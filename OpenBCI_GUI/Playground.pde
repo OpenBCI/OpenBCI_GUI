@@ -6,6 +6,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
+Playground playground;
 
 class Playground {
 
@@ -119,4 +120,3 @@ class Playground {
     }
   }
 };
-

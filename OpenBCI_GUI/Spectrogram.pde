@@ -7,9 +7,6 @@
 // 
 ///////////////////////////////////////////////
 
-
-//import ddf.minim.analysis.*; //for FFT
-
 class Spectrogram {
   public int Nfft;
   //public float dataSlices[][];   //holds the data in [Nslices][Nfft] manner

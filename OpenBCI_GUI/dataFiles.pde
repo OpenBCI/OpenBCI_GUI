@@ -3,7 +3,62 @@
 // Class: OutputFile_rawtxt
 // Purpose: handle file creation and writing for the text log file
 // Created: Chip Audette  May 2, 2014
-//
+////////////////////////////////////////////////////////////
+
+void openNewLogFile(String _fileName) {
+  //close the file if it's open
+  if (fileoutput != null) {
+    println("OpenBCI_GUI: closing log file");
+    closeLogFile();
+  }
+
+  //open the new file
+  fileoutput = new OutputFile_rawtxt(openBCI.get_fs_Hz(), _fileName);
+  output_fname = fileoutput.fname;
+  println("openBCI: openNewLogFile: opened output file: " + output_fname);
+  output("openBCI: openNewLogFile: opened output file: " + output_fname);
+}
+
+void playbackSelected(File selection) {
+  if (selection == null) {
+    println("ControlPanel: playbackSelected: Window was closed or the user hit cancel.");
+  } else {
+    println("ControlPanel: playbackSelected: User selected " + selection.getAbsolutePath());
+    output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
+    playbackData_fname = selection.getAbsolutePath();
+  }
+}
+
+void closeLogFile() {
+  if (fileoutput != null) fileoutput.closeFile();
+}
+
+void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
+  if (selection == null) {
+    println("fileSelected: no selection so far...");
+  } else {
+    //inputFile = selection;
+    playbackData_fname = selection.getAbsolutePath();
+  }
+}
+
+String getDateString() {
+  String fname = year() + "-";
+  if (month() < 10) fname=fname+"0";
+  fname = fname + month() + "-";
+  if (day() < 10) fname = fname + "0";
+  fname = fname + day(); 
+
+  fname = fname + "_";
+  if (hour() < 10) fname = fname + "0";
+  fname = fname + hour() + "-";
+  if (minute() < 10) fname = fname + "0";
+  fname = fname + minute() + "-";
+  if (second() < 10) fname = fname + "0";
+  fname = fname + second();
+  return fname;
+}
+
 //write data to a text file
 public class OutputFile_rawtxt {
   PrintWriter output;
@@ -176,5 +231,111 @@ class Table_CSV extends Table {
     if (row != getRowCount()) {
       setRowCount(row);
     }
+  }
+}
+
+//////////////////////////////////
+//
+//    This collection of functions/methods - convertSDFile, createPlaybackFileFromSD, & sdFileSelected - contains code 
+//    used to convert HEX files (stored by OpenBCI on the local SD) into text files that can be used for PLAYBACK mode.
+//    Created: Conor Russomanno - 10/22/14 (based on code written by Joel Murphy summer 2014)
+//
+//////////////////////////////////
+
+//variables for SD file conversion
+BufferedReader dataReader;
+String dataLine;
+PrintWriter dataWriter;
+String convertedLine;
+String thisLine;
+String h;
+float[] intData = new float[20];
+String logFileName;
+long thisTime;
+long thatTime;
+
+public void convertSDFile() {
+  println("");
+  try {
+    dataLine = dataReader.readLine();
+  } 
+  catch (IOException e) {
+    e.printStackTrace();
+    dataLine = null;
+  }
+
+  if (dataLine == null) {
+    // Stop reading because of an error or file is empty
+    thisTime = millis() - thatTime;
+    controlPanel.convertingSD = false;
+    println("nothing left in file"); 
+    println("SD file conversion took "+thisTime+" mS");
+    dataWriter.flush();
+    dataWriter.close();
+  } else {
+    //        println(dataLine);
+    String[] hexNums = splitTokens(dataLine, ",");
+
+    if (hexNums[0].charAt(0) == '%') {
+      //          println(dataLine);
+      dataWriter.println(dataLine);
+      println(dataLine);
+    } else {
+      for (int i=0; i<hexNums.length; i++) {
+        h = hexNums[i];
+        if (i > 0) {
+          if (h.charAt(0) > '7') {  // if the number is negative 
+            h = "FF" + hexNums[i];   // keep it negative
+          } else {                  // if the number is positive
+            h = "00" + hexNums[i];   // keep it positive
+          }
+          if (i > 8) { // accelerometer data needs another byte
+            if (h.charAt(0) == 'F') {
+              h = "FF" + h;
+            } else {
+              h = "00" + h;
+            }
+          }
+        }
+        // println(h); // use for debugging
+        if (h.length()%2 == 0) {  // make sure this is a real number
+          intData[i] = unhex(h);
+        } else {
+          intData[i] = 0;
+        }
+
+        //if not first column(sample #) or columns 9-11 (accelerometer), convert to uV
+        if (i>=1 && i<=8) {
+          intData[i] *= openBCI.get_scale_fac_uVolts_per_count();
+        }
+
+        //print the current channel value
+        dataWriter.print(intData[i]);
+        if (i < hexNums.length-1) {
+          //print "," separator
+          dataWriter.print(",");
+        }
+      }
+      //println();
+      dataWriter.println();
+    }
+  }
+}
+
+void createPlaybackFileFromSD() {
+  logFileName = "data/EEG_Data/SDconverted-"+getDateString()+".txt";
+  dataWriter = createWriter(logFileName);
+  dataWriter.println("%OBCI Data Log - " + getDateString());
+}
+
+void sdFileSelected(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    dataReader = createReader(selection.getAbsolutePath()); // ("positions.txt");
+    controlPanel.convertingSD = true;
+    println("Timing SD file conversion...");
+    thatTime = millis();
   }
 }

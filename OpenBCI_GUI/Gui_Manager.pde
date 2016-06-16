@@ -12,7 +12,6 @@
 //
 ///////////////////////////////////////////////////
 
-
 //import processing.core.PApplet;
 import org.gwoptics.graphics.*;
 import org.gwoptics.graphics.graph2D.*;
@@ -23,7 +22,42 @@ import org.gwoptics.graphics.graph2D.backgrounds.*;
 import ddf.minim.analysis.*; //for FFT
 import java.util.*; //for Array.copyOfRange()
 
-class Gui_Manager {
+//GUI plotting constants
+GUI_Manager gui;
+color bgColor = color(1, 18, 41);
+int navBarHeight = 32;
+float default_vertScale_uV = 200.0f;  //used for vertical scale of time-domain montage plot and frequency-domain FFT plot
+float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+float dataBuff_len_sec = displayTime_sec+3f; //needs to be wider than actual display so that filter startup is hidden
+
+void initializeGUI() {
+  verbosePrint("OpenBCI_GUI: initializeGUI: Starting...");
+  String filterDescription = dataProcessing.getFilterDescription(); verbosePrint("OpenBCI_GUI: initializeGUI: 2");
+  gui = new GUI_Manager(this, win_x, win_y, nchan, displayTime_sec, default_vertScale_uV, filterDescription, smoothFac[smoothFac_ind]); verbosePrint("OpenBCI_GUI: initializeGUI: 3");
+  //associate the data to the GUI traces
+  gui.initDataTraces(dataBuffX, dataBuffY_filtY_uV, fftBuff, dataProcessing.data_std_uV, is_railed, dataProcessing.polarity); verbosePrint("OpenBCI_GUI: initializeGUI: 4");
+  //limit how much data is plotted...hopefully to speed things up a little
+  gui.setDoNotPlotOutsideXlim(true); verbosePrint("OpenBCI_GUI: initializeGUI: 5");
+  gui.setDecimateFactor(2); verbosePrint("OpenBCI_GUI: initializeGUI: Done.");
+}
+
+void incrementFilterConfiguration() {
+  dataProcessing.incrementFilterConfiguration();
+
+  //update the button strings
+  gui.filtBPButton.but_txt = "BP Filt\n" + dataProcessing.getShortFilterDescription();
+  gui.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
+}
+
+void incrementNotchConfiguration() {
+  dataProcessing.incrementNotchConfiguration();
+
+  //update the button strings
+  gui.filtNotchButton.but_txt = "Notch\n" + dataProcessing.getShortNotchDescription();
+  gui.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
+}
+
+class GUI_Manager {
   ScatterTrace montageTrace;
   ScatterTrace_FFT fftTrace;
   Graph2D gMontage, gFFT, gSpectrogram;
@@ -89,9 +123,9 @@ class Gui_Manager {
   public final static String stopButton_pressToStop_txt = "Stop Data Stream";
   public final static String stopButton_pressToStart_txt = "Start Data Stream";
   
-  Gui_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float default_yScale_uV, 
+  GUI_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float default_yScale_uV, 
     String filterDescription, float smooth_fac) {  
-//  Gui_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float yScale_uV, float fs_Hz,
+//  GUI_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float yScale_uV, float fs_Hz,
 //      String montageFilterText, String detectName) {
     showSpectrogram = false;  
     whichChannelForSpectrogram = 0; //assume
@@ -140,7 +174,7 @@ class Gui_Manager {
     gMontage = new Graph2D(parent, int(axes_x), int(axes_y), false);  //last argument is whether the axes cross at zero
     setupMontagePlot(gMontage, win_x, win_y, axisMontage_relPos,displayTime_sec,fontInfo,filterDescription);
 
-    verbosePrint("Gui_Manager: Buttons: " + int(float(win_x)*axisMontage_relPos[0]) + ", " + (int(float(win_y)*axisMontage_relPos[1])-40));
+    verbosePrint("GUI_Manager: Buttons: " + int(float(win_x)*axisMontage_relPos[0]) + ", " + (int(float(win_y)*axisMontage_relPos[1])-40));
 
     showMontageButton = new Button (int(float(win_x)*axisMontage_relPos[0]) - 1, int(float(win_y)*axisMontage_relPos[1])-45, 125, 21, "EEG DATA", 14); 
     showMontageButton.makeDropdownButton(true);
@@ -283,10 +317,10 @@ class Gui_Manager {
     intensityFactorButton = new Button(x,y,w,h,"Vert Scale\n" + round(vertScale_uV) + "uV",fontInfo.buttonLabel_size);
 
     x = calcButtonXLocation(Ibut++, win_x, w, xoffset,gutter_between_buttons);
-    filtNotchButton = new Button(x,y,w,h,"Notch\n" + eegProcessing.getShortNotchDescription(),fontInfo.buttonLabel_size);    
+    filtNotchButton = new Button(x,y,w,h,"Notch\n" + dataProcessing.getShortNotchDescription(),fontInfo.buttonLabel_size);    
     
     x = calcButtonXLocation(Ibut++, win_x, w, xoffset,gutter_between_buttons);
-    filtBPButton = new Button(x,y,w,h,"BP Filt\n" + eegProcessing.getShortFilterDescription(),fontInfo.buttonLabel_size);
+    filtBPButton = new Button(x,y,w,h,"BP Filt\n" + dataProcessing.getShortFilterDescription(),fontInfo.buttonLabel_size);
 
     set_vertScaleAsLog(true);
     
@@ -297,6 +331,7 @@ class Gui_Manager {
     int w_wide = 120;    //button width, wider
     x = x + w - w_wide-((int)(gutter_between_buttons*win_x));  //adjust the x position for the wider button, plus double the gutter
     stopButton = new Button(x,y,w_wide,h,stopButton_pressToStart_txt,fontInfo.buttonLabel_size);
+    stopButton.setColorNotPressed(color(184, 220, 105));
  
 
     //set the initial display page for the GUI
@@ -321,7 +356,7 @@ class Gui_Manager {
   }
   public void updateVertScale() {
     vertScale_uV = default_vertScale_uV*vertScaleFactor[vertScaleFactor_ind];
-    //println("Gui_Manager: updateVertScale: vertScale_uV = " + vertScale_uV);
+    //println("GUI_Manager: updateVertScale: vertScale_uV = " + vertScale_uV);
     
     //update how the plots are scaled
     if (montageTrace != null) montageTrace.setYScale_uV(vertScale_uV);  //the Y-axis on the montage plot is fixed...the data is simply scaled prior to plotting
@@ -806,7 +841,7 @@ class Gui_Manager {
       ax = gSpectrogram.getYAxis();
       int y =  (int) pos.y - ax.valueToPosition(ax.getMinValue()); //position needs top-left.  The MAX value is at the top-left for this plot.
       int h = ax.valueToPosition(ax.getMaxValue());
-      //println("gui_Manager.draw(): x,y,w,h = " + x + " " + y + " " + w + " " + h);
+      //println("GUI_Manager.draw(): x,y,w,h = " + x + " " + y + " " + w + " " + h);
       float max_freq_Hz = gSpectrogram.getYAxis().getMaxValue()-0.5f;
       spectrogram.draw(x,y,w,h,max_freq_Hz);
     }
@@ -872,7 +907,7 @@ class Gui_Manager {
   }
 
   public void mousePressed(){
-    verbosePrint("Gui_Manager: mousePressed: mouse pressed.");
+    verbosePrint("GUI_Manager: mousePressed: mouse pressed.");
     //if showMontage button pressed
     if(showMontageButton.isMouseHere()){
       //turn off visibility of channel full controller
@@ -893,7 +928,7 @@ class Gui_Manager {
 
     //if cursor inside channel controller
     // if(mouseX >= cc.x1 && mouseX <= (cc.x2 - cc.w2) && mouseY >= cc.y1 && mouseY <= (cc.y1 + cc.h1) ){ 
-      verbosePrint("Gui_Manager: mousePressed: Channel Controller mouse pressed...");
+      verbosePrint("GUI_Manager: mousePressed: Channel Controller mouse pressed...");
       cc.mousePressed();
     // }
     
@@ -906,10 +941,10 @@ class Gui_Manager {
   }
 
   public void mouseReleased(){
-    //verbosePrint("Gui_Manager: mouseReleased()");
+    //verbosePrint("GUI_Manager: mouseReleased()");
 
     // if(mouseX >= cc.x1 && mouseX <= (cc.x2 - cc.w2) && mouseY >= cc.y1 && mouseY <= (cc.y1 + cc.h1) ){ 
-    verbosePrint("Gui_Manager: mouseReleased(): Channel Controller mouse released...");
+    verbosePrint("GUI_Manager: mouseReleased(): Channel Controller mouse released...");
     cc.mouseReleased();
 
 
@@ -925,4 +960,201 @@ class Gui_Manager {
     biasButton.setIsActive(false);
   }
  
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+// Formerly Button.pde
+// This class creates and manages a button for use on the screen to trigger actions.
+//
+// Created: Chip Audette, Oct 2013.
+// Modified: Conor Russomanno, Oct 2014
+// 
+// Based on Processing's "Button" example code
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class Button {
+
+  int but_x, but_y, but_dx, but_dy;      // Position of square button
+  //int rectSize = 90;     // Diameter of rect
+
+  color currentColor;
+  color color_hover = color(127, 134, 143);//color(252, 221, 198); 
+  color color_pressed = color(150,170,200); //bgColor;
+  color color_highlight = color(102);
+  color color_notPressed = color(255); //color(227,118,37);
+  color buttonStrokeColor = bgColor;
+  color textColorActive = color(255);
+  color textColorNotActive = bgColor;
+  color rectHighlight;
+  boolean drawHand = false;
+  //boolean isMouseHere = false;
+  boolean buttonHasStroke = true;
+  boolean isActive = false;
+  boolean isDropdownButton = false;
+  boolean wasPressed = false;
+  public String but_txt;
+  PFont buttonFont = f2;
+
+  public Button(int x, int y, int w, int h, String txt, int fontSize) {
+    setup(x, y, w, h, txt);
+    //println(PFont.list()); //see which fonts are available
+    //font = createFont("SansSerif.plain",fontSize);
+    //font = createFont("Lucida Sans Regular",fontSize);
+    // font = createFont("Arial",fontSize);
+    //font = loadFont("SansSerif.plain.vlw");
+  }
+
+  public void setup(int x, int y, int w, int h, String txt) {
+    but_x = x;
+    but_y = y;
+    but_dx = w;
+    but_dy = h;
+    setString(txt);
+  }
+
+  public void setString(String txt) {
+    but_txt = txt;
+    //println("Button: setString: string = " + txt);
+  }
+
+  public boolean isActive() {
+    return isActive;
+  }
+
+  public void setIsActive(boolean val) {
+    isActive = val;
+  }
+
+  public void makeDropdownButton(boolean val) {
+    isDropdownButton = val;
+  }
+
+  public boolean isMouseHere() {
+    if ( overRect(but_x, but_y, but_dx, but_dy) ) {
+      cursor(HAND);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  color getColor() {
+    if (isActive) {
+     currentColor = color_pressed;
+    } else if (isMouseHere()) {
+     currentColor = color_hover;
+    } else {    
+     currentColor = color_notPressed;
+    }
+    return currentColor;
+  }
+  
+  public void setCurrentColor(color _color){
+    currentColor = _color; 
+  }
+
+  public void setColorPressed(color _color) {
+    color_pressed = _color;
+  }
+  public void setColorNotPressed(color _color) {
+    color_notPressed = _color;
+  }
+
+  public void setStrokeColor(color _color) {
+    buttonStrokeColor = _color;
+  }
+
+  public void hasStroke(boolean _trueORfalse) {
+    buttonHasStroke = _trueORfalse;
+  }
+
+  boolean overRect(int x, int y, int width, int height) {
+    if (mouseX >= x && mouseX <= x+width && 
+      mouseY >= y && mouseY <= y+height) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public void draw(int _x, int _y) {
+    but_x = _x;
+    but_y = _y;
+    draw();
+  }
+
+  public void draw() {
+    //draw the button
+    fill(getColor());
+    if (buttonHasStroke) {
+      stroke(buttonStrokeColor); //button border
+    } else {
+      noStroke();
+    }
+    // noStroke();
+    rect(but_x, but_y, but_dx, but_dy);
+
+    //draw the text
+    if (isActive) {
+      fill(textColorActive);
+    } else {
+      fill(textColorNotActive);
+    }
+    stroke(255);
+    textFont(buttonFont);  //load f2 ... from control panel 
+    textSize(12);
+    textAlign(CENTER, CENTER);
+    textLeading(round(0.9*(textAscent()+textDescent())));
+    //    int x1 = but_x+but_dx/2;
+    //    int y1 = but_y+but_dy/2;
+    int x1, y1;
+    //no auto wrap
+    x1 = but_x+but_dx/2;
+    y1 = but_y+but_dy/2;
+    text(but_txt, x1, y1);
+
+    //draw open/close arrow if it's a dropdown button
+    if (isDropdownButton) {
+      pushStyle();
+      fill(255);
+      noStroke();
+      // smooth();
+      // stroke(255);
+      // strokeWeight(1);
+      if (isActive) {
+        float point1x = but_x + (but_dx - ((3f*but_dy)/4f));
+        float point1y = but_y + but_dy/3f;
+        float point2x = but_x + (but_dx-(but_dy/4f));
+        float point2y = but_y + but_dy/3f;
+        float point3x = but_x + (but_dx - (but_dy/2f));
+        float point3y = but_y + (2f*but_dy)/3f;
+        triangle(point1x, point1y, point2x, point2y, point3x, point3y); //downward triangle, indicating open
+      } else {
+        float point1x = but_x + (but_dx - ((3f*but_dy)/4f));
+        float point1y = but_y + (2f*but_dy)/3f;
+        float point2x = but_x + (but_dx-(but_dy/4f));
+        float point2y = but_y + (2f*but_dy)/3f;
+        float point3x = but_x + (but_dx - (but_dy/2f));
+        float point3y = but_y + but_dy/3f;
+        triangle(point1x, point1y, point2x, point2y, point3x, point3y); //upward triangle, indicating closed
+      }
+      popStyle();
+    }
+
+    if (true) {
+      if (!isMouseHere() && drawHand) {
+        cursor(ARROW);
+        drawHand = false;
+        verbosePrint("don't draw hand");
+      }
+      //if cursor is over button change cursor icon to hand!
+      if (isMouseHere() && !drawHand) {
+        cursor(HAND);
+        drawHand = true;
+        verbosePrint("draw hand");
+      }
+    }
+  }
 };

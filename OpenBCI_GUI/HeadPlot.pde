@@ -14,6 +14,13 @@
 //
 ///////////////////////////////////////////////////////////////
 
+void toggleShowPolarity() {
+  gui.headPlot1.use_polarity = !gui.headPlot1.use_polarity;
+
+  //update the button
+  gui.showPolarityButton.but_txt = "Polarity\n" + gui.headPlot1.getUsePolarityTrueFalse();
+}
+
 class HeadPlot {
   private float rel_posX,rel_posY,rel_width,rel_height;
   private int circ_x,circ_y,circ_diam;
@@ -1032,9 +1039,4 @@ class HeadPlot {
     }
     text("R",ref_electrode_xy[0],ref_electrode_xy[1]); 
   } //end of draw method
-  
 };
-
-
-
-

@@ -8,6 +8,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////
 
+//Global Variables/Constants
+Presentation myPresentation;
 boolean drawPresentation = false;
 
 class Presentation {

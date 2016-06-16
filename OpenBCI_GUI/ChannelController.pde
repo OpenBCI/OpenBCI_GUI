@@ -10,6 +10,45 @@ public void updateChannelArrays(int _nchan) {
   impedanceCheckValues = new char [_nchan][2];
 }
 
+//activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
+void activateChannel(int Ichan) {
+  println("OpenBCI_GUI: activating channel " + (Ichan+1));
+  if (eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (openBCI.isSerialPortOpen()) {
+      verbosePrint("**");
+      openBCI.changeChannelState(Ichan, true); //activate
+    }
+  }
+  if (Ichan < gui.chanButtons.length) {
+    channelSettingValues[Ichan][0] = '0'; 
+    gui.cc.update();
+  }
+}  
+void deactivateChannel(int Ichan) {
+  println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
+  if (eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (openBCI.isSerialPortOpen()) {
+      verbosePrint("**");
+      openBCI.changeChannelState(Ichan, false); //de-activate
+    }
+  }
+  if (Ichan < gui.chanButtons.length) {
+    channelSettingValues[Ichan][0] = '1'; 
+    gui.cc.update();
+  }
+}
+
+//Ichan is zero referenced (not one referenced)
+boolean isChannelActive(int Ichan) {
+  boolean return_val = false;
+  if (channelSettingValues[Ichan][0] == '1') {
+    return_val = false;
+  } else {
+    return_val = true;
+  }
+  return return_val;
+}
+
 // color[] channelColors = new color[16];
 color[] channelColors = {
   color(129, 129, 129), 
@@ -580,4 +619,3 @@ class ChannelController {
     }
   }
 };
-
