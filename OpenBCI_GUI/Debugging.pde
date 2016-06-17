@@ -10,10 +10,25 @@
 //
 /////////////////////////////////////
 
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
+//set true if you want more verbosity in console.. verbosePrint("print_this_thing") is used to output feedback when isVerbose = true
+boolean isVerbose = false;
+
 //Help Widget initiation
 HelpWidget helpWidget;
 
-boolean isVerbose = false; //set true if you want more verbosity in console.. verbosePrint("print_this_thing") is used to output feedback when isVerbose = true
+//use signPost(String identifier) to print 'identifier' text and time since last signPost() for debugging latency/timing issues
+boolean printSignPosts = false;
+float millisOfLastSignPost = 0.0;
+float millisSinceLastSignPost = 0.0;
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
+
 void verbosePrint(String _string) {
   if (isVerbose) {
     println(_string);
@@ -89,9 +104,6 @@ public void output(String _output) {
 // here I will create methods used to identify where there are inefficiencies in the code
 // note to self: make sure to check the frameRate() in setup... switched from 16 to 30... working much faster now... still a useful method below.
 // --------------------------------------------------------------  START -------------------------------------------------------------------------------
-boolean printSignPosts = false;
-float millisOfLastSignPost = 0.0;
-float millisSinceLastSignPost = 0.0;
 
 //method for printing out an ["indentifier"][millisSinceLastSignPost] for debugging purposes... allows us to look at what is taking too long.
 void signPost(String identifier) {

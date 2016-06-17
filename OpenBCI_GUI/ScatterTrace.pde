@@ -31,6 +31,18 @@ import org.gwoptics.graphics.graph2D.traces.Blank2DTrace;
 import org.gwoptics.graphics.graph2D.backgrounds.*;
 import java.awt.Color;
 
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+//                       Classes
+//------------------------------------------------------------------------
+
 class ScatterTrace extends Blank2DTrace {
   private float[] dataX;
   private float[][] dataY;
@@ -411,4 +423,3 @@ class ScatterTrace_FFT extends Blank2DTrace {
     return outputFreq_Hz;
   }
 };
-

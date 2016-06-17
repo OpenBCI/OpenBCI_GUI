@@ -14,12 +14,24 @@
 //
 ///////////////////////////////////////////////////////////////
 
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
+
 void toggleShowPolarity() {
   gui.headPlot1.use_polarity = !gui.headPlot1.use_polarity;
 
   //update the button
   gui.showPolarityButton.but_txt = "Polarity\n" + gui.headPlot1.getUsePolarityTrueFalse();
 }
+
+//------------------------------------------------------------------------
+//                            Classes
+//------------------------------------------------------------------------
 
 class HeadPlot {
   private float rel_posX,rel_posY,rel_width,rel_height;

@@ -1,9 +1,44 @@
 
+//////////////////////////////////////////////////////////////////////////
+//
+//    Channel Controller
+//    - responsible for addressing channel data (Ganglion 1-4, 32bit 
+//    - Select default configuration (EEG, EKG, EMG)
+//    - Select Electrode Count (8 vs 16)
+//    - Select data mode (synthetic, playback file, real-time)
+//    - Record data? (y/n)
+//      - select output location
+//    - link to help guide
+//    - buttons to start/stop/reset application
+//
+//    Written by: Conor Russomanno (Oct. 2014)
+//
+//////////////////////////////////////////////////////////////////////////
+
+//------------------------------------------------------------------------
+//                       Global Variables  & Instances
+//------------------------------------------------------------------------
 
 //these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
 int numSettingsPerChannel = 6; //each channel has 6 different settings
 char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 char[][] impedanceCheckValues = new char [nchan][2];
+
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
+color[] channelColors = {
+  color(129, 129, 129), 
+  color(124, 75, 141), 
+  color(54, 87, 158), 
+  color(49, 113, 89), 
+  color(221, 178, 13), 
+  color(253, 94, 52), 
+  color(224, 56, 45), 
+  color(162, 82, 49)
+};
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
 
 public void updateChannelArrays(int _nchan) {
   channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
@@ -49,17 +84,9 @@ boolean isChannelActive(int Ichan) {
   return return_val;
 }
 
-// color[] channelColors = new color[16];
-color[] channelColors = {
-  color(129, 129, 129), 
-  color(124, 75, 141), 
-  color(54, 87, 158), 
-  color(49, 113, 89), 
-  color(221, 178, 13), 
-  color(253, 94, 52), 
-  color(224, 56, 45), 
-  color(162, 82, 49)
-};
+//------------------------------------------------------------------------
+//                            Classes
+//------------------------------------------------------------------------
 
 class ChannelController {
 

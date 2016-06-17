@@ -16,6 +16,10 @@
 
 import controlP5.*;
 
+//------------------------------------------------------------------------
+//                       Global Variables  & Instances
+//------------------------------------------------------------------------
+
 ControlPanel controlPanel;
 
 ControlP5 cp5; //program-wide instance of ControlP5
@@ -62,6 +66,44 @@ boolean selectPlaybackFilePressed = false;
 Button selectSDFile;
 boolean selectSDFilePressed = false;
 
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
+
+public void controlEvent(ControlEvent theEvent) {
+
+  if (theEvent.isFrom("sourceList")) {
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    String str = (String)bob.get("headline");
+    str = str.substring(0, str.length()-5);
+    //output("Data Source = " + str);
+    int newDataSource = int(theEvent.getValue());
+    eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
+    output("The new data source is " + str);
+  }
+
+  if (theEvent.isFrom("serialList")) {
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    openBCI_portName = (String)bob.get("headline");
+    output("OpenBCI Port Name = " + openBCI_portName);
+  }
+
+  if (theEvent.isFrom("sdTimes")) {
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    sdSettingString = (String)bob.get("headline");
+    sdSetting = int(theEvent.getValue());
+    if (sdSetting != 0) {
+      output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
+    } else {
+      output("OpenBCI microSD Setting = " + sdSettingString);
+    }
+    verbosePrint("SD setting = " + sdSetting);
+  }
+}
+
+//------------------------------------------------------------------------
+//                            Classes
+//------------------------------------------------------------------------
 
 class ControlPanel {
 
@@ -396,37 +438,6 @@ class ControlPanel {
     selectSDFilePressed = false;
   }
 };
-
-public void controlEvent(ControlEvent theEvent) {
-
-  if (theEvent.isFrom("sourceList")) {
-    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    String str = (String)bob.get("headline");
-    str = str.substring(0, str.length()-5);
-    //output("Data Source = " + str);
-    int newDataSource = int(theEvent.getValue());
-    eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
-    output("The new data source is " + str);
-  }
-
-  if (theEvent.isFrom("serialList")) {
-    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    openBCI_portName = (String)bob.get("headline");
-    output("OpenBCI Port Name = " + openBCI_portName);
-  }
-
-  if (theEvent.isFrom("sdTimes")) {
-    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    sdSettingString = (String)bob.get("headline");
-    sdSetting = int(theEvent.getValue());
-    if (sdSetting != 0) {
-      output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
-    } else {
-      output("OpenBCI microSD Setting = " + sdSettingString);
-    }
-    verbosePrint("SD setting = " + sdSetting);
-  }
-}
 
 //==============================================================================//
 //					BELOW ARE THE CLASSES FOR THE VARIOUS 						//

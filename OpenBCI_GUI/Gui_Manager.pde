@@ -22,6 +22,10 @@ import org.gwoptics.graphics.graph2D.backgrounds.*;
 import ddf.minim.analysis.*; //for FFT
 import java.util.*; //for Array.copyOfRange()
 
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
 //GUI plotting constants
 GUI_Manager gui;
 color bgColor = color(1, 18, 41);
@@ -29,6 +33,10 @@ int navBarHeight = 32;
 float default_vertScale_uV = 200.0f;  //used for vertical scale of time-domain montage plot and frequency-domain FFT plot
 float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 float dataBuff_len_sec = displayTime_sec+3f; //needs to be wider than actual display so that filter startup is hidden
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
 
 void initializeGUI() {
   verbosePrint("OpenBCI_GUI: initializeGUI: Starting...");
@@ -56,6 +64,10 @@ void incrementNotchConfiguration() {
   gui.filtNotchButton.but_txt = "Notch\n" + dataProcessing.getShortNotchDescription();
   gui.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
 }
+
+//------------------------------------------------------------------------
+//                       Classes
+//------------------------------------------------------------------------
 
 class GUI_Manager {
   ScatterTrace montageTrace;

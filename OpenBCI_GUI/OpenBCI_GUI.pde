@@ -26,6 +26,10 @@ import java.util.Map.Entry;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
 //used to switch between application states
 int systemMode = 0; /* Modes: 0 = system stopped/control panel setings / 10 = gui / 20 = help guide */
 
@@ -127,6 +131,10 @@ PImage logo;
 PFont f1;
 PFont f2;
 PFont f3;
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
 
 //========================SETUP============================//
 //========================SETUP============================//
@@ -336,7 +344,7 @@ void haltSystem() {
   lastReadDataPacketInd = -1;
   pointCounter = 0;
   prevBytes = 0; 
-  prevMillis=millis();
+  prevMillis = millis();
   byteRate_perSec = 0;
   drawLoop_counter = 0;
   // eegDataSource = -1;

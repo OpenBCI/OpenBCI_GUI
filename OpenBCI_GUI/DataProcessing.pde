@@ -1,6 +1,13 @@
 
-//Global variables/objects:
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
 DataProcessing dataProcessing;
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
 
 //called from systemUpdate when mode=10 and isRunning = true
 int getDataIfAvailable(int pointCounter) {
@@ -250,6 +257,10 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
   }
   return currentTableRowIndex;
 }
+
+//------------------------------------------------------------------------
+//                          CLASSES
+//------------------------------------------------------------------------
 
 class DataProcessing {
   private float fs_Hz;  //sample rate

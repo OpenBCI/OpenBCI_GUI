@@ -17,8 +17,11 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-//import processing.serial.*;
 import java.io.OutputStream; //for logging raw bytes to an output file
+
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
 
 final String command_stop = "s";
 // final String command_startText = "x";
@@ -46,6 +49,11 @@ int channelDeactivateCounter = 0; //used for re-deactivating channels after swit
 //here is the routine that listens to the serial port.
 //if any data is waiting, get it, parse it, and stuff it into our vector of 
 //pre-allocated dataPacketBuff
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
+
 void serialEvent(Serial port) {
   //check to see which serial port it is
   if (openBCI.isOpenBCISerial(port)) {
@@ -122,6 +130,14 @@ void stopButtonWasPressed() {
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
   }
 }
+
+void printRegisters() {
+  openBCI.printRegisters();
+}
+
+//------------------------------------------------------------------------
+//                       Classes
+//------------------------------------------------------------------------
 
 class OpenBCI_ADS1299 {
   
@@ -1072,12 +1088,5 @@ class OpenBCI_ADS1299 {
       impWriteCounter++;
     }
   }
-};  
-
-
-
-void printRegisters() {
-  openBCI.printRegisters();
-  // printingRegisters = true;
-}
+};
  

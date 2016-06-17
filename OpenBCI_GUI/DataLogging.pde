@@ -5,6 +5,14 @@
 // Created: Chip Audette  May 2, 2014
 ////////////////////////////////////////////////////////////
 
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
+//------------------------------------------------------------------------
+//                       Global Functions
+//------------------------------------------------------------------------
+
 void openNewLogFile(String _fileName) {
   //close the file if it's open
   if (fileoutput != null) {
@@ -58,6 +66,29 @@ String getDateString() {
   fname = fname + second();
   return fname;
 }
+
+//these functions are relevant to convertSDFile
+void createPlaybackFileFromSD() {
+  logFileName = "data/EEG_Data/SDconverted-"+getDateString()+".txt";
+  dataWriter = createWriter(logFileName);
+  dataWriter.println("%OBCI Data Log - " + getDateString());
+}
+
+void sdFileSelected(File selection) {
+  if (selection == null) {
+    println("Window was closed or the user hit cancel.");
+  } else {
+    println("User selected " + selection.getAbsolutePath());
+    dataReader = createReader(selection.getAbsolutePath()); // ("positions.txt");
+    controlPanel.convertingSD = true;
+    println("Timing SD file conversion...");
+    thatTime = millis();
+  }
+}
+
+//------------------------------------------------------------------------
+//                            CLASSES
+//------------------------------------------------------------------------
 
 //write data to a text file
 public class OutputFile_rawtxt {
@@ -150,10 +181,10 @@ public class OutputFile_rawtxt {
   public int getRowsWritten() {
     return rowsWritten;
   }
-}
-
+};
 
 ///////////////////////////////////////////////////////////////
+//
 // Class: Table_CSV
 // Purpose: Extend the Table class to handle data files with comment lines
 // Created: Chip Audette  May 2, 2014
@@ -164,8 +195,8 @@ public class OutputFile_rawtxt {
 //    String fname = "myfile.csv";
 //    TableCSV myTable = new TableCSV(fname);
 //
-//import java.io.*; 
-//import processing.core.PApplet;
+///////////////////////////////////////////////////////////////
+
 class Table_CSV extends Table {
   Table_CSV(String fname) throws IOException {
     init();
@@ -319,23 +350,5 @@ public void convertSDFile() {
       //println();
       dataWriter.println();
     }
-  }
-}
-
-void createPlaybackFileFromSD() {
-  logFileName = "data/EEG_Data/SDconverted-"+getDateString()+".txt";
-  dataWriter = createWriter(logFileName);
-  dataWriter.println("%OBCI Data Log - " + getDateString());
-}
-
-void sdFileSelected(File selection) {
-  if (selection == null) {
-    println("Window was closed or the user hit cancel.");
-  } else {
-    println("User selected " + selection.getAbsolutePath());
-    dataReader = createReader(selection.getAbsolutePath()); // ("positions.txt");
-    controlPanel.convertingSD = true;
-    println("Timing SD file conversion...");
-    thatTime = millis();
   }
 }

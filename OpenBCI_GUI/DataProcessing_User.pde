@@ -1,7 +1,14 @@
 
-//Global Variables/Objects
+//------------------------------------------------------------------------
+//                       Global Variables & Instances
+//------------------------------------------------------------------------
+
 DataProcessing_User dataProcessing_user;
 boolean drawEMG = false; //if true... toggles on EEG_Processing_User.draw and toggles off the headplot in Gui_Manager
+
+//------------------------------------------------------------------------
+//                            Classes
+//------------------------------------------------------------------------
 
 class DataProcessing_User {
   private float fs_Hz;  //sample rate
@@ -252,9 +259,6 @@ class DataProcessing_User {
         switchTripped = false;
       }
     }
-
-
-
 
     if (millis() - timeOfLastTrip >= 1250) {
       if (switchCounter == 1) {
