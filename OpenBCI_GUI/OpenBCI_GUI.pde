@@ -154,6 +154,8 @@ void setup() {
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
+  
+  setupContainers();
 
   //V1 FONTS
   f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
@@ -180,7 +182,6 @@ void setup() {
 
   //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
-
   helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
 
   // println("..." + this);
@@ -489,10 +490,18 @@ void systemDraw() { //for drawing to the screen
       //reinitializing GUI after resize
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
+<<<<<<< HEAD
   
     dataProcessing_user.draw();
     playground.draw();
     //dataProcessing_user.draw();
+=======
+
+    playground.draw();
+    dataProcessing_user.draw();
+    drawContainers();
+    
+>>>>>>> origin/master
   } else { //systemMode != 10
     //still print title information about fps
     surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");
