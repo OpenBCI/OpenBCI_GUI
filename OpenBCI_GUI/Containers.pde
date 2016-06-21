@@ -36,6 +36,8 @@ Container container7;
 Container container8;
 Container container9;
 Container container10;
+//Container container11;
+//Container container12;
 
 //Viz extends container (example below)
 //Viz viz1;
@@ -53,7 +55,12 @@ void setupContainers() {
   widthOfLastScreen = width;
   heightOfLastScreen = height;
   
-  container0 = new Container(0, 50, width, height - 100, 10);  //x0, y0, w0, h0, margin 
+  int topNav_h = 32;
+  int bottomNav_h = 30;
+  int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
+  int rightNav_w = 0; //not used currently
+  
+  container0 = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 10);  //x0, y0, w0, h0, margin 
   container1 = new Container(container0, "UPPER_RIGHT");
   container2 = new Container(container0, "UPPER_LEFT");
   container3 = new Container(container0, "LOWER_LEFT");
@@ -62,8 +69,10 @@ void setupContainers() {
   container6 = new Container(container0, "LEFT");
   container7 = new Container(container0, "BOTTOM");
   container8 = new Container(container0, "RIGHT");
-  container9 = new Container(0, 0, width, 50, 0);
-  container10 = new Container(0, height - 50, width, 50, 0);
+  container9 = new Container(0, 0, width, topNav_h, 0);
+  container10 = new Container(0, height - bottomNav_h, width, 50, 0);
+  //container11 = new Container(container1, "LEFT");
+  //container12 = new Container(container1, "RIGHT");
   
   //setup viz objects... example of container extension (more below)
   //setupVizs();

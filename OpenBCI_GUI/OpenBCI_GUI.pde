@@ -490,18 +490,12 @@ void systemDraw() { //for drawing to the screen
       //reinitializing GUI after resize
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
-<<<<<<< HEAD
-  
-    dataProcessing_user.draw();
-    playground.draw();
-    //dataProcessing_user.draw();
-=======
 
     playground.draw();
     dataProcessing_user.draw();
     drawContainers();
     
->>>>>>> origin/master
+
   } else { //systemMode != 10
     //still print title information about fps
     surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");

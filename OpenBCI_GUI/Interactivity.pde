@@ -42,7 +42,9 @@ void parseKey(char val) {
     case '.':
       drawEMG = !drawEMG; 
       break;
-    
+    case ',':
+      drawContainers = !drawContainers; 
+      break;
     case '1':
       deactivateChannel(1-1); 
       break;
