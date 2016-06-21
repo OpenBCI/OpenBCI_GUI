@@ -32,7 +32,7 @@ color bgColor = color(1, 18, 41);
 int navBarHeight = 32;
 float default_vertScale_uV = 200.0f;  //used for vertical scale of time-domain montage plot and frequency-domain FFT plot
 float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-float dataBuff_len_sec = displayTime_sec+3f; //needs to be wider than actual display so that filter startup is hidden
+float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -150,7 +150,7 @@ class GUI_Manager {
     float gutter_left = 0.08f;  //edge around the GUI
     float gutter_right = 0.015f;  //edge around the GUI
     float height_UI_tray = 0.1f + spacer_bottom; //0.1f;//0.10f;  //empty space along bottom for UI elements
-    float left_right_split = 0.45f;  //notional dividing line between left and right plots, measured from left
+    float left_right_split = 0.5f;  //notional dividing line between left and right plots, measured from left
     float available_top2bot = 1.0f - 2*gutter_topbot - height_UI_tray;
     float up_down_split = 0.5f;   //notional dividing line between top and bottom plots, measured from top
     float gutter_between_buttons = 0.005f; //space between buttons
@@ -178,7 +178,7 @@ class GUI_Manager {
     float[] axisMontage_relPos = {  
       gutter_left, 
       height_UI_tray, 
-      (1.0f-left_right_split)-gutter_left-gutter_right, 
+      left_right_split-gutter_left, 
       available_top2bot-title_gutter-spacer_top
     }; //from left, from top, width, height
     axes_x = float(win_x)*axisMontage_relPos[2];  //width of the axis in pixels
@@ -219,9 +219,9 @@ class GUI_Manager {
     //   available_top2bot*(1.0f-up_down_split) - gutter_topbot-title_gutter - spacer_top
     // }; //from left, from top, width, height
     float[] axisFFT_relPos = { 
-      gutter_left + left_right_split + 0.1f, 
+      gutter_left + left_right_split, // + 0.1f, 
       up_down_split*available_top2bot + height_UI_tray + gutter_topbot, 
-      left_right_split-gutter_left-gutter_right, 
+      (1f-left_right_split)-gutter_left-gutter_right, 
       available_top2bot*(1.0f-up_down_split) - gutter_topbot-title_gutter - spacer_top
     }; //from left, from top, width, height
     axes_x = int(float(win_x)*axisFFT_relPos[2]);  //width of the axis in pixels
