@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
 //
@@ -14,7 +14,7 @@
 //
 //   No warranty. Use at your own risk. Use for whatever you'd like.
 // 
-//////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 import ddf.minim.analysis.*; //for FFT
 //import ddf.minim.*;  // commented because too broad.. contains "Controller" class which is also contained in ControlP5... need to be more specific // To make sound.  Following minim example "frequencyModulation"
@@ -489,10 +489,10 @@ void systemDraw() { //for drawing to the screen
       //reinitializing GUI after resize
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
-
-    playground.draw();
-
+  
     dataProcessing_user.draw();
+    playground.draw();
+    //dataProcessing_user.draw();
   } else { //systemMode != 10
     //still print title information about fps
     surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");

@@ -56,7 +56,7 @@ class DataProcessing_User {
   float lowerThreshold = 0;  //default uV lower threshold value ... this will automatically change over time
   int averagePeriod = 125;  //number of data packets to average over (250 = 1 sec)
   int thresholdPeriod = 1250;  //number of packets
-  int ourChan = 4 - 1;  //channel being monitored ... "3 - 1" means channel 3 (with a 0 index)
+  int ourChan = 3 - 1;  //channel being monitored ... "3 - 1" means channel 3 (with a 0 index)
   float myAverage = 0.0;   //this will change over time ... used for calculations below
   float acceptableLimitUV = 150;  //uV values above this limit are excluded, as a result of them almost certainly being noise...
   boolean switchTripped = false;
@@ -89,7 +89,7 @@ class DataProcessing_User {
   //add some functions here...if you'd like
 
   //here is the processing routine called by the OpenBCI main program...update this with whatever you'd like to do
-  public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
+  public void process(float[][] data_newest_uV, //holds raw bio data that is new since the last call
     float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
     float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
     FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
