@@ -121,6 +121,9 @@ boolean screenHasBeenResized = false;
 float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
 int reinitializeGUIdelay = 125;
+//Tao's variabiles
+int widthOfLastScreen = 0;
+int heightOfLastScreen = 0;
 
 //set window size
 int win_x = 1024;  //window width
@@ -141,7 +144,7 @@ PFont f3;
 //========================SETUP============================//
 void setup() {
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 2/16/2016"); //Welcome line.
+  println("Last update: 6/25/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");
   println("For specific questions, please post them to the Software section of the OpenBCI Forum: http://openbci.com/index.php/forum/#/categories/software");
   //open window
@@ -154,7 +157,10 @@ void setup() {
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
-  
+  widthOfLastScreen = width; //for screen resizing (Thank's Tao)
+  heightOfLastScreen = height;
+
+
   setupContainers();
 
   //V1 FONTS
@@ -425,6 +431,15 @@ void systemUpdate() { // for updating data values and variables
     }
 
     gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
+
+    //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
+    if (widthOfLastScreen != width || heightOfLastScreen != height) {
+      println("OpenBCI_GUI: setup: RESIZED");
+      screenHasBeenResized = true;
+      timeOfLastScreenResize = millis();
+      widthOfLastScreen = width;
+      heightOfLastScreen = height;
+    }
 
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {

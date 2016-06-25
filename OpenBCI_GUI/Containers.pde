@@ -43,8 +43,8 @@ Container container10;
 //Viz viz1;
 //Viz viz2;
 
-int widthOfLastScreen = 0;
-int heightOfLastScreen = 0;
+int widthOfLastScreen_C = 0;
+int heightOfLastScreen_C = 0;
 
 void setupContainers() { 
   //size(1024, 768, P2D);
@@ -52,8 +52,8 @@ void setupContainers() {
   //smooth();
   //surface.setResizable(true);
   
-  widthOfLastScreen = width;
-  heightOfLastScreen = height;
+  widthOfLastScreen_C = width;
+  heightOfLastScreen_C = height;
   
   int topNav_h = 32;
   int bottomNav_h = 30;
@@ -99,7 +99,7 @@ void drawContainers() {
   //viz2.draw();
 
   //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
-  if (widthOfLastScreen != width || heightOfLastScreen != height) {
+  if (widthOfLastScreen_C != width || heightOfLastScreen_C != height) {
     println("OpenBCI_GUI: setup: RESIZED");
     //screenHasBeenResized = true;
     //timeOfLastScreenResize = millis();
