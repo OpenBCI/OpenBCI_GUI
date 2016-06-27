@@ -6,14 +6,14 @@
 //   The #s shown below fall at the center of their corresponding container.
 //
 //   ------------------------------------------------
-//   |                       9                      |
+//   |                       0                      |
 //   ------------------------------------------------
 //   |                       |                      |
-//   |          2            5           1          |
+//   |          1            2           3          |
 //   |                       |                      |
-//   |----------6------------0-----------8----------|
+//   |----------4------------5-----------6----------|
 //   |                       |                      |
-//   |          3            7           4          |
+//   |          7            8           9          |
 //   |                       |                      |
 //   ------------------------------------------------
 //   |                       10                     |
@@ -55,21 +55,21 @@ void setupContainers() {
   widthOfLastScreen_C = width;
   heightOfLastScreen_C = height;
   
-  int topNav_h = 32;
-  int bottomNav_h = 30;
+  int topNav_h = 32; //tie this to a global variable or one attached to GUI_Manager
+  int bottomNav_h = 30; //same
   int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
   int rightNav_w = 0; //not used currently
   
-  container0 = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 10);  //x0, y0, w0, h0, margin 
-  container1 = new Container(container0, "UPPER_RIGHT");
-  container2 = new Container(container0, "UPPER_LEFT");
-  container3 = new Container(container0, "LOWER_LEFT");
-  container4 = new Container(container0, "LOWER_RIGHT");
-  container5 = new Container(container0, "TOP");
-  container6 = new Container(container0, "LEFT");
-  container7 = new Container(container0, "BOTTOM");
-  container8 = new Container(container0, "RIGHT");
-  container9 = new Container(0, 0, width, topNav_h, 0);
+  container0 = new Container(0, 0, width, topNav_h, 0);
+  container5 = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 10);
+  container1 = new Container(container5, "TOP_LEFT");
+  container2 = new Container(container5, "TOP");
+  container3 = new Container(container5, "TOP_RIGHT");
+  container4 = new Container(container5, "LEFT");
+  container6 = new Container(container5, "RIGHT");
+  container7 = new Container(container5, "BOTTOM_LEFT");
+  container8 = new Container(container5, "BOTTOM");
+  container9 = new Container(container5, "BOTTOM_RIGHT");
   container10 = new Container(0, height - bottomNav_h, width, 50, 0);
   //container11 = new Container(container1, "LEFT");
   //container12 = new Container(container1, "RIGHT");
@@ -183,7 +183,7 @@ public class Container {
       h = (master.h - margin)/2;
       x = master.x;
       y = master.y + h + margin;
-    } else if (_type == "UPPER_LEFT") {
+    } else if (_type == "TOP_LEFT") {
       x0 = master.x0;
       y0 = master.y0;
       w0 = master.w0/2;
@@ -192,7 +192,7 @@ public class Container {
       h = (master.h - margin)/2;
       x = master.x;
       y = master.y;
-    } else if (_type == "UPPER_RIGHT") {
+    } else if (_type == "TOP_RIGHT") {
       x0 = master.x0 + master.w0/2;
       y0 = master.y0;
       w0 = master.w0/2;
@@ -201,7 +201,7 @@ public class Container {
       h = (master.h - margin)/2;
       x = master.x + w + margin;
       y = master.y;
-    } else if (_type == "LOWER_LEFT") {
+    } else if (_type == "BOTTOM_LEFT") {
       x0 = master.x0;
       y0 = master.y0 + master.h0/2;
       w0 = master.w0/2;
@@ -210,7 +210,7 @@ public class Container {
       h = (master.h - margin)/2;
       x = master.x;
       y = master.y + h + margin;
-    } else if (_type == "LOWER_RIGHT") {
+    } else if (_type == "BOTTOM_RIGHT") {
       x0 = master.x0 + master.w0/2;
       y0 = master.y0 + master.h0/2;
       w0 = master.w0/2;
