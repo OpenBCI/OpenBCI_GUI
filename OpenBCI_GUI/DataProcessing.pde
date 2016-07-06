@@ -112,9 +112,14 @@ void processNewData() {
 
     //convert to uV_per_bin...still need to confirm the accuracy of this code.  
     //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
+    //single sided FFT
     for (int I=0; I < fftBuff[Ichan].specSize(); I++) {  //loop over each FFT bin
-      fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].specSize()));
-    }       
+      fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].timeSize()));
+    }
+    //DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two. 
+    for (int I=1; I < fftBuff[Ichan].specSize()-1; I++) {  //loop over each FFT bin
+      fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
+    }
 
     //average the FFT with previous FFT data so that it makes it smoother in time
     double min_val = 0.01d;
