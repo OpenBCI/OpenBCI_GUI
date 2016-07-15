@@ -3,20 +3,22 @@
 //   This code is used for GUI-wide spacing. It defines the GUI layout as a grid
 //   with the following design:
 //
-//   The #s shown below fall at the center of their corresponding container.
+//   The #s shown below fall at the center of their corresponding container[].
+//   Ex: container[1] is the upper left corner of the large rectangle between [0] & [10]
+//   Ex 2: container[6] is the entire right half of the same rectangle.
 //
 //   ------------------------------------------------
-//   |                       0                      |
+//   |                      [0]                     |
 //   ------------------------------------------------
 //   |                       |                      |
-//   |          1            2           3          |
+//   |         [1]          [2]         [3]         |
 //   |                       |                      |
-//   |----------4------------5-----------6----------|
+//   |---------[4]----------[5]---------[6]---------|
 //   |                       |                      |
-//   |          7            8           9          |
+//   |         [7]          [8]         [9]         |
 //   |                       |                      |
 //   ------------------------------------------------
-//   |                       10                     |
+//   |                      [10]                    |
 //   ------------------------------------------------
 //
 //   Created by: Conor Russomanno (May 2016)
@@ -25,17 +27,18 @@
 
 boolean drawContainers = true;
 
-Container container0;
-Container container1;
-Container container2;
-Container container3;
-Container container4;
-Container container5;
-Container container6;
-Container container7;
-Container container8;
-Container container9;
-Container container10;
+Container[] container = new Container[11];
+// Container container0;
+// Container container1;
+// Container container2;
+// Container container3;
+// Container container4;
+// Container container5;
+// Container container6;
+// Container container7;
+// Container container8;
+// Container container9;
+// Container container10;
 //Container container11;
 //Container container12;
 
@@ -60,17 +63,17 @@ void setupContainers() {
   int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
   int rightNav_w = 0; //not used currently
   
-  container0 = new Container(0, 0, width, topNav_h, 0);
-  container5 = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 10);
-  container1 = new Container(container5, "TOP_LEFT");
-  container2 = new Container(container5, "TOP");
-  container3 = new Container(container5, "TOP_RIGHT");
-  container4 = new Container(container5, "LEFT");
-  container6 = new Container(container5, "RIGHT");
-  container7 = new Container(container5, "BOTTOM_LEFT");
-  container8 = new Container(container5, "BOTTOM");
-  container9 = new Container(container5, "BOTTOM_RIGHT");
-  container10 = new Container(0, height - bottomNav_h, width, 50, 0);
+  container[0] = new Container(0, 0, width, topNav_h, 0);
+  container[5] = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 10);
+  container[1] = new Container(container[5], "TOP_LEFT");
+  container[2] = new Container(container[5], "TOP");
+  container[3] = new Container(container[5], "TOP_RIGHT");
+  container[4] = new Container(container[5], "LEFT");
+  container[6] = new Container(container[5], "RIGHT");
+  container[7] = new Container(container[5], "BOTTOM_LEFT");
+  container[8] = new Container(container[5], "BOTTOM");
+  container[9] = new Container(container[5], "BOTTOM_RIGHT");
+  container[10] = new Container(0, height - bottomNav_h, width, 50, 0);
   //container11 = new Container(container1, "LEFT");
   //container12 = new Container(container1, "RIGHT");
   
@@ -80,17 +83,9 @@ void setupContainers() {
 
 void drawContainers() {
   //background(255);
-  container0.draw();
-  container1.draw();
-  container2.draw();
-  container3.draw();
-  container4.draw();
-  container5.draw();
-  container6.draw();
-  container7.draw();
-  container8.draw();
-  container9.draw();
-  container10.draw();
+  for(int i = 0; i < container.length; i++){
+    container[i].draw();
+  }
   //container11.draw();
   //container12.draw();
   
