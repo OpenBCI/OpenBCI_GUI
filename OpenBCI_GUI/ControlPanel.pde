@@ -138,8 +138,12 @@ class ControlPanel {
     y = 2 + controlPanelCollapser.but_dy;		
     w = controlPanelCollapser.but_dx;
     h = height - int(helpWidget.h);
-
-    isOpen = true;
+    
+    if(hasIntroAnimation){
+      isOpen = false;
+    } else {
+      isOpen = true;
+    }
 
     fontInfo = new PlotFontInfo();
 
