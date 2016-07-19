@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : WavetableGenerator : : gen10</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="wavetablegenerator_class_wavetablegenerator.html">WavetableGenerator</A></p>
+    	<p class="methodName">gen10</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Generate a Wavetable given a list of amplitudes for successive partials (harmonics). These two method 
+ calls are equivalent:
+ <p>
+ <code>Wavetable table = WavetableGenerator.gen9(4096, new float[] { 1, 2, 3 }, new float[] { 1, 0.5, 0.2 }, new float[] { 0, 0, 0 });</code>
+ <p>
+ <code>Wavetable table = WavetableGenerator.gen10(4096, new float[] { 1, 0.5, 0.2 });</code>
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>Wavetable gen10(int size, float[] amp)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">size</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the number of samples the Wavetable should contain</span><br/>
+    
+        <span class="parameterName">amp</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the amplitude of each successive partial, beginning with partial 1.</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>a Wavetable</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="wavetablegenerator_method_gen9.html">gen9 ( )</A><BR>
+<A href="wavetable_class_wavetable.html">Wavetable</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>None available</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

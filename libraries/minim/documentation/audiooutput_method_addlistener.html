@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioOutput : : addListener</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audiosource_class_audiosource.html">AudioSource</A></p>
+    	<p class="methodName">addListener</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Add an AudioListener to this sound generating object,
+ which will have its samples method called every time
+ this object generates a new buffer of samples.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void addListener(AudioListener listener)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">listener</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">the AudioListener that will listen to this</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audiolistener_audiolistener.html">AudioListener</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to implement an AudioListener and then add and remove it from one of Minim's 
+  * classes that support AudioListeners: AudioPlayer, AudioSample, AudioOutput, and AudioInput. 
+  *
+  * An AudioListener is an interface that you can implement in your own classes, which allows you to receive
+  * sample buffers from sound generating classes immediately after they are generated. This is particularly 
+  * useful when you are doing audio analysis because it ensures that you will only see each buffer of audio
+  * once. If instead you perform your analysis in the draw method of your sketch, you might get less than 
+  * perfect results because they audio samples may change while you are observing them. This happens because 
+  * the audio is generated in a different thread of execution than draw is called from.
+  *  
+  * You can add an instance of an AudioListener to a sound generating object by using the addListener 
+  * method of the class. If you want to remove a listener that you previously added, you call the
+  * removeListener method, passing the listener you want to remove.
+  *
+  * Although possible, it is not advised that you add the same listener to more than one sound generating object. 
+  * Your listener will be called any time any of the objects you've added it to have new samples. 
+  * This means that the stream of samples the listener sees will likely be interleaved buffers of samples from 
+  * all of the objects it is listening to, which is probably not what you want.
+  */
+
+import ddf.minim.*;
+
+Minim            minim;
+AudioPlayer      groove;
+WaveformRenderer waveform;
+boolean          listening;
+
+// You'll notice that the three methods of this class are synchronized. This is because the samples methods 
+// will be called from a different thread than the one instances of this class will be created in. That thread 
+// might try to send samples to an instance of this class while the instance is in the middle of drawing the 
+// waveform, which would result in a waveform made up of samples from two different buffers. Synchronizing 
+// all the methods means that while the main thread of execution is inside draw, the thread that calls 
+// samples will block until draw is complete. Likewise, a call to draw will block if the sample thread is inside 
+// one of the samples methods. Hope that's not too confusing!
+
+class WaveformRenderer implements AudioListener
+{
+  private float[] left;
+  private float[] right;
+  
+  WaveformRenderer()
+  {
+    left = null; 
+    right = null;
+  }
+  
+  public synchronized void samples(float[] samp)
+  {
+    left = samp;
+  }
+  
+  public synchronized void samples(float[] sampL, float[] sampR)
+  {
+    left = sampL;
+    right = sampR;
+  }
+  
+  synchronized void draw()
+  {
+    // we've got a stereo signal if right or left are not null
+    if ( left != null && right != null )
+    {
+      noFill();
+      stroke(255);
+      beginShape();
+      for ( int i = 0; i &lt; left.length; i++ )
+      {
+        vertex(i, height/4 + left[i]*50);
+      }
+      endShape();
+      beginShape();
+      for ( int i = 0; i &lt; right.length; i++ )
+      {
+        vertex(i, 3*(height/4) + right[i]*50);
+      }
+      endShape();
+    }
+    else if ( left != null )
+    {
+      noFill();
+      stroke(255);
+      beginShape();
+      for ( int i = 0; i &lt; left.length; i++ )
+      {
+        vertex(i, height/2 + left[i]*50);
+      }
+      endShape();
+    }
+  }
+}
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  groove = minim.loadFile("groove.mp3", 512);
+  groove.loop();
+  waveform = new WaveformRenderer();
+}
+
+void draw()
+{
+  background(0);
+  
+  if ( listening )
+  {  
+    waveform.draw();
+  }
+  
+  if ( listening ) 
+  {
+    text("Press space to remove the listener", 10, 20 );
+  }
+  else
+  {
+    text("Press space to add the listener", 10, 20 );
+  }
+}
+
+void keyPressed()
+{
+  if ( key == ' ' )
+  {
+    if ( !listening )
+    {
+      groove.addListener( waveform );
+      listening = true;
+    }
+    else 
+    {
+      groove.removeListener( waveform );
+      listening = false;
+    }
+  }
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

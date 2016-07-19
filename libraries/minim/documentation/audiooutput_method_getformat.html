@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioOutput : : getFormat</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audiosource_class_audiosource.html">AudioSource</A></p>
+    	<p class="methodName">getFormat</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Returns an AudioFormat object that describes the audio properties 
+ of this sound generating object. This is often useful information 
+ when doing sound analysis or some synthesis, but typically you
+ will not need to know about the specific format.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>AudioFormat getFormat()
+</pre>
+    	
+    	
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>an AudioFormat describing this sound object.</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the &lt;code>getFormat&lt;/code> method of a &lt;code>Recordable&lt;/code> class. 
+  * The class used here is &lt;code>AudioOutput&lt;/code>, but you can also get the format of &lt;code>AudioInput&lt;/code>, 
+  * &lt;code>AudioPlayer&lt;/code>, and &lt;code>AudioSample&lt;/code> objects. The &lt;code>getFormat&lt;/code> method returns 
+  * an object of type &lt;code>AudioFormat&lt;/code> which is a class defined in the JavaSound API. An &lt;code>AudioFormat&lt;/code>
+  * is a container for information about an audio source, such as the framerate, encoding and so forth. The following 
+  * methods are available on an &lt;code>AudioFormat&lt;/code> object and all are demonstrated in this sketch.
+  * 
+  * &lt;pre>
+    int getChannels()
+      Obtains the number of channels.
+       
+    AudioFormat.Encoding getEncoding()
+      Obtains the type of encoding for sounds in this format.
+      
+    float getFrameRate()
+      Obtains the frame rate in frames per second.
+
+    int getFrameSize()
+      Obtains the frame size in bytes.
+      
+    float getSampleRate()
+      Obtains the sample rate.
+      
+    int getSampleSizeInBits()
+      Obtains the size of a sample.
+      
+    boolean isBigEndian()
+      Indicates whether the audio data is stored in big-endian or little-endian byte order.
+
+    boolean matches(AudioFormat format)
+      Indicates whether this format matches the one specified.
+      
+    String toString()
+      Returns a string that describes the format, such as: "PCM SIGNED 22050 Hz 16 bit mono big-endian".
+    &lt;/pre>
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioOutput out;
+
+void setup()
+{
+  size(760, 140, P3D);
+  textFont(loadFont("CourierNewPSMT-12.vlw"));
+
+  minim = new Minim(this);
+  // this should give us a stereo output with a 1024 sample buffer, 
+  // a sample rate of 44100 and a bit depth of 16
+  out = minim.getLineOut();
+}
+
+void draw()
+{
+  background(0);
+  text("The output has " + out.getFormat().getChannels() + " channels.", 5, 15);
+  text("The output's encoding is " + out.getFormat().getEncoding() + ".", 5, 30);
+  text("The output's frame rate is " + out.getFormat().getFrameRate() + " frames per second.", 5, 45);
+  text("The output's frame size is " + out.getFormat().getFrameSize() + " bytes.", 5, 60);
+  text("The output's sample rate is " + out.getFormat().getSampleRate() + " Hz.", 5, 75);
+  text("The output's sample size is " + out.getFormat().getSampleSizeInBits() + " bits.", 5, 90);
+  String endianess = out.getFormat().isBigEndian() ? "big-endian" : "little-endian";
+  text("The output's byte order is " + endianess + ".", 5, 105);
+  text("The output's format as a string is " + out.getFormat(), 5, 120);
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

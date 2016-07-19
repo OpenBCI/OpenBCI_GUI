@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : Oscil : : setWaveform</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="oscil_class_oscil.html">Oscil</A></p>
+    	<p class="methodName">setWaveform</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Changes the Waveform used by this Oscil.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void setWaveform(Waveform theWaveform)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">theWaveform</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">the new Waveform to use</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="waveform_waveform.html">Waveform</A><BR>
+<A href="oscil_class_oscil.html">Oscil</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to create synthesized sound with Minim 
+  * using an AudioOutput and an Oscil. An Oscil is a UGen object, 
+  * one of many different types included with Minim. By using 
+  * the numbers 1 thru 5, you can change the waveform being used
+  * by the Oscil to make sound. These basic waveforms are the 
+  * basis of much audio synthesis. 
+  * 
+  * For many more examples of UGens included with Minim, 
+  * have a look in the Synthesis folder of the Minim examples.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+Minim       minim;
+AudioOutput out;
+Oscil       wave;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  // use the getLineOut method of the Minim object to get an AudioOutput object
+  out = minim.getLineOut();
+  
+  // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
+  wave = new Oscil( 440, 0.5f, Waves.SINE );
+  // patch the Oscil to the output
+  wave.patch( out );
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  strokeWeight(1);
+  
+  // draw the waveform of the output
+  for(int i = 0; i &lt; out.bufferSize() - 1; i++)
+  {
+    line( i, 50  - out.left.get(i)*50,  i+1, 50  - out.left.get(i+1)*50 );
+    line( i, 150 - out.right.get(i)*50, i+1, 150 - out.right.get(i+1)*50 );
+  }
+
+  // draw the waveform we are using in the oscillator
+  stroke( 128, 0, 0 );
+  strokeWeight(4);
+  for( int i = 0; i &lt; width-1; ++i )
+  {
+    point( i, height/2 - (height*0.49) * wave.getWaveform().value( (float)i / width ) );
+  }
+}
+
+void mouseMoved()
+{
+  // usually when setting the amplitude and frequency of an Oscil
+  // you will want to patch something to the amplitude and frequency inputs
+  // but this is a quick and easy way to turn the screen into
+  // an x-y control for them.
+  
+  float amp = map( mouseY, 0, height, 1, 0 );
+  wave.setAmplitude( amp );
+  
+  float freq = map( mouseX, 0, width, 110, 880 );
+  wave.setFrequency( freq );
+}
+
+void keyPressed()
+{ 
+  switch( key )
+  {
+    case '1': 
+      wave.setWaveform( Waves.SINE );
+      break;
+     
+    case '2':
+      wave.setWaveform( Waves.TRIANGLE );
+      break;
+     
+    case '3':
+      wave.setWaveform( Waves.SAW );
+      break;
+    
+    case '4':
+      wave.setWaveform( Waves.SQUARE );
+      break;
+      
+    case '5':
+      wave.setWaveform( Waves.QUARTERPULSE );
+      break;
+     
+    default: break; 
+  }
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>
