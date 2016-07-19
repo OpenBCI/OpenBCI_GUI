@@ -214,13 +214,6 @@ class GUI_Manager {
 
 
     //setup the FFT plot...bottom on left side
-    //float height_subplot = 0.5f*(available_top2bot-2*gutter_topbot);
-    // float[] axisFFT_relPos = { 
-    //   gutter_left, 
-    //   gutter_topbot+ up_down_split*available_top2bot + gutter_topbot+title_gutter + spacer_top, 
-    //   left_right_split-gutter_left-gutter_right, 
-    //   available_top2bot*(1.0f-up_down_split) - gutter_topbot-title_gutter - spacer_top
-    // }; //from left, from top, width, height
     float[] axisFFT_relPos = { 
       gutter_left + left_right_split, // + 0.1f, 
       up_down_split*available_top2bot + height_UI_tray + gutter_topbot, 
@@ -270,8 +263,6 @@ class GUI_Manager {
     //because as of 4/3/2014, you can only turn on/off the higher channels (the ones above chan 8)
     //by also turning off the corresponding lower channel.  So, deactiving channel 9 must also
     //deactivate channel 1, therefore, we might as well use just the 1 button.
-    // int xoffset = x + w + (int)(2*gutter_between_buttons*win_x);
-    // int xoffset = (int)(float(win_x)*gutter_left);
     int xoffset = (int)(float(win_x)*0.5f);
 
     w = 80;   //button width
