@@ -363,11 +363,15 @@ class ControlPanel {
       getChannel.setIsActive(false);
     }
     if(autoconnectNoStart.isMouseHere() && autoconnectNoStart.wasPressed){
-      rcBox.print_onscreen("TESTING");/*
       if(board == null){
-        board = autoconnect_return();
-        rcBox.print_onscreen("Successfully connected to board");
-      }*/
+        try{
+          board = autoconnect_return();
+          rcBox.print_onscreen("Successfully connected to board");
+        }
+        catch (Exception e){
+          rcBox.print_onscreen("Error connecting to board...");
+        }
+      }
       autoconnectNoStart.setIsActive(false);
       autoconnectNoStart.wasPressed = false;
     }
@@ -775,7 +779,7 @@ class SDBox {
 
 class RadioConfigBox {
   int x, y, w, h, padding; //size and position
-  String last_message;
+  String last_message = "";
   Serial board;
 
   RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -811,11 +815,7 @@ class RadioConfigBox {
     textFont(f1);
     textAlign(LEFT, TOP);
     text("RADIO CONFIGURATION", x + padding, y + padding);
-    
-    //Draw Console
-    fill(0);
-    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
-    fill(255);
+   
     
     popStyle();
     getChannel.draw();
@@ -827,18 +827,18 @@ class RadioConfigBox {
     highBAUD.draw();
     autoscan.draw();
     autoconnectNoStart.draw();
-    this.print_onscreen("");
+    this.print_onscreen(last_message);
   
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
 
   }
   
   public void print_onscreen(String localstring){
-
+    textAlign(LEFT);
     fill(0);
     rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*7) + 15, (w-padding*3 + 35), 135);
+    text(localstring, x + padding + 10, y + (padding*7) + 18 + (24*5) + 15, (w-padding*3 + 35), 135);
     this.last_message = localstring;
   }
   

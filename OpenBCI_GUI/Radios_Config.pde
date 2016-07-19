@@ -61,7 +61,7 @@ void autoconnect(){
     }
 }
 
-Serial autoconnect_return(){
+Serial autoconnect_return() throws Exception{
   
     Serial board; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
@@ -110,7 +110,7 @@ Serial autoconnect_return(){
           println("Board not on port " + serialPorts[i] +" with BAUD 230400");
         }
     }
-    return new Serial(this);
+    throw new Exception();
 }
 
 boolean confirm_openbci(Serial board){
