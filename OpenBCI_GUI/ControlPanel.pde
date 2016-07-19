@@ -48,6 +48,9 @@ color isSelected_color = color(184, 220, 105);
 Button refreshPort;
 boolean refreshButtonPressed = false;
 
+Button autoconnect;
+boolean autoconnectPressed = false;
+
 Button initSystemButton;
 boolean initButtonPressed = false; //default false
 
@@ -92,7 +95,7 @@ public void controlEvent(ControlEvent theEvent) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     sdSettingString = (String)bob.get("headline");
     sdSetting = int(theEvent.getValue());
-    if (sdSetting != 0) {
+    if (sdSetting != 0) {  
       output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
     } else {
       output("OpenBCI microSD Setting = " + sdSettingString);
@@ -289,6 +292,11 @@ class ControlPanel {
 
     //only able to click buttons of control panel when system is not running
     if (systemMode != 10) {
+      if(autoconnect.isMouseHere()){
+        autoconnect();
+        autoconnect.setIsActive(true);
+        autoconnectPressed = true;
+      }
       //active buttons during DATASOURCE_NORMAL
       if (eegDataSource == 0) {
         if (refreshPort.isMouseHere()) {
@@ -336,46 +344,14 @@ class ControlPanel {
   //mouse released in control panel
   public void CPmouseReleased() {
     verbosePrint("CPMouseReleased: CPmouseReleased start...");
+    if(autoconnect.isMouseHere() && autoconnectPressed){
+      system_init();
+      autoconnectPressed = false;
+      autoconnect.setIsActive(false);
+    }
     if (initSystemButton.isMouseHere() && initButtonPressed) {
-
       //if system is not active ... initate system and flip button state
-      if (initSystemButton.but_txt == "START SYSTEM") {
-
-        if ((eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
-          output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
-          initButtonPressed = false;
-          initSystemButton.setIsActive(false);
-          return;
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
-          output("No playback file selected. Please select a playback file and retry system initiation.");				// tell user that they need to select a file before the system can be started
-          initButtonPressed = false;
-          initSystemButton.setIsActive(false);
-          return;
-        } else if (eegDataSource == -1) {//if no data source selected
-          output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
-          initButtonPressed = false;
-          initSystemButton.setIsActive(false);
-          return;
-        } else { //otherwise, initiate system!	
-          verbosePrint("ControlPanel: CPmouseReleased: init");
-          initSystemButton.setString("STOP SYSTEM");
-          //global steps to START SYSTEM
-          // prepare the serial port
-          verbosePrint("ControlPanel — port is open: " + openBCI.isSerialPortOpen());
-          if (openBCI.isSerialPortOpen() == true) {
-            openBCI.closeSerialPort();
-          }
-          fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles 
-          initSystem();
-        }
-      }
-
-      //if system is already active ... stop system and flip button state back
-      else {
-        output("SYSTEM STOPPED");
-        initSystemButton.setString("START SYSTEM");
-        haltSystem();
-      }
+      system_init();
       //cursor(ARROW); //this this back to ARROW
     }
 
@@ -443,6 +419,46 @@ class ControlPanel {
   }
 };
 
+public void system_init(){
+  if (initSystemButton.but_txt == "START SYSTEM") {
+
+      if ((eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+        output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+        initButtonPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
+        output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
+        initButtonPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else if (eegDataSource == -1) {//if no data source selected
+        output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
+        initButtonPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else { //otherwise, initiate system!  
+        verbosePrint("ControlPanel: CPmouseReleased: init");
+        initSystemButton.setString("STOP SYSTEM");
+        //global steps to START SYSTEM
+        // prepare the serial port
+        verbosePrint("ControlPanel — port is open: " + openBCI.isSerialPortOpen());
+        if (openBCI.isSerialPortOpen() == true) {
+          openBCI.closeSerialPort();
+        }
+        fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles 
+        initSystem();
+      }
+    }
+
+    //if system is already active ... stop system and flip button state back
+    else {
+      output("SYSTEM STOPPED");
+      initSystemButton.setString("START SYSTEM");
+      haltSystem();
+    }
+}
+
 //==============================================================================//
 //					BELOW ARE THE CLASSES FOR THE VARIOUS 						//
 //					CONTROL PANEL BOXes (control widgets)						//
@@ -501,14 +517,14 @@ class SerialBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 147;
+    h = 171 + _padding;
     padding = _padding;
 
-    // openClosePort = new Button (padding + border, y + padding*3 + 13 + 150, (w-padding*3)/2, 24, "OPEN PORT", fontInfo.buttonLabel_size);
-    refreshPort = new Button (x + padding, y + padding*3 + 13 + 71, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    autoconnect = new Button(x + padding, y + padding*3, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
+    refreshPort = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
-    serialList.setPosition(x + padding, y + padding*2 + 13);
+    serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {
       String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
@@ -534,6 +550,7 @@ class SerialBox {
 
     // openClosePort.draw();
     refreshPort.draw();
+    autoconnect.draw();
   }
 
   public void refreshSerialList() {

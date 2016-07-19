@@ -20,6 +20,9 @@ import org.gwoptics.graphics.graph2D.LabelPos;
 import org.gwoptics.graphics.graph2D.traces.Blank2DTrace;
 import org.gwoptics.graphics.graph2D.backgrounds.*;
 import ddf.minim.analysis.*; //for FFT
+
+import grafica.*;
+
 import java.util.*; //for Array.copyOfRange()
 
 //------------------------------------------------------------------------
