@@ -117,7 +117,7 @@ PlotFontInfo fontInfo;
 boolean isRunning = false;
 boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
-int inByte = -1;    // Incoming serial data
+byte inByte = -1;    // Incoming serial data
 
 //for screen resizing
 boolean screenHasBeenResized = false;

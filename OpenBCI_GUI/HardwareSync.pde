@@ -87,7 +87,7 @@ void serialEvent(Serial port) {
     }
   } else {
     //println("OpenBCI_GUI: serialEvent: received serial data NOT from OpenBCI.");
-    inByte = port.read();
+    inByte = byte(port.read());
   }
 }
 

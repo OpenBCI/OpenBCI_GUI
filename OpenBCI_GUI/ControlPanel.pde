@@ -65,6 +65,7 @@ Button highBAUD;
 Button autoscan;
 Button autoconnectNoStart;
 
+Serial board;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -323,6 +324,16 @@ class ControlPanel {
           chanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
           chanButton16.color_notPressed = isSelected_color;
         }
+        
+        if (getChannel.isMouseHere()){
+          getChannel.setIsActive(true);
+          getChannel.wasPressed = true;
+        }
+        
+        if (autoconnectNoStart.isMouseHere()){
+          autoconnectNoStart.setIsActive(true);
+          autoconnectNoStart.wasPressed = true;
+        }
       }
 
       //active buttons during DATASOURCE_PLAYBACKFILE
@@ -345,6 +356,22 @@ class ControlPanel {
   //mouse released in control panel
   public void CPmouseReleased() {
     verbosePrint("CPMouseReleased: CPmouseReleased start...");
+    if(getChannel.isMouseHere() && getChannel.wasPressed){
+      if(board != null) get_channel(board, rcBox);
+      
+      getChannel.wasPressed=false;
+      getChannel.setIsActive(false);
+    }
+    if(autoconnectNoStart.isMouseHere() && autoconnectNoStart.wasPressed){
+      rcBox.print_onscreen("TESTING");/*
+      if(board == null){
+        board = autoconnect_return();
+        rcBox.print_onscreen("Successfully connected to board");
+      }*/
+      autoconnectNoStart.setIsActive(false);
+      autoconnectNoStart.wasPressed = false;
+    }
+    
     if(autoconnect.isMouseHere() && autoconnect.wasPressed){
       system_init();
       autoconnect.wasPressed = false;
@@ -800,6 +827,7 @@ class RadioConfigBox {
     highBAUD.draw();
     autoscan.draw();
     autoconnectNoStart.draw();
+    this.print_onscreen("");
   
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
 
@@ -810,7 +838,7 @@ class RadioConfigBox {
     fill(0);
     rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
     fill(255);
-    text(localstring, 180, 340, 240, 60);
+    text(localstring, x + padding + 10, y + (padding*7) + 15, (w-padding*3 + 35), 135);
     this.last_message = localstring;
   }
   
