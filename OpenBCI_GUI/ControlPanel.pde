@@ -54,6 +54,18 @@ Button chanButton16;
 Button selectPlaybackFile;
 Button selectSDFile;
 
+//Radio Button Definitions
+Button getChannel;
+Button setChannel;
+Button ovrChannel;
+Button getPoll;
+Button setPoll;
+Button defaultBAUD;
+Button highBAUD;
+Button autoscan;
+Button autoconnectNoStart;
+
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -112,6 +124,7 @@ class ControlPanel {
   SDConverterBox sdConverterBox;
 
   SDBox sdBox;
+  RadioConfigBox rcBox;
 
   boolean drawStopInstructions;
 
@@ -150,6 +163,7 @@ class ControlPanel {
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
+    rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
@@ -176,6 +190,7 @@ class ControlPanel {
     dataLogBox.update();
     channelCountBox.update();
     sdBox.update();
+    rcBox.update();
     initBox.update();
 
     serialList.updateMenu();
@@ -222,6 +237,7 @@ class ControlPanel {
         dataLogBox.draw();
         channelCountBox.draw();
         sdBox.draw();
+        rcBox.draw();
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
@@ -443,6 +459,7 @@ public void system_init(){
       haltSystem();
     }
 }
+
 
 //==============================================================================//
 //					BELOW ARE THE CLASSES FOR THE VARIOUS 						//
@@ -726,6 +743,83 @@ class SDBox {
   
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
 
+  }
+};
+
+class RadioConfigBox {
+  int x, y, w, h, padding; //size and position
+  String last_message;
+  Serial board;
+
+  RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x + _w;
+    y = _y;
+    w = _w;
+    h = 355;
+    padding = _padding;
+
+    getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+    setChannel = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "SET CHANNEL", fontInfo.buttonLabel_size);
+    ovrChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE CHAN", fontInfo.buttonLabel_size);
+    getPoll = new Button(x + padding + (w-padding*2)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET POLL", fontInfo.buttonLabel_size);
+    setPoll = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "SET POLL", fontInfo.buttonLabel_size);
+    defaultBAUD = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "DEFAULT BAUD", fontInfo.buttonLabel_size);    
+    highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
+    autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "AUTOSCAN CHANS", fontInfo.buttonLabel_size);
+    autoconnectNoStart = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 + 5), 24, "CONNECT TO BOARD", fontInfo.buttonLabel_size);
+
+    
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(f1);
+    textAlign(LEFT, TOP);
+    text("RADIO CONFIGURATION", x + padding, y + padding);
+    
+    //Draw Console
+    fill(0);
+    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(255);
+    
+    popStyle();
+    getChannel.draw();
+    setChannel.draw();
+    ovrChannel.draw();
+    getPoll.draw();
+    setPoll.draw();
+    defaultBAUD.draw();
+    highBAUD.draw();
+    autoscan.draw();
+    autoconnectNoStart.draw();
+  
+    //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
+
+  }
+  
+  public void print_onscreen(String localstring){
+
+    fill(0);
+    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(255);
+    text(localstring, 180, 340, 240, 60);
+    this.last_message = localstring;
+  }
+  
+  public void print_lastmessage(){
+  
+    fill(0);
+    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(255);
+    text(this.last_message, 180, 340, 240, 60);
   }
 };
 
