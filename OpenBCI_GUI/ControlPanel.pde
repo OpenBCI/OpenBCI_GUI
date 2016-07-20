@@ -38,6 +38,8 @@ String[] serialPorts = new String[Serial.list().length];
 
 MenuList sdTimes;
 
+MenuList channelList;
+
 color boxColor = color(200);
 color boxStrokeColor = color(138, 146, 153);
 color isSelected_color = color(184, 220, 105);
@@ -53,6 +55,7 @@ Button chanButton8;
 Button chanButton16;
 Button selectPlaybackFile;
 Button selectSDFile;
+Button popOut;
 
 //Radio Button Definitions
 Button getChannel;
@@ -64,6 +67,7 @@ Button defaultBAUD;
 Button highBAUD;
 Button autoscan;
 Button autoconnectNoStart;
+Button systemStatus;
 
 Serial board;
 
@@ -120,7 +124,8 @@ class ControlPanel {
   DataLogBox dataLogBox;
   ChannelCountBox channelCountBox;
   InitBox initBox;
-
+  ChannelPopup channelPopup;
+  
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
 
@@ -169,7 +174,8 @@ class ControlPanel {
     //boxes active when eegDataSource = Playback
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
-
+    channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
+    
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
   }
 
@@ -193,6 +199,7 @@ class ControlPanel {
     sdBox.update();
     rcBox.update();
     initBox.update();
+    channelPopup.update();
 
     serialList.updateMenu();
 
@@ -238,7 +245,14 @@ class ControlPanel {
         dataLogBox.draw();
         channelCountBox.draw();
         sdBox.draw();
-        rcBox.draw();
+        if(rcBox.isShowing){ 
+          
+          rcBox.draw();
+          if(channelPopup.wasClicked()){
+            channelPopup.draw();
+            cp5.get(MenuList.class, "channelList").setVisible(true); 
+          }
+        }
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
@@ -251,17 +265,20 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
+        cp5.get(MenuList.class, "channelList").setVisible(false); 
       } else if (eegDataSource == 2) {
         //make sure serial list is visible
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
+        cp5.get(MenuList.class, "channelList").setVisible(false); 
       } else {
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
+        cp5.get(MenuList.class, "channelList").setVisible(false); 
       }
     } else {
       cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
@@ -301,6 +318,10 @@ class ControlPanel {
       }
       //active buttons during DATASOURCE_NORMAL
       if (eegDataSource == 0) {
+        if (popOut.isMouseHere()){
+          popOut.setIsActive(true);
+          popOut.wasPressed = true;
+        }
         if (refreshPort.isMouseHere()) {
           refreshPort.setIsActive(true);
           refreshPort.wasPressed = true;
@@ -330,9 +351,24 @@ class ControlPanel {
           getChannel.wasPressed = true;
         }
         
+        if (setChannel.isMouseHere()){
+          setChannel.setIsActive(true);
+          setChannel.wasPressed = true;
+        }
+        
         if (autoconnectNoStart.isMouseHere()){
           autoconnectNoStart.setIsActive(true);
           autoconnectNoStart.wasPressed = true;
+        }
+        
+        if (systemStatus.isMouseHere()){
+          systemStatus.setIsActive(true);
+          systemStatus.wasPressed = true;
+        }
+        
+        if (getPoll.isMouseHere()){
+          getPoll.setIsActive(true);
+          getPoll.wasPressed = true;
         }
       }
 
@@ -356,12 +392,29 @@ class ControlPanel {
   //mouse released in control panel
   public void CPmouseReleased() {
     verbosePrint("CPMouseReleased: CPmouseReleased start...");
+    if(popOut.isMouseHere() && popOut.wasPressed){
+      popOut.wasPressed = false;
+      popOut.setIsActive(false);
+      if(rcBox.isShowing) rcBox.isShowing = false;
+      else rcBox.isShowing = true;
+    }
+    
     if(getChannel.isMouseHere() && getChannel.wasPressed){
       if(board != null) get_channel(board, rcBox);
       
       getChannel.wasPressed=false;
       getChannel.setIsActive(false);
     }
+    
+    if (setChannel.isMouseHere() && setChannel.wasPressed){
+      //set_channel_popup();
+      
+      //channelPopup.draw();
+      channelPopup.setClicked(true);
+      setChannel.setIsActive(false);
+      setChannel.wasPressed = false;
+    }
+    
     if(autoconnectNoStart.isMouseHere() && autoconnectNoStart.wasPressed){
       if(board == null){
         try{
@@ -381,6 +434,19 @@ class ControlPanel {
       autoconnect.wasPressed = false;
       autoconnect.setIsActive(false);
     }
+    
+    if(systemStatus.isMouseHere() && systemStatus.wasPressed){
+      system_status(board,rcBox);
+      systemStatus.setIsActive(false);
+      systemStatus.wasPressed = false;
+    }
+    
+    if(getPoll.isMouseHere() && getPoll.wasPressed){
+      get_poll(board,rcBox);
+      getPoll.setIsActive(false);
+      getPoll.wasPressed = false;
+    }
+    
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
       //if system is not active ... initate system and flip button state
       system_init();
@@ -491,6 +557,9 @@ public void system_init(){
     }
 }
 
+public void set_channel_popup(){;
+}
+
 
 //==============================================================================//
 //					BELOW ARE THE CLASSES FOR THE VARIOUS 						//
@@ -555,6 +624,7 @@ class SerialBox {
 
     autoconnect = new Button(x + padding, y + padding*3, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
     refreshPort = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
     serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
@@ -584,6 +654,7 @@ class SerialBox {
     // openClosePort.draw();
     refreshPort.draw();
     autoconnect.draw();
+    popOut.draw();
   }
 
   public void refreshSerialList() {
@@ -781,6 +852,7 @@ class RadioConfigBox {
   int x, y, w, h, padding; //size and position
   String last_message = "";
   Serial board;
+  boolean isShowing;
 
   RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x + _w;
@@ -788,6 +860,7 @@ class RadioConfigBox {
     w = _w;
     h = 355;
     padding = _padding;
+    isShowing = false;
 
     getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
     setChannel = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "SET CHANNEL", fontInfo.buttonLabel_size);
@@ -797,7 +870,8 @@ class RadioConfigBox {
     defaultBAUD = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "DEFAULT BAUD", fontInfo.buttonLabel_size);    
     highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
     autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "AUTOSCAN CHANS", fontInfo.buttonLabel_size);
-    autoconnectNoStart = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 + 5), 24, "CONNECT TO BOARD", fontInfo.buttonLabel_size);
+    autoconnectNoStart = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "CONNECT", fontInfo.buttonLabel_size);
+    systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "STATUS", fontInfo.buttonLabel_size);
 
     
   }
@@ -814,7 +888,7 @@ class RadioConfigBox {
     fill(bgColor);
     textFont(f1);
     textAlign(LEFT, TOP);
-    text("RADIO CONFIGURATION", x + padding, y + padding);
+    text("RADIO CONFIGURATION (V2)", x + padding, y + padding);
    
     
     popStyle();
@@ -827,6 +901,7 @@ class RadioConfigBox {
     highBAUD.draw();
     autoscan.draw();
     autoconnectNoStart.draw();
+    systemStatus.draw();
     this.print_onscreen(last_message);
   
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
@@ -838,7 +913,7 @@ class RadioConfigBox {
     fill(0);
     rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*7) + 18 + (24*5) + 15, (w-padding*3 + 35), 135);
+    text(localstring, x + padding + 10, y + (padding*7) + 18 + (24*5) + 15, (w-padding*3 ), 135 -15);
     this.last_message = localstring;
   }
   
@@ -881,6 +956,57 @@ class SDConverterBox {
 
     selectSDFile.draw();
   }
+};
+
+
+class ChannelPopup {
+  int x, y, w, h, padding; //size and position
+  //connect/disconnect button
+  //Refresh list button
+  //String port status;
+  boolean clicked;
+
+  ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x + _w * 2;
+    y = _y;
+    w = _w;
+    h = 171 + _padding;
+    padding = _padding;
+    clicked = false;
+
+    channelList = new MenuList(cp5, "channelList", w - padding*2, 100, f2);
+    channelList.setPosition(x+padding, y+padding*3 + 13 + 24);
+    
+    for (int i = 1; i < 26; i++) {
+      channelList.addItem(makeItem(String.valueOf(i)));
+    }
+  }
+
+  public void update() {
+    // serialList.updateMenu();
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(f1);
+    textAlign(LEFT, TOP);
+    text("SERIAL/COM PORT", x + padding, y + padding);
+    popStyle();
+
+    // openClosePort.draw();
+    refreshPort.draw();
+    autoconnect.draw();
+  }
+  
+  public void setClicked(boolean click){this.clicked = click; }
+  
+  public boolean wasClicked(){return this.clicked;}
+
 };
 
 class InitBox {

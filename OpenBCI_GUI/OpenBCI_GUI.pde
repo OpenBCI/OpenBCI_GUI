@@ -118,6 +118,11 @@ boolean isRunning = false;
 boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
 byte inByte = -1;    // Incoming serial data
+StringBuilder board_message;
+int dollaBillz;
+boolean isGettingPoll = false;
+boolean spaceFound = false;
+int hexToInt = 0;
 
 //for screen resizing
 boolean screenHasBeenResized = false;

@@ -9,6 +9,8 @@
 //  More to come...
 ////////////////
 
+boolean no_start_connection = false;
+
 void autoconnect(){
     Serial board; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
@@ -31,6 +33,7 @@ void autoconnect(){
           if(confirm_openbci(board)) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             openBCI_portName = serialPorts[i];
+            openBCI_baud = 115200;
             board.stop();
             return;
           }
@@ -50,6 +53,7 @@ void autoconnect(){
           if(confirm_openbci(board)) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
             openBCI_baud = 230400;
+            openBCI_portName = serialPorts[i];
             board.stop();
             return;
           }
@@ -83,7 +87,8 @@ Serial autoconnect_return() throws Exception{
           delay(100);
           if(confirm_openbci(board)) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
-            openBCI_portName = serialPorts[i];
+            no_start_connection = true;
+            
             return board;
           }
         }
@@ -101,7 +106,7 @@ Serial autoconnect_return() throws Exception{
           delay(100);
           if(confirm_openbci(board)) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
-            openBCI_baud = 230400;
+            no_start_connection = true;
             return board;
           }
           
@@ -132,23 +137,9 @@ void trash_bytes(Serial board){
 }
 
 /**** Helper function to read from the serial easily ****/
-void print_bytes(Serial board, RadioConfigBox rc){
-  board.read();
-  byte input = byte(inByte);
-  StringBuilder sb = new StringBuilder();
-  int dollaBillz =0;
-    
-  while(input != -1){
-    print(char(input));
-    if(char(input) != '$') sb.append(char(input));
-    else dollaBillz++;
-    if(dollaBillz>2) break;
-    board.read();
-    input = byte(inByte);
-  }
-  rc.print_onscreen(sb.toString());
-  
-  print("\n");
+void print_bytes( RadioConfigBox rc){
+  println(board_message.toString());
+  rc.print_onscreen(board_message.toString());
 }
 
 
@@ -164,11 +155,17 @@ void print_bytes(Serial board, RadioConfigBox rc){
 //==========================================
 
 void get_channel(Serial board, RadioConfigBox rcConfig){
+  if(board != null){
     board.write(0xF0);
     board.write(0x00);
     delay(100);
     
-    print_bytes(board,rcConfig);
+    print_bytes(rcConfig);
+  }
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
   }
 
 //============== SET CHANNEL ===============
@@ -185,14 +182,20 @@ void get_channel(Serial board, RadioConfigBox rcConfig){
 //==========================================
 
 void set_channel(Serial board, RadioConfigBox rcConfig, int channel_number){
+  if(board != null){
     if(channel_number > 0){
       board.write(0xF0);
       board.write(0x01);
       board.write(byte(channel_number));
       delay(1000);
-      print_bytes(board,rcConfig);
+      print_bytes(rcConfig);
     }
     else rcConfig.print_onscreen("Please Select a Channel");
+  }
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
 }
 
 //========== SET CHANNEL OVERRIDE ===========
@@ -209,15 +212,22 @@ void set_channel(Serial board, RadioConfigBox rcConfig, int channel_number){
 //==========================================
 
 void set_channel_over(Serial board, RadioConfigBox rcConfig, int channel_number){
+  if(board != null){
     if(channel_number > 0){
       board.write(0xF0);
       board.write(0x02);
       board.write(byte(channel_number));
       delay(100);
-      print_bytes(board,rcConfig);
+      print_bytes(rcConfig);
     }
       
     else rcConfig.print_onscreen("Please Select a Channel");
+  }
+  
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
 }
 
 //================ GET POLL =================
@@ -232,46 +242,21 @@ void set_channel_over(Serial board, RadioConfigBox rcConfig, int channel_number)
 //==========================================
 
 void get_poll(Serial board, RadioConfigBox rcConfig){
+  if(board != null){
       board.write(0xF0);
       board.write(0x03);
+      isGettingPoll = true;
       delay(100);
-      
-      board.read();
-      byte input = byte(inByte);
-      boolean space_found = false;
-      int hex_to_int = 0;
-     
-      StringBuilder sb = new StringBuilder();
-      
-      //special case for error messages
-      if(char(input) == 'S'){
-        while(input != -1){
-          print(char(input));
-          if(char(input) != '$' && !space_found) sb.append(char(input));
-          else if(space_found && char(input) != '$')hex_to_int = Integer.parseInt(String.format("%02X",input),16);
-          
-          if(char(input) == ' ')space_found = true;
-          
-          board.read();
-          input = byte(inByte);
-        }
-        
-        sb.append(hex_to_int);
-        rcConfig.print_onscreen(sb.toString());
-        print(" " + hex_to_int + "\n");
-      }
-      else{
-        while(input != -1){
-            print(char(input));
-            if(char(input) != '$') sb.append(char(input)); 
-            board.read();
-            input = byte(inByte);
-          }
-          
-          sb.append(hex_to_int);
-          rcConfig.print_onscreen(sb.toString());
-          print(" " + hex_to_int + "\n");
-      }
+      board_message.append(hexToInt);
+      print_bytes(rcConfig);
+      isGettingPoll = false;
+      spaceFound = false;
+  }
+  
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
 }
 
 //=========== SET POLL OVERRIDE ============
@@ -288,12 +273,17 @@ void get_poll(Serial board, RadioConfigBox rcConfig){
 //==========================================
 
 void set_poll(Serial board, RadioConfigBox rcConfig, int poll_number){
-
+  if(board != null){
     board.write(0xF0);
     board.write(0x04);
     board.write(byte(poll_number));
     delay(1000);
-    print_bytes(board,rcConfig);
+    print_bytes(rcConfig);
+  }
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
 }
 
 //========== SET BAUD TO DEFAULT ===========
@@ -308,11 +298,11 @@ void set_poll(Serial board, RadioConfigBox rcConfig, int poll_number){
 //==========================================
 
 void set_baud_default(Serial board, RadioConfigBox rcConfig, String serialPort){
-    
+  if(board != null){
     board.write(0xF0);
     board.write(0x05);
     delay(100);
-    print_bytes(board, rcConfig);
+    print_bytes( rcConfig);
     
     try{
       board.stop();
@@ -329,6 +319,11 @@ void set_baud_default(Serial board, RadioConfigBox rcConfig, String serialPort){
     catch (Exception e){
       println("error setting serial to BAUD 115200");
     }
+  }
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
 }
 
 //====== SET BAUD TO HIGH-SPEED MODE =======
@@ -343,11 +338,11 @@ void set_baud_default(Serial board, RadioConfigBox rcConfig, String serialPort){
 //==========================================
 
 void set_baud_high(Serial board, RadioConfigBox rcConfig, String serialPort){
-
+  if(board != null){
     board.write(0xF0);
     board.write(0x06);
     delay(100);
-    print_bytes(board, rcConfig);
+    print_bytes( rcConfig);
     
     try{
       board.stop();
@@ -364,6 +359,11 @@ void set_baud_high(Serial board, RadioConfigBox rcConfig, String serialPort){
     catch (Exception e){
       println("error setting serial to BAUD 230400");
     }
+  }
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
       
 }
 
@@ -379,8 +379,14 @@ void set_baud_high(Serial board, RadioConfigBox rcConfig, String serialPort){
 //==========================================
 
 void system_status(Serial board, RadioConfigBox rcConfig){
+  if(board != null){
     board.write(0xF0);
     board.write(0x07);
     delay(100);
-    print_bytes(board, rcConfig);
+    print_bytes(rcConfig);
+  }
+  else {
+    println("Error, no board connected");
+    rcConfig.print_onscreen("No board connected!");
+  }
 }
