@@ -1,4 +1,4 @@
-//////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
 //  Radios_Config will be used for radio configuration 
 //  integration. Also handles functions such as the "autconnect"
@@ -6,8 +6,15 @@
 //
 //  Created: Colin Fausnaught, July 2016
 //
-//  More to come...
-////////////////
+//  Handles interactions between the radio system and OpenBCI systems.
+//  It is important to note that this is using Serial communication directly
+//  rather than the OpenBCI_ADS1299 class. I just found this easier to work
+//  with.
+//
+//  KNOWN ISSUES: Problems switching from default to high baud and back again. 
+//
+//  TODO: Tackle bugs and code cleanup/documentation
+////////////////////////////////////////////////////////////////////////////////
 
 boolean no_start_connection = false;
 boolean isOpenBCI;
@@ -141,26 +148,16 @@ Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
     }
     throw new Exception();
 }
-
+/**** Helper function for connection of boards ****/
 boolean confirm_openbci(){
   if(board_message.toString().charAt(0) == 'S' || board_message.toString().charAt(0) == 'F') return true;
   else return false;
 }
 
+/**** Helper function for autoscan ****/
 boolean confirm_connected(){
   if(board_message.toString().charAt(0) == 'S') return true;
   else return false;
-}
-
-/**** Helper function to throw away all bytes coming in from board ****/
-void trash_bytes(Serial board){
-  board.read();
-  byte input = byte(inByte);
-  
-  while(input != -1){
-    board.read();
-    input = byte(inByte);
-  }
 }
 
 /**** Helper function to read from the serial easily ****/
