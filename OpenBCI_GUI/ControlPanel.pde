@@ -71,6 +71,9 @@ Button systemStatus;
 
 Serial board;
 
+ChannelPopup channelPopup;
+RadioConfigBox rcBox;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -104,6 +107,21 @@ public void controlEvent(ControlEvent theEvent) {
     }
     verbosePrint("SD setting = " + sdSetting);
   }
+  
+  if (theEvent.isFrom("channelList")){
+    int setChannelInt = int(theEvent.getValue()) + 1;
+    //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    cp5.get(MenuList.class, "channelList").setVisible(false); 
+    channelPopup.setClicked(false);   
+    if(setChannel.wasPressed){
+      set_channel(board,rcBox,setChannelInt);
+      setChannel.wasPressed = false;
+    }
+    else if(ovrChannel.wasPressed){
+      set_channel_over(board,rcBox,setChannelInt);
+      ovrChannel.wasPressed = false;
+    }
+  }
 }
 
 //------------------------------------------------------------------------
@@ -124,13 +142,11 @@ class ControlPanel {
   DataLogBox dataLogBox;
   ChannelCountBox channelCountBox;
   InitBox initBox;
-  ChannelPopup channelPopup;
   
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
 
   SDBox sdBox;
-  RadioConfigBox rcBox;
 
   boolean drawStopInstructions;
 
@@ -356,6 +372,11 @@ class ControlPanel {
           setChannel.wasPressed = true;
         }
         
+        if (ovrChannel.isMouseHere()){
+          ovrChannel.setIsActive(true);
+          ovrChannel.wasPressed = true;
+        }
+        
         if (autoconnectNoStart.isMouseHere()){
           autoconnectNoStart.setIsActive(true);
           autoconnectNoStart.wasPressed = true;
@@ -395,7 +416,10 @@ class ControlPanel {
     if(popOut.isMouseHere() && popOut.wasPressed){
       popOut.wasPressed = false;
       popOut.setIsActive(false);
-      if(rcBox.isShowing) rcBox.isShowing = false;
+      if(rcBox.isShowing){ 
+        rcBox.isShowing = false;
+        cp5.get(MenuList.class, "channelList").setVisible(false); 
+      }
       else rcBox.isShowing = true;
     }
     
@@ -412,7 +436,12 @@ class ControlPanel {
       //channelPopup.draw();
       channelPopup.setClicked(true);
       setChannel.setIsActive(false);
-      setChannel.wasPressed = false;
+      //setChannel.wasPressed = false;
+    }
+    
+    if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
+      channelPopup.setClicked(true);
+      ovrChannel.setIsActive(false);
     }
     
     if(autoconnectNoStart.isMouseHere() && autoconnectNoStart.wasPressed){
@@ -974,8 +1003,8 @@ class ChannelPopup {
     padding = _padding;
     clicked = false;
 
-    channelList = new MenuList(cp5, "channelList", w - padding*2, 100, f2);
-    channelList.setPosition(x+padding, y+padding*3 + 13 + 24);
+    channelList = new MenuList(cp5, "channelList", w - padding*2, 140, f2);
+    channelList.setPosition(x+padding, y+padding*3);
     
     for (int i = 1; i < 26; i++) {
       channelList.addItem(makeItem(String.valueOf(i)));
