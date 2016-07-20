@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioMetaData</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">AudioMetaData</p>
+    	
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="audiometadata_method_album.html" title="The album the recording came from.">album ( )</a><br/>
+    
+    <a href="audiometadata_method_author.html" title="The author of the recording.">author ( )</a><br/>
+    
+    <a href="audiometadata_method_comment.html" title="The comment field in the file.">comment ( )</a><br/>
+    
+    <a href="audiometadata_method_composer.html" title="The composer of the recording.">composer ( )</a><br/>
+    
+    <a href="audiometadata_method_copyright.html" title="The copyright of the recording.">copyright ( )</a><br/>
+    
+    <a href="audiometadata_method_date.html" title="The date the recording was made.">date ( )</a><br/>
+    
+    <a href="audiometadata_method_disc.html" title="The disc number of the recording.">disc ( )</a><br/>
+    
+    <a href="audiometadata_method_encoded.html" title="The software the recording was encoded with.">encoded ( )</a><br/>
+    
+    <a href="audiometadata_method_filename.html" title="The name of the file / URL of the recording.">fileName ( )</a><br/>
+    
+    <a href="audiometadata_method_genre.html" title="The genre of the recording.">genre ( )</a><br/>
+    
+    <a href="audiometadata_method_length.html" title="The length of the recording in milliseconds.">length ( )</a><br/>
+    
+    <a href="audiometadata_method_lyrics.html" title="The lyrics for the recording, if any.">lyrics ( )</a><br/>
+    
+    <a href="audiometadata_method_orchestra.html" title="The orchestra that performed the recording.">orchestra ( )</a><br/>
+    
+    <a href="audiometadata_method_publisher.html" title="The publisher of the recording.">publisher ( )</a><br/>
+    
+    <a href="audiometadata_method_sampleframecount.html" title="How many sample frames are in this recording.">sampleFrameCount ( )</a><br/>
+    
+    <a href="audiometadata_method_title.html" title="The title of the recording.">title ( )</a><br/>
+    
+    <a href="audiometadata_method_track.html" title="The track number of the recording.
+ This will sometimes be in the form 3/10,
+ giving you both the track number and total
+ tracks on the album this track came from.">track ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	<code>AudioMetaData</code> provides information commonly found in ID3 tags. 
+ However, other audio formats, such as Ogg, can contain
+ similar information. So rather than refer to this information
+ as ID3Tags or similar, we simply call it metadata. This base 
+ class returns the empty string or -1 from all methods and
+ derived classes are expected to simply override the methods
+ that they have information for. This is a little less brittle
+ than using an interface because later on new properties can 
+ be added without breaking existing code.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre><em></em>
+AudioMetaData()
+</pre>
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+ * Get Meta Data
+ * by Damien Di Fede.
+ *  
+ * This sketch demonstrates how to use the &lt;code>getMetaData&lt;/code> 
+ * method of &lt;code>AudioPlayer&lt;/code>. This method is also available 
+ * for &lt;code>AudioSnippet&lt;/code> and &lt;code>AudioSample&lt;/code>. 
+ * You should use this method when you want to retrieve metadata 
+ * about a file that you have loaded, like ID3 tags from an mp3 file. 
+ * If you load WAV file or other non-tagged file, most of the metadata 
+ * will be empty, but you will still have information like the filename 
+ * and the length.
+ * &lt;p>
+ * For more information about Minim and additional features, 
+ * visit http://code.compartmental.net/minim/ 
+ */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer groove;
+AudioMetaData meta;
+
+void setup()
+{
+  size(512, 256, P2D);
+  
+  minim = new Minim(this);
+  groove = minim.loadFile("groove.mp3");
+  meta = groove.getMetaData();
+  
+  textFont(createFont("Serif", 12));
+}
+
+int ys = 25;
+int yi = 15;
+
+void draw()
+{
+  background(0);
+  int y = ys;
+  text("File Name: " + meta.fileName(), 5, y);
+  text("Length (in milliseconds): " + meta.length(), 5, y+=yi);
+  text("Title: " + meta.title(), 5, y+=yi);
+  text("Author: " + meta.author(), 5, y+=yi); 
+  text("Album: " + meta.album(), 5, y+=yi);
+  text("Date: " + meta.date(), 5, y+=yi);
+  text("Comment: " + meta.comment(), 5, y+=yi);
+  text("Lyrics: " + meta.lyrics(), 5, y+=yi ); 
+  text("Track: " + meta.track(), 5, y+=yi);
+  text("Genre: " + meta.genre(), 5, y+=yi);
+  text("Copyright: " + meta.copyright(), 5, y+=yi);
+  text("Disc: " + meta.disc(), 5, y+=yi);
+  text("Composer: " + meta.composer(), 5, y+=yi);
+  text("Orchestra: " + meta.orchestra(), 5, y+=yi);
+  text("Publisher: " + meta.publisher(), 5, y+=yi);
+  text("Encoded: " + meta.encoded(), 5, y+=yi);
+}
+</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

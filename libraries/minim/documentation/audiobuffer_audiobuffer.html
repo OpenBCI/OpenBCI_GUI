@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioBuffer</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">AudioBuffer</p>
+    	
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="audiobuffer_method_get.html" title="Gets the <code>i<sup>th</sup></code> sample in the buffer. This method
+ does not do bounds checking, so it may throw an exception.">get ( )</a><br/>
+    
+    <a href="audiobuffer_method_level.html" title="Gets the current level of the buffer. It is calculated as the
+ root-mean-square of all the samples in the buffer.">level ( )</a><br/>
+    
+    <a href="audiobuffer_method_size.html" title="Returns the length of the buffer.">size ( )</a><br/>
+    
+    <a href="audiobuffer_method_toarray.html" title="Returns the samples in the buffer in a new float array. 
+ Modifying the samples in the returned array will not change 
+ the samples in the buffer.">toArray ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	An <code>AudioBuffer</code> is a buffer of floating point samples 
+ corresponding to a single channel of streaming audio. It is readonly, but you 
+ can obtain a copy of the samples in the buffer by using the <code>toArray</code> method. 
+ In fact, when drawing a waveform, you should use the <code>toArray</code> method 
+ rather than iterating over the buffer itself because it is possible that the samples 
+ in the buffer will be replaced with new ones between calls to the <code>get</code> method, 
+ which results in a waveform that appears to have discontinuities in it.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre></pre>
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>None available</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>
