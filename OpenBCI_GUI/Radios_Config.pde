@@ -147,6 +147,11 @@ boolean confirm_openbci(){
   else return false;
 }
 
+boolean confirm_connected(){
+  if(board_message.toString().charAt(0) == 'S') return true;
+  else return false;
+}
+
 /**** Helper function to throw away all bytes coming in from board ****/
 void trash_bytes(Serial board){
   board.read();
@@ -401,61 +406,12 @@ void system_status(RadioConfigBox rcConfig){
 }
 
 //Scans through channels until a success message has been found
-void scan_channels(){
-  scanningChannels = true;
-  /*
-  byte input = byte(board.read());
-  StringBuilder sb = new StringBuilder();
-  String the_string = "Success: System is Up$$$";
-  
-  while(input != -1){
-    if(char(input) != '$') sb.append(char(input));
-    input = byte(board.read());
-  }
-  
+void scan_channels(RadioConfigBox rcConfig){
   
   for(int i = 1; i < 26; i++){
-    channel_number = i;
-    //Channel override
-    board.write(0xF0);
-    board.write(0x02);
-    board.write(byte(channel_number));
-    delay(100);
     
-    input = byte(board.read());
-    //throw out data from override
-    while(input != -1){
-      input = byte(board.read());
-    }
-    
-    //Channel Status
-    board.write(0xF0);
-    board.write(0x07);
-    delay(100);
-    
-    input = byte(board.read());
-    sb = new StringBuilder();
-    
-    while(input != -1){
-      sb.append(char(input));
-      input = byte(board.read());
-    }
-    
-    println(the_string);
-    println(sb.toString());
-    
-    if(sb.toString().equals(the_string)) {
-      print_onscreen("Successfully connected to channel: " + i);
-      println("Successfully connected to channel: " + i); 
-      return;
-    }
-    
-    
-    
+    set_channel_over(rcConfig,i);
+    system_status(rcConfig);
+    if(confirm_connected()) break;
   }
-  
-  print_onscreen("Could not connect, is your board powered on?");
-  println("Could not connect, is your board powered on?");
-
-      */
 }

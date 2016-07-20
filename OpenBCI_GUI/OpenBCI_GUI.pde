@@ -119,6 +119,8 @@ boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
 byte inByte = -1;    // Incoming serial data
 StringBuilder board_message;
+StringBuilder scanning_message;
+
 int dollaBillz;
 boolean isGettingPoll = false;
 boolean spaceFound = false;

@@ -533,6 +533,13 @@ class ControlPanel {
       autoconnectNoStart.wasPressed = false;
     }
     
+    if(autoscan.isMouseHere() && autoscan.wasPressed){
+      autoscan.wasPressed = false;
+      autoscan.setIsActive(false);
+      scan_channels(rcBox);
+      
+    }
+    
     if(autoconnect.isMouseHere() && autoconnect.wasPressed){
       system_init();
       autoconnect.wasPressed = false;

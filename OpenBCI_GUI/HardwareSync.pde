@@ -86,6 +86,8 @@ void serialEvent(Serial port) {
       fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
     }
   } else {
+    
+    //Used for serial communications, primarily everything in no_start_connection
     if(no_start_connection){
 
       
@@ -113,9 +115,13 @@ void serialEvent(Serial port) {
       
       
       
+      
+      
     }
     else{
-      println("Recieved serial data not from OpenBCI");
+      println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
+      
+      
       inByte = byte(port.read());
       if(isOpenBCI){
         
