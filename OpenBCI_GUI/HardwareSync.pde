@@ -92,6 +92,8 @@ void serialEvent(Serial port) {
       if(board_message == null || dollaBillz>2){ board_message = new StringBuilder(); dollaBillz = 0;}
       
       inByte = byte(port.read());
+      if(char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
+      
       //print(char(inByte));
       if(inByte != -1){ 
         if(isGettingPoll){
@@ -115,7 +117,20 @@ void serialEvent(Serial port) {
     else{
       println("Recieved serial data not from OpenBCI");
       inByte = byte(port.read());
-      //print(char(inByte));
+      if(isOpenBCI){
+        
+        if(board_message == null || dollaBillz >2){board_message = new StringBuilder(); dollaBillz=0;}
+        
+        if(inByte != '$') board_message.append(char(inByte));
+        else dollaBillz++;
+      }
+      if(char(inByte) == 'S' || char(inByte) == 'F'){
+        isOpenBCI = true;
+        if(board_message == null) board_message = new StringBuilder(); 
+        board_message.append(char(inByte));
+     
+      }
+      
     }
   }
 }

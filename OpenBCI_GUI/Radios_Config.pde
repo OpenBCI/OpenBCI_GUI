@@ -10,9 +10,11 @@
 ////////////////
 
 boolean no_start_connection = false;
+boolean isOpenBCI;
+int baudSwitch = 0;
 
 void autoconnect(){
-    Serial board; //local serial instance just to make sure it's openbci, then connect to it if it is
+    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
     String serialPort  = "";
     serialPorts = Serial.list();
@@ -22,19 +24,19 @@ void autoconnect(){
     for(int i = 0; i < serialPorts.length; i++){
       try{
           serialPort = serialPorts[i];
-          board = new Serial(this,serialPort,115200);
+          locBoard = new Serial(this,serialPort,115200);
           println(serialPort);
           
           delay(100);
           
-          board.write(0xF0);
+          locBoard.write(0xF0);
           board.write(0x07);
           delay(100);
-          if(confirm_openbci(board)) {
+          if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             openBCI_portName = serialPorts[i];
             openBCI_baud = 115200;
-            board.stop();
+            locBoard.stop();
             return;
           }
         }
@@ -42,19 +44,19 @@ void autoconnect(){
           println("Board not on port " + serialPorts[i] +" with BAUD 115200");
         }
       try{
-          board = new Serial(this,serialPort,230400);
+          locBoard = new Serial(this,serialPort,230400);
           println(serialPort);
           
           delay(100);
           
-          board.write(0xF0);
-          board.write(0x07);
+          locBoard.write(0xF0);
+          locBoard.write(0x07);
           delay(100);
-          if(confirm_openbci(board)) {
+          if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
             openBCI_baud = 230400;
             openBCI_portName = serialPorts[i];
-            board.stop();
+            locBoard.stop();
             return;
           }
           
@@ -65,9 +67,9 @@ void autoconnect(){
     }
 }
 
-Serial autoconnect_return() throws Exception{
+Serial autoconnect_return_high(RadioConfigBox rc) throws Exception{
   
-    Serial board; //local serial instance just to make sure it's openbci, then connect to it if it is
+    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
     String serialPort  = "";
     serialPorts = Serial.list();
@@ -77,51 +79,71 @@ Serial autoconnect_return() throws Exception{
     for(int i = 0; i < serialPorts.length; i++){
       try{
           serialPort = serialPorts[i];
-          board = new Serial(this,serialPort,115200);
+          locBoard = new Serial(this,serialPort,230400);
           println(serialPort);
           
           delay(100);
           
-          board.write(0xF0);
-          board.write(0x07);
+          locBoard.write(0xF0);
+          locBoard.write(0x07);
+          delay(1000);
+          //print_bytes(rc);
+          if(confirm_openbci()) {
+            println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
+            no_start_connection = true;
+            openBCI_portName = serialPorts[i];
+            isOpenBCI = false;
+                        
+            return locBoard;
+          }
+        }
+        catch (Exception e){
+          println("Board not on port " + serialPorts[i] +" with BAUD 230400");
+        }    
+      
+    }
+    throw new Exception();
+}
+
+Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
+  
+    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
+    String[] serialPorts = new String[Serial.list().length];
+    String serialPort  = "";
+    serialPorts = Serial.list();
+    
+    
+    for(int i = 0; i < serialPorts.length; i++){
+     
+      try{
+          serialPort = serialPorts[i];
+          locBoard = new Serial(this,serialPort,115200);
+          println(serialPort);
+          
           delay(100);
-          if(confirm_openbci(board)) {
+          
+          locBoard.write(0xF0);
+          locBoard.write(0x07);
+          delay(1000);
+          //print_bytes(rc);
+          if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             no_start_connection = true;
+            openBCI_portName = serialPorts[i];
+            isOpenBCI = false;
             
-            return board;
+            return locBoard;
           }
         }
         catch (Exception e){
           println("Board not on port " + serialPorts[i] +" with BAUD 115200");
-        }
-      try{
-          board = new Serial(this,serialPort,230400);
-          println(serialPort);
-          
-          delay(100);
-          
-          board.write(0xF0);
-          board.write(0x07);
-          delay(100);
-          if(confirm_openbci(board)) {
-            println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
-            no_start_connection = true;
-            return board;
-          }
-          
-        }
-        catch (Exception e){
-          println("Board not on port " + serialPorts[i] +" with BAUD 230400");
         }
     }
     throw new Exception();
 }
 
-boolean confirm_openbci(Serial board){
-  byte input = byte(inByte);
-  println(char(input));
-  if(char(input) == 'F' || char(input) == 'S' || char(input) == '$'){/*trash_bytes(board); */return true;}
+boolean confirm_openbci(){
+  if(board_message.toString().charAt(0) == 'S' || board_message.toString().charAt(0) == 'F') return true;
   else return false;
 }
 
@@ -154,7 +176,7 @@ void print_bytes( RadioConfigBox rc){
 //= from the board.
 //==========================================
 
-void get_channel(Serial board, RadioConfigBox rcConfig){
+void get_channel(RadioConfigBox rcConfig){
   if(board != null){
     board.write(0xF0);
     board.write(0x00);
@@ -181,7 +203,7 @@ void get_channel(Serial board, RadioConfigBox rcConfig){
 //= from the board.
 //==========================================
 
-void set_channel(Serial board, RadioConfigBox rcConfig, int channel_number){
+void set_channel(RadioConfigBox rcConfig, int channel_number){
   if(board != null){
     if(channel_number > 0){
       board.write(0xF0);
@@ -211,7 +233,7 @@ void set_channel(Serial board, RadioConfigBox rcConfig, int channel_number){
 //= from the board.
 //==========================================
 
-void set_channel_over(Serial board, RadioConfigBox rcConfig, int channel_number){
+void set_channel_over(RadioConfigBox rcConfig, int channel_number){
   if(board != null){
     if(channel_number > 0){
       board.write(0xF0);
@@ -241,7 +263,7 @@ void set_channel_over(Serial board, RadioConfigBox rcConfig, int channel_number)
 //= from the board.
 //==========================================
 
-void get_poll(Serial board, RadioConfigBox rcConfig){
+void get_poll(RadioConfigBox rcConfig){
   if(board != null){
       board.write(0xF0);
       board.write(0x03);
@@ -272,7 +294,7 @@ void get_poll(Serial board, RadioConfigBox rcConfig){
 //= from the board.
 //==========================================
 
-void set_poll(Serial board, RadioConfigBox rcConfig, int poll_number){
+void set_poll(RadioConfigBox rcConfig, int poll_number){
   if(board != null){
     board.write(0xF0);
     board.write(0x04);
@@ -297,24 +319,18 @@ void set_poll(Serial board, RadioConfigBox rcConfig, int poll_number){
 //= from the board.
 //==========================================
 
-void set_baud_default(Serial board, RadioConfigBox rcConfig, String serialPort){
+void set_baud_default(RadioConfigBox rcConfig, String serialPort){
   if(board != null){
     board.write(0xF0);
     board.write(0x05);
-    delay(100);
-    print_bytes( rcConfig);
+    delay(1000);
+    print_bytes(rcConfig);
+    delay(1000);
+    
     
     try{
       board.stop();
-      board = new Serial(this,serialPort,115200);
-      println(serialPorts[serialPorts.length -1]);
-      byte input = byte(board.read());
-      
-      while(input != -1){
-        print(char(input));
-        input = byte(board.read());
-      }
-      print("\n");
+      board = autoconnect_return_default(rcConfig);
     }
     catch (Exception e){
       println("error setting serial to BAUD 115200");
@@ -337,24 +353,17 @@ void set_baud_default(Serial board, RadioConfigBox rcConfig, String serialPort){
 //= from the board.
 //==========================================
 
-void set_baud_high(Serial board, RadioConfigBox rcConfig, String serialPort){
+void set_baud_high(RadioConfigBox rcConfig, String serialPort){
   if(board != null){
     board.write(0xF0);
     board.write(0x06);
-    delay(100);
-    print_bytes( rcConfig);
+    delay(1000);
+    print_bytes(rcConfig);
+    delay(1000);
     
     try{
       board.stop();
-      board = new Serial(this,serialPort,230400);
-      println(serialPorts[serialPorts.length -1]);
-      byte input = byte(board.read());
-      
-      while(input != -1){
-        print(char(input));
-        input = byte(board.read());
-      }
-      print("\n");
+      board = autoconnect_return_high(rcConfig);
     }
     catch (Exception e){
       println("error setting serial to BAUD 230400");
@@ -378,7 +387,7 @@ void set_baud_high(Serial board, RadioConfigBox rcConfig, String serialPort){
 //= from the board.
 //==========================================
 
-void system_status(Serial board, RadioConfigBox rcConfig){
+void system_status(RadioConfigBox rcConfig){
   if(board != null){
     board.write(0xF0);
     board.write(0x07);
@@ -389,4 +398,64 @@ void system_status(Serial board, RadioConfigBox rcConfig){
     println("Error, no board connected");
     rcConfig.print_onscreen("No board connected!");
   }
+}
+
+//Scans through channels until a success message has been found
+void scan_channels(){
+  scanningChannels = true;
+  /*
+  byte input = byte(board.read());
+  StringBuilder sb = new StringBuilder();
+  String the_string = "Success: System is Up$$$";
+  
+  while(input != -1){
+    if(char(input) != '$') sb.append(char(input));
+    input = byte(board.read());
+  }
+  
+  
+  for(int i = 1; i < 26; i++){
+    channel_number = i;
+    //Channel override
+    board.write(0xF0);
+    board.write(0x02);
+    board.write(byte(channel_number));
+    delay(100);
+    
+    input = byte(board.read());
+    //throw out data from override
+    while(input != -1){
+      input = byte(board.read());
+    }
+    
+    //Channel Status
+    board.write(0xF0);
+    board.write(0x07);
+    delay(100);
+    
+    input = byte(board.read());
+    sb = new StringBuilder();
+    
+    while(input != -1){
+      sb.append(char(input));
+      input = byte(board.read());
+    }
+    
+    println(the_string);
+    println(sb.toString());
+    
+    if(sb.toString().equals(the_string)) {
+      print_onscreen("Successfully connected to channel: " + i);
+      println("Successfully connected to channel: " + i); 
+      return;
+    }
+    
+    
+    
+  }
+  
+  print_onscreen("Could not connect, is your board powered on?");
+  println("Could not connect, is your board powered on?");
+
+      */
 }

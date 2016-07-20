@@ -122,6 +122,7 @@ StringBuilder board_message;
 int dollaBillz;
 boolean isGettingPoll = false;
 boolean spaceFound = false;
+boolean scanningChannels = false;
 int hexToInt = 0;
 
 //for screen resizing

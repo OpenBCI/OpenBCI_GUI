@@ -40,6 +40,8 @@ MenuList sdTimes;
 
 MenuList channelList;
 
+MenuList pollList;
+
 color boxColor = color(200);
 color boxStrokeColor = color(138, 146, 153);
 color isSelected_color = color(184, 220, 105);
@@ -72,6 +74,7 @@ Button systemStatus;
 Serial board;
 
 ChannelPopup channelPopup;
+PollPopup pollPopup;
 RadioConfigBox rcBox;
 
 //------------------------------------------------------------------------
@@ -114,13 +117,22 @@ public void controlEvent(ControlEvent theEvent) {
     cp5.get(MenuList.class, "channelList").setVisible(false); 
     channelPopup.setClicked(false);   
     if(setChannel.wasPressed){
-      set_channel(board,rcBox,setChannelInt);
+      set_channel(rcBox,setChannelInt);
       setChannel.wasPressed = false;
     }
     else if(ovrChannel.wasPressed){
-      set_channel_over(board,rcBox,setChannelInt);
+      set_channel_over(rcBox,setChannelInt);
       ovrChannel.wasPressed = false;
     }
+  }
+  
+  if (theEvent.isFrom("pollList")){
+    int setChannelInt = int(theEvent.getValue());
+    //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    cp5.get(MenuList.class, "pollList").setVisible(false); 
+    channelPopup.setClicked(false);   
+    set_poll(rcBox,setChannelInt);
+    setPoll.wasPressed = false;
   }
 }
 
@@ -191,6 +203,7 @@ class ControlPanel {
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
+    pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
     
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
   }
@@ -268,6 +281,10 @@ class ControlPanel {
             channelPopup.draw();
             cp5.get(MenuList.class, "channelList").setVisible(true); 
           }
+          else if(pollPopup.wasClicked()){
+            pollPopup.draw();
+            cp5.get(MenuList.class, "pollList").setVisible(true);
+          }
         }
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
@@ -282,6 +299,7 @@ class ControlPanel {
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "channelList").setVisible(false); 
+        cp5.get(MenuList.class, "pollList").setVisible(false);
       } else if (eegDataSource == 2) {
         //make sure serial list is visible
         //set other CP5 controllers invisible
@@ -289,12 +307,14 @@ class ControlPanel {
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "channelList").setVisible(false); 
+        cp5.get(MenuList.class, "pollList").setVisible(false);
       } else {
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "channelList").setVisible(false); 
+        cp5.get(MenuList.class, "pollList").setVisible(false);
       }
     } else {
       cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
@@ -377,6 +397,31 @@ class ControlPanel {
           ovrChannel.wasPressed = true;
         }
         
+        if (getPoll.isMouseHere()){
+          getPoll.setIsActive(true);
+          getPoll.wasPressed = true;
+        }
+        
+        if (setPoll.isMouseHere()){
+          setPoll.setIsActive(true);
+          setPoll.wasPressed = true;
+        }
+        
+        if (defaultBAUD.isMouseHere()){
+          defaultBAUD.setIsActive(true);
+          defaultBAUD.wasPressed = true;
+        }
+        
+        if (highBAUD.isMouseHere()){
+          highBAUD.setIsActive(true);
+          highBAUD.wasPressed = true;
+        }
+        
+        if (autoscan.isMouseHere()){
+          autoscan.setIsActive(true);
+          autoscan.wasPressed = true;
+        }
+        
         if (autoconnectNoStart.isMouseHere()){
           autoconnectNoStart.setIsActive(true);
           autoconnectNoStart.wasPressed = true;
@@ -387,10 +432,6 @@ class ControlPanel {
           systemStatus.wasPressed = true;
         }
         
-        if (getPoll.isMouseHere()){
-          getPoll.setIsActive(true);
-          getPoll.wasPressed = true;
-        }
       }
 
       //active buttons during DATASOURCE_PLAYBACKFILE
@@ -424,7 +465,7 @@ class ControlPanel {
     }
     
     if(getChannel.isMouseHere() && getChannel.wasPressed){
-      if(board != null) get_channel(board, rcBox);
+      if(board != null) get_channel( rcBox);
       
       getChannel.wasPressed=false;
       getChannel.setIsActive(false);
@@ -444,14 +485,48 @@ class ControlPanel {
       ovrChannel.setIsActive(false);
     }
     
+    
+    if (getPoll.isMouseHere() && getPoll.wasPressed){
+      get_poll(rcBox);
+      getPoll.setIsActive(false);
+      getPoll.wasPressed = false;
+    }
+    
+    if (setPoll.isMouseHere() && setPoll.wasPressed){
+      pollPopup.setClicked(true);
+      setPoll.setIsActive(false);
+    }
+    
+    if (defaultBAUD.isMouseHere() && defaultBAUD.wasPressed){
+      set_baud_default(rcBox,openBCI_portName);
+      defaultBAUD.setIsActive(false);
+      defaultBAUD.wasPressed=false;
+    }
+    
+    if (highBAUD.isMouseHere() && highBAUD.wasPressed){
+      set_baud_high(rcBox,openBCI_portName);
+      highBAUD.setIsActive(false);
+      highBAUD.wasPressed=false;
+    }
+    
     if(autoconnectNoStart.isMouseHere() && autoconnectNoStart.wasPressed){
       if(board == null){
         try{
-          board = autoconnect_return();
+          board = autoconnect_return_default(rcBox);
           rcBox.print_onscreen("Successfully connected to board");
         }
         catch (Exception e){
           rcBox.print_onscreen("Error connecting to board...");
+        }
+        if(!no_start_connection){
+          try{
+            board.stop();
+            board = autoconnect_return_high(rcBox);
+            rcBox.print_onscreen("Successfully connected to board");
+          }
+          catch (Exception e){
+            rcBox.print_onscreen("Error connecting to board...");
+          }
         }
       }
       autoconnectNoStart.setIsActive(false);
@@ -465,16 +540,11 @@ class ControlPanel {
     }
     
     if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-      system_status(board,rcBox);
+      system_status(rcBox);
       systemStatus.setIsActive(false);
       systemStatus.wasPressed = false;
     }
     
-    if(getPoll.isMouseHere() && getPoll.wasPressed){
-      get_poll(board,rcBox);
-      getPoll.setIsActive(false);
-      getPoll.wasPressed = false;
-    }
     
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
       //if system is not active ... initate system and flip button state
@@ -1037,6 +1107,57 @@ class ChannelPopup {
   public boolean wasClicked(){return this.clicked;}
 
 };
+
+class PollPopup {
+  int x, y, w, h, padding; //size and position
+  //connect/disconnect button
+  //Refresh list button
+  //String port status;
+  boolean clicked;
+
+  PollPopup(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x + _w * 2;
+    y = _y;
+    w = _w;
+    h = 171 + _padding;
+    padding = _padding;
+    clicked = false;
+
+    pollList = new MenuList(cp5, "pollList", w - padding*2, 140, f2);
+    pollList.setPosition(x+padding, y+padding*3);
+    
+    for (int i = 0; i < 256; i++) {
+      pollList.addItem(makeItem(String.valueOf(i)));
+    }
+  }
+
+  public void update() {
+    // serialList.updateMenu();
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(f1);
+    textAlign(LEFT, TOP);
+    text("SERIAL/COM PORT", x + padding, y + padding);
+    popStyle();
+
+    // openClosePort.draw();
+    refreshPort.draw();
+    autoconnect.draw();
+  }
+  
+  public void setClicked(boolean click){this.clicked = click; }
+  
+  public boolean wasClicked(){return this.clicked;}
+
+};
+
 
 class InitBox {
   int x, y, w, h, padding; //size and position
