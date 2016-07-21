@@ -1,0 +1,5 @@
+%OpenBCI Raw EEG Data
+%
+%Sample Rate = 250.0 Hz
+%First Column = SampleIndex
+%Other Columns = EEG data in microvolts followed by Accel Data (in G) interleaved with Aux Data
