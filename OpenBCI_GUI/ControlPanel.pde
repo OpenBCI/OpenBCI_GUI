@@ -124,6 +124,8 @@ public void controlEvent(ControlEvent theEvent) {
       set_channel_over(rcBox,setChannelInt);
       ovrChannel.wasPressed = false;
     }
+    println("still goin off");
+    
   }
   
   if (theEvent.isFrom("pollList")){
@@ -465,8 +467,12 @@ class ControlPanel {
       if(rcBox.isShowing){ 
         rcBox.isShowing = false;
         cp5.get(MenuList.class, "channelList").setVisible(false); 
+        popOut.setString(">");
       }
-      else rcBox.isShowing = true;
+      else{
+        rcBox.isShowing = true;
+        popOut.setString("<");
+      }
     }
     
     if(getChannel.isMouseHere() && getChannel.wasPressed){
