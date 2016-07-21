@@ -21,7 +21,7 @@ boolean isOpenBCI;
 int baudSwitch = 0;
 
 void autoconnect(){
-    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
+    //Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
     String serialPort  = "";
     serialPorts = Serial.list();
@@ -31,19 +31,19 @@ void autoconnect(){
     for(int i = 0; i < serialPorts.length; i++){
       try{
           serialPort = serialPorts[i];
-          locBoard = new Serial(this,serialPort,115200);
+          board = new Serial(this,serialPort,115200);
           println(serialPort);
           
           delay(100);
           
-          locBoard.write(0xF0);
+          board.write(0xF0);
           board.write(0x07);
           delay(100);
           if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             openBCI_portName = serialPorts[i];
             openBCI_baud = 115200;
-            locBoard.stop();
+            board.stop();
             return;
           }
         }
@@ -51,19 +51,19 @@ void autoconnect(){
           println("Board not on port " + serialPorts[i] +" with BAUD 115200");
         }
       try{
-          locBoard = new Serial(this,serialPort,230400);
+          board = new Serial(this,serialPort,230400);
           println(serialPort);
           
           delay(100);
           
-          locBoard.write(0xF0);
-          locBoard.write(0x07);
+          board.write(0xF0);
+          board.write(0x07);
           delay(100);
           if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
             openBCI_baud = 230400;
             openBCI_portName = serialPorts[i];
-            locBoard.stop();
+            board.stop();
             return;
           }
           
@@ -72,44 +72,6 @@ void autoconnect(){
           println("Board not on port " + serialPorts[i] +" with BAUD 230400");
         }
     }
-}
-
-Serial autoconnect_return_high(RadioConfigBox rc) throws Exception{
-  
-    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
-    String[] serialPorts = new String[Serial.list().length];
-    String serialPort  = "";
-    serialPorts = Serial.list();
-    
-    
-    
-    for(int i = 0; i < serialPorts.length; i++){
-      try{
-          serialPort = serialPorts[i];
-          locBoard = new Serial(this,serialPort,230400);
-          println(serialPort);
-          
-          delay(100);
-          
-          locBoard.write(0xF0);
-          locBoard.write(0x07);
-          delay(1000);
-          //print_bytes(rc);
-          if(confirm_openbci()) {
-            println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
-            no_start_connection = true;
-            openBCI_portName = serialPorts[i];
-            isOpenBCI = false;
-                        
-            return locBoard;
-          }
-        }
-        catch (Exception e){
-          println("Board not on port " + serialPorts[i] +" with BAUD 230400");
-        }    
-      
-    }
-    throw new Exception();
 }
 
 Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
@@ -137,6 +99,7 @@ Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             no_start_connection = true;
             openBCI_portName = serialPorts[i];
+            openBCI_baud = 115200;
             isOpenBCI = false;
             
             return locBoard;
@@ -148,6 +111,46 @@ Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
     }
     throw new Exception();
 }
+
+Serial autoconnect_return_high(RadioConfigBox rc) throws Exception{
+  
+    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
+    String[] serialPorts = new String[Serial.list().length];
+    String serialPort  = "";
+    serialPorts = Serial.list();
+    
+    
+    
+    for(int i = 0; i < serialPorts.length; i++){
+      try{
+          serialPort = serialPorts[i];
+          locBoard = new Serial(this,serialPort,230400);
+          println(serialPort);
+          
+          delay(100);
+          
+          locBoard.write(0xF0);
+          locBoard.write(0x07);
+          delay(1000);
+          //print_bytes(rc);
+          if(confirm_openbci()) {
+            println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
+            no_start_connection = true;
+            openBCI_portName = serialPorts[i];
+            openBCI_baud = 230400;
+            isOpenBCI = false;
+                        
+            return locBoard;
+          }
+        }
+        catch (Exception e){
+          println("Board not on port " + serialPorts[i] +" with BAUD 230400");
+        }    
+      
+    }
+    throw new Exception();
+}
+
 /**** Helper function for connection of boards ****/
 boolean confirm_openbci(){
   if(board_message.toString().charAt(0) == 'S' || board_message.toString().charAt(0) == 'F') return true;

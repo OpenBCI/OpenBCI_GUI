@@ -205,6 +205,7 @@ class ControlPanel {
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
     pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
     
+    
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
   }
 
@@ -277,14 +278,18 @@ class ControlPanel {
         if(rcBox.isShowing){ 
           
           rcBox.draw();
+          
           if(channelPopup.wasClicked()){
             channelPopup.draw();
-            cp5.get(MenuList.class, "channelList").setVisible(true); 
+            cp5.get(MenuList.class, "channelList").setVisible(true);
+            cp5.get(MenuList.class, "pollList").setVisible(false);
           }
           else if(pollPopup.wasClicked()){
             pollPopup.draw();
             cp5.get(MenuList.class, "pollList").setVisible(true);
+            cp5.get(MenuList.class, "channelList").setVisible(false);
           }
+          
         }
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
@@ -472,16 +477,14 @@ class ControlPanel {
     }
     
     if (setChannel.isMouseHere() && setChannel.wasPressed){
-      //set_channel_popup();
-      
-      //channelPopup.draw();
       channelPopup.setClicked(true);
+      pollPopup.setClicked(false);
       setChannel.setIsActive(false);
-      //setChannel.wasPressed = false;
     }
     
     if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
       channelPopup.setClicked(true);
+      pollPopup.setClicked(false);
       ovrChannel.setIsActive(false);
     }
     
@@ -494,6 +497,7 @@ class ControlPanel {
     
     if (setPoll.isMouseHere() && setPoll.wasPressed){
       pollPopup.setClicked(true);
+      channelPopup.setClicked(false);
       setPoll.setIsActive(false);
     }
     
@@ -554,6 +558,7 @@ class ControlPanel {
     
     
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
+      board.stop();
       //if system is not active ... initate system and flip button state
       system_init();
       //cursor(ARROW); //this this back to ARROW
@@ -1101,7 +1106,7 @@ class ChannelPopup {
     fill(bgColor);
     textFont(f1);
     textAlign(LEFT, TOP);
-    text("SERIAL/COM PORT", x + padding, y + padding);
+    text("CHANNEL SELECTION", x + padding, y + padding);
     popStyle();
 
     // openClosePort.draw();
@@ -1130,6 +1135,7 @@ class PollPopup {
     padding = _padding;
     clicked = false;
 
+
     pollList = new MenuList(cp5, "pollList", w - padding*2, 140, f2);
     pollList.setPosition(x+padding, y+padding*3);
     
@@ -1151,7 +1157,7 @@ class PollPopup {
     fill(bgColor);
     textFont(f1);
     textAlign(LEFT, TOP);
-    text("SERIAL/COM PORT", x + padding, y + padding);
+    text("POLL SELECTION", x + padding, y + padding);
     popStyle();
 
     // openClosePort.draw();
