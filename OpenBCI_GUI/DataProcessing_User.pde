@@ -20,7 +20,7 @@ class DataProcessing_User {
   boolean isTriggered_L = false;
   float upperThreshold_L = 25;  //default uV upper threshold value ... this will automatically change over time
   float lowerThreshold_L = 0;  //default uV lower threshold value ... this will automatically change over time
-  int averagePeriod_L = 125;  //number of data packets to average over (250 = 1 sec)
+  int averagePeriod_L = 40;  //number of data packets to average over (250 = 1 sec)
   int thresholdPeriod_L = 1250;  //number of packets
   int ourChan_L = 1 - 1;  //channel being monitored ... "3 - 1" means channel 3 (with a 0 index)
   float myAverage_L = 0.0;   //this will change over time ... used for calculations below
