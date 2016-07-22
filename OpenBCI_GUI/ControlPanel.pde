@@ -23,6 +23,7 @@ import controlP5.*;
 ControlPanel controlPanel;
 
 ControlP5 cp5; //program-wide instance of ControlP5
+ControlP5 cp5Popup;
 CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
   public void controlEvent(CallbackEvent theEvent) {
     println("CallbackListener: controlEvent: clearing");
@@ -114,7 +115,7 @@ public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom("channelList")){
     int setChannelInt = int(theEvent.getValue()) + 1;
     //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    cp5.get(MenuList.class, "channelList").setVisible(false); 
+    cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
     channelPopup.setClicked(false);   
     if(setChannel.wasPressed){
       set_channel(rcBox,setChannelInt);
@@ -131,7 +132,7 @@ public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom("pollList")){
     int setChannelInt = int(theEvent.getValue());
     //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    cp5.get(MenuList.class, "pollList").setVisible(false); 
+    cp5Popup.get(MenuList.class, "pollList").setVisible(false); 
     channelPopup.setClicked(false);   
     set_poll(rcBox,setChannelInt);
     setPoll.wasPressed = false;
@@ -192,6 +193,7 @@ class ControlPanel {
     globalBorder = 0;   //controls the border of all elements in the control panel ... using processing's stroke() instead
 
     cp5 = new ControlP5(mainClass); 
+    cp5Popup = new ControlP5(mainClass);
 
     //boxes active when eegDataSource = Normal (OpenBCI) 
     dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
@@ -216,10 +218,12 @@ class ControlPanel {
     if (isOpen) { // if control panel is open
       if (!cp5.isVisible()) {  //and cp5 is not visible
         cp5.show(); // shot it
+        cp5Popup.show();
       }
     } else { //the opposite of above
       if (cp5.isVisible()) {
         cp5.hide();
+        cp5Popup.show();
       }
     }
 
@@ -272,6 +276,7 @@ class ControlPanel {
       dataSourceBox.draw();
       drawStopInstructions = false;
       cp5.setVisible(true);//make sure controlP5 elements are visible
+      cp5Popup.setVisible(true);
       if (eegDataSource == 0) {	//when data source is from OpenBCI
         serialBox.draw();
         dataLogBox.draw();
@@ -283,13 +288,19 @@ class ControlPanel {
           
           if(channelPopup.wasClicked()){
             channelPopup.draw();
-            cp5.get(MenuList.class, "channelList").setVisible(true);
-            cp5.get(MenuList.class, "pollList").setVisible(false);
+            cp5Popup.get(MenuList.class, "channelList").setVisible(true);
+            cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+            cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+            cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+            cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
           }
           else if(pollPopup.wasClicked()){
             pollPopup.draw();
-            cp5.get(MenuList.class, "pollList").setVisible(true);
-            cp5.get(MenuList.class, "channelList").setVisible(false);
+            cp5Popup.get(MenuList.class, "pollList").setVisible(true);
+            cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+            cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+            cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+            cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
           }
           
         }
@@ -305,26 +316,27 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "channelList").setVisible(false); 
-        cp5.get(MenuList.class, "pollList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
+        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else if (eegDataSource == 2) {
         //make sure serial list is visible
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "channelList").setVisible(false); 
-        cp5.get(MenuList.class, "pollList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
+        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else {
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "channelList").setVisible(false); 
-        cp5.get(MenuList.class, "pollList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
+        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       }
     } else {
       cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
+      cp5Popup.setVisible(false);
     }
 
     //draw the box that tells you to stop the system in order to edit control settings
@@ -466,7 +478,7 @@ class ControlPanel {
       popOut.setIsActive(false);
       if(rcBox.isShowing){ 
         rcBox.isShowing = false;
-        cp5.get(MenuList.class, "channelList").setVisible(false); 
+        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         popOut.setString(">");
       }
       else{
@@ -1091,7 +1103,7 @@ class ChannelPopup {
     padding = _padding;
     clicked = false;
 
-    channelList = new MenuList(cp5, "channelList", w - padding*2, 140, f2);
+    channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, f2);
     channelList.setPosition(x+padding, y+padding*3);
     
     for (int i = 1; i < 26; i++) {
@@ -1142,7 +1154,7 @@ class PollPopup {
     clicked = false;
 
 
-    pollList = new MenuList(cp5, "pollList", w - padding*2, 140, f2);
+    pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, f2);
     pollList.setPosition(x+padding, y+padding*3);
     
     for (int i = 0; i < 256; i++) {
