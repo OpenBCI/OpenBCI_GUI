@@ -15,6 +15,12 @@
 //   No warranty. Use at your own risk. Use for whatever you'd like.
 // 
 ////////////////////////////////////////////////////////////////////////////////
+//DM: added robot to simulate keystrokes
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
+
+Robot robot;
 
 import ddf.minim.analysis.*; //for FFT
 //import ddf.minim.*;  // commented because too broad.. contains "Controller" class which is also contained in ControlP5... need to be more specific // To make sound.  Following minim example "frequencyModulation"
@@ -146,6 +152,13 @@ PFont f3;
 //========================SETUP============================//
 //========================SETUP============================//
 void setup() {
+  try { 
+     robot = new Robot();
+   } catch (AWTException e) {
+     e.printStackTrace();
+     exit();
+   }
+  
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 6/25/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");

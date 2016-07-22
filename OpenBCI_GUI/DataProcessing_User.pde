@@ -20,7 +20,7 @@ class DataProcessing_User {
   boolean isTriggered_L = false;
   float upperThreshold_L = 25;  //default uV upper threshold value ... this will automatically change over time
   float lowerThreshold_L = 0;  //default uV lower threshold value ... this will automatically change over time
-  int averagePeriod_L = 125;  //number of data packets to average over (250 = 1 sec)
+  int averagePeriod_L = 40;  //number of data packets to average over (250 = 1 sec)
   int thresholdPeriod_L = 1250;  //number of packets
   int ourChan_L = 1 - 1;  //channel being monitored ... "3 - 1" means channel 3 (with a 0 index)
   float myAverage_L = 0.0;   //this will change over time ... used for calculations below
@@ -35,9 +35,9 @@ class DataProcessing_User {
 
   //Right Eye Variables
   boolean isTriggered_R = false;
-  float upperThreshold_R= 25;  //default uV upper threshold value ... this will automatically change over time
+  float upperThreshold_R= 12;  //default uV upper threshold value ... this will automatically change over time
   float lowerThreshold_R = 0;  //default uV lower threshold value ... this will automatically change over time
-  int averagePeriod_R = 125;  //number of data packets to average over (250 = 1 sec)
+  int averagePeriod_R = 10;  //number of data packets to average over (250 = 1 sec)
   int thresholdPeriod_R = 1250;  //number of packets
   int ourChan_R = 2 - 1;  //channel being monitored ... "3 - 1" means channel 3 (with a 0 index)
   float myAverage_R = 0.0;   //this will change over time ... used for calculations below
@@ -48,7 +48,7 @@ class DataProcessing_User {
   int switchCounter_R = 0;
   float timeOfLastTrip_R = 0;
   float tripThreshold_R = 0.75;
-  float untripThreshold_R = 0.60;
+  float untripThreshold_R = 0.6;
 
   //add your own variables here
   boolean isTriggered = false;  //boolean to keep track of when the trigger condition is met
@@ -183,7 +183,7 @@ class DataProcessing_User {
     }
     if (upperThreshold_L >= (myAverage_L + 35)) {
       //upperThreshold_L -= (upperThreshold_L)/(frameRate * 5); //have upper threshold creep downwards to keep range tight
-      upperThreshold_L *= .97;
+      upperThreshold_L *= .95;
     }
     if (lowerThreshold_L <= myAverage_L) {
       lowerThreshold_L += (10 - lowerThreshold_L)/(frameRate * 5); //have lower threshold creep upwards to keep range tight
@@ -201,7 +201,7 @@ class DataProcessing_User {
     }
     if (upperThreshold_R >= myAverage_R + 35) {
       //upperThreshold_R -= (upperThreshold_R - 25)/(frameRate * 5); //have upper threshold creep downwards to keep range tight
-      upperThreshold_R *= .97;
+      upperThreshold_R *= .95;
     }
     if (lowerThreshold_R <= myAverage_R) {
       lowerThreshold_R += (10 - lowerThreshold_R)/(frameRate * 5); //have lower threshold creep upwards to keep range tight
@@ -220,14 +220,16 @@ class DataProcessing_User {
         switchCounter_L = 1;
       }
 
-      if (output_normalized_R >= tripThreshold_R && switchTripped_R == false && (millis() - timeOfLastTrip_R) >= 2000 && switchTripped_L == false) {
+      if (output_normalized_R >= tripThreshold_R && switchTripped_R == false && (millis() - timeOfLastTrip_R) >= 20 && switchTripped_L == false) {
         println("switchTripped_R = true");
         switchTripped_R = true;
+        robot.keyPress(KeyEvent.VK_SPACE);
         timeOfLastTrip_R = millis();
         switchCounter_R = 1;
       }
-      if ((millis() - timeOfLastTrip_R) >= 750 && (millis() - timeOfLastTrip_R) <= 1250) {
+      if ((millis() - timeOfLastTrip_R) >= 0 && (millis() - timeOfLastTrip_R) <= 20) {
         println("sweet zone R");
+        robot.keyPress(KeyEvent.VK_SPACE);
         if (switchTripped_L) {
           switchTripped_L = false;
           myPresentation.slideBack();
@@ -245,8 +247,9 @@ class DataProcessing_User {
         switchTripped_L = false;
         switchCounter_L = 0;
       }
-      if (millis() - timeOfLastTrip_R >= 250) {
+      if (millis() - timeOfLastTrip_R >= 15) {
         switchTripped_R = false;
+        robot.keyRelease(KeyEvent.VK_SPACE);
         switchCounter_R = 0;
       }
       //============================= JAW ===================================
