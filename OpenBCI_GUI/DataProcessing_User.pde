@@ -35,9 +35,9 @@ class DataProcessing_User {
 
   //Right Eye Variables
   boolean isTriggered_R = false;
-  float upperThreshold_R= 25;  //default uV upper threshold value ... this will automatically change over time
+  float upperThreshold_R= 12;  //default uV upper threshold value ... this will automatically change over time
   float lowerThreshold_R = 0;  //default uV lower threshold value ... this will automatically change over time
-  int averagePeriod_R = 5;  //number of data packets to average over (250 = 1 sec)
+  int averagePeriod_R = 10;  //number of data packets to average over (250 = 1 sec)
   int thresholdPeriod_R = 1250;  //number of packets
   int ourChan_R = 2 - 1;  //channel being monitored ... "3 - 1" means channel 3 (with a 0 index)
   float myAverage_R = 0.0;   //this will change over time ... used for calculations below
@@ -48,7 +48,7 @@ class DataProcessing_User {
   int switchCounter_R = 0;
   float timeOfLastTrip_R = 0;
   float tripThreshold_R = 0.75;
-  float untripThreshold_R = 0.70;
+  float untripThreshold_R = 0.6;
 
   //add your own variables here
   boolean isTriggered = false;  //boolean to keep track of when the trigger condition is met
