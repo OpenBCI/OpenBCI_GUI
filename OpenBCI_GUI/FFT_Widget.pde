@@ -23,7 +23,7 @@ class FFT_Widget {
   GPlot fft_plot; //create an fft plot for each active channel
   GPointsArray[] fft_points = new GPointsArray[nchan]; //create an array of points for each channel of data (4, 8, or 16)
 
-  int nPoints = 256; //resolution of FFT plots
+//  int nPoints = Nfft; //resolution of FFT plots
 
   int parentContainer = 7; //which container is it mapped to by default?
 
@@ -40,10 +40,14 @@ class FFT_Widget {
   };
 
   int xLim = 60;  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
+  int FFT_indexLim = int(1.0*xLim*(Nfft/openBCI.get_fs_Hz()));   // maxim value of FFT index
   int yLim = 100;  //maximum value of y axis ... 100 uV
+  
 
   //constructor 1
   FFT_Widget(PApplet parent) {
+    
+    println(FFT_indexLim);
     x = (int)container[parentContainer].x;
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
@@ -67,12 +71,12 @@ class FFT_Widget {
 
     //setup points of fft point arrays
     for (int i = 0; i < fft_points.length; i++) {
-      fft_points[i] = new GPointsArray(xLim);
+      fft_points[i] = new GPointsArray(FFT_indexLim);
     }
 
     //fill fft point arrays
     for (int i = 0; i < fft_points.length; i++) {
-      for (int j = 0; j < xLim; j++) {
+      for (int j = 0; j < FFT_indexLim; j++) {
         //GPoint temp = new GPoint(i, 15*noise(0.1*i));
         //println(i + " " + j);
         GPoint temp = new GPoint(j, 15*random(0.1*j));
@@ -94,12 +98,29 @@ class FFT_Widget {
     fft_plot.setPos(x, y+navHeight);//update position
     fft_plot.setOuterDim(w, h-navHeight);//update dimensions
 
+
+
+    //float FFT_freq_Hz, FFT_value_uV;
+    //for (int Ichan=0; Ichan < nchan; Ichan++) {
+    //  //loop over each new sample
+    //  for (int Ibin=0; Ibin < fftBuff[Ichan].specSize(); Ibin++) {
+    //    FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin);
+    //    FFT_value_uV = fftData[Ichan].getBand(Ibin);
+
+    //    //add your processing here...
+
+    //    //println("EEG_Processing_User: Ichan = " + Ichan + ", Freq = " + FFT_freq_Hz + "Hz, FFT Value = " + FFT_value_uV + "uV/bin");
+    //  }
+    //}
+
+
     //update the points of the FFT channel arrays
     //update fft point arrays
     for (int i = 0; i < fft_points.length; i++) {
-      for (int j = 0; j < xLim + 1; j++) {  //loop through frequency domain data, and store into points array
+      for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
         //GPoint powerAtBin = new GPoint(j, 15*random(0.1*j));
-        GPoint powerAtBin = new GPoint(j, fftBuff[i].getBand(j));
+        
+        GPoint powerAtBin = new GPoint((1.0*openBCI.get_fs_Hz()/Nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
         //println("=========================================");
         //println(j);
