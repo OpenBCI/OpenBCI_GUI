@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioRecorder : : save</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audiorecorder_class_audiorecorder.html">AudioRecorder</A></p>
+    	<p class="methodName">save</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Requests that the recorder saves. This will only
+ work if you have called the endRecord method. If this was created with a
+ buffered recorder, then calling the beginRecord method after saving will
+ not overwrite the file on the disk, unless this method is subsequently
+ called. However, if this was created with an unbuffered recorder, it is
+ likely that a call to the beginRecord method will create the file again,
+ overwriting the file that had previously been saved. An
+ <code>AudioRecordingStream</code> will be returned if the
+ <code>SampleRecorder</code> used to record the audio saved to a file
+ (this will always be the case if you use <code>createRecorder</code> or
+ the first constructor for <code>AudioRecorder</code>).
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>AudioRecordingStream save()
+</pre>
+    	
+    	
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>the audio that was recorded as an <code>AudioRecordingStream</code></p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audiorecorder_class_audiorecorder.html">AudioRecorder</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use an AudioRecorder to record audio to disk
+  * and then immediately play it back by creating a new FilePlayer using the AudioRecordingStream
+  * returned by the save method.
+  * &lt;p> 
+  * To use this sketch you need to have something plugged into the line-in on your computer.&lt;br/>
+  * Press 'r' to toggle recording on and off and the press 's' to save to disk.&lt;br/>
+  * The recorded file will be placed in the main folder of the sketch.
+  * &lt;p>
+  * For more information about Minim and additional features, visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+Minim minim;
+
+// for recording
+AudioInput in;
+AudioRecorder recorder;
+boolean recorded;
+
+// for playing back
+AudioOutput out;
+FilePlayer player;
+
+void setup()
+{
+  size(512, 200, P3D);
+
+  minim = new Minim(this);
+  
+  // get a stereo line-in: sample buffer length of 2048
+  // default sample rate is 44100, default bit depth is 16
+  in = minim.getLineIn(Minim.STEREO, 2048);
+  
+  // create an AudioRecorder that will record from in to the filename specified.
+  // the file will be located in the sketch's main folder.
+  recorder = minim.createRecorder(in, "myrecording.wav");
+  
+  // get an output we can playback the recording on
+  out = minim.getLineOut( Minim.STEREO );
+  
+  textFont(createFont("Arial", 12));
+}
+
+void draw()
+{
+  background(0); 
+  stroke(255);
+  // draw the waveforms
+  // the values returned by left.get() and right.get() will be between -1 and 1,
+  // so we need to scale them up to see the waveform
+  for(int i = 0; i &lt; in.left.size()-1; i++)
+  {
+    line(i, 50 + in.left.get(i)*50, i+1, 50 + in.left.get(i+1)*50);
+    line(i, 150 + in.right.get(i)*50, i+1, 150 + in.right.get(i+1)*50);
+  }
+  
+  if ( recorder.isRecording() )
+  {
+    text("Now recording, press the r key to stop recording.", 5, 15);
+  }
+  else if ( !recorded )
+  {
+    text("Press the r key to start recording.", 5, 15);
+  }
+  else
+  {
+    text("Press the s key to save the recording to disk and play it back in the sketch.", 5, 15);
+  }
+}
+
+void keyReleased()
+{
+  if ( !recorded && key == 'r' ) 
+  {
+    // to indicate that you want to start or stop capturing audio data, 
+    // you must callstartRecording() and stopRecording() on the AudioRecorder object. 
+    // You can start and stop as many times as you like, the audio data will 
+    // be appended to the end of to the end of the file. 
+    if ( recorder.isRecording() ) 
+    {
+      recorder.endRecord();
+      recorded = true;
+    }
+    else 
+    {
+      recorder.beginRecord();
+    }
+  }
+  if ( recorded && key == 's' )
+  {
+    // we've filled the file out buffer, 
+    // now write it to a file of the type we specified in setup
+    // in the case of buffered recording, 
+    // this will appear to freeze the sketch for sometime, if the buffer is large
+    // in the case of streamed recording, 
+    // it will not freeze as the data is already in the file and all that is being done
+    // is closing the file.
+    // save returns the recorded audio in an AudioRecordingStream, 
+    // which we can then play with a FilePlayer
+    if ( player != null )
+    {
+        player.unpatch( out );
+        player.close();
+    }
+    player = new FilePlayer( recorder.save() );
+    player.patch( out );
+    player.play();
+  }
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

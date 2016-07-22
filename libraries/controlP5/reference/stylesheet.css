@@ -1,0 +1,561 @@
+/* Javadoc style sheet */
+/*
+Overall document style
+*/
+body {
+    background-color:#f4f4f4;
+    color:#111111;
+    font-family:Arial, Helvetica, sans-serif;
+    font-size:76%;
+    padding:0;
+    margin:0;
+    margin-top:20px;
+}
+a:link, a:visited {
+    text-decoration:none;
+    color:#0074D9; /* OK */
+}
+a:hover, a:focus {
+    text-decoration:none;
+    color:#2ECC40; /* OK */
+}
+a:active {
+    text-decoration:none;
+    color:#2ECC40; /* OK */
+}
+a[name] {
+    color:#ffff00;
+}
+a[name]:hover {
+    text-decoration:none;
+    color:#2ECC40;
+}
+pre {
+    font-size:1.3em;
+}
+h1 {
+    font-size:1.8em;
+}
+h2 {
+    font-size:1.5em;
+}
+h3 {
+    font-size:1.4em;
+}
+h4 {
+    font-size:1.3em;
+}
+h5 {
+    font-size:1.2em;
+}
+h6 {
+    font-size:1.1em;
+}
+ul {
+    list-style-type:disc;
+}
+code, tt {
+    font-size:1.2em;
+}
+dt code {
+    font-size:1.2em;
+}
+table tr td dt code {
+    font-size:1.2em;
+    vertical-align:top;
+}
+sup {
+    font-size:.6em;
+}
+/*
+Document title and Copyright styles
+*/
+.clear {
+    clear:both;
+    height:0px;
+    overflow:hidden;
+}
+.aboutLanguage {
+    float:right;
+    padding:0px 21px;
+    font-size:.8em;
+    z-index:200;
+    margin-top:-7px;
+}
+.legalCopy {
+    margin-left:20px;
+    margin-bottom:100px;
+    width:200px;
+}
+p.legalCopy small {
+    font-size:1em;
+
+}
+.bar a, .bar a:link, .bar a:visited, .bar a:active {
+    color:#ff0000;
+    text-decoration:none;
+}
+.bar a:hover, .bar a:focus {
+    color:#ff0000;
+}
+.tab {
+    background-color:#ff0000;
+    background-position:left top;
+    background-repeat:no-repeat;
+    color:#ffff00;
+    padding:8px;
+    width:5em;
+    font-weight:bold;
+}
+/*
+Navigation bar styles
+*/
+.bar {
+    background-repeat:repeat-x;
+    color:#0074D9; /* OK */
+    padding:.8em .5em .4em .8em;
+    height:auto;/*height:1.8em;*/
+    font-size:1em;
+    margin:0;
+}
+.topNav {
+    color:#2ECC40;
+    float:left;
+    padding:0;
+    clear:right;
+    height:2.8em;
+    padding-top:10px;
+    padding-left:10px;
+    overflow:hidden;
+}
+.bottomNav {
+    margin-top:10px;
+    color:#2ECC40;
+    float:left;
+    padding:0;
+    clear:right;
+    height:2.8em;
+    padding-top:10px;
+    padding-left:10px;
+    overflow:hidden;
+}
+.subNav {
+    background-color:#f4f4f4;
+    padding:20px 10px;
+    margin:10px 0px;
+    clear:left;
+    float:left;
+    overflow:hidden;
+}
+.subNav div {
+    clear:left;
+    float:left;
+}
+
+ul.navList, ul.subNavList {
+    float:left;
+    margin:0 0 0 0px;
+    padding:0 0 0 0px;
+}
+
+ul.subNavList {
+    border-bottom:1px solid black;
+    margin-left:10px;
+    padding-top:10px;
+}
+ul.navList li{
+    list-style:none;
+    float:left;
+    padding:6px 10px;
+}
+ul.subNavList li{
+    list-style:none;
+    float:left;
+    font-size:90%;
+}
+.topNav a:link, .topNav a:active, .topNav a:visited, .bottomNav a:link, .bottomNav a:active, .bottomNav a:visited {
+    color:#0074D9; /* OK */
+    text-decoration:none;
+}
+.topNav a:hover, .bottomNav a:hover {
+    text-decoration:none;
+    color:#2ECC40; /* OK */
+}
+
+/*
+Page header and footer styles
+*/
+.header, .footer {
+    clear:both;
+    margin:0 20px;
+    padding:5px 0 0 0;
+}
+.indexHeader {
+    margin:10px;
+    position:relative;
+}
+.indexHeader h1 {
+    font-size:1.3em;
+}
+.title {
+    color:#001F3F;
+    margin:10px 0;
+    font-weight: normal;
+}
+.subTitle {
+    margin:5px 0 0 0;
+}
+.header ul {
+    margin:0 0 25px 0;
+    padding:0;
+}
+.footer ul {
+    margin:20px 0 5px 0;
+}
+.header ul li, .footer ul li {
+    list-style:none;
+    font-size:1.2em;
+}
+/*
+Heading styles
+*/
+div.details ul.blockList ul.blockList ul.blockList li.blockList h4, div.details ul.blockList ul.blockList ul.blockListLast li.blockList h4 {
+    background-color:#DDDDDD; /* OK, method-details */
+    margin:0 0 6px -8px;
+    padding:10px 5px;
+    border-top:1px solid #0074D9; /* OK */
+}
+ul.blockList ul.blockList ul.blockList li.blockList h3 {
+    background-color:#DDDDDD; /* OK, method summary */
+    margin:0 0 6px -8px;
+    padding:12px 5px;
+    border-top:1px solid #0074D9; /* OK */
+}
+ul.blockList ul.blockList li.blockList h3 {
+    padding:0;
+    margin:15px 0;
+}
+ul.blockList li.blockList h2 {
+    padding:0px 0 20px 0;
+}
+/*
+Page layout container styles
+*/
+.contentContainer, .sourceContainer, .classUseContainer, .serializedFormContainer, .constantValuesContainer {
+    clear:both;
+    padding:50px 20px;
+    position:relative;
+}
+.indexContainer {
+    margin:10px;
+    position:relative;
+    font-size:1.0em;
+}
+.indexContainer h2 {
+    font-size:1.1em;
+    padding:0 0 3px 0;
+}
+.indexContainer ul {
+    margin:0;
+    padding:0;
+}
+.indexContainer ul li {
+    list-style:none;
+}
+.contentContainer dl dt {
+    border-top:1px solid #0074D9;
+    padding-top:5px;
+}
+
+.contentContainer dl dd {
+    margin-bottom:10px;
+}
+
+
+.contentContainer .description dl dt, .contentContainer .details dl dt, .serializedFormContainer dl dt {
+    font-size:1.1em;
+    font-weight:bold;
+    margin:10px 0 0 0;
+    color:#001F3F; /* OK */
+}
+.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd {
+    margin:10px 0 10px 20px;
+}
+.serializedFormContainer dl.nameValue dt {
+    margin-left:1px;
+    font-size:1.1em;
+    display:inline;
+    font-weight:bold;
+}
+.serializedFormContainer dl.nameValue dd {
+    margin:0 0 0 1px;
+    font-size:1.1em;
+    display:inline;
+}
+/*
+List styles
+*/
+ul.horizontal li {
+    display:inline;
+    font-size:0.9em;
+}
+ul.inheritance {
+    margin:0;
+    padding:0;
+}
+ul.inheritance li {
+    display:inline;
+    list-style:none;
+}
+ul.inheritance li ul.inheritance {
+    margin-left:15px;
+    padding-left:15px;
+    padding-top:1px;
+}
+ul.blockList, ul.blockListLast {
+    margin:10px 0 10px 0;
+    padding:0;
+
+}
+ul.blockList li.blockList, ul.blockListLast li.blockList {
+    list-style:none;
+    margin-bottom:25px;
+
+}
+ul.blockList ul.blockList li.blockList, ul.blockList ul.blockListLast li.blockList {
+    padding:0px 20px 5px 10px;
+    border:1px solid #0074D9; /* OK */
+    background-color:#ffffff;
+}
+
+ul.blockList ul.blockList ul.blockList li.blockList, ul.blockList ul.blockList ul.blockListLast li.blockList {
+    padding:0 0 5px 8px;
+    border:1px solid #0074D9; /* OK */
+    background-color:#ffffff;
+    border-top:none;
+}
+ul.blockList ul.blockList ul.blockList ul.blockList li.blockList {
+    margin-left:0;
+    padding-left:0;
+    padding-bottom:15px;
+    border:none;
+    border-bottom:1px solid #0074D9;
+}
+ul.blockList ul.blockList ul.blockList ul.blockList li.blockListLast {
+    list-style:none;
+    border-bottom:none;
+    padding-bottom:0;
+}
+table tr td dl, table tr td dl dt, table tr td dl dd {
+    margin-top:0px;
+    margin-bottom:1px;  
+}
+/*
+Table styles
+*/
+.contentContainer table, .classUseContainer table, .constantValuesContainer table {
+    border-bottom:1px solid #0074D9;
+    width:100%;
+}
+.contentContainer ul li table, .classUseContainer ul li table, .constantValuesContainer ul li table {
+    width:100%;
+}
+.contentContainer .description table, .contentContainer .details table {
+    border-bottom:none;
+}
+.contentContainer ul li table th.colOne, .contentContainer ul li table th.colFirst, .contentContainer ul li table th.colLast, .classUseContainer ul li table th, .constantValuesContainer ul li table th, .contentContainer ul li table td.colOne, .contentContainer ul li table td.colFirst, .contentContainer ul li table td.colLast, .classUseContainer ul li table td, .constantValuesContainer ul li table td{
+    vertical-align:top;
+    padding-right:20px;
+}
+.contentContainer ul li table th.colLast, .classUseContainer ul li table th.colLast,.constantValuesContainer ul li table th.colLast,
+.contentContainer ul li table td.colLast, .classUseContainer ul li table td.colLast,.constantValuesContainer ul li table td.colLast,
+.contentContainer ul li table th.colOne, .classUseContainer ul li table th.colOne,
+.contentContainer ul li table td.colOne, .classUseContainer ul li table td.colOne {
+    padding-right:3px;
+}
+.overviewSummary caption, .packageSummary caption, .contentContainer ul.blockList li.blockList caption, .summary caption, .classUseContainer caption, .constantValuesContainer caption {
+    position:relative;
+    text-align:left;
+    background-repeat:no-repeat;
+    color:#ff0000;
+    font-weight:bold;
+    clear:none;
+    overflow:hidden;
+    padding:0px;
+    margin:0px;
+    padding:20px 20px;
+}
+caption a:link, caption a:hover, caption a:active, caption a:visited {
+    color:#ff0000;
+}
+.overviewSummary caption span, .packageSummary caption span, .contentContainer ul.blockList li.blockList caption span, .summary caption span, .classUseContainer caption span, .constantValuesContainer caption span {
+    white-space:nowrap;
+    padding-top:8px;
+    padding-left:0px;
+    display:block;
+    float:left;
+    height:18px;
+    color:#001F3F;
+    font-size:1.4em;
+    font-weight:normal;
+}
+.overviewSummary .tabEnd, .packageSummary .tabEnd, .contentContainer ul.blockList li.blockList .tabEnd, .summary .tabEnd, .classUseContainer .tabEnd, .constantValuesContainer .tabEnd {
+    width:10px;
+    position:relative;
+    float:left;
+}
+ul.blockList ul.blockList li.blockList table {
+    margin:0 0 12px 0px;
+    width:100%;
+}
+.tableSubHeadingColor {
+    background-color: #ffff00;
+}
+
+.altColor {
+    background-color:#ffffff;
+}
+.rowColor {
+    background-color:#f0f0f0;
+}
+.overviewSummary td, .packageSummary td, .contentContainer ul.blockList li.blockList td, .summary td, .classUseContainer td, .constantValuesContainer td {
+    text-align:left;
+    padding:3px 3px 3px 7px;
+}
+th.colFirst, th.colLast, th.colOne, .constantValuesContainer th {
+    background:#01FF70;
+    border-top:1px solid #0074D9;
+    border-bottom:1px solid #0074D9;
+    text-align:left;
+    padding:12px 3px 12px 7px;
+}
+td.colOne a:link, td.colOne a:active, td.colOne a:visited, td.colOne a:hover, td.colFirst a:link, td.colFirst a:active, td.colFirst a:visited, td.colFirst a:hover, td.colLast a:link, td.colLast a:active, td.colLast a:visited, td.colLast a:hover, .constantValuesContainer td a:link, .constantValuesContainer td a:active, .constantValuesContainer td a:visited, .constantValuesContainer td a:hover {
+    font-weight:normal;
+}
+td.colFirst, th.colFirst {
+    border-left:1px solid #0074D9;
+    white-space:nowrap;
+}
+td.colLast, th.colLast {
+    border-right:1px solid #0074D9;
+}
+td.colOne, th.colOne {
+    border-right:1px solid #0074D9;
+    border-left:1px solid #0074D9;
+}
+table.overviewSummary  {
+    padding:0px;
+    margin-left:0px;
+}
+table.overviewSummary td.colFirst, table.overviewSummary th.colFirst,
+table.overviewSummary td.colOne, table.overviewSummary th.colOne {
+    width:25%;
+    vertical-align:middle;
+}
+table.packageSummary td.colFirst, table.overviewSummary th.colFirst {
+    width:25%;
+    vertical-align:middle;
+}
+/*
+Content styles
+*/
+.description pre {
+    margin-top:0;
+}
+.deprecatedContent {
+    margin:0;
+    padding:10px 0;
+}
+.docSummary {
+    padding:0;
+}
+/*
+Formatting effect styles
+*/
+.sourceLineNo {
+    color:green;
+    padding:0 30px 0 0;
+}
+h1.hidden {
+    visibility:hidden;
+    overflow:hidden;
+    font-size:.9em;
+}
+.block {
+    display:block;
+    margin:3px 0 0 0;
+}
+.strong {
+    font-weight:bold;
+}
+
+
+
+.toggleList { 
+    padding:0;
+    margin:0;
+    margin-top:12px;
+    border:0;
+}
+
+.toggleList dt {
+    background:#01FF70;
+    color:#333;
+    display:inline-block;
+    padding:8px 16px;
+    margin:10px 0px 10px 0px;
+    -moz-border-radius: 20px; /* Firefox */
+    -webkit-border-radius: 20px; /* Safari, Chrome */
+    border-radius: 20px; /* CSS3 */
+    border-top:0;
+}
+
+.toggleList dt:hover {
+    cursor:pointer;
+}
+
+.toggleList dt span { 
+    border-top:0;
+    font-family: monospace;
+    padding:0;
+    margin:0;
+}
+
+ 
+.toggleList dd {
+    margin:0;
+    padding:0; 
+    border:0;
+}
+
+html.isjs .toggleList dd { 
+    border:0;
+    display: none; 
+}
+
+.toggleList pre {
+    padding: 4px 4px 4px 4px;
+}
+
+
+
+
+.navBarCell1Rev {
+    background-color:#0074D9;
+    color:#ffffff;
+    -moz-border-radius: 20px; /* Firefox */
+    -webkit-border-radius: 20px; /* Safari, Chrome */
+    border-radius: 20px; /* CSS3 */
+    display:inline-block;
+    margin:0px 10px 0px 10px;
+}
+
+pre {
+
+    font-size:1em;
+}
+
+
+p {
+    width:80%;
+}

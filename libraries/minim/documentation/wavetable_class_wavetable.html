@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : Wavetable</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">Wavetable</p>
+    	
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="wavetable_method_addnoise.html" title="Adds Gaussian noise to the waveform.">addNoise ( )</a><br/>
+    
+    <a href="wavetable_method_flip.html" title="Flip the values in the table around a particular value.">flip ( )</a><br/>
+    
+    <a href="wavetable_method_get.html" title="Returns the value of the i<sup>th</sup> entry in this Wavetable's
+ waveform.">get ( )</a><br/>
+    
+    <a href="wavetable_method_getwaveform.html" title="Returns the underlying waveform, <em>not</em> a copy of it.">getWaveform ( )</a><br/>
+    
+    <a href="wavetable_method_invert.html" title="Flips the table around 0. Equivalent to <code>flip(0)</code>.">invert ( )</a><br/>
+    
+    <a href="wavetable_method_normalize.html" title="Normalizes the Wavetable by finding the largest amplitude in the table
+ and scaling the table by the inverse of that amount. The result is that
+ the largest value in the table will now have an amplitude of 1 and
+ everything else is scaled proportionally.">normalize ( )</a><br/>
+    
+    <a href="wavetable_method_offset.html" title="Apply a DC offset to this Wavetable. In other words, add
+ <code>amount</code> to every sample.">offset ( )</a><br/>
+    
+    <a href="wavetable_method_rectify.html" title="Inverts all values in the table that are less than zero. -1 -&gt; 1, -0.2 -&gt; 0.2, etc.">rectify ( )</a><br/>
+    
+    <a href="wavetable_method_scale.html" title="Multiplies each value of the underlying waveform by <code>scale</code>.">scale ( )</a><br/>
+    
+    <a href="wavetable_method_set.html" title="Sets the i<sup>th</sup> entry of the underlying waveform to
+ <code>value</code>. This is equivalent to:
+ <p>
+ <code>getWaveform()[i] = value;</code>">set ( )</a><br/>
+    
+    <a href="wavetable_method_setwaveform.html" title="Sets this Wavetable's waveform to the one provided. This
+ <em>will not</em> copy the values from the provided waveform, it will use
+ the waveform directly.">setWaveform ( )</a><br/>
+    
+    <a href="wavetable_method_size.html" title="Returns the length of the underlying waveform. This is equivalent to:
+ <p>
+ <code>getWaveform().length</code>">size ( )</a><br/>
+    
+    <a href="wavetable_method_smooth.html" title="Smooth out the values in the table by using a moving average window.">smooth ( )</a><br/>
+    
+    <a href="wavetable_method_value.html" title="Sample the Wavetable using a value in the range [0,1].">value ( )</a><br/>
+    
+    <a href="wavetable_method_warp.html" title="Warping works by choosing a point in the waveform, the
+            warpPoint, and then specifying where it should move to, the
+            warpTarget.">warp ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	Wavetable wraps a float array of any size and lets you sample the array using
+ a normalized value [0,1]. This means that if you have an array that is 2048
+ samples long, then value(0.5) will give you the 1024th sample. You will most
+ often use Wavetables as the Waveform in an Oscil, but other uses are also
+ possible. Additionally, Wavetable provides a set of methods for transforming
+ the samples it contains.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre><em>Construct a Wavetable that contains <code>size</code> entries.</em>
+Wavetable(int size)
+<em>Construct a Wavetable that will use <code>waveform</code> as the float
+ array to sample from. This <em>will not</em> copy <code>waveform</code>,
+ it will use it directly.</em>
+Wavetable(float[] waveform)
+<em>Make a new Wavetable that has the same waveform values as
+ <code>wavetable</code>. This will <em>copy</em> the values from the
+ provided Wavetable into this Wavetable's waveform.</em>
+Wavetable(Wavetable wavetable)
+</pre>
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">size</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the number of samples the Wavetable should contain</span><br/>
+    
+        <span class="parameterName">waveform</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the float array this Wavetable will sample</span><br/>
+    
+        <span class="parameterName">wavetable</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">Wavetable: the Wavetable to copy</span><br/>
+    
+   
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="waveform_waveform.html">Waveform</A><BR>
+<A href="waves_class_waves.html">Waves</A><BR>
+<A href="wavetablegenerator_class_wavetablegenerator.html">WavetableGenerator</A><BR>
+
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates many of the methods available for 
+  * modifying Wavetables. The controls are as follows:
+  * &lt;ul>
+  *   &lt;li>n: normalize the waveform&lt;/li>
+  *   &lt;li>s: smooth the waveform&lt;/li>
+  *   &lt;li>r: rectify the waveform&lt;/li>
+  *   &lt;li>z: add noise to the waveform&lt;/li>
+  *   &lt;li>q/a: scale the waveform up or down&lt;/li>
+  *   &lt;li>left click and drag: warp the waveform&lt;/li>
+  *   &lt;li>right click: flip the waveform around the y position of the mouse&lt;/li>
+  * &lt;/ul>
+  * The waveform shown in red is the Wavetable being used by the Oscil and 
+  * the moving waveform in white is what the output looks like.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+Minim       minim;
+AudioOutput out;
+Oscil       wave;
+Wavetable   table;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  // use the getLineOut method of the Minim object to get an AudioOutput object
+  out = minim.getLineOut();
+  
+  // create a reasonably complex waveform to start, will be slightly different every time
+  table = Waves.randomNHarms(16);
+  wave  = new Oscil( 440, 0.5f, table );
+  // patch the Oscil to the output
+  wave.patch( out );
+}
+
+void draw()
+{
+  background(0);
+  
+  stroke(255, 64);
+  strokeWeight(1);
+  
+  // draw the waveform of the output
+  for(int i = 0; i &lt; out.bufferSize() - 1; i++)
+  {
+    line( i, 50  - out.left.get(i)*50,  i+1, 50  - out.left.get(i+1)*50 );
+    line( i, 150 - out.right.get(i)*50, i+1, 150 - out.right.get(i+1)*50 );
+  }
+
+  // draw the waveform we are using in the oscillator
+  stroke( 200, 0, 0 );
+  strokeWeight(4);
+  for( int i = 0; i &lt; width-1; ++i )
+  {
+    point( i, height/2 - (height*0.49) * table.value( (float)i / width ) );
+  }
+}
+
+void keyPressed()
+{ 
+  switch( key )
+  {
+    case 'n':
+      // scale the table so that the largest value is -1/1.
+      table.normalize();
+      break;
+     
+    case 's':
+      // smooth out the table, similar to applying a low pass filter
+      table.smooth( 64 );
+      break;
+     
+    case 'r':
+      // change all negative values to positive values
+      table.rectify();
+      break;
+   
+    case 'z':
+      // add some noise
+      table.addNoise( 0.1f );
+      break;
+    
+    case 'q':
+      table.scale( 1.1f );
+      break;
+      
+    case 'a':
+      table.scale( 0.9f );
+      break;
+     
+    default: break; 
+  }
+}
+
+void mousePressed()
+{
+  if ( mouseButton == RIGHT )
+  {
+    float flipPoint = map( mouseY, 0, height, 1, -1 );
+    table.flip( flipPoint );
+  }
+}
+
+void mouseDragged()
+{
+  if ( mouseButton == LEFT )
+  {
+    float warpPoint = constrain( (float)pmouseX / width, 0, 1 );
+    float warpTarget = constrain( (float)mouseX / width, 0, 1 );
+    table.warp( warpPoint, warpTarget );
+  }
+}
+</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

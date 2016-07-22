@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : WavetableGenerator : : gen9</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="wavetablegenerator_class_wavetablegenerator.html">WavetableGenerator</A></p>
+    	<p class="methodName">gen9</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Generates a Wavetable from a list of partials with matching amplitudes and phases. Partial, here, refers 
+ to a particular sine wave in the harmonic series (see: <a href="http://en.wikipedia.org/wiki/Harmonic_series_%28music%29#Harmonic_vs._partial">Harmonic vs. partial</a>). 
+ If you want to generate a single sine wave, suitable for playing a single tone of a particular frequency 
+ in an Oscil, you could use this code:
+ <p>
+ <code>Wavetable sine = WavetableGenerator.gen9(4096, new float[] { 1 }, new float[] { 1 }, new float[] { 0 });</code>
+ <p>
+ But what this method lets you do, is create a Wavetable that contains several different partials, each with 
+ a particular amplitude or phase shift. For instance, you could create a Wavetable that plays two pitches an octave 
+ apart like this:
+ <p>
+ <code>Wavetable octave = WavetableGenerator.gen9(4096, new float[] { 1, 2 }, new float[] { 1, 1 }, new float[] { 0, 0 });</code>
+ <p>
+ If this is something you want a particular instrument you write to do, then creating a Wavetable that already 
+ contains the octave and using that in an Oscil will be less computationally expensive than creating two Oscils 
+ and setting their frequencies an octave apart.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>Wavetable gen9(int size, float[] partial, float[] amp, float[] phase)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">size</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: how many samples the Wavetable should contain</span><br/>
+    
+        <span class="parameterName">partial</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: a list of partials to generate</span><br/>
+    
+        <span class="parameterName">amp</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the amplitude of each partial</span><br/>
+    
+        <span class="parameterName">phase</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the phase of each partial</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>a Wavetable</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="wavetable_class_wavetable.html">Wavetable</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>None available</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

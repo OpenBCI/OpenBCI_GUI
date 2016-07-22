@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioPlayer : : pause</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audioplayer_class_audioplayer.html">AudioPlayer</A></p>
+    	<p class="methodName">pause</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Pauses playback.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void pause()
+</pre>
+    	
+    	
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audioplayer_class_audioplayer.html">AudioPlayer</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the &lt;code>pause&lt;/code> method of a &lt;code>Playable&lt;/code> class. 
+  * The class used here is &lt;code>AudioPlayer&lt;/code>, but you can also pause an &lt;code>AudioSnippet&lt;/code>.
+  * Pausing a &lt;code>Playable&lt;/code> causes it to cease playback but not change position, so that when you 
+  * resume playback it will start from where you last paused it. Press 'p' to pause the player.
+  *
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer groove;
+
+void setup()
+{
+  size(512, 200, P3D);
+
+  minim = new Minim(this);
+  groove = minim.loadFile("groove.mp3", 2048);
+  groove.loop();
+}
+
+void draw()
+{
+  background(0);
+  
+  stroke(255);
+  
+  for(int i = 0; i &lt; groove.bufferSize() - 1; i++)
+  {
+    line(i, 50  + groove.left.get(i)*50,  i+1, 50  + groove.left.get(i+1)*50);
+    line(i, 150 + groove.right.get(i)*50, i+1, 150 + groove.right.get(i+1)*50);
+  }
+}
+
+void keyPressed()
+{
+  if ( groove.isPlaying() )
+  {
+    groove.pause();
+  }
+  else
+  {
+    // simply call loop again to resume playing from where it was paused
+    groove.loop();
+  }
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

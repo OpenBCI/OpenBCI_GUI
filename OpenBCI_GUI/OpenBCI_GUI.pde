@@ -32,7 +32,8 @@ import java.awt.event.*; //to allow for event listener on screen resize
 
 //used to switch between application states
 int systemMode = -10; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
-boolean hasIntroAnimation = true;
+
+boolean hasIntroAnimation = false;
 PImage cog;
 
 //choose where to get the EEG data
@@ -155,15 +156,15 @@ void setup() {
   //if (frame != null) frame.setResizable(true);  //make window resizable
   //attach exit handler
   //prepareExitHandler();
-  frameRate(120); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
   widthOfLastScreen = width; //for screen resizing (Thank's Tao)
   heightOfLastScreen = height;
 
-
   setupContainers();
+  //setupGUIWidgets(); 
 
   //V1 FONTS
   f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
@@ -325,6 +326,7 @@ void initSystem() {
 
   //initilize the GUI
   initializeGUI();
+  setupGUIWidgets(); //####
 
   //final config
   // setBiasState(openBCI.isBiasAuto);
@@ -403,7 +405,13 @@ void systemUpdate() { // for updating data values and variables
         // }
         if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { //wait 1 second for GUI to reinitialize
           try {
+
+            //-----------------------------------------------------------            
+            //-----------------------------------------------------------
             gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
+            updateGUIWidgets(); //####
+            //-----------------------------------------------------------
+            //-----------------------------------------------------------
           } 
           catch (Exception e) {
             println(e.getMessage());
@@ -462,6 +470,7 @@ void systemDraw() { //for drawing to the screen
 
   //redraw the screen...not every time, get paced by when data is being plotted    
   background(bgColor);  //clear the screen
+  //background(255);  //clear the screen
 
   if (systemMode == 10) {
     int drawLoopCounter_thresh = 100;
@@ -495,7 +504,14 @@ void systemDraw() { //for drawing to the screen
         noStroke();
         rect(0, 0, width, navBarHeight);
         popStyle();
+
+        //----------------------------
         gui.draw(); //draw the GUI
+        //updateGUIWidgets(); //####
+        drawGUIWidgets();
+
+        //----------------------------
+
         // playground.draw();
       } 
       catch (Exception e) {
@@ -508,8 +524,9 @@ void systemDraw() { //for drawing to the screen
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
 
-    playground.draw();
+
     dataProcessing_user.draw();
+    playground.draw();
     drawContainers();
   } else { //systemMode != 10
     //still print title information about fps
