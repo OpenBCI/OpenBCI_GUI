@@ -79,7 +79,10 @@ void processNewData() {
 
   //prepare to update the data buffers
   float foo_val;
+  
+  println("PPP" + fftBuff[0].specSize());
   float prevFFTdata[] = new float[fftBuff[0].specSize()];
+
   double foo;
 
   //update the data buffers
@@ -407,6 +410,7 @@ class DataProcessing {
     currentFilt_ind++;
     if (currentFilt_ind >= N_FILT_CONFIGS) currentFilt_ind = 0;
   }
+
   public void incrementNotchConfiguration() {
     //increment the index
     currentNotch_ind++;
