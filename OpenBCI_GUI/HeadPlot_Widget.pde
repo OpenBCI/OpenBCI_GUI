@@ -40,7 +40,7 @@ HeadPlot_Widget headPlot_widget;
 class HeadPlot_Widget {
 
   int x, y, w, h; 
-  int parentContainer = 1;
+  int parentContainer = 3;
 
   HeadPlot headPlot;
 
@@ -52,8 +52,8 @@ class HeadPlot_Widget {
     h = (int)container[parentContainer].h;
 
     //headPlot = new HeadPlot(float(x)/win_x, float(y)/win_y, float(w)/win_x, float(h)/win_y, win_x, win_y, nchan);
-    headPlot = new HeadPlot(x, y, w, h, win_x, win_y, nchan);
-    
+    headPlot = new HeadPlot(x, y+navHeight/2, w, h, win_x, win_y, nchan);
+
     //FROM old Gui_Manager
     //dataProcessing.data_std_uV, is_railed, dataProcessing.polarity
     headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
@@ -69,16 +69,18 @@ class HeadPlot_Widget {
     h = (int)container[parentContainer].h;
 
     headPlot.update();
-    
   }
 
   void draw() {
     pushStyle();
-
+    noStroke();
+    
     fill(255);
     rect(x, y, w, h); //widget background
-    fill(200, 200, 200);
+    fill(150,150,150);
     rect(x, y, w, navHeight); //top bar
+    fill(200, 200, 200);
+    rect(x, y+navHeight, w, navHeight); //top bar
     fill(bgColor);
     textSize(18);
     text("Head Plot", x+w/2, y+navHeight/2);
@@ -161,14 +163,14 @@ class HeadPlot {
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
     font = createFont("Arial", 16);
     drawHeadAsContours = true; //set this to be false for slower computers
-    
-    
+
+
     float percentMargin = 0.1;
     _x = _x + (int)(float(_w)*percentMargin);
     _y = _y + (int)(float(_h)*percentMargin);
     _w = (int)(float(_w)-(2*(float(_w)*percentMargin)));
     _h = (int)(float(_h)-(2*(float(_h)*percentMargin)));
-    
+
     rel_posX = float(_x)/_win_x;
     rel_posY = float(_y)/_win_y;
     rel_width = float(_w)/_win_x;

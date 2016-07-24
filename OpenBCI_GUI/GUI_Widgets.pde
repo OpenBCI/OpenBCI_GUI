@@ -1,5 +1,5 @@
 
-int navHeight = 25;
+int navHeight = 22;
 
 void setupGUIWidgets() {
   fft_widget = new FFT_Widget(this);

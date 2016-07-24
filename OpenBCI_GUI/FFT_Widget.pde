@@ -13,8 +13,21 @@
 import grafica.*;
 import java.util.Random;
 
-FFT_Widget fft_widget;
+//fft constants
+int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
+FFT fftBuff[] = new FFT[nchan];   //from the minim library
+float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98};
+int smoothFac_ind = 2;    //initial index into the smoothFac array = 0.75 to start
 
+FFT_Widget fft_widget;
+ControlP5 cp5_FFT;
+List maxFreqList = Arrays.asList("20 Hz", "40 Hz", "60 Hz", "120 Hz");
+List logLinList = Arrays.asList("Log", "Linear");
+List vertScaleList = Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV");
+List smoothList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
+List filterList = Arrays.asList("Unfilt.", "Filtered");
+
+CColor cp5_colors;
 
 class FFT_Widget {
 
@@ -23,9 +36,7 @@ class FFT_Widget {
   GPlot fft_plot; //create an fft plot for each active channel
   GPointsArray[] fft_points = new GPointsArray[nchan]; //create an array of points for each channel of data (4, 8, or 16)
 
-//  int nPoints = Nfft; //resolution of FFT plots
-
-  int parentContainer = 7; //which container is it mapped to by default?
+  int parentContainer = 9; //which container is it mapped to by default?
 
   int[] lineColor = {
     (int)color(129, 129, 129), 
@@ -39,24 +50,33 @@ class FFT_Widget {
 
   };
 
-  int xLim = 60;  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
-  int FFT_indexLim = int(1.0*xLim*(Nfft/openBCI.get_fs_Hz()));   // maxim value of FFT index
+  int[] xLimOptions = {20, 40, 60, 120};
+  int[] yLimOptions = {10, 50, 100, 1000};
+
+  int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
+  int xMax = xLimOptions[3];
+  int FFT_indexLim = int(1.0*xMax*(Nfft/openBCI.get_fs_Hz()));   // maxim value of FFT index
   int yLim = 100;  //maximum value of y axis ... 100 uV
-  
+
 
   //constructor 1
   FFT_Widget(PApplet parent) {
-    
+
     println(FFT_indexLim);
     x = (int)container[parentContainer].x;
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
 
+    initializeFFTPlot(parent);
+    setupDropdownMenus(parent);
+  }
+
+  void initializeFFTPlot(PApplet _parent) {
     //setup GPlot for FFT
-    fft_plot =  new GPlot(parent, x, y+navHeight, w, h-navHeight); //based on container dimensions
+    fft_plot =  new GPlot(_parent, x, y+navHeight, w, h-navHeight); //based on container dimensions
     fft_plot.getXAxis().setAxisLabelText("Frequency (Hz)");
-    fft_plot.getYAxis().setAxisLabelText("EEG Amplitude (uV per bin)");
+    fft_plot.getYAxis().setAxisLabelText("Amplitude (uV)");
     //fft_plot.setMar(50,50,50,50); //{ bot=60, left=70, top=40, right=30 } by default
     fft_plot.setMar(60, 70, 40, 30); //{ bot=60, left=70, top=40, right=30 } by default
     fft_plot.setLogScale("y");
@@ -79,13 +99,145 @@ class FFT_Widget {
       for (int j = 0; j < FFT_indexLim; j++) {
         //GPoint temp = new GPoint(i, 15*noise(0.1*i));
         //println(i + " " + j);
-        GPoint temp = new GPoint(j, 15*random(0.1*j));
+        GPoint temp = new GPoint(j, 0);
         fft_points[i].set(j, temp);
       }
     }
 
     //map fft point arrays to fft plots
     fft_plot.setPoints(fft_points[0]);
+  }
+
+  void setupDropdownMenus(PApplet _parent) {
+    //ControlP5 Stuff
+    int dropdownPos = 0;
+    int dropdownWidth = 60;
+    cp5_FFT = new ControlP5(_parent);
+    cp5_colors = new CColor();
+    cp5_colors.setActive(color(0, 255, 255)); //when clicked
+    cp5_colors.setForeground(color(125)); //when hovering
+    cp5_colors.setBackground(color(255)); //color of buttons
+    cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
+    cp5_colors.setValueLabel(color(0, 0, 255));
+
+    cp5_FFT.setColor(cp5_colors);
+    cp5_FFT.setAutoDraw(false);
+    //-------------------------------------------------------------
+    //MAX FREQUENCY (ie X Axis) DROPDOWN
+    //-------------------------------------------------------------
+    cp5_FFT.addScrollableList("MaxFreq")
+      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(maxFreqList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_FFT.getController("MaxFreq")
+      .getCaptionLabel()
+      .setText("60 Hz")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+    //-------------------------------------------------------------
+    //VERTICAL SCALE (ie Y Axis) DROPDOWN
+    //-------------------------------------------------------------
+    dropdownPos = 1;
+    cp5_FFT.addScrollableList("VertScale")
+      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(vertScaleList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_FFT.getController("VertScale")
+      .getCaptionLabel()
+      .setText("100 uV")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+    //-------------------------------------------------------------
+    //Logarithmic vs. Linear DROPDOWN
+    //-------------------------------------------------------------
+    dropdownPos = 2;
+    cp5_FFT.addScrollableList("LogLin")
+      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(logLinList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_FFT.getController("LogLin")
+      .getCaptionLabel()
+      .setText("Log")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+    //-------------------------------------------------------------
+    // SMOOTHING DROPDOWN (ie FFT bin size)
+    //-------------------------------------------------------------
+    dropdownPos = 3;
+    cp5_FFT.addScrollableList("Smoothing")
+      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(smoothList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+      
+    String initSmooth = smoothFac[smoothFac_ind] + "";
+    cp5_FFT.getController("Smoothing")
+      .getCaptionLabel()
+      .setText(initSmooth)
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+    //-------------------------------------------------------------
+    // UNFILTERED VS FILT DROPDOWN
+    //-------------------------------------------------------------
+    dropdownPos = 4;
+    cp5_FFT.addScrollableList("UnfiltFilt")
+      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(filterList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_FFT.getController("UnfiltFilt")
+      .getCaptionLabel()
+      .setText("Unfilt.")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+    //-------------------------------------------------------------
   }
 
   void update() {
@@ -98,28 +250,12 @@ class FFT_Widget {
     fft_plot.setPos(x, y+navHeight);//update position
     fft_plot.setOuterDim(w, h-navHeight);//update dimensions
 
-
-
-    //float FFT_freq_Hz, FFT_value_uV;
-    //for (int Ichan=0; Ichan < nchan; Ichan++) {
-    //  //loop over each new sample
-    //  for (int Ibin=0; Ibin < fftBuff[Ichan].specSize(); Ibin++) {
-    //    FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin);
-    //    FFT_value_uV = fftData[Ichan].getBand(Ibin);
-
-    //    //add your processing here...
-
-    //    //println("EEG_Processing_User: Ichan = " + Ichan + ", Freq = " + FFT_freq_Hz + "Hz, FFT Value = " + FFT_value_uV + "uV/bin");
-    //  }
-    //}
-
-
     //update the points of the FFT channel arrays
     //update fft point arrays
     for (int i = 0; i < fft_points.length; i++) {
       for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
         //GPoint powerAtBin = new GPoint(j, 15*random(0.1*j));
-        
+
         GPoint powerAtBin = new GPoint((1.0*openBCI.get_fs_Hz()/Nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
         //println("=========================================");
@@ -137,6 +273,7 @@ class FFT_Widget {
     pushStyle();
 
     //draw FFT Graph w/ all plots
+    noStroke();
     fft_plot.beginDraw();
     fft_plot.drawBackground();
     fft_plot.drawBox();
@@ -151,12 +288,14 @@ class FFT_Widget {
       fft_plot.setLineColor(lineColor[i]);
       fft_plot.setPoints(fft_points[i]);
       fft_plot.drawLines();
-      fft_plot.drawPoints(); //draw points
+      //fft_plot.drawPoints(); //draw points
     }
     fft_plot.endDraw();
 
-    fill(200, 200, 200);
+    fill(150, 150, 150);
     rect(x, y, w, navHeight); //top bar
+    fill(200, 200, 200);
+    rect(x, y+navHeight, w, navHeight); //button bar
     fill(bgColor);
     textSize(18);
     text("FFT Plot", x+w/2, y+navHeight/2);
@@ -164,5 +303,65 @@ class FFT_Widget {
     //rect(x,y,w,h);
 
     popStyle();
+    
+    cp5_FFT.draw();
+  }
+}
+
+//triggered when there is an event in the MaxFreq. Dropdown
+void MaxFreq(int n) {
+  /* request the selected item based on index n */
+  println(n, cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(n));
+
+  /* here an item is stored as a Map  with the following key-value pairs:
+   * name, the given name of the item
+   * text, the given text of the item by default the same as name
+   * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
+   * color, the given color of the item, how to change, see below
+   * view, a customizable view, is of type CDrawable 
+   */
+
+  //for (int i =0; i < maxFreqList.size(); i++) {
+  //  if (i != n) {
+  //    cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(i).put("color", cp5_colors);
+  //  }
+  //}
+
+  //CColor c = new CColor();
+  ////c.setBackground(color(1, 18, 41));
+  //c.setBackground(color(0, 255, 0));
+  //c.setCaptionLabel(color(255, 255, 255));
+  //cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(n).put("color", c);
+
+  fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
+}
+
+//triggered when there is an event in the VertScale Dropdown
+void VertScale(int n) {
+
+  fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot  
+  
+}
+
+//triggered when there is an event in the LogLin Dropdown
+void LogLin(int n) {
+  if (n==0) {
+    fft_widget.fft_plot.setLogScale("y");
+  } else {
+    fft_widget.fft_plot.setLogScale("");
+  }
+}
+
+//triggered when there is an event in the LogLin Dropdown
+void Smoothing(int n) {
+  smoothFac_ind = n;
+}
+
+//triggered when there is an event in the LogLin Dropdown
+void UnfiltFilt(int n) {
+  if (n==0) {
+    fft_widget.fft_plot.setLogScale("y");
+  } else {
+    fft_widget.fft_plot.setLogScale("");
   }
 }

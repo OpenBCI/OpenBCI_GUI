@@ -103,12 +103,6 @@ String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based
 Serial serial_output;
 int serial_output_baud = 115200; //baud rate from the Arduino
 
-//fft constants
-int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
-FFT fftBuff[] = new FFT[nchan];   //from the minim library
-float[] smoothFac = new float[]{0.75, 0.9, 0.95, 0.98, 0.0, 0.5};
-int smoothFac_ind = 0;    //initial index into the smoothFac array
-
 //Control Panel for (re)configuring system settings
 Button controlPanelCollapser;
 PlotFontInfo fontInfo;

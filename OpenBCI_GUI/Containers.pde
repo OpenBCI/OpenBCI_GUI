@@ -64,7 +64,7 @@ void setupContainers() {
   int rightNav_w = 0; //not used currently
   
   container[0] = new Container(0, 0, width, topNav_h, 0);
-  container[5] = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 10);
+  container[5] = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 4);
   container[1] = new Container(container[5], "TOP_LEFT");
   container[2] = new Container(container[5], "TOP");
   container[3] = new Container(container[5], "TOP_RIGHT");

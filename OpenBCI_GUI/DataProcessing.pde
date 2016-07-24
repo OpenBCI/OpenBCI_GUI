@@ -407,6 +407,7 @@ class DataProcessing {
     currentFilt_ind++;
     if (currentFilt_ind >= N_FILT_CONFIGS) currentFilt_ind = 0;
   }
+  
   public void incrementNotchConfiguration() {
     //increment the index
     currentNotch_ind++;
