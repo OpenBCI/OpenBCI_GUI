@@ -39,7 +39,7 @@ ControlP5 cp5_HeadPlot;
 List ten20List = Arrays.asList("10-20", "5-10");
 List headsetList = Arrays.asList("None", "Mark II", "Mark III (N)", "Mark III (SN)", "Mark IV");
 List numChanList = Arrays.asList("4 chan", "8 chan", "16 chan");
-List polarizationList = Arrays.asList("+/-", " + ");
+List polarityList = Arrays.asList("+/-", " + ");
 List smoothingHeadPlotList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
 List filterHeadplotList = Arrays.asList("Unfilt.", "Filtered");
 
@@ -59,7 +59,7 @@ class HeadPlot_Widget {
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
-    
+
     cp5_HeadPlot = new ControlP5(_parent);
 
     //headPlot = new HeadPlot(float(x)/win_x, float(y)/win_y, float(w)/win_x, float(h)/win_y, win_x, win_y, nchan);
@@ -69,6 +69,8 @@ class HeadPlot_Widget {
     //dataProcessing.data_std_uV, is_railed, dataProcessing.polarity
     headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
     headPlot.setPolarityData_byRef(dataProcessing.polarity);
+    
+    setSmoothFac(smoothFac[smoothFac_ind]);
 
     //setup dropdown menus
     setupDropdownMenus(_parent);
@@ -90,7 +92,7 @@ class HeadPlot_Widget {
     //-------------------------------------------------------------
     //MAX FREQUENCY (ie X Axis) DROPDOWN
     //-------------------------------------------------------------
-    dropdownPos = 5; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.addScrollableList("Ten20")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
@@ -114,7 +116,7 @@ class HeadPlot_Widget {
     //-------------------------------------------------------------
     //VERTICAL SCALE (ie Y Axis) DROPDOWN
     //-------------------------------------------------------------
-    dropdownPos = 4;
+    dropdownPos = 3;
     cp5_HeadPlot.addScrollableList("Headset")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
@@ -138,32 +140,32 @@ class HeadPlot_Widget {
     //-------------------------------------------------------------
     //Logarithmic vs. Linear DROPDOWN
     //-------------------------------------------------------------
-    dropdownPos = 3;
-    cp5_HeadPlot.addScrollableList("NumChan")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
-      .setOpen(false)
-      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      .setScrollSensitivity(0.0)
-      .setBarHeight(navHeight - 4)
-      .setItemHeight(navHeight - 4)
-      .addItems(numChanList)
-      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-      ;
+    //dropdownPos = 3;
+    //cp5_HeadPlot.addScrollableList("NumChan")
+    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
+    //  .setOpen(false)
+    //  .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+    //  .setScrollSensitivity(0.0)
+    //  .setBarHeight(navHeight - 4)
+    //  .setItemHeight(navHeight - 4)
+    //  .addItems(numChanList)
+    //  // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+    //  ;
 
-    cp5_HeadPlot.getController("NumChan")
-      .getCaptionLabel()
-      .setText("8 chan")
-      //.setFont(controlFonts[0])
-      .setSize(12)
-      .getStyle()
-      //.setPaddingTop(4)
-      ;
+    //cp5_HeadPlot.getController("NumChan")
+    //  .getCaptionLabel()
+    //  .setText("8 chan")
+    //  //.setFont(controlFonts[0])
+    //  .setSize(12)
+    //  .getStyle()
+    //  //.setPaddingTop(4)
+    //  ;
     //-------------------------------------------------------------
     // SMOOTHING DROPDOWN (ie FFT bin size)
     //-------------------------------------------------------------
     dropdownPos = 2;
-    cp5_HeadPlot.addScrollableList("Polarization")
+    cp5_HeadPlot.addScrollableList("Polarity")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
       .setOpen(false)
@@ -171,12 +173,12 @@ class HeadPlot_Widget {
       .setScrollSensitivity(0.0)
       .setBarHeight(navHeight - 4)
       .setItemHeight(navHeight - 4)
-      .addItems(polarizationList)
+      .addItems(polarityList)
       // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
       ;
 
 
-    cp5_HeadPlot.getController("Polarization")
+    cp5_HeadPlot.getController("Polarity")
       .getCaptionLabel()
       .setText("+/-")
       //.setFont(controlFonts[0])
@@ -227,7 +229,7 @@ class HeadPlot_Widget {
 
     cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
       .getCaptionLabel()
-      .setText("Unfilt.")
+      .setText("Filtered")
       //.setFont(controlFonts[0])
       .setSize(12)
       .getStyle()
@@ -288,19 +290,19 @@ class HeadPlot_Widget {
     headPlot.draw(); //draw the actual headplot
 
     //draw dropdown titles
-    int dropdownPos = 5; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+    int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
     int dropdownWidth = 60;
     textFont(f2);
     textSize(12);
     textAlign(CENTER, BOTTOM);
     fill(bgColor);
     text("Layout", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 4;
-    text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
     dropdownPos = 3;
-    text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    //dropdownPos = 3;
+    //text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
     dropdownPos = 2;
-    text("Polar.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
     dropdownPos = 1;
     text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
     dropdownPos = 0;
@@ -318,35 +320,35 @@ class HeadPlot_Widget {
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
-    
+
     //update position of headplot
-    headPlot.setPositionSize(x,y,w,h,width,height);
-    
+    headPlot.setPositionSize(x, y, w, h, width, height);
+
     cp5_HeadPlot.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
-    
+
     //update dropdown menu positions
     int dropdownPos;
     int dropdownWidth = 60;
-    dropdownPos = 5; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.getController("Ten20")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.getController("Headset")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 3;
-    cp5_HeadPlot.getController("NumChan")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
+    //dropdownPos = 3;
+    //cp5_HeadPlot.getController("NumChan")
+    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+    //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+    //  ;
     dropdownPos = 2;
-    cp5_HeadPlot.getController("Polarization")
+    cp5_HeadPlot.getController("Polarity")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
@@ -364,13 +366,14 @@ class HeadPlot_Widget {
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
   }
+  
+  public void setSmoothFac(float fac) {
+    headPlot.smooth_fac = fac;
+  }
 }
 
 //triggered when there is an event in the Ten20 Dropdown
 void Ten20(int n) {
-  /* request the selected item based on index n */
-  println(n, cp5_HeadPlot.get(ScrollableList.class, "MaxFreq").getItem(n));
-
   /* here an item is stored as a Map  with the following key-value pairs:
    * name, the given name of the item
    * text, the given text of the item by default the same as name
@@ -379,40 +382,40 @@ void Ten20(int n) {
    * view, a customizable view, is of type CDrawable 
    */
 
-  fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
+  //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
 }
 
 //triggered when there is an event in the Headset Dropdown
 void Headset(int n) {
-
-  fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
+  //fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
 }
 
 //triggered when there is an event in the NumChan Dropdown
 void NumChan(int n) {
-  if (n==0) {
-    fft_widget.fft_plot.setLogScale("y");
-  } else {
-    fft_widget.fft_plot.setLogScale("");
-  }
+  //if (n==0) {
+  //  fft_widget.fft_plot.setLogScale("y");
+  //} else {
+  //  fft_widget.fft_plot.setLogScale("");
+  //}
 }
 
-//triggered when there is an event in the Polarization Dropdown
-void Polarization(int n) {
-  smoothFac_ind = n;
+//triggered when there is an event in the Polarity Dropdown
+void Polarity(int n) {
+  
+    if (n==0) {
+      headPlot_widget.headPlot.use_polarity = true;
+    } else {
+      headPlot_widget.headPlot.use_polarity = false;
+    }
 }
 
 //triggered when there is an event in the SmoothingHeadPlot Dropdown
 void SmoothingHeadPlot(int n) {
-  if (n==0) {
-    fft_widget.fft_plot.setLogScale("y");
-  } else {
-    fft_widget.fft_plot.setLogScale("");
-  }
+  headPlot_widget.setSmoothFac(smoothFac[n]);
 }
 
 //triggered when there is an event in the UnfiltFiltHeadPlot Dropdown
-void UnfiltFiltHeadPlot() {
+void UnfiltFiltHeadPlot(int n) {
 }
 
 
@@ -501,10 +504,8 @@ class HeadPlot {
     setPositionSize(_x, _y, _w, _h, _win_x, _win_y);
     setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
   }
-  
-  public void setPositionSize(int _x, int _y, int _w, int _h, int _win_x, int _win_y){
-    println("test");
-    println(navHeight);
+
+  public void setPositionSize(int _x, int _y, int _w, int _h, int _win_x, int _win_y) {
     float percentMargin = 0.1;
     _x = _x + (int)(float(_w)*percentMargin);
     _y = _y + (int)(float(_h)*percentMargin) + navHeight/2;
@@ -1493,11 +1494,12 @@ class HeadPlot {
   }
 
   public void draw() {
-    
+
     pushStyle();
+    smooth();
     //draw head parts
     fill(255, 255, 255);
-    stroke(125,125,125);
+    stroke(125, 125, 125);
     triangle(nose_x[0], nose_y[0], nose_x[1], nose_y[1], nose_x[2], nose_y[2]);  //nose
     ellipse(earL_x, earL_y, ear_width, ear_height); //little circle for the ear
     ellipse(earR_x, earR_y, ear_width, ear_height); //little circle for the ear
@@ -1534,9 +1536,7 @@ class HeadPlot {
       text(i+1, electrode_xy[i][0], electrode_xy[i][1]);
     }
     text("R", ref_electrode_xy[0], ref_electrode_xy[1]);
-    
+
     popStyle();
-    
-    
   } //end of draw method
 };

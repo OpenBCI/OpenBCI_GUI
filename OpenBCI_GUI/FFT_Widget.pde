@@ -15,11 +15,8 @@ import java.util.Random;
 
 //fft constants
 int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
-FFT fftBuff[] = new FFT[nchan];   //from the minim library
-float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98};
-int smoothFac_ind = 2;    //initial index into the smoothFac array = 0.75 to start
+FFT[] fftBuff = new FFT[nchan];    //from the minim library
 
-FFT_Widget fft_widget;
 ControlP5 cp5_FFT;
 List maxFreqList = Arrays.asList("20 Hz", "40 Hz", "60 Hz", "120 Hz");
 List logLinList = Arrays.asList("Log", "Linear");
@@ -34,7 +31,7 @@ class FFT_Widget {
   int x, y, w, h; 
   int[] positioning = {0, 0, 0, 0}; // {x0, y0, w, h} retreived from corresponding container
   GPlot fft_plot; //create an fft plot for each active channel
-  GPointsArray[] fft_points = new GPointsArray[nchan]; //create an array of points for each channel of data (4, 8, or 16)
+  GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
 
   PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
   PFont f2 = createFont("Arial", 18); //for dropdown name titles (above dropdown widgets)
@@ -49,8 +46,15 @@ class FFT_Widget {
     (int)color(221, 178, 13), 
     (int)color(253, 94, 52), 
     (int)color(224, 56, 45), 
+    (int)color(162, 82, 49),
+    (int)color(129, 129, 129), 
+    (int)color(124, 75, 141), 
+    (int)color(54, 87, 158), 
+    (int)color(49, 113, 89), 
+    (int)color(221, 178, 13), 
+    (int)color(253, 94, 52), 
+    (int)color(224, 56, 45), 
     (int)color(162, 82, 49)
-
   };
 
   int[] xLimOptions = {20, 40, 60, 120};
@@ -66,6 +70,14 @@ class FFT_Widget {
   FFT_Widget(PApplet parent) {
     
     cp5_FFT = new ControlP5(parent);
+    
+    println("1");
+    fft_points = new GPointsArray[nchan];
+    println(fft_points.length);
+    println("2");
+    //fftBuff = new FFT[nchan];
+    println(fftBuff.length);
+    println("3");
 
     println(FFT_indexLim);
     x = (int)container[parentContainer].x;
