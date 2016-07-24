@@ -446,6 +446,9 @@ void systemUpdate() { // for updating data values and variables
     }
 
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
+    if(screenHasBeenResized){
+      GUIWidgets_screenResized(width, height);
+    }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
       println("systemUpdate: reinitializing GUI");
@@ -520,7 +523,7 @@ void systemDraw() { //for drawing to the screen
 
 
     dataProcessing_user.draw();
-    playground.draw();
+    //playground.draw();
     drawContainers();
   } else { //systemMode != 10
     //still print title information about fps

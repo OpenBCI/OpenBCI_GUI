@@ -16,14 +16,14 @@ import java.util.*;
 PFont[] _controlFonts = new PFont[5];
 ControlFont[] controlFonts = new ControlFont[5];
 
-ControlP5 cp5_GUI;
+ControlP5 cp5_FFT;
 CColor cp5_colors;
 color[] colors = new color[10];
 
 void setup() {
   textAlign(CENTER, BOTTOM);
   size(400, 400);
-  cp5_GUI = new ControlP5(this);
+  cp5_FFT = new ControlP5(this);
   _controlFonts[0] = createFont("Arial", 10, true);
   _controlFonts[1] = createFont("Arial", 12, true);
   _controlFonts[2] = createFont("Arial", 14, true);
@@ -34,19 +34,19 @@ void setup() {
     controlFonts[i] = new ControlFont(_controlFonts[i]);
   }
 
-  List l = Arrays.asList("a", "b", "c", "d");
+  List l = Arrays.asList("20 Hz", "40 Hz", "60 Hz", "120 Hz");
   /* add a ScrollableList, by default it behaves like a DropdownList */
 
-  //colors to be sent to cp5_GUI
+  //colors to be sent to cp5_FFT
   cp5_colors = new CColor();
-  cp5_colors.setActive(color(0, 0, 255));
-  cp5_colors.setForeground(color(0, 255, 0));
-  cp5_colors.setBackground(color(255, 0, 0));
-  cp5_colors.setCaptionLabel(color(255, 255, 0));
-  cp5_colors.setValueLabel(color(255, 0, 255));
+  cp5_colors.setActive(color(0, 255, 255)); //when clicked
+  cp5_colors.setForeground(color(125,125,125)); //when hovering
+  cp5_colors.setBackground(color(255,255,255)); //color of buttons
+  cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
+  cp5_colors.setValueLabel(color(0, 0, 255));
 
-  cp5_GUI.setColor(cp5_colors);
-  cp5_GUI.setFont(controlFonts[1]);
+  cp5_FFT.setColor(cp5_colors);
+  cp5_FFT.setFont(controlFonts[1]);
 
   //cp5_colors.setActive(color(0,255,255));
   //cp5_colors.setActive(color(0,255,255));
@@ -56,7 +56,7 @@ void setup() {
 
 
 
-  cp5_GUI.addScrollableList("dropdown")
+  cp5_FFT.addScrollableList("MaxFreq")
     .setPosition(100, 100)
     .setSize(100, 100)
     .setScrollSensitivity(0.0)
@@ -66,8 +66,9 @@ void setup() {
     // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
     ;
     
-  cp5_GUI.getController("dropdown")
+  cp5_FFT.getController("MaxFreq")
     .getCaptionLabel()
+    .toUpperCase(false)
     //.setFont(controlFonts[0])
     //.setSize(12)
     .getStyle()
@@ -76,15 +77,25 @@ void setup() {
   //cp5.getController("dropdown")
   //    .setColor(int(color(255,0,0)))
   //    ;
+  
+  for(int i = 0; i < l.size(); i++){
+    println(i);
+    println(cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(i));
+    //cp5_FFT.get(ScrollableList.class, "MaxFreq.").getItem(i).get("captionlabel").getStyle().setPaddingTop(4);
+    //Map myMap = cp5_FFT.get(ScrollableList.class, "MaxFreq.").getItem("captionLabel");
+    println(cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem("value"));
+    println(cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(i).get("view"));
+    //cp5_FFT.get(ScrollableList.class, "MaxFreq.").getController("20 Hz").
+  }
 }
 
 void draw() {
   background(240);
 }
 
-void dropdown(int n) {
+void MaxFreq(int n) { //function must have the same name as "NameOfList" aka MaxFreq in this case
   /* request the selected item based on index n */
-  println(n, cp5_GUI.get(ScrollableList.class, "dropdown").getItem(n));
+  println(n, cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(n));
 
   /* here an item is stored as a Map  with the following key-value pairs:
    * name, the given name of the item
@@ -96,31 +107,31 @@ void dropdown(int n) {
 
   CColor c = new CColor();
   c.setBackground(color(255, 0, 0));
-  cp5_GUI.get(ScrollableList.class, "dropdown").getItem(n).put("color", c);
+  cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(n).put("color", c);
 }
 
 void keyPressed() {
   switch(key) {
     case('1'):
     /* make the ScrollableList behave like a ListBox */
-    cp5_GUI.get(ScrollableList.class, "dropdown").setType(ControlP5.LIST);
+    cp5_FFT.get(ScrollableList.class, "dropdown").setType(ControlP5.LIST);
     break;
     case('2'):
     /* make the ScrollableList behave like a DropdownList */
-    cp5_GUI.get(ScrollableList.class, "dropdown").setType(ControlP5.DROPDOWN);
+    cp5_FFT.get(ScrollableList.class, "dropdown").setType(ControlP5.DROPDOWN);
     break;
     case('3'):
     /*change content of the ScrollableList */
     List l = Arrays.asList("a-1", "b-1", "c-1", "d-1", "e-1", "f-1", "g-1", "h-1", "i-1", "j-1", "k-1");
-    cp5_GUI.get(ScrollableList.class, "dropdown").setItems(l);
+    cp5_FFT.get(ScrollableList.class, "dropdown").setItems(l);
     break;
     case('4'):
     /* remove an item from the ScrollableList */
-    cp5_GUI.get(ScrollableList.class, "dropdown").removeItem("k-1");
+    cp5_FFT.get(ScrollableList.class, "dropdown").removeItem("k-1");
     break;
     case('5'):
     /* clear the ScrollableList */
-    cp5_GUI.get(ScrollableList.class, "dropdown").clear();
+    cp5_FFT.get(ScrollableList.class, "dropdown").clear();
     break;
   }
 }

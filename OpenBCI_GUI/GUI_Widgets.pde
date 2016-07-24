@@ -3,7 +3,7 @@ int navHeight = 22;
 
 void setupGUIWidgets() {
   fft_widget = new FFT_Widget(this);
-  headPlot_widget = new HeadPlot_Widget();
+  headPlot_widget = new HeadPlot_Widget(this);
   
 }
 
@@ -19,6 +19,11 @@ void drawGUIWidgets() {
     fft_widget.draw();
     
   //}
+}
+
+void GUIWidgets_screenResized(int _winX, int _winY){
+  headPlot_widget.screenResized(this, _winX, _winY);
+  fft_widget.screenResized(this, _winX, _winY);
 }
 
 void GUIWidgets_mousePressed(){

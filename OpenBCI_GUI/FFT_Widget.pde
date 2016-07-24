@@ -36,6 +36,9 @@ class FFT_Widget {
   GPlot fft_plot; //create an fft plot for each active channel
   GPointsArray[] fft_points = new GPointsArray[nchan]; //create an array of points for each channel of data (4, 8, or 16)
 
+  PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
+  PFont f2 = createFont("Arial", 18); //for dropdown name titles (above dropdown widgets)
+
   int parentContainer = 9; //which container is it mapped to by default?
 
   int[] lineColor = {
@@ -61,6 +64,8 @@ class FFT_Widget {
 
   //constructor 1
   FFT_Widget(PApplet parent) {
+    
+    cp5_FFT = new ControlP5(parent);
 
     println(FFT_indexLim);
     x = (int)container[parentContainer].x;
@@ -110,11 +115,10 @@ class FFT_Widget {
 
   void setupDropdownMenus(PApplet _parent) {
     //ControlP5 Stuff
-    int dropdownPos = 0;
+    int dropdownPos;
     int dropdownWidth = 60;
-    cp5_FFT = new ControlP5(_parent);
     cp5_colors = new CColor();
-    cp5_colors.setActive(color(0, 255, 255)); //when clicked
+    cp5_colors.setActive(color(150, 170, 200)); //when clicked
     cp5_colors.setForeground(color(125)); //when hovering
     cp5_colors.setBackground(color(255)); //color of buttons
     cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
@@ -125,8 +129,10 @@ class FFT_Widget {
     //-------------------------------------------------------------
     //MAX FREQUENCY (ie X Axis) DROPDOWN
     //-------------------------------------------------------------
+    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
     cp5_FFT.addScrollableList("MaxFreq")
-      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       .setOpen(false)
       .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       .setScrollSensitivity(0.0)
@@ -147,9 +153,10 @@ class FFT_Widget {
     //-------------------------------------------------------------
     //VERTICAL SCALE (ie Y Axis) DROPDOWN
     //-------------------------------------------------------------
-    dropdownPos = 1;
+    dropdownPos = 3;
     cp5_FFT.addScrollableList("VertScale")
-      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
       .setOpen(false)
       .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       .setScrollSensitivity(0.0)
@@ -172,7 +179,8 @@ class FFT_Widget {
     //-------------------------------------------------------------
     dropdownPos = 2;
     cp5_FFT.addScrollableList("LogLin")
-      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
       .setOpen(false)
       .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       .setScrollSensitivity(0.0)
@@ -193,9 +201,10 @@ class FFT_Widget {
     //-------------------------------------------------------------
     // SMOOTHING DROPDOWN (ie FFT bin size)
     //-------------------------------------------------------------
-    dropdownPos = 3;
+    dropdownPos = 1;
     cp5_FFT.addScrollableList("Smoothing")
-      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
       .setOpen(false)
       .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       .setScrollSensitivity(0.0)
@@ -204,7 +213,7 @@ class FFT_Widget {
       .addItems(smoothList)
       // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
       ;
-      
+
     String initSmooth = smoothFac[smoothFac_ind] + "";
     cp5_FFT.getController("Smoothing")
       .getCaptionLabel()
@@ -217,9 +226,10 @@ class FFT_Widget {
     //-------------------------------------------------------------
     // UNFILTERED VS FILT DROPDOWN
     //-------------------------------------------------------------
-    dropdownPos = 4;
+    dropdownPos = 0;
     cp5_FFT.addScrollableList("UnfiltFilt")
-      .setPosition(x+(dropdownWidth*dropdownPos)+(2*(dropdownPos+1)), navHeight+(y+2))
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
       .setOpen(false)
       .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       .setScrollSensitivity(0.0)
@@ -241,14 +251,6 @@ class FFT_Widget {
   }
 
   void update() {
-
-    //update position/size of FFT Plot
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
-    fft_plot.setPos(x, y+navHeight);//update position
-    fft_plot.setOuterDim(w, h-navHeight);//update dimensions
 
     //update the points of the FFT channel arrays
     //update fft point arrays
@@ -296,15 +298,96 @@ class FFT_Widget {
     rect(x, y, w, navHeight); //top bar
     fill(200, 200, 200);
     rect(x, y+navHeight, w, navHeight); //button bar
+    fill(255);
+    rect(x+2, y+2, navHeight-4, navHeight-4);
+    fill(bgColor, 100);
+    //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
+    rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
+    rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
+    rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
+    rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
+    //text("FFT Plot", x+w/2, y+navHeight/2)
     fill(bgColor);
+    textAlign(LEFT, CENTER);
+    textFont(f);
     textSize(18);
-    text("FFT Plot", x+w/2, y+navHeight/2);
+    text("FFT Plot", x+navHeight+2, y+navHeight/2 - 2); //left
+    //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
     //fill(255,0,0,150);
     //rect(x,y,w,h);
 
     popStyle();
-    
+
+    pushStyle();
+    //draw dropdown titles
+    int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+    int dropdownWidth = 60;
+    textFont(f2);
+    textSize(12);
+    textAlign(CENTER, BOTTOM);
+    fill(bgColor);
+    text("Max Freq", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    dropdownPos = 3;
+    text("Max uV", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    dropdownPos = 2;
+    text("Log/Lin", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    dropdownPos = 1;
+    text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    dropdownPos = 0;
+    text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+
+    //draw dropdown menus
     cp5_FFT.draw();
+
+    popStyle();
+  }
+
+  void screenResized(PApplet _parent, int _winX, int _winY) {
+    //when screen is resized...
+    //update position/size of FFT widget
+    x = (int)container[parentContainer].x;
+    y = (int)container[parentContainer].y;
+    w = (int)container[parentContainer].w;
+    h = (int)container[parentContainer].h;
+    
+    //update position/size of FFT plot
+    fft_plot.setPos(x, y+navHeight);//update position
+    fft_plot.setOuterDim(w, h-navHeight);//update dimensions
+
+    //update dropdown menu positions
+    cp5_FFT.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
+    int dropdownPos;
+    int dropdownWidth = 60;
+    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
+    cp5_FFT.getController("MaxFreq")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+    dropdownPos = 3;
+    cp5_FFT.getController("VertScale")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+    dropdownPos = 2;
+    cp5_FFT.getController("LogLin")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+    dropdownPos = 1;
+    cp5_FFT.getController("Smoothing")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+    dropdownPos = 0;
+    cp5_FFT.getController("UnfiltFilt")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
   }
 }
 
@@ -339,8 +422,7 @@ void MaxFreq(int n) {
 //triggered when there is an event in the VertScale Dropdown
 void VertScale(int n) {
 
-  fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot  
-  
+  fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
 }
 
 //triggered when there is an event in the LogLin Dropdown
