@@ -80,7 +80,7 @@ void processNewData() {
   //prepare to update the data buffers
   float foo_val;
   
-  println("PPP" + fftBuff[0].specSize());
+  //println("PPP" + fftBuff[0].specSize());
   float prevFFTdata[] = new float[fftBuff[0].specSize()];
 
   double foo;
