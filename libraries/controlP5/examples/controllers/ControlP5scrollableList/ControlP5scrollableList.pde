@@ -13,24 +13,58 @@
 import controlP5.*;
 import java.util.*;
 
+PFont _controlFont;
+ControlFont controlFont;
 
 ControlP5 cp5;
+CColor cp5_colors;
+color[] colors = new color[10];
 
 void setup() {
   size(400, 400);
   cp5 = new ControlP5(this);
-  List l = Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h");
+  _controlFont = createFont("Arial", 20, true);
+  controlFont = new ControlFont(_controlFont, 20);
+  
+  List l = Arrays.asList("a", "b", "c", "d");
   /* add a ScrollableList, by default it behaves like a DropdownList */
+  
+  cp5_colors = new CColor();
+  cp5_colors.setActive(color(0,0,255));
+  cp5_colors.setForeground(color(0,255,0));
+  cp5_colors.setBackground(color(255,0,0));
+  cp5_colors.setCaptionLabel(color(255,255,0));
+  cp5_colors.setValueLabel(color(255,0,255));
+  
+  cp5.setColor(cp5_colors);
+  
+  //cp5_colors.setActive(color(0,255,255));
+  //cp5_colors.setActive(color(0,255,255));
+  //cp5_colors.setActive(color(0,255,255));
+  //cp5_colors.setActive(color(0,255,255));
+  //color1.
+  
+  
+  
   cp5.addScrollableList("dropdown")
      .setPosition(100, 100)
-     .setSize(200, 100)
+     .setSize(100, 100)
+     .setScrollSensitivity(0.0)
      .setBarHeight(20)
      .setItemHeight(20)
      .addItems(l)
      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
      ;
-     
-     
+  cp5.getController("dropdown")
+      .getCaptionLabel()
+      .setFont(controlFont)
+      .setSize(12)
+      .getStyle()
+      .setPaddingTop(4)
+      ;
+  //cp5.getController("dropdown")
+  //    .setColor(int(color(255,0,0)))
+  //    ;
 }
 
 void draw() {
@@ -49,7 +83,7 @@ void dropdown(int n) {
    * view, a customizable view, is of type CDrawable 
    */
   
-   CColor c = new CColor();
+  CColor c = new CColor();
   c.setBackground(color(255,0,0));
   cp5.get(ScrollableList.class, "dropdown").getItem(n).put("color", c);
   
@@ -257,5 +291,3 @@ java.lang.Object : boolean equals(Object)
 created: 2014/09/08 01:19:14
 
 */
-
-
