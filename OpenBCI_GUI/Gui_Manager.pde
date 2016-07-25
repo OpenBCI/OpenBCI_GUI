@@ -915,6 +915,19 @@ class GUI_Manager {
   public void mousePressed(){
     verbosePrint("GUI_Manager: mousePressed: mouse pressed.");
     //if showMontage button pressed
+    if(configButton.isMouseHere()){
+      configButton.setIsActive(true);
+      
+      if(configButton.wasPressed){
+        configButton.wasPressed = false;
+        configButton.setString("O");
+      }
+      else{
+        configButton.wasPressed = true;
+        configButton.setString("X");
+      }
+    }
+    
     if(showMontageButton.isMouseHere()){
       //turn off visibility of channel full controller
       cc.showFullController = false;
@@ -950,6 +963,8 @@ class GUI_Manager {
     //verbosePrint("GUI_Manager: mouseReleased()");
 
     // if(mouseX >= cc.x1 && mouseX <= (cc.x2 - cc.w2) && mouseY >= cc.y1 && mouseY <= (cc.y1 + cc.h1) ){ 
+    
+      
     verbosePrint("GUI_Manager: mouseReleased(): Channel Controller mouse released...");
     cc.mouseReleased();
 
@@ -964,6 +979,8 @@ class GUI_Manager {
     showPolarityButton.setIsActive(false);
     maxDisplayFreqButton.setIsActive(false);
     biasButton.setIsActive(false);
+    
+    configButton.setIsActive(false);
   }
  
 };

@@ -119,7 +119,7 @@ void serialEvent(Serial port) {
       
     }
     else{
-      println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
+      //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
       
       
       inByte = byte(port.read());

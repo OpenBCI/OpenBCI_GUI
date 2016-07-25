@@ -576,7 +576,7 @@ class ControlPanel {
     
     
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-      board.stop();
+      if(board != null) board.stop();
       //if system is not active ... initate system and flip button state
       system_init();
       //cursor(ARROW); //this this back to ARROW

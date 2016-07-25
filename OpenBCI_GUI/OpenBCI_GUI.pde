@@ -146,6 +146,8 @@ PFont f1;
 PFont f2;
 PFont f3;
 
+Motor_Imagery_Widget motorWidget;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -278,6 +280,11 @@ void initSystem() {
   }
   dataProcessing = new DataProcessing(nchan, openBCI.get_fs_Hz());
   dataProcessing_user = new DataProcessing_User(nchan, openBCI.get_fs_Hz());
+  
+  
+  Container motor_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
+
+  motorWidget = new Motor_Imagery_Widget(nchan, openBCI.get_fs_Hz(), motor_container);
 
   //initialize the data
   prepareData(dataBuffX, dataBuffY_uV, openBCI.get_fs_Hz());
@@ -518,7 +525,9 @@ void systemDraw() { //for drawing to the screen
     }
 
     playground.draw();
-    dataProcessing_user.draw();
+
+    motorWidget.draw();
+    //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10
     //still print title information about fps
@@ -550,7 +559,8 @@ void systemDraw() { //for drawing to the screen
 
   if (drawPresentation) {
     myPresentation.draw();
-    dataProcessing_user.drawTriggerFeedback();
+    motorWidget.drawTriggerFeedback();
+    //dataProcessing_user.drawTriggerFeedback();
   }
 
   // use commented code below to verify frameRate and check latency
