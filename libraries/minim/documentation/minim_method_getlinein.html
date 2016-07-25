@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : Minim : : getLineIn</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="minim_class_minim.html">Minim</A></p>
+    	<p class="methodName">getLineIn</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	An AudioInput is used when you want to monitor the active audio input 
+ of the computer. On a laptop, for instance, this will typically be 
+ the built-in microphone. On a desktop it might be the line-in
+ port on the soundcard. The default values are for a stereo input
+ with a 1024 sample buffer (ie the size of left, right, and mix 
+ buffers), sample rate of 44100 and bit depth of 16. Generally
+ speaking, you will not want to specify these things, but it's
+ there if you need it.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>AudioInput getLineIn()
+AudioInput getLineIn(int type)
+AudioInput getLineIn(int type, int bufferSize)
+AudioInput getLineIn(int type, int bufferSize, float sampleRate)
+AudioInput getLineIn(int type, int bufferSize, float sampleRate, int bitDepth)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">type</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">Minim.MONO or Minim.STEREO</span><br/>
+    
+        <span class="parameterName">bufferSize</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: how long you want the <code>AudioInput</code>'s sample buffer
+            to be (ie the size of left, right, and mix buffers)</span><br/>
+    
+        <span class="parameterName">sampleRate</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float: the desired sample rate in Hertz (typically 44100)</span><br/>
+    
+        <span class="parameterName">bitDepth</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the desired bit depth (typically 16)</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>an AudioInput that reads from the active audio input of the soundcard</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audioinput_class_audioinput.html">AudioInput</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to monitor the currently active audio input 
+  * of the computer using an AudioInput. What you will actually 
+  * be monitoring depends on the current settings of the machine the sketch is running on. 
+  * Typically, you will be monitoring the built-in microphone, but if running on a desktop
+  * it's feasible that the user may have the actual audio output of the computer 
+  * as the active audio input, or something else entirely.
+  * &lt;p>
+  * Press 'm' to toggle monitoring on and off.
+  * &lt;p>
+  * When you run your sketch as an applet you will need to sign it in order to get an input.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/ 
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioInput in;
+
+void setup()
+{
+  size(512, 200, P3D);
+
+  minim = new Minim(this);
+  
+  // use the getLineIn method of the Minim object to get an AudioInput
+  in = minim.getLineIn();
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  
+  // draw the waveforms so we can see what we are monitoring
+  for(int i = 0; i &lt; in.bufferSize() - 1; i++)
+  {
+    line( i, 50 + in.left.get(i)*50, i+1, 50 + in.left.get(i+1)*50 );
+    line( i, 150 + in.right.get(i)*50, i+1, 150 + in.right.get(i+1)*50 );
+  }
+  
+  String monitoringState = in.isMonitoring() ? "enabled" : "disabled";
+  text( "Input monitoring is currently " + monitoringState + ".", 5, 15 );
+}
+
+void keyPressed()
+{
+  if ( key == 'm' || key == 'M' )
+  {
+    if ( in.isMonitoring() )
+    {
+      in.disableMonitoring();
+    }
+    else
+    {
+      in.enableMonitoring();
+    }
+  }
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

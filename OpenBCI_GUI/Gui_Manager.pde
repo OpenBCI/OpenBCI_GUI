@@ -31,7 +31,7 @@ import java.util.*; //for Array.copyOfRange()
 
 //GUI plotting constants
 GUI_Manager gui;
-color bgColor = color(1, 18, 41);
+
 int navBarHeight = 32;
 float default_vertScale_uV = 200.0f;  //used for vertical scale of time-domain montage plot and frequency-domain FFT plot
 float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -79,7 +79,9 @@ class GUI_Manager {
   GridBackground gbMontage, gbFFT;
   Button stopButton;
   PlotFontInfo fontInfo;
+  
   HeadPlot headPlot1;
+  
   Button[] chanButtons;
   // Button guiPageButton;
   //boolean showImpedanceButtons;
@@ -778,6 +780,7 @@ class GUI_Manager {
     montageTrace.generate();  //graph doesn't update without this
     fftTrace.generate(); //graph doesn't update without this
     headPlot1.update();
+    //headPlot_widget.headPlot.update();
     cc.update();
 
     //update the text strings

@@ -21,7 +21,7 @@ boolean isVerbose = false;
 HelpWidget helpWidget;
 
 //use signPost(String identifier) to print 'identifier' text and time since last signPost() for debugging latency/timing issues
-boolean printSignPosts = false;
+boolean printSignPosts = true;
 float millisOfLastSignPost = 0.0;
 float millisSinceLastSignPost = 0.0;
 

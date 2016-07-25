@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioBuffer : : level</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audiobuffer_audiobuffer.html">AudioBuffer</A></p>
+    	<p class="methodName">level</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Gets the current level of the buffer. It is calculated as the
+ root-mean-square of all the samples in the buffer.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>float level()
+</pre>
+    	
+    	
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>float: the RMS amplitude of the buffer</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audiobuffer_audiobuffer.html">AudioBuffer</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the AudioBuffer objects of an AudioPlayer 
+  * to draw the waveform and level of the sound as it is playing. These same 
+  * AudioBuffer objects are available on AudioInput, AudioOuput, and AudioSample,
+  * so they same drawing code will work in those cases.
+  *
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer groove;
+
+void setup()
+{
+  size(1024, 200);
+
+  minim = new Minim(this);
+  groove = minim.loadFile("groove.mp3", 1024);
+  groove.loop();
+}
+
+void draw()
+{
+  background(0);
+  
+  stroke( 255 );
+  
+  // draw the waveforms
+  // the values returned by left.get() and right.get() will be between -1 and 1,
+  // so we need to scale them up to see the waveform
+  // note that if the file is MONO, left.get() and right.get() will return the same value
+  for(int i = 0; i &lt; groove.bufferSize() - 1; i++)
+  {
+    float x1 = map( i, 0, groove.bufferSize(), 0, width );
+    float x2 = map( i+1, 0, groove.bufferSize(), 0, width );
+    line( x1, 50 + groove.left.get(i)*50, x2, 50 + groove.left.get(i+1)*50 );
+    line( x1, 150 + groove.right.get(i)*50, x2, 150 + groove.right.get(i+1)*50 );
+  }
+  
+  noStroke();
+  fill( 255, 128 );
+  
+  // the value returned by the level method is the RMS (root-mean-square) 
+  // value of the current buffer of audio.
+  // see: http://en.wikipedia.org/wiki/Root_mean_square
+  rect( 0, 0, groove.left.level()*width, 100 );
+  rect( 0, 100, groove.right.level()*width, 100 );
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

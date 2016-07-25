@@ -103,12 +103,6 @@ String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based
 Serial serial_output;
 int serial_output_baud = 115200; //baud rate from the Arduino
 
-//fft constants
-int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
-FFT fftBuff[] = new FFT[nchan];   //from the minim library
-float[] smoothFac = new float[]{0.75, 0.9, 0.95, 0.98, 0.0, 0.5};
-int smoothFac_ind = 0;    //initial index into the smoothFac array
-
 //Control Panel for (re)configuring system settings
 Button controlPanelCollapser;
 PlotFontInfo fontInfo;
@@ -166,15 +160,15 @@ void setup() {
   //if (frame != null) frame.setResizable(true);  //make window resizable
   //attach exit handler
   //prepareExitHandler();
-  frameRate(120); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
   widthOfLastScreen = width; //for screen resizing (Thank's Tao)
   heightOfLastScreen = height;
 
-
   setupContainers();
+  //setupGUIWidgets(); 
 
   //V1 FONTS
   f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
@@ -341,6 +335,7 @@ void initSystem() {
 
   //initilize the GUI
   initializeGUI();
+  setupGUIWidgets(); //####
 
   //final config
   // setBiasState(openBCI.isBiasAuto);
@@ -419,7 +414,13 @@ void systemUpdate() { // for updating data values and variables
         // }
         if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { //wait 1 second for GUI to reinitialize
           try {
+
+            //-----------------------------------------------------------            
+            //-----------------------------------------------------------
             gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
+            updateGUIWidgets(); //####
+            //-----------------------------------------------------------
+            //-----------------------------------------------------------
           } 
           catch (Exception e) {
             println(e.getMessage());
@@ -460,6 +461,9 @@ void systemUpdate() { // for updating data values and variables
     }
 
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
+    if(screenHasBeenResized){
+      GUIWidgets_screenResized(width, height);
+    }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
       println("systemUpdate: reinitializing GUI");
@@ -478,6 +482,7 @@ void systemDraw() { //for drawing to the screen
 
   //redraw the screen...not every time, get paced by when data is being plotted    
   background(bgColor);  //clear the screen
+  //background(255);  //clear the screen
 
   if (systemMode == 10) {
     int drawLoopCounter_thresh = 100;
@@ -511,7 +516,14 @@ void systemDraw() { //for drawing to the screen
         noStroke();
         rect(0, 0, width, navBarHeight);
         popStyle();
+
+        //----------------------------
         gui.draw(); //draw the GUI
+        //updateGUIWidgets(); //####
+        drawGUIWidgets();
+
+        //----------------------------
+
         // playground.draw();
       } 
       catch (Exception e) {
