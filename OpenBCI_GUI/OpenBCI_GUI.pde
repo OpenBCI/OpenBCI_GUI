@@ -276,9 +276,7 @@ void initSystem() {
   dataProcessing_user = new DataProcessing_User(nchan, openBCI.get_fs_Hz());
   
   
-  Container motor_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
 
-  motorWidget = new Motor_Imagery_Widget(nchan, openBCI.get_fs_Hz(), motor_container);
 
   //initialize the data
   prepareData(dataBuffX, dataBuffY_uV, openBCI.get_fs_Hz());

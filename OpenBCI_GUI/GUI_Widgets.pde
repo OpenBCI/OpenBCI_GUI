@@ -9,6 +9,10 @@ FFT_Widget fft_widget;
 void setupGUIWidgets() {
   headPlot_widget = new HeadPlot_Widget(this);
   fft_widget = new FFT_Widget(this);
+  Container motor_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
+
+  motorWidget = new Motor_Imagery_Widget(nchan, openBCI.get_fs_Hz(), motor_container);
+
 }
 
 void updateGUIWidgets() {
@@ -30,9 +34,32 @@ void GUIWidgets_screenResized(int _winX, int _winY) {
 }
 
 void GUIWidgets_mousePressed() {
+  
+  for(int i = 0; i < nchan; i++){
+    if(motorWidget.configWidget.chans[i].isMouseHere()) {
+      motorWidget.configWidget.chans[i].setIsActive(true);
+      motorWidget.configWidget.chans[i].wasPressed = true;
+      
+    }
+    
+  }
+  
+  if(configButton.isMouseHere()){
+    configButton.setIsActive(true);
+    
+    if(configButton.wasPressed){
+      configButton.wasPressed = false;
+      configButton.setString("O");
+    }
+    else{
+      configButton.wasPressed = true;
+      configButton.setString("X");
+    }
+  }
 }
 
 void GUIWidgets_mouseReleased() {
+    configButton.setIsActive(false);
 }
 
 void GUIWidgets_keyPressed() {

@@ -918,18 +918,6 @@ class GUI_Manager {
   public void mousePressed(){
     verbosePrint("GUI_Manager: mousePressed: mouse pressed.");
     //if showMontage button pressed
-    if(configButton.isMouseHere()){
-      configButton.setIsActive(true);
-      
-      if(configButton.wasPressed){
-        configButton.wasPressed = false;
-        configButton.setString("O");
-      }
-      else{
-        configButton.wasPressed = true;
-        configButton.setString("X");
-      }
-    }
     
     if(showMontageButton.isMouseHere()){
       //turn off visibility of channel full controller
@@ -953,6 +941,9 @@ class GUI_Manager {
       verbosePrint("GUI_Manager: mousePressed: Channel Controller mouse pressed...");
       cc.mousePressed();
     // }
+    
+    
+    GUIWidgets_mousePressed();
     
 
     //turn off visibility of graph
@@ -983,7 +974,6 @@ class GUI_Manager {
     maxDisplayFreqButton.setIsActive(false);
     biasButton.setIsActive(false);
     
-    configButton.setIsActive(false);
   }
  
 };
