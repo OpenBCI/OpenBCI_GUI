@@ -5,34 +5,38 @@ int smoothFac_ind = 2;    //initial index into the smoothFac array = 0.75 to sta
 color bgColor = color(1, 18, 41);
 
 FFT_Widget fft_widget;
+FocusViz_Widget focusViz_Widget;
 
 void setupGUIWidgets() {
   headPlot_widget = new HeadPlot_Widget(this);
   fft_widget = new FFT_Widget(this);
+  focusViz_Widget = new FocusViz_Widget(this);
 }
 
 void updateGUIWidgets() {
   headPlot_widget.update();
   fft_widget.update();
+  focusViz_Widget.update();
 }
 
 void drawGUIWidgets() {
   //if () {
   headPlot_widget.draw();
   fft_widget.draw();
-
+  focusViz_Widget.draw();
   //}
 }
 
 void GUIWidgets_screenResized(int _winX, int _winY) {
   headPlot_widget.screenResized(this, _winX, _winY);
   fft_widget.screenResized(this, _winX, _winY);
+  focusViz_Widget.screenResized(this, _winX, _winY);
 }
 
 void GUIWidgets_mousePressed() {
   headPlot_widget.mousePressed();
   fft_widget.mousePressed();
-  
+  focusViz_Widget.mousePressed();
 }
 
 void GUIWidgets_mouseReleased() {
