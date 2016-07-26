@@ -943,8 +943,6 @@ class GUI_Manager {
     // }
     
     
-    GUIWidgets_mousePressed();
-    
 
     //turn off visibility of graph
     // turn on drawing and interactivity of channel controller

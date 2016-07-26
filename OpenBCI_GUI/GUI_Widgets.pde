@@ -34,32 +34,12 @@ void GUIWidgets_screenResized(int _winX, int _winY) {
 }
 
 void GUIWidgets_mousePressed() {
-  
-  for(int i = 0; i < nchan; i++){
-    if(motorWidget.configWidget.chans[i].isMouseHere()) {
-      motorWidget.configWidget.chans[i].setIsActive(true);
-      motorWidget.configWidget.chans[i].wasPressed = true;
-      
-    }
-    
-  }
-  
-  if(configButton.isMouseHere()){
-    configButton.setIsActive(true);
-    
-    if(configButton.wasPressed){
-      configButton.wasPressed = false;
-      configButton.setString("O");
-    }
-    else{
-      configButton.wasPressed = true;
-      configButton.setString("X");
-    }
-  }
+  motorWidget.mousePressed();
 }
 
 void GUIWidgets_mouseReleased() {
-    configButton.setIsActive(false);
+  
+  motorWidget.mouseReleased();
 }
 
 void GUIWidgets_keyPressed() {
