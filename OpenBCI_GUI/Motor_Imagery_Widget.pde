@@ -50,6 +50,7 @@ class Motor_Imagery_Widget extends Container{
     
     //make that array yo
     tripSliders = new TripSlider[NCHAN];
+    untripSliders = new TripSlider[NCHAN];
     motorWidgets = new Motor_Widget[NCHAN];
     
     for (int i = 0; i < NCHAN; i++){
@@ -80,9 +81,19 @@ class Motor_Imagery_Widget extends Container{
     for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {      
 
-              println("Offset rh: "+ (rh));
-              println("Offset rw: "+ (rw));
-              tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(115 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders);
+//              println("Offset rh: "+ (rh));
+//              println("Offset rw: "+ (rw));
+              if(rowNum > 2){
+                tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+                untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+              }
+              else{
+                tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(117 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+                untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+              }
+              
+              tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
+              untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
               index++;
               
 
@@ -194,9 +205,11 @@ class Motor_Imagery_Widget extends Container{
             
             //if(this.motorWidgets[index].digitalBool){
               fill(0,255,255,125);
-              rect(5*colOffset/8, 2 * rowOffset / 8, (3*colOffset/32), (4*rowOffset/8));
+              rect(5*colOffset/8, 2 * rowOffset / 8 - 7, (3*colOffset/32), int((4*rowOffset/8) + 7));
+              
+              //println("WOAH THIS: " + (4*rowOffset/8));
               //draw real time bar of actually mapped value
-              rect(5*colOffset/8, 6 *rowOffset / 8, (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * (4*rowOffset/8)));
+              rect(5*colOffset/8, 6 *rowOffset / 8 - 7, (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) + 7)));
             //}
             
              //draw the thresholds
@@ -208,6 +221,8 @@ class Motor_Imagery_Widget extends Container{
               popMatrix();
               tripSliders[index].update();
               tripSliders[index].display();
+              untripSliders[index].update();
+              untripSliders[index].display();
               index++;
             }
           }
@@ -314,7 +329,9 @@ class Motor_Imagery_Widget extends Container{
     //if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
       //println("Motor imagery Mouse Pressed");
     for(int i = 0; i < nchan; i++){
+      if(!motorWidget.configWidget.dynamicThreshold.wasPressed)
       tripSliders[i].releaseEvent();
+      untripSliders[i].releaseEvent();
       if(i != lastChan){
         motorWidget.configWidget.chans[i].setIsActive(false);
         motorWidget.configWidget.chans[i].wasPressed = false;
@@ -349,8 +366,8 @@ class Motor_Imagery_Widget extends Container{
       chans = new Button[NCHAN];
       digital = new Button(int(x + 55),int(y + 60),10,10,"",fontInfo.buttonLabel_size);
       analog = new Button(int(x - 15),int(y + 60),10,10,"",fontInfo.buttonLabel_size);
-      valueThreshold = new Button(int(x+240), int(y+60), 10,10,"",fontInfo.buttonLabel_size);
-      dynamicThreshold = new Button(int(x+155), int(y+60), 10,10,"",fontInfo.buttonLabel_size);
+      valueThreshold = new Button(int(x+235), int(y+60), 10,10,"",fontInfo.buttonLabel_size);
+      dynamicThreshold = new Button(int(x+150), int(y+60), 10,10,"",fontInfo.buttonLabel_size);
       digital.setIsActive(true);
       digital.wasPressed = true;
       analog.setIsActive(true);
@@ -405,9 +422,10 @@ class Motor_Imagery_Widget extends Container{
       
       fill(50);
       textAlign(LEFT);
-      text("Dynamic",x+175, y+68);
-      text("Trip Value %" + parent[lastChan].tripThreshold * 10,x+255, y+63);
-      text("Untrip Value %"+ (parent[lastChan].untripThreshold * 10),x+255, y+78);
+      textSize(13);
+      text("Dynamic",x+167, y+68);
+      text("Trip Value     %" + (double)Math.round((parent[lastChan].tripThreshold * 100) * 10d) / 10d,x+250, y+63);
+      text("Untrip Value %"+ (double)Math.round((parent[lastChan].untripThreshold * 100) * 10d) / 10d,x+250, y+78);
     }
   
   }
@@ -426,10 +444,12 @@ class Motor_Imagery_Widget extends Container{
     boolean press;
     boolean locked = false;
     boolean otherslocked = false;
+    boolean trip;
     TripSlider[] others;
     color current_color = color(255,255,255);
+    Motor_Widget parent;
     
-    TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o) {
+    TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
       lx = ix;
       ly = iy;
       stretch = il;
@@ -438,6 +458,8 @@ class Motor_Imagery_Widget extends Container{
       boxx = lx - wid/2;
       boxy = ly-stretch - len/2;
       others = o;
+      trip = wastrip; 
+      parent = p;
     }
     
     void update() {
@@ -459,10 +481,16 @@ class Motor_Imagery_Widget extends Container{
       }
       
       if (press) {
-        stretch = lock(ly -mouseY, 0, 100);
-        println("ly - mouseY: " + (ly - mouseY));
-        println("ly: " + ly);
-        println("mouseY: " + mouseY);
+        if(trip) stretch = lock(ly -mouseY, int(parent.untripThreshold * (50 - len)), 50 - len);
+        else stretch = lock(ly -mouseY, 0, int(parent.tripThreshold * (50- len)));
+        //println("wut :" + float(ly - mouseY) / 48);
+        
+        if((ly - mouseY) > 50-len && trip) parent.tripThreshold = 1;
+        else if((ly - mouseY) > 50 -len && !trip) parent.untripThreshold = 1;
+        else if((ly - mouseY) < 0 && trip) parent.tripThreshold = 0;
+        else if((ly - mouseY) < 0 && !trip) parent.untripThreshold = 0;
+        else if(trip) parent.tripThreshold = float(ly - mouseY) / (50 - len);
+        else if(!trip) parent.untripThreshold = float(ly - mouseY) / (50 - len);
       }
     }
     
@@ -489,14 +517,18 @@ class Motor_Imagery_Widget extends Container{
     
     void setColor(){
       if(over)current_color = color(127,134,143);    
-      else current_color = color(255,255,255);
+      else {
+        if(trip) current_color = color(0,255,0);
+        else current_color = color(255,0,0);
+      }
     }
     
     void setStretchPercentage(float val){
       println("ly: " + (ly - 60 - 100*val));
       
-      stretch = lock(int(ly - (ly%100) - 100*val), 0, 100);
+      stretch = lock(int((50 - len) * val), 0, 50 - len);
     }
+    
     
     void display() {
       //line(lx, ly, lx, ly-stretch);
