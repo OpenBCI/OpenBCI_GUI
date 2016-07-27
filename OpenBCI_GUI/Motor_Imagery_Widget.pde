@@ -269,7 +269,7 @@ class Motor_Imagery_Widget extends Container{
               
               //println("WOAH THIS: " + (4*rowOffset/8));
               //draw real time bar of actually mapped value
-              rect(5*colOffset/8, 6 *rowOffset / 8 - 7, (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) + 7)));
+              rect(5*colOffset/8, 6 *rowOffset / 8 , (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) )));
             //}
             
              //draw the thresholds
@@ -586,7 +586,7 @@ class Motor_Imagery_Widget extends Container{
     }
     
     void setStretchPercentage(float val){
-      println("ly: " + (ly - 60 - 100*val));
+      //println("ly: " + (ly - 60 - 100*val));
       
       stretch = lock(int((50 - len) * val), 0, 50 - len);
     }
@@ -632,13 +632,15 @@ class Motor_Imagery_Widget extends Container{
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
     int timeToWait = 1250;
+    int timeToWaitThresh = 750;
     
-    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= 750){
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
       cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 1");
       cfc.switchTripped = false;
     }
     
@@ -647,75 +649,375 @@ class Motor_Imagery_Widget extends Container{
   
   void eventChan1(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 2");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan2(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 3");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
   
   void eventChan3(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 4");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan4(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 5");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
   
   void eventChan5(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 6");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan6(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 7");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
   
   void eventChan7(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 8");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan8(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 9");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
   
   void eventChan9(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 10");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan10(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 11");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
   
   void eventChan11(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 12");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan12(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 13");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
   
   void eventChan13(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 14");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan14(Motor_Widget cfc){
   
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 15");
+      cfc.switchTripped = false;
+    }
+    
+  
   
   }
   
   void eventChan15(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    int timeToWaitThresh = 750;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      println("Untripped 16");
+      cfc.switchTripped = false;
+    }
+    
   
   
   }
