@@ -31,18 +31,6 @@ void setup() {
   // use ScrollableList instead, 
   // see example ControlP5scrollableList
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   // create a DropdownList, 
   d1 = cp5.addDropdownList("myList-d1")
           .setPosition(100, 100)
@@ -307,5 +295,3 @@ java.lang.Object : boolean equals(Object)
 created: 2014/09/08 01:18:58
 
 */
-
-

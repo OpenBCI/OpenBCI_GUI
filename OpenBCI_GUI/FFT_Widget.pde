@@ -46,7 +46,7 @@ class FFT_Widget {
     (int)color(221, 178, 13), 
     (int)color(253, 94, 52), 
     (int)color(224, 56, 45), 
-    (int)color(162, 82, 49),
+    (int)color(162, 82, 49), 
     (int)color(129, 129, 129), 
     (int)color(124, 75, 141), 
     (int)color(54, 87, 158), 
@@ -68,9 +68,9 @@ class FFT_Widget {
 
   //constructor 1
   FFT_Widget(PApplet parent) {
-    
+
     cp5_FFT = new ControlP5(parent);
-    
+
     println("1");
     fft_points = new GPointsArray[nchan];
     println(fft_points.length);
@@ -284,6 +284,7 @@ class FFT_Widget {
   }
 
   void draw() {
+
     pushStyle();
 
     //draw FFT Graph w/ all plots
@@ -306,6 +307,7 @@ class FFT_Widget {
     }
     fft_plot.endDraw();
 
+    //draw nav bars and button bars
     fill(150, 150, 150);
     rect(x, y, w, navHeight); //top bar
     fill(200, 200, 200);
@@ -323,14 +325,11 @@ class FFT_Widget {
     textAlign(LEFT, CENTER);
     textFont(f);
     textSize(18);
-    text("FFT Plot", x+navHeight+2, y+navHeight/2 - 2); //left
-    //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
+    text("FFT Plot", x+navHeight+2, y+navHeight/2 - 2); //title of widget -- left
+    //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //title of widget -- left
     //fill(255,0,0,150);
     //rect(x,y,w,h);
 
-    popStyle();
-
-    pushStyle();
     //draw dropdown titles
     int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
     int dropdownWidth = 60;
@@ -361,7 +360,7 @@ class FFT_Widget {
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
-    
+
     //update position/size of FFT plot
     fft_plot.setPos(x, y+navHeight);//update position
     fft_plot.setOuterDim(w, h-navHeight);//update dimensions
@@ -401,6 +400,25 @@ class FFT_Widget {
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
   }
+
+  void mousePressed() {
+    //called by GUI_Widgets.pde
+    if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
+      println("fft_widget.mousePressed()");
+    }
+  }
+  void mouseReleased() {
+    //called by GUI_Widgets.pde
+    if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
+      println("fft_widget.mouseReleased()");
+    }
+  }
+  //void keyPressed() {
+  //  //called by GUI_Widgets.pde
+  //}
+  //void keyReleased() {
+  //  //called by GUI_Widgets.pde
+  //}
 }
 
 //triggered when there is an event in the MaxFreq. Dropdown
