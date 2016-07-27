@@ -276,7 +276,6 @@ void initSystem() {
     fftBuff[Ichan] = new FFT(Nfft, openBCI.get_fs_Hz());
   };  //make the FFT objects
   verbosePrint("OpenBCI_GUI: initSystem: b");
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, openBCI.get_fs_Hz());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
