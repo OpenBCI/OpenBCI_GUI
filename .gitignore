@@ -1,0 +1,28 @@
+#### Added by CHIP 2014-10-29
+# Ignore these OpenBCI files
+OpenBCI_GUI/SavedData/*.txt
+OpenBCI_GUI/output/*.*
+OpenBCI_GUI/*.bak
+OpenBCI_GUI/build-tmp/*
+OpenBCI_GU\build-tmp\*
+
+
+
+#### Added as part of default GitHub .getattributes
+
+#############
+## Windows detritus
+#############
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Mac crap
+.DS_Store
