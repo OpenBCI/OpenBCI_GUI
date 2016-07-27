@@ -9,6 +9,8 @@ class Motor_Imagery_Widget extends Container{
   
   
   Motor_Widget[] motorWidgets;
+  TripSlider[] tripSliders;
+  TripSlider[] untripSliders;
   
   public Config_Widget configWidget;
   
@@ -45,15 +47,48 @@ class Motor_Imagery_Widget extends Container{
     this.nchan = NCHAN;
     this.fs_Hz = sample_rate_Hz;
     
+    
     //make that array yo
+    tripSliders = new TripSlider[NCHAN];
     motorWidgets = new Motor_Widget[NCHAN];
+    
     for (int i = 0; i < NCHAN; i++){
       motorWidgets[i] = new Motor_Widget();
       motorWidgets[i].ourChan = i;
+      
+      
     }
+    
+    initSliders(h,w);
+    
+    //tripSliders[0] = new TripSlider(50,160,0,30,5,tripSliders);
+    //tripSliders[1] = new TripSlider(100,160,0,30,5,tripSliders);
     
     configButton = new Button(int(x) - 60,int(y),20,20,"O",fontInfo.buttonLabel_size);
     configWidget = new Config_Widget(NCHAN, sample_rate_Hz, container, motorWidgets);
+  }
+  
+  void initSliders(float rh, float rw){
+    
+            //rect(5*colOffset/8, (2 * rowOffset / 8) , (3*colOffset/32), 2);
+    int rowNum = 4;
+    int colNum = motorWidgets.length / rowNum;
+    int index = 0;
+    float rowOffset = rh / rowNum;
+    float colOffset = rw / colNum;
+    
+    for (int i = 0; i < rowNum; i++) {
+            for (int j = 0; j < colNum; j++) {      
+
+              println("Offset rh: "+ (rh));
+              println("Offset rw: "+ (rw));
+              tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(115 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders);
+              index++;
+              
+
+            }
+    }
+    
   }
   
   public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
@@ -165,17 +200,22 @@ class Motor_Imagery_Widget extends Container{
             //}
             
              //draw the thresholds
-            fill(255,0,0);
-            rect(5*colOffset/8, (2 * rowOffset / 8) , (3*colOffset/32), 2);
-            fill(0,0,50);
+            //fill(255,0,0);
+            //rect(5*colOffset/8, (2 * rowOffset / 8) , (3*colOffset/32), 2);
+            //fill(0,0,50);
             //rect(13*(width/16), 3*(height/8) +  map(output_normalized, 0, 1, 0, (-1) * (height/4)) * untripThreshold, (width/64), 5);
     
               popMatrix();
-              
+              tripSliders[index].update();
+              tripSliders[index].display();
               index++;
             }
           }
     
+          //tripSliders[0].update();
+          //tripSliders[0].display();
+          //tripSliders[1].update();
+          //tripSliders[1].display();
           popStyle();
         }
        else{
@@ -274,6 +314,7 @@ class Motor_Imagery_Widget extends Container{
     //if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
       //println("Motor imagery Mouse Pressed");
     for(int i = 0; i < nchan; i++){
+      tripSliders[i].releaseEvent();
       if(i != lastChan){
         motorWidget.configWidget.chans[i].setIsActive(false);
         motorWidget.configWidget.chans[i].wasPressed = false;
@@ -370,6 +411,128 @@ class Motor_Imagery_Widget extends Container{
     }
   
   }
+  
+  
+  
+  //TRIP SLIDERS
+  class TripSlider {
+    
+    int lx, ly;
+    int boxx, boxy;
+    int stretch;
+    int wid;
+    int len;
+    boolean over;
+    boolean press;
+    boolean locked = false;
+    boolean otherslocked = false;
+    TripSlider[] others;
+    color current_color = color(255,255,255);
+    
+    TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o) {
+      lx = ix;
+      ly = iy;
+      stretch = il;
+      wid = iwid;
+      len = ilen;
+      boxx = lx - wid/2;
+      boxy = ly-stretch - len/2;
+      others = o;
+    }
+    
+    void update() {
+      boxx = lx - wid/2;
+      boxy = ly - stretch;
+      
+      for (int i=0; i<others.length; i++) {
+        if (others[i].locked == true) {
+          otherslocked = true;
+          break;
+        } else {
+          otherslocked = false;
+        }  
+      }
+      
+      if (otherslocked == false) {
+        overEvent();
+        pressEvent();
+      }
+      
+      if (press) {
+        stretch = lock(ly -mouseY, 0, 100);
+        println("ly - mouseY: " + (ly - mouseY));
+        println("ly: " + ly);
+        println("mouseY: " + mouseY);
+      }
+    }
+    
+    void overEvent() {
+      if (overRect(boxx, boxy, wid, len)) {
+        over = true;
+      } else {
+        over = false;
+      }
+    }
+    
+    void pressEvent() {
+      if (over && mousePressed || locked) {
+        press = true;
+        locked = true;
+      } else {
+        press = false;
+      }
+    }
+    
+    void releaseEvent() {
+      locked = false;
+    }
+    
+    void setColor(){
+      if(over)current_color = color(127,134,143);    
+      else current_color = color(255,255,255);
+    }
+    
+    void setStretchPercentage(float val){
+      println("ly: " + (ly - 60 - 100*val));
+      
+      stretch = lock(int(ly - (ly%100) - 100*val), 0, 100);
+    }
+    
+    void display() {
+      //line(lx, ly, lx, ly-stretch);
+      fill(255);
+      strokeWeight(0);
+      stroke(255);
+      setColor();
+      fill(current_color);
+      rect(boxx, boxy, wid, len);
+      //if (over || press) {
+      //  line(boxx, boxy, boxx+wid, boxy+len);
+      //  line(boxx, boxy+wid, boxx+len, boxy);
+      //}
+  
+    }
+    boolean overRect(int lx, int ly, int lwidth, int lheight) {
+      if (mouseX >= lx && mouseX <= lx+lwidth && 
+          mouseY >= ly && mouseY <= ly+lheight) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  
+    int lock(int val, int minv, int maxv) { 
+      return  min(max(val, minv), maxv); 
+    } 
+}
+
+  
+  
+  
+  
+  
+  
+  
   
   
   
