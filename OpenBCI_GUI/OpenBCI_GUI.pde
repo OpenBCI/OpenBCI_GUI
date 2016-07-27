@@ -1,3 +1,10 @@
+import netP5.*;
+import oscP5.*;
+
+import hypermedia.net.*;
+
+import grafica.*;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
@@ -97,6 +104,12 @@ float data_elec_imp_ohm[];
 OutputFile_rawtxt fileoutput;
 String output_fname;
 String fileName = "N/A";
+
+//variables for Networking
+int port = 0;
+String ip = "";
+UDPSend udp;
+OSCSend osc;
 
 // Serial output
 String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port

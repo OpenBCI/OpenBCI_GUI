@@ -337,7 +337,6 @@ class OpenBCI_ADS1299 {
     println("OpenBCI_ADS1299: closeSerialPort: d");
     portIsOpen = false;
     println("OpenBCI_ADS1299: closeSerialPort: e");
-    serial_openBCI.clear();
     println("OpenBCI_ADS1299: closeSerialPort: e2");
     serial_openBCI.stop();
     println("OpenBCI_ADS1299: closeSerialPort: f");
