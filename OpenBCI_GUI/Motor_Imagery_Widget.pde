@@ -247,8 +247,8 @@ class Motor_Imagery_Widget extends Container{
   }
   
   void mousePressed(){
-    if(mouseX >= x - 35 && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
-         
+    if(mouseX >= x - 35 && mouseX <= x+w && mouseY >= y && mouseY <= y+h && configButton.wasPressed){
+       
       for(int i = 0; i < nchan; i++){
         if(motorWidget.configWidget.chans[i].isMouseHere()) {
           motorWidget.configWidget.chans[i].setIsActive(true);
@@ -329,9 +329,11 @@ class Motor_Imagery_Widget extends Container{
     //if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
       //println("Motor imagery Mouse Pressed");
     for(int i = 0; i < nchan; i++){
-      if(!motorWidget.configWidget.dynamicThreshold.wasPressed)
-      tripSliders[i].releaseEvent();
-      untripSliders[i].releaseEvent();
+      if(!motorWidget.configWidget.dynamicThreshold.wasPressed){
+        tripSliders[i].releaseEvent();
+        untripSliders[i].releaseEvent();
+      }
+      
       if(i != lastChan){
         motorWidget.configWidget.chans[i].setIsActive(false);
         motorWidget.configWidget.chans[i].wasPressed = false;
