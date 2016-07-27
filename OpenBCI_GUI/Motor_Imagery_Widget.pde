@@ -78,26 +78,49 @@ class Motor_Imagery_Widget extends Container{
     float rowOffset = rh / rowNum;
     float colOffset = rw / colNum;
     
-    for (int i = 0; i < rowNum; i++) {
-            for (int j = 0; j < colNum; j++) {      
-
-//              println("Offset rh: "+ (rh));
-//              println("Offset rw: "+ (rw));
-              if(rowNum > 2){
-                tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-                untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+    if(nchan == 8){
+      for (int i = 0; i < rowNum; i++) {
+              for (int j = 0; j < colNum; j++) {      
+  
+                if(i > 2){
+                  tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+                  untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+                }
+                else{
+                  tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(117 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+                  untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(117 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+                }
+                
+                tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
+                untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
+                index++;
+                println(index);
+                
+  
               }
-              else{
-                tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(117 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-                untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+      }
+    }
+    else if(nchan == 16){
+      for (int i = 0; i < rowNum; i++) {
+              for (int j = 0; j < colNum; j++) {    
+                
+                if( j < 2){
+                  tripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+                  untripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+                }
+                else{
+                  tripSliders[index] = new TripSlider(int(683 + (j * 103) - 1), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+                  untripSliders[index] = new TripSlider(int(683 + (j * 103) - 1), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+                }
+                
+                tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
+                untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
+                index++;
+                println(index);
+                
+  
               }
-              
-              tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
-              untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
-              index++;
-              
-
-            }
+      }
     }
     
   }
@@ -141,7 +164,7 @@ class Motor_Imagery_Widget extends Container{
       
       
       
-      //=========== TRIPPIN ==================
+      //=============== TRIPPIN ==================
       switch(cfc.ourChan){
       
         case 0:
@@ -507,6 +530,7 @@ class Motor_Imagery_Widget extends Container{
     boolean locked = false;
     boolean otherslocked = false;
     boolean trip;
+    boolean drawHand;
     TripSlider[] others;
     color current_color = color(255,255,255);
     Motor_Widget parent;
@@ -578,10 +602,20 @@ class Motor_Imagery_Widget extends Container{
     }
     
     void setColor(){
-      if(over)current_color = color(127,134,143);    
+      if(over) {
+        current_color = color(127,134,143); 
+        if(!drawHand){
+          cursor(HAND);
+          drawHand = true;
+        }
+      }
       else {
         if(trip) current_color = color(0,255,0);
         else current_color = color(255,0,0);
+        if(drawHand){
+          cursor(ARROW);
+          drawHand = false;
+        }
       }
     }
     
@@ -600,6 +634,7 @@ class Motor_Imagery_Widget extends Container{
       setColor();
       fill(current_color);
       rect(boxx, boxy, wid, len);
+      
       //if (over || press) {
       //  line(boxx, boxy, boxx+wid, boxy+len);
       //  line(boxx, boxy+wid, boxx+len, boxy);
@@ -636,11 +671,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 1");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -660,11 +695,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 2");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -685,11 +720,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 3");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -710,11 +745,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 4");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -735,11 +770,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 5");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -760,11 +795,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 6");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -785,11 +820,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 7");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -810,11 +845,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 8");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -835,11 +870,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 9");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -860,11 +895,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 10");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -885,11 +920,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 11");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -910,11 +945,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 12");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -935,11 +970,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 13");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -960,11 +995,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 14");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -985,11 +1020,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 15");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
@@ -1010,11 +1045,11 @@ class Motor_Imagery_Widget extends Container{
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       cfc.switchTripped = true;
-      cfc.switchCounter++;
       cfc.timeOfLastTrip = millis();
     }
     if(switchTripped && output_normalized <= untripThreshold){
       println("Untripped 16");
+      cfc.switchCounter++;
       cfc.switchTripped = false;
     }
     
