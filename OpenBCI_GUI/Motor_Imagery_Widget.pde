@@ -138,6 +138,66 @@ class Motor_Imagery_Widget extends Container{
       //output_L = (int)map(myAverage_L, lowerThreshold_L, upperThreshold_L, 0, 255);
       cfc.output_normalized = map(cfc.myAverage, cfc.lowerThreshold, cfc.upperThreshold, 0, 1);
       cfc.output_adjusted = ((-0.1/(cfc.output_normalized*255.0)) + 255.0);
+      
+      
+      
+      //=========== TRIPPIN ==================
+      switch(cfc.ourChan){
+      
+        case 0:
+          eventChan0(cfc);
+          break;
+        case 1:
+          eventChan1(cfc);
+          break;
+        case 2:
+          eventChan2(cfc);
+          break;
+        case 3:
+          eventChan3(cfc);
+          break;
+        case 4:
+          eventChan4(cfc);
+          break;
+        case 5:
+          eventChan5(cfc);
+          break;
+        case 6:
+          eventChan6(cfc);
+          break;
+        case 7:
+          eventChan7(cfc);
+          break;
+        case 8:
+          eventChan8(cfc);
+          break;
+        case 9:
+          eventChan9(cfc);
+          break;
+        case 10:
+          eventChan10(cfc);
+          break;
+        case 11:
+          eventChan11(cfc);
+          break;
+        case 12:
+          eventChan12(cfc);
+          break;
+        case 13:
+          eventChan13(cfc);
+          break;
+        case 14:
+          eventChan14(cfc);
+          break;
+        case 15:
+          eventChan15(cfc);
+          break;
+        default:
+          break;
+      
+      }
+      
+      
     }
   
 
@@ -329,7 +389,7 @@ class Motor_Imagery_Widget extends Container{
     //if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
       //println("Motor imagery Mouse Pressed");
     for(int i = 0; i < nchan; i++){
-      if(!motorWidget.configWidget.dynamicThreshold.wasPressed){
+      if(!motorWidget.configWidget.dynamicThreshold.wasPressed && !configButton.wasPressed){
         tripSliders[i].releaseEvent();
         untripSliders[i].releaseEvent();
       }
@@ -561,12 +621,104 @@ class Motor_Imagery_Widget extends Container{
 }
 
   
+  //===================== EVENTS =========================
+  
+  void eventChan0(Motor_Widget cfc){
+  
+    float output_normalized = cfc.output_normalized;
+    float tripThreshold = cfc.tripThreshold;
+    float untripThreshold = cfc.untripThreshold;
+    boolean switchTripped = cfc.switchTripped;
+    float timeOfLastTrip = cfc.timeOfLastTrip;
+    
+    int timeToWait = 1250;
+    
+    if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= 750){
+      cfc.switchTripped = true;
+      cfc.switchCounter++;
+      cfc.timeOfLastTrip = millis();
+    }
+    if(switchTripped && output_normalized <= untripThreshold){
+      cfc.switchTripped = false;
+    }
+    
+  
+  }
+  
+  void eventChan1(Motor_Widget cfc){
   
   
+  }
+  
+  void eventChan2(Motor_Widget cfc){
   
   
+  }
+  
+  void eventChan3(Motor_Widget cfc){
   
   
+  }
+  
+  void eventChan4(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan5(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan6(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan7(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan8(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan9(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan10(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan11(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan12(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan13(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan14(Motor_Widget cfc){
+  
+  
+  }
+  
+  void eventChan15(Motor_Widget cfc){
+  
+  
+  }
   
   
   
