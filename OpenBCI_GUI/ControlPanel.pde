@@ -354,6 +354,9 @@ class ControlPanel {
         cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+
 
 
       } else if (eegDataSource == 2) {
@@ -368,6 +371,8 @@ class ControlPanel {
         cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
 
       } else {
         //set other CP5 controllers invisible
@@ -380,6 +385,8 @@ class ControlPanel {
         cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
 
        }
     } else {
@@ -499,6 +506,15 @@ class ControlPanel {
             port = int(cp5.get(Textfield.class, "udp_port").getText());
             println(port);
             udp = new UDPSend(port, ip);
+          }else if (networkType == 2){
+            ip = cp5.get(Textfield.class, "osc_ip").getText();
+            port = int(cp5.get(Textfield.class, "osc_port").getText());
+            address = cp5.get(Textfield.class, "osc_address").getText();
+            osc = new OSCSend(port, ip, address);
+          }else if (networkType == 3){
+            data_stream = cp5.get(Textfield.class, "lsl_data").getText();
+            aux_stream = cp5.get(Textfield.class, "lsl_aux").getText();
+            lsl = new LSLSend(data_stream, aux_stream);
           }
           fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles 
           
