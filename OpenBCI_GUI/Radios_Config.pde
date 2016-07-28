@@ -34,11 +34,11 @@ void autoconnect(){
           board = new Serial(this,serialPort,115200);
           println(serialPort);
           
-          delay(100);
+          delay(1000);
           
-          board.write(0xF0);
-          board.write(0x07);
-          delay(100);
+          board.write('?');
+          //board.write(0x07);
+          delay(1000);
           if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             openBCI_portName = serialPorts[i];
@@ -54,11 +54,11 @@ void autoconnect(){
           board = new Serial(this,serialPort,230400);
           println(serialPort);
           
-          delay(100);
+          delay(1000);
           
-          board.write(0xF0);
-          board.write(0x07);
-          delay(100);
+          board.write('?');
+          //board.write(0x07);
+          delay(1000);
           if(confirm_openbci()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
             openBCI_baud = 230400;
@@ -153,7 +153,8 @@ Serial autoconnect_return_high(RadioConfigBox rc) throws Exception{
 
 /**** Helper function for connection of boards ****/
 boolean confirm_openbci(){
-  if(board_message.toString().charAt(0) == 'S' || board_message.toString().charAt(0) == 'F') return true;
+  println(board_message.toString());
+  if(board_message.toString().toLowerCase().contains("registers")) return true;
   else return false;
 }
 
