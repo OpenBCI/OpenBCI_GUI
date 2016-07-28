@@ -140,7 +140,7 @@ PFont f1;
 PFont f2;
 PFont f3;
 
-Motor_Imagery_Widget motorWidget;
+EMG_Widget motorWidget;
 
 //------------------------------------------------------------------------
 //                       Global Functions

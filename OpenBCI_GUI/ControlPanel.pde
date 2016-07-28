@@ -83,7 +83,16 @@ RadioConfigBox rcBox;
 //------------------------------------------------------------------------
 
 public void controlEvent(ControlEvent theEvent) {
-
+  if (theEvent.isFrom("serialListConfig")) {
+     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+     serialNameEMG = (String)bob.get("headline");
+     println(serialNameEMG);
+  }
+  if (theEvent.isFrom("baudList")) {
+     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+     baudEMG = (String)bob.get("headline");
+     println(baudEMG);
+  }
   if (theEvent.isFrom("sourceList")) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
@@ -337,6 +346,7 @@ class ControlPanel {
     } else {
       cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
       cp5Popup.setVisible(false);
+      cp5Serial.setVisible(false);  
     }
 
     //draw the box that tells you to stop the system in order to edit control settings
@@ -756,6 +766,7 @@ class SerialBox {
     popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
+    println(w-padding*2);
     serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {

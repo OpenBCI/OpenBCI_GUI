@@ -153,7 +153,7 @@ Serial autoconnect_return_high(RadioConfigBox rc) throws Exception{
 
 /**** Helper function for connection of boards ****/
 boolean confirm_openbci(){
-  println(board_message.toString());
+  //println(board_message.toString());
   if(board_message.toString().toLowerCase().contains("registers")) return true;
   else return false;
 }

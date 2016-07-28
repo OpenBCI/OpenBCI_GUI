@@ -424,7 +424,7 @@ class HeadPlot_Widget {
   void mousePressed() {
     //called by GUI_Widgets.pde
     if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
-      println("headPlot.mousePressed()");
+      //println("headPlot.mousePressed()");
     }
   }
   void mouseReleased() {
