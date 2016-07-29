@@ -332,13 +332,13 @@ class HeadPlot_Widget {
     //update dropdown menu positions
     int dropdownPos;
     int dropdownWidth = 60;
-    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.getController("Ten20")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 2; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.getController("Headset")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
@@ -350,24 +350,24 @@ class HeadPlot_Widget {
     //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
     //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
     //  ;
-    dropdownPos = 2;
+    dropdownPos = 1;
     cp5_HeadPlot.getController("Polarity")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 1;
+    dropdownPos = 0;
     cp5_HeadPlot.getController("SmoothingHeadPlot")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 0;
-    cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
+    //dropdownPos = 0;
+    //cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
+    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+    //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+    //  ;
   }
 
   public void setSmoothFac(float fac) {
