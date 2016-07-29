@@ -9,6 +9,11 @@
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+
+DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -154,7 +159,12 @@ public class OutputFile_rawtxt {
 //    writeRawData_dataPacket(data, scale_to_uV, data.values.length);
 //  }
   public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux) {
+    
+    //get current date time with Date()
+    Date date = new Date();
+     
     if (output != null) {
+      output.print(dateFormat.format(date) +",");
       output.print(Integer.toString(data.sampleIndex));
       writeValues(data.values,scale_to_uV);
       writeValues(data.auxValues,scale_for_aux);

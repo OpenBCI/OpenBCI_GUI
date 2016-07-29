@@ -1418,8 +1418,11 @@ class EMG_Widget extends Container{
     
     if(serialOutEMG != null){
       //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
-      serialOutEMG.write("G0P" + int(map(output_normalized, 0, 1, 0, 100)));
-      delay(1000);
+      if(int(map(output_normalized, 0, 1, 0, 100)) > 10){
+        serialOutEMG.write("G0P" + int(map(output_normalized, 0, 1, 0, 100)));
+        delay(10);
+      }
+      else serialOutEMG.write("G0P0");
       
     }
     
