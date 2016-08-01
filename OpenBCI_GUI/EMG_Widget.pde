@@ -1,3 +1,17 @@
+/////////////////////////////////////////////////////////////////////////////////
+//
+//  Emg_Widget is used to visiualze EMG data by channel, and to trip events
+//
+//  Created: Colin Fausnaught, August 2016 (with a lot of reworked code from Tao)
+//
+//  Custom widget to visiualze EMG data. Features dragable thresholds, serial
+//  out communication, channel configuration, digital and analog events.
+//
+//  KNOWN ISSUES: Cannot resize with window dragging events
+//
+//  TODO: Add dynamic threshold functionality 
+////////////////////////////////////////////////////////////////////////////////
+
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -50,9 +64,8 @@ class EMG_Widget extends Container{
     int output = 0;                   //value between 0-255 that is the relative position of the current uV average between the rolling lower and upper uV thresholds
     float output_normalized = 0;      //converted to between 0-1
     float output_adjusted = 0;        //adjusted depending on range that is expected on the other end, ie 0-255?
-  
-    boolean analogBool = true;
-    boolean digitalBool = true;
+    boolean analogBool = true;        //Analog events?
+    boolean digitalBool = true;       //Digital events?
   }
   
   //Constructor
@@ -65,8 +78,6 @@ class EMG_Widget extends Container{
     this.nchan = NCHAN;
     this.fs_Hz = sample_rate_Hz;
     
-    
-    //make that array yo
     tripSliders = new TripSlider[NCHAN];
     untripSliders = new TripSlider[NCHAN];
     motorWidgets = new Motor_Widget[NCHAN];
@@ -74,19 +85,17 @@ class EMG_Widget extends Container{
     for (int i = 0; i < NCHAN; i++){
       motorWidgets[i] = new Motor_Widget();
       motorWidgets[i].ourChan = i;
-      
-      
     }
     
     initSliders(w);
-    
     
     configButton = new Button(int(x) - 60,int(y),20,20,"O",fontInfo.buttonLabel_size);
     configWidget = new Config_Widget(NCHAN, sample_rate_Hz, container, motorWidgets);
   }
   
+  //Initalizes the threshold sliders
   void initSliders(float rw){
-    
+    //Stole some logic from the rectangle drawing in draw()
     int rowNum = 4;
     int colNum = motorWidgets.length / rowNum;
     int index = 0;
@@ -108,9 +117,6 @@ class EMG_Widget extends Container{
             tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
             untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
             index++;
-            println(index);
-            
-
           }
       }
     }
@@ -179,6 +185,9 @@ class EMG_Widget extends Container{
       
       
       //=============== TRIPPIN ==================
+      //= Just calls all the trip events         =
+      //==========================================
+      
       switch(cfc.ourChan){
       
         case 0:
@@ -252,151 +261,142 @@ class EMG_Widget extends Container{
 
     }
     
-    if (millis() - motorWidgets[1].timeOfLastTrip >= 2000 && serialOutEMG != null) {
-      switch(motorWidgets[1].switchCounter){
-        case 1:
-          
-          switch(motorWidgets[0].switchCounter){
-          
-            case 1:
-              //RED CIRCLE FOR JAW, RED FOR BROW
-              //hand.write(oldCommand);
-              
-              break;
-            case 2:
-              //GREEN CIRCLE FOR JAW, RED FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "1234";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 3:
-              //BLUE CIRCLE FOR JAW, RED FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "01";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 4:
-              //VIOLET CIRCLE FOR JAW, RED FOR BROW
-              serialOutEMG.write("0");
-              break;
-          }
-          break;
-        case 2:
-          //println("Two Brow Raises");
-          
-          switch(motorWidgets[0].switchCounter){
-          
-            case 1:
-              //RED CIRCLE FOR JAW, GREEN FOR BROW
-              break;
-            case 2:
-              //GREEN CIRCLE FOR JAW, GREEN FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "23";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 3:
-              //BLUE CIRCLE FOR JAW, GREEN FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "012";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 4:
-              //VIOLET CIRCLE FOR JAW, GREEN FOR BROW
-              serialOutEMG.write("1");
-              break;
-          }
-          break;
-        case 3:
-          //println("Three Brow Raises");
-          
-          switch(motorWidgets[0].switchCounter){
-          
-            case 1:
-              //RED CIRCLE FOR JAW, BLUE FOR BROW
-              break;
-            case 2:
-              //GREEN CIRCLE FOR JAW, BLUE FOR BROW                
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "234";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 3:
-              //BLUE CIRCLE FOR JAW, BLUE FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "0123";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 4:
-              //VIOLET CIRCLE FOR JAW, BLUE FOR BROW
-              serialOutEMG.write("2");
-              break;
-          }
-          break;
-        case 4:
-          //println("Four Brow Raises");
-          
-          switch(motorWidgets[0].switchCounter){
-          
-            case 1:
-              //RED CIRCLE FOR JAW, VIOLET FOR BROW
-              break;
-            case 2:
-              //GREEN CIRCLE FOR JAW, VIOLET FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "0134";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 3:
-              //BLUE CIRCLE FOR JAW, VIOLET FOR BROW
-              serialOutEMG.write(oldCommand);
-              delay(100);
-              oldCommand = "01234";
-              serialOutEMG.write(oldCommand);
-              break;
-            case 4:
-              //VIOLET CIRCLE FOR JAW, VIOLET FOR BROW
-              serialOutEMG.write("3");
-              break;
-          }
-          break;
-        case 5:
-          //println("Five Brow Raises");
-          
-          switch(motorWidgets[0].switchCounter){
-          
-            case 1:
-              //RED CIRCLE FOR JAW, YELLOW FOR BROW
-              break;
-            case 2:
-              //GREEN CIRCLE FOR JAW, YELLOW FOR BROW
-              break;
-            case 3:
-              //BLUE CIRCLE FOR JAW, YELLOW FOR BROW
-              break;
-            case 4:
-              //VIOLET CIRCLE FOR JAW, YELLOW FOR BROW
-              serialOutEMG.write("4");
-              break;
-          }
-          break;
-        //case 6: 
-        //  println("Six Brow Raises");
-        //  break;
-      }
-      motorWidgets[1].switchCounter = 0;
-    }
+    //=================== OpenBionics switch example ==============================
+    
+    //if (millis() - motorWidgets[1].timeOfLastTrip >= 2000 && serialOutEMG != null) {
+    //  switch(motorWidgets[1].switchCounter){
+    //    case 1:
+    //      switch(motorWidgets[0].switchCounter){
+    //        case 1:
+    //          //RED CIRCLE FOR JAW, RED FOR BROW
+    //          //hand.write(oldCommand);
+    //          break;
+    //        case 2:
+    //          //GREEN CIRCLE FOR JAW, RED FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "1234";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 3:
+    //          //BLUE CIRCLE FOR JAW, RED FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "01";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 4:
+    //          //VIOLET CIRCLE FOR JAW, RED FOR BROW
+    //          serialOutEMG.write("0");
+    //          break;
+    //      }
+    //      break;
+    //    case 2:
+    //      //println("Two Brow Raises");
+    //      switch(motorWidgets[0].switchCounter){
+    //        case 1:
+    //          //RED CIRCLE FOR JAW, GREEN FOR BROW
+    //          break;
+    //        case 2:
+    //          //GREEN CIRCLE FOR JAW, GREEN FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "23";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 3:
+    //          //BLUE CIRCLE FOR JAW, GREEN FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "012";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 4:
+    //          //VIOLET CIRCLE FOR JAW, GREEN FOR BROW
+    //          serialOutEMG.write("1");
+    //          break;
+    //      }
+    //      break;
+    //    case 3:
+    //      //println("Three Brow Raises");
+    //      switch(motorWidgets[0].switchCounter){
+    //        case 1:
+    //          //RED CIRCLE FOR JAW, BLUE FOR BROW
+    //          break;
+    //        case 2:
+    //          //GREEN CIRCLE FOR JAW, BLUE FOR BROW                
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "234";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 3:
+    //          //BLUE CIRCLE FOR JAW, BLUE FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "0123";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 4:
+    //          //VIOLET CIRCLE FOR JAW, BLUE FOR BROW
+    //          serialOutEMG.write("2");
+    //          break;
+    //      }
+    //      break;
+    //    case 4:
+    //      //println("Four Brow Raises");
+    //      switch(motorWidgets[0].switchCounter){
+    //        case 1:
+    //          //RED CIRCLE FOR JAW, VIOLET FOR BROW
+    //          break;
+    //        case 2:
+    //          //GREEN CIRCLE FOR JAW, VIOLET FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "0134";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 3:
+    //          //BLUE CIRCLE FOR JAW, VIOLET FOR BROW
+    //          serialOutEMG.write(oldCommand);
+    //          delay(100);
+    //          oldCommand = "01234";
+    //          serialOutEMG.write(oldCommand);
+    //          break;
+    //        case 4:
+    //          //VIOLET CIRCLE FOR JAW, VIOLET FOR BROW
+    //          serialOutEMG.write("3");
+    //          break;
+    //      }
+    //      break;
+    //    case 5:
+    //      //println("Five Brow Raises");
+    //      switch(motorWidgets[0].switchCounter){
+    //        case 1:
+    //          //RED CIRCLE FOR JAW, YELLOW FOR BROW
+    //          break;
+    //        case 2:
+    //          //GREEN CIRCLE FOR JAW, YELLOW FOR BROW
+    //          break;
+    //        case 3:
+    //          //BLUE CIRCLE FOR JAW, YELLOW FOR BROW
+    //          break;
+    //        case 4:
+    //          //VIOLET CIRCLE FOR JAW, YELLOW FOR BROW
+    //          serialOutEMG.write("4");
+    //          break;
+    //      }
+    //      break;
+    //    //case 6: 
+    //    //  println("Six Brow Raises");
+    //    //  break;
+    //  }
+    //  motorWidgets[1].switchCounter = 0;
+    //}
   
 
    
-   //-----------------what is this part used for---------------------------------------
+   //----------------- Leftover from Tou Code, what does this do? ----------------------------
     //OR, you could loop over each EEG channel and do some sort of frequency-domain processing from the FFT data
     float FFT_freq_Hz, FFT_value_uV;
     for (int Ichan=0;Ichan < nchan; Ichan++) {
@@ -412,6 +412,8 @@ class EMG_Widget extends Container{
     //---------------------------------------------------------------------------------
     
     }
+    
+    
     public void draw(){
       super.draw();
       if(drawEMG){
@@ -453,9 +455,6 @@ class EMG_Widget extends Container{
               noStroke();
               ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].myAverage, scaleFactor * motorWidgets[i * colNum + j].myAverage);
             
-            
-             
-            
              //draw background bar for mapped uV value indication
             
               fill(0,255,255,125);
@@ -467,6 +466,8 @@ class EMG_Widget extends Container{
             
     
               popMatrix();
+              
+              //draw thresholds
               tripSliders[index].update();
               tripSliders[index].display();
               untripSliders[index].update();
@@ -492,10 +493,12 @@ class EMG_Widget extends Container{
 
   
 	
-  
+  //Feedback for triggers/switches.
+  //Currently only used for the OpenBionics implementation, but left
+  //in to give an idea of how it can be used.
   public void drawTriggerFeedback() {
     //Is the board streaming data?
-    //if so ... draw left eye trigger feedback
+    //if so ... draw feedback
     if (isRunning) {
      
       switch (motorWidgets[0].switchCounter){
@@ -515,8 +518,6 @@ class EMG_Widget extends Container{
           fill(128,0,128);
           ellipse(width/2, height - 40, 20, 20);
           break;
-           
-      
       }
 
       switch (motorWidgets[1].switchCounter){
@@ -540,16 +541,20 @@ class EMG_Widget extends Container{
           fill(255,255,0);
           ellipse(width/2, height - 70 , 20, 20);
           break;
-           
-      
       }
 
     }
   }
   
+  //Mouse pressed event
   void mousePressed(){
     if(mouseX >= x - 35 && mouseX <= x+w && mouseY >= y && mouseY <= y+h && configButton.wasPressed){
        
+      //Handler for channel selection. No two channels can be 
+      //selected at the same time. All values are then set
+      //to whatever value the channel specifies they should
+      //have (particularly analog and digital buttons)
+      
       for(int i = 0; i < nchan; i++){
         if(motorWidget.configWidget.chans[i].isMouseHere()) {
           motorWidget.configWidget.chans[i].setIsActive(true);
@@ -575,6 +580,7 @@ class EMG_Widget extends Container{
         
       }
       
+      //Digital button event
       if(motorWidget.configWidget.digital.isMouseHere()){
         if(motorWidget.configWidget.digital.wasPressed){
           motorWidgets[lastChan].digitalBool = false;
@@ -588,6 +594,7 @@ class EMG_Widget extends Container{
         }
       }
       
+      //Analog button event
       if(motorWidget.configWidget.analog.isMouseHere()){
         if(motorWidget.configWidget.analog.wasPressed){
           motorWidgets[lastChan].analogBool = false;
@@ -601,19 +608,16 @@ class EMG_Widget extends Container{
         }
       }
       
+      //Connect button event
       if(motorWidget.configWidget.connectToSerial.isMouseHere()){
         motorWidget.configWidget.connectToSerial.wasPressed = true;
         motorWidget.configWidget.connectToSerial.setIsActive(true);
       }
       
-      
-      //digital = new Button(int(x + 55),int(y + 60),10,10,"",fontInfo.buttonLabel_size);
-      //analog = new Button(int(x - 15),int(y + 60),10,10,"",fontInfo.buttonLabel_size);
-      
-      
     }
     else if(mouseX >= (x-60) && mouseX <= (x-40) && mouseY >= y && mouseY <= y+20){
       
+      //Open configuration menu
       if(configButton.isMouseHere()){
         configButton.setIsActive(true);
         
@@ -630,10 +634,8 @@ class EMG_Widget extends Container{
   
   }
 
-
+  //Mouse Released Event
   void mouseReleased(){
-    //if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
-      //println("Motor imagery Mouse Pressed");
     for(int i = 0; i < nchan; i++){
       if(!motorWidget.configWidget.dynamicThreshold.wasPressed && !configButton.wasPressed){
         tripSliders[i].releaseEvent();
@@ -658,11 +660,17 @@ class EMG_Widget extends Container{
         motorWidget.configWidget.print_onscreen("Could not connect!");
       }
     }
-
-    //}
     
     configButton.setIsActive(false);
   }
+  
+  
+  //=============== Config_Widget ================
+  //=  The configuration menu. Customize in any  =
+  //=  way that could help you out!              =
+  //=                                            =
+  //=  TODO: Add dynamic threshold functionality =
+  //==============================================
   
   class Config_Widget extends Container{
     private float fs_Hz;
@@ -678,11 +686,10 @@ class EMG_Widget extends Container{
     MenuList serialListLocal;
     MenuList baudList;
     String last_message = "";
-    
-    
     String[] serialPortsLocal = new String[Serial.list().length];
     
     
+    //Constructor
     public Config_Widget(int NCHAN, float sample_rate_Hz, Container container, Motor_Widget[] parent){
       super(container, "WHOLE");
       
@@ -695,7 +702,7 @@ class EMG_Widget extends Container{
       digital = new Button(int(x + 55),int(y + 60),10,10,"",fontInfo.buttonLabel_size);
       analog = new Button(int(x - 15),int(y + 60),10,10,"",fontInfo.buttonLabel_size);
       valueThreshold = new Button(int(x+235), int(y+60), 10,10,"",fontInfo.buttonLabel_size);
-      dynamicThreshold = new Button(int(x+150), int(y+60), 10,10,"",fontInfo.buttonLabel_size);
+      dynamicThreshold = new Button(int(x+150), int(y+60), 10,10,"",fontInfo.buttonLabel_size);  //CURRENTLY DOES NOTHING! Working on implementation
       connectToSerial = new Button(int(x+235), int(y+297),100,25,"Connect", 18);
       
       digital.setIsActive(true);
@@ -705,7 +712,7 @@ class EMG_Widget extends Container{
       valueThreshold.setIsActive(true);
       valueThreshold.wasPressed = true;
       
-      
+      //Available serial outputs
       serialListLocal = new MenuList(cp5Serial, "serialListConfig", 236, 120, f2);
       serialListLocal.setPosition(x - 10 , y + 160);
       serialPortsLocal = Serial.list();
@@ -714,7 +721,7 @@ class EMG_Widget extends Container{
         if(!tempPort.equals(openBCI_portName)) serialListLocal.addItem(makeItem(tempPort));
       }
       
-      
+      //List of BAUD values 
       baudList = new MenuList(cp5Serial, "baudList", 100, 120, f2);
       baudList.setPosition(x+235, y + 160);
      
@@ -736,25 +743,28 @@ class EMG_Widget extends Container{
       baudList.addItem(makeItem("300"));
       
       
+      //Set first items to active
       Map bob = ((MenuList)baudList).getItem(0);
       baudEMG = (String)bob.get("headline");
       baudList.activeItem = 0;
-      
+     
       Map bobSer = ((MenuList)serialListLocal).getItem(0);
       serialNameEMG = (String)bobSer.get("headline");
       serialListLocal.activeItem = 0;
       
+      //Hide the list until open button clicked
       cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false); 
       cp5Serial.get(MenuList.class, "baudList").setVisible(false);   
       
-      
+      //Buttons for different channels (Just displays number if 16 channel)
       for (int i = 0; i < NCHAN; i++){
         if(NCHAN == 8) chans[i] = new Button(int(x - 30 + (i * (w-10)/nchan )), int(y + 10), int((w-10)/nchan), 30,"CHAN " + (i+1),fontInfo.buttonLabel_size);
         else chans[i] = new Button(int(x - 30 + (i * (w-10)/nchan )), int(y + 5), int((w-10)/nchan), 30,"" + (i+1),fontInfo.buttonLabel_size);
       }
+      
+      //Set fist channel as active
       chans[0].setIsActive(true);
       chans[0].wasPressed = true;
-    
     }
   
     public void draw(){
@@ -831,8 +841,6 @@ class EMG_Widget extends Container{
         fill(255);
         text(localstring, x, y + 290 + 15, ( w - 180), 40 -15);
         this.last_message = localstring;
-        
-     
       }
       
     void print_lastmessage(){
@@ -847,9 +855,14 @@ class EMG_Widget extends Container{
   
   
   
-  //TRIP SLIDERS
+  //============= TripSlider =============
+  //=  Class for moving thresholds. Can  =
+  //=  be dragged up and down, but lower =
+  //=  thresholds cannot go above upper  =
+  //=  thresholds (and visa versa).      =
+  //======================================
   class TripSlider {
-    
+    //Fields
     int lx, ly;
     int boxx, boxy;
     int stretch;
@@ -865,6 +878,7 @@ class EMG_Widget extends Container{
     color current_color = color(255,255,255);
     Motor_Widget parent;
     
+    //Constructor
     TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
       lx = ix;
       ly = iy;
@@ -874,10 +888,11 @@ class EMG_Widget extends Container{
       boxx = lx - wid/2;
       boxy = ly-stretch - len/2;
       others = o;
-      trip = wastrip; 
+      trip = wastrip;  //Boolean to distinguish between trip and untrip thresholds
       parent = p;
     }
     
+    //Called whenever thresholds are dragged
     void update() {
       boxx = lx - wid/2;
       boxy = ly - stretch;
@@ -897,9 +912,9 @@ class EMG_Widget extends Container{
       }
       
       if (press) {
+        //Some of this may need to be refactored in order to support window resizing.
         if(trip) stretch = lock(ly -mouseY, int(parent.untripThreshold * (50 - len)), 50 - len);
         else stretch = lock(ly -mouseY, 0, int(parent.tripThreshold * (50- len)));
-        //println("wut :" + float(ly - mouseY) / 48);
         
         if((ly - mouseY) > 50-len && trip) parent.tripThreshold = 1;
         else if((ly - mouseY) > 50 -len && !trip) parent.untripThreshold = 1;
@@ -910,6 +925,7 @@ class EMG_Widget extends Container{
       }
     }
     
+    //Checks if mouse is here
     void overEvent() {
       if (overRect(boxx, boxy, wid, len)) {
         over = true;
@@ -918,6 +934,7 @@ class EMG_Widget extends Container{
       }
     }
     
+    //Checks if mouse is pressed
     void pressEvent() {
       if (over && mousePressed || locked) {
         press = true;
@@ -927,10 +944,12 @@ class EMG_Widget extends Container{
       }
     }
     
+    //Mouse was released
     void releaseEvent() {
       locked = false;
     }
     
+    //Color selector and cursor setter
     void setColor(){
       if(over) {
         current_color = color(127,134,143); 
@@ -949,28 +968,23 @@ class EMG_Widget extends Container{
       }
     }
     
+    //Helper function to make setting default threshold values easier.
+    //Expects a float as input (0.25 is 25%)
     void setStretchPercentage(float val){
-      //println("ly: " + (ly - 60 - 100*val));
-      
       stretch = lock(int((50 - len) * val), 0, 50 - len);
     }
     
-    
+    //Displays the thresholds
     void display() {
-      //line(lx, ly, lx, ly-stretch);
       fill(255);
       strokeWeight(0);
       stroke(255);
       setColor();
       fill(current_color);
       rect(boxx, boxy, wid, len);
-      
-      //if (over || press) {
-      //  line(boxx, boxy, boxx+wid, boxy+len);
-      //  line(boxx, boxy+wid, boxx+len, boxy);
-      //}
-  
     }
+    
+    //Check if the mouse is here
     boolean overRect(int lx, int ly, int lwidth, int lheight) {
       if (mouseX >= lx && mouseX <= lx+lwidth && 
           mouseY >= ly && mouseY <= ly+lheight) {
@@ -980,34 +994,50 @@ class EMG_Widget extends Container{
       }
     }
   
+    //Locks the threshold in place
     int lock(int val, int minv, int maxv) { 
       return  min(max(val, minv), maxv); 
     } 
   }
 
   
-  //===================== EVENTS =========================
+  
+  //===================== DIGITAL EVENTS =============================
+  //=  Digital Events work by tripping certain thresholds, and then  =
+  //=  untripping said thresholds. In order to use digital events    =
+  //=  you will need to observe the switchCounter field in any       =
+  //=  given channel. Check out the OpenBionics Switch Example       =
+  //=  in the process() function above to get an idea of how to do   =
+  //=  this. It is important that your observation of switchCounter  =
+  //=  is done in the process() function AFTER the Digital Events    =
+  //=  are evoked.                                                   =
+  //=                                                                =
+  //=  This system supports both digital and analog events           =
+  //=  simultaneously and seperated.                                 =
+  //==================================================================
   
   //Channel 1 Event
   void digitalEventChan0(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(motorWidgets[0].switchCounter > 4) motorWidgets[0].switchCounter = 0;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 1");
+      //Untripped
       cfc.switchTripped = false;
     }
     
@@ -1016,23 +1046,24 @@ class EMG_Widget extends Container{
   
   //Channel 2 Event
   void digitalEventChan1(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 2");
+      //Untripped
       cfc.switchTripped = false;
     }
     
@@ -1042,23 +1073,24 @@ class EMG_Widget extends Container{
   
   //Channel 3 Event
   void digitalEventChan2(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 3");
+      //Untripped
       cfc.switchTripped = false;
     }
     
@@ -1068,23 +1100,24 @@ class EMG_Widget extends Container{
   
   //Channel 4 Event
   void digitalEventChan3(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 4");
+      //Untripped
       cfc.switchTripped = false;
     }
     
@@ -1094,23 +1127,24 @@ class EMG_Widget extends Container{
   
   //Channel 5 Event
   void digitalEventChan4(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 5");
+      //Untripped
       cfc.switchTripped = false;
     }
     
@@ -1120,292 +1154,281 @@ class EMG_Widget extends Container{
   
   //Channel 6 Event
   void digitalEventChan5(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 6");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
   
   }
   
   //Channel 7 Event
   void digitalEventChan6(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 7");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 8 Event
   void digitalEventChan7(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 8");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 9 Event
   void digitalEventChan8(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 9");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
   
   }
   
   //Channel 10 Event
   void digitalEventChan9(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 10");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 11 Event
   void digitalEventChan10(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 11");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 12 Event
   void digitalEventChan11(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 12");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 13 Event
   void digitalEventChan12(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 13");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 14 Event
   void digitalEventChan13(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 14");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 15 Event
   void digitalEventChan14(Motor_Widget cfc){
-  
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 15");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   //Channel 16 Event
   void digitalEventChan15(Motor_Widget cfc){
   
+    //Local instances of Motor_Widget fields
     float output_normalized = cfc.output_normalized;
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    
+    //Custom waiting threshold
     int timeToWaitThresh = 750;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
+      //Tripped
       cfc.switchTripped = true;
       cfc.timeOfLastTrip = millis();
       cfc.switchCounter++;
     }
     if(switchTripped && output_normalized <= untripThreshold){
-      println("Untripped 16");
+      //Untripped
       cfc.switchTripped = false;
     }
-    
-  
-  
   }
   
   
-  //===================== ANALOG EVENTS =========================
+  //===================== ANALOG EVENTS ===========================
+  //=  Analog events are a big more complicated than digital      =
+  //=  events. In order to use analog events you must map the     =
+  //=  output_normalized value to whatver minimum and maximum     =
+  //=  you'd like and then write that to the serialOutEMG.        =
+  //=                                                             =
+  //=  Check out analogEventChan0() for the OpenBionics analog    =
+  //=  event example to get an idea of how to use analog events.  =
+  //===============================================================
   
   //Channel 1 Event
   void analogEventChan0(Motor_Widget cfc){
@@ -1416,18 +1439,18 @@ class EMG_Widget extends Container{
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
     
-    if(serialOutEMG != null){
-      //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
-      if(int(map(output_normalized, 0, 1, 0, 100)) > 10){
-        serialOutEMG.write("G0P" + int(map(output_normalized, 0, 1, 0, 100)));
-        delay(10);
-      }
-      else serialOutEMG.write("G0P0");
+    
+    //================= OpenBionics Analog Movement Example =======================
+    //if(serialOutEMG != null){
+    //  //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
+    //  if(int(map(output_normalized, 0, 1, 0, 100)) > 10){
+    //    serialOutEMG.write("G0P" + int(map(output_normalized, 0, 1, 0, 100)));
+    //    delay(10);
+    //  }
+    //  else serialOutEMG.write("G0P0");
       
-    }
+    //}
     
-    
-  
   }
   
   //Channel 2 Event
@@ -1438,10 +1461,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-    
-  
   
   }
   
@@ -1453,10 +1472,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-  
-  
   }
   
   //Channel 4 Event
@@ -1467,11 +1482,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-  
-    
-  
-  
   }
   
   //Channel 5 Event
@@ -1482,10 +1492,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-  
-  
   }
   
   //Channel 6 Event
@@ -1496,11 +1502,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-   
-    
-  
-  
   }
   
   //Channel 7 Event
@@ -1511,11 +1512,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-    
-  
-  
   }
   
   //Channel 8 Event
@@ -1526,11 +1522,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-   
-    
-  
-  
   }
   
   //Channel 9 Event
@@ -1541,10 +1532,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-  
-  
   }
   
   //Channel 10 Event
@@ -1555,10 +1542,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-  
-  
   }
   
   //Channel 11 Event
@@ -1568,12 +1551,7 @@ class EMG_Widget extends Container{
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
-    float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-    
-  
-  
+    float timeOfLastTrip = cfc.timeOfLastTrip;  
   }
   
   //Channel 12 Event
@@ -1584,11 +1562,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-    
-  
-  
   }
   
   //Channel 13 Event
@@ -1599,10 +1572,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-  
-  
   }
   
   //Channel 14 Event
@@ -1613,11 +1582,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-    
-  
-  
   }
   
   //Channel 15 Event
@@ -1627,11 +1591,7 @@ class EMG_Widget extends Container{
     float tripThreshold = cfc.tripThreshold;
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
-    float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-  
-  
+    float timeOfLastTrip = cfc.timeOfLastTrip;  
   }
   
   //Channel 16 Event
@@ -1642,11 +1602,6 @@ class EMG_Widget extends Container{
     float untripThreshold = cfc.untripThreshold;
     boolean switchTripped = cfc.switchTripped;
     float timeOfLastTrip = cfc.timeOfLastTrip;
-    
-    
-    
-  
-  
   }
   
 }

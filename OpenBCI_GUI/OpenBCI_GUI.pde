@@ -127,7 +127,7 @@ float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
 int reinitializeGUIdelay = 125;
 //Tao's variabiles
-int widthOfLastScreen = 0;
+int widthOfLastScreen = 0;      
 int heightOfLastScreen = 0;
 
 //set window size
