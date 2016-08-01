@@ -1,9 +1,3 @@
-import netP5.*;
-import oscP5.*;
-
-import hypermedia.net.*;
-
-import grafica.*;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -32,6 +26,11 @@ import java.util.*; //for Array.copyOfRange()
 import java.util.Map.Entry; 
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
+import netP5.*; //for OSC networking
+import oscP5.*; //for OSC networking
+import hypermedia.net.*; //for UDP networking
+import grafica.*;
+
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -108,8 +107,12 @@ String fileName = "N/A";
 //variables for Networking
 int port = 0;
 String ip = "";
+String address = "";
+String data_stream = "";
+String aux_stream = "";
 UDPSend udp;
 OSCSend osc;
+LSLSend lsl;
 
 // Serial output
 String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port

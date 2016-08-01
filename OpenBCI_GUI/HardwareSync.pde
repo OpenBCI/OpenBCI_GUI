@@ -75,16 +75,16 @@ void serialEvent(Serial port) {
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
       openBCI.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
       
-      //If networking enabled --> send data every sample if 8 channels and every other sample if 16 channels
+      //If networking enabled --> send data every sample if 8 channels or every other sample if 16 channels
       if (networkType !=0){
         if (nchan==8){
           sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
-        }else if ((nchan==16) && ((curDataPacketInd%2)!=0)){
+        }else if ((nchan==16) && ((dataPacketBuff[curDataPacketInd].sampleIndex %2)!=1)){
           sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
         }
       }
-      newPacketCounter++;
       fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
+      newPacketCounter++;
     }
   } else {
     println("OpenBCI_GUI: serialEvent: received serial data NOT from OpenBCI.");
