@@ -69,7 +69,8 @@ Button setPoll;
 Button defaultBAUD;
 Button highBAUD;
 Button autoscan;
-Button autoconnectNoStart;
+Button autoconnectNoStartDefault;
+Button autoconnectNoStartHigh;
 Button systemStatus;
 
 Serial board;
@@ -451,11 +452,17 @@ class ControlPanel {
           autoscan.wasPressed = true;
         }
         
-        if (autoconnectNoStart.isMouseHere()){
-          autoconnectNoStart.setIsActive(true);
-          autoconnectNoStart.wasPressed = true;
+        if (autoconnectNoStartDefault.isMouseHere()){
+          autoconnectNoStartDefault.setIsActive(true);
+          autoconnectNoStartDefault.wasPressed = true;
         }
         
+        if (autoconnectNoStartHigh.isMouseHere()){
+          autoconnectNoStartHigh.setIsActive(true);
+          autoconnectNoStartHigh.wasPressed = true;
+        }
+        
+       
         if (systemStatus.isMouseHere()){
           systemStatus.setIsActive(true);
           systemStatus.wasPressed = true;
@@ -541,28 +548,49 @@ class ControlPanel {
       highBAUD.wasPressed=false;
     }
     
-    if(autoconnectNoStart.isMouseHere() && autoconnectNoStart.wasPressed){
+    if(autoconnectNoStartDefault.isMouseHere() && autoconnectNoStartDefault.wasPressed){
+      
       if(board == null){
         try{
-          board = autoconnect_return_default(rcBox);
+          board = autoconnect_return_default();
           rcBox.print_onscreen("Successfully connected to board");
         }
         catch (Exception e){
           rcBox.print_onscreen("Error connecting to board...");
+          
+          //try{
+            
+          //  board = autoconnect_return_high(rcBox);
+          //  rcBox.print_onscreen("Successfully connected to board");
+          //}
+          //catch (Exception e2){
+          //}
         }
-        if(!no_start_connection){
-          try{
-            board.stop();
-            board = autoconnect_return_high(rcBox);
-            rcBox.print_onscreen("Successfully connected to board");
-          }
-          catch (Exception e){
-            rcBox.print_onscreen("Error connecting to board...");
-          }
-        }
+        
+        
       }
-      autoconnectNoStart.setIsActive(false);
-      autoconnectNoStart.wasPressed = false;
+     else rcBox.print_onscreen("Board already connected!");
+      autoconnectNoStartDefault.setIsActive(false);
+      autoconnectNoStartDefault.wasPressed = false;
+    }
+    
+    if(autoconnectNoStartHigh.isMouseHere() && autoconnectNoStartHigh.wasPressed){
+      
+      if(board == null){
+        
+        try{
+          
+          board = autoconnect_return_high();
+          rcBox.print_onscreen("Successfully connected to board");
+        }
+        catch (Exception e2){
+          rcBox.print_onscreen("Error connecting to board...");
+        }
+         
+      }
+     else rcBox.print_onscreen("Board already connected!");
+      autoconnectNoStartHigh.setIsActive(false);
+      autoconnectNoStartHigh.wasPressed = false;
     }
     
     if(autoscan.isMouseHere() && autoscan.wasPressed){
@@ -1010,8 +1038,9 @@ class RadioConfigBox {
     defaultBAUD = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "DEFAULT BAUD", fontInfo.buttonLabel_size);    
     highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
     autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "AUTOSCAN CHANS", fontInfo.buttonLabel_size);
-    autoconnectNoStart = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "CONNECT", fontInfo.buttonLabel_size);
+    autoconnectNoStartDefault = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2 , 24, "CONNECT 115200", fontInfo.buttonLabel_size);
     systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "STATUS", fontInfo.buttonLabel_size);
+    autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
 
     
   }
@@ -1040,7 +1069,8 @@ class RadioConfigBox {
     defaultBAUD.draw();
     highBAUD.draw();
     autoscan.draw();
-    autoconnectNoStart.draw();
+    autoconnectNoStartDefault.draw();
+    autoconnectNoStartHigh.draw();
     systemStatus.draw();
     this.print_onscreen(last_message);
   
@@ -1051,9 +1081,9 @@ class RadioConfigBox {
   public void print_onscreen(String localstring){
     textAlign(LEFT);
     fill(0);
-    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    rect(x + padding, y + (padding*8) + 18 + (24*6), (w-padding*3 + 5), 135 - 24 - padding);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*7) + 18 + (24*5) + 15, (w-padding*3 ), 135 -15);
+    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*6) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     this.last_message = localstring;
   }
   

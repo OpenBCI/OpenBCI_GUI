@@ -11,12 +11,10 @@
 //  rather than the OpenBCI_ADS1299 class. I just found this easier to work
 //  with.
 //
-//  KNOWN ISSUES: Problems switching from default to high baud and back again. 
+//  KNOWN ISSUES: 
 //
-//  TODO: Tackle bugs and code cleanup/documentation
+//  TODO: 
 ////////////////////////////////////////////////////////////////////////////////
-
-boolean no_start_connection = false;
 boolean isOpenBCI;
 int baudSwitch = 0;
 
@@ -74,9 +72,10 @@ void autoconnect(){
     }
 }
 
-Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
+Serial autoconnect_return_default() throws Exception{
   
     Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
+    Serial retBoard;
     String[] serialPorts = new String[Serial.list().length];
     String serialPort  = "";
     serialPorts = Serial.list();
@@ -87,15 +86,14 @@ Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
       try{
           serialPort = serialPorts[i];
           locBoard = new Serial(this,serialPort,115200);
-          println(serialPort);
           
           delay(100);
           
           locBoard.write(0xF0);
           locBoard.write(0x07);
           delay(1000);
-          //print_bytes(rc);
-          if(confirm_openbci()) {
+          
+          if(confirm_openbci_v2()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 115200"); 
             no_start_connection = true;
             openBCI_portName = serialPorts[i];
@@ -104,43 +102,43 @@ Serial autoconnect_return_default(RadioConfigBox rc) throws Exception{
             
             return locBoard;
           }
+          else locBoard.stop();
         }
         catch (Exception e){
           println("Board not on port " + serialPorts[i] +" with BAUD 115200");
         }
     }
+    
+  
     throw new Exception();
 }
 
-Serial autoconnect_return_high(RadioConfigBox rc) throws Exception{
+Serial autoconnect_return_high() throws Exception{
   
-    Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
+    Serial localBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
     String serialPort  = "";
     serialPorts = Serial.list();
     
     
-    
     for(int i = 0; i < serialPorts.length; i++){
       try{
           serialPort = serialPorts[i];
-          locBoard = new Serial(this,serialPort,230400);
-          println(serialPort);
+          localBoard = new Serial(this,serialPort,230400);
           
           delay(100);
           
-          locBoard.write(0xF0);
-          locBoard.write(0x07);
+          localBoard.write(0xF0);
+          localBoard.write(0x07);
           delay(1000);
-          //print_bytes(rc);
-          if(confirm_openbci()) {
+          if(confirm_openbci_v2()) {
             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
             no_start_connection = true;
             openBCI_portName = serialPorts[i];
             openBCI_baud = 230400;
             isOpenBCI = false;
                         
-            return locBoard;
+            return localBoard;
           }
         }
         catch (Exception e){
@@ -158,6 +156,11 @@ boolean confirm_openbci(){
   else return false;
 }
 
+boolean confirm_openbci_v2(){
+  //println(board_message.toString());
+  if(board_message.toString().toLowerCase().contains("success"))  return true;
+  else return false;
+}
 /**** Helper function for autoscan ****/
 boolean confirm_connected(){
   if(board_message.toString().charAt(0) == 'S') return true;
@@ -165,7 +168,7 @@ boolean confirm_connected(){
 }
 
 /**** Helper function to read from the serial easily ****/
-void print_bytes( RadioConfigBox rc){
+void print_bytes(RadioConfigBox rc){
   println(board_message.toString());
   rc.print_onscreen(board_message.toString());
 }
@@ -336,7 +339,8 @@ void set_baud_default(RadioConfigBox rcConfig, String serialPort){
     
     try{
       board.stop();
-      board = autoconnect_return_default(rcConfig);
+      board = null;
+      board = autoconnect_return_default();
     }
     catch (Exception e){
       println("error setting serial to BAUD 115200");
@@ -369,7 +373,8 @@ void set_baud_high(RadioConfigBox rcConfig, String serialPort){
     
     try{
       board.stop();
-      board = autoconnect_return_high(rcConfig);
+      board = null;
+      board = autoconnect_return_high();
     }
     catch (Exception e){
       println("error setting serial to BAUD 230400");
