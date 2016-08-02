@@ -329,104 +329,57 @@ class HeadPlot_Widget {
     //update dropdown menu positions
     int dropdownPos;
     int dropdownWidth = 60;
-    dropdownPos = 4; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.getController("Ten20")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
+    dropdownPos = 2; //work down from 4 since we're starting on the right side now...
     cp5_HeadPlot.getController("Headset")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    //dropdownPos = 3;
+    //dropdownPos = 2;
     //cp5_HeadPlot.getController("NumChan")
     //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
     //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
     //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
     //  ;
-    dropdownPos = 2;
+    dropdownPos = 1;
     cp5_HeadPlot.getController("Polarity")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 1;
+    dropdownPos = 0;
     cp5_HeadPlot.getController("SmoothingHeadPlot")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
-    dropdownPos = 0;
-    cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
+    //dropdownPos = 0;
+    //cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
+    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+    //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+    //  ;
   }
 
   public void setSmoothFac(float fac) {
     headPlot.smooth_fac = fac;
   }
 
-  //triggered when there is an event in the Ten20 Dropdown
-  void Ten20(int n) {
-    /* here an item is stored as a Map  with the following key-value pairs:
-     * name, the given name of the item
-     * text, the given text of the item by default the same as name
-     * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
-     * color, the given color of the item, how to change, see below
-     * view, a customizable view, is of type CDrawable 
-     */
-
-    //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
-    println("BOOOOM!" + n);
-  }
-
-  //triggered when there is an event in the Headset Dropdown
-  void Headset(int n) {
-    //fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
-  }
-
-  //triggered when there is an event in the NumChan Dropdown
-  void NumChan(int n) {
-    //if (n==0) {
-    //  fft_widget.fft_plot.setLogScale("y");
-    //} else {
-    //  fft_widget.fft_plot.setLogScale("");
-    //}
-  }
-
-  //triggered when there is an event in the Polarity Dropdown
-  void Polarity(int n) {
-
-    if (n==0) {
-      headPlot_widget.headPlot.use_polarity = true;
-    } else {
-      headPlot_widget.headPlot.use_polarity = false;
-    }
-  }
-
-  //triggered when there is an event in the SmoothingHeadPlot Dropdown
-  void SmoothingHeadPlot(int n) {
-    headPlot_widget.setSmoothFac(smoothFac[n]);
-  }
-
-  //triggered when there is an event in the UnfiltFiltHeadPlot Dropdown
-  void UnfiltFiltHeadPlot(int n) {
-  }
-
   void mousePressed() {
     //called by GUI_Widgets.pde
-    if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
+    if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
       println("headPlot.mousePressed()");
     }
   }
   void mouseReleased() {
     //called by GUI_Widgets.pde
-    if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
+    if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
       println("headPlot.mouseReleased()");
     }
   }
@@ -438,7 +391,52 @@ class HeadPlot_Widget {
   }
 };
 
+//triggered when there is an event in the Ten20 Dropdown
+void Ten20(int n) {
+  /* here an item is stored as a Map  with the following key-value pairs:
+   * name, the given name of the item
+   * text, the given text of the item by default the same as name
+   * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
+   * color, the given color of the item, how to change, see below
+   * view, a customizable view, is of type CDrawable 
+   */
 
+  //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
+  println("BOOOOM!" + n);
+}
+
+//triggered when there is an event in the Headset Dropdown
+void Headset(int n) {
+  //fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
+}
+
+//triggered when there is an event in the NumChan Dropdown
+void NumChan(int n) {
+  //if (n==0) {
+  //  fft_widget.fft_plot.setLogScale("y");
+  //} else {
+  //  fft_widget.fft_plot.setLogScale("");
+  //}
+}
+
+//triggered when there is an event in the Polarity Dropdown
+void Polarity(int n) {
+
+  if (n==0) {
+    headPlot_widget.headPlot.use_polarity = true;
+  } else {
+    headPlot_widget.headPlot.use_polarity = false;
+  }
+}
+
+//triggered when there is an event in the SmoothingHeadPlot Dropdown
+void SmoothingHeadPlot(int n) {
+  headPlot_widget.setSmoothFac(smoothFac[n]);
+}
+
+//triggered when there is an event in the UnfiltFiltHeadPlot Dropdown
+void UnfiltFiltHeadPlot(int n) {
+}
 
 
 
