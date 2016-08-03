@@ -821,7 +821,7 @@ Map<String, Object> makeItem(String theHeadline) {
 //
 //=======================================================================================================================================
 
-public class MenuList extends Controller {
+public class MenuList extends controlP5.Controller {
 
   float pos, npos;
   int itemHeight = 24;
