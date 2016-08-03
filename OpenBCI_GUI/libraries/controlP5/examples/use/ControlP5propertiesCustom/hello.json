@@ -1,0 +1,22 @@
+{
+  "/sliderValue": {
+    "min": 0,
+    "max": 255,
+    "value": 128
+  },
+  "/slider": {
+    "min": 0,
+    "max": 200,
+    "value": 128
+  },
+  "/sliderTicks1": {
+    "min": 0,
+    "max": 255,
+    "value": 127.5
+  },
+  "/sliderTicks2": {
+    "min": 0,
+    "max": 255,
+    "value": 127.5
+  }
+}

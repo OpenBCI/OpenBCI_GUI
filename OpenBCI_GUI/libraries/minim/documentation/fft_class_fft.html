@@ -1,0 +1,338 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : FFT</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">FFT</p>
+    	
+       <p class="linkListHeader">Fields</p>
+       <p class="linkList">
+           
+    <a href="fft_field_bartlett.html" title="A constant indicating a Bartlett window should be used on sample buffers.">BARTLETT</a><br/>
+    
+    <a href="fft_field_bartletthann.html" title="A constant indicating a Bartlett-Hann window should be used on sample buffers.">BARTLETTHANN</a><br/>
+    
+    <a href="fft_field_blackman.html" title="A constant indicating a Blackman window with a default value should be used on sample buffers.">BLACKMAN</a><br/>
+    
+    <a href="fft_field_cosine.html" title="A constant indicating a Cosine window should be used on sample buffers.">COSINE</a><br/>
+    
+    <a href="fft_field_gauss.html" title="A constant indicating a Gauss with a default value should be used on sample buffers.">GAUSS</a><br/>
+    
+    <a href="fft_field_hamming.html" title="A constant indicating a Hamming window should be used on sample buffers.">HAMMING</a><br/>
+    
+    <a href="fft_field_hann.html" title="A constant indicating a Hann window should be used on sample buffers.">HANN</a><br/>
+    
+    <a href="fft_field_lanczos.html" title="A constant indicating a Lanczos window should be used on sample buffers.">LANCZOS</a><br/>
+    
+    <a href="fft_field_none.html" title="A constant indicating no window should be used on sample buffers. 
+  Also referred as a Rectangular window.">NONE</a><br/>
+    
+    <a href="fft_field_triangular.html" title="A constant indicating a Triangular window should be used on sample buffers.">TRIANGULAR</a><br/>
+    
+	   </p>
+   
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="fft_method_avgsize.html" title="Returns the number of averages currently being calculated.">avgSize ( )</a><br/>
+    
+    <a href="fft_method_calcavg.html" title="Calculate the average amplitude of the frequency band bounded by
+ <code>lowFreq</code> and <code>hiFreq</code>, inclusive.">calcAvg ( )</a><br/>
+    
+    <a href="fft_method_forward.html" title="Performs a forward transform on <code>buffer</code>.">forward ( )</a><br/>
+    
+    <a href="fft_method_freqtoindex.html" title="Returns the index of the frequency band that contains the requested
+ frequency.">freqToIndex ( )</a><br/>
+    
+    <a href="fft_method_getaveragebandwidth.html" title="Returns the bandwidth of the requested average band. Using this information 
+ and the return value of getAverageCenterFrequency you can determine the 
+ lower and upper frequency of any average band.">getAverageBandWidth ( )</a><br/>
+    
+    <a href="fft_method_getaveragecenterfrequency.html" title="Returns the center frequency of the i<sup>th</sup> average band.">getAverageCenterFrequency ( )</a><br/>
+    
+    <a href="fft_method_getavg.html" title="Gets the value of the <code>i<sup>th</sup></code> average.">getAvg ( )</a><br/>
+    
+    <a href="fft_method_getband.html" title="Returns the amplitude of the requested frequency band.">getBand ( )</a><br/>
+    
+    <a href="fft_method_getbandwidth.html" title="Returns the width of each frequency band in the spectrum (in Hz). It should
+ be noted that the bandwidth of the first and last frequency bands is half
+ as large as the value returned by this function.">getBandWidth ( )</a><br/>
+    
+    <a href="fft_method_getfreq.html" title="Gets the amplitude of the requested frequency in the spectrum.">getFreq ( )</a><br/>
+    
+    <a href="fft_method_getspectrumimaginary.html" title="Get the Imaginary part of the Complex representation of the spectrum.">getSpectrumImaginary ( )</a><br/>
+    
+    <a href="fft_method_getspectrumreal.html" title="Get the Real part of the Complex representation of the spectrum.">getSpectrumReal ( )</a><br/>
+    
+    <a href="fft_method_indextofreq.html" title="Returns the middle frequency of the i<sup>th</sup> band.">indexToFreq ( )</a><br/>
+    
+    <a href="fft_method_inverse.html" title="Performs an inverse transform of the frequency spectrum and places the
+ result in <code>buffer</code>.">inverse ( )</a><br/>
+    
+    <a href="fft_method_linaverages.html" title="Sets the number of averages used when computing the spectrum and spaces the
+ averages in a linear manner. In other words, each average band will be
+ <code>specSize() / numAvg</code> bands wide.">linAverages ( )</a><br/>
+    
+    <a href="fft_method_logaverages.html" title="Sets the number of averages used when computing the spectrum based on the
+ minimum bandwidth for an octave and the number of bands per octave. For
+ example, with audio that has a sample rate of 44100 Hz,
+ <code>logAverages(11, 1)</code> will result in 12 averages, each
+ corresponding to an octave, the first spanning 0 to 11 Hz. To ensure that
+ each octave band is a full octave, the number of octaves is computed by
+ dividing the Nyquist frequency by two, and then the result of that by two,
+ and so on. This means that the actual bandwidth of the lowest octave may
+ not be exactly the value specified.">logAverages ( )</a><br/>
+    
+    <a href="fft_method_noaverages.html" title="Sets the object to not compute averages.">noAverages ( )</a><br/>
+    
+    <a href="fft_method_scaleband.html" title="Scales the amplitude of the <code>i<sup>th</sup></code> frequency band
+ by <code>s</code>. You can use this to shape the spectrum before using
+ <code>inverse()</code>.">scaleBand ( )</a><br/>
+    
+    <a href="fft_method_scalefreq.html" title="Scales the amplitude of the requested frequency by <code>a</code>.">scaleFreq ( )</a><br/>
+    
+    <a href="fft_method_setband.html" title="Sets the amplitude of the <code>i<sup>th</sup></code> frequency band to
+ <code>a</code>. You can use this to shape the spectrum before using
+ <code>inverse()</code>.">setBand ( )</a><br/>
+    
+    <a href="fft_method_setfreq.html" title="Sets the amplitude of the requested frequency in the spectrum to
+ <code>a</code>.">setFreq ( )</a><br/>
+    
+    <a href="fft_method_specsize.html" title="Returns the size of the spectrum created by this transform. In other words,
+ the number of frequency bands produced by this transform. This is typically
+ equal to <code>timeSize()/2 + 1</code>, see above for an explanation.">specSize ( )</a><br/>
+    
+    <a href="fft_method_timesize.html" title="Returns the length of the time domain signal expected by this transform.">timeSize ( )</a><br/>
+    
+    <a href="fft_method_window.html" title="Sets the window to use on the samples before taking the forward transform.
+ If an invalid window is asked for, an error will be reported and the
+ current window will not be changed.">window ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	FFT stands for Fast Fourier Transform. It is an efficient way to calculate the Complex 
+ Discrete Fourier Transform. There is not much to say about this class other than the fact 
+ that when you want to analyze the spectrum of an audio buffer you will almost always use 
+ this class. One restriction of this class is that the audio buffers you want to analyze 
+ must have a length that is a power of two. If you try to construct an FFT with a 
+ <code>timeSize</code> that is not a power of two, an IllegalArgumentException will be 
+ thrown.
+ <p>
+ A Fourier Transform is an algorithm that transforms a signal in the time
+ domain, such as a sample buffer, into a signal in the frequency domain, often
+ called the spectrum. The spectrum does not represent individual frequencies,
+ but actually represents frequency bands centered on particular frequencies.
+ The center frequency of each band is usually expressed as a fraction of the
+ sampling rate of the time domain signal and is equal to the index of the
+ frequency band divided by the total number of bands. The total number of
+ frequency bands is usually equal to the length of the time domain signal, but
+ access is only provided to frequency bands with indices less than half the
+ length, because they correspond to frequencies below the <a
+ href="http://en.wikipedia.org/wiki/Nyquist_frequency">Nyquist frequency</a>.
+ In other words, given a signal of length <code>N</code>, there will be
+ <code>N/2</code> frequency bands in the spectrum.
+ <p>
+ As an example, if you construct an FFT with a
+ <code>timeSize</code> of 1024 and and a <code>sampleRate</code> of 44100
+ Hz, then the spectrum will contain values for frequencies below 22010 Hz,
+ which is the Nyquist frequency (half the sample rate). If you ask for the
+ value of band number 5, this will correspond to a frequency band centered on
+ <code>5/1024 * 44100 = 0.0048828125 * 44100 = 215 Hz</code>. The width of
+ that frequency band is equal to <code>2/1024</code>, expressed as a
+ fraction of the total bandwidth of the spectrum. The total bandwith of the
+ spectrum is equal to the Nyquist frequency, which in this case is 22050, so
+ the bandwidth is equal to about 50 Hz. It is not necessary for you to
+ remember all of these relationships, though it is good to be aware of them.
+ The function <code>getFreq()</code> allows you to query the spectrum with a
+ frequency in Hz and the function <code>getBandWidth()</code> will return
+ the bandwidth in Hz of each frequency band in the spectrum.
+ <p>
+ <b>Usage</b>
+ <p>
+ A typical usage of the FFT is to analyze a signal so that the
+ frequency spectrum may be represented in some way, typically with vertical
+ lines. You could do this in Processing with the following code, where
+ <code>audio</code> is an AudioSource and <code>fft</code> is an FFT.
+ 
+ <pre>
+ fft.forward(audio.left);
+ for (int i = 0; i &lt; fft.specSize(); i++)
+ {
+   // draw the line for frequency band i, scaling it by 4 so we can see it a bit better
+   line(i, height, i, height - fft.getBand(i) * 4);
+ }
+ </pre>
+ 
+ <b>Windowing</b>
+ <p>
+ Windowing is the process of shaping the audio samples before transforming them
+ to the frequency domain. The Fourier Transform assumes the sample buffer is is a 
+ repetitive signal, if a sample buffer is not truly periodic within the measured
+ interval sharp discontinuities may arise that can introduce spectral leakage.
+ Spectral leakage is the speading of signal energy across multiple FFT bins. This
+ "spreading" can drown out narrow band signals and hinder detection.
+ </p>
+ <p>
+ A <a href="http://en.wikipedia.org/wiki/Window_function">windowing function</a>
+ attempts to reduce spectral leakage by attenuating the measured sample buffer
+ at its end points to eliminate discontinuities. If you call the <code>window()</code> 
+ function with an appropriate WindowFunction, such as <code>HammingWindow()</code>,
+ the sample buffers passed to the object for analysis will be shaped by the current
+ window before being transformed. The result of using a window is to reduce
+ the leakage in the spectrum somewhat.
+ <p>
+ <b>Averages</b>
+ <p>
+ FFT also has functions that allow you to request the creation of
+ an average spectrum. An average spectrum is simply a spectrum with fewer
+ bands than the full spectrum where each average band is the average of the
+ amplitudes of some number of contiguous frequency bands in the full spectrum.
+ <p>
+ <code>linAverages()</code> allows you to specify the number of averages
+ that you want and will group frequency bands into groups of equal number. So
+ if you have a spectrum with 512 frequency bands and you ask for 64 averages,
+ each average will span 8 bands of the full spectrum.
+ <p>
+ <code>logAverages()</code> will group frequency bands by octave and allows
+ you to specify the size of the smallest octave to use (in Hz) and also how
+ many bands to split each octave into. So you might ask for the smallest
+ octave to be 60 Hz and to split each octave into two bands. The result is
+ that the bandwidth of each average is different. One frequency is an octave
+ above another when it's frequency is twice that of the lower frequency. So,
+ 120 Hz is an octave above 60 Hz, 240 Hz is an octave above 120 Hz, and so on.
+ When octaves are split, they are split based on Hz, so if you split the
+ octave 60-120 Hz in half, you will get 60-90Hz and 90-120Hz. You can see how
+ these bandwidths increase as your octave sizes grow. For instance, the last
+ octave will always span <code>sampleRate/4 - sampleRate/2</code>, which in
+ the case of audio sampled at 44100 Hz is 11025-22010 Hz. These
+ logarithmically spaced averages are usually much more useful than the full
+ spectrum or the linearly spaced averages because they map more directly to
+ how humans perceive sound.
+ <p>
+ <code>calcAvg()</code> allows you to specify the frequency band you want an
+ average calculated for. You might ask for 60-500Hz and this function will
+ group together the bands from the full spectrum that fall into that range and
+ average their amplitudes for you.
+ <p>
+ If you don't want any averages calculated, then you can call
+ <code>noAverages()</code>. This will not impact your ability to use
+ <code>calcAvg()</code>, it will merely prevent the object from calculating
+ an average array every time you use <code>forward()</code>.
+ <p>
+ <b>Inverse Transform</b>
+ <p>
+ FFT also supports taking the inverse transform of a spectrum.
+ This means that a frequency spectrum will be transformed into a time domain
+ signal and placed in a provided sample buffer. The length of the time domain
+ signal will be <code>timeSize()</code> long. The <code>set</code> and
+ <code>scale</code> functions allow you the ability to shape the spectrum
+ already stored in the object before taking the inverse transform. You might
+ use these to filter frequencies in a spectrum or modify it in some other way.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre><em>Constructs an FFT that will accept sample buffers that are
+ <code>timeSize</code> long and have been recorded with a sample rate of
+ <code>sampleRate</code>. <code>timeSize</code> <em>must</em> be a
+ power of two. This will throw an exception if it is not.</em>
+FFT(int timeSize, float sampleRate)
+</pre>
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">timeSize</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the length of the sample buffers you will be analyzing</span><br/>
+    
+        <span class="parameterName">sampleRate</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float: the sample rate of the audio you will be analyzing</span><br/>
+    
+   
+    	<p class="memberSectionHeader">Related</p>
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use an FFT to analyze
+  * the audio being generated by an AudioPlayer.
+  * &lt;p>
+  * FFT stands for Fast Fourier Transform, which is a 
+  * method of analyzing audio that allows you to visualize 
+  * the frequency content of a signal. You've seen 
+  * visualizations like this before in music players 
+  * and car stereos.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.analysis.*;
+import ddf.minim.*;
+
+Minim       minim;
+AudioPlayer jingle;
+FFT         fft;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  // specify that we want the audio buffers of the AudioPlayer
+  // to be 1024 samples long because our FFT needs to have 
+  // a power-of-two buffer size and this is a good size.
+  jingle = minim.loadFile("jingle.mp3", 1024);
+  
+  // loop the file indefinitely
+  jingle.loop();
+  
+  // create an FFT object that has a time-domain buffer 
+  // the same size as jingle's sample buffer
+  // note that this needs to be a power of two 
+  // and that it means the size of the spectrum will be half as large.
+  fft = new FFT( jingle.bufferSize(), jingle.sampleRate() );
+  
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  
+  // perform a forward FFT on the samples in jingle's mix buffer,
+  // which contains the mix of both the left and right channels of the file
+  fft.forward( jingle.mix );
+  
+  for(int i = 0; i &lt; fft.specSize(); i++)
+  {
+    // draw the line for frequency band i, scaling it up a bit so we can see it
+    line( i, height, i, height - fft.getBand(i)*8 );
+  }
+}
+</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+
+  <tr>
+  	<td class="linkList classNavigation"><a class="classLink" href="beatdetect_class_beatdetect.html">BeatDetect</a><br><a href="beatdetect_field_freq_energy.html">FREQ_ENERGY</a><br><a href="beatdetect_field_sound_energy.html">SOUND_ENERGY</a><br><a href="beatdetect_method_dectectsize.html">dectectSize ( )</a><br><a href="beatdetect_method_detect.html">detect ( )</a><br><a href="beatdetect_method_detectmode.html">detectMode ( )</a><br><a href="beatdetect_method_detectsize.html">detectSize ( )</a><br><a href="beatdetect_method_getdetectcenterfrequency.html">getDetectCenterFrequency ( )</a><br><a href="beatdetect_method_ishat.html">isHat ( )</a><br><a href="beatdetect_method_iskick.html">isKick ( )</a><br><a href="beatdetect_method_isonset.html">isOnset ( )</a><br><a href="beatdetect_method_isrange.html">isRange ( )</a><br><a href="beatdetect_method_issnare.html">isSnare ( )</a><br><a href="beatdetect_method_setsensitivity.html">setSensitivity ( )</a><br><BR><a class="classLink" href="fft_class_fft.html">FFT</a><br><a href="fft_field_bartlett.html">BARTLETT</a><br><a href="fft_field_bartletthann.html">BARTLETTHANN</a><br><a href="fft_field_blackman.html">BLACKMAN</a><br><a href="fft_field_cosine.html">COSINE</a><br><a href="fft_field_gauss.html">GAUSS</a><br><a href="fft_field_hamming.html">HAMMING</a><br><a href="fft_field_hann.html">HANN</a><br><a href="fft_field_lanczos.html">LANCZOS</a><br><a href="fft_field_none.html">NONE</a><br><a href="fft_field_triangular.html">TRIANGULAR</a><br><a href="fft_method_avgsize.html">avgSize ( )</a><br><a href="fft_method_calcavg.html">calcAvg ( )</a><br><a href="fft_method_forward.html">forward ( )</a><br><a href="fft_method_freqtoindex.html">freqToIndex ( )</a><br><a href="fft_method_getaveragebandwidth.html">getAverageBandWidth ( )</a><br><a href="fft_method_getaveragecenterfrequency.html">getAverageCenterFrequency ( )</a><br><a href="fft_method_getavg.html">getAvg ( )</a><br><a href="fft_method_getband.html">getBand ( )</a><br><a href="fft_method_getbandwidth.html">getBandWidth ( )</a><br><a href="fft_method_getfreq.html">getFreq ( )</a><br><a href="fft_method_getspectrumimaginary.html">getSpectrumImaginary ( )</a><br><a href="fft_method_getspectrumreal.html">getSpectrumReal ( )</a><br><a href="fft_method_indextofreq.html">indexToFreq ( )</a><br><a href="fft_method_inverse.html">inverse ( )</a><br><a href="fft_method_linaverages.html">linAverages ( )</a><br><a href="fft_method_logaverages.html">logAverages ( )</a><br><a href="fft_method_noaverages.html">noAverages ( )</a><br><a href="fft_method_scaleband.html">scaleBand ( )</a><br><a href="fft_method_scalefreq.html">scaleFreq ( )</a><br><a href="fft_method_setband.html">setBand ( )</a><br><a href="fft_method_setfreq.html">setFreq ( )</a><br><a href="fft_method_specsize.html">specSize ( )</a><br><a href="fft_method_timesize.html">timeSize ( )</a><br><a href="fft_method_window.html">window ( )</a><br><BR><a class="classLink" href="windowfunction_class_windowfunction.html">WindowFunction</a><br><a href="windowfunction_method_apply.html">apply ( )</a><br><a href="windowfunction_method_generatecurve.html">generateCurve ( )</a><br></td>
+    <td class="mainText border-left">The Analysis package contains classes for analyzing audio in real-time.
+	<p>
+	<strong>Fast Fourier Transform</strong>
+	<p>
+	A Fourier Transform is an algorithm that transforms a signal in the time
+ 	domain, such as a sample buffer, into a signal in the frequency domain, often
+ 	called the spectrum. The spectrum does not represent individual frequencies,
+ 	but actually represents frequency bands centered on particular frequencies.
+ 	The center frequency of each band is usually expressed as a fraction of the
+ 	sampling rate of the time domain signal and is equal to the index of the
+	frequency band divided by the total number of bands. The total number of
+ 	frequency bands is usually equal to the length of the time domain signal, but
+	access is only provided to frequency bands with indices less than half the
+ 	length, because they correspond to frequencies below the <a
+ 	href="http://en.wikipedia.org/wiki/Nyquist_frequency">Nyquist frequency</a>.
+ 	In other words, given a signal of length <code>N</code>, there will be
+ 	<code>N/2</code> frequency bands in the spectrum.
+ 	<p>
+ 	<strong>Beat (or Onset) Detection</strong>
+ 	<p>
+ 	The BeatDetect class allows you to analyze an audio stream for beats (rhythmic onsets). 
+ 	<a href="http://www.gamedev.net/reference/programming/features/beatdetection">Beat
+ 	Detection Algorithms</a> by Frederic Patin describes beats in the following
+ 	way: 
+ 	
+ 	<blockquote> 
+ 	The human listening system determines the rhythm of music
+ 	by detecting a pseudo periodical succession of beats. The signal which is
+ 	intercepted by the ear contains a certain energy, this energy is converted
+ 	into an electrical signal which the brain interprets. Obviously, The more
+ 	energy the sound transports, the louder the sound will seem. But a sound will
+ 	be heard as a <em>beat</em> only if his energy is largely superior to the
+ 	sound's energy history, that is to say if the brain detects a
+ 	<em>brutal variation in sound energy</em>. Therefore if the ear intercepts
+ 	a monotonous sound with sometimes big energy peaks it will detect beats,
+ 	however, if you play a continuous loud sound you will not perceive any beats.
+ 	Thus, the beats are big variations of sound energy. 
+ 	</blockquote> 
+ 	In fact, the two algorithms in this class are based on two algorithms described in
+ 	that paper.
+ 	<p>
+ 	BeatDetect has two modes: sound energy tracking and frequency energy
+ 	tracking. In sound energy mode, the level of the buffer, as returned by
+ 	<code>level()</code>, is used as the instant energy in each frame. Beats,
+ 	then, are spikes in this value, relative to the previous one second of sound.
+ 	In frequency energy mode, the same process is used but instead of tracking
+ 	the level of the buffer, an FFT is used to obtain a spectrum, which is then
+ 	divided into average bands using <code>logAverages()</code>, and each of
+ 	these bands is tracked individually. The result is that it is possible to
+ 	track sounds that occur in different parts of the frequency spectrum
+ 	independently (like the kick drum and snare drum).
+ 	<p>
+ 	In sound energy mode you use <code>isOnset()</code> to query the algorithm
+ 	and in frequency energy mode you use <code>isOnset(int i)</code>,
+ 	<code>isKick()</code>, <code>isSnare()</code>, and
+ 	<code>isRange()</code> to query particular frequnecy bands or ranges of
+ 	frequency bands. It should be noted that <code>isKick()</code>,
+ 	<code>isSnare()</code>, and <code>isHat()</code> merely call
+ 	<code>isRange()</code> with values determined by testing the algorithm
+ 	against music with a heavy beat and they may not be appropriate for all kinds
+ 	of music. If you find they are performing poorly with your music, you should
+	use <code>isRange()</code> directly to locate the bands that provide the
+ 	most meaningful information for you.</td>
+  </tr>
+  
+</table>
+</center>
+</body>
+</html>
