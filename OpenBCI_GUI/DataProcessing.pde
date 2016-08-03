@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
+import ddf.minim.analysis.*; //for FFT
 
 DataProcessing dataProcessing;
 String curTimestamp;
