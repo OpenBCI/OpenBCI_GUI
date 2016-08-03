@@ -9,6 +9,10 @@ FFT_Widget fft_widget;
 void setupGUIWidgets() {
   headPlot_widget = new HeadPlot_Widget(this);
   fft_widget = new FFT_Widget(this);
+  Container motor_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
+
+  motorWidget = new EMG_Widget(nchan, openBCI.get_fs_Hz(), motor_container, this);
+
 }
 
 void updateGUIWidgets() {
@@ -30,15 +34,17 @@ void GUIWidgets_screenResized(int _winX, int _winY) {
 }
 
 void GUIWidgets_mousePressed() {
+  motorWidget.mousePressed();
+}
+
+void GUIWidgets_mouseReleased() {
+  
+  motorWidget.mouseReleased();
   headPlot_widget.mousePressed();
   fft_widget.mousePressed();
   
 }
 
-void GUIWidgets_mouseReleased() {
-  headPlot_widget.mouseReleased();
-  fft_widget.mouseReleased();
-}
 
 
 //void GUIWidgets_keyPressed() {
