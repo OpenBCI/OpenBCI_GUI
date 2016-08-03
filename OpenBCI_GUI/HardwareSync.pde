@@ -58,7 +58,7 @@ void serialEvent(Serial port) {
   //check to see which serial port it is
   if (openBCI.isOpenBCISerial(port)) {
     // println("OpenBCI_GUI: serialEvent: millis = " + millis());
-
+ 
     // boolean echoBytes = !openBCI.isStateNormal(); 
     boolean echoBytes;
 
@@ -86,8 +86,58 @@ void serialEvent(Serial port) {
       fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
     }
   } else {
-    println("OpenBCI_GUI: serialEvent: received serial data NOT from OpenBCI.");
-    inByte = port.read();
+    
+    //Used for serial communications, primarily everything in no_start_connection
+    if(no_start_connection){
+
+      
+      if(board_message == null || dollaBillz>2){ board_message = new StringBuilder(); dollaBillz = 0;}
+      
+      inByte = byte(port.read());
+      if(char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
+      
+      //print(char(inByte));
+      if(inByte != -1){ 
+        if(isGettingPoll){
+          if(inByte != '$'){
+            if(!spaceFound) board_message.append(char(inByte));
+            else hexToInt = Integer.parseInt(String.format("%02X",inByte),16);
+            
+            if(char(inByte) == ' ') spaceFound = true;
+          }
+          else dollaBillz++;
+        }
+        else{
+          if(inByte != '$') board_message.append(char(inByte));
+          else dollaBillz++;
+        }
+      }
+      
+      
+      
+      
+      
+    }
+    else{
+      //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
+      
+      
+      inByte = byte(port.read());
+      if(isOpenBCI){
+        
+        if(board_message == null || dollaBillz >2){board_message = new StringBuilder(); dollaBillz=0;}
+        
+        if(inByte != '$') board_message.append(char(inByte));
+        else dollaBillz++;
+      }
+      if(char(inByte) == 'S' || char(inByte) == 'F'){
+        isOpenBCI = true;
+        if(board_message == null) board_message = new StringBuilder(); 
+        board_message.append(char(inByte));
+     
+      }
+      
+    }
   }
 }
 

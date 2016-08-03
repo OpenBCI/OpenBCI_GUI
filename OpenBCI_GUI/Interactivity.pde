@@ -405,6 +405,7 @@ void mousePressed() {
       //was the stopButton pressed?
 
       gui.mousePressed(); // trigger mousePressed function in GUI
+
       GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
       
       //most of the logic below should be migrated into the GUI_Manager specific function above

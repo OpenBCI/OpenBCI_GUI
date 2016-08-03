@@ -20,6 +20,9 @@ import org.gwoptics.graphics.graph2D.LabelPos;
 import org.gwoptics.graphics.graph2D.traces.Blank2DTrace;
 import org.gwoptics.graphics.graph2D.backgrounds.*;
 import ddf.minim.analysis.*; //for FFT
+
+import grafica.*;
+
 import java.util.*; //for Array.copyOfRange()
 
 //------------------------------------------------------------------------
@@ -915,6 +918,7 @@ class GUI_Manager {
   public void mousePressed(){
     verbosePrint("GUI_Manager: mousePressed: mouse pressed.");
     //if showMontage button pressed
+    
     if(showMontageButton.isMouseHere()){
       //turn off visibility of channel full controller
       cc.showFullController = false;
@@ -938,6 +942,7 @@ class GUI_Manager {
       cc.mousePressed();
     // }
     
+    
 
     //turn off visibility of graph
     // turn on drawing and interactivity of channel controller
@@ -950,6 +955,8 @@ class GUI_Manager {
     //verbosePrint("GUI_Manager: mouseReleased()");
 
     // if(mouseX >= cc.x1 && mouseX <= (cc.x2 - cc.w2) && mouseY >= cc.y1 && mouseY <= (cc.y1 + cc.h1) ){ 
+    
+      
     verbosePrint("GUI_Manager: mouseReleased(): Channel Controller mouse released...");
     cc.mouseReleased();
 
@@ -964,6 +971,7 @@ class GUI_Manager {
     showPolarityButton.setIsActive(false);
     maxDisplayFreqButton.setIsActive(false);
     biasButton.setIsActive(false);
+    
   }
  
 };
