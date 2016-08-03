@@ -4,12 +4,34 @@
 //------------------------------------------------------------------------
 
 DataProcessing dataProcessing;
+String curTimestamp;
+boolean hasRepeated = false;
+HashMap<String,float[][]> processed_file;
 
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
 
 //called from systemUpdate when mode=10 and isRunning = true
+void process_input_file(){
+  processed_file = new HashMap<String, float[][]>();
+  float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
+  
+  while(!hasRepeated){
+    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, openBCI.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+  
+    for (int Ichan=0; Ichan < nchan; Ichan++) {
+      //scale the data into engineering units..."microvolts"
+      localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
+    }
+  }
+  
+  println("Finished filling hashmap");
+  has_processed = true;
+}
+
+
+
 int getDataIfAvailable(int pointCounter) {
 
   if ( (eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX) ) {
@@ -54,6 +76,7 @@ int getDataIfAvailable(int pointCounter) {
           //scale the data into engineering units..."microvolts"
           yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
         }
+        
         pointCounter++;
       } //close the loop over data points
       //if (eegDataSource==DATASOURCE_PLAYBACKFILE) println("OpenBCI_GUI: getDataIfAvailable: currentTableRowIndex = " + currentTableRowIndex);
@@ -240,6 +263,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
   if (currentTableRowIndex >= datatable.getRowCount()) {
     //end of file
     println("OpenBCI_GUI: getPlaybackDataFromTable: hit the end of the playback data file.  starting over...");
+    hasRepeated = true;
     //if (isRunning) stopRunning();
     currentTableRowIndex = 0;
   } else {
@@ -259,6 +283,17 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       //put into data structure
       curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
     }
+    curTimestamp = row.getString(nchan+3);
+    //int localnchan = nchan;
+    
+    
+    //try{
+    //  while(true){
+    //    println("VALUE: " + row.getString(localnchan));
+    //    localnchan++;
+    //  }
+    //}
+    //catch (Exception e){ println("DONE WITH THIS TIME. INDEX: " + --localnchan);}
   }
   return currentTableRowIndex;
 }

@@ -16,7 +16,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 
-DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -153,7 +153,7 @@ public class OutputFile_rawtxt {
     output.println("%");
     output.println("%Sample Rate = " + fs_Hz + " Hz");
     output.println("%First Column = SampleIndex");
-    output.println("%Second Column = Timestamp ");
+    output.println("%Last Column = Timestamp ");
     output.println("%Other Columns = EEG data in microvolts followed by Accel Data (in G) interleaved with Aux Data");
     output.flush();
   }
@@ -167,9 +167,9 @@ public class OutputFile_rawtxt {
      
     if (output != null) {
       output.print(Integer.toString(data.sampleIndex));
-      output.print(dateFormat.format(date) +", ");
       writeValues(data.values,scale_to_uV);
       writeValues(data.auxValues,scale_for_aux);
+      output.print( ", " + dateFormat.format(date));
       output.println(); rowsWritten++;
       //output.flush();
     }

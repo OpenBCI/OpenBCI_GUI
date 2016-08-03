@@ -58,7 +58,7 @@ void serialEvent(Serial port) {
   //check to see which serial port it is
   if (openBCI.isOpenBCISerial(port)) {
     // println("OpenBCI_GUI: serialEvent: millis = " + millis());
-
+ 
     // boolean echoBytes = !openBCI.isStateNormal(); 
     boolean echoBytes;
 

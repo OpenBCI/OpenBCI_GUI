@@ -143,6 +143,7 @@ PFont f3;
 EMG_Widget motorWidget;
 
 boolean no_start_connection = false;
+boolean has_processed = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -324,7 +325,6 @@ void initSystem() {
       exit();
     }
     println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/openBCI.get_fs_Hz()) + " seconds of EEG data");
-
     //removing first column of data from data file...the first column is a time index and not eeg data
     playbackData_table.removeColumn(0);
     break;
@@ -447,6 +447,10 @@ void systemUpdate() { // for updating data values and variables
       } else {
         //not enough data has arrived yet... only update the channel controller
       }
+    }else if(eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed) {
+      lastReadDataPacketInd = 0;
+      pointCounter = 0;
+      process_input_file();
     }
 
     gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)

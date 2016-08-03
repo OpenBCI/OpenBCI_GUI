@@ -378,7 +378,6 @@ class ControlPanel {
     //only able to click buttons of control panel when system is not running
     if (systemMode != 10) {
       if(autoconnect.isMouseHere()){
-        autoconnect();
         autoconnect.setIsActive(true);
         autoconnect.wasPressed = true;
       }
@@ -557,14 +556,6 @@ class ControlPanel {
         }
         catch (Exception e){
           rcBox.print_onscreen("Error connecting to board...");
-          
-          //try{
-            
-          //  board = autoconnect_return_high(rcBox);
-          //  rcBox.print_onscreen("Successfully connected to board");
-          //}
-          //catch (Exception e2){
-          //}
         }
         
         
@@ -600,7 +591,8 @@ class ControlPanel {
       
     }
     
-    if(autoconnect.isMouseHere() && autoconnect.wasPressed){
+    if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
+      autoconnect();
       system_init();
       autoconnect.wasPressed = false;
       autoconnect.setIsActive(false);
