@@ -3,12 +3,20 @@
 // Class: OutputFile_rawtxt
 // Purpose: handle file creation and writing for the text log file
 // Created: Chip Audette  May 2, 2014
+//
+// DATA FORMAT:
+//
 ////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+
+DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -145,19 +153,23 @@ public class OutputFile_rawtxt {
     output.println("%");
     output.println("%Sample Rate = " + fs_Hz + " Hz");
     output.println("%First Column = SampleIndex");
+    output.println("%Last Column = Timestamp ");
     output.println("%Other Columns = EEG data in microvolts followed by Accel Data (in G) interleaved with Aux Data");
     output.flush();
   }
 
 
-//  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux) {
-//    writeRawData_dataPacket(data, scale_to_uV, data.values.length);
-//  }
+
   public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux) {
+    
+    //get current date time with Date()
+    Date date = new Date();
+     
     if (output != null) {
       output.print(Integer.toString(data.sampleIndex));
       writeValues(data.values,scale_to_uV);
       writeValues(data.auxValues,scale_for_aux);
+      output.print( ", " + dateFormat.format(date));
       output.println(); rowsWritten++;
       //output.flush();
     }
