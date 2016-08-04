@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>hypermedia.net : : UDP</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table width="600" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td class="header">
+	  <span class="libName">hypermedia.net</span>
+	  <a href="index.htm">index</a></td>
+    <td class="descList"></td>
+  </tr>
+  <tr>
+    <td valign="top" class="mainTextName">Name</td>
+    <td class="methodName">UDP</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Examples</td>
+    <td valign=top class="descList"><pre>None available</pre></td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Description</td>
+    <td valign=top class="descList">Create and manage unicast, broadcast or multicast socket to send and receive
+ datagram packets over the network.
+ <p>
+ The socket type is define at his initialyzation by the passed IP address. 
+ To reach a host (interface) within a network, you need to specified the kind 
+ of address:
+ <ul>
+ <li>An <b>unicast address</b> refer to a unique host within a subnet.</li>
+ <li>A <b>broadcast address</b> allow you to call every host within a subnet.
+ </li>
+ <li>A <b>multicast address</b> allows to call a specific group of hosts within 
+ the subnet. A multicast group is specified by a IP address in the range 
+ 224.0.0.0 (reserved, should not be used) to 
+ 239.255.255.255 inclusive, and by a standard UDP port number.
+ <br />
+ <small>notes: the complete reference of special multicast addresses should be
+ found in the latest available version of the "Assigned Numbers RFC"
+ </small></li>
+ </ul>
+ A packet sent to a unicast or broadcast address is only delivered to the 
+ host identified by that address. To the contrary, when packet is send to a 
+ multicast address, all interfaces identified by that address receive the data
+ .
+ <p>
+ To perform actions on receive and/or timeout events, you must implement 
+ specific method(s) in your code. This method will be automatically called
+ when the socket receive incoming data or a timeout event. By default, the
+ "receive handler" is typically <code>receive(byte[] data)</code> but you can
+ retrieve more informations about the datagram packet, see 
+ {@link UDP#setReceiveHandler(String name)} for more informations. In the same
+ logic, the default "timeout handler" is explicitly <code>timeout()</code>.
+ <p>
+ <small>
+ note: currently applets are not allowed to use multicast sockets
+ </small></td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Constructors</td>
+    <td valign=top class="descList"><pre>UDP(owner);
+UDP(owner, port);
+UDP(owner, port, ip);
+</pre></td>
+  </tr>
+  
+     <tr>
+       <td class="mainText">Parameters</td>
+       <td valign=top class="descList">
+         <table border=0 cellspacing=0 cellpadding=0>
+           
+      <tr>
+        <td width="70" valign=top>owner</td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>the target object to be call by the receive handler</td>
+	  </tr>
+    
+      <tr>
+        <td width="70" valign=top>port</td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>local port to bind</td>
+	  </tr>
+    
+      <tr>
+        <td width="70" valign=top>ip</td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>host address or group address</td>
+	  </tr>
+    
+         </table>
+	   </td>
+	 </tr>
+   
+  
+     <tr>
+       <td class="mainText">Fields</td>
+       <td valign=top class="descList">
+         <table border=0 cellspacing=0 cellpadding=0>
+           
+      <tr>
+        <td width="120" valign=top><a href="udp_field_buffer_size.htm">BUFFER_SIZE</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>The default socket buffer length in bytes.<BR><BR></td>
+	  </tr>
+    
+         </table>
+	   </td>
+	 </tr>
+   
+  
+     <tr>
+       <td class="mainText">Methods</td>
+       <td valign=top class="descList">
+         <table border=0 cellspacing=0 cellpadding=0>
+           
+      <tr>
+        <td width="120" valign=top><a href="udp_method_address.htm">address ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Return the actual socket's local address, or <code>null</code> if the 
+ address correspond to any local address.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_broadcast.htm">broadcast ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Enables or disables the ability of the current process to send broadcast
+ messages.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_close.htm">close ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Close the actuel datagram socket and all associate resources.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_dispose.htm">dispose ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Close the socket. This method is automatically called by Processing when 
+ the PApplet shuts down.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_getbuffer.htm">getBuffer ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Return the actual socket buffer length<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_gettimetolive.htm">getTimeToLive ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Return the "Time to Live" value or -1 if an error occurred (or if 
+ the current socket is not a multicast socket).<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_isbroadcast.htm">isBroadcast ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Returns whether the opened socket send broadcast message socket or not.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_isclosed.htm">isClosed ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Returns whether the current socket is closed or not.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_isjoined.htm">isJoined ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Returns whether the multicast socket is joined to a group address.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_islistening.htm">isListening ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Returns whether the socket wait for incoming data or not.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_isloopback.htm">isLoopback ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Returns whether the multicast socket loopback mode is enable or not.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_ismulticast.htm">isMulticast ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Returns whether the opened datagram socket is a multicast socket or not.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_listen.htm">listen ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Wait for incoming data, and call the appropriate handlers each time a 
+ message is received. If the owner's class own the appropriate target 
+ handler, this method send it the receive message as byte[], the sender 
+ IP address and port.
+ <p>
+ This method force the current <code>Thread</code> to be ceased for a 
+ temporary period. If you prefer listening without blocking the current 
+ thread, use the {@link UDP#listen(int millis)} or 
+ {@link UDP#listen(boolean on)} method instead.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_log.htm">log ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Enable or disable output process log.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_loopback.htm">loopback ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Enable or disable the multicast socket loopback mode. By default loopback
+ is enable.
+ <br>
+ Setting loopback to false means this multicast socket does not want to 
+ receive the data that it sends to the multicast group.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_port.htm">port ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Return the actual socket's local port, or -1 if the socket is closed.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_run.htm">run ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Wait for incoming datagram packets. This method is called automaticlly,
+ you do not need to call it.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_send.htm">send ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Send data to the requested IP address and port.
+ <p>
+ A <code>null</code> IP address will assign the packet address to the 
+ local host. Use this method to send data to another application by
+ passing <code>null</code> as the destination address.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_setbuffer.htm">setBuffer ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Set the maximum size of the packet that can be sent or receive on the 
+ current socket. This value must be greater than 0, otherwise the buffer 
+ size is set to the his default value.
+ <p>
+ return <code>true</code> if the new buffer value have been correctly set, 
+ <code>false</code> otherwise.
+ <p>
+ <i>note : this method has no effect if the socket is listening. To define
+ a new buffer size, call this method before implementing a new buffer in 
+ memory. Explicitly before calling a receive methods.</i><BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_setreceivehandler.htm">setReceiveHandler ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Register the target's receive handler.
+ <p>
+ By default, this method name is "receive" with one argument 
+ representing the received data as <code>byte[]</code>. For more 
+ flexibility, you can change this method with another useful method by 
+ passing his name. You could get more informations by implementing two 
+ additional arguments, a <code>String</code> representing the sender IP 
+ address and a <code>int</code> representing the sender port :
+ <p><blockquote><pre>
+ void myCustomReceiveHandler(byte[] message, String ip, int port) {
+	// do something here...
+ }
+ </blockquote></pre><BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_settimetolive.htm">setTimeToLive ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Control the life-time of a datagram in the network for multicast packets 
+ in order to indicates the scope of the multicasts (ie how far the packet 
+ will travel).
+ <p>
+ The TTL value must be in range of 0 to 255 inclusive. The larger the 
+ number, the farther the multicast packets will travel (by convention):
+ <blockquote><pre>
+ 0	-> restricted to the same host
+ 1	-> restricted to the same subnet (default)
+ &lt;32	-> restricted to the same site
+ &lt;64	-> restricted to the same region
+ &lt;128	-> restricted to the same continent
+ &lt;255	-> no restriction
+ </blockquote></pre>
+ The default value is 1, meaning that the datagram will not go beyond the 
+ local subnet.
+ <p>
+ return <code>true</code> if no error occured.<BR><BR></td>
+	  </tr>
+    
+      <tr>
+        <td width="120" valign=top><a href="udp_method_settimeouthandler.htm">setTimeoutHandler ( )</a></td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>Register the target's timeout handler. By default, this method name is 
+ "timeout" with no argument.<BR><BR></td>
+	  </tr>
+    
+         </table>
+	   </td>
+	 </tr>
+   
+  <tr>
+    <td valign=top class="mainText">Usage</td>
+    <td class="descList">Web & Application</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Related</td>
+    <td class="descList"></td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

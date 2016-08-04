@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : BeatDetect : : setSensitivity</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="beatdetect_class_beatdetect.html">BeatDetect</A></p>
+    	<p class="methodName">setSensitivity</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Sets the sensitivity of the algorithm. After a beat has been detected, the
+ algorithm will wait for <code>millis</code> milliseconds before allowing
+ another beat to be reported. You can use this to dampen the algorithm if
+ it is giving too many false-positives. The default value is 10, which is
+ essentially no damping. If you try to set the sensitivity to a negative
+ value, an error will be reported and it will be set to 10 instead.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void setSensitivity(int millis)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">millis</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the sensitivity in milliseconds</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="beatdetect_class_beatdetect.html">BeatDetect</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the BeatDetect object in FREQ_ENERGY mode.&lt;br />
+  * You can use &lt;code>isKick&lt;/code>, &lt;code>isSnare&lt;/code>, &lt;/code>isHat&lt;/code>, &lt;code>isRange&lt;/code>, 
+  * and &lt;code>isOnset(int)&lt;/code> to track whatever kind of beats you are looking to track, they will report 
+  * true or false based on the state of the analysis. To "tick" the analysis you must call &lt;code>detect&lt;/code> 
+  * with successive buffers of audio. You can do this inside of &lt;code>draw&lt;/code>, but you are likely to miss some 
+  * audio buffers if you do this. The sketch implements an &lt;code>AudioListener&lt;/code> called &lt;code>BeatListener&lt;/code> 
+  * so that it can call &lt;code>detect&lt;/code> on every buffer of audio processed by the system without repeating a buffer 
+  * or missing one.
+  * &lt;p>
+  * This sketch plays an entire song so it may be a little slow to load.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+
+Minim minim;
+AudioPlayer song;
+BeatDetect beat;
+BeatListener bl;
+
+float kickSize, snareSize, hatSize;
+
+class BeatListener implements AudioListener
+{
+  private BeatDetect beat;
+  private AudioPlayer source;
+  
+  BeatListener(BeatDetect beat, AudioPlayer source)
+  {
+    this.source = source;
+    this.source.addListener(this);
+    this.beat = beat;
+  }
+  
+  void samples(float[] samps)
+  {
+    beat.detect(source.mix);
+  }
+  
+  void samples(float[] sampsL, float[] sampsR)
+  {
+    beat.detect(source.mix);
+  }
+}
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  song = minim.loadFile("marcus_kellis_theme.mp3", 1024);
+  song.play();
+  // a beat detection object that is FREQ_ENERGY mode that 
+  // expects buffers the length of song's buffer size
+  // and samples captured at songs's sample rate
+  beat = new BeatDetect(song.bufferSize(), song.sampleRate());
+  // set the sensitivity to 300 milliseconds
+  // After a beat has been detected, the algorithm will wait for 300 milliseconds 
+  // before allowing another beat to be reported. You can use this to dampen the 
+  // algorithm if it is giving too many false-positives. The default value is 10, 
+  // which is essentially no damping. If you try to set the sensitivity to a negative value, 
+  // an error will be reported and it will be set to 10 instead. 
+  // note that what sensitivity you choose will depend a lot on what kind of audio 
+  // you are analyzing. in this example, we use the same BeatDetect object for 
+  // detecting kick, snare, and hat, but that this sensitivity is not especially great
+  // for detecting snare reliably (though it's also possible that the range of frequencies
+  // used by the isSnare method are not appropriate for the song).
+  beat.setSensitivity(300);  
+  kickSize = snareSize = hatSize = 16;
+  // make a new beat listener, so that we won't miss any buffers for the analysis
+  bl = new BeatListener(beat, song);  
+  textFont(createFont("Helvetica", 16));
+  textAlign(CENTER);
+}
+
+void draw()
+{
+  background(0);
+  
+  // draw a green rectangle for every detect band
+  // that had an onset this frame
+  float rectW = width / beat.detectSize();
+  for(int i = 0; i &lt; beat.detectSize(); ++i)
+  {
+    // test one frequency band for an onset
+    if ( beat.isOnset(i) )
+    {
+      fill(0,200,0);
+      rect( i*rectW, 0, rectW, height);
+    }
+  }
+  
+  // draw an orange rectangle over the bands in 
+  // the range we are querying
+  int lowBand = 5;
+  int highBand = 15;
+  // at least this many bands must have an onset 
+  // for isRange to return true
+  int numberOfOnsetsThreshold = 4;
+  if ( beat.isRange(lowBand, highBand, numberOfOnsetsThreshold) )
+  {
+    fill(232,179,2,200);
+    rect(rectW*lowBand, 0, (highBand-lowBand)*rectW, height);
+  }
+  
+  if ( beat.isKick() ) kickSize = 32;
+  if ( beat.isSnare() ) snareSize = 32;
+  if ( beat.isHat() ) hatSize = 32;
+  
+  fill(255);
+    
+  textSize(kickSize);
+  text("KICK", width/4, height/2);
+  
+  textSize(snareSize);
+  text("SNARE", width/2, height/2);
+  
+  textSize(hatSize);
+  text("HAT", 3*width/4, height/2);
+  
+  kickSize = constrain(kickSize * 0.95, 16, 32);
+  snareSize = constrain(snareSize * 0.95, 16, 32);
+  hatSize = constrain(hatSize * 0.95, 16, 32);
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>
