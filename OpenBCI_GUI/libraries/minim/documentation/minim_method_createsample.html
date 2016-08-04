@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : Minim : : createSample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="minim_class_minim.html">Minim</A></p>
+    	<p class="methodName">createSample</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Creates an AudioSample using the provided sample data and AudioFormat. 
+ When a buffer size is not provided, it defaults to 1024. The buffer size 
+ of a sample controls the size of the left, right, and mix AudioBuffer 
+ fields of the returned AudioSample.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>AudioSample createSample(float[] sampleData, AudioFormat format)
+AudioSample createSample(float[] sampleData, AudioFormat format, int bufferSize)
+AudioSample createSample(float[] leftSampleData, float[] rightSampleData, AudioFormat format)
+AudioSample createSample(float[] leftSampleData, float[] rightSampleData, AudioFormat format, int bufferSize)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">sampleData</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the single channel of sample data</span><br/>
+    
+        <span class="parameterName">format</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">the AudioFormat describing the sample data</span><br/>
+    
+        <span class="parameterName">bufferSize</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the output buffer size to use,
+            which controls the size of the left, right, and mix AudioBuffer
+            fields of the returned AudioSample.</span><br/>
+    
+        <span class="parameterName">leftSampleData</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the left channel of the sample data</span><br/>
+    
+        <span class="parameterName">rightSampleData</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the right channel of the sample data</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>an AudioSample that can be triggered to make sound</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audiosample_class_audiosample.html">AudioSample</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the &lt;code>createSample&lt;/code> method of &lt;code>Minim&lt;/code>. 
+  * The &lt;code>createSample&lt;/code> method allows you to create an &lt;code>AudioSample&lt;/code> by provided 
+  * either one or two float arrays, which are the sound you want be able to trigger. 
+  * &lt;p>
+  * See the loadSample example for more information about &lt;code>AudioSample&lt;/code>s.
+  * &lt;p>
+  * Press 't' to trigger the sample.
+  * &lt;p>
+  * For more information about Minim and additional features, visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+// we must import this package to create an AudioFormat object
+import javax.sound.sampled.*;
+
+Minim minim;
+AudioSample wave;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  // we'll make a MONO sample, but there is also a version
+  // of createSample that you can pass two float arrays to:
+  // which will be used for the left and right channels
+  // of a stereo sample.
+  float[] samples = new float[1024*8];
+  
+  float waveFrequency  = 220f;
+  float waveSampleRate = 44100f;
+  
+  // generate the sample by using Waves.SINE
+  float lookUp = 0; 
+  float lookUpStep = waveFrequency / waveSampleRate;
+  for( int i = 0; i &lt; samples.length; ++i )
+  {
+     samples[i] = Waves.SINE.value(lookUp);  
+     lookUp = (lookUp + lookUpStep) % 1.0f;
+  }
+  
+  // when we create a sample we need to provide an AudioFormat so 
+  // the sound will be played back correctly.
+  AudioFormat format = new AudioFormat( waveSampleRate, // sample rate
+                                        16,    // sample size in bits
+                                        1,     // channels
+                                        true,  // signed
+                                        true   // bigEndian
+                                      );
+                                      
+  // finally, create the AudioSample
+  wave = minim.createSample( samples, // the samples
+                             format,  // the format
+                             1024     // the output buffer size
+                            );
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  // use the mix buffer to draw the waveforms.
+  for (int i = 0; i &lt; wave.bufferSize() - 1; i++)
+  {
+    line(i, 100 - wave.left.get(i)*50, i+1, 100 - wave.left.get(i+1)*50);
+  }
+}
+
+void keyPressed()
+{
+  if ( key == 't' ) 
+  {
+    wave.trigger();
+  }
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

@@ -74,16 +74,17 @@ void serialEvent(Serial port) {
       //copy packet into buffer of data packets
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
       openBCI.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
-
-      // //write this chunk of data to file
-      // println("-------------------------------------------------------------------------");
-      // println("New Packet Available [" + tempCounter + "]");
-      // println("dataPacketBuff[curDataPacketInd] = " + dataPacketBuff[curDataPacketInd]);
-      // println("openBCI.scale_fac_uVolts_per_count = " + openBCI.scale_fac_uVolts_per_count);
-      // println("nchan = " + nchan);
-      newPacketCounter++;
-
+      
+      //If networking enabled --> send data every sample if 8 channels or every other sample if 16 channels
+      if (networkType !=0){
+        if (nchan==8){
+          sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
+        }else if ((nchan==16) && ((dataPacketBuff[curDataPacketInd].sampleIndex %2)!=1)){
+          sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
+        }
+      }
       fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
+      newPacketCounter++;
     }
   } else {
     
@@ -389,7 +390,6 @@ class OpenBCI_ADS1299 {
     println("OpenBCI_ADS1299: closeSerialPort: d");
     portIsOpen = false;
     println("OpenBCI_ADS1299: closeSerialPort: e");
-    serial_openBCI.clear();
     println("OpenBCI_ADS1299: closeSerialPort: e2");
     serial_openBCI.stop();
     println("OpenBCI_ADS1299: closeSerialPort: f");

@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : TickRate : : value</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="tickrate_class_tickrate.html">TickRate</A></p>
+    	<p class="methodName">value</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	The rate that this ticks the UGen patched to it.
+ With a rate of 1, the patched UGen 
+ will come through normally, but 0.5 will half as fast and sound 
+ an octave lower, whereas 2 will be twice as fast and sound an 
+ octave higher.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>UGen.UGenInput value
+</pre>
+    	
+    	
+    	
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="tickrate_class_tickrate.html">TickRate</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  This is an example of how to use a TickRate UGen to control 
+  the tick rate of another UGen, in this case a FilePlayer. &lt;br/>
+  A TickRate will tick the UGen patched to it at a rate relative 
+  to the normal tick rate. So a TickRate with a value of 1 
+  will simply pass the audio. A TickRate with a value of 2 
+  will tick the incoming UGen twice as fast as normal. 
+  If the value of TickRate is ever set to 0 or lower, 
+  it will simply generate silence and not tick its incoming UGen at all. 
+  This is because there isn't a way to tell a UGen to tick backwards.
+  &lt;p>
+  Slide the mouse left and right in the window 
+  to control the playback rate of the loop.
+  &lt;br/>
+  Hold 'i' to make TickRate interpolate between actual sample values 
+  (this will remove the "crunch" when at rates less than 1).
+  &lt;p>
+  For more information about Minim and additional features, 
+  visit http://code.compartmental.net/minim/
+  &lt;p>
+  author: Damien Di Fede
+*/
+
+import ddf.minim.*;
+import ddf.minim.spi.*; // for AudioRecordingStream
+import ddf.minim.ugens.*;
+
+// declare everything we need to play our file and control the playback rate
+Minim minim;
+TickRate rateControl;
+FilePlayer filePlayer;
+AudioOutput out;
+
+// you can use your own file by putting it in the data directory of this sketch
+// and changing the value assigned to fileName here.
+String fileName = "again_loop.aif";
+
+void setup()
+{
+  // setup the size of the app
+  size(640, 200);
+  
+  // create our Minim object for loading audio
+  minim = new Minim(this);
+                               
+  // this opens the file and puts it in the "play" state.                           
+  filePlayer = new FilePlayer( minim.loadFileStream(fileName) );
+  // and then we'll tell the recording to loop indefinitely
+  filePlayer.loop();
+  
+  // this creates a TickRate UGen with the default playback speed of 1.
+  // ie, it will sound as if the file is patched directly to the output
+  rateControl = new TickRate(1.f);
+  
+  // get a line out from Minim. It's important that the file is the same audio format 
+  // as our output (i.e. same sample rate, number of channels, etc).
+  out = minim.getLineOut();
+  
+  // patch the file player through the TickRate to the output.
+  filePlayer.patch(rateControl).patch(out);
+                        
+}
+
+// keyPressed is called whenever a key on the keyboard is pressed
+void keyPressed()
+{
+  if ( key == 'i' || key == 'I' )
+  {
+    // with interpolation on, it will sound as a record would when slowed down or sped up
+    rateControl.setInterpolation( true );
+  }
+}
+
+void keyReleased()
+{
+  if ( key == 'i' || key == 'I' )
+  {
+    // with interpolation off, the sound will become "crunchy" when playback is slowed down
+    rateControl.setInterpolation( false );
+  }
+}
+
+// draw is run many times
+void draw()
+{
+  // change the rate control value based on mouse position
+  float rate = map(mouseX, 0, width, 0.0f, 3.f);
+  
+  rateControl.value.setLastValue(rate);
+  
+  // erase the window to black
+  background( 0 );
+  // draw using a white stroke
+  stroke( 255 );
+  // draw the waveforms
+  for( int i = 0; i &lt; out.bufferSize() - 1; i++ )
+  {
+    // find the x position of each buffer value
+    float x1  =  map( i, 0, out.bufferSize(), 0, width );
+    float x2  =  map( i+1, 0, out.bufferSize(), 0, width );
+    // draw a line from one buffer position to the next for both channels
+    line( x1, 50  - out.left.get(i)*50,  x2, 50  - out.left.get(i+1)*50);
+    line( x1, 150 - out.right.get(i)*50, x2, 150 - out.right.get(i+1)*50);
+  }  
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

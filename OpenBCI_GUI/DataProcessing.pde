@@ -46,6 +46,7 @@ int getDataIfAvailable(int pointCounter) {
       }
       pointCounter++; //increment counter for "little buffer"
     }
+   
   } else {
     // make or load data to simulate real time
 

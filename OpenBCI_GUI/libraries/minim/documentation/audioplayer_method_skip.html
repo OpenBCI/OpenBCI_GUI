@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioPlayer : : skip</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audioplayer_class_audioplayer.html">AudioPlayer</A></p>
+    	<p class="methodName">skip</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Skips <code>millis</code> milliseconds from the current position. 
+ <code>millis</code> can be negative, which will make this skip backwards. 
+ If the skip amount would result in a negative position or a position that is greater than 
+ <code>length()</code>, the new position will be clamped to zero or 
+ <code>length()</code>.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void skip(int millis)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">millis</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: how many milliseconds to skip, sign indicates direction</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audioplayer_class_audioplayer.html">AudioPlayer</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the &lt;code>skip&lt;/code> method of a &lt;code>Playable&lt;/code> class. 
+  * The class used here is &lt;code>AudioPlayer&lt;/code>, but you can also skip an &lt;code>AudioSnippet&lt;/code>.
+  * When you skip, it is always measured from the current position of the recording. So &lt;code>skip(100)&lt;/code> will 
+  * set the "playhead" at 100 milliseconds from the current position. A sort of fast-forward. It is also possible 
+  * to skip in a negative direction. So &lt;code>skip(-200)&lt;/code> will set the "playhead" to 200 milliseconds before 
+  * the current position. Using &lt;code>skip&lt;/code> will not change the play state of &lt;code>Playable&lt;/code>, 
+  * meaning that if it was already playing it will continue playing from the new position, but if it was not playing, 
+  * skipping will not start playback, it will simply set the point at which playback will begin. 
+  * If an error occurs while trying to skip, the position will not change. 
+  * If you try to skip to a position that is less than zero or try to skip past the end of the 
+  * recording, the position will be clamped to zero or &lt;code>length()&lt;/code>. 
+  * &lt;p>
+  * Press 'f' to skip by 1000 milliseconds.&lt;br />
+  * Press 'r' to skip by -1000 milliseconds.
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer groove;
+
+void setup()
+{
+  size(512, 200, P3D);
+
+  minim = new Minim(this);
+  groove = minim.loadFile("groove.mp3", 2048);
+  groove.loop();
+}
+
+void draw()
+{
+  background(0);
+  
+  stroke(255);
+  
+  for(int i = 0; i &lt; groove.bufferSize() - 1; i++)
+  {
+    line(i, 50  + groove.left.get(i)*50,  i+1, 50  + groove.left.get(i+1)*50);
+    line(i, 150 + groove.right.get(i)*50, i+1, 150 + groove.right.get(i+1)*50);
+  }
+  
+  float posx = map(groove.position(), 0, groove.length(), 0, width);
+  stroke(0,200,0);
+  line(posx, 0, posx, height);
+  
+  stroke(255);
+  text("Press f to skip forward and r to skip backward.", 10, 20);
+}
+
+void keyPressed()
+{
+  if ( key == 'f' )
+  {
+    // skip forward 1 second (1000 milliseconds)
+    groove.skip(1000);
+  }
+  if ( key == 'r' )
+  {
+    // skip backward 1 second (1000 milliseconds)
+    groove.skip(-1000);
+  }
+}</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

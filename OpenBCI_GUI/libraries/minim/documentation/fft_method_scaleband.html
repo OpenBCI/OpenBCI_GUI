@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : FFT : : scaleBand</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="fouriertransform_class_fouriertransform.html">FourierTransform</A></p>
+    	<p class="methodName">scaleBand</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Scales the amplitude of the <code>i<sup>th</sup></code> frequency band
+ by <code>s</code>. You can use this to shape the spectrum before using
+ <code>inverse()</code>.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void scaleBand(int i, float s)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">i</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the frequency band to modify</span><br/>
+    
+        <span class="parameterName">s</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float: the scaling factor</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="fft_class_fft.html">FFT</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+ * This sketch demonstrates very simply how you might use the inverse FFT to modify an audio signal.&lt;br />
+ * Press 'f' to perform the forward FFT, then press 's' to scale the large frequency band.&lt;br />
+ * Now press 'd' to take the inverse FFT. You will see that the wave form has a smaller amplitude.&lt;br />
+ * &lt;br />
+ * You might wonder how we knew which band to scale. You should read 
+ * &lt;a href="http://code.compartmental.net/2007/03/21/fft-averages/">this blog post&lt;/a> about calculating 
+ * FFT averages for the answer to that question.
+ * &lt;p>
+ * For more information about Minim and additional features, visit http://code.compartmental.net/minim/
+ */
+
+import ddf.minim.analysis.*;
+import ddf.minim.*;
+import ddf.minim.signals.*;
+
+FFT fft;
+SineWave sine;
+float[] buffer;
+int bsize = 512;
+
+void setup()
+{
+  size(512, 300, P3D);
+
+  // create an FFT with a time-domain size the same as the size of buffer
+  // it is required that these two values be the same
+  // and also that the value is a power of two
+  fft = new FFT(bsize, 44100);
+  sine = new SineWave(600, 1, 44100);
+  buffer = new float[bsize];
+  // fill the buffer with a sine wave
+  sine.generate(buffer);
+}
+
+void draw()
+{
+  background(0);
+  noStroke();
+  fill(255, 128);
+  // draw the waveform
+  for(int i = 0; i &lt; buffer.length; i++)
+  {
+    ellipse(i, 50 + buffer[i]*10, 2, 2);
+  }
+  noFill();
+  stroke(255);
+  // draw the spectrum
+  for(int i = 0; i &lt; fft.specSize(); i++)
+  {
+    line(i, height, i, height - fft.getBand(i));
+  }
+  stroke(255, 0, 0);
+  line(width/2, height, width/2, 0);
+}
+
+
+void keyReleased()
+{
+  if ( key == 'f' ) 
+  {
+    println("Performing a Forward FFT on buffer.");
+    fft.forward(buffer);
+  }
+  if ( key == 'd' ) 
+  {
+    println("Performing an Inverse FFT and putting the result in buffer.");
+    fft.inverse(buffer);
+  }
+  if ( key == 's' )
+  {
+    println("Scaling frequency band 7 by 0.5.");
+    fft.scaleBand(7, 0.5);
+  }
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : Instrument</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">Instrument</p>
+    	
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="instrument_method_noteoff.html" title="Stop playing a note.">noteOff ( )</a><br/>
+    
+    <a href="instrument_method_noteon.html" title="Start playing a note.">noteOn ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	The Instrument interface is expected by AudioOutput.playNote. You can create
+ your own instruments by implementing this interface in one of your classes.
+ Typically, you will create a class that constructs a UGen chain: an Oscil
+ patched to a filter patched to an ADSR. When noteOn is called you will patch
+ the end of your chain to the AudioOutput you are using and when noteOff is
+ called you will unpatch.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre></pre>
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to create synthesized sound with Minim using an AudioOutput and
+  * an Instrument we define. By using the playNote method you can schedule notes to played 
+  * at some point in the future, essentially allowing to you create musical scores with code. 
+  * Because they are constructed with code, they can be either deterministic or different every time. 
+  * This sketch creates a deterministic score, meaning it is the same every time you run the sketch.
+  * &lt;p>
+  * For more complex examples of using playNote check out algorithmicCompExample and compositionExample
+  * in the Synthesis folder.
+  * &lt;p>
+  * For more information about Minim and additional features, visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+Minim minim;
+AudioOutput out;
+
+// to make an Instrument we must define a class
+// that implements the Instrument interface.
+class SineInstrument implements Instrument
+{
+  Oscil wave;
+  Line  ampEnv;
+  
+  SineInstrument( float frequency )
+  {
+    // make a sine wave oscillator
+    // the amplitude is zero because 
+    // we are going to patch a Line to it anyway
+    wave   = new Oscil( frequency, 0, Waves.SINE );
+    ampEnv = new Line();
+    ampEnv.patch( wave.amplitude );
+  }
+  
+  // this is called by the sequencer when this instrument
+  // should start making sound. the duration is expressed in seconds.
+  void noteOn( float duration )
+  {
+    // start the amplitude envelope
+    ampEnv.activate( duration, 0.5f, 0 );
+    // attach the oscil to the output so it makes sound
+    wave.patch( out );
+  }
+  
+  // this is called by the sequencer when the instrument should
+  // stop making sound
+  void noteOff()
+  {
+    wave.unpatch( out );
+  }
+}
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  // use the getLineOut method of the Minim object to get an AudioOutput object
+  out = minim.getLineOut();
+  
+  // when providing an Instrument, we always specify start time and duration
+  out.playNote( 0.0, 0.9, new SineInstrument( 97.99 ) );
+  out.playNote( 1.0, 0.9, new SineInstrument( 123.47 ) );
+  
+  // we can use the Frequency class to create frequencies from pitch names
+  out.playNote( 2.0, 2.9, new SineInstrument( Frequency.ofPitch( "C3" ).asHz() ) );
+  out.playNote( 3.0, 1.9, new SineInstrument( Frequency.ofPitch( "E3" ).asHz() ) );
+  out.playNote( 4.0, 0.9, new SineInstrument( Frequency.ofPitch( "G3" ).asHz() ) );
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  
+  // draw the waveforms
+  for(int i = 0; i &lt; out.bufferSize() - 1; i++)
+  {
+    line( i, 50 + out.left.get(i)*50, i+1, 50 + out.left.get(i+1)*50 );
+    line( i, 150 + out.right.get(i)*50, i+1, 150 + out.right.get(i+1)*50 );
+  }
+}
+</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

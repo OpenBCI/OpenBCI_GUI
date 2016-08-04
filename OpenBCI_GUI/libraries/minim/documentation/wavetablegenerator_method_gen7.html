@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : WavetableGenerator : : gen7</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="wavetablegenerator_class_wavetablegenerator.html">WavetableGenerator</A></p>
+    	<p class="methodName">gen7</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Generate a piecewise linear waveform given an array of sample values and the distances 
+ between them. The <code>dist</code> array should contain one value less than the <code>val</code>
+ array. The values in the <code>dist</code> array should also add up to <code>size</code>. For instance, a 
+ call like this:
+ <p>
+ <code>Wavetable table = WavetableGenerator.gen7( 4096, new float[] { 1.0, -1.0, 1.0 }, new int[] { 2048, 2048 } );</code>
+ <p>
+ Would generate a Wavetable that was 4096 samples long and the values of those samples would start at 1.0, 
+ linearly decrease to -1.0 over 2048 samples, and then increase to 1.0 over the next 2048 samples.
+ <p>
+ If you wanted to generate a triangle wavetable with 4096 samples, you'd do this:
+ <p>
+ <code>Wavetable table = WavetableGenerator.gen7( 4069, new float[] { 0.0, 1.0, 0.0, -1.0, 0.0 }, new int[] { 1024, 1024, 1024, 1024 } );</code>
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>Wavetable gen7(int size, float[] val, int[] dist)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">size</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the size of the Wavetable that you want generate</span><br/>
+    
+        <span class="parameterName">val</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float[]: the sample values used as control points for generating the waveform</span><br/>
+    
+        <span class="parameterName">dist</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int[]: the sample distances between control points in val</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>a Wavetable</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="wavetable_class_wavetable.html">Wavetable</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>None available</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

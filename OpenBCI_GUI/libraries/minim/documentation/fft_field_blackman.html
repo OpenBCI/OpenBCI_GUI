@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : FFT : : BLACKMAN</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="fouriertransform_class_fouriertransform.html">FourierTransform</A></p>
+    	<p class="methodName">BLACKMAN</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	A constant indicating a Blackman window with a default value should be used on sample buffers.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>WindowFunction BLACKMAN
+</pre>
+    	
+    	
+    	
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href=".html"><a href="http://en.wikipedia.org/wiki/Window_function#Blackman_windows">Blackman window</a></A><BR>
+<A href="windowfunction_class_windowfunction.html">WindowFunction</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use an FFT to analyze an 
+  * AudioBuffer and draw the resulting spectrum. &lt;br />
+  * It also allows you to turn windowing on and off, 
+  * but you will see there is not much difference in the spectrum.&lt;br />
+  * Use the number keys to choose different windows.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.analysis.*;
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer jingle;
+FFT fft;
+String windowName;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  minim = new Minim(this);
+  
+  jingle = minim.loadFile("jingle.mp3", 2048);
+  jingle.loop();
+  
+  // create an FFT object that has a time-domain buffer 
+  // the same size as jingle's sample buffer
+  // note that this needs to be a power of two 
+  // and that it means the size of the spectrum
+  // will be 512. see the online tutorial for more info.
+  fft = new FFT(jingle.bufferSize(), jingle.sampleRate());
+  
+  textFont(createFont("Arial", 16));
+  
+  windowName = "Rectangular Window";
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  // perform a forward FFT on the samples in jingle's left buffer
+  // note that if jingle were a MONO file, 
+  // this would be the same as using jingle.right or jingle.left
+  fft.forward(jingle.mix);
+  for(int i = 0; i &lt; fft.specSize(); i++)
+  {
+    // convert the magnitude to a DB value. 
+    // this means values will range roughly from 0 for the loudest
+    // bands to some negative value.
+    float bandDB = 20 * log( 2 * fft.getBand(i) / fft.timeSize() );
+    // so then we want to map our DB value to the height of the window
+    // given some reasonable range
+    float bandHeight = map( bandDB, 0, -150, 0, height );
+    line(i, height, i, bandHeight );
+  }
+  fill(255);
+  // keep us informed about the window being used
+  text("The window being used is: " + windowName, 5, 20);
+}
+
+void keyReleased()
+{
+  WindowFunction newWindow = FFT.NONE;
+  
+  if ( key == '1' ) 
+  {
+    newWindow = FFT.BARTLETT;
+  }
+  else if ( key == '2' )
+  {
+    newWindow = FFT.BARTLETTHANN;
+  }
+  else if ( key == '3' )
+  {
+    newWindow = FFT.BLACKMAN;
+  }
+  else if ( key == '4' )
+  {
+    newWindow = FFT.COSINE;
+  }
+  else if ( key == '5' )
+  {
+    newWindow = FFT.GAUSS;
+  }
+  else if ( key == '6' )
+  {
+    newWindow = FFT.HAMMING;
+  }
+  else if ( key == '7' )
+  {
+    newWindow = FFT.HANN;
+  }
+  else if ( key == '8' )
+  {
+    newWindow = FFT.LANCZOS;
+  }
+  else if ( key == '9' )
+  {
+    newWindow = FFT.TRIANGULAR;
+  }
+
+  fft.window( newWindow );
+  windowName = newWindow.toString();
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

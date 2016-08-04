@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : FFT : : setBand</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="fouriertransform_class_fouriertransform.html">FourierTransform</A></p>
+    	<p class="methodName">setBand</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Sets the amplitude of the <code>i<sup>th</sup></code> frequency band to
+ <code>a</code>. You can use this to shape the spectrum before using
+ <code>inverse()</code>.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void setBand(int i, float a)
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">i</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the frequency band to modify</span><br/>
+    
+        <span class="parameterName">a</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float: the new amplitude</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="fft_class_fft.html">FFT</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+ * This sketch demonstrates very simply how you might use the inverse FFT to modify an audio signal.&lt;br />
+ * Press 'f' to perform the forward FFT, then press 's' to set one of the frequency bands to 150.&lt;br />
+ * Now press 'd' to take the inverse FFT. You will see that the wave form now looks like two sine waves that have
+ * been added together. In fact, this is exactly the case. The sine wave that has been added has the 
+ * same frequency as the frequency band that we artificially changed the value of.&lt;br />
+ * &lt;br />
+ * You might wonder what the actual frequency added to the spectrum is.
+ * That frequency is a fraction of the sampling rate, which can be found with the formula &lt;b>f = i/N&lt;/b>
+ * where &lt;b>f&lt;/b> is the fraction of the sampling rate, &lt;b>i&lt;/b> is the index of the frequency band, 
+ * and &lt;b>N&lt;/b> is the time-domain size of the FFT. In this case we have a 512 point FFT and we are 
+ * changing the frequency band at index 20. So in our case &lt;b>f = 20/512 = 0.0390625&lt;/b>
+ * Our sampling rate is 44100 Hz, a value passed in the Sine constructor,
+ * so the frequency in Hz that is being added to the spectrum is &lt;b>44100 * 0.0390625 = 1722.65625 Hz&lt;/b>
+ * &lt;p>
+ * For more information about Minim and additional features, visit http://code.compartmental.net/minim/
+ */
+
+import ddf.minim.analysis.*;
+import ddf.minim.signals.*;
+
+FFT fft;
+SineWave sine;
+float[] buffer;
+int bsize = 512;
+
+void setup()
+{
+  size(512, 300, P3D);
+  // create an FFT with a time-domain size the same as the size of buffer
+  // it is required that these two values be the same
+  // and also that the value is a power of two
+  fft = new FFT(bsize, 44100);
+  sine = new SineWave(600, 1, 44100);
+  buffer = new float[bsize];
+  // fill the buffer with a sine wave
+  sine.generate(buffer);
+}
+
+void draw()
+{
+  background(0);
+  noStroke();
+  fill(255, 128);
+  // draw the waveform
+  for(int i = 0; i &lt; buffer.length; i++)
+  {
+    ellipse(i, 50 + buffer[i]*10, 2, 2);
+  }
+  noFill();
+  stroke(255);
+  // draw the spectrum
+  for(int i = 0; i &lt; fft.specSize(); i++)
+  {
+    line(i, height, i, height - fft.getBand(i));
+  }
+  stroke(255, 0, 0);
+  line(width/2, height, width/2, 0);
+}
+
+
+void keyReleased()
+{
+  if ( key == 'f' ) 
+  {
+    println("Performing a Forward FFT on buffer.");
+    fft.forward(buffer);
+  }
+  if ( key == 'd' ) 
+  {
+    println("Performing an Inverse FFT and putting the result in buffer.");
+    fft.inverse(buffer);
+  }
+  if ( key == 's' )
+  {
+    // by setting frequency band 20 to a high value, we are basically mixing in a sine wave at that frequency
+    // after setting the frequency band and then taking the inverse FFT, you will see the waveform change
+    println("Setting frequency band 20 to 150.");
+    fft.setBand(20, 150);
+  }
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

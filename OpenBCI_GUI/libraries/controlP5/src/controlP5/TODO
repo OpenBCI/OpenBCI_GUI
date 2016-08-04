@@ -1,0 +1,92 @@
+2014-09-08  Andreas Schlegel
+      * add glyphicons reference to controlp5.Icon.java http://glyphicons.com
+      * add useiconic to controlp5.Icon.java https://useiconic.com/open
+
+2014-05-29  Andreas Schlegel
+      * distinguish between left,center, right mouse click events http://forum.processing.org/two/discussion/5422/controlp5-mousepressed-only-if-mousebutton-left- 
+
+2014-04-22  Andreas Schlegel
+      * javascript version on hold; it is unclear which project processing.js or p5.js will become the default js framework for processing
+      
+2013-09-09  Andreas Schlegel
+      * javascript version
+      * textinput on android
+      * color picker used for clicks-and-strokes
+      * rendering into pgraphics
+      * add colorwheel
+      * add ControlFrame with customizable render access
+      * spacer / separator
+
+2011-03-24  Andreas Schlegel
+      * finish info to toString conversion
+      * implement plugTo for ControllerGroups
+      * BitFontRenderer addBitFont is broken, see the ControlP5bitFont example, 
+      the font is cut off at the bottom, probably something wrong with 
+      the label's PImage height. 
+
+2010-08-07  Andreas Schlegel
+      * fix ControlWindowCanvas.pre(), doesnt work anymore.
+      
+2010-07-25  Andreas Schlegel
+      * Android support, current version conflicts with android java (ControlWindow, PAppletWindow, using Toolkit when loading bit-font, KeyEvents, etc.)
+      * CColor: alpha handling
+      * Chart: finish. a chart graph controller to display line, bar, pie and histogram charts.
+       
+2010-04-02  Andreas Schlegel
+      * BitFontRenderer: \n is recognized as a not-supported-character. fix!
+      * general: processingjs port
+      * Knob: implement new version of knob
+      * Textfield: implement new version of textfield
+      * TextArea: implement new version of TextArea
+      * Label: implement modifications so that text rendering for P3D works properly
+      * picking: use an image and color-coding for picking controllers instead mouse-coordinates against rectangular boxes.
+
+
+
+* fileChooser conflicts with mouse event.
+http://processing.org/discourse/yabb2/YaBB.pl?num=1247162607/0#0
+
+
+* alt-tab causes problems with dragging functionality.
+http://processing.org/discourse/yabb2/YaBB.pl?num=1242718131/0#0
+
+* Multilist, pop out to the left.
+* ScrollList, slider on the left option.
+* ScrollList: collapse/and hide. add option to hide the scroll-list area but only keep the scrollbar.
+* add CheckBoxList
+* tab issues as addressed in this post:
+http://processing.org/discourse/yabb_beta/YaBB.cgi?board=LibraryProblems;action=display;num=1237538493;start=2#2
+ - moveTo does not work for only a String which would stanbd for the name of a tab
+ - controlP5.window(this).activateTab("myTab");
+   controlP5.tab("myTab").mousePressed();
+* ControlGroup, set Width of bar. the + - toggle is not updated visually.
+* Text -Field, -Label, -Area: customize font
+* textarea: when changing the font of the valueLabel, the scrollbar is not updated / does not show even it is required. current hack is: myTextarea.setHeight(myTextarea.valueLabel().height()); 
+* textarea: automatically updating the scrollbar whensetting text with setText() see email from martin froehlich 16.january 2009
+* save and load does not work for some controllers.
+* loading and saving
+* multilist, range, matrix dont load from xml file.
+* colorstyle does not save and load.
+* labels dont save properly, background color is not saved.
+* matrix needs to be redone. develop whole new concept for matrix / synthesizer.
+* multitouch support
+* controlWindow: add feedback when closing window. see email from henri 5 january 2009
+* controllerStyle: see email from johnny rodgers 30 november 2008
+* range: see email from hartmut bohnacker 27 november 2008
+* textfield: see email from henri 14 october 2008
+* save and open file dialog: see email from henri 12 october 2008
+* ControlBroadcaster suggestions: see email from aaron mayers 2 october 2008
+* pushmatrix / popMatrix : see email from florian 6 june 2008
+Lib.pre() { /*other code */ pushMatrix(); }
+PApplet.draw() { ... }
+Lib.draw() { popMatrix(); /* the lib code, untransformed */ }
+
+
+
+DONE
+* (done) add setArrayValue to Controller class.
+* (done, implemented with TickMark) Slider: snap 
+* (done) add id() method to ControlEvent
+* (done, fixed) fix save/load. saving twice and loading again results in empty. 
+* (done) add setTitle to ControlWindow http://processing.org/discourse/yabb2/YaBB.pl?num=1245762312/0#0
+* (done, now ListBox) redo ScrollList so that it becomes a controller? change the button management of a scrollList. 
