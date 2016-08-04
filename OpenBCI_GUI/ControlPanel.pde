@@ -157,6 +157,7 @@ public void controlEvent(ControlEvent theEvent) {
     } else if (index == 3){
       networkType = 3;
     }
+  }
   
   if (theEvent.isFrom("channelList")){
     int setChannelInt = int(theEvent.getValue()) + 1;
@@ -451,7 +452,6 @@ class ControlPanel {
         cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else {
@@ -467,7 +467,6 @@ class ControlPanel {
         cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-       }
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       }
@@ -609,7 +608,6 @@ class ControlPanel {
         }
       }
     }
-
     // output("Text File Name: " + cp5.get(Textfield.class,"fileName").getText());
   }
 
