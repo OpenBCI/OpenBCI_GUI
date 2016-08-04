@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioPlayer : : loop</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName"><A href="audioplayer_class_audioplayer.html">AudioPlayer</A></p>
+    	<p class="methodName">loop</p>
+    </td>
+    <td class="mainText border-left">
+    	<p class="memberSectionHeader">Description</p>
+    	Set the <code>AudioPlayer</code> to loop some number of times.
+ If it is already playing, the position
+ <i>will not</i> be reset to the beginning. 
+ If it is not playing, it will start playing.
+ If you previously called this method and then paused the
+ <code>AudioPlayer</code>, you can resume looping
+ by using the result of <code>getLoopCount()</code> as
+ the argument for this method. 
+ To loop indefinitely, use <code>loop()</code>.
+    	
+    	<p class="memberSectionHeader">Signature</p>
+    	<pre>void loop(int num)
+void loop()
+</pre>
+    	
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">num</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: the number of times to loop</span><br/>
+    
+   
+    	
+   <p class="memberSectionHeader">Returns</p> 
+   <p>None</p>
+   
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="audioplayer_class_audioplayer.html">AudioPlayer</A><BR>
+
+    	
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the &lt;code>loop(int)&lt;/code> method of a &lt;code>Playable&lt;/code> class. 
+  * The class used here is &lt;code>AudioPlayer&lt;/code>, but you can also loop an &lt;code>AudioSnippet&lt;/code>.
+  * When you call &lt;code>loop(int)&lt;/code> it will make the &lt;code>Playable&lt;/code> loop for the number of times 
+  * you specify. So, &lt;code>loop(3)&lt;/code> will loop the recording three times, which will result in the recording 
+  * being played 4 times. This may seem odd, but it is consistent with the behavior of a JavaSound &lt;code>Clip&lt;/code>.
+  * If you want to make it stop looping you can call &lt;code>play()&lt;/code> and it will finish the current loop 
+  * and then stop. Press any of the number keys to make the player loop that many times. Text will be displayed 
+  * on the screen indicating your most recent choice.
+  *
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer groove;
+int loopcount;
+
+void setup()
+{
+  size(512, 200, P3D);
+
+  minim = new Minim(this);
+  groove = minim.loadFile("groove.mp3", 2048);
+  
+  textFont(createFont("Arial", 12));
+}
+
+void draw()
+{
+  background(0);
+
+  stroke(255);
+  
+  for(int i = 0; i &lt; groove.bufferSize() - 1; i++)
+  {
+    line(i, 50  + groove.left.get(i)*50,  i+1, 50  + groove.left.get(i+1)*50);
+    line(i, 150 + groove.right.get(i)*50, i+1, 150 + groove.right.get(i+1)*50);
+  }
+  
+  text("The player has " + groove.loopCount() + " loops left." 
+     + " Is playing: " + groove.isPlaying() 
+     + ", Is looping: " + groove.isLooping(), 5, 15);
+}
+
+void keyPressed()
+{
+  String keystr = String.valueOf(key);
+  int num = int(keystr);
+  if ( num > 0 && num &lt; 10 )
+  {
+    groove.loop(num);
+    loopcount = num;
+  }    
+}
+</pre>
+    	
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

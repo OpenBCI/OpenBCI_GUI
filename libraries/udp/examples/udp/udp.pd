@@ -1,0 +1,30 @@
+#N canvas 103 333 764 337 10;
+#X obj 36 28 cnv 15 690 190 empty empty empty 20 12 0 12 -237178 -212212
+0;
+#X obj 36 221 cnv 15 690 70 empty empty empty 20 12 0 14 -146177 -66577
+0;
+#X obj 45 256 print receive;
+#X text 177 233 <-- Opens a socket for UDP network reception on port
+6100 and prints the received message.;
+#X obj 47 116 netsend 1;
+#X msg 47 94 disconnect;
+#X floatatom 47 164 5 0 0 0 - - -;
+#X text 95 164 <-- Reports whether the connection is open or not (0=close
+\, nonzero otherwise).;
+#X obj 242 70 cnv 15 480 60 empty empty empty 20 12 0 14 -259904 -66577
+0;
+#X msg 249 100 send \$1;
+#X floatatom 249 82 5 0 0 0 - - -;
+#X obj 45 234 netreceive 6100 1;
+#X msg 47 72 connect localhost 6000;
+#X text 314 81 [2] Send the current number to the remote machine (change
+the value by dragging the number box or type directly the new value).
+;
+#X text 47 40 [1] Connect to 'localhost' on port 6000 for sending UDP
+messages.;
+#X connect 4 0 6 0;
+#X connect 5 0 4 0;
+#X connect 9 0 4 0;
+#X connect 10 0 9 0;
+#X connect 11 0 2 0;
+#X connect 12 0 4 0;

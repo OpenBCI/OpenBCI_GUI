@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : MultiChannelBuffer</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">MultiChannelBuffer</p>
+    	
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="multichannelbuffer_method_getbuffersize.html" title="Returns the length of this buffer in samples.">getBufferSize ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_getchannel.html" title="Returns the requested channel as a float array.">getChannel ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_getchannelcount.html" title="Returns the number of channels in this buffer.">getChannelCount ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_getsample.html" title="Returns the value of a sample in the given channel,
+ at the given offset from the beginning of the buffer.">getSample ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_set.html" title="Copy the data in the provided MultiChannelBuffer to this MultiChannelBuffer.">set ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_setbuffersize.html" title="Set the length of this buffer in sample frames.">setBufferSize ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_setchannel.html" title="Sets all of the values in a particular channel using 
+ the values of the provided float array.">setChannel ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_setchannelcount.html" title="Set the number of channels this buffer contains.">setChannelCount ( )</a><br/>
+    
+    <a href="multichannelbuffer_method_setsample.html" title="Sets the value of a sample in the given channel at the given
+ offset from the beginning of the buffer.">setSample ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	MultiChannelBuffer represents a chunk of multichannel (or mono) audio data.
+ It is primarily used internally when passing buffers of audio around, but 
+ you will need to create one to use things like the loadFileIntoBuffer method of Minim
+ and the setSample method of Sampler. When thinking about a buffer of audio
+ we usually consider how many <em>sample frames</em> long that buffer is. This 
+ is not the same as the actual number of values stored in the buffer. Mono, or 
+ single channel audio, contains one sample per sample frame, but stereo is
+ two, quadraphonic is four, and so forth. The buffer size of a MultiChannelBuffer
+ is how many sample frames it stores, so when retrieving and setting values
+ it is required to indicate which channel should be operated upon.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre><em>Construct a MultiChannelBuffer, providing a size and number of channels.</em>
+MultiChannelBuffer(int bufferSize, int numChannels)
+</pre>
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">bufferSize</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: The length of the buffer in sample frames.</span><br/>
+    
+        <span class="parameterName">numChannels</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">int: The number of channels the buffer should contain.</span><br/>
+    
+   
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="minim_class_minim.html">Minim</A><BR>
+
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to use the loadFileIntoBuffer method of the Minim class and is also a good 
+  * reference for some of the methods of the MultiChannelBuffer class. When the sketch begins it loads 
+  * a file from the data folder into a MultiChannelBuffer and then modifies that sample data before 
+  * using it to create a Sampler UGen. You can hear the result of this modification by hitting 
+  * the space bar.
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+Minim              minim;
+MultiChannelBuffer sampleBuffer;
+
+AudioOutput        output;
+Sampler            sampler;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  // create Minim and an AudioOutput
+  minim  = new Minim(this);
+  output = minim.getLineOut();
+  
+  // construct a new MultiChannelBuffer with 2 channels and 1024 sample frames.
+  // in our particular case, it doesn't really matter what we choose for these
+  // two values because loadFileIntoBuffer will reconfigure the buffer 
+  // to match the channel count and length of the file.
+  sampleBuffer     = new MultiChannelBuffer( 1, 1024 );
+  
+  // we pass the buffer to the method and Minim will reconfigure it to match 
+  // the file. if the file doesn't exist, or there is some other problen with 
+  // loading it, the function will return 0 as the sample rate.
+  float sampleRate = minim.loadFileIntoBuffer( "SD.wav", sampleBuffer );
+  
+  // make sure the file load worked
+  if ( sampleRate > 0 )
+  {
+    // double the size of the buffer to give ourselves some silence to play with
+    int originalBufferSize = sampleBuffer.getBufferSize();
+    sampleBuffer.setBufferSize( originalBufferSize * 2 );
+    
+    // go through first half of the buffer, which contains the original sample,
+    // and add a delayed version of each sample at some random position.
+    // we happen to know that the source file is only one channel
+    // but in general you'd want to iterate over all channels when doing something like this
+    for( int s = 0; s &lt; originalBufferSize; ++s )
+    {
+      int   delayIndex  = s + int( random( 0, originalBufferSize ) );
+      float sampleValue = sampleBuffer.getSample( 0, s );
+      float destValue   = sampleBuffer.getSample( 0, delayIndex ); 
+      sampleBuffer.setSample( 0, // channel
+                              delayIndex, // sample frame to set
+                              sampleValue + destValue // the value to set
+                            );
+    }
+    
+    // create a sampler that will use our buffer to generate audio.
+    // we must provide the sample rate of the audio and the number of voices. 
+    sampler = new Sampler( sampleBuffer, sampleRate, 1 );
+    
+    // and finally, connect to the output so we can hear it
+    sampler.patch( output );
+  }
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  
+  // use the mix buffer to draw the waveforms.
+  for (int i = 0; i &lt; output.bufferSize() - 1; i++)
+  {
+    float x1 = map(i, 0, output.bufferSize(), 0, width);
+    float x2 = map(i+1, 0, output.bufferSize(), 0, width);
+    line(x1, 50 - output.left.get(i)*50, x2, 50 - output.left.get(i+1)*50);
+    line(x1, 150 - output.right.get(i)*50, x2, 150 - output.right.get(i+1)*50);
+  }
+}
+
+void keyPressed() 
+{
+  if ( key == ' ' && sampler != null )
+  {
+    sampler.trigger();
+  }
+}
+</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

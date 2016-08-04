@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>packagehtml</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+<body>
+	Minim is an audio library that uses the
+	<a href="http://java.sun.com/products/java-media/sound/doc-sampled.html">
+		JavaSound API
+	</a>, a bit of <a href="http://www.tritonus.org">Tritonus</a>, and Javazoom's
+	<a href="http://www.javazoom.net/mp3spi/mp3spi.html">MP3SPI</a> to
+	provide an easy to use audio library for people developing in the
+	Processing environment. The philosophy behind the API is to make
+	integrating audio into your sketches as simple as possible while still
+	providing a reasonable amount of flexibility for more advanced users.
+	There are no callbacks and you do not ever need to directly manipulate
+	sample arrays, all of the dirty work is handled for you. 
+	<p>
+	Here are some of the features of Minim:
+	<ul>
+		<li>AudioPlayer: Mono and Stereo playback of WAV, AIFF, AU, SND,
+			and MP3 files.</li>
+		<li>AudioMetaData: An object filled with metadata about a file,
+			such as ID3 tags.</li>
+		<li>AudioRecorder: Mono and Stereo audio recording either
+			buffered or direct to disk.</li>
+		<li>AudioInput: Mono and Stereo input monitoring.</li>
+		<li>AudioOutput: Mono and Stereo sound synthesis.</li>
+		<li>FFT: perform a Fourier Transform on audio data to generate a frequency spectrum.</li>
+		<li>BeatDetect: a class for doing beat detection.</li>
+		<li>A <a href="http://code.compartmental.net/minim/index_ugens.html">real-time synthesis framework</a> based around unit generators, which we call UGens.</li>
+	</ul>
+	<p>
+	If you are using Processing you've already got Minim! So feel free to peruse 
+	this documentation and start playing with examples. If you prefer Javadocs, 
+	<a href="http://code.compartmental.net/minim/javadoc/">we got those too</a>! 
+	<p>
+	If you are not using Processing,
+	you can still use Minim! We provide a constructor for the <code>Minim</code> class 
+	that takes a plain <code>Object</code> and you simply need to 
+	<a href="http://code.compartmental.net/minim/javadoc/ddf/minim/Minim.html#Minim(java.lang.Object)">define two methods</a>
+	that we will find using reflection.
+	<p>
+	The download includes Processing examples and source code. 
+	Minim is licensed under the
+	<a href="http://www.gnu.org/licenses/lgpl-3.0-standalone.html">GNU Lesser General Public License</a> (LGPL), 
+	a copy of which is included with the distribution.
+	<p>
+	<strong>Download:</strong>
+	<a href="http://code.compartmental.net/minim/distro/minim-2.2.2.zip">Minim 2.2.2 Zip</a> or visit the  
+	<a href="https://github.com/ddf/Minim/releases/tag/v2.2.2">Github 2.2.2 release page</a>
+	<p>
+	If you have any questions about using the library you can start by 
+	<a href="http://forum.processing.org/two/discussions/tagged/minim">checking the Processing forum</a> 
+	or <a href="http://forum.processing.org/two/profile/ddf">send me a private message</a> there. 
+	If you find bugs, please report them on the
+	<a href="https://github.com/ddf/Minim/issues">Github issues page</a>.
+	<p>
+	If you'd like to contribute to the development of Minim, simply
+	<a href="http://github.com/ddf/Minim">fork the project on Github</a>
+	and send pull requests when you've got code you'd like us to consider
+	for inclusion in the library. Enjoy!
+	<br/>
+	@libname Minim
+</body>
+</html>

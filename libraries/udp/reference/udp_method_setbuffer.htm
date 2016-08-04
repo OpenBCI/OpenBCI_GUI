@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>hypermedia.net : : UDP : : setBuffer ( )</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table width="600" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td height="100" valign="top" class="header"><span class="libName">hypermedia.net</span><br>
+        <a href="index.htm">index</a></td>
+    <td width="450" class="descList">&nbsp;</td>
+  </tr>
+  <tr>
+    <td valign="top" class="mainTextName">Name</td>
+    <td class="methodName">setBuffer ( )</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Examples</td>
+    <td valign=top class="descList">None available</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Description</td>
+    <td valign=top class="descList">Set the maximum size of the packet that can be sent or receive on the 
+ current socket. This value must be greater than 0, otherwise the buffer 
+ size is set to the his default value.
+ <p>
+ return <code>true</code> if the new buffer value have been correctly set, 
+ <code>false</code> otherwise.
+ <p>
+ <i>note : this method has no effect if the socket is listening. To define
+ a new buffer size, call this method before implementing a new buffer in 
+ memory. Explicitly before calling a receive methods.</i></td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Syntax</td>
+    <td valign=top class="descList"><pre>setBuffer(size);
+</pre></td>
+  </tr>
+  
+     <tr>
+       <td class="mainText">Parameters</td>
+       <td valign=top class="descList">
+         <table border=0 cellspacing=0 cellpadding=0>
+           
+      <tr>
+        <td width="70" valign=top>size</td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>the buffer size value in bytes or n<=0</td>
+	  </tr>
+    
+         </table>
+	   </td>
+	 </tr>
+   
+  
+     <tr>
+       <td valign=top class="mainText">Returns</td>
+       <td class="descList">boolean</td>
+     </tr>
+   
+  <tr>
+    <td valign=top class="mainText">Usage</td>
+    <td class="descList">Web & Application</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Related</td>
+    <td class="descList"></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="descList">&nbsp;</td>
+  </tr>
+</table>
+</center>
+</body>
+</html>
