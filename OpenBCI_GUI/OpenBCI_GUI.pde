@@ -16,9 +16,7 @@
 //   No warranty. Use at your own risk. Use for whatever you'd like.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-
-import ddf.minim.analysis.*; //for FFT
-import ddf.minim.*;  // commented because too broad.. contains "Controller" class which is also contained in ControlP5... need to be more specific // To make sound.  Following minim example "frequencyModulation"
+import ddf.minim.*;  // To make sound.  Following minim example "frequencyModulation"
 import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyModulation"
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
@@ -307,7 +305,7 @@ void initSystem() {
   for (int Ichan=0; Ichan < nchan; Ichan++) { 
     verbosePrint("a--"+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, openBCI.get_fs_Hz());
-  };  //make the FFT objects
+  }  //make the FFT objects
   verbosePrint("OpenBCI_GUI: initSystem: b");
   initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, openBCI.get_fs_Hz());
 
