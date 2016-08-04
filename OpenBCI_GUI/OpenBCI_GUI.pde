@@ -158,6 +158,7 @@ EMG_Widget motorWidget;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
+boolean isOldData = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -461,10 +462,16 @@ void systemUpdate() { // for updating data values and variables
       } else {
         //not enough data has arrived yet... only update the channel controller
       }
-    }else if(eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed) {
+    }else if(eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
       lastReadDataPacketInd = 0;
       pointCounter = 0;
-      process_input_file();
+      try{
+        process_input_file();
+      }
+      catch(Exception e){
+        isOldData = true;
+        output("Error processing timestamps, are you using old data?");
+      }
     }
 
     gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)

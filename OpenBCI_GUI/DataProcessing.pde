@@ -14,18 +14,21 @@ HashMap<String,float[][]> processed_file;
 //------------------------------------------------------------------------
 
 //called from systemUpdate when mode=10 and isRunning = true
-void process_input_file(){
+void process_input_file() throws Exception{
   processed_file = new HashMap<String, float[][]>();
   float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
   
-  while(!hasRepeated){
-    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, openBCI.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-  
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-      //scale the data into engineering units..."microvolts"
-      localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
+  try{
+    while(!hasRepeated){
+      currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, openBCI.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+    
+      for (int Ichan=0; Ichan < nchan; Ichan++) {
+        //scale the data into engineering units..."microvolts"
+        localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
+      }
     }
   }
+  catch (Exception e){throw new Exception();}
   
   println("Finished filling hashmap");
   has_processed = true;
@@ -254,7 +257,8 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       //put into data structure
       curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
     }
-    curTimestamp = row.getString(nchan+3);
+    if(!isOldData) curTimestamp = row.getString(nchan+3);
+    
     //int localnchan = nchan;
     
     
