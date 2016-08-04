@@ -1,3 +1,4 @@
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
@@ -15,9 +16,7 @@
 //   No warranty. Use at your own risk. Use for whatever you'd like.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-
-import ddf.minim.analysis.*; //for FFT
-//import ddf.minim.*;  // commented because too broad.. contains "Controller" class which is also contained in ControlP5... need to be more specific // To make sound.  Following minim example "frequencyModulation"
+import ddf.minim.*;  // To make sound.  Following minim example "frequencyModulation"
 import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyModulation"
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
@@ -25,6 +24,11 @@ import java.util.*; //for Array.copyOfRange()
 import java.util.Map.Entry; 
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
+import netP5.*; //for OSC networking
+import oscP5.*; //for OSC networking
+import hypermedia.net.*; //for UDP networking
+import grafica.*;
+
 
 //import java.awt.*;
 //import java.awt.Point;
@@ -125,6 +129,16 @@ OutputFile_rawtxt fileoutput;
 String output_fname;
 String fileName = "N/A";
 
+//variables for Networking
+int port = 0;
+String ip = "";
+String address = "";
+String data_stream = "";
+String aux_stream = "";
+UDPSend udp;
+OSCSend osc;
+LSLSend lsl;
+
 // Serial output
 String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port
 Serial serial_output;
@@ -138,7 +152,15 @@ PlotFontInfo fontInfo;
 boolean isRunning = false;
 boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
-int inByte = -1;    // Incoming serial data
+byte inByte = -1;    // Incoming serial data
+StringBuilder board_message;
+StringBuilder scanning_message;
+
+int dollaBillz;
+boolean isGettingPoll = false;
+boolean spaceFound = false;
+boolean scanningChannels = false;
+int hexToInt = 0;
 
 //for screen resizing
 boolean screenHasBeenResized = false;
@@ -146,7 +168,7 @@ float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
 int reinitializeGUIdelay = 125;
 //Tao's variabiles
-int widthOfLastScreen = 0;
+int widthOfLastScreen = 0;      
 int heightOfLastScreen = 0;
 
 //set window size
@@ -158,6 +180,12 @@ PImage logo;
 PFont f1;
 PFont f2;
 PFont f3;
+
+EMG_Widget motorWidget;
+
+boolean no_start_connection = false;
+boolean has_processed = false;
+boolean isOldData = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -291,6 +319,9 @@ void initSystem() {
   }
   dataProcessing = new DataProcessing(nchan, openBCI.get_fs_Hz());
   dataProcessing_user = new DataProcessing_User(nchan, openBCI.get_fs_Hz());
+  
+  
+
 
   //initialize the data
   prepareData(dataBuffX, dataBuffY_uV, openBCI.get_fs_Hz());
@@ -301,7 +332,7 @@ void initSystem() {
   for (int Ichan=0; Ichan < nchan; Ichan++) { 
     verbosePrint("a--"+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, openBCI.get_fs_Hz());
-  };  //make the FFT objects
+  }  //make the FFT objects
   verbosePrint("OpenBCI_GUI: initSystem: b");
   initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, openBCI.get_fs_Hz());
 
@@ -336,7 +367,6 @@ void initSystem() {
       exit();
     }
     println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/openBCI.get_fs_Hz()) + " seconds of EEG data");
-
     //removing first column of data from data file...the first column is a time index and not eeg data
     playbackData_table.removeColumn(0);
     break;
@@ -459,6 +489,16 @@ void systemUpdate() { // for updating data values and variables
       } else {
         //not enough data has arrived yet... only update the channel controller
       }
+    }else if(eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
+      lastReadDataPacketInd = 0;
+      pointCounter = 0;
+      try{
+        process_input_file();
+      }
+      catch(Exception e){
+        isOldData = true;
+        output("Error processing timestamps, are you using old data?");
+      }
     }
 
     gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
@@ -548,9 +588,10 @@ void systemDraw() { //for drawing to the screen
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
 
+    playground.draw();
 
-    dataProcessing_user.draw();
-    //playground.draw();
+    motorWidget.draw();
+    //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10
     //still print title information about fps
@@ -582,7 +623,8 @@ void systemDraw() { //for drawing to the screen
 
   if (drawPresentation) {
     myPresentation.draw();
-    dataProcessing_user.drawTriggerFeedback();
+    motorWidget.drawTriggerFeedback();
+    //dataProcessing_user.drawTriggerFeedback();
   }
 
   // use commented code below to verify frameRate and check latency

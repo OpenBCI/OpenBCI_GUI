@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : DefaultInstrument</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">DefaultInstrument</p>
+    	
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="defaultinstrument_method_noteoff.html" title="Turn off the default instrument.">noteOff ( )</a><br/>
+    
+    <a href="defaultinstrument_method_noteon.html" title="Turn on the default instrument.">noteOn ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	You can use this default instrument to make sound if you don't want to write 
+ your own instrument. It's a good way to start playing around with the playNote
+ method of AudioOutput. The default instrument makes a fuzzy triangle wave sound.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre><em>Construct a default instrument that will play a note at the given frequency on the given output.</em>
+DefaultInstrument(float frequency, AudioOutput output)
+</pre>
+    	
+   <p class="memberSectionHeader">Parameters</p>
+   
+        <span class="parameterName">frequency</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">float: the frequency of the note</span><br/>
+    
+        <span class="parameterName">output</span>&nbsp;&mdash;&nbsp;<span class="parameterDescription">AudioOutput: the output to play the note on when noteOn is called</span><br/>
+    
+   
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="instrument_instrument.html">Instrument</A><BR>
+<A href="audiooutput_class_audiooutput.html">AudioOutput</A><BR>
+
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/* defaultInstrumentExample&lt;br/>
+   is an example of using the extremely simple default
+   instrument built into Minim.  The following is intended
+   to be pretty much the minimum necessary to use the default
+   instrument.
+   &lt;p>
+   For more information about Minim and additional features, 
+   visit http://code.compartmental.net/minim/
+   &lt;p>   
+   author: Anderson Mills&lt;br/>
+   Anderson Mills's work was supported by numediart (www.numediart.org)
+*/
+
+// import everything necessary to make sound.
+import ddf.minim.*;
+import ddf.minim.ugens.*;
+
+AudioOutput out;
+
+void setup()
+{
+  // initialize the drawing window
+  size(512, 200, P2D);
+  
+  Minim minim = new Minim( this );
+  out = minim.getLineOut();
+  
+  // given start time, duration, and frequency
+  out.playNote( 0.0, 0.9, 97.99 );
+  out.playNote( 1.0, 0.9, 123.47 );
+  
+  // given start time, duration, and note name  
+  out.playNote( 2.0, 2.9, "C3" );
+  out.playNote( 3.0, 1.9, "E3" );
+  out.playNote( 4.0, 0.9, "G3" );
+    
+  // given start time and note name or frequency
+  // (duration defaults to 1.0)
+  out.playNote( 5.0, "" );
+  out.playNote( 6.0, 329.63);
+  out.playNote( 7.0, "G4" );
+  
+  // set a note offset  
+  out.setNoteOffset( 8.1 );
+  
+  // because only given a note name or frequency
+  // starttime defaults to 0.0 and duration defaults to 1.0
+  out.playNote( "G5" );
+  out.playNote( 987.77 );
+}
+
+void draw()
+{
+  // erase the window to black
+  background( 0 );
+  // draw using a white stroke
+  stroke( 255 );
+  // draw the waveforms
+  for( int i = 0; i &lt; out.bufferSize() - 1; i++ )
+  {
+    // find the x position of each buffer value
+    float x1  =  map( i, 0, out.bufferSize(), 0, width );
+    float x2  =  map( i+1, 0, out.bufferSize(), 0, width );
+    // draw a line from one buffer position to the next for both channels
+    line( x1, 50 + out.left.get(i)*50, x2, 50 + out.left.get(i+1)*50);
+    line( x1, 150 + out.right.get(i)*50, x2, 150 + out.right.get(i+1)*50);
+  }  
+}</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

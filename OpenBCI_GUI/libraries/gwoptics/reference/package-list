@@ -1,0 +1,14 @@
+org.gwoptics
+org.gwoptics.gaussbeams
+org.gwoptics.graphics
+org.gwoptics.graphics.camera
+org.gwoptics.graphics.colourmap
+org.gwoptics.graphics.colourmap.presets
+org.gwoptics.graphics.graph2D
+org.gwoptics.graphics.graph2D.backgrounds
+org.gwoptics.graphics.graph2D.effects
+org.gwoptics.graphics.graph2D.traces
+org.gwoptics.graphics.graph3D
+org.gwoptics.graphicsutils
+org.gwoptics.mathutils
+org.gwoptics.testing

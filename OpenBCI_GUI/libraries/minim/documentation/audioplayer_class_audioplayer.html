@@ -1,0 +1,224 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Minim : : AudioPlayer</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table class="mainTable">
+  <tr>
+    <td class="header">
+    	<span class="indexheader">Minim</span><br/>
+    	<span class="indexnavigation">
+    		<a href="index.html">core</a> | 
+    		<a href="index_ugens.html">ugens</a> | 
+    		<a href="index_analysis.html">analysis</a>
+    	</span>
+    </td>
+    <td class="border-left">&nbsp;</td>
+  </tr>
+  
+  <tr>
+    <td class="classNavigation">
+    	<p class="mainTextName">AudioPlayer</p>
+    	
+       <p class="linkListHeader">Fields</p>
+       <p class="linkList">
+           
+    <a href="audioplayer_field_left.html" title="The AudioBuffer containing the left channel samples. If this is a mono
+ sound, it contains the single channel of audio.">left</a><br/>
+    
+    <a href="audioplayer_field_mix.html" title="The AudioBuffer containing the mix of the left and right channels. If this is
+ a mono sound, <code>mix</code> contains the same
+ samples as <code>left</code>.">mix</a><br/>
+    
+    <a href="audioplayer_field_right.html" title="The AudioBuffer containing the right channel samples. If this is a mono
+ sound, <code>right</code> contains the same samples as
+ <code>left</code>.">right</a><br/>
+    
+	   </p>
+   
+    	
+       <p class="linkListHeader">Methods</p>
+       <p class="linkList">
+           
+    <a href="audioplayer_method_addlistener.html" title="Add an AudioListener to this sound generating object.">addListener ( )</a><br/>
+    
+    <a href="audioplayer_method_buffersize.html" title="The internal buffer size of this sound object.">bufferSize ( )</a><br/>
+    
+    <a href="audioplayer_method_cue.html" title="Sets the position to <code>millis</code> milliseconds from
+ the beginning.">cue ( )</a><br/>
+    
+    <a href="audioplayer_method_getbalance.html" title="Returns the current balance.">getBalance ( )</a><br/>
+    
+    <a href="audioplayer_method_getformat.html" title="Returns AudioFormat object that describes the audio properties 
+ of this sound generating object.">getFormat ( )</a><br/>
+    
+    <a href="audioplayer_method_getgain.html" title="Returns the current gain.">getGain ( )</a><br/>
+    
+    <a href="audioplayer_method_getmetadata.html" title="Returns the meta data for the recording being played by this player.">getMetaData ( )</a><br/>
+    
+    <a href="audioplayer_method_getpan.html" title="Returns the current pan.">getPan ( )</a><br/>
+    
+    <a href="audioplayer_method_getvolume.html" title="Returns the current volume.">getVolume ( )</a><br/>
+    
+    <a href="audioplayer_method_islooping.html" title="Returns true if the <code>AudioPlayer</code> is currently playing 
+ and has more than one loop left to play.">isLooping ( )</a><br/>
+    
+    <a href="audioplayer_method_ismuted.html" title="Returns true if the sound is muted.">isMuted ( )</a><br/>
+    
+    <a href="audioplayer_method_isplaying.html" title="Indicates if the <code>AudioPlayer</code> is currently playing.">isPlaying ( )</a><br/>
+    
+    <a href="audioplayer_method_length.html" title="Returns the length of the sound in milliseconds.">length ( )</a><br/>
+    
+    <a href="audioplayer_method_loop.html" title="Set the <code>AudioPlayer</code> to loop some number of times.">loop ( )</a><br/>
+    
+    <a href="audioplayer_method_loopcount.html" title="Returns the number of loops left to do.">loopCount ( )</a><br/>
+    
+    <a href="audioplayer_method_mute.html" title="Mutes the sound.">mute ( )</a><br/>
+    
+    <a href="audioplayer_method_pause.html" title="Pauses playback.">pause ( )</a><br/>
+    
+    <a href="audioplayer_method_play.html" title="Starts playback from the current position.">play ( )</a><br/>
+    
+    <a href="audioplayer_method_position.html" title="Returns the current position of the "playhead" in milliseconds
+ (ie how much of the sound has already been played).">position ( )</a><br/>
+    
+    <a href="audioplayer_method_removelistener.html" title="Removes an AudioListener that was previously 
+ added to this sound object.">removeListener ( )</a><br/>
+    
+    <a href="audioplayer_method_rewind.html" title="Rewinds to the beginning. This <i>does not</i> stop playback.">rewind ( )</a><br/>
+    
+    <a href="audioplayer_method_samplerate.html" title="Returns the sample rate of this sound object.">sampleRate ( )</a><br/>
+    
+    <a href="audioplayer_method_setbalance.html" title="Sets the balance.">setBalance ( )</a><br/>
+    
+    <a href="audioplayer_method_setgain.html" title="Sets the gain.">setGain ( )</a><br/>
+    
+    <a href="audioplayer_method_setlooppoints.html" title="Sets the loop points used when looping.">setLoopPoints ( )</a><br/>
+    
+    <a href="audioplayer_method_setpan.html" title="Sets the pan.">setPan ( )</a><br/>
+    
+    <a href="audioplayer_method_setvolume.html" title="Sets the volume.">setVolume ( )</a><br/>
+    
+    <a href="audioplayer_method_shiftbalance.html" title="Transitions the balance from one value to another.">shiftBalance ( )</a><br/>
+    
+    <a href="audioplayer_method_shiftgain.html" title="Transitions the gain from one value to another.">shiftGain ( )</a><br/>
+    
+    <a href="audioplayer_method_shiftpan.html" title="Transitions the pan from one value to another.">shiftPan ( )</a><br/>
+    
+    <a href="audioplayer_method_shiftvolume.html" title="Transitions the volume from one value to another.">shiftVolume ( )</a><br/>
+    
+    <a href="audioplayer_method_skip.html" title="Skips <code>millis</code> milliseconds from the current position.">skip ( )</a><br/>
+    
+    <a href="audioplayer_method_type.html" title="The type is an int describing the number of channels
+ this sound object has.">type ( )</a><br/>
+    
+    <a href="audioplayer_method_unmute.html" title="Unmutes the sound.">unmute ( )</a><br/>
+    
+	   </p>
+   
+    </td>
+    <td class="mainText border-left">
+    	An <code>AudioPlayer</code> provides a self-contained way of playing a 
+ sound file by streaming it from disk (or the internet). It
+ provides methods for playing and looping the file, as well 
+ as methods for setting the position in the file and 
+ looping a section of the file. You can obtain an 
+ <code>AudioPlayer</code> by using the loadFile method of the Minim 
+ class.
+    	<p class="memberSectionHeader">Constructors</p>
+    	<pre></pre>
+    	
+    	<p class="memberSectionHeader">Related</p>
+    	<A href="minim_class_minim.html">Minim</A><BR>
+
+    	<p class="memberSectionHeader">Example</p>
+    	<pre>/**
+  * This sketch demonstrates how to play a file with Minim using an AudioPlayer. &lt;br />
+  * It's also a good example of how to draw the waveform of the audio. Full documentation 
+  * for AudioPlayer can be found at http://code.compartmental.net/minim/audioplayer_class_audioplayer.html
+  * &lt;p>
+  * For more information about Minim and additional features, 
+  * visit http://code.compartmental.net/minim/
+  */
+
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer player;
+
+void setup()
+{
+  size(512, 200, P3D);
+  
+  // we pass this to Minim so that it can load files from the data directory
+  minim = new Minim(this);
+  
+  // loadFile will look in all the same places as loadImage does.
+  // this means you can find files that are in the data folder and the 
+  // sketch folder. you can also pass an absolute path, or a URL.
+  player = minim.loadFile("groove.mp3");
+}
+
+void draw()
+{
+  background(0);
+  stroke(255);
+  
+  // draw the waveforms
+  // the values returned by left.get() and right.get() will be between -1 and 1,
+  // so we need to scale them up to see the waveform
+  // note that if the file is MONO, left.get() and right.get() will return the same value
+  for(int i = 0; i &lt; player.bufferSize() - 1; i++)
+  {
+    float x1 = map( i, 0, player.bufferSize(), 0, width );
+    float x2 = map( i+1, 0, player.bufferSize(), 0, width );
+    line( x1, 50 + player.left.get(i)*50, x2, 50 + player.left.get(i+1)*50 );
+    line( x1, 150 + player.right.get(i)*50, x2, 150 + player.right.get(i+1)*50 );
+  }
+  
+  // draw a line to show where in the song playback is currently located
+  float posx = map(player.position(), 0, player.length(), 0, width);
+  stroke(0,200,0);
+  line(posx, 0, posx, height);
+  
+  if ( player.isPlaying() )
+  {
+    text("Press any key to pause playback.", 10, 20 );
+  }
+  else
+  {
+    text("Press any key to start playback.", 10, 20 );
+  }
+}
+
+void keyPressed()
+{
+  if ( player.isPlaying() )
+  {
+    player.pause();
+  }
+  // if the player is at the end of the file,
+  // we have to rewind it before telling it to play again
+  else if ( player.position() == player.length() )
+  {
+    player.rewind();
+    player.play();
+  }
+  else
+  {
+    player.play();
+  }
+}</pre>
+    	<p class="memberSectionHeader">Usage</p>
+    	Web & Application
+    </td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

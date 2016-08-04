@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>hypermedia.net : : UDP : : setTimeToLive ( )</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body> 
+<center>
+<table width="600" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td height="100" valign="top" class="header"><span class="libName">hypermedia.net</span><br>
+        <a href="index.htm">index</a></td>
+    <td width="450" class="descList">&nbsp;</td>
+  </tr>
+  <tr>
+    <td valign="top" class="mainTextName">Name</td>
+    <td class="methodName">setTimeToLive ( )</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Examples</td>
+    <td valign=top class="descList">None available</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Description</td>
+    <td valign=top class="descList">Control the life-time of a datagram in the network for multicast packets 
+ in order to indicates the scope of the multicasts (ie how far the packet 
+ will travel).
+ <p>
+ The TTL value must be in range of 0 to 255 inclusive. The larger the 
+ number, the farther the multicast packets will travel (by convention):
+ <blockquote><pre>
+ 0	-> restricted to the same host
+ 1	-> restricted to the same subnet (default)
+ &lt;32	-> restricted to the same site
+ &lt;64	-> restricted to the same region
+ &lt;128	-> restricted to the same continent
+ &lt;255	-> no restriction
+ </blockquote></pre>
+ The default value is 1, meaning that the datagram will not go beyond the 
+ local subnet.
+ <p>
+ return <code>true</code> if no error occured.</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Syntax</td>
+    <td valign=top class="descList"><pre>setTimeToLive(ttl);
+</pre></td>
+  </tr>
+  
+     <tr>
+       <td class="mainText">Parameters</td>
+       <td valign=top class="descList">
+         <table border=0 cellspacing=0 cellpadding=0>
+           
+      <tr>
+        <td width="70" valign=top>ttl</td>
+        <td width="20">&nbsp;</td>
+        <td valign=top>the "Time to Live" value</td>
+	  </tr>
+    
+         </table>
+	   </td>
+	 </tr>
+   
+  
+     <tr>
+       <td valign=top class="mainText">Returns</td>
+       <td class="descList">boolean</td>
+     </tr>
+   
+  <tr>
+    <td valign=top class="mainText">Usage</td>
+    <td class="descList">Web & Application</td>
+  </tr>
+  <tr>
+    <td valign=top class="mainText">Related</td>
+    <td class="descList"></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td class="descList">&nbsp;</td>
+  </tr>
+</table>
+</center>
+</body>
+</html>

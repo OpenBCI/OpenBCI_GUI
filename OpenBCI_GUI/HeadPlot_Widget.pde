@@ -250,67 +250,70 @@ class HeadPlot_Widget {
   }
 
   void draw() {
-    pushStyle();
-    noStroke();
-
-    fill(255);
-    rect(x, y, w, h); //widget background
-    //fill(150,150,150);
-    //rect(x, y, w, navHeight); //top bar
-    //fill(200, 200, 200);
-    //rect(x, y+navHeight, w, navHeight); //top bar
-    //fill(bgColor);
-    //textSize(18);
-    //text("Head Plot", x+w/2, y+navHeight/2);
-    ////fill(255,0,0,150);
-    ////rect(x,y,w,h);
-
-    fill(150, 150, 150);
-    rect(x, y, w, navHeight); //top bar
-    fill(200, 200, 200);
-    rect(x, y+navHeight, w, navHeight); //button bar
-    fill(255);
-    rect(x+2, y+2, navHeight-4, navHeight-4);
-    fill(bgColor, 100);
-    //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
-    rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
-    //text("FFT Plot", x+w/2, y+navHeight/2)
-    fill(bgColor);
-    textAlign(LEFT, CENTER);
-    textFont(f);
-    textSize(18);
-    text("Head Plot", x+navHeight+2, y+navHeight/2 - 2); //left
-    //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
-    //fill(255,0,0,150);
-    //rect(x,y,w,h);
-
-    headPlot.draw(); //draw the actual headplot
-
-    //draw dropdown titles
-    int dropdownPos = 3; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
-    int dropdownWidth = 60;
-    textFont(f2);
-    textSize(12);
-    textAlign(CENTER, BOTTOM);
-    fill(bgColor);
-    text("Layout", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 2;
-    text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    //dropdownPos = 3;
-    //text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 1;
-    text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 0;
-    text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    //dropdownPos = 0;
-    //text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-
-    cp5_HeadPlot.draw(); //draw all dropdown menus
-
-    popStyle();
+    
+    if(!drawEMG){
+      pushStyle();
+      noStroke();
+  
+      fill(255);
+      rect(x, y, w, h); //widget background
+      //fill(150,150,150);
+      //rect(x, y, w, navHeight); //top bar
+      //fill(200, 200, 200);
+      //rect(x, y+navHeight, w, navHeight); //top bar
+      //fill(bgColor);
+      //textSize(18);
+      //text("Head Plot", x+w/2, y+navHeight/2);
+      ////fill(255,0,0,150);
+      ////rect(x,y,w,h);
+  
+      fill(150, 150, 150);
+      rect(x, y, w, navHeight); //top bar
+      fill(200, 200, 200);
+      rect(x, y+navHeight, w, navHeight); //button bar
+      fill(255);
+      rect(x+2, y+2, navHeight-4, navHeight-4);
+      fill(bgColor, 100);
+      //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
+      rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
+      rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
+      rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
+      rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
+      //text("FFT Plot", x+w/2, y+navHeight/2)
+      fill(bgColor);
+      textAlign(LEFT, CENTER);
+      textFont(f);
+      textSize(18);
+      text("Head Plot", x+navHeight+2, y+navHeight/2 - 2); //left
+      //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
+      //fill(255,0,0,150);
+      //rect(x,y,w,h);
+  
+      headPlot.draw(); //draw the actual headplot
+  
+      //draw dropdown titles
+      int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+      int dropdownWidth = 60;
+      textFont(f2);
+      textSize(12);
+      textAlign(CENTER, BOTTOM);
+      fill(bgColor);
+      text("Layout", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 3;
+      text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      //dropdownPos = 3;
+      //text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 2;
+      text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 1;
+      text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 0;
+      text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+  
+      cp5_HeadPlot.draw(); //draw all dropdown menus
+  
+      popStyle();
+    }
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -373,8 +376,8 @@ class HeadPlot_Widget {
 
   void mousePressed() {
     //called by GUI_Widgets.pde
-    if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
-      println("headPlot.mousePressed()");
+    if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
+      //println("headPlot.mousePressed()");
     }
   }
   void mouseReleased() {
