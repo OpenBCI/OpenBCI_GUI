@@ -16,13 +16,14 @@ import java.util.Random;
 //fft constants
 int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
+boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 ControlP5 cp5_FFT;
 List maxFreqList = Arrays.asList("20 Hz", "40 Hz", "60 Hz", "120 Hz");
 List logLinList = Arrays.asList("Log", "Linear");
 List vertScaleList = Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV");
 List smoothList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
-List filterList = Arrays.asList("Unfilt.", "Filtered");
+List filterList = Arrays.asList("Filtered", "Unfilt.");
 
 CColor cp5_colors;
 
@@ -253,7 +254,7 @@ class FFT_Widget {
 
     cp5_FFT.getController("UnfiltFilt")
       .getCaptionLabel()
-      .setText("Unfilt.")
+      .setText("Filtered")
       //.setFont(controlFonts[0])
       .setSize(12)
       .getStyle()
@@ -472,8 +473,10 @@ void Smoothing(int n) {
 //triggered when there is an event in the LogLin Dropdown
 void UnfiltFilt(int n) {
   if (n==0) {
-    fft_widget.fft_plot.setLogScale("y");
+    //have FFT use filtered data -- default
+    isFFTFiltered = true;
   } else {
-    fft_widget.fft_plot.setLogScale("");
+    //have FFT use unfiltered data
+    isFFTFiltered = false;
   }
 }

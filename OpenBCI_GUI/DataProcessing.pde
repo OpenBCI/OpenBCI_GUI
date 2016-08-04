@@ -119,7 +119,7 @@ void processNewData() {
   if (false) rereferenceTheMontage(dataBuffY_filtY_uV);
 
   //apply additional processing for the time-domain montage plot (ie, filtering)
-  dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV);
+  dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
 
   //apply user processing
   // ...yLittleBuff_uV[Ichan] is the most recent raw data since the last call to this processing routine
@@ -216,7 +216,11 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int N, float fs
     fftBuff[Ichan].window(FFT.HAMMING);
 
     //do the FFT on the initial data
-    fooData = dataBuffY_uV[Ichan];
+    if (isFFTFiltered == true) {
+      fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+    } else {
+      fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT      
+    }
     fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);
     fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
   }
@@ -423,8 +427,8 @@ class DataProcessing {
 
   public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
     float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
-    float[][] data_forDisplay_uV) { //, //put data here that should be plotted on the screen
-    //FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+    float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
+    FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
     //loop over each EEG channel
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -453,13 +457,18 @@ class DataProcessing {
     for (int I=0; I < fftBuff[Ichan].specSize(); I++) prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
 
     //prepare the data for the new FFT
-    float[] fooData_raw = dataBuffY_filtY_uV[Ichan];  //use the filtere data for the FFT
-    fooData_raw = Arrays.copyOfRange(fooData_raw, fooData_raw.length-Nfft, fooData_raw.length);   //trim to grab just the most recent block of data
-    float meanData = mean(fooData_raw);  //compute the mean
-    for (int I=0; I < fooData_raw.length; I++) fooData_raw[I] -= meanData; //remove the mean (for a better looking FFT
+    float[] fooData;
+    if (isFFTFiltered == true) {
+      fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+    } else {
+      fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT      
+    }
+    fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
+    float meanData = mean(fooData);  //compute the mean
+    for (int I=0; I < fooData.length; I++) fooData[I] -= meanData; //remove the mean (for a better looking FFT
 
     //compute the FFT
-    fftBuff[Ichan].forward(fooData_raw); //compute FFT on this channel of data
+    fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
 
     //convert to uV_per_bin...still need to confirm the accuracy of this code.  
     //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
