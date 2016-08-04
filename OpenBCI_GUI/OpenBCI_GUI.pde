@@ -16,9 +16,7 @@
 //   No warranty. Use at your own risk. Use for whatever you'd like.
 // 
 ////////////////////////////////////////////////////////////////////////////////
-
-import ddf.minim.analysis.*; //for FFT
-import ddf.minim.*;  // commented because too broad.. contains "Controller" class which is also contained in ControlP5... need to be more specific // To make sound.  Following minim example "frequencyModulation"
+import ddf.minim.*;  // To make sound.  Following minim example "frequencyModulation"
 import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyModulation"
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
@@ -30,6 +28,31 @@ import netP5.*; //for OSC networking
 import oscP5.*; //for OSC networking
 import hypermedia.net.*; //for UDP networking
 import grafica.*;
+
+
+//import java.awt.*;
+//import java.awt.Point;
+import java.awt.MouseInfo;
+//import processing.core.PConstants;
+//import java.awt.Window;
+//import java.awt.Component;
+//import java.awt.Container;
+
+//package processing.opengl;
+//import java.awt.Component.*;
+//import java.awt.GraphicsDevice;
+//import java.awt.GraphicsEnvironment;
+//import java.awt.Point;
+//import java.awt.Rectangle;
+//import java.awt.image.BufferedImage;
+//import java.awt.image.DataBufferInt;
+
+//import processing.opengl.GLWindow;
+//import com.sun.javafx.newt.opengl.GLWindow;
+//import Graphics.Rendering.OpenGL;
+//import java.awt.Graphics.UI.GLWindow;      
+//import qualified Graphics.UI.GLWindow as Window;   
+//import com.sun.javafx.newt.opengl.GLWindow;
 
 
 //------------------------------------------------------------------------
@@ -89,7 +112,9 @@ int newPacketCounter = 0;
 long timeOfInit;
 long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
-final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received 
+
+//final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received 
+final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received 
 
 //define some data fields for handling data here in processing
 float dataBuffX[];  //define the size later
@@ -180,7 +205,7 @@ void setup() {
   //if (frame != null) frame.setResizable(true);  //make window resizable
   //attach exit handler
   //prepareExitHandler();
-  frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -307,7 +332,7 @@ void initSystem() {
   for (int Ichan=0; Ichan < nchan; Ichan++) { 
     verbosePrint("a--"+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, openBCI.get_fs_Hz());
-  };  //make the FFT objects
+  }  //make the FFT objects
   verbosePrint("OpenBCI_GUI: initSystem: b");
   initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, openBCI.get_fs_Hz());
 
@@ -488,7 +513,7 @@ void systemUpdate() { // for updating data values and variables
     }
 
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
-    if(screenHasBeenResized){
+    if (screenHasBeenResized) {
       GUIWidgets_screenResized(width, height);
     }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
@@ -614,6 +639,8 @@ void systemDraw() { //for drawing to the screen
       systemMode = 0;
     }
   }
+
+  mouseOutOfBounds(); // to fix
 }
 
 void introAnimation() {
@@ -639,3 +666,58 @@ void introAnimation() {
   }
   popStyle();
 }
+
+//CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
+boolean mouseInFrame = false;
+boolean windowOriginSet = false;
+int appletOriginX = 0;
+int appletOriginY = 0;
+PVector loc;
+
+void mouseOutOfBounds() {
+  if (windowOriginSet && mouseInFrame) {
+    //if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
+    //  println("mouseX " + mouseX);
+    //  println("mouseY " + mouseY);
+    //  println("true X " + MouseInfo.getPointerInfo().getLocation().x); 
+    //  println("true Y " + MouseInfo.getPointerInfo().getLocation().y);
+    //  println("Window X " + loc.x); 
+    //  println("Window Y " + loc.y);
+    //  println();
+    //} 
+    if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX || 
+      MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
+      MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
+      MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
+      mouseX = 0;
+      mouseY = 0;
+      println("Mouse out of bounds!");
+      mouseInFrame = false;
+    }
+  } else {
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+      loc = getWindowLocation(P2D);
+      appletOriginX = (int)loc.x;
+      appletOriginY = (int)loc.y;
+      windowOriginSet = true;
+      mouseInFrame = true;
+      println("WINDOW ORIGIN SET!");
+    }
+  }
+}
+
+PVector getWindowLocation(String renderer) {
+  PVector l = new PVector();
+  if (renderer == P2D || renderer == P3D) {
+    com.jogamp.nativewindow.util.Point p = new com.jogamp.nativewindow.util.Point();
+    ((com.jogamp.newt.opengl.GLWindow)surface.getNative()).getLocationOnScreen(p);
+    l.x = p.getX();
+    l.y = p.getY();
+  } else if (renderer == JAVA2D) {
+    java.awt.Frame f =  (java.awt.Frame) ((processing.awt.PSurfaceAWT.SmoothCanvas) surface.getNative()).getFrame();
+    l.x = f.getX();
+    l.y = f.getY();
+  }
+  return l;
+}
+//END OF CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
