@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
+import ddf.minim.analysis.*; //for FFT
 
 DataProcessing dataProcessing;
 String curTimestamp;
@@ -104,13 +105,8 @@ void processNewData() {
   avgBitRate.addValue(inst_byteRate_perSec);
   byteRate_perSec = (int)avgBitRate.calcMean();
 
-  //prepare to update the data buffers
-  float foo_val;
-
-  //println("PPP" + fftBuff[0].specSize());
-  float prevFFTdata[] = new float[fftBuff[0].specSize()];
-
-  double foo;
+  ////prepare to update the data buffers
+  //float foo_val;
 
   //update the data buffers
   for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -124,55 +120,6 @@ void processNewData() {
 
   //if you want to, re-reference the montage to make it be a mean-head reference
   if (false) rereferenceTheMontage(dataBuffY_filtY_uV);
-
-  //update the FFT (frequency spectrum)
-  for (int Ichan=0; Ichan < nchan; Ichan++) {
-
-    //copy the previous FFT data...enables us to apply some smoothing to the FFT data
-    for (int I=0; I < fftBuff[Ichan].specSize(); I++) prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
-
-    //prepare the data for the new FFT
-    float[] fooData_raw = dataBuffY_uV[Ichan];  //use the raw data for the FFT
-    fooData_raw = Arrays.copyOfRange(fooData_raw, fooData_raw.length-Nfft, fooData_raw.length);   //trim to grab just the most recent block of data
-    float meanData = mean(fooData_raw);  //compute the mean
-    for (int I=0; I < fooData_raw.length; I++) fooData_raw[I] -= meanData; //remove the mean (for a better looking FFT
-
-    //compute the FFT
-    fftBuff[Ichan].forward(fooData_raw); //compute FFT on this channel of data
-
-    //convert to uV_per_bin...still need to confirm the accuracy of this code.
-    //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
-    //single sided FFT
-    for (int I=0; I < fftBuff[Ichan].specSize(); I++) {  //loop over each FFT bin
-      fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].timeSize()));
-    }
-    //DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two. 
-    for (int I=1; I < fftBuff[Ichan].specSize()-1; I++) {  //loop over each FFT bin
-      fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
-    }
-
-    //average the FFT with previous FFT data so that it makes it smoother in time
-    double min_val = 0.01d;
-    for (int I=0; I < fftBuff[Ichan].specSize(); I++) {   //loop over each fft bin
-      if (prevFFTdata[I] < min_val) prevFFTdata[I] = (float)min_val; //make sure we're not too small for the log calls
-      foo = fftBuff[Ichan].getBand(I);
-      if (foo < min_val) foo = min_val; //make sure this value isn't too small
-
-      if (true) {
-        //smooth in dB power space
-        foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.log(java.lang.Math.pow(foo, 2));
-        foo += smoothFac[smoothFac_ind] * java.lang.Math.log(java.lang.Math.pow((double)prevFFTdata[I], 2));
-        foo = java.lang.Math.sqrt(java.lang.Math.exp(foo)); //average in dB space
-      } else {
-        //smooth (average) in linear power space
-        foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.pow(foo, 2);
-        foo+= smoothFac[smoothFac_ind] * java.lang.Math.pow((double)prevFFTdata[I], 2);
-        // take sqrt to be back into uV_rtHz
-        foo = java.lang.Math.sqrt(foo);
-      }
-      fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
-    } //end loop over FFT bins
-  } //end the loop over channels.
 
   //apply additional processing for the time-domain montage plot (ie, filtering)
   dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
@@ -262,6 +209,7 @@ void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
   }
 }
 
+
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int N, float fs_Hz) {
 
   float[] fooData;
@@ -271,11 +219,16 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int N, float fs
     fftBuff[Ichan].window(FFT.HAMMING);
 
     //do the FFT on the initial data
-    fooData = dataBuffY_uV[Ichan];
+    if (isFFTFiltered == true) {
+      fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+    } else {
+      fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT      
+    }
     fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);
     fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
   }
 }
+
 
 int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
   float val_uV = 0.0f;
@@ -495,6 +448,63 @@ class DataProcessing {
       data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
     } //close loop over channels
 
+    
+    // calculate FFT after filter
+    
+    //println("PPP" + fftBuff[0].specSize());
+    float prevFFTdata[] = new float[fftBuff[0].specSize()];
+    double foo;
+  
+    //update the FFT (frequency spectrum)
+    for (int Ichan=0; Ichan < nchan; Ichan++) {  
+
+    //copy the previous FFT data...enables us to apply some smoothing to the FFT data
+    for (int I=0; I < fftBuff[Ichan].specSize(); I++) prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
+
+    //prepare the data for the new FFT
+    float[] fooData;
+    if (isFFTFiltered == true) {
+      fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+    } else {
+      fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT      
+    }
+    fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
+    float meanData = mean(fooData);  //compute the mean
+    for (int I=0; I < fooData.length; I++) fooData[I] -= meanData; //remove the mean (for a better looking FFT
+
+    //compute the FFT
+    fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
+
+    //convert to uV_per_bin...still need to confirm the accuracy of this code.  
+    //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
+    for (int I=0; I < fftBuff[Ichan].specSize(); I++) {  //loop over each FFT bin
+      fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].specSize()));
+    }       
+
+    //average the FFT with previous FFT data so that it makes it smoother in time
+    double min_val = 0.01d;
+    for (int I=0; I < fftBuff[Ichan].specSize(); I++) {   //loop over each fft bin
+      if (prevFFTdata[I] < min_val) prevFFTdata[I] = (float)min_val; //make sure we're not too small for the log calls
+      foo = fftBuff[Ichan].getBand(I); 
+      if (foo < min_val) foo = min_val; //make sure this value isn't too small
+
+      if (true) {
+        //smooth in dB power space
+        foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.log(java.lang.Math.pow(foo, 2));
+        foo += smoothFac[smoothFac_ind] * java.lang.Math.log(java.lang.Math.pow((double)prevFFTdata[I], 2)); 
+        foo = java.lang.Math.sqrt(java.lang.Math.exp(foo)); //average in dB space
+      } else { 
+        //smooth (average) in linear power space
+        foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.pow(foo, 2);
+        foo+= smoothFac[smoothFac_ind] * java.lang.Math.pow((double)prevFFTdata[I], 2); 
+        // take sqrt to be back into uV_rtHz
+        foo = java.lang.Math.sqrt(foo);
+      }
+      fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
+    } //end loop over FFT bins
+  } //end the loop over channels.
+  
+
     //find strongest channel
     int refChanInd = findMax(data_std_uV);
     //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
@@ -514,4 +524,4 @@ class DataProcessing {
       }
     }
   }
-};
+}
