@@ -785,13 +785,13 @@ class Button {
       if (!isMouseHere() && drawHand) {
         cursor(ARROW);
         drawHand = false;
-        verbosePrint("don't draw hand");
+        //verbosePrint("don't draw hand");
       }
       //if cursor is over button change cursor icon to hand!
       if (isMouseHere() && !drawHand) {
         cursor(HAND);
         drawHand = true;
-        verbosePrint("draw hand");
+        //verbosePrint("draw hand");
       }
     }
   }

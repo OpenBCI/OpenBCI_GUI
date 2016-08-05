@@ -38,11 +38,11 @@ void GUIWidgets_mousePressed() {
 }
 
 void GUIWidgets_mouseReleased() {
-  
+
   motorWidget.mouseReleased();
   headPlot_widget.mousePressed();
   fft_widget.mousePressed();
-  
+
 }
 
 

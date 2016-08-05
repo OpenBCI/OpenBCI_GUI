@@ -308,14 +308,15 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
     
     //int localnchan = nchan;
     
-    
-    //try{
-    //  while(true){
-    //    println("VALUE: " + row.getString(localnchan));
-    //    localnchan++;
-    //  }
-    //}
-    //catch (Exception e){ println("DONE WITH THIS TIME. INDEX: " + --localnchan);}
+    if(!isRunning){
+      try{
+        if(!isOldData) row.getString(nchan+4);
+        else row.getString(nchan+3);
+        
+        nchan = 16;
+      }
+      catch (ArrayIndexOutOfBoundsException e){ println("8 Channel");}
+    }
   }
   return currentTableRowIndex;
 }
