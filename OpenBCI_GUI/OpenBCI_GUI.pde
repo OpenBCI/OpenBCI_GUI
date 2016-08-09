@@ -187,6 +187,8 @@ boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
 
+int indices = 0;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

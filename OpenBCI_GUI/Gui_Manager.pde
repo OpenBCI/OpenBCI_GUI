@@ -140,6 +140,7 @@ class GUI_Manager {
 
   public final static String stopButton_pressToStop_txt = "Stop Data Stream";
   public final static String stopButton_pressToStart_txt = "Start Data Stream";
+  PlaybackScrollbar scrollbar;
 
   GUI_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float default_yScale_uV,
     String filterDescription, float smooth_fac) {
@@ -248,6 +249,8 @@ class GUI_Manager {
     axisHead_relPos[3] = available_top2bot*up_down_split  - gutter_topbot;
     headPlot1 = new HeadPlot(axisHead_relPos[0],axisHead_relPos[1],axisHead_relPos[2],axisHead_relPos[3],win_x,win_y,nchan);
     setSmoothFac(smooth_fac);
+    
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE) scrollbar = new PlaybackScrollbar(10,height/20  * 19, width/2 - 20,16,indices);
 
     //setup the buttons
     int w,h,x,y;
@@ -839,8 +842,11 @@ class GUI_Manager {
         }
       }
 
-      if(eegDataSource == DATASOURCE_PLAYBACKFILE) ; //draw playblack slider
-
+      
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE){
+      scrollbar.update();
+      scrollbar.display();
+    }
 
     } else {
       //show the spectrogram
@@ -982,128 +988,94 @@ class GUI_Manager {
 };
 
 //============= PLAYBACKSLIDER =============
-class PlaybackSlider {
-  //Fields
-  int lx, ly;
-  int boxx, boxy;
-  int stretch;
-  int wid;
-  int len;
-  boolean over;
-  boolean press;
-  boolean locked = false;
-  boolean otherslocked = false;
-  boolean drawHand;
-  color current_color = color(255,255,255);
+class PlaybackScrollbar {
+  int swidth, sheight;    // width and height of bar
+  float xpos, ypos;       // x and y position of bar
+  float spos, newspos;    // x position of slider
+  float sposMin, sposMax; // max and min values of slider
+  boolean over;           // is the mouse over the slider?
+  boolean locked;
+  float ratio;
+  int num_indices;
 
-  //Constructor
-  PlaybackSlider(int ix, int iy, int il, int iwid, int ilen) {
-    lx = ix;
-    ly = iy;
-    stretch = il;
-    wid = iwid;
-    len = ilen;
-    boxx = lx - wid/2;
-    boxy = ly-stretch - len/2;
+  PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
+    swidth = sw;
+    sheight = sh;
+    int widthtoheight = sw - sh;
+    ratio = (float)sw / (float)widthtoheight;
+    xpos = xp;
+    ypos = yp-sheight/2;
+    spos = xpos;
+    newspos = spos;
+    sposMin = xpos;
+    sposMax = xpos + swidth - sheight/2;
+    num_indices = is;
   }
 
-  //Called whenever thresholds are dragged
   void update() {
-    boxx = lx - wid/2;
-    boxy = ly - stretch;
-
-    //for (int i=0; i<others.length; i++) {
-    //  if (others[i].locked == true) {
-    //    otherslocked = true;
-    //    break;
-    //  } else {
-    //    otherslocked = false;
-    //  }
-    //}
-
-    if (otherslocked == false) {
-      overEvent();
-      pressEvent();
-    }
-
-    if (press) {
-      //Some of this may need to be refactored in order to support window resizing.
-      //if(trip) stretch = lock(ly -mouseY, int(parent.untripThreshold * (50 - len)), 50 - len);
-      //else stretch = lock(ly -mouseY, 0, int(parent.tripThreshold * (50- len)));
-
-    }
-  }
-
-  //Checks if mouse is here
-  void overEvent() {
-    if (overRect(boxx, boxy, wid, len)) {
+    if (overEvent()) {
       over = true;
     } else {
       over = false;
     }
-  }
-
-  //Checks if mouse is pressed
-  void pressEvent() {
-    if (over && mousePressed || locked) {
-      press = true;
+    if (mousePressed && over) {
       locked = true;
-    } else {
-      press = false;
+    }
+    if (!mousePressed) {
+      locked = false;
+    }
+    if (locked) {
+      newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
+    }
+    if (abs(newspos - spos) > 1) {
+      spos = spos + (newspos-spos);
     }
   }
 
-  //Mouse was released
-  void releaseEvent() {
-    locked = false;
+  float constrain(float val, float minv, float maxv) {
+    return min(max(val, minv), maxv);
   }
 
-  //Color selector and cursor setter
-  void setColor(){
-    if(over) {
-      current_color = color(127,134,143);
-      if(!drawHand){
-        cursor(HAND);
-        drawHand = true;
-      }
-    }
-    else {
-      color(0,255,0);
-      if(drawHand){
-        cursor(ARROW);
-        drawHand = false;
-      }
-    }
-  }
-
-  //Helper function to make setting default threshold values easier.
-  //Expects a float as input (0.25 is 25%)
-  void setStretchPercentage(float val){
-    stretch = lock(int((50 - len) * val), 0, 50 - len);
-  }
-
-  //Displays the thresholds
-  void display() {
-    fill(255);
-    strokeWeight(0);
-    stroke(255);
-    setColor();
-    fill(current_color);
-    rect(boxx, boxy, wid, len);
-  }
-
-  //Check if the mouse is here
-  boolean overRect(int lx, int ly, int lwidth, int lheight) {
-    if (mouseX >= lx && mouseX <= lx+lwidth &&
-        mouseY >= ly && mouseY <= ly+lheight) {
+  boolean overEvent() {
+    if (mouseX > xpos && mouseX < xpos+swidth &&
+       mouseY > ypos && mouseY < ypos+sheight) {
+      cursor(HAND);
       return true;
     } else {
+      cursor(ARROW);
       return false;
     }
   }
 
-  //Locks the threshold in place
-  int lock(int val, int minv, int maxv) {
-    return  min(max(val, minv), maxv);
+  int get_index(){
+    
+    float seperate_val = sposMax / num_indices;
+    
+    int index;
+    
+    for(index = 0; index < num_indices + 1; index++){
+      if(getPos() >= seperate_val * index && getPos() <= seperate_val * (index +1) ) return index; 
+      else if(index == num_indices && getPos() >= seperate_val * index) return num_indices;
+    }
+    
+    return -1;
+  }
+
+  void display() {
+    noStroke();
+    fill(204);
+    rect(xpos, ypos, swidth, sheight);
+    if (over || locked) {
+      fill(0, 0, 0);
+    } else {
+      fill(102, 102, 102);
+    }
+    rect(spos, ypos, sheight/2, sheight);
+  }
+
+  float getPos() {
+    // Convert spos to be values between
+    // 0 and the total width of the scrollbar
+    return spos * ratio;
   }
 }

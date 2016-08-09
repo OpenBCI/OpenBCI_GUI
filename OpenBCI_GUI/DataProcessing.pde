@@ -26,6 +26,7 @@ void process_input_file() throws Exception{
         //scale the data into engineering units..."microvolts"
         localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
       }
+      indices++;
     }
   }
   catch (Exception e){throw new Exception();}
