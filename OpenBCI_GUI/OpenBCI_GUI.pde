@@ -1,4 +1,4 @@
- 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
@@ -27,7 +27,9 @@ import java.awt.event.*; //to allow for event listener on screen resize
 import netP5.*; //for OSC networking
 import oscP5.*; //for OSC networking
 import hypermedia.net.*; //for UDP networking
+import processing.net.*; // For TCP networking
 import grafica.*;
+import java.lang.reflect.*; // For callbacks
 
 
 //import java.awt.*;
@@ -50,8 +52,8 @@ import java.awt.MouseInfo;
 //import processing.opengl.GLWindow;
 //import com.sun.javafx.newt.opengl.GLWindow;
 //import Graphics.Rendering.OpenGL;
-//import java.awt.Graphics.UI.GLWindow;      
-//import qualified Graphics.UI.GLWindow as Window;   
+//import java.awt.Graphics.UI.GLWindow;
+//import qualified Graphics.UI.GLWindow as Window;
 //import com.sun.javafx.newt.opengl.GLWindow;
 
 
@@ -66,7 +68,7 @@ boolean hasIntroAnimation = false;
 PImage cog;
 
 //choose where to get the EEG data
-final int DATASOURCE_NORMAL = 3;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
+final int DATASOURCE_GANGLION = 3;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
 final int DATASOURCE_PLAYBACKFILE = 1;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 2;  //Synthetically generated data
 final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -84,6 +86,9 @@ int nextPlayback_millis = -100; //any negative number
 OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
+
+OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
+String ganglion_portName = "N/A";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from openBCI...first EEG channels, then aux channels
@@ -113,8 +118,8 @@ long timeOfInit;
 long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
-//final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received 
-final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received 
+//final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
+final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
 
 //define some data fields for handling data here in processing
 float dataBuffX[];  //define the size later
@@ -245,6 +250,8 @@ void setup() {
   }
   );
 
+  ganglion = new OpenBCI_Ganglion(this);
+
   //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
   helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
@@ -266,11 +273,11 @@ void setup() {
   cog = loadImage("cog_1024x1024.png");
 
   playground = new Playground(navBarHeight);
-  
+
 
   accelWidget = new Accelerometer_Widget(navBarHeight);
   accelWidget.initPlayground(openBCI);
-  
+
   pulseWidget = new PulseSensor_Widget(navBarHeight);
   pulseWidget.initPlayground(openBCI);
   //attempt to open a serial port for "output"
@@ -304,6 +311,15 @@ void draw() {
 //====================== END-OF-DRAW ==========================//
 //====================== END-OF-DRAW ==========================//
 
+void tcpEvent(String msg) {
+  // println("GanglionSync: udpEvent " + msg);
+  if (ganglion.parseMessage(msg)) {
+    // Refresh the BLE list
+    controlPanel.bleBox.refreshBLEList();
+  }
+
+}
+
 int pointCounter = 0;
 int prevBytes = 0;
 int prevMillis = millis();
@@ -318,7 +334,7 @@ void initSystem() {
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
-  dataBuffX = new float[(int)(dataBuff_len_sec * openBCI.get_fs_Hz())];
+  dataBuffX = new float[(int)(dataBuff_len_sec * get_fs_Hz_safe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
   //data_std_uV = new float[nchan];
@@ -330,8 +346,8 @@ void initSystem() {
     // dataPacketBuff[i] = new DataPacket_ADS1299(OpenBCI_Nchannels+n_aux_ifEnabled);
     dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
   }
-  dataProcessing = new DataProcessing(nchan, openBCI.get_fs_Hz());
-  dataProcessing_user = new DataProcessing_User(nchan, openBCI.get_fs_Hz());
+  dataProcessing = new DataProcessing(nchan, get_fs_Hz_safe());
+  dataProcessing_user = new DataProcessing_User(nchan, get_fs_Hz_safe());
 
 
 
@@ -356,9 +372,7 @@ void initSystem() {
 
   //prepare the source of the input data
   switch (eegDataSource) {
-  case DATASOURCE_NORMAL:
   case DATASOURCE_NORMAL_W_AUX:
-
     // int nDataValuesPerPacket = OpenBCI_Nchannels;
     int nEEDataValuesPerPacket = nchan;
     boolean useAux = false;
@@ -385,6 +399,9 @@ void initSystem() {
     //removing first column of data from data file...the first column is a time index and not eeg data
     playbackData_table.removeColumn(0);
     break;
+  case DATASOURCE_GANGLION:
+    ganglion.connectBLE(ganglion_portName);
+    break;
   default:
   }
 
@@ -399,16 +416,29 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 --");
 
   //open data file
-  if ((eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX)) openNewLogFile(fileName);  //open a new log file
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) openNewLogFile(fileName);  //open a new log file
+  if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
 
   nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
 
-  if (eegDataSource != DATASOURCE_NORMAL && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
     systemMode = 10; //tell system it's ok to leave control panel and start interfacing GUI
   }
   //sync GUI default settings with OpenBCI's default settings...
   // openBCI.syncWithHardware(); //this starts the sequence off ... read in OpenBCI_ADS1299 iterates through the rest based on the ASCII trigger "$$$"
   // verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 [COMPLETE] --");
+}
+
+/**
+ * @description Useful function to get the correct sample rate based on data source
+ * @returns `float` - The frequency / sample rate of the data source
+ */
+float get_fs_Hz_safe() {
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    return ganglion.get_fs_Hz();
+  } else {
+    return openBCI.get_fs_Hz();
+  }
 }
 
 //halt the data collection
@@ -429,9 +459,12 @@ void haltSystem() {
 
   // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
 
-  if ((eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX)) {
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
     closeLogFile();  //close log file
     openBCI.closeSDandSerialPort();
+  }
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    println("closed ganglion file");
   }
   systemMode = 0;
 }
@@ -564,7 +597,6 @@ void systemDraw() { //for drawing to the screen
 
       //update the title of the figure;
       switch (eegDataSource) {
-      case DATASOURCE_NORMAL:
       case DATASOURCE_NORMAL_W_AUX:
         surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput.getRowsWritten())/openBCI.get_fs_Hz()) + " secs Saved, Writing to " + output_fname);
         break;
@@ -573,6 +605,9 @@ void systemDraw() { //for drawing to the screen
         break;
       case DATASOURCE_PLAYBACKFILE:
         surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/openBCI.get_fs_Hz()) + " of " + int(float(playbackData_table.getRowCount())/openBCI.get_fs_Hz()) + " secs, Reading from: " + playbackData_fname);
+        break;
+      case DATASOURCE_GANGLION:
+        surface.setTitle(int(frameRate) + " fps, Ganglion!");
         break;
       }
     }
@@ -699,19 +734,19 @@ void mouseOutOfBounds() {
     //if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
     //  println("mouseX " + mouseX);
     //  println("mouseY " + mouseY);
-    //  println("true X " + MouseInfo.getPointerInfo().getLocation().x); 
+    //  println("true X " + MouseInfo.getPointerInfo().getLocation().x);
     //  println("true Y " + MouseInfo.getPointerInfo().getLocation().y);
-    //  println("Window X " + loc.x); 
+    //  println("Window X " + loc.x);
     //  println("Window Y " + loc.y);
     //  println();
-    //} 
-    if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX || 
+    //}
+    if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
       MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
       MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
       MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
       mouseX = 0;
       mouseY = 0;
-      println("Mouse out of bounds!");
+      // println("Mouse out of bounds!");
       mouseInFrame = false;
     }
   } else {
@@ -721,7 +756,7 @@ void mouseOutOfBounds() {
       appletOriginY = (int)loc.y;
       windowOriginSet = true;
       mouseInFrame = true;
-      println("WINDOW ORIGIN SET!");
+      // println("WINDOW ORIGIN SET!");
     }
   }
 }

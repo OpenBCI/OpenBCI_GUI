@@ -57,6 +57,8 @@ MenuList sourceList;
 MenuList serialList;
 String[] serialPorts = new String[Serial.list().length];
 
+MenuList bleList;
+
 MenuList sdTimes;
 
 MenuList channelList;
@@ -74,6 +76,7 @@ int networkType = 0;
 
 
 Button refreshPort;
+Button refreshBLE;
 Button autoconnect;
 Button initSystemButton;
 Button autoFileName;
@@ -133,11 +136,17 @@ public void controlEvent(ControlEvent theEvent) {
     output("OpenBCI Port Name = " + openBCI_portName);
   }
 
+  if (theEvent.isFrom("bleList")) {
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    ganglion_portName = (String)bob.get("headline");
+    output("Ganglion Device Name = " + ganglion_portName);
+  }
+
   if (theEvent.isFrom("sdTimes")) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     sdSettingString = (String)bob.get("headline");
     sdSetting = int(theEvent.getValue());
-    if (sdSetting != 0) {  
+    if (sdSetting != 0) {
       output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
     } else {
       output("OpenBCI microSD Setting = " + sdSettingString);
@@ -158,12 +167,12 @@ public void controlEvent(ControlEvent theEvent) {
       networkType = 3;
     }
   }
-  
+
   if (theEvent.isFrom("channelList")){
     int setChannelInt = int(theEvent.getValue()) + 1;
     //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
-    channelPopup.setClicked(false);   
+    cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+    channelPopup.setClicked(false);
     if(setChannel.wasPressed){
       set_channel(rcBox,setChannelInt);
       setChannel.wasPressed = false;
@@ -173,14 +182,14 @@ public void controlEvent(ControlEvent theEvent) {
       ovrChannel.wasPressed = false;
     }
     println("still goin off");
-    
+
   }
-  
+
   if (theEvent.isFrom("pollList")){
     int setChannelInt = int(theEvent.getValue());
     //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    cp5Popup.get(MenuList.class, "pollList").setVisible(false); 
-    channelPopup.setClicked(false);   
+    cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+    channelPopup.setClicked(false);
     set_poll(rcBox,setChannelInt);
     setPoll.wasPressed = false;
   }
@@ -213,7 +222,8 @@ class ControlPanel {
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
   NetworkingBox networkingBoxPlayback;
-  
+
+  BLEBox bleBox;
 
   SDBox sdBox;
 
@@ -227,10 +237,10 @@ class ControlPanel {
   ControlPanel(OpenBCI_GUI mainClass) {
 
     x = 2;
-    y = 2 + controlPanelCollapser.but_dy;		
+    y = 2 + controlPanelCollapser.but_dy;
     w = controlPanelCollapser.but_dx;
     h = height - int(helpWidget.h);
-    
+
     if(hasIntroAnimation){
       isOpen = false;
     } else {
@@ -246,10 +256,10 @@ class ControlPanel {
     globalPadding = 10;  //controls the padding of all elements on the control panel
     globalBorder = 0;   //controls the border of all elements in the control panel ... using processing's stroke() instead
 
-    cp5 = new ControlP5(mainClass); 
+    cp5 = new ControlP5(mainClass);
     cp5Popup = new ControlP5(mainClass);
 
-    //boxes active when eegDataSource = Normal (OpenBCI) 
+    //boxes active when eegDataSource = Normal (OpenBCI)
     dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
     serialBox = new SerialBox(x + w, dataSourceBox.y, w, h, globalPadding);
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
@@ -259,7 +269,7 @@ class ControlPanel {
     udpOptionsBox = new UDPOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
     oscOptionsBox = new OSCOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
     lslOptionsBox = new LSLOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
-    
+
     //boxes active when eegDataSource = Playback
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
@@ -268,8 +278,12 @@ class ControlPanel {
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
     pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
-    
+
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
+
+    // Ganglion
+    bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
+
   }
 
   public void update() {
@@ -289,6 +303,7 @@ class ControlPanel {
     //update all boxes if they need to be
     dataSourceBox.update();
     serialBox.update();
+    bleBox.update();
     dataLogBox.update();
     channelCountBox.update();
     sdBox.update();
@@ -299,6 +314,7 @@ class ControlPanel {
 
     channelPopup.update();
     serialList.updateMenu();
+    bleList.updateMenu();
 
     //SD File Conversion
     while (convertingSD == true) {
@@ -345,10 +361,8 @@ class ControlPanel {
         channelCountBox.draw();
         sdBox.draw();
         networkingBoxLive.draw();
-        if(rcBox.isShowing){ 
-          
+        if(rcBox.isShowing){
           rcBox.draw();
-          
           if(channelPopup.wasClicked()){
             channelPopup.draw();
             cp5Popup.get(MenuList.class, "channelList").setVisible(true);
@@ -365,10 +379,10 @@ class ControlPanel {
             cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
             cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
           }
-          
         }
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+        cp5.get(MenuList.class, "bleList").setVisible(false); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         cp5.get(MenuList.class, "networkList").setVisible(true); //make sure the SD time record options menulist is visible
         if (networkType == -1){
@@ -379,7 +393,7 @@ class ControlPanel {
           cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
           cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
           cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-        }else if (networkType == 0){
+        } else if (networkType == 0){
           cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
           cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
           cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
@@ -417,7 +431,7 @@ class ControlPanel {
           cp5.get(Textfield.class, "lsl_aux").setVisible(true); //make sure the SD time record options menulist is visible
           lslOptionsBox.draw();
         }
-    
+
       } else if (eegDataSource == 1) { //when data source is from playback file
         playbackFileBox.draw();
         sdConverterBox.draw();
@@ -436,44 +450,26 @@ class ControlPanel {
         cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
 
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
+        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else if (eegDataSource == 2) {
-        //make sure serial list is visible
         //set other CP5 controllers invisible
-        cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
-        cp5.get(MenuList.class, "serialList").setVisible(false);
-        cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "networkList").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+        hideAllBoxes();
+      } else if (eegDataSource == DATASOURCE_GANGLION) {
+        hideAllBoxes();
+
+        bleBox.draw();
+        cp5.get(MenuList.class, "bleList").setVisible(true); //make sure the bleList menulist is visible
+
+
       } else {
         //set other CP5 controllers invisible
-        cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
-        cp5.get(MenuList.class, "serialList").setVisible(false);
-        cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "networkList").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+        hideAllBoxes();
       }
     } else {
       cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
       cp5Popup.setVisible(false);
-      cp5Serial.setVisible(false);  
+      cp5Serial.setVisible(false);
     }
 
     //draw the box that tells you to stop the system in order to edit control settings
@@ -492,6 +488,24 @@ class ControlPanel {
     }
   }
 
+  public void hideAllBoxes() {
+    //set other CP5 controllers invisible
+    cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+    cp5.get(MenuList.class, "serialList").setVisible(false);
+    cp5.get(MenuList.class, "bleList").setVisible(false);
+    cp5.get(MenuList.class, "sdTimes").setVisible(false);
+    cp5.get(MenuList.class, "networkList").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+    cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+    cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+  }
+
   //mouse pressed in control panel
   public void CPmousePressed() {
     verbosePrint("CPmousePressed");
@@ -503,16 +517,19 @@ class ControlPanel {
 
     //only able to click buttons of control panel when system is not running
     if (systemMode != 10) {
-      if(autoconnect.isMouseHere()){
-        autoconnect.setIsActive(true);
-        autoconnect.wasPressed = true;
-      }
-      //active buttons during DATASOURCE_NORMAL
-      if (eegDataSource == 0) {
+
+      //active buttons during DATASOURCE_NORMAL_W_AUX
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        if(autoconnect.isMouseHere()){
+          autoconnect.setIsActive(true);
+          autoconnect.wasPressed = true;
+        }
+
         if (popOut.isMouseHere()){
           popOut.setIsActive(true);
           popOut.wasPressed = true;
         }
+
         if (refreshPort.isMouseHere()) {
           refreshPort.setIsActive(true);
           refreshPort.wasPressed = true;
@@ -536,63 +553,63 @@ class ControlPanel {
           chanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
           chanButton16.color_notPressed = isSelected_color;
         }
-        
+
         if (getChannel.isMouseHere()){
           getChannel.setIsActive(true);
           getChannel.wasPressed = true;
         }
-        
+
         if (setChannel.isMouseHere()){
           setChannel.setIsActive(true);
           setChannel.wasPressed = true;
         }
-        
+
         if (ovrChannel.isMouseHere()){
           ovrChannel.setIsActive(true);
           ovrChannel.wasPressed = true;
         }
-        
+
         if (getPoll.isMouseHere()){
           getPoll.setIsActive(true);
           getPoll.wasPressed = true;
         }
-        
+
         if (setPoll.isMouseHere()){
           setPoll.setIsActive(true);
           setPoll.wasPressed = true;
         }
-        
+
         if (defaultBAUD.isMouseHere()){
           defaultBAUD.setIsActive(true);
           defaultBAUD.wasPressed = true;
         }
-        
+
         if (highBAUD.isMouseHere()){
           highBAUD.setIsActive(true);
           highBAUD.wasPressed = true;
         }
-        
+
         if (autoscan.isMouseHere()){
           autoscan.setIsActive(true);
           autoscan.wasPressed = true;
         }
-        
+
         if (autoconnectNoStartDefault.isMouseHere()){
           autoconnectNoStartDefault.setIsActive(true);
           autoconnectNoStartDefault.wasPressed = true;
         }
-        
+
         if (autoconnectNoStartHigh.isMouseHere()){
           autoconnectNoStartHigh.setIsActive(true);
           autoconnectNoStartHigh.wasPressed = true;
         }
-        
-       
+
+
         if (systemStatus.isMouseHere()){
           systemStatus.setIsActive(true);
           systemStatus.wasPressed = true;
         }
-        
+
       }
 
       //active buttons during DATASOURCE_PLAYBACKFILE
@@ -607,6 +624,16 @@ class ControlPanel {
           selectSDFile.wasPressed = true;
         }
       }
+
+      if (eegDataSource == DATASOURCE_GANGLION) {
+        // This is where we check for button presses if we are searching for BLE devices
+
+        if (refreshBLE.isMouseHere()) {
+          refreshBLE.setIsActive(true);
+          refreshBLE.wasPressed = true;
+        }
+
+      }
     }
     // output("Text File Name: " + cp5.get(Textfield.class,"fileName").getText());
   }
@@ -617,9 +644,9 @@ class ControlPanel {
     if(popOut.isMouseHere() && popOut.wasPressed){
       popOut.wasPressed = false;
       popOut.setIsActive(false);
-      if(rcBox.isShowing){ 
+      if(rcBox.isShowing){
         rcBox.isShowing = false;
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
+        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
         popOut.setString(">");
       }
       else{
@@ -627,53 +654,53 @@ class ControlPanel {
         popOut.setString("<");
       }
     }
-    
+
     if(getChannel.isMouseHere() && getChannel.wasPressed){
       if(board != null) get_channel( rcBox);
-      
+
       getChannel.wasPressed=false;
       getChannel.setIsActive(false);
     }
-    
+
     if (setChannel.isMouseHere() && setChannel.wasPressed){
       channelPopup.setClicked(true);
       pollPopup.setClicked(false);
       setChannel.setIsActive(false);
     }
-    
+
     if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
       channelPopup.setClicked(true);
       pollPopup.setClicked(false);
       ovrChannel.setIsActive(false);
     }
-    
-    
+
+
     if (getPoll.isMouseHere() && getPoll.wasPressed){
       get_poll(rcBox);
       getPoll.setIsActive(false);
       getPoll.wasPressed = false;
     }
-    
+
     if (setPoll.isMouseHere() && setPoll.wasPressed){
       pollPopup.setClicked(true);
       channelPopup.setClicked(false);
       setPoll.setIsActive(false);
     }
-    
+
     if (defaultBAUD.isMouseHere() && defaultBAUD.wasPressed){
       set_baud_default(rcBox,openBCI_portName);
       defaultBAUD.setIsActive(false);
       defaultBAUD.wasPressed=false;
     }
-    
+
     if (highBAUD.isMouseHere() && highBAUD.wasPressed){
       set_baud_high(rcBox,openBCI_portName);
       highBAUD.setIsActive(false);
       highBAUD.wasPressed=false;
     }
-    
+
     if(autoconnectNoStartDefault.isMouseHere() && autoconnectNoStartDefault.wasPressed){
-      
+
       if(board == null){
         try{
           board = autoconnect_return_default();
@@ -682,54 +709,54 @@ class ControlPanel {
         catch (Exception e){
           rcBox.print_onscreen("Error connecting to board...");
         }
-        
-        
+
+
       }
      else rcBox.print_onscreen("Board already connected!");
       autoconnectNoStartDefault.setIsActive(false);
       autoconnectNoStartDefault.wasPressed = false;
     }
-    
+
     if(autoconnectNoStartHigh.isMouseHere() && autoconnectNoStartHigh.wasPressed){
-      
+
       if(board == null){
-        
+
         try{
-          
+
           board = autoconnect_return_high();
           rcBox.print_onscreen("Successfully connected to board");
         }
         catch (Exception e2){
           rcBox.print_onscreen("Error connecting to board...");
         }
-         
+
       }
      else rcBox.print_onscreen("Board already connected!");
       autoconnectNoStartHigh.setIsActive(false);
       autoconnectNoStartHigh.wasPressed = false;
     }
-    
+
     if(autoscan.isMouseHere() && autoscan.wasPressed){
       autoscan.wasPressed = false;
       autoscan.setIsActive(false);
       scan_channels(rcBox);
-      
+
     }
-    
+
     if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
       autoconnect();
       system_init();
       autoconnect.wasPressed = false;
       autoconnect.setIsActive(false);
     }
-    
+
     if(systemStatus.isMouseHere() && systemStatus.wasPressed){
       system_status(rcBox);
       systemStatus.setIsActive(false);
       systemStatus.wasPressed = false;
     }
-    
-    
+
+
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
       if(board != null) board.stop();
       //if system is not active ... initate system and flip button state
@@ -748,6 +775,12 @@ class ControlPanel {
         serialList.addItem(makeItem(tempPort));
       }
       serialList.updateMenu();
+    }
+
+    //open or close serial port if serial port button is pressed (left button in serial widget)
+    if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
+      output("BLE Devices Refreshing");
+      ganglion.getBLEDevices();
     }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
@@ -786,6 +819,8 @@ class ControlPanel {
     //reset all buttons to false
     refreshPort.setIsActive(false);
     refreshPort.wasPressed = false;
+    refreshBLE.setIsActive(false);
+    refreshBLE.wasPressed = false;
     initSystemButton.setIsActive(false);
     initSystemButton.wasPressed = false;
     autoFileName.setIsActive(false);
@@ -804,7 +839,7 @@ class ControlPanel {
 public void system_init(){
   if (initSystemButton.but_txt == "START SYSTEM") {
 
-      if ((eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
         output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
@@ -814,19 +849,37 @@ public void system_init(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
+      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion_portName == "N/A") {
+        output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
       } else if (eegDataSource == -1) {//if no data source selected
         output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      } else { //otherwise, initiate system!  
+      } else { //otherwise, initiate system!
         //verbosePrint("ControlPanel: CPmouseReleased: init");
         initSystemButton.setString("STOP SYSTEM");
         //global steps to START SYSTEM
         // prepare the serial port
-        verbosePrint("ControlPanel — port is open: " + openBCI.isSerialPortOpen());
-        if (openBCI.isSerialPortOpen() == true) {
-          openBCI.closeSerialPort();
+        if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+          verbosePrint("ControlPanel — port is open: " + openBCI.isSerialPortOpen());
+          if (openBCI.isSerialPortOpen() == true) {
+            openBCI.closeSerialPort();
+          }
+        } else { // Must be Ganglion
+          nchan = 4;
+          fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+          yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
+          output("channel count set to " + str(nchan));
+          updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
+
+          println("ControlPanel — port is open: " + ganglion.isPortOpen());
+          if (ganglion.isPortOpen()) {
+            ganglion.disconnectBLE();
+          }
         }
 
         if (networkType == 1){
@@ -846,7 +899,7 @@ public void system_init(){
           }
 
 
-        fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles 
+        fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
         initSystem();
       }
     }
@@ -870,6 +923,10 @@ public void set_channel_popup(){;
 
 class DataSourceBox {
   int x, y, w, h, padding; //size and position
+  int numItems = 4;
+  int boxHeight = 24;
+  int spacing = 43;
+
 
   CheckBox sourceCheckBox;
 
@@ -877,16 +934,17 @@ class DataSourceBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 115;
+    h = spacing + (numItems * boxHeight);
     padding = _padding;
 
-    sourceList = new MenuList(cp5, "sourceList", w - padding*2, 72, f2);
+    sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, f2);
     // sourceList.itemHeight = 28;
     // sourceList.padding = 9;
     sourceList.setPosition(x + padding, y + padding*2 + 13);
     sourceList.addItem(makeItem("LIVE (from OpenBCI)                   >"));
     sourceList.addItem(makeItem("PLAYBACK (from file)                  >"));
     sourceList.addItem(makeItem("SYNTHETIC (algorithmic)           >"));
+    sourceList.addItem(makeItem("LIVE (from Ganglion)                   >"));
     sourceList.scrollerLength = 10;
   }
 
@@ -929,7 +987,7 @@ class SerialBox {
     popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
-    println(w-padding*2);
+    // println(w-padding*2);
     serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {
@@ -961,6 +1019,58 @@ class SerialBox {
   }
 
   public void refreshSerialList() {
+  }
+};
+
+class BLEBox {
+  int x, y, w, h, padding; //size and position
+  //connect/disconnect button
+  //Refresh list button
+  //String port status;
+
+  BLEBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 171 - 24 + _padding;
+    padding = _padding;
+
+    refreshBLE = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    bleList = new MenuList(cp5, "bleList", w - padding * 2, 84, f2);
+    // println(w-padding*2);
+    bleList.setPosition(x + padding, y + padding * 3);
+    // Call to update the list
+    // ganglion.getBLEDevices();
+
+  }
+
+  public void update() {
+    // Quick check to see if there are just more or less devices in general
+
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(f1);
+    textAlign(LEFT, TOP);
+    text("BLE DEVICES", x + padding, y + padding);
+    popStyle();
+
+    refreshBLE.draw();
+  }
+
+  public void refreshBLEList() {
+    bleList.items.clear();
+    for (int i = 0; i < ganglion.deviceList.length; i++) {
+      String tempPort = ganglion.deviceList[i];
+      bleList.addItem(makeItem(tempPort));
+    }
+    bleList.updateMenu();
   }
 };
 
@@ -998,10 +1108,10 @@ class DataLogBox {
       .setColorValueLabel(color(0, 0, 0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26, 26, 26)) 
+      .setColorCursor(color(26, 26, 26))
       .setText(getDateString())
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setAutoClear(true);
 
     //clear text field on double click
@@ -1127,7 +1237,7 @@ class SDBox {
     sdTimes.addItem(makeItem("4 hour maximum"));
     sdTimes.addItem(makeItem("12 hour maximum"));
     sdTimes.addItem(makeItem("24 hour maximum"));
-    
+
     sdTimes.activeItem = sdSetting; //added to indicate default choice (sdSetting is in OpenBCI_GUI)
   }
 
@@ -1145,7 +1255,7 @@ class SDBox {
     textAlign(LEFT, TOP);
     text("WRITE TO SD (Y/N)?", x + padding, y + padding);
     popStyle();
-  
+
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
 
   }
@@ -1192,7 +1302,7 @@ class NetworkingBox{
     popStyle();
   }
 };
-  
+
 
 class RadioConfigBox {
   int x, y, w, h, padding; //size and position
@@ -1213,14 +1323,14 @@ class RadioConfigBox {
     ovrChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE CHAN", fontInfo.buttonLabel_size);
     getPoll = new Button(x + padding + (w-padding*2)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET POLL", fontInfo.buttonLabel_size);
     setPoll = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "SET POLL", fontInfo.buttonLabel_size);
-    defaultBAUD = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "DEFAULT BAUD", fontInfo.buttonLabel_size);    
+    defaultBAUD = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "DEFAULT BAUD", fontInfo.buttonLabel_size);
     highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
     autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "AUTOSCAN CHANS", fontInfo.buttonLabel_size);
     autoconnectNoStartDefault = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2 , 24, "CONNECT 115200", fontInfo.buttonLabel_size);
     systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "STATUS", fontInfo.buttonLabel_size);
     autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
 
-    
+
   }
   public void update() {
   }
@@ -1248,11 +1358,11 @@ class RadioConfigBox {
     autoconnectNoStartHigh.draw();
     systemStatus.draw();
     this.print_onscreen(last_message);
-  
+
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
 
   }
-  
+
   public void print_onscreen(String localstring){
     textAlign(LEFT);
     fill(0);
@@ -1261,9 +1371,9 @@ class RadioConfigBox {
     text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*6) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     this.last_message = localstring;
   }
-  
+
   public void print_lastmessage(){
-  
+
     fill(0);
     rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
     fill(255);
@@ -1275,14 +1385,14 @@ class RadioConfigBox {
 
 class UDPOptionsBox {
   int x, y, w, h, padding; //size and position
-  
+
   UDPOptionsBox(int _x, int _y, int _w, int _h, int _padding){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
-    
+
     cp5.addTextfield("udp_ip")
       .setPosition(x + 60,y + 50)
       .setCaptionLabel("")
@@ -1294,10 +1404,10 @@ class UDPOptionsBox {
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("localhost")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1313,10 +1423,10 @@ class UDPOptionsBox {
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("12345")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1351,14 +1461,14 @@ class UDPOptionsBox {
 
 class OSCOptionsBox{
   int x, y, w, h, padding; //size and position
-  
+
   OSCOptionsBox(int _x, int _y, int _w, int _h, int _padding){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
-    
+
     cp5.addTextfield("osc_ip")
       .setPosition(x + 80,y + 35)
       .setCaptionLabel("")
@@ -1370,10 +1480,10 @@ class OSCOptionsBox{
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("localhost")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1388,10 +1498,10 @@ class OSCOptionsBox{
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("12345")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1406,10 +1516,10 @@ class OSCOptionsBox{
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("/openbci")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1445,14 +1555,14 @@ class OSCOptionsBox{
 
 class LSLOptionsBox {
   int x, y, w, h, padding; //size and position
-  
+
   LSLOptionsBox(int _x, int _y, int _w, int _h, int _padding){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
-    
+
     cp5.addTextfield("lsl_data")
       .setPosition(x + 115,y + 50)
       .setCaptionLabel("")
@@ -1464,10 +1574,10 @@ class LSLOptionsBox {
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("openbci_data")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1483,10 +1593,10 @@ class LSLOptionsBox {
       .setColorValueLabel(color(0,0,0))  // text color
       .setColorForeground(isSelected_color)  // border color when not selected
       .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
+      .setColorCursor(color(26,26,26))
       .setText("openbci_aux")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
       .setVisible(false)
       .setAutoClear(true)
       ;
@@ -1569,7 +1679,7 @@ class ChannelPopup {
 
     channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, f2);
     channelList.setPosition(x+padding, y+padding*3);
-    
+
     for (int i = 1; i < 26; i++) {
       channelList.addItem(makeItem(String.valueOf(i)));
     }
@@ -1595,9 +1705,9 @@ class ChannelPopup {
     refreshPort.draw();
     autoconnect.draw();
   }
-  
+
   public void setClicked(boolean click){this.clicked = click; }
-  
+
   public boolean wasClicked(){return this.clicked;}
 
 };
@@ -1620,7 +1730,7 @@ class PollPopup {
 
     pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, f2);
     pollList.setPosition(x+padding, y+padding*3);
-    
+
     for (int i = 0; i < 256; i++) {
       pollList.addItem(makeItem(String.valueOf(i)));
     }
@@ -1646,9 +1756,9 @@ class PollPopup {
     refreshPort.draw();
     autoconnect.draw();
   }
-  
+
   public void setClicked(boolean click){this.clicked = click; }
-  
+
   public boolean wasClicked(){return this.clicked;}
 
 };
@@ -1730,7 +1840,7 @@ public class MenuList extends controlP5.Controller {
   boolean drawHand;
   int hoverItem = -1;
   int activeItem = -1;
-  PFont menuFont = f2; 
+  PFont menuFont = f2;
   int padding = 7;
 
 
@@ -1766,7 +1876,7 @@ public class MenuList extends controlP5.Controller {
             menu.rect(getWidth()-scrollerWidth-2, ty, scrollerWidth, scrollerLength );
           }
           menu.endDraw();
-        } 
+        }
         else {
           if(drawHand){
             drawHand = false;
@@ -1793,12 +1903,12 @@ public class MenuList extends controlP5.Controller {
     menu.pushMatrix();
     menu.translate( 0, pos );
     menu.pushMatrix();
-    
+
     int i0;
     if((itemHeight * items.size()) != 0){
       i0 = PApplet.max( 0, int(map(-pos, 0, itemHeight * items.size(), 0, items.size())));
     } else{
-      i0 = 0; 
+      i0 = 0;
     }
     int range = ceil((float(getHeight())/float(itemHeight))+1);
     int i1 = PApplet.min( items.size(), i0 + range );
@@ -1831,7 +1941,7 @@ public class MenuList extends controlP5.Controller {
     updateMenu = abs(npos-pos)>0.01 ? true:false;
   }
 
-  /* when detecting a click, check if the click happend to the far right, if yes, scroll to that position, 
+  /* when detecting a click, check if the click happend to the far right, if yes, scroll to that position,
    * otherwise do whatever this item of the list is supposed to do.
    */
   public void onClick() {
@@ -1866,7 +1976,7 @@ public class MenuList extends controlP5.Controller {
       npos += getPointer().dy() * 2;
       updateMenu = true;
     }
-  } 
+  }
 
   public void onScroll(int n) {
     npos += ( n * 4 );

@@ -58,8 +58,8 @@ void serialEvent(Serial port) {
   //check to see which serial port it is
   if (openBCI.isOpenBCISerial(port)) {
     // println("OpenBCI_GUI: serialEvent: millis = " + millis());
- 
-    // boolean echoBytes = !openBCI.isStateNormal(); 
+
+    // boolean echoBytes = !openBCI.isStateNormal();
     boolean echoBytes;
 
     if (openBCI.isStateNormal() != true) {  // || printingRegisters == true){
@@ -74,7 +74,7 @@ void serialEvent(Serial port) {
       //copy packet into buffer of data packets
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
       openBCI.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
-      
+
       //If networking enabled --> send data every sample if 8 channels or every other sample if 16 channels
       if (networkType !=0){
         if (nchan==8){
@@ -87,23 +87,23 @@ void serialEvent(Serial port) {
       newPacketCounter++;
     }
   } else {
-    
+
     //Used for serial communications, primarily everything in no_start_connection
     if(no_start_connection){
 
-      
+
       if(board_message == null || dollaBillz>2){ board_message = new StringBuilder(); dollaBillz = 0;}
-      
+
       inByte = byte(port.read());
       if(char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
-      
+
       //print(char(inByte));
-      if(inByte != -1){ 
+      if(inByte != -1){
         if(isGettingPoll){
           if(inByte != '$'){
             if(!spaceFound) board_message.append(char(inByte));
             else hexToInt = Integer.parseInt(String.format("%02X",inByte),16);
-            
+
             if(char(inByte) == ' ') spaceFound = true;
           }
           else dollaBillz++;
@@ -113,31 +113,31 @@ void serialEvent(Serial port) {
           else dollaBillz++;
         }
       }
-      
-      
-      
-      
-      
+
+
+
+
+
     }
     else{
       //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
-      
-      
+
+
       inByte = byte(port.read());
       if(isOpenBCI){
-        
+
         if(board_message == null || dollaBillz >2){board_message = new StringBuilder(); dollaBillz=0;}
-        
+
         if(inByte != '$') board_message.append(char(inByte));
         else dollaBillz++;
       }
       if(char(inByte) == 'S' || char(inByte) == 'F'){
         isOpenBCI = true;
-        if(board_message == null) board_message = new StringBuilder(); 
+        if(board_message == null) board_message = new StringBuilder();
         board_message.append(char(inByte));
-     
+
       }
-      
+
     }
   }
 }
@@ -145,9 +145,16 @@ void serialEvent(Serial port) {
 void startRunning() {
   verbosePrint("startRunning...");
   output("Data stream started.");
-  if ((eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX)) {
-    if (openBCI != null) openBCI.startDataTransfer();
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    if (ganglion != null) {
+      ganglion.startDataTransfer();
+    }
+  } else {
+    if (openBCI != null) {
+      openBCI.startDataTransfer();
+    }
   }
+
   isRunning = true;
 }
 
@@ -155,9 +162,16 @@ void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
   output("Data stream stopped.");
-  if (openBCI != null) {
-    openBCI.stopDataTransfer();
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    if (ganglion != null) {
+      ganglion.stopDataTransfer();
+    }
+  } else {
+    if (openBCI != null) {
+      openBCI.stopDataTransfer();
+    }
   }
+
   timeSinceStopRunning = millis(); //used as a timer to prevent misc. bytes from flooding serial...
   isRunning = false;
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
