@@ -232,7 +232,8 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int N, float fs
 
 int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
   float val_uV = 0.0f;
-
+  float[] currentData = new float[nchan];
+  float[] auxData = new float[3];
   //check to see if we can load a value from the table
   if (currentTableRowIndex >= datatable.getRowCount()) {
     //end of file
@@ -253,9 +254,22 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         //use zeros for the missing channels
         val_uV = 0.0f;
       }
-
+      //place data into row array (used for networking)
+      currentData[Ichan] = val_uV;
+     
       //put into data structure
       curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+    }
+    for (int chan=0;chan<3;chan++){
+      auxData[chan] = row.getFloat(nchan+chan);
+    }
+    //If networking is enabled, send data read from the playback file to the Networking class
+    if (networkType !=0){
+      if (nchan==8){
+        sendPlaybackData(currentData,auxData);
+      }else if ((nchan==16) && (curDataPacket.sampleIndex %2)!=1){
+        sendPlaybackData(currentData, auxData);
+      }
     }
     if(!isOldData) curTimestamp = row.getString(nchan+3);
     

@@ -20,9 +20,18 @@ public void sendRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, f
   data_to_send = writeValues(data.values,scale_to_uV);
   aux_to_send = writeValues(data.auxValues,scale_for_aux);
   
-  full_message = compressArray(data);     //Collect packet into full_message array
-  
+  //full_message = compressArray(data);     //Collect packet into full_message array
   //send to appropriate network type
+  if (networkType == 1){
+    udp.send_message(data_to_send);       //Send full message to udp
+  }else if (networkType == 2){
+    osc.send_message(data_to_send);       //Send full message to osc
+  }else if (networkType == 3){
+    lsl.send_message(data_to_send,aux_to_send);       //Send 
+  }
+}
+
+public void sendPlaybackData(float[] data_to_send,float[]aux_to_send){
   if (networkType == 1){
     udp.send_message(data_to_send);       //Send full message to udp
   }else if (networkType == 2){
