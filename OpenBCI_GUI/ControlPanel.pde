@@ -1033,7 +1033,6 @@ public void system_init(){
           if (networkType == 1){
               ip = cp5.get(Textfield.class, "live_udp_ip").getText();
               port = int(cp5.get(Textfield.class, "live_udp_port").getText());
-              println(port);
               udp = new UDPSend(port, ip);
             }else if (networkType == 2){
               ip = cp5.get(Textfield.class, "live_osc_ip").getText();
@@ -1049,8 +1048,6 @@ public void system_init(){
             if (networkType == 1){
               ip = cp5.get(Textfield.class, "playback_udp_ip").getText();
               port = int(cp5.get(Textfield.class, "playback_udp_port").getText());
-              println(port);
-              print(ip);
               udp = new UDPSend(port, ip);
             }else if (networkType == 2){
               ip = cp5.get(Textfield.class, "playback_osc_ip").getText();
@@ -1151,7 +1148,7 @@ class SerialBox {
     popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
-    // println(w-padding*2);
+
     serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {
