@@ -500,8 +500,6 @@ class ControlPanel {
           cp5.get(Textfield.class, "playback_lsl_aux").setVisible(true); //make sure the SD time record options menulist is visible
           lslOptionsBoxPlayback.draw();
         }
-        //playback networking stuff
-
 
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
@@ -514,7 +512,7 @@ class ControlPanel {
         cp5.get(Textfield.class, "live_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "live_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
         cp5.get(Textfield.class, "live_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_lsl_aux").setVisible(false);
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else if (eegDataSource == 2) {
@@ -523,14 +521,22 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "liveNetworkList").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(MenuList.class, "liveNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "live_udp_ip").setVisible(false);
+        cp5.get(Textfield.class, "live_udp_port").setVisible(false);
+        cp5.get(Textfield.class, "live_osc_ip").setVisible(false); 
+        cp5.get(Textfield.class, "live_osc_port").setVisible(false);
+        cp5.get(Textfield.class, "live_osc_address").setVisible(false); 
+        cp5.get(Textfield.class, "live_lsl_data").setVisible(false); 
+        cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); 
+        cp5.get(MenuList.class, "playbackNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "playback_udp_ip").setVisible(false);
+        cp5.get(Textfield.class, "playback_udp_port").setVisible(false);
+        cp5.get(Textfield.class, "playback_osc_ip").setVisible(false);
+        cp5.get(Textfield.class, "playback_osc_port").setVisible(false);
+        cp5.get(Textfield.class, "playback_osc_address").setVisible(false);
+        cp5.get(Textfield.class, "playback_lsl_data").setVisible(false);
+        cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); 
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else {
