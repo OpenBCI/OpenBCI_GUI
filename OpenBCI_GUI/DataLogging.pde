@@ -63,7 +63,7 @@ String getDateString() {
   if (month() < 10) fname=fname+"0";
   fname = fname + month() + "-";
   if (day() < 10) fname = fname + "0";
-  fname = fname + day(); 
+  fname = fname + day();
 
   fname = fname + "_";
   if (hour() < 10) fname = fname + "0";
@@ -114,7 +114,7 @@ public class OutputFile_rawtxt {
     if (month() < 10) fname=fname+"0";
     fname = fname + month() + "-";
     if (day() < 10) fname = fname + "0";
-    fname = fname + day(); 
+    fname = fname + day();
 
     //add hour minute sec to the file name
     fname = fname + "_";
@@ -133,7 +133,7 @@ public class OutputFile_rawtxt {
 
     //add the header
     writeHeader(fs_Hz);
-    
+
     //init the counter
     rowsWritten = 0;
   }
@@ -161,10 +161,10 @@ public class OutputFile_rawtxt {
 
 
   public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux) {
-    
+
     //get current date time with Date()
     Date date = new Date();
-     
+
     if (output != null) {
       output.print(Integer.toString(data.sampleIndex));
       writeValues(data.values,scale_to_uV);
@@ -174,8 +174,8 @@ public class OutputFile_rawtxt {
       //output.flush();
     }
   }
-  
-  private void writeValues(int[] values, float scale_fac) {          
+
+  private void writeValues(int[] values, float scale_fac) {
     int nVal = values.length;
     for (int Ival = 0; Ival < nVal; Ival++) {
       output.print(", ");
@@ -203,7 +203,7 @@ public class OutputFile_rawtxt {
 //
 // Usage: Only invoke this object when you want to read in a data
 //    file in CSV format.  Read it in at the time of creation via
-//    
+//
 //    String fname = "myfile.csv";
 //    TableCSV myTable = new TableCSV(fname);
 //
@@ -238,11 +238,11 @@ class Table_CSV extends Table {
           setRowCount(row << 1);
         }
         if (row == 0 && header) {
-          setColumnTitles(tsv ? PApplet.split(line, '\t') : splitLineCSV(line));
+          setColumnTitles(tsv ? PApplet.split(line, '\t') : split(line,','));
           header = false;
-        } 
+        }
         else {
-          setRow(row, tsv ? PApplet.split(line, '\t') : splitLineCSV(line));
+          setRow(row, tsv ? PApplet.split(line, '\t') : split(line,','));
           row++;
         }
 
@@ -260,13 +260,13 @@ class Table_CSV extends Table {
           try {
             // Sleep this thread so that the GC can catch up
             Thread.sleep(10);
-          } 
+          }
           catch (InterruptedException e) {
             e.printStackTrace();
           }
         }
       }
-    } 
+    }
     catch (Exception e) {
       throw new RuntimeException("Error reading table on line " + row, e);
     }
@@ -279,7 +279,7 @@ class Table_CSV extends Table {
 
 //////////////////////////////////
 //
-//    This collection of functions/methods - convertSDFile, createPlaybackFileFromSD, & sdFileSelected - contains code 
+//    This collection of functions/methods - convertSDFile, createPlaybackFileFromSD, & sdFileSelected - contains code
 //    used to convert HEX files (stored by OpenBCI on the local SD) into text files that can be used for PLAYBACK mode.
 //    Created: Conor Russomanno - 10/22/14 (based on code written by Joel Murphy summer 2014)
 //
@@ -301,7 +301,7 @@ public void convertSDFile() {
   println("");
   try {
     dataLine = dataReader.readLine();
-  } 
+  }
   catch (IOException e) {
     e.printStackTrace();
     dataLine = null;
@@ -311,7 +311,7 @@ public void convertSDFile() {
     // Stop reading because of an error or file is empty
     thisTime = millis() - thatTime;
     controlPanel.convertingSD = false;
-    println("nothing left in file"); 
+    println("nothing left in file");
     println("SD file conversion took "+thisTime+" mS");
     dataWriter.flush();
     dataWriter.close();
@@ -327,7 +327,7 @@ public void convertSDFile() {
       for (int i=0; i<hexNums.length; i++) {
         h = hexNums[i];
         if (i > 0) {
-          if (h.charAt(0) > '7') {  // if the number is negative 
+          if (h.charAt(0) > '7') {  // if the number is negative
             h = "FF" + hexNums[i];   // keep it negative
           } else {                  // if the number is positive
             h = "00" + hexNums[i];   // keep it positive
