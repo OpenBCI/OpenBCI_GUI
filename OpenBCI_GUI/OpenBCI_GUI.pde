@@ -131,9 +131,15 @@ float auxBuff[][] = new float[3][nPointsPerUpdate];
 float data_elec_imp_ohm[];
 
 //variables for writing EEG data out to a file
-OutputFile_rawtxt fileoutput;
+OutputFile_rawtxt fileoutput_odf;
+OutputFile_BDF fileoutput_bdf;
 String output_fname;
 String fileName = "N/A";
+final int OUTPUT_SOURCE_NONE = 0;
+final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
+final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
+public int outputDataSource = OUTPUT_SOURCE_ODF;
+// public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 //variables for Networking
 int port = 0;
@@ -348,7 +354,6 @@ void initSystem() {
   }
   dataProcessing = new DataProcessing(nchan, get_fs_Hz_safe());
   dataProcessing_user = new DataProcessing_User(nchan, get_fs_Hz_safe());
-
 
 
 
@@ -598,7 +603,18 @@ void systemDraw() { //for drawing to the screen
       //update the title of the figure;
       switch (eegDataSource) {
       case DATASOURCE_NORMAL_W_AUX:
-        surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput.getRowsWritten())/get_fs_Hz_safe()) + " secs Saved, Writing to " + output_fname);
+        switch (outputDataSource) {
+          case OUTPUT_SOURCE_ODF:
+            surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput_odf.getRowsWritten())/get_fs_Hz_safe()) + " secs Saved, Writing to " + output_fname);
+            break;
+          case OUTPUT_SOURCE_BDF:
+            surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+            break;
+          case OUTPUT_SOURCE_NONE:
+          default:
+            surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps");
+            break;
+        }
         break;
       case DATASOURCE_SYNTHETIC:
         surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
