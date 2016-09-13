@@ -250,7 +250,6 @@ class GUI_Manager {
     headPlot1 = new HeadPlot(axisHead_relPos[0],axisHead_relPos[1],axisHead_relPos[2],axisHead_relPos[3],win_x,win_y,nchan);
     setSmoothFac(smooth_fac);
     
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE) scrollbar = new PlaybackScrollbar(10,height/20  * 19, width/2 - 20,16,indices);
 
     //setup the buttons
     int w,h,x,y;
@@ -661,6 +660,7 @@ class GUI_Manager {
     titleSpectrogram.alignH = CENTER;
   }
 
+///******CF START HERE TOMORROW**********/
   public void initializeMontageTraces(float[] dataBuffX, float [][] dataBuffY) {
 
     //create the trace object, add it to the  plotting object, and set the data and scale factor
@@ -822,6 +822,7 @@ class GUI_Manager {
         fmt = "%.2f";
       }
       return fmt;
+      
   }
 
   public void draw() {
@@ -841,12 +842,103 @@ class GUI_Manager {
           chanValuesMontage[Ichan].draw();
         }
       }
+      if(has_processed){
+        if(scrollbar == null) scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices); 
+        else {
+          float val_uV = 0.0f;
+          boolean foundIndex = true;
+          int lowIndex = 0;
 
+          scrollbar.update();
+          scrollbar.display();
+          //println(index_of_times.get(scrollbar.get_index()));
+          SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
+          ArrayList<Date> keys_to_plot = new ArrayList();
+          
+          try{
+            Date timeIndex = format.parse(index_of_times.get(scrollbar.get_index()));
+            Date fiveBefore = new Date(timeIndex.getTime());
+            fiveBefore.setTime(fiveBefore.getTime() - 5000);
+            //println("Before: " + fiveBefore.toString());
+            //println("Time: " +timeIndex.toString());
+            
+            processed_file.get(fiveBefore);
+        
+            if(processed_file.keySet().contains(fiveBefore)) keys_to_plot.add(fiveBefore);
+            //println(fiveBefore);
+            fiveBefore.setTime(fiveBefore.getTime() + 1);
+                
+            //while(fiveBefore.before(timeIndex)){
+            //  try{
+            //    processed_file.get(fiveBefore);
+            //    if(foundIndex){
+            //      for(int i = 0; i <= scrollbar.get_index(); i++){ 
+            //        if(index_of_times.get(i).equals(fiveBefore.toString())){
+            //          lowIndex = i; 
+            //          break;
+            //        }
+            //      }
+            //      foundIndex = false;
+            //    }
+            //    if(processed_file.keySet().contains(fiveBefore)) keys_to_plot.add(fiveBefore);
+            //    //println(fiveBefore);
+            //    fiveBefore.setTime(fiveBefore.getTime() + 1);
+            //  }
+            //  catch(Exception e) {}
+            //}
+          }
+          catch(Exception e){}
+          
+          
+          
+          
+            //for (int Ichan=0; Ichan < nchan; Ichan++) {
+            //if (isChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
+            //val_uV = row.getFloat(Ichan);
+            //} else {
+            ////use zeros for the missing channels
+            //  val_uV = 0.0f;
+            //}
+
+            ////put into data structure
+            //curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+            //}  
+          //dataPacketBuff[lastReadDataPacketInd]
+          
+          
+          
+   
+           //lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+           // for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+           //   //scale the data into engineering units ("microvolts") and save to the "little buffer"
+           //   yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * openBCI.get_scale_fac_uVolts_per_count();
+           // }
+           // pointCounter++; //increment counter for "little buffer"
+           
+          //Date past = format.parse("01/10/2010");
+          //Date now = new Date();
+          
+          //System.out.println(TimeUnit.MILLISECONDS.toMillis(now.getTime() - past.getTime()) + " milliseconds ago");
+
+          for(Date elm : keys_to_plot){
+          
+            for(int Ichan=0; Ichan < nchan; Ichan++){
+              val_uV = processed_file.get(elm)[Ichan][lowIndex];
+              
+              yLittleBuff_uV[Ichan][lowIndex] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+            }
+            lowIndex++;
+          }
+          //for(int index = 0; index <= scrollbar.get_index(); index++){
+          //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
+            
+          //}
+          
+          cc.update();
+          cc.draw();
+        }
+      } 
       
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE){
-      scrollbar.update();
-      scrollbar.display();
-    }
 
     } else {
       //show the spectrogram

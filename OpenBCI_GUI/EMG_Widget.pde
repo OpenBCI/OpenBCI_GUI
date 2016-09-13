@@ -261,6 +261,27 @@ class EMG_Widget extends Container{
 
     }
     
+    
+    
+    
+    //if(millis() - motorWidgets[0].timeOfLastTrip >= 2000){
+    
+    //  switch(motorWidgets[0].switchCounter){
+    //    case 2:
+    //      String command = "xdotool key XF86AudioPlay";
+    //      File dir = new File("/");
+          
+    //      try{
+          
+    //        Process p = Runtime.getRuntime().exec(command,null, dir);
+    //      }
+    //      catch(Exception e){println("oops");} 
+    //      break;
+          
+    //  }
+    // motorWidgets[0].switchCounter = 0;
+    //}
+    
     //=================== OpenBionics switch example ==============================
     
     //if (millis() - motorWidgets[1].timeOfLastTrip >= 2000 && serialOutEMG != null) {
@@ -475,6 +496,7 @@ class EMG_Widget extends Container{
               index++;
             }
           }
+          drawTriggerFeedback();
     
 
           popStyle();
@@ -520,28 +542,28 @@ class EMG_Widget extends Container{
           break;
       }
 
-      switch (motorWidgets[1].switchCounter){
-        case 1:
-          fill(255,0,0);
-          ellipse(width/2, height - 70 , 20, 20);
-          break;
-        case 2:
-          fill(0,255,0);
-          ellipse(width/2, height - 70 , 20, 20);
-          break;
-        case 3:
-          fill(0,0,255);
-          ellipse(width/2, height - 70 , 20, 20);
-          break;
-        case 4:
-          fill(128,0,128);
-          ellipse(width/2, height - 70 , 20, 20);
-          break;
-        case 5:
-          fill(255,255,0);
-          ellipse(width/2, height - 70 , 20, 20);
-          break;
-      }
+      //switch (motorWidgets[1].switchCounter){
+      //  case 1:
+      //    fill(255,0,0);
+      //    ellipse(width/2, height - 70 , 20, 20);
+      //    break;
+      //  case 2:
+      //    fill(0,255,0);
+      //    ellipse(width/2, height - 70 , 20, 20);
+      //    break;
+      //  case 3:
+      //    fill(0,0,255);
+      //    ellipse(width/2, height - 70 , 20, 20);
+      //    break;
+      //  case 4:
+      //    fill(128,0,128);
+      //    ellipse(width/2, height - 70 , 20, 20);
+      //    break;
+      //  case 5:
+      //    fill(255,255,0);
+      //    ellipse(width/2, height - 70 , 20, 20);
+      //    break;
+      //}
 
     }
   }
@@ -1028,7 +1050,6 @@ class EMG_Widget extends Container{
     //Custom waiting threshold
     int timeToWaitThresh = 750;
     
-    if(motorWidgets[0].switchCounter > 4) motorWidgets[0].switchCounter = 0;
     
     if(output_normalized >= tripThreshold && !switchTripped && millis() - timeOfLastTrip >= timeToWaitThresh){
       //Tripped

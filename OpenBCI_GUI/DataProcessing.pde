@@ -8,6 +8,7 @@ DataProcessing dataProcessing;
 String curTimestamp;
 boolean hasRepeated = false;
 HashMap<String,float[][]> processed_file;
+HashMap<Integer,String> index_of_times;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -16,6 +17,7 @@ HashMap<String,float[][]> processed_file;
 //called from systemUpdate when mode=10 and isRunning = true
 void process_input_file() throws Exception{
   processed_file = new HashMap<String, float[][]>();
+  index_of_times = new HashMap<Integer, String>();
   float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
   
   try{
@@ -26,6 +28,8 @@ void process_input_file() throws Exception{
         //scale the data into engineering units..."microvolts"
         localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
       }
+      processed_file.put(curTimestamp, localLittleBuff);
+      index_of_times.put(indices,curTimestamp);
       indices++;
     }
   }
