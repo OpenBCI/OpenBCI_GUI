@@ -346,7 +346,7 @@ public class OutputFile_BDF {
   private int bdf_number_of_data_records = -1;
 
   public boolean continuous = true;
-  public boolean write_as_accel = true;
+  public boolean write_accel = true;
 
   private float dataRecordDuration = 1; // second
   private int nbAnnotations = 1;
@@ -499,8 +499,8 @@ public class OutputFile_BDF {
       arrayCopy(auxValBuf,auxValBuf_buffer);
 
       samplesInDataRecord = 0;
-
-      thread("writeDataOut");
+      writeDataOut();
+      // thread("writeDataOut");
     }
   }
 
@@ -671,9 +671,9 @@ public class OutputFile_BDF {
    *  string `str`. Must be smaller than `nbChan`.
    * @returns {boolean} - `true` if the label was added, `false` if not able to
    */
-  public boolean setLabelForIndex(String s, int index) {
+  public boolean setEEGLabelForIndex(String s, int index) {
     if (index < nbChan) {
-      labels[index] = s;
+      labelsEEG[index] = s;
       return true;
     } else {
       return false;
@@ -761,9 +761,9 @@ public class OutputFile_BDF {
    *  string `str`. Must be smaller than `nbChan`.
    * @returns {boolean} - `true` if the string was added, `false` if not able to
    */
-  public boolean setPrefilterForIndex(String s, int index) {
+  public boolean setEEGPrefilterForIndex(String s, int index) {
     if (index < nbChan) {
-      prefiltering[index] = s;
+      prefilteringEEG[index] = s;
       return true;
     } else {
       return false;
@@ -1007,7 +1007,7 @@ public class OutputFile_BDF {
     setStringArray(physicalMinimumAnnotations, bdf_physical_minimum_ADC_24bit, 1);
     setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit, 1);
     setStringArray(prefilteringAnnotations, " ", 1);
-    nbSamplesPerDataRecordAnnotations[nbChan] = str(nbSamplesPerAnnontation);
+    nbSamplesPerDataRecordAnnotations[0] = str(nbSamplesPerAnnontation);
     setStringArray(reservedAnnotations, " ", 1);
   }
 
@@ -1106,13 +1106,31 @@ public class OutputFile_BDF {
    */
   private void writeAuxDataValues(byte[][] values) {
     for (int i = 0; i < nbAux; i++) {
-      // Make the values little endian
-      auxValBuf[i][samplesInDataRecord][0] = swapByte(values[i][1]);
-      auxValBuf[i][samplesInDataRecord][1] = swapByte(values[i][0]);
-      if (auxValBuf[i][samplesInDataRecord][0] & 0x01 == 1) {
-        auxValBuf[i][samplesInDataRecord][2] = (byte)0xFF;
+      if (write_accel) {
+        // grab the lower part of
+        boolean zeroPack = true;
+        // shift right
+        int t = (int)values[i][0] & 0x0F;
+        values[i][0] = (byte)((int)values[i][0] >> 4);
+        if (values[i][0] >= 8) {
+          zeroPack = false;
+        }
+        values[i][1] = (byte)((int)values[i][1] >> 4);
+        values[i][1] = (byte)((int)values[i][1] | t);
+        if (!zeroPack) {
+          values[i][0] = (byte)((int)values[i][0] | 0xF0);
+        }
+        // make msb -> lsb
+        auxValBuf[i][samplesInDataRecord][0] = swapByte(values[i][1]);
+        auxValBuf[i][samplesInDataRecord][1] = swapByte(values[i][0]);
+        // pad byte
+        if (zeroPack) {
+          auxValBuf[i][samplesInDataRecord][2] = (byte)0x00;
+        } else {
+          auxValBuf[i][samplesInDataRecord][2] = (byte)0xFF;
+        }
       } else {
-        auxValBuf[i][samplesInDataRecord][2] = (byte)0x00;
+        // TODO: Implement once GUI gets support for non standard packets
       }
     }
   }
@@ -1158,6 +1176,7 @@ public class OutputFile_BDF {
     // writer.write(0xFF); // Write the first byte of the header here
     try {
       println("writeHeader: starting...");
+
       o.write(0xFF);
       writeString(padStringRight(new String(bdf_version),BDF_HEADER_SIZE_VERSION - 1), o); // Do one less then supposed to because of the first byte already written.
       String[] temp1  = {bdf_patient_id_subfield_hospoital_code,bdf_patient_id_subfield_sex,bdf_patient_id_subfield_birthdate,bdf_patient_id_subfield_name};
@@ -1172,16 +1191,39 @@ public class OutputFile_BDF {
       writeString(padStringRight("1",BDF_HEADER_SIZE_DURATION_OF_DATA_RECORD), o);
       writeString(padStringRight(str(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
 
-      writeStringArrayWithPaddingTimes(labels, BDF_HEADER_NS_SIZE_LABEL, o);
+      writeStringArrayWithPaddingTimes(labelsEEG, BDF_HEADER_NS_SIZE_LABEL, o);
       writeStringArrayWithPaddingTimes(transducerEEG, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
       writeStringArrayWithPaddingTimes(physicalDimensionEEG, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
       writeStringArrayWithPaddingTimes(physicalMinimumEEG, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
       writeStringArrayWithPaddingTimes(physicalMaximumEEG, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
       writeStringArrayWithPaddingTimes(digitalMinimumEEG, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
       writeStringArrayWithPaddingTimes(digitalMaximumEEG, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
-      writeStringArrayWithPaddingTimes(prefiltering, BDF_HEADER_NS_SIZE_PREFILTERING, o);
+      writeStringArrayWithPaddingTimes(prefilteringEEG, BDF_HEADER_NS_SIZE_PREFILTERING, o);
       writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordEEG, BDF_HEADER_NS_SIZE_NR, o);
-      writeStringArrayWithPaddingTimes(reserved, BDF_HEADER_NS_SIZE_RESERVED, o);
+      writeStringArrayWithPaddingTimes(reservedEEG, BDF_HEADER_NS_SIZE_RESERVED, o);
+
+      writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
+      writeStringArrayWithPaddingTimes(transducerAux, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
+      writeStringArrayWithPaddingTimes(physicalDimensionAux, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
+      writeStringArrayWithPaddingTimes(physicalMinimumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
+      writeStringArrayWithPaddingTimes(physicalMaximumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
+      writeStringArrayWithPaddingTimes(digitalMinimumAux, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
+      writeStringArrayWithPaddingTimes(digitalMaximumAux, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
+      writeStringArrayWithPaddingTimes(prefilteringAux, BDF_HEADER_NS_SIZE_PREFILTERING, o);
+      writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAux, BDF_HEADER_NS_SIZE_NR, o);
+      writeStringArrayWithPaddingTimes(reservedAux, BDF_HEADER_NS_SIZE_RESERVED, o);
+
+      writeStringArrayWithPaddingTimes(labelsAnnotations, BDF_HEADER_NS_SIZE_LABEL, o);
+      writeStringArrayWithPaddingTimes(transducerAnnotations, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
+      writeStringArrayWithPaddingTimes(physicalDimensionAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
+      writeStringArrayWithPaddingTimes(physicalMinimumAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
+      writeStringArrayWithPaddingTimes(physicalMaximumAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
+      writeStringArrayWithPaddingTimes(digitalMinimumAnnotations, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
+      writeStringArrayWithPaddingTimes(digitalMaximumAnnotations, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
+      writeStringArrayWithPaddingTimes(prefilteringAnnotations, BDF_HEADER_NS_SIZE_PREFILTERING, o);
+      writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAnnotations, BDF_HEADER_NS_SIZE_NR, o);
+      writeStringArrayWithPaddingTimes(reservedAnnotations, BDF_HEADER_NS_SIZE_RESERVED, o);
+
       println("writeHeader: done...");
 
     } catch(Exception e) {
