@@ -390,7 +390,6 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 --");
 
   //open data file
-  // TODO: Set the output file type here.
   if ((eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX)) openNewLogFile(fileName);  //open a new log file
 
   nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.

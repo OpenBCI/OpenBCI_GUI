@@ -302,8 +302,10 @@ public class OutputFile_BDF {
   // Ref: http://www.edfplus.info/specs/edfplus.html#header
   final static String BDF_HEADER_DATA_CONTINUOUS = "BDF+C";
   final static String BDF_HEADER_DATA_DISCONTINUOUS = "BDF+D";
-  final static String BDF_HEADER_PHYSICAL_DIMENTSION_UV = "uV";
+  final static String BDF_HEADER_PHYSICAL_DIMENISION_UV = "uV";
+  final static String BDF_HEADER_PHYSICAL_DIMENISION_G = "g";
   final static String BDF_HEADER_TRANSDUCER_AGAGCL = "AgAgCl electrode";
+  final static String BDF_HEADER_TRANSDUCER_MEMS = "MEMS";
   final static String BDF_HEADER_ANNOTATIONS = "BDF Annotations ";
 
   final static int BDF_HEADER_BYTES_BLOCK = 256;
@@ -328,12 +330,14 @@ public class OutputFile_BDF {
   // Digital max and mins
   private String bdf_digital_minimum_ADC_24bit = "-8388608"; // -1 * 2^23
   private String bdf_digital_maximum_ADC_24bit = "8388607"; // 2^23 - 1
-  private String bdf_digital_minimum_ADC_16bit = "-32768"; // -1 * 2^15
-  private String bdf_digital_maximum_ADC_16bit = "32767"; // 2^15 - 1
+  private String bdf_digital_minimum_ADC_12bit = "-2048"; // -1 * 2^11
+  private String bdf_digital_maximum_ADC_12bit = "2047"; // 2^11 - 1
 
   // Physcial max and mins
   private String bdf_physical_minimum_ADC_24bit = "-187500"; // 4.5 / 24 / (2^23 - 1) * 1000000 *  (2^23 - 1)
   private String bdf_physical_maximum_ADC_24bit = "187500"; // 4.5 / 24 / (2^23) * 1000000 * -1 * (2^23)
+  private String bdf_physical_minimum_ADC_Accel = "-4";
+  private String bdf_physical_maximum_ADC_Accel = "4";
 
   private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
   private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
@@ -342,26 +346,51 @@ public class OutputFile_BDF {
   private int bdf_number_of_data_records = -1;
 
   public boolean continuous = true;
+  public boolean write_as_accel = true;
 
   private float dataRecordDuration = 1; // second
   private int nbAnnotations = 1;
+  private int nbAux = 3;
   private int nbChan = 8;
   private int sampleSize = 3; // Number of bytes in a sample
 
-  private String labels[] = new String[getNbSignals()];
-  private String transducerEEG[] = new String[getNbSignals()];
-  private String physicalDimensionEEG[] = new String[getNbSignals()];
-  private String physicalMinimumEEG[] = new String[getNbSignals()];
-  private String physicalMaximumEEG[] = new String[getNbSignals()];
-  private String digitalMinimumEEG[] = new String[getNbSignals()];
-  private String digitalMaximumEEG[] = new String[getNbSignals()];
-  private String prefiltering[] = new String[getNbSignals()];
-  private String nbSamplesPerDataRecordEEG[] = new String[getNbSignals()];
-  private String reserved[] = new String[getNbSignals()];
+  private String labelsAnnotations[] = new String[nbAnnotations];
+  private String transducerAnnotations[] = new String[nbAnnotations];
+  private String physicalDimensionAnnotations[] = new String[nbAnnotations];
+  private String physicalMinimumAnnotations[] = new String[nbAnnotations];
+  private String physicalMaximumAnnotations[] = new String[nbAnnotations];
+  private String digitalMinimumAnnotations[] = new String[nbAnnotations];
+  private String digitalMaximumAnnotations[] = new String[nbAnnotations];
+  private String prefilteringAnnotations[] = new String[nbAnnotations];
+  private String nbSamplesPerDataRecordAnnotations[] = new String[nbAnnotations];
+  private String reservedAnnotations[] = new String[nbAnnotations];
+
+  private String labelsAux[] = new String[nbAux];
+  private String transducerAux[] = new String[nbAux];
+  private String physicalDimensionAux[] = new String[nbAux];
+  private String physicalMinimumAux[] = new String[nbAux];
+  private String physicalMaximumAux[] = new String[nbAux];
+  private String digitalMinimumAux[] = new String[nbAux];
+  private String digitalMaximumAux[] = new String[nbAux];
+  private String prefilteringAux[] = new String[nbAux];
+  private String nbSamplesPerDataRecordAux[] = new String[nbAux];
+  private String reservedAux[] = new String[nbAux];
+
+  private String labelsEEG[] = new String[nbChan];
+  private String transducerEEG[] = new String[nbChan];
+  private String physicalDimensionEEG[] = new String[nbChan];
+  private String physicalMinimumEEG[] = new String[nbChan];
+  private String physicalMaximumEEG[] = new String[nbChan];
+  private String digitalMinimumEEG[] = new String[nbChan];
+  private String digitalMaximumEEG[] = new String[nbChan];
+  private String prefilteringEEG[] = new String[nbChan];
+  private String nbSamplesPerDataRecordEEG[] = new String[nbChan];
+  private String reservedEEG[] = new String[nbChan];
 
   private String tempWriterPrefix = "temp.txt";
 
   private int fs_Hz = 250;
+  private int accel_Hz = 25;
 
   private int samplesInDataRecord = 0;
   private int dataRecordsWritten = 0;
@@ -371,7 +400,10 @@ public class OutputFile_BDF {
 
   private int timeDataRecordStart = 0;
 
+  private byte auxValBuf[][][];
+  private byte auxValBuf_buffer[][][];
   private byte chanValBuf[][][];
+  private byte chanValBuf_buffer[][][];
 
   public String fname = "";
 
@@ -423,17 +455,19 @@ public class OutputFile_BDF {
    * @description Used to initalize the writer.
    */
   private void init() {
-    // Open the file
-    // writer = createWriter(tempWriterPrefix);
 
-    // Set the number of channels
+    // Set the arrays needed for header
+    setNbAnnotations(nbAnnotations);
+    setNbAux(nbAux);
     setNbChan(nbChan);
 
-    // Add the header later
-    // writeHeader();
+    // Create the accel value buffer
+    auxValBuf = new byte[nbAux][fs_Hz][sampleSize];
+    auxValBuf_buffer = new byte[nbAux][fs_Hz][sampleSize];
 
-    // Fill the channel value buffer
+    // Create the channel value buffer
     chanValBuf = new byte[nbChan][fs_Hz][sampleSize];
+    chanValBuf_buffer = new byte[nbChan][fs_Hz][sampleSize];
 
     // Create the output stream for raw data
     dstream = createOutput(tempWriterPrefix);
@@ -442,6 +476,12 @@ public class OutputFile_BDF {
     dataRecordsWritten = 0;
   }
 
+  /**
+   * @description Writes a raw data packet to the buffer. Also will flush the
+   *  buffer if it is filled with one second worth of data. Will also capture
+   *  the start time, or the first time a packet is recieved.
+   * @param `data` {DataPacket_ADS1299} - A data packet
+   */
   public void writeRawData_dataPacket(DataPacket_ADS1299 data) {
 
     if (!startTimeCaptured) {
@@ -451,48 +491,55 @@ public class OutputFile_BDF {
     }
 
     writeChannelDataValues(data.rawValues);
+    writeAuxDataValues(data.rawAuxValues);
+    samplesInDataRecord++;
     // writeValues(data.auxValues,scale_for_aux);
     if (samplesInDataRecord >= fs_Hz) {
-      try {
-        for (int i = 0; i < nbChan; i++) {
-          for (int j = 0; j < fs_Hz; j++) {
-            for (int k = 0; k < 3; k++) {
-              dstream.write(chanValBuf[i][j][k]);
-            }
-          }
-        }
-        // Write the annotations
-        dstream.write('+');
-        String _t = str((millis() - timeDataRecordStart) / 1000);
-        int strLen = _t.length();
-        for (int i = 0; i < strLen; i++) {
-          dstream.write(_t.charAt(i));
-        }
-        dstream.write(20);
-        dstream.write(20);
-        int lenWritten = 1 + strLen + 1 + 1;
-        // for (int i = lenWritten; i < fs_Hz * sampleSize; i++) {
-        for (int i = lenWritten; i < nbSamplesPerAnnontation * sampleSize; i++) {
-          dstream.write(0);
-        }
-      } catch (Exception e) {
-        println("writeRawData_dataPacket: Exception ");
-        e.printStackTrace();
-      }
+      arrayCopy(chanValBuf,chanValBuf_buffer);
+      arrayCopy(auxValBuf,auxValBuf_buffer);
 
       samplesInDataRecord = 0;
-      dataRecordsWritten++;
+
+      thread("writeDataOut");
     }
   }
 
-  private void writeChannelDataValues(byte[][] values) {
-    for (int i = 0; i < nbChan; i++) {
-      // Make the values little endian
-      chanValBuf[i][samplesInDataRecord][0] = swapByte(values[i][2]);
-      chanValBuf[i][samplesInDataRecord][1] = swapByte(values[i][1]);
-      chanValBuf[i][samplesInDataRecord][2] = swapByte(values[i][0]);
+  private void writeDataOut() {
+    try {
+      for (int i = 0; i < nbChan; i++) {
+        for (int j = 0; j < fs_Hz; j++) {
+          for (int k = 0; k < 3; k++) {
+            dstream.write(chanValBuf_buffer[i][j][k]);
+          }
+        }
+      }
+      for (int i = 0; i < nbAux; i++) {
+        for (int j = 0; j < fs_Hz; j++) {
+          for (int k = 0; k < 3; k++) {
+            dstream.write(auxValBuf_buffer[i][j][k]);
+          }
+        }
+      }
+      // Write the annotations
+      dstream.write('+');
+      String _t = str((millis() - timeDataRecordStart) / 1000);
+      int strLen = _t.length();
+      for (int i = 0; i < strLen; i++) {
+        dstream.write(_t.charAt(i));
+      }
+      dstream.write(20);
+      dstream.write(20);
+      int lenWritten = 1 + strLen + 1 + 1;
+      // for (int i = lenWritten; i < fs_Hz * sampleSize; i++) {
+      for (int i = lenWritten; i < nbSamplesPerAnnontation * sampleSize; i++) {
+        dstream.write(0);
+      }
+      dataRecordsWritten++;
+
+    } catch (Exception e) {
+      println("writeRawData_dataPacket: Exception ");
+      e.printStackTrace();
     }
-    samplesInDataRecord++;
   }
 
   public void closeFile() {
@@ -567,20 +614,54 @@ public class OutputFile_BDF {
   }
 
   /**
+   * @description Resizes and resets the per aux channel arrays to size `n`
+   * @param `n` {int} - The new size of arrays
+   */
+  public void setAnnotationsArraysToSize(int n) {
+    labelsAnnotations = new String[n];
+    transducerAnnotations = new String[n];
+    physicalDimensionAnnotations = new String[n];
+    physicalMinimumAnnotations = new String[n];
+    physicalMaximumAnnotations = new String[n];
+    digitalMinimumAnnotations = new String[n];
+    digitalMaximumAnnotations = new String[n];
+    prefilteringAnnotations = new String[n];
+    nbSamplesPerDataRecordAnnotations = new String[n];
+    reservedAnnotations = new String[n];
+  }
+
+  /**
+   * @description Resizes and resets the per aux channel arrays to size `n`
+   * @param `n` {int} - The new size of arrays
+   */
+  public void setAuxArraysToSize(int n) {
+    labelsAux = new String[n];
+    transducerAux = new String[n];
+    physicalDimensionAux = new String[n];
+    physicalMinimumAux = new String[n];
+    physicalMaximumAux = new String[n];
+    digitalMinimumAux = new String[n];
+    digitalMaximumAux = new String[n];
+    prefilteringAux = new String[n];
+    nbSamplesPerDataRecordAux = new String[n];
+    reservedAux = new String[n];
+  }
+
+  /**
    * @description Resizes and resets the per channel arrays to size `n`
    * @param `n` {int} - The new size of arrays
    */
   public void setEEGArraysToSize(int n) {
-    labels = new String[n];
+    labelsEEG = new String[n];
     transducerEEG = new String[n];
     physicalDimensionEEG = new String[n];
     physicalMinimumEEG = new String[n];
     physicalMaximumEEG = new String[n];
     digitalMinimumEEG = new String[n];
     digitalMaximumEEG = new String[n];
-    prefiltering = new String[n];
+    prefilteringEEG = new String[n];
     nbSamplesPerDataRecordEEG = new String[n];
-    reserved = new String[n];
+    reservedEEG = new String[n];
   }
 
   /**
@@ -600,6 +681,36 @@ public class OutputFile_BDF {
   }
 
   /**
+   * @description Set the number of annotation signals.
+   * @param `n` {int} - The new number of channels
+   */
+  public void setNbAnnotations(int n) {
+    if (n < 1) n = 1;
+
+    // Set the main variable
+    nbAnnotations = n;
+    // Resize the arrays
+    setAnnotationsArraysToSize(n);
+    // Fill any arrays that can be filled
+    setAnnotationsArraysToDefaults();
+  }
+
+  /**
+   * @description Set the number of aux signals.
+   * @param `n` {int} - The new number of aux channels
+   */
+  public void setNbAux(int n) {
+    if (n < 1) n = 1;
+
+    // Set the main variable
+    nbAux = n;
+    // Resize the arrays
+    setAuxArraysToSize(n);
+    // Fill any arrays that can be filled
+    setAuxArraysToDefaults();
+  }
+
+  /**
    * @description Set the number of channels. Important to do. This will nuke
    *  the labels array if the size increases or decreases.
    * @param `n` {int} - The new number of channels
@@ -607,13 +718,12 @@ public class OutputFile_BDF {
   public void setNbChan(int n) {
     if (n < 1) n = 1;
 
-    // Resize the arrays
-    setEEGArraysToSize(n + 1);
-    // Fill any arrays that can be filled
-    setEEGArraysToDefaults();
-
     // Set the main variable
     nbChan = n;
+    // Resize the arrays
+    setEEGArraysToSize(n);
+    // Fill any arrays that can be filled
+    setEEGArraysToDefaults();
   }
 
   /**
@@ -817,7 +927,7 @@ public class OutputFile_BDF {
    * @returns {int} - The number of signals in the header.
    */
   private int getNbSignals() {
-    return nbChan + nbAnnotations;
+    return nbChan + nbAux + nbAnnotations;
   }
 
   /**
@@ -870,21 +980,51 @@ public class OutputFile_BDF {
   /**
    * @description Sets the header per channel arrays to their default values
    */
-  private void setEEGArraysToDefaults() {
-    setStringArray(labels, "EEG", nbChan); // Leave space for the annotations space
-    labels[nbChan] = BDF_HEADER_ANNOTATIONS;
-    setStringArray(transducerEEG, BDF_HEADER_TRANSDUCER_AGAGCL, nbChan);
-    transducerEEG[nbChan] = " ";
-    setStringArray(physicalDimensionEEG, BDF_HEADER_PHYSICAL_DIMENTSION_UV, getNbSignals());
-    setStringArray(digitalMinimumEEG, bdf_digital_minimum_ADC_24bit, getNbSignals());
-    setStringArray(digitalMaximumEEG, bdf_digital_maximum_ADC_24bit, getNbSignals());
-    setStringArray(physicalMinimumEEG, bdf_physical_minimum_ADC_24bit, getNbSignals());
-    setStringArray(physicalMaximumEEG, bdf_physical_maximum_ADC_24bit, getNbSignals());
-    setStringArray(prefiltering, " ", getNbSignals());
-    setStringArray(nbSamplesPerDataRecordEEG, str(fs_Hz), nbChan);
-    nbSamplesPerDataRecordEEG[nbChan] = str(nbSamplesPerAnnontation);
+  private void setAuxArraysToDefaults() {
+    labelsAux[0] = "Accel X";
+    labelsAux[1] = "Accel Y";
+    labelsAux[2] = "Accel Z";
+    setStringArray(transducerAux, BDF_HEADER_TRANSDUCER_AGAGCL, nbAux);
+    setStringArray(physicalDimensionAux, BDF_HEADER_PHYSICAL_DIMENISION_UV, nbAux);
+    setStringArray(digitalMinimumAux, bdf_digital_minimum_ADC_12bit, nbAux);
+    setStringArray(digitalMaximumAux, bdf_digital_maximum_ADC_12bit, nbAux);
+    setStringArray(physicalMinimumAux, bdf_physical_minimum_ADC_Accel, nbAux);
+    setStringArray(physicalMaximumAux, bdf_physical_maximum_ADC_Accel, nbAux);
+    setStringArray(prefilteringAux, " ", nbAux);
+    setStringArray(nbSamplesPerDataRecordAux, str(fs_Hz), nbAux);
+    setStringArray(reservedAux, " ", nbAux);
+  }
 
-    setStringArray(reserved, " ", getNbSignals());
+  /**
+   * @description Sets the header per channel arrays to their default values
+   */
+  private void setAnnotationsArraysToDefaults() {
+    setStringArray(labelsAnnotations, BDF_HEADER_ANNOTATIONS, 1); // Leave space for the annotations space
+    setStringArray(transducerAnnotations, " ", 1);
+    setStringArray(physicalDimensionAnnotations, " ", 1);
+    setStringArray(digitalMinimumAnnotations, bdf_digital_minimum_ADC_24bit, 1);
+    setStringArray(digitalMaximumAnnotations, bdf_digital_maximum_ADC_24bit, 1);
+    setStringArray(physicalMinimumAnnotations, bdf_physical_minimum_ADC_24bit, 1);
+    setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit, 1);
+    setStringArray(prefilteringAnnotations, " ", 1);
+    nbSamplesPerDataRecordAnnotations[nbChan] = str(nbSamplesPerAnnontation);
+    setStringArray(reservedAnnotations, " ", 1);
+  }
+
+  /**
+   * @description Sets the header per channel arrays to their default values
+   */
+  private void setEEGArraysToDefaults() {
+    setStringArray(labelsEEG, "EEG", nbChan); // Leave space for the annotations space
+    setStringArray(transducerEEG, BDF_HEADER_TRANSDUCER_AGAGCL, nbChan);
+    setStringArray(physicalDimensionEEG, BDF_HEADER_PHYSICAL_DIMENISION_UV, nbChan);
+    setStringArray(digitalMinimumEEG, bdf_digital_minimum_ADC_24bit, nbChan);
+    setStringArray(digitalMaximumEEG, bdf_digital_maximum_ADC_24bit, nbChan);
+    setStringArray(physicalMinimumEEG, bdf_physical_minimum_ADC_24bit, nbChan);
+    setStringArray(physicalMaximumEEG, bdf_physical_maximum_ADC_24bit, nbChan);
+    setStringArray(prefilteringEEG, " ", nbChan);
+    setStringArray(nbSamplesPerDataRecordEEG, str(fs_Hz), nbChan);
+    setStringArray(reservedEEG, " ", nbChan);
   }
 
   /**
@@ -898,19 +1038,12 @@ public class OutputFile_BDF {
     }
   }
 
-  public void swapBEtoLE(byte[] arr) {
-    byte[] output = new byte[3];
-
-    for (int i = 0; i < 3; i++) {
-      output[i] = swapByte(arr[i]);
-    }
-
-    arr[0] = output[2];
-    arr[1] = output[1];
-    arr[2] = output[0];
-  }
-
-  public byte swapByte(byte val) {
+  /**
+   * @description Converts a byte from Big Endian to Little Endian
+   * @param `val` {byte} - The byte to swap
+   * @returns {byte} - The swapped byte.
+   */
+  private byte swapByte(byte val) {
     int mask = 0x80;
     int res = 0;
     // println("swapByte: starting to swap val: 0b" + binary(val,8));
@@ -950,6 +1083,46 @@ public class OutputFile_BDF {
     return new String(output, 0, len);
   }
 
+  /**
+   * @description Moves a packet worth of data into channel buffer, also converts
+   *  from Big Endian to Little Indian as per the specs of BDF+.
+   *  Ref [1]: http://www.biosemi.com/faq/file_format.htm
+   * @param `values` {byte[][]} - A byte array that is n_chan X sample size (3)
+   */
+  private void writeChannelDataValues(byte[][] values) {
+    for (int i = 0; i < nbChan; i++) {
+      // Make the values little endian
+      chanValBuf[i][samplesInDataRecord][0] = swapByte(values[i][2]);
+      chanValBuf[i][samplesInDataRecord][1] = swapByte(values[i][1]);
+      chanValBuf[i][samplesInDataRecord][2] = swapByte(values[i][0]);
+    }
+  }
+
+  /**
+   * @description Moves a packet worth of data into aux buffer, also converts
+   *  from Big Endian to Little Indian as per the specs of BDF+.
+   *  Ref [1]: http://www.biosemi.com/faq/file_format.htm
+   * @param `values` {byte[][]} - A byte array that is n_aux X sample size (3)
+   */
+  private void writeAuxDataValues(byte[][] values) {
+    for (int i = 0; i < nbAux; i++) {
+      // Make the values little endian
+      auxValBuf[i][samplesInDataRecord][0] = swapByte(values[i][1]);
+      auxValBuf[i][samplesInDataRecord][1] = swapByte(values[i][0]);
+      if (auxValBuf[i][samplesInDataRecord][0] & 0x01 == 1) {
+        auxValBuf[i][samplesInDataRecord][2] = (byte)0xFF;
+      } else {
+        auxValBuf[i][samplesInDataRecord][2] = (byte)0x00;
+      }
+    }
+  }
+
+  /**
+   * @description Writes data from a temp file over to the final file with the
+   *  header in place already.
+   *  TODO: Stop keeping it in memory.
+   * @param `o` {OutputStream} - An output stream to write to.
+   */
   private void writeData(OutputStream o) {
 
     InputStream input = createInput(tempWriterPrefix);
@@ -1021,23 +1194,20 @@ public class OutputFile_BDF {
    *  Each element is padded right.
    * @param `arr` {String []} - An array of strings to write out
    * @param `padding` {int} - The amount of padding for each `arr` element.
+   * @param `o` {OutputStream} - The output stream to write to.
    */
   private void writeStringArrayWithPaddingTimes(String[] arr, int padding, OutputStream o) {
     int len = arr.length;
     for (int i = 0; i < len; i++) {
       writeString(padStringRight(arr[i], padding), o);
     }
-
-    // int len = arr.length;
-    // try {
-    //   for (int i = 0; i < len; i++) {
-    //     o.write(padStringRight(arr[i], padding));
-    //   }
-    // } catch (Exception e) {
-    //   println("writeStringArrayWithPaddingTimes: exception: " + e);
-    // }
   }
 
+  /**
+   * @description Writes a string to an OutputStream s
+   * @param `s` {String} - The string to write.
+   * @param `o` {OutputStream} - The output stream to write to.
+   */
   private void writeString(String s, OutputStream o) {
     int len = s.length();
     try {
