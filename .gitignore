@@ -1,2 +1,5 @@
 OpenBCI_GUI/SavedData/OpenBCI-RAW-*
+OpenBCI_GUI/SavedData/OpenBCI-EDF-*
 OpenBCI_GUI/build/
+OpenBCI_GUI/temp.txt
+OpenBCI_GUI/t-temp.txt
