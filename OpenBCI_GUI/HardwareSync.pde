@@ -258,6 +258,7 @@ class OpenBCI_ADS1299 {
   private int nEEGValuesPerPacket = 8; //defined by the data format sent by openBCI boards
   //int nAuxValuesPerPacket = 3; //defined by the data format sent by openBCI boards
   private DataPacket_ADS1299 rawReceivedDataPacket;
+  private DataPacket_ADS1299 missedDataPacket;
   private DataPacket_ADS1299 dataPacket;
   public int [] validAuxValues = {0,0,0};
   public boolean[] freshAuxValuesAvailable = {false,false,false};
@@ -329,6 +330,7 @@ class OpenBCI_ADS1299 {
 
     //allocate space for data packet
     rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
+    missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerOpenBCI,nAuxValuesPerPacket);            //this could be 8 or 16 channels
     //prevDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);
     //set all values to 0 so not null
@@ -336,10 +338,14 @@ class OpenBCI_ADS1299 {
       rawReceivedDataPacket.values[i] = 0;
       //prevDataPacket.values[i] = 0;
     }
-    for (int i=0; i < nEEGValuesPerOpenBCI; i++) { dataPacket.values[i]=0; }
+    for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
+      dataPacket.values[i] = 0;
+      missedDataPacket.values[i] = 0;
+    }
     for(int i = 0; i < nAuxValuesPerPacket; i++){
       rawReceivedDataPacket.auxValues[i] = 0;
       dataPacket.auxValues[i] = 0;
+      missedDataPacket.auxValues[i] = 0;
       //prevDataPacket.auxValues[i] = 0;
     }
 
@@ -692,6 +698,13 @@ class OpenBCI_ADS1299 {
           if(rawReceivedDataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
             serialErrorCounter++;
             println("OpenBCI_ADS1299: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
+            if (outputDataSource == OUTPUT_SOURCE_BDF) {
+              int fakePacketsToWrite = (rawReceivedDataPacket.sampleIndex - prevSampleIndex) - 1;
+              for (int i = 0; i < fakePacketsToWrite; i++) {
+                fileoutput_bdf.writeRawData_dataPacket(missedDataPacket);
+              }
+              println("OpenBCI_ADS1299: because BDF, wrote " + fakePacketsToWrite + " empty data packet(s)");
+            }
           }
         }
         prevSampleIndex = rawReceivedDataPacket.sampleIndex;

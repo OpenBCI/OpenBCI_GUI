@@ -338,7 +338,7 @@ public class OutputFile_BDF {
   private String bdf_digital_maximum_ADC_12bit = "2047"; // 2^11 - 1
 
   // Physcial max and mins
-  private String bdf_physical_minimum_ADC_24bit = "-187500"; // 4.5 / 24 / (2^23 - 1) * 1000000 *  (2^23 - 1)
+  private String bdf_physical_minimum_ADC_24bit = "-187500"; // 4.5 / 24 / (2^23) * 1000000 *  (2^23)
   private String bdf_physical_maximum_ADC_24bit = "187500"; // 4.5 / 24 / (2^23) * 1000000 * -1 * (2^23)
   private String bdf_physical_minimum_ADC_Accel = "-4";
   private String bdf_physical_maximum_ADC_Accel = "4";
@@ -1018,7 +1018,9 @@ public class OutputFile_BDF {
    * @description Sets the header per channel arrays to their default values
    */
   private void setEEGArraysToDefaults() {
-    setStringArray(labelsEEG, "EEG", nbChan); // Leave space for the annotations space
+    for (int i = 1; i <= nbChan; i++) {
+      labelsEEG[i] = "EEG" + i;
+    }
     setStringArray(transducerEEG, BDF_HEADER_TRANSDUCER_AGAGCL, nbChan);
     setStringArray(physicalDimensionEEG, BDF_HEADER_PHYSICAL_DIMENISION_UV, nbChan);
     setStringArray(digitalMinimumEEG, bdf_digital_minimum_ADC_24bit, nbChan);
