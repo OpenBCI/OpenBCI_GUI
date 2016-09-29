@@ -251,7 +251,7 @@ class HeadPlot_Widget {
 
   void draw() {
     
-    if(!drawEMG){
+    if(!drawEMG && !drawAccel){
       pushStyle();
       noStroke();
   

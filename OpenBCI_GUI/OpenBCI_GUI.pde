@@ -122,6 +122,7 @@ float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is
 float dataBuffY_filtY_uV[][];
 float yLittleBuff[] = new float[nPointsPerUpdate];
 float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+float auxBuff[][] = new float[3][nPointsPerUpdate];
 float data_elec_imp_ohm[];
 
 //variables for writing EEG data out to a file
@@ -182,12 +183,15 @@ PFont f2;
 PFont f3;
 
 EMG_Widget motorWidget;
+Accelerometer_Widget accelWidget;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
 
 int indices = 0;
+
+boolean synthesizeData = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -261,7 +265,10 @@ void setup() {
   cog = loadImage("cog_1024x1024.png");
 
   playground = new Playground(navBarHeight);
+  
 
+  accelWidget = new Accelerometer_Widget(navBarHeight);
+  accelWidget.initPlayground(openBCI);
   //attempt to open a serial port for "output"
   try {
     verbosePrint("OpenBCI_GUI.pde:  attempting to open serial port for data output = " + serial_output_portName);
@@ -355,6 +362,8 @@ void initSystem() {
     openBCI = new OpenBCI_ADS1299(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
     break;
   case DATASOURCE_SYNTHETIC:
+    synthesizeData = true;
+
     //do nothing
     break;
   case DATASOURCE_PLAYBACKFILE:
@@ -524,9 +533,11 @@ void systemUpdate() { // for updating data values and variables
       timeOfGUIreinitialize = millis();
       initializeGUI();
       playground.x = width; //reset the x for the playground...
+      accelWidget.x = width;
     }
 
     playground.update();
+    accelWidget.update();
   }
 
   controlPanel.update();
@@ -591,8 +602,8 @@ void systemDraw() { //for drawing to the screen
     }
 
     playground.draw();
-
     motorWidget.draw();
+    accelWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10

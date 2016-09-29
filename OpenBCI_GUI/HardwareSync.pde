@@ -225,6 +225,8 @@ class OpenBCI_ADS1299 {
   //int nAuxValuesPerPacket = 3; //defined by the data format sent by openBCI boards
   private DataPacket_ADS1299 rawReceivedDataPacket;
   private DataPacket_ADS1299 dataPacket;
+  public int [] validAuxValues = {0,0,0};
+  public boolean[] freshAuxValuesAvailable = {false,false,false};
   //DataPacket_ADS1299 prevDataPacket;
 
   private int nAuxValues;
@@ -690,15 +692,19 @@ class OpenBCI_ADS1299 {
         localAccelByteBuffer[localByteCounter] = actbyte;
         localByteCounter++;
         if (localByteCounter==2) {
-          rawReceivedDataPacket.auxValues[localChannelCounter]  = interpret16bitAsInt32(localAccelByteBuffer);
+         rawReceivedDataPacket.auxValues[localChannelCounter]  = interpret16bitAsInt32(localAccelByteBuffer);
+          if(rawReceivedDataPacket.auxValues[localChannelCounter] != 0){
+            validAuxValues[localChannelCounter] = rawReceivedDataPacket.auxValues[localChannelCounter]; 
+            freshAuxValuesAvailable[localChannelCounter] = true;
+          }
           localChannelCounter++;
-          if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {
+          if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {  
             // all Accelerometer channels arrived !
             //println("OpenBCI_ADS1299: interpretBinaryStream: Accel Data: " + rawReceivedDataPacket.auxValues[0] + ", " + rawReceivedDataPacket.auxValues[1] + ", " + rawReceivedDataPacket.auxValues[2]);
             PACKET_readstate++;
             localByteCounter = 0;
             //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
-          } else {
+          } else { 
             //prepare for next data channel
             localByteCounter=0; //prepare for next usage of localByteCounter
           }

@@ -40,7 +40,12 @@ void parseKey(char val) {
   //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
   switch (val) {
     case '.':
-      drawEMG = !drawEMG; 
+      if(!drawEMG && !drawAccel) drawEMG = true;
+      else if(drawEMG && !drawAccel){
+        drawEMG = false;
+        drawAccel = true;
+      }
+      else if(!drawEMG && drawAccel) drawAccel = false;
       break;
     case ',':
       drawContainers = !drawContainers; 
@@ -546,6 +551,14 @@ void mousePressed() {
 
   if (playground.isMouseInButton()) {
     playground.toggleWindow();
+  }
+  
+  if (accelWidget.isMouseHere()) {
+    accelWidget.mousePressed();
+  }
+
+  if (accelWidget.isMouseInButton()) {
+    accelWidget.toggleWindow();
   }
 }
 

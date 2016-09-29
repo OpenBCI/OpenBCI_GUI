@@ -826,7 +826,7 @@ class GUI_Manager {
   }
 
   public void draw() {
-    if(!drawEMG){
+    if(!drawEMG && !drawAccel){
       headPlot1.draw();
     }
 
@@ -846,8 +846,8 @@ class GUI_Manager {
         if(scrollbar == null) scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices); 
         else {
           float val_uV = 0.0f;
-          boolean foundIndex = true;
-          int lowIndex = 0;
+          boolean foundIndex =true;
+          int startIndex = 0;
 
           scrollbar.update();
           scrollbar.display();
@@ -859,75 +859,81 @@ class GUI_Manager {
             Date timeIndex = format.parse(index_of_times.get(scrollbar.get_index()));
             Date fiveBefore = new Date(timeIndex.getTime());
             fiveBefore.setTime(fiveBefore.getTime() - 5000);
-            //println("Before: " + fiveBefore.toString());
-            //println("Time: " +timeIndex.toString());
+            Date fiveBeforeCopy = new Date(fiveBefore.getTime());
+            //println("Before: " + fiveBefore.getTime());
+            //println("Before Copy: " + fiveBeforeCopy.getTime());
+            //println("Time: " +timeIndex.getTime());
+            //println(index_of_times.get(44));
+            //println(format.format(fiveBefore));
+            //if(index_of_times.get(44).contains(format.format(fiveBefore).toString())) println("true");
             
-            processed_file.get(fiveBefore);
-        
-            if(processed_file.keySet().contains(fiveBefore)) keys_to_plot.add(fiveBefore);
-            //println(fiveBefore);
-            fiveBefore.setTime(fiveBefore.getTime() + 1);
-                
-            //while(fiveBefore.before(timeIndex)){
-            //  try{
-            //    processed_file.get(fiveBefore);
-            //    if(foundIndex){
-            //      for(int i = 0; i <= scrollbar.get_index(); i++){ 
-            //        if(index_of_times.get(i).equals(fiveBefore.toString())){
-            //          lowIndex = i; 
-            //          break;
-            //        }
-            //      }
-            //      foundIndex = false;
-            //    }
-            //    if(processed_file.keySet().contains(fiveBefore)) keys_to_plot.add(fiveBefore);
-            //    //println(fiveBefore);
-            //    fiveBefore.setTime(fiveBefore.getTime() + 1);
-            //  }
-            //  catch(Exception e) {}
-            //}
+            
+            //START HERE TOMORROW
+            
+            int i = 0;
+            int timeToBreak = 0;
+            while(true){
+              //println("in while i:" + i);
+              if(index_of_times.get(i).contains(format.format(fiveBeforeCopy).toString())){
+                println("found");
+                startIndex = i;
+                break;
+              }
+              if(i == index_of_times.size() -1){
+                i = 0;
+                fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
+                timeToBreak++;
+              }
+              if(timeToBreak > 3){
+                break;
+              }
+              i++;
+            
+            }
+            println("after first while");
+            
+            while(fiveBefore.before(timeIndex)){
+             //println("in while :" + fiveBefore);
+              if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
+                keys_to_plot.add(fiveBefore);
+                startIndex++;
+              }
+              //println(fiveBefore);
+              fiveBefore.setTime(fiveBefore.getTime() + 1);
+            }
+            println("keys_to_plot size: " + keys_to_plot.size());
           }
           catch(Exception e){}
           
           
-          
-          
-            //for (int Ichan=0; Ichan < nchan; Ichan++) {
-            //if (isChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
-            //val_uV = row.getFloat(Ichan);
-            //} else {
-            ////use zeros for the missing channels
-            //  val_uV = 0.0f;
-            //}
-
-            ////put into data structure
-            //curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-            //}  
-          //dataPacketBuff[lastReadDataPacketInd]
-          
-          
-          
-   
-           //lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-           // for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-           //   //scale the data into engineering units ("microvolts") and save to the "little buffer"
-           //   yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * openBCI.get_scale_fac_uVolts_per_count();
+           //for (int Ichan=0; Ichan < nchan; Ichan++) {
+           // //append the new data to the larger data buffer...because we want the plotting routines
+           // //to show more than just the most recent chunk of data.  This will be our "raw" data.
+           // appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
+        
+           // //make a copy of the data that we'll apply processing to.  This will be what is displayed on the full montage
+           // dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
            // }
-           // pointCounter++; //increment counter for "little buffer"
            
-          //Date past = format.parse("01/10/2010");
-          //Date now = new Date();
-          
-          //System.out.println(TimeUnit.MILLISECONDS.toMillis(now.getTime() - past.getTime()) + " milliseconds ago");
-
+          float[][] data = new float[keys_to_plot.size()][nchan];
+          int i = 0;
+           
           for(Date elm : keys_to_plot){
           
             for(int Ichan=0; Ichan < nchan; Ichan++){
-              val_uV = processed_file.get(elm)[Ichan][lowIndex];
+              val_uV = processed_file.get(elm)[Ichan][startIndex];
               
-              yLittleBuff_uV[Ichan][lowIndex] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+              
+              data[Ichan][i] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
             }
-            lowIndex++;
+            i++;
+          }
+          
+          //println(keys_to_plot.size());
+          if(keys_to_plot.size() > 100){
+          for(int Ichan=0; Ichan<nchan; Ichan++){
+            update(data[Ichan],data_elec_imp_ohm);
+          }
           }
           //for(int index = 0; index <= scrollbar.get_index(); index++){
           //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));

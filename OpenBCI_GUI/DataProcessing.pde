@@ -9,6 +9,7 @@ String curTimestamp;
 boolean hasRepeated = false;
 HashMap<String,float[][]> processed_file;
 HashMap<Integer,String> index_of_times;
+HashMap<String,Integer> index_of_times_rev;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -18,6 +19,7 @@ HashMap<Integer,String> index_of_times;
 void process_input_file() throws Exception{
   processed_file = new HashMap<String, float[][]>();
   index_of_times = new HashMap<Integer, String>();
+  index_of_times_rev = new HashMap<String, Integer>();
   float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
   
   try{
@@ -30,6 +32,7 @@ void process_input_file() throws Exception{
       }
       processed_file.put(curTimestamp, localLittleBuff);
       index_of_times.put(indices,curTimestamp);
+      index_of_times_rev.put(curTimestamp,indices);
       indices++;
     }
   }
@@ -40,7 +43,7 @@ void process_input_file() throws Exception{
 }
 
 
-
+/*************************/
 int getDataIfAvailable(int pointCounter) {
 
   if ( (eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX) ) {
@@ -52,6 +55,7 @@ int getDataIfAvailable(int pointCounter) {
         //scale the data into engineering units ("microvolts") and save to the "little buffer"
         yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * openBCI.get_scale_fac_uVolts_per_count();
       }
+      for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
       pointCounter++; //increment counter for "little buffer"
     }
    

@@ -89,8 +89,9 @@ class EMG_Widget extends Container{
     
     initSliders(w);
     
-    configButton = new Button(int(x) - 60,int(y),20,20,"O",fontInfo.buttonLabel_size);
+    configButton = new Button(int(x) - 60,int(y),20,20,"O",fontInfo.buttonLabel_size);  
     configWidget = new Config_Widget(NCHAN, sample_rate_Hz, container, motorWidgets);
+
   }
   
   //Initalizes the threshold sliders

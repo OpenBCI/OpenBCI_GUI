@@ -58,6 +58,9 @@ class Playground {
     } else {
       expand();
     }
+    
+    if(accelWidget.collapsing)accelWidget.collapse();
+    else accelWidget.expand();
 
     if (x > width) {
       x = width;
@@ -97,16 +100,28 @@ class Playground {
   }
 
   public void toggleWindow() {
-    if (isOpen) {//if open
+    //if (isOpen) {//if open
+    //  verbosePrint("close");
+    //  collapsing = true;//collapsing = true;
+    //  isOpen = false;
+    //  collapser.but_txt = "<";
+    //} else {//if closed
+    //  verbosePrint("open");
+    //  collapsing = false;//expanding = true;
+    //  isOpen = true;
+    //  collapser.but_txt = ">";
+    //}
+    
+    if (accelWidget.isOpen) {//if open
       verbosePrint("close");
-      collapsing = true;//collapsing = true;
-      isOpen = false;
-      collapser.but_txt = "<";
+      accelWidget.collapsing = true;//collapsing = true;
+      accelWidget.isOpen = false;
+      accelWidget.collapser.but_txt = "<";
     } else {//if closed
       verbosePrint("open");
-      collapsing = false;//expanding = true;
-      isOpen = true;
-      collapser.but_txt = ">";
+      accelWidget.collapsing = false;//expanding = true;
+      accelWidget.isOpen = true;
+      accelWidget.collapser.but_txt = ">";
     }
   }
 
