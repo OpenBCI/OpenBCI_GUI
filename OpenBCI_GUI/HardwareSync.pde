@@ -227,6 +227,7 @@ class OpenBCI_ADS1299 {
   private DataPacket_ADS1299 dataPacket;
   public int [] validAuxValues = {0,0,0};
   public boolean[] freshAuxValuesAvailable = {false,false,false};
+  public boolean freshAuxValues = false;
   //DataPacket_ADS1299 prevDataPacket;
 
   private int nAuxValues;
@@ -696,7 +697,9 @@ class OpenBCI_ADS1299 {
           if(rawReceivedDataPacket.auxValues[localChannelCounter] != 0){
             validAuxValues[localChannelCounter] = rawReceivedDataPacket.auxValues[localChannelCounter]; 
             freshAuxValuesAvailable[localChannelCounter] = true;
+            freshAuxValues = true;
           }
+          else freshAuxValues = true;
           localChannelCounter++;
           if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {  
             // all Accelerometer channels arrived !

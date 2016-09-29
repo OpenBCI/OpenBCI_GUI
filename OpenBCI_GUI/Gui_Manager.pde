@@ -826,7 +826,7 @@ class GUI_Manager {
   }
 
   public void draw() {
-    if(!drawEMG && !drawAccel){
+    if(!drawEMG){
       headPlot1.draw();
     }
 

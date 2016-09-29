@@ -184,6 +184,7 @@ PFont f3;
 
 EMG_Widget motorWidget;
 Accelerometer_Widget accelWidget;
+PulseSensor_Widget pulseWidget;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
@@ -269,6 +270,9 @@ void setup() {
 
   accelWidget = new Accelerometer_Widget(navBarHeight);
   accelWidget.initPlayground(openBCI);
+  
+  pulseWidget = new PulseSensor_Widget(navBarHeight);
+  pulseWidget.initPlayground(openBCI);
   //attempt to open a serial port for "output"
   try {
     verbosePrint("OpenBCI_GUI.pde:  attempting to open serial port for data output = " + serial_output_portName);
@@ -534,10 +538,12 @@ void systemUpdate() { // for updating data values and variables
       initializeGUI();
       playground.x = width; //reset the x for the playground...
       accelWidget.x = width;
+      pulseWidget.x = width;
     }
 
     playground.update();
     accelWidget.update();
+    pulseWidget.update();
   }
 
   controlPanel.update();
@@ -604,6 +610,7 @@ void systemDraw() { //for drawing to the screen
     playground.draw();
     motorWidget.draw();
     accelWidget.draw();
+    pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10

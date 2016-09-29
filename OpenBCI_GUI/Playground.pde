@@ -59,8 +59,11 @@ class Playground {
       expand();
     }
     
-    if(accelWidget.collapsing)accelWidget.collapse();
+    if(accelWidget.collapsing) accelWidget.collapse();
     else accelWidget.expand();
+    
+    if(pulseWidget.collapsing) pulseWidget.collapse();
+    else pulseWidget.expand();
 
     if (x > width) {
       x = width;
@@ -78,7 +81,8 @@ class Playground {
     fill(bgColor);
     text("Developer Playground", x + 10, y + 10);
     fill(255, 0, 0);
-    collapser.draw(int(x - collapser.but_dx), int(topMargin + (h-collapser.but_dy)/2));
+    //uncomment if you want the dev playground to display again
+    //collapser.draw(int(x - collapser.but_dx), int(topMargin + (h-collapser.but_dy)/2));
     popStyle();
   }
 
@@ -100,6 +104,8 @@ class Playground {
   }
 
   public void toggleWindow() {
+    
+    //Uncomment if you'd like to open the playground
     //if (isOpen) {//if open
     //  verbosePrint("close");
     //  collapsing = true;//collapsing = true;
@@ -112,16 +118,34 @@ class Playground {
     //  collapser.but_txt = ">";
     //}
     
-    if (accelWidget.isOpen) {//if open
-      verbosePrint("close");
-      accelWidget.collapsing = true;//collapsing = true;
-      accelWidget.isOpen = false;
-      accelWidget.collapser.but_txt = "<";
-    } else {//if closed
-      verbosePrint("open");
-      accelWidget.collapsing = false;//expanding = true;
-      accelWidget.isOpen = true;
-      accelWidget.collapser.but_txt = ">";
+    if(drawAccel){
+      if (accelWidget.isOpen) {//if open
+        verbosePrint("close");
+        accelWidget.collapsing = true;//collapsing = true;
+        accelWidget.isOpen = false;
+        accelWidget.collapser.but_txt = "<";
+      } else {//if closed
+        verbosePrint("open");
+        accelWidget.collapsing = false;//expanding = true;
+        accelWidget.isOpen = true;
+        accelWidget.collapser.but_txt = ">";
+      }
+    }
+    
+    else if(drawPulse){
+      if (pulseWidget.isOpen) {//if open
+        verbosePrint("close");
+        pulseWidget.collapsing = true;//collapsing = true;
+        pulseWidget.isOpen = false;
+        pulseWidget.collapser.but_txt = "<";
+      } else {//if closed
+        verbosePrint("open");
+        pulseWidget.collapsing = false;//expanding = true;
+        pulseWidget.isOpen = true;
+        pulseWidget.collapser.but_txt = ">";
+      }
+    
+    
     }
   }
 

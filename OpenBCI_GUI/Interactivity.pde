@@ -40,15 +40,14 @@ void parseKey(char val) {
   //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
   switch (val) {
     case '.':
-      if(!drawEMG && !drawAccel) drawEMG = true;
-      else if(drawEMG && !drawAccel){
-        drawEMG = false;
-        drawAccel = true;
-      }
-      else if(!drawEMG && drawAccel) drawAccel = false;
+      drawEMG = !drawEMG;
       break;
     case ',':
       drawContainers = !drawContainers; 
+      break;
+    case '/':
+      drawAccel = !drawAccel;
+      drawPulse = !drawPulse;
       break;
     case '1':
       deactivateChannel(1-1); 
@@ -559,6 +558,14 @@ void mousePressed() {
 
   if (accelWidget.isMouseInButton()) {
     accelWidget.toggleWindow();
+  }
+  
+  if (pulseWidget.isMouseHere()) {
+    pulseWidget.mousePressed();
+  }
+
+  if (pulseWidget.isMouseInButton()) {
+    pulseWidget.toggleWindow();
   }
 }
 
