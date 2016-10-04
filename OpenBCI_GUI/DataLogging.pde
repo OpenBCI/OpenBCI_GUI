@@ -465,7 +465,7 @@ public class OutputFile_BDF {
     setNbAux(nbAux);
     setNbChan(nbChan);
 
-    // Create the accel value buffer
+    // Create the aux value buffer
     auxValBuf = new byte[nbAux][fs_Hz][sampleSize];
     auxValBuf_buffer = new byte[nbAux][fs_Hz][sampleSize];
 
@@ -1019,7 +1019,7 @@ public class OutputFile_BDF {
    */
   private void setEEGArraysToDefaults() {
     for (int i = 1; i <= nbChan; i++) {
-      labelsEEG[i] = "EEG" + i;
+      labelsEEG[i - 1] = "EEG " + i;
     }
     setStringArray(transducerEEG, BDF_HEADER_TRANSDUCER_AGAGCL, nbChan);
     setStringArray(physicalDimensionEEG, BDF_HEADER_PHYSICAL_DIMENISION_UV, nbChan);

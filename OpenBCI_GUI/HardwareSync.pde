@@ -90,8 +90,9 @@ void serialEvent(Serial port) {
           fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
           break;
         case OUTPUT_SOURCE_BDF:
-          fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-          // writeRawData_dataPacket_bdf();
+          curBDFDataPacketInd = curDataPacketInd;
+          thread("writeRawData_dataPacket_bdf");
+          // fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
           break;
         case OUTPUT_SOURCE_NONE:
         default:
@@ -128,16 +129,9 @@ void serialEvent(Serial port) {
           else dollaBillz++;
         }
       }
-
-
-
-
-
     }
     else{
       //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
-
-
       inByte = byte(port.read());
       if(isOpenBCI){
 
@@ -152,14 +146,13 @@ void serialEvent(Serial port) {
         board_message.append(char(inByte));
 
       }
-
     }
   }
 }
 
 
 void writeRawData_dataPacket_bdf() {
-  fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+  fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
 }
 
 void startRunning() {

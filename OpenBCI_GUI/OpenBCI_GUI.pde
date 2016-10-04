@@ -105,6 +105,7 @@ String sdSettingString = "Do not write to SD";
 final int nDataBackBuff = 3*(int)get_fs_Hz_safe();
 DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
 int curDataPacketInd = -1;
+int curBDFDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
 //related to sync'ing communiction to OpenBCI hardware?
 boolean currentlySyncing = false;
