@@ -29,30 +29,7 @@ import oscP5.*; //for OSC networking
 import hypermedia.net.*; //for UDP networking
 import grafica.*;
 
-
-//import java.awt.*;
-//import java.awt.Point;
 import java.awt.MouseInfo;
-//import processing.core.PConstants;
-//import java.awt.Window;
-//import java.awt.Component;
-//import java.awt.Container;
-
-//package processing.opengl;
-//import java.awt.Component.*;
-//import java.awt.GraphicsDevice;
-//import java.awt.GraphicsEnvironment;
-//import java.awt.Point;
-//import java.awt.Rectangle;
-//import java.awt.image.BufferedImage;
-//import java.awt.image.DataBufferInt;
-
-//import processing.opengl.GLWindow;
-//import com.sun.javafx.newt.opengl.GLWindow;
-//import Graphics.Rendering.OpenGL;
-//import java.awt.Graphics.UI.GLWindow;      
-//import qualified Graphics.UI.GLWindow as Window;   
-//import com.sun.javafx.newt.opengl.GLWindow;
 
 
 //------------------------------------------------------------------------
@@ -182,7 +159,7 @@ PFont f1;
 PFont f2;
 PFont f3;
 
-EMG_Widget motorWidget;
+EMG_Widget emg_widget;
 Accelerometer_Widget accelWidget;
 PulseSensor_Widget pulseWidget;
 
@@ -208,10 +185,6 @@ void setup() {
   println("For specific questions, please post them to the Software section of the OpenBCI Forum: http://openbci.com/index.php/forum/#/categories/software");
   //open window
   size(1024, 768, P2D);
-  // size(displayWidth, displayHeight, P2D);
-  //if (frame != null) frame.setResizable(true);  //make window resizable
-  //attach exit handler
-  //prepareExitHandler();
   frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   smooth(); //turn this off if it's too slow
 
@@ -286,11 +259,7 @@ void setup() {
   myPresentation = new Presentation();
 }
 //====================== END-OF-SETUP ==========================//
-//====================== END-OF-SETUP ==========================//
-//====================== END-OF-SETUP ==========================//
 
-//======================== DRAW LOOP =============================//
-//======================== DRAW LOOP =============================//
 //======================== DRAW LOOP =============================//
 
 void draw() {
@@ -300,8 +269,6 @@ void draw() {
   systemDraw();   //signPost("30");
 }
 
-//====================== END-OF-DRAW ==========================//
-//====================== END-OF-DRAW ==========================//
 //====================== END-OF-DRAW ==========================//
 
 int pointCounter = 0;
@@ -326,8 +293,6 @@ void initSystem() {
   is_railed = new DataStatus[nchan];
   for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
   for (int i=0; i<nDataBackBuff; i++) {
-    //dataPacketBuff[i] = new DataPacket_ADS1299(nchan+n_aux_ifEnabled);
-    // dataPacketBuff[i] = new DataPacket_ADS1299(OpenBCI_Nchannels+n_aux_ifEnabled);
     dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
   }
   dataProcessing = new DataProcessing(nchan, openBCI.get_fs_Hz());
@@ -359,7 +324,6 @@ void initSystem() {
   case DATASOURCE_NORMAL:
   case DATASOURCE_NORMAL_W_AUX:
 
-    // int nDataValuesPerPacket = OpenBCI_Nchannels;
     int nEEDataValuesPerPacket = nchan;
     boolean useAux = false;
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
@@ -608,7 +572,7 @@ void systemDraw() { //for drawing to the screen
     }
 
     playground.draw();
-    motorWidget.draw();
+    emg_widget.draw();
     accelWidget.draw();
     pulseWidget.draw();
     //dataProcessing_user.draw();
@@ -643,7 +607,7 @@ void systemDraw() { //for drawing to the screen
 
   if (drawPresentation) {
     myPresentation.draw();
-    motorWidget.drawTriggerFeedback();
+    emg_widget.drawTriggerFeedback();
     //dataProcessing_user.drawTriggerFeedback();
   }
 

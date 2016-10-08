@@ -36,7 +36,9 @@ class EMG_Widget extends Container{
   private int lastChan = 0;
   PApplet parent;
   String oldCommand = "";
-  
+  int parentContainer = 3;
+  PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
+
   Motor_Widget[] motorWidgets;
   TripSlider[] tripSliders;
   TripSlider[] untripSliders;
@@ -69,11 +71,18 @@ class EMG_Widget extends Container{
   }
   
   //Constructor
-  EMG_Widget(int NCHAN, float sample_rate_Hz, Container container, PApplet p){
+  EMG_Widget(int NCHAN, float sample_rate_Hz, Container c, PApplet p){
     
-    super(container, "WHOLE");
+    
+    
+    super(c, "WHOLE");
+    x = (int)container[parentContainer].x;
+    y = (int)container[parentContainer].y;
+    h = (int)container[parentContainer].h;
+    w = (int)container[parentContainer].w;
+    
     parent = p;
-    cp5Serial = new ControlP5(parent);
+    cp5Serial = new ControlP5(p);
     
     this.nchan = NCHAN;
     this.fs_Hz = sample_rate_Hz;
@@ -89,11 +98,12 @@ class EMG_Widget extends Container{
     
     initSliders(w);
     
-    configButton = new Button(int(x) - 60,int(y),20,20,"O",fontInfo.buttonLabel_size);  
-    configWidget = new Config_Widget(NCHAN, sample_rate_Hz, container, motorWidgets);
+    configButton = new Button(int(x),int(y),20,20,"O",fontInfo.buttonLabel_size);  
+    configWidget = new Config_Widget(NCHAN, sample_rate_Hz, c, motorWidgets);
 
   }
   
+ 
   //Initalizes the threshold sliders
   void initSliders(float rw){
     //Stole some logic from the rectangle drawing in draw()
@@ -263,6 +273,49 @@ class EMG_Widget extends Container{
     }
     
     
+    if(millis() - motorWidgets[0].timeOfLastTrip >= 2000){
+      switch(motorWidgets[0].switchCounter){
+        case 1:
+            serialOutEMG.write("G0 O");
+            delay(100);
+            oldCommand = "G1";
+            serialOutEMG.write(oldCommand);
+            break;
+        case 2:
+            serialOutEMG.write("G0 O");
+            delay(1000);
+            oldCommand = "G2 C";
+            serialOutEMG.write(oldCommand);
+            delay(100);
+            oldCommand = "G2 O";
+            serialOutEMG.write(oldCommand);
+            break;
+        case 3:
+            serialOutEMG.write("G0 O");
+            delay(1000);
+            oldCommand = "G3";
+            serialOutEMG.write(oldCommand);
+            delay(100);
+            oldCommand = "G3 O";
+            serialOutEMG.write(oldCommand);
+            break;
+        case 4:
+            serialOutEMG.write("G0 O");
+            delay(1000);
+            oldCommand = "G4";
+            serialOutEMG.write(oldCommand);
+            break;
+        case 5:
+            serialOutEMG.write("G0 O");
+            delay(1000);
+            oldCommand = "G5";
+            serialOutEMG.write(oldCommand);
+            break;
+      }
+      
+      motorWidgets[0].switchCounter = 0;
+    
+    }
     
     
     //if(millis() - motorWidgets[0].timeOfLastTrip >= 2000){
@@ -434,7 +487,24 @@ class EMG_Widget extends Container{
     //---------------------------------------------------------------------------------
     
     }
+    void update() {
+
+      //update position/size of FFT Plot
+      x = (int)container[parentContainer].x;
+      y = (int)container[parentContainer].y;
+      w = (int)container[parentContainer].w;
+      h = (int)container[parentContainer].h;
+  
+    }
     
+    void screenResized(PApplet _parent, int _winX, int _winY) {
+      //when screen is resized...
+      //update Head Plot widget position/size
+      x = (int)container[parentContainer].x;
+      y = (int)container[parentContainer].y;
+      w = (int)container[parentContainer].w;
+      h = (int)container[parentContainer].h;
+    }
     
     public void draw(){
       super.draw();
@@ -443,11 +513,56 @@ class EMG_Widget extends Container{
         cp5Serial.setVisible(true);  
 
         pushStyle();
+        noStroke();
+        fill(255);
+        rect(x,y,w,h);
+        
+        fill(150, 150, 150);
+        rect(x, y, w, navHeight); //top bar
+        fill(200, 200, 200);
+        rect(x, y+navHeight, w, navHeight); //button bar
+        fill(255);
+        rect(x+2, y+2, navHeight-4, navHeight-4);
+        fill(bgColor, 100);
+        //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
+        rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
+        rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
+        rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
+        rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
+        //text("FFT Plot", x+w/2, y+navHeight/2)
+        fill(bgColor);
+        textAlign(LEFT, CENTER);
+        textFont(f);
+        textSize(18);
+        text("EMG Widget", x+navHeight+2, y+navHeight/2 - 2);
+        
+        
+        //draw dropdown titles
+        int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+        int dropdownWidth = 60;
+        textFont(f2);
+        textSize(12);
+        textAlign(CENTER, BOTTOM);
+        fill(bgColor);
+        text("Layout", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+        dropdownPos = 3;
+        text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+        //dropdownPos = 3;
+        //text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+        dropdownPos = 2;
+        text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+        dropdownPos = 1;
+        text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+        dropdownPos = 0;
+        text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    
+    
+        
         configButton.draw();
         if(!configButton.wasPressed){   
           cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false); 
           cp5Serial.get(MenuList.class, "baudList").setVisible(false);   
-          float rx = x, ry = y, rw = w, rh = h;
+          float rx = x , ry = y + navHeight + 2, rw = w, rh = h - navHeight - 2;
           
           float scaleFactor = 3.0;
           float scaleFactorJaw = 1.5;
@@ -499,7 +614,6 @@ class EMG_Widget extends Container{
           }
           drawTriggerFeedback();
     
-
           popStyle();
         }
        else{
@@ -579,23 +693,23 @@ class EMG_Widget extends Container{
       //have (particularly analog and digital buttons)
       
       for(int i = 0; i < nchan; i++){
-        if(motorWidget.configWidget.chans[i].isMouseHere()) {
-          motorWidget.configWidget.chans[i].setIsActive(true);
-          motorWidget.configWidget.chans[i].wasPressed = true;
+        if(emg_widget.configWidget.chans[i].isMouseHere()) {
+          emg_widget.configWidget.chans[i].setIsActive(true);
+          emg_widget.configWidget.chans[i].wasPressed = true;
           lastChan = i;
           
           if(!motorWidgets[lastChan].digitalBool){
-            motorWidget.configWidget.digital.setIsActive(false);
+            emg_widget.configWidget.digital.setIsActive(false);
           }
           else if(motorWidgets[lastChan].digitalBool){
-            motorWidget.configWidget.digital.setIsActive(true);
+            emg_widget.configWidget.digital.setIsActive(true);
           }
         
           if(!motorWidgets[lastChan].analogBool){
-            motorWidget.configWidget.analog.setIsActive(false);
+            emg_widget.configWidget.analog.setIsActive(false);
           }
           else if(motorWidgets[lastChan].analogBool){
-            motorWidget.configWidget.analog.setIsActive(true);
+            emg_widget.configWidget.analog.setIsActive(true);
           }
         
           break;          
@@ -604,41 +718,41 @@ class EMG_Widget extends Container{
       }
       
       //Digital button event
-      if(motorWidget.configWidget.digital.isMouseHere()){
-        if(motorWidget.configWidget.digital.wasPressed){
+      if(emg_widget.configWidget.digital.isMouseHere()){
+        if(emg_widget.configWidget.digital.wasPressed){
           motorWidgets[lastChan].digitalBool = false;
-          motorWidget.configWidget.digital.wasPressed = false;
-          motorWidget.configWidget.digital.setIsActive(false);
+          emg_widget.configWidget.digital.wasPressed = false;
+          emg_widget.configWidget.digital.setIsActive(false);
         }
-        else if(!motorWidget.configWidget.digital.wasPressed){
+        else if(!emg_widget.configWidget.digital.wasPressed){
           motorWidgets[lastChan].digitalBool = true;
-          motorWidget.configWidget.digital.wasPressed = true;
-          motorWidget.configWidget.digital.setIsActive(true);
+          emg_widget.configWidget.digital.wasPressed = true;
+          emg_widget.configWidget.digital.setIsActive(true);
         }
       }
       
       //Analog button event
-      if(motorWidget.configWidget.analog.isMouseHere()){
-        if(motorWidget.configWidget.analog.wasPressed){
+      if(emg_widget.configWidget.analog.isMouseHere()){
+        if(emg_widget.configWidget.analog.wasPressed){
           motorWidgets[lastChan].analogBool = false;
-          motorWidget.configWidget.analog.wasPressed = false;
-          motorWidget.configWidget.analog.setIsActive(false);
+          emg_widget.configWidget.analog.wasPressed = false;
+          emg_widget.configWidget.analog.setIsActive(false);
         }
-        else if(!motorWidget.configWidget.analog.wasPressed){
+        else if(!emg_widget.configWidget.analog.wasPressed){
           motorWidgets[lastChan].analogBool = true;
-          motorWidget.configWidget.analog.wasPressed = true;
-          motorWidget.configWidget.analog.setIsActive(true);
+          emg_widget.configWidget.analog.wasPressed = true;
+          emg_widget.configWidget.analog.setIsActive(true);
         }
       }
       
       //Connect button event
-      if(motorWidget.configWidget.connectToSerial.isMouseHere()){
-        motorWidget.configWidget.connectToSerial.wasPressed = true;
-        motorWidget.configWidget.connectToSerial.setIsActive(true);
+      if(emg_widget.configWidget.connectToSerial.isMouseHere()){
+        emg_widget.configWidget.connectToSerial.wasPressed = true;
+        emg_widget.configWidget.connectToSerial.setIsActive(true);
       }
       
     }
-    else if(mouseX >= (x-60) && mouseX <= (x-40) && mouseY >= y && mouseY <= y+20){
+    else if(mouseX >= (x) && mouseX <= (x-20) && mouseY >= y && mouseY <= y+20){
       
       //Open configuration menu
       if(configButton.isMouseHere()){
@@ -660,27 +774,27 @@ class EMG_Widget extends Container{
   //Mouse Released Event
   void mouseReleased(){
     for(int i = 0; i < nchan; i++){
-      if(!motorWidget.configWidget.dynamicThreshold.wasPressed && !configButton.wasPressed){
+      if(!emg_widget.configWidget.dynamicThreshold.wasPressed && !configButton.wasPressed){
         tripSliders[i].releaseEvent();
         untripSliders[i].releaseEvent();
       }
       
       if(i != lastChan){
-        motorWidget.configWidget.chans[i].setIsActive(false);
-        motorWidget.configWidget.chans[i].wasPressed = false;
+        emg_widget.configWidget.chans[i].setIsActive(false);
+        emg_widget.configWidget.chans[i].wasPressed = false;
       }
     }
     
-    if(motorWidget.configWidget.connectToSerial.isMouseHere()){
-      motorWidget.configWidget.connectToSerial.wasPressed = false;
-      motorWidget.configWidget.connectToSerial.setIsActive(false);
+    if(emg_widget.configWidget.connectToSerial.isMouseHere()){
+      emg_widget.configWidget.connectToSerial.wasPressed = false;
+      emg_widget.configWidget.connectToSerial.setIsActive(false);
       
       try{
         serialOutEMG = new Serial(parent,serialNameEMG,Integer.parseInt(baudEMG));
-        motorWidget.configWidget.print_onscreen("Connected!");
+        emg_widget.configWidget.print_onscreen("Connected!");
       }
       catch (Exception e){
-        motorWidget.configWidget.print_onscreen("Could not connect!");
+        emg_widget.configWidget.print_onscreen("Could not connect!");
       }
     }
     
