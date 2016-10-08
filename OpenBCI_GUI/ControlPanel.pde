@@ -29,24 +29,42 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
     if (cp5.isMouseOver(cp5.get(Textfield.class, "fileName"))){
       println("CallbackListener: controlEvent: clearing");
       cp5.get(Textfield.class, "fileName").clear();
-    }else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_ip"))){
+    }else if (cp5.isMouseOver(cp5.get(Textfield.class, "live_udp_ip"))){
       println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "udp_ip").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_port"))){
+      cp5.get(Textfield.class, "live_udp_ip").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "live_udp_port"))){
       println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "udp_port").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "osc_ip"))){
+      cp5.get(Textfield.class, "live_udp_port").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "live_osc_ip"))){
       println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "osc_ip").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "osc_address"))){
+      cp5.get(Textfield.class, "live_osc_ip").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "live_osc_address"))){
       println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "osc_address").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "lsl_data"))){
+      cp5.get(Textfield.class, "live_osc_address").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "live_lsl_data"))){
       println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "lsl_data").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "lsl_aux"))){
+      cp5.get(Textfield.class, "live_lsl_data").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "live_lsl_aux"))){
       println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "lsl_aux").clear();
+      cp5.get(Textfield.class, "live_lsl_aux").clear();
+    }else if (cp5.isMouseOver(cp5.get(Textfield.class, "playback_udp_ip"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "playback_udp_ip").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "playback_udp_port"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "playback_udp_port").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "playback_osc_ip"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "playback_osc_ip").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "playback_osc_address"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "playback_osc_address").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "playback_lsl_data"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "playback_lsl_data").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "playback_lsl_aux"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "playback_lsl_aux").clear();
     }
   }
 };
@@ -124,6 +142,7 @@ public void controlEvent(ControlEvent theEvent) {
     //output("Data Source = " + str);
     int newDataSource = int(theEvent.getValue());
     eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
+    networkType = 0; //reset networking type
     output("The new data source is " + str);
   }
 
@@ -144,7 +163,7 @@ public void controlEvent(ControlEvent theEvent) {
     }
     verbosePrint("SD setting = " + sdSetting);
   }
-  if (theEvent.isFrom("networkList")){
+  if (theEvent.isFrom("liveNetworkList")){
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
     int index = int(theEvent.getValue());
@@ -158,7 +177,20 @@ public void controlEvent(ControlEvent theEvent) {
       networkType = 3;
     }
   }
-  
+ if (theEvent.isFrom("playbackNetworkList")){
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    String str = (String)bob.get("headline");
+    int index = int(theEvent.getValue());
+    if (index == 0) {
+      networkType = 0;
+    }else if (index ==1){
+      networkType = 1;
+    } else if (index == 2){
+      networkType = 2;
+    } else if (index == 3){
+      networkType = 3;
+    }
+}  
   if (theEvent.isFrom("channelList")){
     int setChannelInt = int(theEvent.getValue()) + 1;
     //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
@@ -206,13 +238,16 @@ class ControlPanel {
   InitBox initBox;
 
   NetworkingBox networkingBoxLive;
-  UDPOptionsBox udpOptionsBox;
-  OSCOptionsBox oscOptionsBox;
-  LSLOptionsBox lslOptionsBox;
+  UDPOptionsBox udpOptionsBoxLive;
+  OSCOptionsBox oscOptionsBoxLive;
+  LSLOptionsBox lslOptionsBoxLive;
 
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
   NetworkingBox networkingBoxPlayback;
+  UDPOptionsBox udpOptionsBoxPlayback;
+  OSCOptionsBox oscOptionsBoxPlayback;
+  LSLOptionsBox lslOptionsBoxPlayback;
   
 
   SDBox sdBox;
@@ -255,16 +290,19 @@ class ControlPanel {
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
-    networkingBoxLive = new NetworkingBox(x + w, (sdBox.y + sdBox.h), w, 150, globalPadding);
-    udpOptionsBox = new UDPOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
-    oscOptionsBox = new OSCOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
-    lslOptionsBox = new LSLOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
+    networkingBoxLive = new NetworkingBox(x + w, (sdBox.y + sdBox.h), w, 150, globalPadding, true);
+    udpOptionsBoxLive = new UDPOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding,true);
+    oscOptionsBoxLive = new OSCOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding,true);
+    lslOptionsBoxLive = new LSLOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding,true);
     
     //boxes active when eegDataSource = Playback
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
-    //networkingBoxPlayback = new NetworkingBox(x + w, (sdConverterBox.y + sdConverterBox.h), w, h, globalPadding);
-
+    networkingBoxPlayback = new NetworkingBox(x + w, (sdConverterBox.y + sdConverterBox.h), w, 150, globalPadding, false);
+    udpOptionsBoxPlayback = new UDPOptionsBox(networkingBoxPlayback.x + networkingBoxPlayback.w, (sdConverterBox.y + sdConverterBox.h), w-30, networkingBoxPlayback.h, globalPadding,false);
+    oscOptionsBoxPlayback = new OSCOptionsBox(networkingBoxPlayback.x + networkingBoxPlayback.w, (sdConverterBox.y + sdConverterBox.h), w-30, networkingBoxPlayback.h, globalPadding,false);
+    lslOptionsBoxPlayback = new LSLOptionsBox(networkingBoxPlayback.x + networkingBoxPlayback.w, (sdConverterBox.y + sdConverterBox.h), w-30, networkingBoxPlayback.h, globalPadding,false);
+    
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
     pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
@@ -295,7 +333,7 @@ class ControlPanel {
     rcBox.update();
     initBox.update();
     networkingBoxLive.update();
-    //networkingBoxPlayback.update();
+    networkingBoxPlayback.update();
 
     channelPopup.update();
     serialList.updateMenu();
@@ -337,6 +375,7 @@ class ControlPanel {
       dataSourceBox.draw();
       drawStopInstructions = false;
       cp5.setVisible(true);//make sure controlP5 elements are visible
+      cp5.get(MenuList.class, "playbackNetworkList").setVisible(false);
 
       cp5Popup.setVisible(true);
       if (eegDataSource == 0) {	//when data source is from OpenBCI
@@ -370,72 +409,110 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
-        cp5.get(MenuList.class, "networkList").setVisible(true); //make sure the SD time record options menulist is visible
-        if (networkType == -1){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-        }else if (networkType == 0){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(MenuList.class, "liveNetworkList").setVisible(true); //make sure the SD time record options menulist is visible
 
+        cp5.get(MenuList.class, "playbackNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "playback_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        
+        if (networkType == 0){
+          cp5.get(Textfield.class, "live_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
         } else if (networkType == 1){
-          cp5.get(Textfield.class, "udp_ip").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-          udpOptionsBox.draw();
+          cp5.get(Textfield.class, "live_udp_ip").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_udp_port").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+          udpOptionsBoxLive.draw();
         } else if (networkType == 2){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_ip").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_port").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_address").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
 
-          oscOptionsBox.draw();
+          oscOptionsBoxLive.draw();
         } else if (networkType == 3){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(true); //make sure the SD time record options menulist is visible
-          lslOptionsBox.draw();
+          cp5.get(Textfield.class, "live_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_data").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "live_lsl_aux").setVisible(true); //make sure the SD time record options menulist is visible
+          lslOptionsBoxLive.draw();
         }
     
       } else if (eegDataSource == 1) { //when data source is from playback file
         playbackFileBox.draw();
         sdConverterBox.draw();
-        //networkingBoxPlayback.draw();
+        networkingBoxPlayback.draw();
+        cp5.get(MenuList.class, "playbackNetworkList").setVisible(true);
+
+        if (networkType == 0){
+          cp5.get(Textfield.class, "playback_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        } else if (networkType == 1){
+          cp5.get(Textfield.class, "playback_udp_ip").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_udp_port").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+          udpOptionsBoxPlayback.draw();
+        } else if (networkType == 2){
+          cp5.get(Textfield.class, "playback_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_ip").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_port").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_address").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+          oscOptionsBoxPlayback.draw();
+        } else if (networkType == 3){
+          cp5.get(Textfield.class, "playback_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_data").setVisible(true); //make sure the SD time record options menulist is visible
+          cp5.get(Textfield.class, "playback_lsl_aux").setVisible(true); //make sure the SD time record options menulist is visible
+          lslOptionsBoxPlayback.draw();
+        }
 
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "networkList").setVisible(false);
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-
+        cp5.get(MenuList.class, "liveNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "live_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_lsl_aux").setVisible(false);
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else if (eegDataSource == 2) {
@@ -444,14 +521,22 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "networkList").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(MenuList.class, "liveNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "live_udp_ip").setVisible(false);
+        cp5.get(Textfield.class, "live_udp_port").setVisible(false);
+        cp5.get(Textfield.class, "live_osc_ip").setVisible(false); 
+        cp5.get(Textfield.class, "live_osc_port").setVisible(false);
+        cp5.get(Textfield.class, "live_osc_address").setVisible(false); 
+        cp5.get(Textfield.class, "live_lsl_data").setVisible(false); 
+        cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); 
+        cp5.get(MenuList.class, "playbackNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "playback_udp_ip").setVisible(false);
+        cp5.get(Textfield.class, "playback_udp_port").setVisible(false);
+        cp5.get(Textfield.class, "playback_osc_ip").setVisible(false);
+        cp5.get(Textfield.class, "playback_osc_port").setVisible(false);
+        cp5.get(Textfield.class, "playback_osc_address").setVisible(false);
+        cp5.get(Textfield.class, "playback_lsl_data").setVisible(false);
+        cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); 
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       } else {
@@ -459,14 +544,22 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "networkList").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(MenuList.class, "liveNetworkList").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "live_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(MenuList.class, "playbackNetworkList").setVisible(false);
+        cp5.get(Textfield.class, "playback_udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_udp_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_osc_port").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_osc_address").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
+        cp5.get(Textfield.class, "playback_lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
         cp5Popup.get(MenuList.class, "channelList").setVisible(false); 
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
       }
@@ -828,24 +921,37 @@ public void system_init(){
         if (openBCI.isSerialPortOpen() == true) {
           openBCI.closeSerialPort();
         }
-
-        if (networkType == 1){
-            ip = cp5.get(Textfield.class, "udp_ip").getText();
-            port = int(cp5.get(Textfield.class, "udp_port").getText());
-            println(port);
-            udp = new UDPSend(port, ip);
-          }else if (networkType == 2){
-            ip = cp5.get(Textfield.class, "osc_ip").getText();
-            port = int(cp5.get(Textfield.class, "osc_port").getText());
-            address = cp5.get(Textfield.class, "osc_address").getText();
-            osc = new OSCSend(port, ip, address);
-          }else if (networkType == 3){
-            data_stream = cp5.get(Textfield.class, "lsl_data").getText();
-            aux_stream = cp5.get(Textfield.class, "lsl_aux").getText();
-            lsl = new LSLSend(data_stream, aux_stream);
-          }
-
-
+        if (eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX){
+          if (networkType == 1){
+              ip = cp5.get(Textfield.class, "live_udp_ip").getText();
+              port = int(cp5.get(Textfield.class, "live_udp_port").getText());
+              udp = new UDPSend(port, ip);
+            }else if (networkType == 2){
+              ip = cp5.get(Textfield.class, "live_osc_ip").getText();
+              port = int(cp5.get(Textfield.class, "live_osc_port").getText());
+              address = cp5.get(Textfield.class, "live_osc_address").getText();
+              osc = new OSCSend(port, ip, address);
+            }else if (networkType == 3){
+              data_stream = cp5.get(Textfield.class, "live_lsl_data").getText();
+              aux_stream = cp5.get(Textfield.class, "live_lsl_aux").getText();
+              lsl = new LSLSend(data_stream, aux_stream);
+            }
+        }else if (eegDataSource == DATASOURCE_PLAYBACKFILE){
+            if (networkType == 1){
+              ip = cp5.get(Textfield.class, "playback_udp_ip").getText();
+              port = int(cp5.get(Textfield.class, "playback_udp_port").getText());
+              udp = new UDPSend(port, ip);
+            }else if (networkType == 2){
+              ip = cp5.get(Textfield.class, "playback_osc_ip").getText();
+              port = int(cp5.get(Textfield.class, "playback_osc_port").getText());
+              address = cp5.get(Textfield.class, "playback_osc_address").getText();
+              osc = new OSCSend(port, ip, address);
+            }else if (networkType == 3){
+              data_stream = cp5.get(Textfield.class, "playback_lsl_data").getText();
+              aux_stream = cp5.get(Textfield.class, "playback_lsl_aux").getText();
+              lsl = new LSLSend(data_stream, aux_stream);
+            }
+        }
         fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles 
         initSystem();
       }
@@ -929,7 +1035,6 @@ class SerialBox {
     popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
-    println(w-padding*2);
     serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {
@@ -1153,26 +1258,35 @@ class SDBox {
 
 class NetworkingBox{
   int x, y, w, h, padding; //size and position
-   MenuList networkList;
+   MenuList liveNetworkList;
+   MenuList playbackNetworkList;
 
-  //boolean initButtonPressed; //default false
-
-  //boolean isSystemInitialized;
-  NetworkingBox(int _x, int _y, int _w, int _h, int _padding){
+  NetworkingBox(int _x, int _y, int _w, int _h, int _padding, boolean live){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
-    networkList = new MenuList(cp5, "networkList", w - padding*2, 100, f2);
-    networkList.setPosition(x + padding, y+padding+20);
-    networkList.addItem(makeItem("None"));
-    networkList.addItem(makeItem("UDP                                             >"));
-    networkList.addItem(makeItem("OSC                                             >"));
-    networkList.addItem(makeItem("LabStreamingLayer (LSL)       >"));
-    networkList.scrollerLength = 0;
-    networkList.activeItem = 0;
-  }
+    if (live){
+      liveNetworkList = new MenuList(cp5, "liveNetworkList", w - padding*2, 100, f2);
+      liveNetworkList.setPosition(x + padding, y+padding+20);
+      liveNetworkList.addItem(makeItem("None"));
+      liveNetworkList.addItem(makeItem("UDP                                             >"));
+      liveNetworkList.addItem(makeItem("OSC                                             >"));
+      liveNetworkList.addItem(makeItem("LabStreamingLayer (LSL)       >"));
+      liveNetworkList.scrollerLength = 0;
+      liveNetworkList.activeItem = 0;
+    }else{
+      playbackNetworkList = new MenuList(cp5, "playbackNetworkList", w - padding*2, 100, f2);
+      playbackNetworkList.setPosition(x + padding, y+padding+20);
+      playbackNetworkList.addItem(makeItem("None"));
+      playbackNetworkList.addItem(makeItem("UDP                                             >"));
+      playbackNetworkList.addItem(makeItem("OSC                                             >"));
+      playbackNetworkList.addItem(makeItem("LabStreamingLayer (LSL)       >"));
+      playbackNetworkList.scrollerLength = 0;
+      playbackNetworkList.activeItem = 0;
+    }
+  }    
   public void update() {
   }
 
@@ -1276,50 +1390,88 @@ class RadioConfigBox {
 class UDPOptionsBox {
   int x, y, w, h, padding; //size and position
   
-  UDPOptionsBox(int _x, int _y, int _w, int _h, int _padding){
+  UDPOptionsBox(int _x, int _y, int _w, int _h, int _padding, boolean live){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
-    
-    cp5.addTextfield("udp_ip")
-      .setPosition(x + 60,y + 50)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("localhost")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-
-   cp5.addTextfield("udp_port")
-      .setPosition(x + 60,y + 82)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("12345")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
+    if (live){
+      cp5.addTextfield("live_udp_ip")
+        .setPosition(x + 60,y + 50)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("localhost")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+     cp5.addTextfield("live_udp_port")
+        .setPosition(x + 60,y + 82)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("12345")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+    }else{
+       cp5.addTextfield("playback_udp_ip")
+        .setPosition(x + 60,y + 50)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("localhost")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+  
+     cp5.addTextfield("playback_udp_port")
+        .setPosition(x + 60,y + 82)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("12345")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+    }
   }
   public void update(){
   }
@@ -1352,67 +1504,124 @@ class UDPOptionsBox {
 class OSCOptionsBox{
   int x, y, w, h, padding; //size and position
   
-  OSCOptionsBox(int _x, int _y, int _w, int _h, int _padding){
+  OSCOptionsBox(int _x, int _y, int _w, int _h, int _padding, boolean live){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
     
-    cp5.addTextfield("osc_ip")
-      .setPosition(x + 80,y + 35)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("localhost")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-   cp5.addTextfield("osc_port")
-      .setPosition(x + 80,y + 67)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("12345")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-    cp5.addTextfield("osc_address")
-      .setPosition(x + 80,y + 99)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("/openbci")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
+    if (live){
+      cp5.addTextfield("live_osc_ip")
+        .setPosition(x + 80,y + 35)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("localhost")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+     cp5.addTextfield("live_osc_port")
+        .setPosition(x + 80,y + 67)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("12345")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+      cp5.addTextfield("live_osc_address")
+        .setPosition(x + 80,y + 99)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("/openbci")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+    }else{
+       cp5.addTextfield("playback_osc_ip")
+        .setPosition(x + 80,y + 35)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("localhost")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+     cp5.addTextfield("playback_osc_port")
+        .setPosition(x + 80,y + 67)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("12345")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+      cp5.addTextfield("playback_osc_address")
+        .setPosition(x + 80,y + 99)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("/openbci")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+    }
   }
   public void update(){
   }
@@ -1446,50 +1655,89 @@ class OSCOptionsBox{
 class LSLOptionsBox {
   int x, y, w, h, padding; //size and position
   
-  LSLOptionsBox(int _x, int _y, int _w, int _h, int _padding){
+  LSLOptionsBox(int _x, int _y, int _w, int _h, int _padding, boolean live){
     x = _x;
     y = _y;
     w = _w;
     h = _h;
     padding = _padding;
-    
-    cp5.addTextfield("lsl_data")
-      .setPosition(x + 115,y + 50)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("openbci_data")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-
-   cp5.addTextfield("lsl_aux")
-      .setPosition(x + 115,y + 82)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26)) 
-      .setText("openbci_aux")
-      .align(5, 10, 20, 40) 
-      .onDoublePress(cb) 
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
+    if (live){
+      cp5.addTextfield("live_lsl_data")
+        .setPosition(x + 115,y + 50)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("openbci_data")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+  
+     cp5.addTextfield("live_lsl_aux")
+        .setPosition(x + 115,y + 82)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("openbci_aux")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+    }else{
+     cp5.addTextfield("playback_lsl_data")
+        .setPosition(x + 115,y + 50)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("openbci_data")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+  
+     cp5.addTextfield("playback_lsl_aux")
+        .setPosition(x + 115,y + 82)
+        .setCaptionLabel("")
+        .setSize(100,26)
+        .setFont(f2)
+        .setFocus(false)
+        .setColor(color(26,26,26))
+        .setColorBackground(color(255,255,255)) // text field bg color
+        .setColorValueLabel(color(0,0,0))  // text color
+        .setColorForeground(isSelected_color)  // border color when not selected
+        .setColorActive(isSelected_color)  // border color when selected
+        .setColorCursor(color(26,26,26)) 
+        .setText("openbci_aux")
+        .align(5, 10, 20, 40) 
+        .onDoublePress(cb) 
+        .setVisible(false)
+        .setAutoClear(true)
+        ;
+    }
   }
   public void update(){
   }
