@@ -40,10 +40,14 @@ void parseKey(char val) {
   //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
   switch (val) {
     case '.':
-      drawEMG = !drawEMG; 
+      drawEMG = !drawEMG;
       break;
     case ',':
       drawContainers = !drawContainers; 
+      break;
+    case '/':
+      drawAccel = !drawAccel;
+      drawPulse = !drawPulse;
       break;
     case '1':
       deactivateChannel(1-1); 
@@ -547,6 +551,22 @@ void mousePressed() {
   if (playground.isMouseInButton()) {
     playground.toggleWindow();
   }
+  
+  if (accelWidget.isMouseHere()) {
+    accelWidget.mousePressed();
+  }
+
+  if (accelWidget.isMouseInButton()) {
+    accelWidget.toggleWindow();
+  }
+  
+  if (pulseWidget.isMouseHere()) {
+    pulseWidget.mousePressed();
+  }
+
+  if (pulseWidget.isMouseInButton()) {
+    pulseWidget.toggleWindow();
+  }
 }
 
 void mouseReleased() {
@@ -785,13 +805,13 @@ class Button {
       if (!isMouseHere() && drawHand) {
         cursor(ARROW);
         drawHand = false;
-        verbosePrint("don't draw hand");
+        //verbosePrint("don't draw hand");
       }
       //if cursor is over button change cursor icon to hand!
       if (isMouseHere() && !drawHand) {
         cursor(HAND);
         drawHand = true;
-        verbosePrint("draw hand");
+        //verbosePrint("draw hand");
       }
     }
   }

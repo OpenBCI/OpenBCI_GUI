@@ -8,6 +8,8 @@ DataProcessing dataProcessing;
 String curTimestamp;
 boolean hasRepeated = false;
 HashMap<String,float[][]> processed_file;
+HashMap<Integer,String> index_of_times;
+HashMap<String,Integer> index_of_times_rev;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -16,6 +18,8 @@ HashMap<String,float[][]> processed_file;
 //called from systemUpdate when mode=10 and isRunning = true
 void process_input_file() throws Exception{
   processed_file = new HashMap<String, float[][]>();
+  index_of_times = new HashMap<Integer, String>();
+  index_of_times_rev = new HashMap<String, Integer>();
   float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
   
   try{
@@ -26,6 +30,10 @@ void process_input_file() throws Exception{
         //scale the data into engineering units..."microvolts"
         localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
       }
+      processed_file.put(curTimestamp, localLittleBuff);
+      index_of_times.put(indices,curTimestamp);
+      index_of_times_rev.put(curTimestamp,indices);
+      indices++;
     }
   }
   catch (Exception e){throw new Exception();}
@@ -35,7 +43,7 @@ void process_input_file() throws Exception{
 }
 
 
-
+/*************************/
 int getDataIfAvailable(int pointCounter) {
 
   if ( (eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX) ) {
@@ -47,6 +55,7 @@ int getDataIfAvailable(int pointCounter) {
         //scale the data into engineering units ("microvolts") and save to the "little buffer"
         yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * openBCI.get_scale_fac_uVolts_per_count();
       }
+      for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
       pointCounter++; //increment counter for "little buffer"
     }
    
@@ -261,14 +270,15 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
     
     //int localnchan = nchan;
     
-    
-    //try{
-    //  while(true){
-    //    println("VALUE: " + row.getString(localnchan));
-    //    localnchan++;
-    //  }
-    //}
-    //catch (Exception e){ println("DONE WITH THIS TIME. INDEX: " + --localnchan);}
+    if(!isRunning){
+      try{
+        if(!isOldData) row.getString(nchan+4);
+        else row.getString(nchan+3);
+        
+        nchan = 16;
+      }
+      catch (ArrayIndexOutOfBoundsException e){ println("8 Channel");}
+    }
   }
   return currentTableRowIndex;
 }

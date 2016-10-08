@@ -1,4 +1,4 @@
-
+ 
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
@@ -14,14 +14,14 @@
 //   with the ControlP5 library that is included with this GitHub repository
 //
 //   No warranty. Use at your own risk. Use for whatever you'd like.
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////
 import ddf.minim.*;  // To make sound.  Following minim example "frequencyModulation"
 import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyModulation"
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
 import java.util.*; //for Array.copyOfRange()
-import java.util.Map.Entry; 
+import java.util.Map.Entry;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 import netP5.*; //for OSC networking
@@ -122,6 +122,7 @@ float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is
 float dataBuffY_filtY_uV[][];
 float yLittleBuff[] = new float[nPointsPerUpdate];
 float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+float auxBuff[][] = new float[3][nPointsPerUpdate];
 float data_elec_imp_ohm[];
 
 //variables for writing EEG data out to a file
@@ -168,7 +169,7 @@ float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
 int reinitializeGUIdelay = 125;
 //Tao's variabiles
-int widthOfLastScreen = 0;      
+int widthOfLastScreen = 0;
 int heightOfLastScreen = 0;
 
 //set window size
@@ -182,10 +183,16 @@ PFont f2;
 PFont f3;
 
 EMG_Widget motorWidget;
+Accelerometer_Widget accelWidget;
+PulseSensor_Widget pulseWidget;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
+
+int indices = 0;
+
+boolean synthesizeData = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -213,7 +220,7 @@ void setup() {
   heightOfLastScreen = height;
 
   setupContainers();
-  //setupGUIWidgets(); 
+  //setupGUIWidgets();
 
   //V1 FONTS
   f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
@@ -226,9 +233,9 @@ void setup() {
   //f3 = createFont("fonts/Montserrat-SemiBold.otf", 15);
 
   //listen for window resize ... used to adjust elements in application
-  frame.addComponentListener(new ComponentAdapter() { 
-    public void componentResized(ComponentEvent e) { 
-      if (e.getSource()==frame) { 
+  frame.addComponentListener(new ComponentAdapter() {
+    public void componentResized(ComponentEvent e) {
+      if (e.getSource()==frame) {
         println("OpenBCI_GUI: setup: RESIZED");
         screenHasBeenResized = true;
         timeOfLastScreenResize = millis();
@@ -250,22 +257,28 @@ void setup() {
 
   //from the user's perspective, the program hangs out on the ControlPanel until the user presses "Start System".
   print("Graphics & GUI Library: ");
-  controlPanel = new ControlPanel(this);  
+  controlPanel = new ControlPanel(this);
   //The effect of "Start System" is that initSystem() gets called, which starts up the conneciton to the OpenBCI
-  //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.  
+  //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.
   //Once the hardware is synchronized, the main GUI is drawn and the user switches over to the main GUI.
 
   logo = loadImage("logo2.png");
   cog = loadImage("cog_1024x1024.png");
 
   playground = new Playground(navBarHeight);
+  
 
+  accelWidget = new Accelerometer_Widget(navBarHeight);
+  accelWidget.initPlayground(openBCI);
+  
+  pulseWidget = new PulseSensor_Widget(navBarHeight);
+  pulseWidget.initPlayground(openBCI);
   //attempt to open a serial port for "output"
   try {
     verbosePrint("OpenBCI_GUI.pde:  attempting to open serial port for data output = " + serial_output_portName);
     serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
     serial_output.clear(); // clear anything in the com port's buffer
-  } 
+  }
   catch (RuntimeException e) {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
@@ -292,7 +305,7 @@ void draw() {
 //====================== END-OF-DRAW ==========================//
 
 int pointCounter = 0;
-int prevBytes = 0; 
+int prevBytes = 0;
 int prevMillis = millis();
 int byteRate_perSec = 0;
 int drawLoop_counter = 0;
@@ -312,15 +325,15 @@ void initSystem() {
   data_elec_imp_ohm = new float[nchan];
   is_railed = new DataStatus[nchan];
   for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
-  for (int i=0; i<nDataBackBuff; i++) { 
+  for (int i=0; i<nDataBackBuff; i++) {
     //dataPacketBuff[i] = new DataPacket_ADS1299(nchan+n_aux_ifEnabled);
     // dataPacketBuff[i] = new DataPacket_ADS1299(OpenBCI_Nchannels+n_aux_ifEnabled);
     dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
   }
   dataProcessing = new DataProcessing(nchan, openBCI.get_fs_Hz());
   dataProcessing_user = new DataProcessing_User(nchan, openBCI.get_fs_Hz());
-  
-  
+
+
 
 
   //initialize the data
@@ -329,7 +342,7 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 --");
 
   //initialize the FFT objects
-  for (int Ichan=0; Ichan < nchan; Ichan++) { 
+  for (int Ichan=0; Ichan < nchan; Ichan++) {
     verbosePrint("a--"+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, openBCI.get_fs_Hz());
   }  //make the FFT objects
@@ -343,7 +356,7 @@ void initSystem() {
 
   //prepare the source of the input data
   switch (eegDataSource) {
-  case DATASOURCE_NORMAL: 
+  case DATASOURCE_NORMAL:
   case DATASOURCE_NORMAL_W_AUX:
 
     // int nDataValuesPerPacket = OpenBCI_Nchannels;
@@ -353,6 +366,8 @@ void initSystem() {
     openBCI = new OpenBCI_ADS1299(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
     break;
   case DATASOURCE_SYNTHETIC:
+    synthesizeData = true;
+
     //do nothing
     break;
   case DATASOURCE_PLAYBACKFILE:
@@ -360,7 +375,7 @@ void initSystem() {
     println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
     try {
       playbackData_table = new Table_CSV(playbackData_fname);
-    } 
+    }
     catch (Exception e) {
       println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
       println("   : quitting...");
@@ -405,7 +420,7 @@ void haltSystem() {
   curDataPacketInd = -1;
   lastReadDataPacketInd = -1;
   pointCounter = 0;
-  prevBytes = 0; 
+  prevBytes = 0;
   prevMillis = millis();
   byteRate_perSec = 0;
   drawLoop_counter = 0;
@@ -457,13 +472,13 @@ void systemUpdate() { // for updating data values and variables
         if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { //wait 1 second for GUI to reinitialize
           try {
 
-            //-----------------------------------------------------------            
+            //-----------------------------------------------------------
             //-----------------------------------------------------------
             gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
             updateGUIWidgets(); //####
             //-----------------------------------------------------------
             //-----------------------------------------------------------
-          } 
+          }
           catch (Exception e) {
             println(e.getMessage());
             reinitializeGUIdelay = reinitializeGUIdelay * 2;
@@ -522,9 +537,13 @@ void systemUpdate() { // for updating data values and variables
       timeOfGUIreinitialize = millis();
       initializeGUI();
       playground.x = width; //reset the x for the playground...
+      accelWidget.x = width;
+      pulseWidget.x = width;
     }
 
     playground.update();
+    accelWidget.update();
+    pulseWidget.update();
   }
 
   controlPanel.update();
@@ -532,7 +551,7 @@ void systemUpdate() { // for updating data values and variables
 
 void systemDraw() { //for drawing to the screen
 
-  //redraw the screen...not every time, get paced by when data is being plotted    
+  //redraw the screen...not every time, get paced by when data is being plotted
   background(bgColor);  //clear the screen
   //background(255);  //clear the screen
 
@@ -545,7 +564,7 @@ void systemDraw() { //for drawing to the screen
 
       //update the title of the figure;
       switch (eegDataSource) {
-      case DATASOURCE_NORMAL: 
+      case DATASOURCE_NORMAL:
       case DATASOURCE_NORMAL_W_AUX:
         surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput.getRowsWritten())/openBCI.get_fs_Hz()) + " secs Saved, Writing to " + output_fname);
         break;
@@ -559,7 +578,7 @@ void systemDraw() { //for drawing to the screen
     }
 
     //wait 1 second for GUI to reinitialize
-    if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { 
+    if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) {
       // println("attempting to draw GUI...");
       try {
         // println("GUI DRAW!!! " + millis());
@@ -577,7 +596,7 @@ void systemDraw() { //for drawing to the screen
         //----------------------------
 
         // playground.draw();
-      } 
+      }
       catch (Exception e) {
         println(e.getMessage());
         reinitializeGUIdelay = reinitializeGUIdelay * 2;
@@ -589,8 +608,9 @@ void systemDraw() { //for drawing to the screen
     }
 
     playground.draw();
-
     motorWidget.draw();
+    accelWidget.draw();
+    pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10

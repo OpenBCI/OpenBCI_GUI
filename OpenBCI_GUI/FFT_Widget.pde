@@ -411,7 +411,7 @@ class FFT_Widget {
   void mouseReleased() {
     //called by GUI_Widgets.pde
     if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
-      println("fft_widget.mouseReleased()");
+      //println("fft_widget.mouseReleased()");
     }
   }
   //void keyPressed() {

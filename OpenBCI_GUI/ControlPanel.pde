@@ -613,7 +613,7 @@ class ControlPanel {
 
   //mouse released in control panel
   public void CPmouseReleased() {
-    verbosePrint("CPMouseReleased: CPmouseReleased start...");
+    //verbosePrint("CPMouseReleased: CPmouseReleased start...");
     if(popOut.isMouseHere() && popOut.wasPressed){
       popOut.wasPressed = false;
       popOut.setIsActive(false);
@@ -820,7 +820,7 @@ public void system_init(){
         initSystemButton.setIsActive(false);
         return;
       } else { //otherwise, initiate system!  
-        verbosePrint("ControlPanel: CPmouseReleased: init");
+        //verbosePrint("ControlPanel: CPmouseReleased: init");
         initSystemButton.setString("STOP SYSTEM");
         //global steps to START SYSTEM
         // prepare the serial port
