@@ -112,7 +112,7 @@ class OpenBionics_Widget {
               OpenBionicsHand.write("F" + i + "P" + output_normalized);
               last_chan = fingerChans[i];
               last_out = output_normalized;
-              delay(1);
+              //delay(12);
               
             //}
             //else OpenBionicsHand.write("F" + i + "P0");
@@ -283,6 +283,7 @@ class OpenBionics_Widget {
           connect.draw();
           break;
         case 0:
+          configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1; 
           configP5.get(MenuList.class, "obChanList").setVisible(true);   
           fill(180,180,180);
           rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
@@ -293,6 +294,7 @@ class OpenBionics_Widget {
           text("Thumb Finger Channel Selection", x + w/2, y + 4*navHeight);
           break;
         case 1:
+          configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1;   
           configP5.get(MenuList.class, "obChanList").setVisible(true);   
           fill(180,180,180);
           rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
@@ -303,6 +305,7 @@ class OpenBionics_Widget {
           text("Index Finger Channel Selection", x + w/2, y + 4*navHeight);
           break;
         case 2:
+          configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1; 
           configP5.get(MenuList.class, "obChanList").setVisible(true);   
           fill(180,180,180);
           rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
@@ -313,6 +316,7 @@ class OpenBionics_Widget {
           text("Middle Finger Channel Selection", x + w/2, y + 4*navHeight);
           break;
         case 3:
+          configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1; 
           configP5.get(MenuList.class, "obChanList").setVisible(true);   
           fill(180,180,180);
           rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
@@ -323,6 +327,7 @@ class OpenBionics_Widget {
           text("Ring Finger Channel Selection", x + w/2, y + 4*navHeight);
           break;
         case 4:
+          configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1; 
           configP5.get(MenuList.class, "obChanList").setVisible(true);   
           fill(180,180,180);
           rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
@@ -333,6 +338,7 @@ class OpenBionics_Widget {
           text("Little Finger Channel Selection", x + w/2, y + 4*navHeight);
           break;
         case 5:
+          configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1; 
           configP5.get(MenuList.class, "obChanList").setVisible(true);   
           fill(180,180,180);
           rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
