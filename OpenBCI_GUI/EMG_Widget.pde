@@ -164,6 +164,7 @@ class EMG_Widget extends Container{
     //for example, you could loop over each EEG channel to do some sort of time-domain processing 
     //using the sample values that have already been filtered, as will be plotted on the display
     //float EEG_value_uV;
+    //println("processing");
     
     //looping over channels and analyzing input data
     for (Motor_Widget cfc : motorWidgets) {
@@ -273,49 +274,49 @@ class EMG_Widget extends Container{
     }
     
     
-    if(millis() - motorWidgets[0].timeOfLastTrip >= 2000){
-      switch(motorWidgets[0].switchCounter){
-        case 1:
-            serialOutEMG.write("G0 O");
-            delay(100);
-            oldCommand = "G1";
-            serialOutEMG.write(oldCommand);
-            break;
-        case 2:
-            serialOutEMG.write("G0 O");
-            delay(1000);
-            oldCommand = "G2 C";
-            serialOutEMG.write(oldCommand);
-            delay(100);
-            oldCommand = "G2 O";
-            serialOutEMG.write(oldCommand);
-            break;
-        case 3:
-            serialOutEMG.write("G0 O");
-            delay(1000);
-            oldCommand = "G3";
-            serialOutEMG.write(oldCommand);
-            delay(100);
-            oldCommand = "G3 O";
-            serialOutEMG.write(oldCommand);
-            break;
-        case 4:
-            serialOutEMG.write("G0 O");
-            delay(1000);
-            oldCommand = "G4";
-            serialOutEMG.write(oldCommand);
-            break;
-        case 5:
-            serialOutEMG.write("G0 O");
-            delay(1000);
-            oldCommand = "G5";
-            serialOutEMG.write(oldCommand);
-            break;
-      }
+    //if(millis() - motorWidgets[0].timeOfLastTrip >= 2000){
+    //  switch(motorWidgets[0].switchCounter){
+    //    case 1:
+    //        serialOutEMG.write("G0 O");
+    //        delay(100);
+    //        oldCommand = "G1";
+    //        serialOutEMG.write(oldCommand);
+    //        break;
+    //    case 2:
+    //        serialOutEMG.write("G0 O");
+    //        delay(1000);
+    //        oldCommand = "G2 C";
+    //        serialOutEMG.write(oldCommand);
+    //        delay(100);
+    //        oldCommand = "G2 O";
+    //        serialOutEMG.write(oldCommand);
+    //        break;
+    //    case 3:
+    //        serialOutEMG.write("G0 O");
+    //        delay(1000);
+    //        oldCommand = "G3";
+    //        serialOutEMG.write(oldCommand);
+    //        delay(100);
+    //        oldCommand = "G3 O";
+    //        serialOutEMG.write(oldCommand);
+    //        break;
+    //    case 4:
+    //        serialOutEMG.write("G0 O");
+    //        delay(1000);
+    //        oldCommand = "G4";
+    //        serialOutEMG.write(oldCommand);
+    //        break;
+    //    case 5:
+    //        serialOutEMG.write("G0 O");
+    //        delay(1000);
+    //        oldCommand = "G5";
+    //        serialOutEMG.write(oldCommand);
+    //        break;
+    //  }
       
-      motorWidgets[0].switchCounter = 0;
+    //  motorWidgets[0].switchCounter = 0;
     
-    }
+    //}
     
     
     //if(millis() - motorWidgets[0].timeOfLastTrip >= 2000){
@@ -562,7 +563,7 @@ class EMG_Widget extends Container{
         if(!configButton.wasPressed){   
           cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false); 
           cp5Serial.get(MenuList.class, "baudList").setVisible(false);   
-          float rx = x , ry = y + navHeight + 2, rw = w, rh = h - navHeight - 2;
+          float rx = x , ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
           
           float scaleFactor = 3.0;
           float scaleFactorJaw = 1.5;

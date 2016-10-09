@@ -675,7 +675,7 @@ void mouseOutOfBounds() {
       MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
       mouseX = 0;
       mouseY = 0;
-      println("Mouse out of bounds!");
+      //println("Mouse out of bounds!");
       mouseInFrame = false;
     }
   } else {
@@ -685,7 +685,7 @@ void mouseOutOfBounds() {
       appletOriginY = (int)loc.y;
       windowOriginSet = true;
       mouseInFrame = true;
-      println("WINDOW ORIGIN SET!");
+      //println("WINDOW ORIGIN SET!");
     }
   }
 }
