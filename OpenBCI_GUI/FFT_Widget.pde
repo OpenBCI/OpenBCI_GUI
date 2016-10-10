@@ -63,13 +63,12 @@ class FFT_Widget {
 
   int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
   int xMax = xLimOptions[3];
-  int FFT_indexLim = int(1.0*xMax*(Nfft/openBCI.get_fs_Hz()));   // maxim value of FFT index
+  int FFT_indexLim = int(1.0*xMax*(Nfft/get_fs_Hz_safe()));   // maxim value of FFT index
   int yLim = 100;  //maximum value of y axis ... 100 uV
 
 
   //constructor 1
   FFT_Widget(PApplet parent) {
-
     cp5_FFT = new ControlP5(parent);
 
     println("1");
@@ -264,14 +263,13 @@ class FFT_Widget {
   }
 
   void update() {
-
     //update the points of the FFT channel arrays
     //update fft point arrays
     for (int i = 0; i < fft_points.length; i++) {
       for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
         //GPoint powerAtBin = new GPoint(j, 15*random(0.1*j));
 
-        GPoint powerAtBin = new GPoint((1.0*openBCI.get_fs_Hz()/Nfft)*j, fftBuff[i].getBand(j));
+        GPoint powerAtBin = new GPoint((1.0*get_fs_Hz_safe()/Nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
         //println("=========================================");
         //println(j);

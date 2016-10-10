@@ -78,7 +78,7 @@ int getDataIfAvailable(int pointCounter) {
     int current_millis = millis();
     if (current_millis >= nextPlayback_millis) {
       //prepare for next time
-      int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/openBCI.get_fs_Hz())/playback_speed_fac);
+      int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/get_fs_Hz_safe())/playback_speed_fac);
       if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
       nextPlayback_millis += increment_millis;
 
@@ -89,7 +89,7 @@ int getDataIfAvailable(int pointCounter) {
         dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
         switch (eegDataSource) {
         case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-          synthesizeData(nchan, openBCI.get_fs_Hz(), openBCI.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+          synthesizeData(nchan, get_fs_Hz_safe(), openBCI.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
           break;
         case DATASOURCE_PLAYBACKFILE:
           currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, openBCI.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);

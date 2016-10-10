@@ -91,7 +91,7 @@ class OpenBCI_Ganglion {
   private int tcpGanglionPort = 10996;
   private String tcpGanglionIP = "127.0.0.1";
 
-  private final float fs_Hz = 256.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
+  private final float fs_Hz = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80

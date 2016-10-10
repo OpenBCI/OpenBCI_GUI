@@ -102,7 +102,7 @@ final int threshold_railed_warn = int(pow(2, 23)*0.75); //set a somewhat smaller
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
 //openBCI data packet
-final int nDataBackBuff = 3*(int)openBCI.get_fs_Hz();
+final int nDataBackBuff = 3*(int)get_fs_Hz_safe();
 DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
 int curDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
@@ -353,17 +353,17 @@ void initSystem() {
 
 
   //initialize the data
-  prepareData(dataBuffX, dataBuffY_uV, openBCI.get_fs_Hz());
+  prepareData(dataBuffX, dataBuffY_uV, get_fs_Hz_safe());
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 --");
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
     verbosePrint("a--"+Ichan);
-    fftBuff[Ichan] = new FFT(Nfft, openBCI.get_fs_Hz());
+    fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
   }  //make the FFT objects
   verbosePrint("OpenBCI_GUI: initSystem: b");
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, openBCI.get_fs_Hz());
+  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -395,7 +395,7 @@ void initSystem() {
       println("   : quitting...");
       exit();
     }
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/openBCI.get_fs_Hz()) + " seconds of EEG data");
+    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/get_fs_Hz_safe()) + " seconds of EEG data");
     //removing first column of data from data file...the first column is a time index and not eeg data
     playbackData_table.removeColumn(0);
     break;
@@ -598,13 +598,13 @@ void systemDraw() { //for drawing to the screen
       //update the title of the figure;
       switch (eegDataSource) {
       case DATASOURCE_NORMAL_W_AUX:
-        surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput.getRowsWritten())/openBCI.get_fs_Hz()) + " secs Saved, Writing to " + output_fname);
+        surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput.getRowsWritten())/get_fs_Hz_safe()) + " secs Saved, Writing to " + output_fname);
         break;
       case DATASOURCE_SYNTHETIC:
         surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
         break;
       case DATASOURCE_PLAYBACKFILE:
-        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/openBCI.get_fs_Hz()) + " of " + int(float(playbackData_table.getRowCount())/openBCI.get_fs_Hz()) + " secs, Reading from: " + playbackData_fname);
+        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/get_fs_Hz_safe()) + " of " + int(float(playbackData_table.getRowCount())/get_fs_Hz_safe()) + " secs, Reading from: " + playbackData_fname);
         break;
       case DATASOURCE_GANGLION:
         surface.setTitle(int(frameRate) + " fps, Ganglion!");
