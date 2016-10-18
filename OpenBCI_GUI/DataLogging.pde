@@ -49,7 +49,11 @@ void openNewLogFileBDF(String _fileName) {
     closeLogFile();
   }
   //open the new file
-  fileoutput_bdf = new OutputFile_BDF(openBCI.get_fs_Hz(), nchan, _fileName);
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    fileoutput_bdf = new OutputFile_BDF(ganglion.get_fs_Hz(), nchan, _fileName);
+  } else {
+    fileoutput_bdf = new OutputFile_BDF(openBCI.get_fs_Hz(), nchan, _fileName);
+  }
   output_fname = fileoutput_bdf.fname;
   println("openBCI: openNewLogFile: opened BDF output file: " + output_fname);
   output("openBCI: openNewLogFile: opened BDF output file: " + output_fname);
@@ -343,6 +347,9 @@ public class OutputFile_BDF {
   private String bdf_physical_minimum_ADC_Accel = "-4";
   private String bdf_physical_maximum_ADC_Accel = "4";
 
+  private String bdf_physical_minimum_ADC_24bit_ganglion = "-15686";
+  private String bdf_physical_maximum_ADC_24bit_ganglion = "15686";
+
   private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
   private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
   private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2,23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
@@ -495,12 +502,16 @@ public class OutputFile_BDF {
     }
 
     writeChannelDataValues(data.rawValues);
-    writeAuxDataValues(data.rawAuxValues);
+    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      writeAuxDataValues(data.rawAuxValues);
+    }
     samplesInDataRecord++;
     // writeValues(data.auxValues,scale_for_aux);
     if (samplesInDataRecord >= fs_Hz) {
       arrayCopy(chanValBuf,chanValBuf_buffer);
-      arrayCopy(auxValBuf,auxValBuf_buffer);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        arrayCopy(auxValBuf,auxValBuf_buffer);
+      }
 
       samplesInDataRecord = 0;
       writeDataOut();
@@ -516,13 +527,16 @@ public class OutputFile_BDF {
           }
         }
       }
-      for (int i = 0; i < nbAux; i++) {
-        for (int j = 0; j < fs_Hz; j++) {
-          for (int k = 0; k < 3; k++) {
-            dstream.write(auxValBuf_buffer[i][j][k]);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        for (int i = 0; i < nbAux; i++) {
+          for (int j = 0; j < fs_Hz; j++) {
+            for (int k = 0; k < 3; k++) {
+              dstream.write(auxValBuf_buffer[i][j][k]);
+            }
           }
         }
       }
+
       // Write the annotations
       dstream.write('+');
       String _t = str((millis() - timeDataRecordStart) / 1000);
@@ -930,7 +944,12 @@ public class OutputFile_BDF {
    * @returns {int} - The number of signals in the header.
    */
   private int getNbSignals() {
-    return nbChan + nbAux + nbAnnotations;
+    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      return nbChan + nbAux + nbAnnotations;
+    } else {
+      return nbChan + nbAnnotations;
+    }
+
   }
 
   /**
@@ -1007,8 +1026,13 @@ public class OutputFile_BDF {
     setStringArray(physicalDimensionAnnotations, " ", 1);
     setStringArray(digitalMinimumAnnotations, bdf_digital_minimum_ADC_24bit, 1);
     setStringArray(digitalMaximumAnnotations, bdf_digital_maximum_ADC_24bit, 1);
-    setStringArray(physicalMinimumAnnotations, bdf_physical_minimum_ADC_24bit, 1);
-    setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit, 1);
+    if (eegDataSource == DATASOURCE_GANGLION) {
+      setStringArray(physicalMinimumAnnotations, bdf_physical_minimum_ADC_24bit_ganglion, 1);
+      setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit_ganglion, 1);
+    } else {
+      setStringArray(physicalMinimumAnnotations, bdf_physical_minimum_ADC_24bit, 1);
+      setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit, 1);
+    }
     setStringArray(prefilteringAnnotations, " ", 1);
     nbSamplesPerDataRecordAnnotations[0] = str(nbSamplesPerAnnontation);
     setStringArray(reservedAnnotations, " ", 1);
@@ -1197,43 +1221,43 @@ public class OutputFile_BDF {
       writeString(padStringRight(str(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
 
       writeStringArrayWithPaddingTimes(labelsEEG, BDF_HEADER_NS_SIZE_LABEL, o);
-      writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
       writeStringArrayWithPaddingTimes(labelsAnnotations, BDF_HEADER_NS_SIZE_LABEL, o);
 
       writeStringArrayWithPaddingTimes(transducerEEG, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
-      writeStringArrayWithPaddingTimes(transducerAux, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(transducerAux, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
       writeStringArrayWithPaddingTimes(transducerAnnotations, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
 
       writeStringArrayWithPaddingTimes(physicalDimensionEEG, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
-      writeStringArrayWithPaddingTimes(physicalDimensionAux, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(physicalDimensionAux, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
       writeStringArrayWithPaddingTimes(physicalDimensionAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
 
       writeStringArrayWithPaddingTimes(physicalMinimumEEG, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
-      writeStringArrayWithPaddingTimes(physicalMinimumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(physicalMinimumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
       writeStringArrayWithPaddingTimes(physicalMinimumAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
 
       writeStringArrayWithPaddingTimes(physicalMaximumEEG, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
-      writeStringArrayWithPaddingTimes(physicalMaximumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(physicalMaximumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
       writeStringArrayWithPaddingTimes(physicalMaximumAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
 
       writeStringArrayWithPaddingTimes(digitalMinimumEEG, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
-      writeStringArrayWithPaddingTimes(digitalMinimumAux, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(digitalMinimumAux, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
       writeStringArrayWithPaddingTimes(digitalMinimumAnnotations, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
 
       writeStringArrayWithPaddingTimes(digitalMaximumEEG, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
-      writeStringArrayWithPaddingTimes(digitalMaximumAux, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(digitalMaximumAux, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
       writeStringArrayWithPaddingTimes(digitalMaximumAnnotations, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
 
       writeStringArrayWithPaddingTimes(prefilteringEEG, BDF_HEADER_NS_SIZE_PREFILTERING, o);
-      writeStringArrayWithPaddingTimes(prefilteringAux, BDF_HEADER_NS_SIZE_PREFILTERING, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(prefilteringAux, BDF_HEADER_NS_SIZE_PREFILTERING, o);
       writeStringArrayWithPaddingTimes(prefilteringAnnotations, BDF_HEADER_NS_SIZE_PREFILTERING, o);
 
       writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordEEG, BDF_HEADER_NS_SIZE_NR, o);
-      writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAux, BDF_HEADER_NS_SIZE_NR, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAux, BDF_HEADER_NS_SIZE_NR, o);
       writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAnnotations, BDF_HEADER_NS_SIZE_NR, o);
 
       writeStringArrayWithPaddingTimes(reservedEEG, BDF_HEADER_NS_SIZE_RESERVED, o);
-      writeStringArrayWithPaddingTimes(reservedAux, BDF_HEADER_NS_SIZE_RESERVED, o);
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(reservedAux, BDF_HEADER_NS_SIZE_RESERVED, o);
       writeStringArrayWithPaddingTimes(reservedAnnotations, BDF_HEADER_NS_SIZE_RESERVED, o);
 
       // println("writeHeader: done...");

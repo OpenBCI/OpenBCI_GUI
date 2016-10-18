@@ -470,7 +470,8 @@ void haltSystem() {
     openBCI.closeSDandSerialPort();
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
-    println("closed ganglion file");
+    closeLogFile();  //close log file
+    ganglion.disconnectBLE();
   }
   systemMode = 0;
 }

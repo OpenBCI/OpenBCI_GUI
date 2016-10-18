@@ -74,6 +74,7 @@ color isSelected_color = color(184, 220, 105);
 
 int networkType = 0;
 
+boolean calledForBLEList = false;
 
 Button refreshPort;
 Button refreshBLE;
@@ -318,9 +319,15 @@ class ControlPanel {
     serialList.updateMenu();
     bleList.updateMenu();
 
+
     //SD File Conversion
     while (convertingSD == true) {
       convertSDFile();
+    }
+
+    if (!calledForBLEList) {
+      calledForBLEList = true;
+      ganglion.getBLEDevices();
     }
   }
 
@@ -359,6 +366,7 @@ class ControlPanel {
       cp5Popup.setVisible(true);
       if (eegDataSource == 0) {	//when data source is from OpenBCI
         serialBox.draw();
+        dataLogBox.y = serialBox.y + serialBox.h;
         dataLogBox.draw();
         channelCountBox.draw();
         sdBox.draw();
@@ -462,6 +470,9 @@ class ControlPanel {
         hideAllBoxes();
 
         bleBox.draw();
+        dataLogBox.y = bleBox.y + bleBox.h;
+        dataLogBox.draw();
+        cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "bleList").setVisible(true); //make sure the bleList menulist is visible
 
       } else {
@@ -647,6 +658,20 @@ class ControlPanel {
         if (refreshBLE.isMouseHere()) {
           refreshBLE.setIsActive(true);
           refreshBLE.wasPressed = true;
+        }
+
+        if (outputODF.isMouseHere()) {
+          outputODF.setIsActive(true);
+          outputODF.wasPressed = true;
+          outputODF.color_notPressed = isSelected_color;
+          outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (outputBDF.isMouseHere()) {
+          outputBDF.setIsActive(true);
+          outputBDF.wasPressed = true;
+          outputBDF.color_notPressed = isSelected_color;
+          outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
       }
@@ -1071,7 +1096,6 @@ class BLEBox {
     bleList.setPosition(x + padding, y + padding * 3);
     // Call to update the list
     // ganglion.getBLEDevices();
-
   }
 
   public void update() {
@@ -1168,8 +1192,12 @@ class DataLogBox {
     textFont(f3);
     text("File Name", x + padding, y + padding*2 + 18);
     popStyle();
+    cp5.get(Textfield.class, "fileName").setPosition(x + 90, y + 32);
+    autoFileName.but_y = y + 66;
     autoFileName.draw();
+    outputODF.but_y = y + padding*2 + 18 + 58;
     outputODF.draw();
+    outputBDF.but_y = y + padding*2 + 18 + 58;
     outputBDF.draw();
   }
 };
