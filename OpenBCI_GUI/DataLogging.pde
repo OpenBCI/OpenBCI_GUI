@@ -242,11 +242,11 @@ class Table_CSV extends Table {
           setRowCount(row << 1);
         }
         if (row == 0 && header) {
-          setColumnTitles(tsv ? PApplet.split(line, '\t') : splitLineCSV(line,reader));
+          setColumnTitles(tsv ? PApplet.split(line, '\t') : split(line,','));
           header = false;
         }
         else {
-          setRow(row, tsv ? PApplet.split(line, '\t') : splitLineCSV(line,reader));
+          setRow(row, tsv ? PApplet.split(line, '\t') : split(line,','));
           row++;
         }
 
