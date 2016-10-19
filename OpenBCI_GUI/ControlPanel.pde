@@ -74,12 +74,15 @@ color isSelected_color = color(184, 220, 105);
 
 int networkType = 0;
 
+boolean calledForBLEList = false;
 
 Button refreshPort;
 Button refreshBLE;
 Button autoconnect;
 Button initSystemButton;
 Button autoFileName;
+Button outputBDF;
+Button outputODF;
 Button chanButton8;
 Button chanButton16;
 Button selectPlaybackFile;
@@ -316,9 +319,15 @@ class ControlPanel {
     serialList.updateMenu();
     bleList.updateMenu();
 
+
     //SD File Conversion
     while (convertingSD == true) {
       convertSDFile();
+    }
+
+    if (!calledForBLEList) {
+      calledForBLEList = true;
+      ganglion.getBLEDevices();
     }
   }
 
@@ -357,6 +366,7 @@ class ControlPanel {
       cp5Popup.setVisible(true);
       if (eegDataSource == 0) {	//when data source is from OpenBCI
         serialBox.draw();
+        dataLogBox.y = serialBox.y + serialBox.h;
         dataLogBox.draw();
         channelCountBox.draw();
         sdBox.draw();
@@ -379,6 +389,7 @@ class ControlPanel {
             cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
             cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
           }
+
         }
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
@@ -459,8 +470,10 @@ class ControlPanel {
         hideAllBoxes();
 
         bleBox.draw();
+        dataLogBox.y = bleBox.y + bleBox.h;
+        dataLogBox.draw();
+        cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "bleList").setVisible(true); //make sure the bleList menulist is visible
-
 
       } else {
         //set other CP5 controllers invisible
@@ -538,6 +551,20 @@ class ControlPanel {
         if (autoFileName.isMouseHere()) {
           autoFileName.setIsActive(true);
           autoFileName.wasPressed = true;
+        }
+
+        if (outputODF.isMouseHere()) {
+          outputODF.setIsActive(true);
+          outputODF.wasPressed = true;
+          outputODF.color_notPressed = isSelected_color;
+          outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (outputBDF.isMouseHere()) {
+          outputBDF.setIsActive(true);
+          outputBDF.wasPressed = true;
+          outputBDF.color_notPressed = isSelected_color;
+          outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
         if (chanButton8.isMouseHere()) {
@@ -631,6 +658,20 @@ class ControlPanel {
         if (refreshBLE.isMouseHere()) {
           refreshBLE.setIsActive(true);
           refreshBLE.wasPressed = true;
+        }
+
+        if (outputODF.isMouseHere()) {
+          outputODF.setIsActive(true);
+          outputODF.wasPressed = true;
+          outputODF.color_notPressed = isSelected_color;
+          outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (outputBDF.isMouseHere()) {
+          outputBDF.setIsActive(true);
+          outputBDF.wasPressed = true;
+          outputBDF.color_notPressed = isSelected_color;
+          outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
       }
@@ -789,6 +830,16 @@ class ControlPanel {
       cp5.get(Textfield.class, "fileName").setText(getDateString());
     }
 
+    if (outputODF.isMouseHere() && outputODF.wasPressed) {
+      output("Output has been set to OpenBCI Data Format");
+      outputDataSource = OUTPUT_SOURCE_ODF;
+    }
+
+    if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
+      output("Output has been set to BDF+ (biosemi data format based off EDF)");
+      outputDataSource = OUTPUT_SOURCE_BDF;
+    }
+
     if (chanButton8.isMouseHere() && chanButton8.wasPressed) {
       nchan = 8;
       fftBuff = new FFT[nchan];   //from the minim library
@@ -825,6 +876,10 @@ class ControlPanel {
     initSystemButton.wasPressed = false;
     autoFileName.setIsActive(false);
     autoFileName.wasPressed = false;
+    outputBDF.setIsActive(false);
+    outputBDF.wasPressed = false;
+    outputODF.setIsActive(false);
+    outputODF.wasPressed = false;
     chanButton8.setIsActive(false);
     chanButton8.wasPressed = false;
     chanButton16.setIsActive(false);
@@ -1041,7 +1096,6 @@ class BLEBox {
     bleList.setPosition(x + padding, y + padding * 3);
     // Call to update the list
     // ganglion.getBLEDevices();
-
   }
 
   public void update() {
@@ -1087,7 +1141,7 @@ class DataLogBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 101;
+    h = 127; // Added 24 +
     padding = _padding;
     //instantiate button
     //figure out default file name (from Chip's code)
@@ -1096,6 +1150,11 @@ class DataLogBox {
 
     //button to autogenerate file name based on time/date
     autoFileName = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
+    outputODF = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
+    if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    outputBDF = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
+    if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.color_notPressed = isSelected_color; //make it appear like this one is already selected
+
 
     cp5.addTextfield("fileName")
       .setPosition(x + 90, y + 32)
@@ -1133,7 +1192,13 @@ class DataLogBox {
     textFont(f3);
     text("File Name", x + padding, y + padding*2 + 18);
     popStyle();
+    cp5.get(Textfield.class, "fileName").setPosition(x + 90, y + 32);
+    autoFileName.but_y = y + 66;
     autoFileName.draw();
+    outputODF.but_y = y + padding*2 + 18 + 58;
+    outputODF.draw();
+    outputBDF.but_y = y + padding*2 + 18 + 58;
+    outputBDF.draw();
   }
 };
 

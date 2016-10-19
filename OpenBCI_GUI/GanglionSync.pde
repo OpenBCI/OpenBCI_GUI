@@ -35,26 +35,7 @@ void clientEvent(Client someClient) {
       // Reset the buffer position
       ganglion.tcpBufferPositon = 0;
     }
-  }
-
-  // background(dataIn);
-
-  // // get the "real" message =
-  // // forget the ";\n" at the end <-- !!! only for a communication with Pd !!!
-  // data = subset(data, 0, data.length-2);
-  // String message = new String( data );
-  //
-  // // Be safe, always check to make sure the parent did implement this function
-  // if (ganglion.udpRx.udpEventMethod != null) {
-  //   try {
-  //     ganglion.udpRx.udpEventMethod.invoke(ganglion.udpRx.parent, message);
-  //   }
-  //   catch (Exception e) {
-  //     System.err.println("Disabling udpEvent() for because of an error.");
-  //     e.printStackTrace();
-  //     ganglion.udpRx.udpEventMethod = null;
-  //   }
-  // }
+  } //<>//
 }
 
 class OpenBCI_Ganglion {
@@ -62,7 +43,7 @@ class OpenBCI_Ganglion {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA= "t";
-  final static String TCP_CMD_ERROR = "e";
+  final static String TCP_CMD_ERROR = "e"; //<>//
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";
   final static String TCP_CMD_STATUS = "q";
@@ -153,29 +134,46 @@ class OpenBCI_Ganglion {
         }
         return false;
       case 't': // Data
-        if (isSuccessCode(Integer.parseInt(list[1]))) {
-          // Sample number stuff
-          dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
-          if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-            if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
-              bleErrorCounter++;
-              println("OpenBCI_Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+        if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
+          if (isSuccessCode(Integer.parseInt(list[1]))) { //<>//
+            // Sample number stuff
+            dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
+            if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
+              if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
+                bleErrorCounter++;
+                println("OpenBCI_Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+              }
             }
-          }
-          prevSampleIndex = dataPacket.sampleIndex;
+            prevSampleIndex = dataPacket.sampleIndex;
 
-          // Channel data storage
-          for (int i = 0; i < 4; i++) {
-            dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+            // Channel data storage
+            for (int i = 0; i < 4; i++) {
+              dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+            }
+            getRawValues(dataPacket);
+            // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+            ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+            switch (outputDataSource) {
+              case OUTPUT_SOURCE_ODF:
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), 0);
+                break;
+              case OUTPUT_SOURCE_BDF:
+                // curBDFDataPacketInd = curDataPacketInd;
+                // thread("writeRawData_dataPacket_bdf");
+                fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+                break;
+              case OUTPUT_SOURCE_NONE:
+              default:
+                // Do nothing...
+                break;
+            }
+            newPacketCounter++;
+          } else {
+            bleErrorCounter++;
+            println("OpenBCI_Ganglion: parseMessage: data: bad");
           }
-          curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
-          ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
-          fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), 0);
-          newPacketCounter++;
-        } else {
-          bleErrorCounter++;
-          println("OpenBCI_Ganglion: parseMessage: data: bad");
-        }
+        } //<>// //<>// //<>// //<>// //<>// //<>//
         return false;
       case 'e': // Error
         println("OpenBCI_Ganglion: parseMessage: error: " + list[2]);
@@ -197,8 +195,30 @@ class OpenBCI_Ganglion {
     }
   }
 
+  void writeRawData_dataPacket_bdf() {
+    fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
+  }
+
   public int copyDataPacketTo(DataPacket_ADS1299 target) {
     return dataPacket.copyTo(target);
+  }
+
+  private void getRawValues(DataPacket_ADS1299 packet) {
+    for (int i=0; i < nchan; i++) {
+      int val = packet.values[i];
+      //println(binary(val, 24));
+      byte rawValue[] = new byte[3];
+      // Breakdown values into
+      rawValue[2] = byte(val & 0xFF);
+      //println("rawValue[2] " + binary(rawValue[2], 8));
+      rawValue[1] = byte((val & (0xFF << 8)) >> 8);
+      //println("rawValue[1] " + binary(rawValue[1], 8));
+      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>//
+      //println("rawValue[0] " + binary(rawValue[0], 8));
+      // Store to the target raw values
+      packet.rawValues[i] = rawValue;
+      //println();
+    }
   }
 
   public boolean isSuccessCode(int c) {

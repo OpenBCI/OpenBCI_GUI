@@ -36,6 +36,9 @@ final String[] command_activate_channel = {"!", "@", "#", "$", "%", "^", "&", "*
 
 int channelDeactivateCounter = 0; //used for re-deactivating channels after switching settings...
 
+boolean threadLock = false;
+
+
 //everything below is now deprecated...
 // final String[] command_activate_leadoffP_channel = {"!", "@", "#", "$", "%", "^", "&", "*"};  //shift + 1-8
 // final String[] command_deactivate_leadoffP_channel = {"Q", "W", "E", "R", "T", "Y", "U", "I"};   //letters (plus shift) right below 1-8
@@ -57,7 +60,6 @@ int channelDeactivateCounter = 0; //used for re-deactivating channels after swit
 void serialEvent(Serial port) {
   //check to see which serial port it is
   if (openBCI.isOpenBCISerial(port)) {
-    // println("OpenBCI_GUI: serialEvent: millis = " + millis());
 
     // boolean echoBytes = !openBCI.isStateNormal();
     boolean echoBytes;
@@ -83,7 +85,21 @@ void serialEvent(Serial port) {
           sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
         }
       }
-      fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
+      switch (outputDataSource) {
+        case OUTPUT_SOURCE_ODF:
+          fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
+          break;
+        case OUTPUT_SOURCE_BDF:
+          curBDFDataPacketInd = curDataPacketInd;
+          thread("writeRawData_dataPacket_bdf");
+          // fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+          break;
+        case OUTPUT_SOURCE_NONE:
+        default:
+          // Do nothing...
+          break;
+      }
+
       newPacketCounter++;
     }
   } else {
@@ -97,7 +113,7 @@ void serialEvent(Serial port) {
       inByte = byte(port.read());
       if(char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
 
-      //print(char(inByte));
+      // print(char(inByte));
       if(inByte != -1){
         if(isGettingPoll){
           if(inByte != '$'){
@@ -113,16 +129,9 @@ void serialEvent(Serial port) {
           else dollaBillz++;
         }
       }
-
-
-
-
-
     }
     else{
       //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
-
-
       inByte = byte(port.read());
       if(isOpenBCI){
 
@@ -137,9 +146,13 @@ void serialEvent(Serial port) {
         board_message.append(char(inByte));
 
       }
-
     }
   }
+}
+
+
+void writeRawData_dataPacket_bdf() {
+  fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
 }
 
 void startRunning() {
@@ -238,6 +251,7 @@ class OpenBCI_ADS1299 {
   private int nEEGValuesPerPacket = 8; //defined by the data format sent by openBCI boards
   //int nAuxValuesPerPacket = 3; //defined by the data format sent by openBCI boards
   private DataPacket_ADS1299 rawReceivedDataPacket;
+  private DataPacket_ADS1299 missedDataPacket;
   private DataPacket_ADS1299 dataPacket;
   public int [] validAuxValues = {0,0,0};
   public boolean[] freshAuxValuesAvailable = {false,false,false};
@@ -309,6 +323,7 @@ class OpenBCI_ADS1299 {
 
     //allocate space for data packet
     rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
+    missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerOpenBCI,nAuxValuesPerPacket);            //this could be 8 or 16 channels
     //prevDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);
     //set all values to 0 so not null
@@ -316,10 +331,14 @@ class OpenBCI_ADS1299 {
       rawReceivedDataPacket.values[i] = 0;
       //prevDataPacket.values[i] = 0;
     }
-    for (int i=0; i < nEEGValuesPerOpenBCI; i++) { dataPacket.values[i]=0; }
+    for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
+      dataPacket.values[i] = 0;
+      missedDataPacket.values[i] = 0;
+    }
     for(int i = 0; i < nAuxValuesPerPacket; i++){
       rawReceivedDataPacket.auxValues[i] = 0;
       dataPacket.auxValues[i] = 0;
+      missedDataPacket.auxValues[i] = 0;
       //prevDataPacket.auxValues[i] = 0;
     }
 
@@ -672,6 +691,13 @@ class OpenBCI_ADS1299 {
           if(rawReceivedDataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
             serialErrorCounter++;
             println("OpenBCI_ADS1299: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
+            if (outputDataSource == OUTPUT_SOURCE_BDF) {
+              int fakePacketsToWrite = (rawReceivedDataPacket.sampleIndex - prevSampleIndex) - 1;
+              for (int i = 0; i < fakePacketsToWrite; i++) {
+                fileoutput_bdf.writeRawData_dataPacket(missedDataPacket);
+              }
+              println("OpenBCI_ADS1299: because BDF, wrote " + fakePacketsToWrite + " empty data packet(s)");
+            }
           }
         }
         prevSampleIndex = rawReceivedDataPacket.sampleIndex;
@@ -686,10 +712,11 @@ class OpenBCI_ADS1299 {
         localByteCounter++;
         if (localByteCounter==3) {
           rawReceivedDataPacket.values[localChannelCounter] = interpret24bitAsInt32(localAdsByteBuffer);
+          arrayCopy(localAdsByteBuffer, rawReceivedDataPacket.rawValues[localChannelCounter]);
           localChannelCounter++;
           if (localChannelCounter==8) { //nDataValuesInPacket) {
             // all ADS channels arrived !
-            //println("OpenBCI_ADS1299: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
+            // println("OpenBCI_ADS1299: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
             PACKET_readstate++;
             if (prefered_datamode != DATAMODE_BIN_WAUX) PACKET_readstate++;  //if not using AUX, skip over the next readstate
             localByteCounter = 0;
@@ -707,21 +734,22 @@ class OpenBCI_ADS1299 {
         localAccelByteBuffer[localByteCounter] = actbyte;
         localByteCounter++;
         if (localByteCounter==2) {
-         rawReceivedDataPacket.auxValues[localChannelCounter]  = interpret16bitAsInt32(localAccelByteBuffer);
+          rawReceivedDataPacket.auxValues[localChannelCounter]  = interpret16bitAsInt32(localAccelByteBuffer);
+          arrayCopy(localAccelByteBuffer, rawReceivedDataPacket.rawAuxValues[localChannelCounter]);
           if(rawReceivedDataPacket.auxValues[localChannelCounter] != 0){
-            validAuxValues[localChannelCounter] = rawReceivedDataPacket.auxValues[localChannelCounter]; 
+            validAuxValues[localChannelCounter] = rawReceivedDataPacket.auxValues[localChannelCounter];
             freshAuxValuesAvailable[localChannelCounter] = true;
             freshAuxValues = true;
           }
           else freshAuxValues = true;
           localChannelCounter++;
-          if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {  
+          if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {
             // all Accelerometer channels arrived !
-            //println("OpenBCI_ADS1299: interpretBinaryStream: Accel Data: " + rawReceivedDataPacket.auxValues[0] + ", " + rawReceivedDataPacket.auxValues[1] + ", " + rawReceivedDataPacket.auxValues[2]);
+            // println("OpenBCI_ADS1299: interpretBinaryStream: Accel Data: " + rawReceivedDataPacket.auxValues[0] + ", " + rawReceivedDataPacket.auxValues[1] + ", " + rawReceivedDataPacket.auxValues[2]);
             PACKET_readstate++;
             localByteCounter = 0;
             //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
-          } else { 
+          } else {
             //prepare for next data channel
             localByteCounter=0; //prepare for next usage of localByteCounter
           }
@@ -732,7 +760,7 @@ class OpenBCI_ADS1299 {
         // println("case 4");
         if (actbyte == byte(0xC0)) {    // if correct end delimiter found:
           // println("... 0xC0 found");
-          //println("OpenBCI_ADS1299: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
+          // println("OpenBCI_ADS1299: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
           isNewDataPacketAvailable = true; //original place for this.  but why not put it in the previous case block
           flag_copyRawDataToFullData = true;  //time to copy the raw data packet into the full data packet (mainly relevant for 16-chan OpenBCI)
         } else {
