@@ -11,9 +11,6 @@
 
 
 
-
-
-
 ControlP5 configP5;
 String obName;
 String obBaud;
@@ -33,6 +30,7 @@ class OpenBionics_Widget {
 
   int parentContainer = 9; //which container is it mapped to by default?
   boolean thumbPressed,indexPressed,middlePressed,ringPressed,littlePressed,palmPressed = false;
+  boolean researchMode = false;
  
   
   PImage hand;
@@ -42,6 +40,7 @@ class OpenBionics_Widget {
   PImage ring;
   PImage little;
   PImage palm;
+  int last_command;
 
   Button configClose;  
   Button configConfirm;  
@@ -94,52 +93,62 @@ class OpenBionics_Widget {
 
 
   void process(){
-    int last_chan = -2;
-    int last_out = 0;
     int output_normalized;
+    StringBuilder researchCommand = new StringBuilder();
+    
+    if(OpenBionicsHand != null ){
+        if(!researchMode){
+          OpenBionicsHand.write("A10\n");
+          researchMode = true;
+        }
+         //println(OpenBionicsHand.available());
+    }
+    
     if(fingerChans[5] == -1){
-      for(int i = 0; i<5; i++){
         
-        println("Finger " + i + " Channel " + fingerChans[i]);
+        if(OpenBionicsHand != null){
+        
+     
+        for(int i = 0; i<5; i++){
           //================= OpenBionics Analog Movement =======================
-          if(OpenBionicsHand != null && fingerChans[i] != -1){
-            
-            //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
-            if(last_chan != fingerChans[i]) output_normalized = int(map(emg_widget.motorWidgets[fingerChans[i]].output_normalized, 0, 1, 0, 100));
-            else output_normalized = last_out;
-            //if(output_normalized > 10){
-              println("Should be writing... Value: " +output_normalized);
-              OpenBionicsHand.write("F" + i + "P" + output_normalized);
-              last_chan = fingerChans[i];
-              last_out = output_normalized;
-              //delay(12);
-              
-            //}
-            //else OpenBionicsHand.write("F" + i + "P0");
-            
-          }
-          //else if(fingerChans[i] == -1) OpenBionicsHand.write("F" + i + "P0");
+          if(fingerChans[i] == -1) output_normalized = 0;
+          else output_normalized = int(map(emg_widget.motorWidgets[fingerChans[i]].output_normalized, 0, 1, 0, 1023));
+          
+          if(i == 4) researchCommand.append(output_normalized + "\n");
+          else researchCommand.append(output_normalized + ",");
+          
+        }
+        //println(researchCommand.toString());
+        OpenBionicsHand.write(researchCommand.toString());
       }
     }
-    else{
+    else {
       
       if(OpenBionicsHand != null){
-        //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
+
+          //if(researchMode){
+          //  //println("researchTrue");
+          //  researchMode = false;
+          //  //Turn CSV mode on
+          //  OpenBionicsHand.write("A10\r\n");
+          //}
         
         output_normalized = int(map(emg_widget.motorWidgets[fingerChans[5]].output_normalized, 0, 1, 0, 100));
-        //if(output_normalized > 10){
-          OpenBionicsHand.write("G0P" + output_normalized);
-          
-        //}
-        //else OpenBionicsHand.write("G0P0");
+        OpenBionicsHand.write("G0P" + output_normalized + "\n");
+        //println("output = " + output_normalized + "," +  output_normalized +"," + 
+        //output_normalized + "," + output_normalized + ","+ output_normalized + "\r\n");
+        //if(last_command != output_normalized) OpenBionicsHand.write(output_normalized + "," +  output_normalized +"," + output_normalized + "," + output_normalized + ","+ output_normalized + "\r\n");
+        
+        //last_command = output_normalized;
        
       }
    
     
     
     }
-    //println("working");
-    //emg_widget.motorWidgets;
+    //else{
+    //  //check if all fingers == -1, if so close hand
+    //}
   }
 
   void setupDropdownMenus(PApplet _parent) {
@@ -212,9 +221,6 @@ class OpenBionics_Widget {
 
   void update() {
 
-    //update the points of the FFT channel arrays
-    //update fft point arrays
-   
 
   }
 
