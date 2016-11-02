@@ -1,3 +1,4 @@
+Project Management Plan:
 [![Stories in Ready](https://badge.waffle.io/OpenBCI/OpenBCI_GUI_v2.0.svg?label=ready&title=Ready)](http://waffle.io/OpenBCI/OpenBCI_GUI_v2.0)
 
 # OpenBCI_GUI_v2.0
