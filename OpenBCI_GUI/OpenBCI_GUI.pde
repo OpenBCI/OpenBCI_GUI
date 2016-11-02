@@ -157,7 +157,7 @@ int hexToInt = 0;
 boolean screenHasBeenResized = false;
 float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
-int reinitializeGUIdelay = 125; 
+int reinitializeGUIdelay = 125;
 //Tao's variabiles
 int widthOfLastScreen = 0;
 int heightOfLastScreen = 0;
