@@ -96,7 +96,7 @@ class EMG_Widget extends Container{
       motorWidgets[i].ourChan = i;
     }
     
-    initSliders(w);
+    initSliders(w,h);
     
     configButton = new Button(int(x),int(y),20,20,"O",fontInfo.buttonLabel_size);  
     configWidget = new Config_Widget(NCHAN, sample_rate_Hz, c, motorWidgets);
@@ -105,25 +105,51 @@ class EMG_Widget extends Container{
   
  
   //Initalizes the threshold sliders
-  void initSliders(float rw){
+  void initSliders(float rw, float rh){
     //Stole some logic from the rectangle drawing in draw()
     int rowNum = 4;
     int colNum = motorWidgets.length / rowNum;
     int index = 0;
+    
+    float rowOffset = rh / rowNum;
     float colOffset = rw / colNum;
     
     if(nchan == 8){
       for (int i = 0; i < rowNum; i++) {
           for (int j = 0; j < colNum; j++) {      
+          //TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
+          //rect(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), int((4*rowOffset/8)));
+          //        ^X              ^Y                ^WIDTH              ^HEIGHT
+          
+          //TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
+            
+          //lx = ix;
+          //ly = iy;
+          //stretch = il;
+          //wid = iwid;
+          //len = ilen;
+          //boxx = lx - wid/2;
+          //boxy = ly-stretch - len/2;
 
-            if(i > 2){
-              tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-              untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
-            }
-            else{
-              tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(117 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-              untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(117 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
-            }
+
+//            if(i > 2){
+//              //tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+//              //untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+              
+//              //done here
+//              //tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+//              tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+
+//              untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, untripSliders,false, motorWidgets[index]);
+              
+//            }
+          //  else{
+              
+            //(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2_
+            
+              tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int((3*colOffset/32)), 2, tripSliders,true, motorWidgets[index]);
+              untripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+          //  }
             
             tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
             untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
@@ -134,8 +160,11 @@ class EMG_Widget extends Container{
     else if(nchan == 16){
       for (int i = 0; i < rowNum; i++) {
           for (int j = 0; j < colNum; j++) {    
-            
+
             if( j < 2){
+              //tripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+              //untripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+              
               tripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
               untripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
             }
@@ -515,7 +544,7 @@ class EMG_Widget extends Container{
 
         pushStyle();
         noStroke();
-        fill(255);
+        fill(125);
         rect(x,y,w,h);
         
         fill(150, 150, 150);
@@ -596,21 +625,45 @@ class EMG_Widget extends Container{
              //draw background bar for mapped uV value indication
             
               fill(0,255,255,125);
-              rect(5*colOffset/8, 2 * rowOffset / 8 - 7, (3*colOffset/32), int((4*rowOffset/8) + 7));
-              
+              //rect(5*colOffset/8, 2 * rowOffset / 8 - 7, (3*colOffset/32), int((4*rowOffset/8) + 7));
+              rect(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), int((4*rowOffset/8)));
+
+              //println("Col thing: " + (5*colOffset/8));
               //println("WOAH THIS: " + (4*rowOffset/8));
               //draw real time bar of actually mapped value
-              rect(5*colOffset/8, 6 *rowOffset / 8 , (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) ) -7));
-            
+              //rect(5*colOffset/8, 6 *rowOffset / 8 , (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) ) -7));
+              rect(5*colOffset/8, 6 *rowOffset / 8 , (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) )));
+
+
+
+
+
+              //TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
+                
+              //lx = ix;
+              //ly = iy;
+              //stretch = il;
+              //wid = iwid;
+              //len = ilen;
+              //boxx = lx - wid/2;
+              //boxy = ly-stretch - len/2;
+
+
+              //tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
+              //untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
     
-              popMatrix();
               
               //draw thresholds
-              tripSliders[index].update();
-              tripSliders[index].display();
-              untripSliders[index].update();
-              untripSliders[index].display();
+              tripSliders[index].update(rx + j * colOffset, ry + i * rowOffset);
+              tripSliders[index].display(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2);
+              //tripSliders[index].display(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2);
+              //println("Col thing For Sliders: " + (5*colOffset/8));
+              untripSliders[index].update(rx + j * colOffset, ry + i * rowOffset);
+              untripSliders[index].display(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2);
               index++;
+              
+              popMatrix();
+              
             }
           }
           drawTriggerFeedback();
@@ -1024,16 +1077,18 @@ class EMG_Widget extends Container{
       wid = iwid;
       len = ilen;
       boxx = lx - wid/2;
+      //boxx = lx;
       boxy = ly-stretch - len/2;
+      //boxy = ly;
       others = o;
       trip = wastrip;  //Boolean to distinguish between trip and untrip thresholds
       parent = p;
     }
     
     //Called whenever thresholds are dragged
-    void update() {
-      boxx = lx - wid/2;
-      boxy = ly - stretch;
+    void update(float tx, float ty) {
+      //boxx = lx - wid/2;
+      //boxy = ly - stretch;
       
       for (int i=0; i<others.length; i++) {
         if (others[i].locked == true) {
@@ -1045,7 +1100,7 @@ class EMG_Widget extends Container{
       }
       
       if (otherslocked == false) {
-        overEvent();
+        overEvent(tx,ty);
         pressEvent();
       }
       
@@ -1064,8 +1119,8 @@ class EMG_Widget extends Container{
     }
     
     //Checks if mouse is here
-    void overEvent() {
-      if (overRect(boxx, boxy, wid, len)) {
+    void overEvent(float tx, float ty) {
+      if (overRect(int(boxx + tx), int(boxy + ty), wid, len)) {
         over = true;
       } else {
         over = false;
@@ -1113,19 +1168,27 @@ class EMG_Widget extends Container{
     }
     
     //Displays the thresholds
-    void display() {
+    void display(float tx, float ty, float tw, float tl) {
+      lx = int(tx);
+      ly = int(ty);
+      wid = int(tw);
+      len = int(tl);
+      boxx = int(tx);
+      boxy = ly;
       fill(255);
       strokeWeight(0);
       stroke(255);
       setColor();
       fill(current_color);
       rect(boxx, boxy, wid, len);
+
+      //rect(lx, ly, wid, len);
     }
     
     //Check if the mouse is here
-    boolean overRect(int lx, int ly, int lwidth, int lheight) {
-      if (mouseX >= lx && mouseX <= lx+lwidth && 
-          mouseY >= ly && mouseY <= ly+lheight) {
+    boolean overRect(int lx, int ly, int twidth, int theight) {
+      if (mouseX >= lx && mouseX <= lx+twidth && 
+          mouseY >= ly && mouseY <= ly+theight) {
         return true;
       } else {
         return false;

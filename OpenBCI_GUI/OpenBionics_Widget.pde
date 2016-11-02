@@ -101,7 +101,9 @@ class OpenBionics_Widget {
           OpenBionicsHand.write("A10\n");
           researchMode = true;
         }
-         //println(OpenBionicsHand.available());
+        byte inByte = byte(OpenBionicsHand.read());
+
+        println(inByte);
     }
     
     if(fingerChans[5] == -1){
@@ -118,37 +120,19 @@ class OpenBionics_Widget {
           else researchCommand.append(output_normalized + ",");
           
         }
-        //println(researchCommand.toString());
         OpenBionicsHand.write(researchCommand.toString());
       }
     }
     else {
       
       if(OpenBionicsHand != null){
-
-          //if(researchMode){
-          //  //println("researchTrue");
-          //  researchMode = false;
-          //  //Turn CSV mode on
-          //  OpenBionicsHand.write("A10\r\n");
-          //}
         
         output_normalized = int(map(emg_widget.motorWidgets[fingerChans[5]].output_normalized, 0, 1, 0, 100));
         OpenBionicsHand.write("G0P" + output_normalized + "\n");
-        //println("output = " + output_normalized + "," +  output_normalized +"," + 
-        //output_normalized + "," + output_normalized + ","+ output_normalized + "\r\n");
-        //if(last_command != output_normalized) OpenBionicsHand.write(output_normalized + "," +  output_normalized +"," + output_normalized + "," + output_normalized + ","+ output_normalized + "\r\n");
-        
-        //last_command = output_normalized;
        
       }
    
-    
-    
     }
-    //else{
-    //  //check if all fingers == -1, if so close hand
-    //}
   }
 
   void setupDropdownMenus(PApplet _parent) {
@@ -388,11 +372,16 @@ class OpenBionics_Widget {
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
     dropdownPos = 0;
+    try{
     configP5.getController("LogLin")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
       //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
+    }
+    catch(Exception e){
+      println("error resizing...");
+    }
  
   }
 
