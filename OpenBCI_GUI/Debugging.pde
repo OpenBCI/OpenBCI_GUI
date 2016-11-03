@@ -1,12 +1,12 @@
 
 //////////////////////////////////////
 //
-// This file contains classes that are helpful for debugging, as well as the HelpWidget, 
-// which is used to give feedback to the GUI user in the small text window at the bottom of the GUI 
+// This file contains classes that are helpful for debugging, as well as the HelpWidget,
+// which is used to give feedback to the GUI user in the small text window at the bottom of the GUI
 //
 // Created: Conor Russomanno, June 2016
 // Based on code: Chip Audette, Oct 2013 - Dec 2014
-// 
+//
 //
 /////////////////////////////////////
 
@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------
 
 //set true if you want more verbosity in console.. verbosePrint("print_this_thing") is used to output feedback when isVerbose = true
-boolean isVerbose = true;
+boolean isVerbose = false;
 
 //Help Widget initiation
 HelpWidget helpWidget;
@@ -90,7 +90,7 @@ class HelpWidget {
     popStyle();
   }
 
-  public void output(String _output) {  
+  public void output(String _output) {
     currentOutput = _output;
     // prevOutputs.add(_output);
   }
