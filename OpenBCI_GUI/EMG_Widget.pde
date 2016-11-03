@@ -147,8 +147,8 @@ class EMG_Widget extends Container{
               
             //(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2_
             
-              tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int((3*colOffset/32)), 2, tripSliders,true, motorWidgets[index]);
-              untripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
+            tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int((3*colOffset/32)), 2, tripSliders,true, motorWidgets[index]);
+            untripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
           //  }
             
             tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
@@ -625,13 +625,9 @@ class EMG_Widget extends Container{
              //draw background bar for mapped uV value indication
             
               fill(0,255,255,125);
-              //rect(5*colOffset/8, 2 * rowOffset / 8 - 7, (3*colOffset/32), int((4*rowOffset/8) + 7));
               rect(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), int((4*rowOffset/8)));
 
-              //println("Col thing: " + (5*colOffset/8));
-              //println("WOAH THIS: " + (4*rowOffset/8));
               //draw real time bar of actually mapped value
-              //rect(5*colOffset/8, 6 *rowOffset / 8 , (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) ) -7));
               rect(5*colOffset/8, 6 *rowOffset / 8 , (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) )));
 
 
