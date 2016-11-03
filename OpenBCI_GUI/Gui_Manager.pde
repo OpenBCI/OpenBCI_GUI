@@ -249,7 +249,6 @@ class GUI_Manager {
     axisHead_relPos[3] = available_top2bot*up_down_split  - gutter_topbot;
     headPlot1 = new HeadPlot(axisHead_relPos[0],axisHead_relPos[1],axisHead_relPos[2],axisHead_relPos[3],win_x,win_y,nchan);
     setSmoothFac(smooth_fac);
-    
 
     //setup the buttons
     int w,h,x,y;
@@ -822,7 +821,7 @@ class GUI_Manager {
         fmt = "%.2f";
       }
       return fmt;
-      
+
   }
 
   public void draw() {
@@ -843,7 +842,7 @@ class GUI_Manager {
         }
       }
       if(has_processed){
-        if(scrollbar == null) scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices); 
+        if(scrollbar == null) scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices);
         else {
           float val_uV = 0.0f;
           boolean foundIndex =true;
@@ -854,7 +853,7 @@ class GUI_Manager {
           //println(index_of_times.get(scrollbar.get_index()));
           SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
           ArrayList<Date> keys_to_plot = new ArrayList();
-          
+
           try{
             Date timeIndex = format.parse(index_of_times.get(scrollbar.get_index()));
             Date fiveBefore = new Date(timeIndex.getTime());
@@ -866,10 +865,10 @@ class GUI_Manager {
             //println(index_of_times.get(44));
             //println(format.format(fiveBefore));
             //if(index_of_times.get(44).contains(format.format(fiveBefore).toString())) println("true");
-            
-            
+
+
             //START HERE TOMORROW
-            
+
             int i = 0;
             int timeToBreak = 0;
             while(true){
@@ -888,10 +887,10 @@ class GUI_Manager {
                 break;
               }
               i++;
-            
+
             }
             println("after first while");
-            
+
             while(fiveBefore.before(timeIndex)){
              //println("in while :" + fiveBefore);
               if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
@@ -904,31 +903,31 @@ class GUI_Manager {
             println("keys_to_plot size: " + keys_to_plot.size());
           }
           catch(Exception e){}
-          
-          
+
+
            //for (int Ichan=0; Ichan < nchan; Ichan++) {
            // //append the new data to the larger data buffer...because we want the plotting routines
            // //to show more than just the most recent chunk of data.  This will be our "raw" data.
            // appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
-        
+
            // //make a copy of the data that we'll apply processing to.  This will be what is displayed on the full montage
            // dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
            // }
-           
+
           float[][] data = new float[keys_to_plot.size()][nchan];
           int i = 0;
-           
+
           for(Date elm : keys_to_plot){
-          
+
             for(int Ichan=0; Ichan < nchan; Ichan++){
               val_uV = processed_file.get(elm)[Ichan][startIndex];
-              
-              
+
+
               data[Ichan][i] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
             }
             i++;
           }
-          
+
           //println(keys_to_plot.size());
           if(keys_to_plot.size() > 100){
           for(int Ichan=0; Ichan<nchan; Ichan++){
@@ -937,14 +936,14 @@ class GUI_Manager {
           }
           //for(int index = 0; index <= scrollbar.get_index(); index++){
           //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
-            
+
           //}
-          
+
           cc.update();
           cc.draw();
         }
-      } 
-      
+      }
+
 
     } else {
       //show the spectrogram
@@ -1146,16 +1145,16 @@ class PlaybackScrollbar {
   }
 
   int get_index(){
-    
+
     float seperate_val = sposMax / num_indices;
-    
+
     int index;
-    
+
     for(index = 0; index < num_indices + 1; index++){
-      if(getPos() >= seperate_val * index && getPos() <= seperate_val * (index +1) ) return index; 
+      if(getPos() >= seperate_val * index && getPos() <= seperate_val * (index +1) ) return index;
       else if(index == num_indices && getPos() >= seperate_val * index) return num_indices;
     }
-    
+
     return -1;
   }
 
@@ -1176,4 +1175,4 @@ class PlaybackScrollbar {
     // 0 and the total width of the scrollbar
     return spos * ratio;
   }
-}
+};

@@ -18,9 +18,9 @@
 //interpret a keypress...the key pressed comes in as "key"
 void keyPressed() {
   //note that the Processing variable "key" is the keypress as an ASCII character
-  //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII  
+  //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
   //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
-  
+
   if(!controlPanel.isOpen){ //don't parse the key if the control panel is open
     if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
       parseKey(key);
@@ -28,7 +28,7 @@ void keyPressed() {
       parseKeycode(keyCode);
     }
   }
-  
+
   if(key==27){
     key=0; //disable 'esc' quitting program
   }
@@ -36,14 +36,14 @@ void keyPressed() {
 
 void parseKey(char val) {
   int Ichan; boolean activate; int code_P_N_Both;
-  
+
   //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
   switch (val) {
     case '.':
       drawEMG = !drawEMG;
       break;
     case ',':
-      drawContainers = !drawContainers; 
+      drawContainers = !drawContainers;
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -54,71 +54,71 @@ void parseKey(char val) {
       drawBionics = !drawBionics;
       break;
     case '1':
-      deactivateChannel(1-1); 
+      deactivateChannel(1-1);
       break;
     case '2':
-      deactivateChannel(2-1); 
+      deactivateChannel(2-1);
       break;
     case '3':
-      deactivateChannel(3-1); 
+      deactivateChannel(3-1);
       break;
     case '4':
-      deactivateChannel(4-1); 
+      deactivateChannel(4-1);
       break;
     case '5':
-      deactivateChannel(5-1); 
+      deactivateChannel(5-1);
       break;
     case '6':
-      deactivateChannel(6-1); 
+      deactivateChannel(6-1);
       break;
     case '7':
-      deactivateChannel(7-1); 
+      deactivateChannel(7-1);
       break;
     case '8':
-      deactivateChannel(8-1); 
+      deactivateChannel(8-1);
       break;
 
     case 'q':
       if(nchan == 16){
-        deactivateChannel(9-1); 
+        deactivateChannel(9-1);
       }
       break;
     case 'w':
       if(nchan == 16){
-        deactivateChannel(10-1); 
+        deactivateChannel(10-1);
       }
       break;
     case 'e':
       if(nchan == 16){
-        deactivateChannel(11-1); 
+        deactivateChannel(11-1);
       }
       break;
     case 'r':
       if(nchan == 16){
-        deactivateChannel(12-1); 
+        deactivateChannel(12-1);
       }
       break;
     case 't':
       if(nchan == 16){
-        deactivateChannel(13-1); 
+        deactivateChannel(13-1);
       }
       break;
     case 'y':
       if(nchan == 16){
-        deactivateChannel(14-1); 
+        deactivateChannel(14-1);
       }
       break;
     case 'u':
       if(nchan == 16){
-        deactivateChannel(15-1); 
+        deactivateChannel(15-1);
       }
       break;
     case 'i':
       if(nchan == 16){
-        deactivateChannel(16-1); 
+        deactivateChannel(16-1);
       }
       break;
-      
+
     //activate channels 1-8
     case '!':
       activateChannel(1-1);
@@ -144,7 +144,7 @@ void parseKey(char val) {
     case '*':
       activateChannel(8-1);
       break;
-      
+
     //activate channels 9-16 (DAISY MODE ONLY)
     case 'Q':
       if(nchan == 16){
@@ -212,7 +212,7 @@ void parseKey(char val) {
       //openBCI.serial_openBCI.write('d');
       openBCI.configureAllChannelsToDefault();
       break;
-      
+
     // //change the state of the impedance measurements...activate the N-channels
     // case 'A':
     //   Ichan = 1; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -238,7 +238,7 @@ void parseKey(char val) {
     // case 'K':
     //   Ichan = 8; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
     //   break;
-      
+
     // //change the state of the impedance measurements...deactivate the N-channels
     // case 'Z':
     //   Ichan = 1; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -265,7 +265,7 @@ void parseKey(char val) {
     //   Ichan = 8; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
     //   break;
 
-      
+
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";
      println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
@@ -277,22 +277,22 @@ void parseKey(char val) {
      // if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key);//send the value as ascii with a newline character
      //if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key);//send the value as ascii with a newline character
      openBCI.sendChar(key);
-    
+
      break;
   }
 }
 
-void parseKeycode(int val) { 
+void parseKeycode(int val) {
   //assumes that val is Java keyCode
   switch (val) {
     case 8:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received BACKSPACE keypress.  Ignoring...");
-      break;   
+      break;
     case 9:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received TAB keypress.  Ignoring...");
       //gui.showImpedanceButtons = !gui.showImpedanceButtons;
       // gui.incrementGUIpage(); //deprecated with new channel controller
-      break;    
+      break;
     case 10:
       println("Entering Presentation Mode");
       drawPresentation = !drawPresentation;
@@ -312,19 +312,19 @@ void parseKeycode(int val) {
     case 27:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Stopping OpenBCI...");
       //stopRunning();
-      break; 
+      break;
     case 33:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE UP keypress.  Ignoring...");
-      break;    
+      break;
     case 34:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE DOWN keypress.  Ignoring...");
       break;
     case 35:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received END keypress.  Ignoring...");
-      break; 
+      break;
     case 36:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
-      break; 
+      break;
     case 37:
       println("Slide Back!");
       if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
@@ -333,11 +333,11 @@ void parseKeycode(int val) {
           myPresentation.timeOfLastSlideChange = millis();
         }
       }
-      break;  
+      break;
     case 38:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
       dataProcessing_user.switchesActive = true;
-      break;  
+      break;
     case 39:
       println("Forward!");
       if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
@@ -346,7 +346,7 @@ void parseKeycode(int val) {
           myPresentation.timeOfLastSlideChange = millis();
         }
       }
-      break;  
+      break;
     case 40:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
       dataProcessing_user.switchesActive = false;
@@ -356,43 +356,43 @@ void parseKeycode(int val) {
       break;
     case 113:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F2 keypress.  Ignoring...");
-      break;  
+      break;
     case 114:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F3 keypress.  Ignoring...");
-      break;  
+      break;
     case 115:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F4 keypress.  Ignoring...");
-      break;  
+      break;
     case 116:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F5 keypress.  Ignoring...");
-      break;  
+      break;
     case 117:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F6 keypress.  Ignoring...");
-      break;  
+      break;
     case 118:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F7 keypress.  Ignoring...");
-      break;  
+      break;
     case 119:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F8 keypress.  Ignoring...");
-      break;  
+      break;
     case 120:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F9 keypress.  Ignoring...");
-      break;  
+      break;
     case 121:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F10 keypress.  Ignoring...");
-      break;  
+      break;
     case 122:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F11 keypress.  Ignoring...");
-      break;  
+      break;
     case 123:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received F12 keypress.  Ignoring...");
-      break;     
+      break;
     case 127:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received DELETE keypress.  Ignoring...");
       break;
     case 155:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received INSERT keypress.  Ignoring...");
-      break; 
+      break;
     default:
       println("OpenBCI_GUI: parseKeycode(" + val + "): value is not known.  Ignoring...");
       break;
@@ -415,10 +415,10 @@ void mousePressed() {
       gui.mousePressed(); // trigger mousePressed function in GUI
 
       GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
-      
+
       //most of the logic below should be migrated into the GUI_Manager specific function above
 
-      if (gui.stopButton.isMouseHere()) { 
+      if (gui.stopButton.isMouseHere()) {
         gui.stopButton.setIsActive(true);
         stopButtonWasPressed();
       }
@@ -434,13 +434,13 @@ void mousePressed() {
       case GUI_Manager.GUI_PAGE_CHANNEL_ONOFF:
         //check the channel buttons
         // for (int Ibut = 0; Ibut < gui.chanButtons.length; Ibut++) {
-        //   if (gui.chanButtons[Ibut].isMouseHere()) { 
+        //   if (gui.chanButtons[Ibut].isMouseHere()) {
         //     toggleChannelState(Ibut);
         //   }
         // }
 
         //check the detection button
-        //if (gui.detectButton.updateIsMouseHere()) toggleDetectionState();      
+        //if (gui.detectButton.updateIsMouseHere()) toggleDetectionState();
         //check spectrogram button
         //if (gui.spectrogramButton.updateIsMouseHere()) toggleSpectrogramState();
 
@@ -449,17 +449,17 @@ void mousePressed() {
         // ============ DEPRECATED ============== //
         // //check the impedance buttons
         // for (int Ibut = 0; Ibut < gui.impedanceButtonsP.length; Ibut++) {
-        //   if (gui.impedanceButtonsP[Ibut].isMouseHere()) { 
+        //   if (gui.impedanceButtonsP[Ibut].isMouseHere()) {
         //     toggleChannelImpedanceState(gui.impedanceButtonsP[Ibut],Ibut,0);
         //   }
-        //   if (gui.impedanceButtonsN[Ibut].isMouseHere()) { 
+        //   if (gui.impedanceButtonsN[Ibut].isMouseHere()) {
         //     toggleChannelImpedanceState(gui.impedanceButtonsN[Ibut],Ibut,1);
         //   }
         // }
-        // if (gui.biasButton.isMouseHere()) { 
+        // if (gui.biasButton.isMouseHere()) {
         //   gui.biasButton.setIsActive(true);
         //   setBiasState(!openBCI.isBiasAuto);
-        // }      
+        // }
         // break;
       case GUI_Manager.GUI_PAGE_HEADPLOT_SETUP:
         if (gui.intensityFactorButton.isMouseHere()) {
@@ -590,7 +590,7 @@ void mouseReleased() {
 
     gui.mouseReleased();
     GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
-    
+
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
   }
 
@@ -625,13 +625,13 @@ void incrementSmoothing() {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 // Formerly Button.pde
 // This class creates and manages a button for use on the screen to trigger actions.
 //
 // Created: Chip Audette, Oct 2013.
 // Modified: Conor Russomanno, Oct 2014
-// 
+//
 // Based on Processing's "Button" example code
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -642,7 +642,7 @@ class Button {
   //int rectSize = 90;     // Diameter of rect
 
   color currentColor;
-  color color_hover = color(127, 134, 143);//color(252, 221, 198); 
+  color color_hover = color(127, 134, 143);//color(252, 221, 198);
   color color_pressed = color(150,170,200); //bgColor;
   color color_highlight = color(102);
   color color_notPressed = color(255); //color(227,118,37);
@@ -707,14 +707,14 @@ class Button {
      currentColor = color_pressed;
     } else if (isMouseHere()) {
      currentColor = color_hover;
-    } else {    
+    } else {
      currentColor = color_notPressed;
     }
     return currentColor;
   }
-  
+
   public void setCurrentColor(color _color){
-    currentColor = _color; 
+    currentColor = _color;
   }
 
   public void setColorPressed(color _color) {
@@ -733,7 +733,7 @@ class Button {
   }
 
   boolean overRect(int x, int y, int width, int height) {
-    if (mouseX >= x && mouseX <= x+width && 
+    if (mouseX >= x && mouseX <= x+width &&
       mouseY >= y && mouseY <= y+height) {
       return true;
     } else {
@@ -765,7 +765,7 @@ class Button {
       fill(textColorNotActive);
     }
     stroke(255);
-    textFont(buttonFont);  //load f2 ... from control panel 
+    textFont(buttonFont);  //load f2 ... from control panel
     textSize(12);
     textAlign(CENTER, CENTER);
     textLeading(round(0.9*(textAscent()+textDescent())));

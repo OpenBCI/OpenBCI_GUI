@@ -2,7 +2,7 @@
 //////////////////////////////////////////////////////////////////////////
 //
 //    Channel Controller
-//    - responsible for addressing channel data (Ganglion 1-4, 32bit 
+//    - responsible for addressing channel data (Ganglion 1-4, 32bit
 //    - Select default configuration (EEG, EKG, EMG)
 //    - Select Electrode Count (8 vs 16)
 //    - Select data mode (synthetic, playback file, real-time)
@@ -26,13 +26,13 @@ char[][] impedanceCheckValues = new char [nchan][2];
 
 //Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
 color[] channelColors = {
-  color(129, 129, 129), 
-  color(124, 75, 141), 
-  color(54, 87, 158), 
-  color(49, 113, 89), 
-  color(221, 178, 13), 
-  color(253, 94, 52), 
-  color(224, 56, 45), 
+  color(129, 129, 129),
+  color(124, 75, 141),
+  color(54, 87, 158),
+  color(49, 113, 89),
+  color(221, 178, 13),
+  color(253, 94, 52),
+  color(224, 56, 45),
   color(162, 82, 49)
 };
 
@@ -48,27 +48,33 @@ public void updateChannelArrays(int _nchan) {
 //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
 void activateChannel(int Ichan) {
   println("OpenBCI_GUI: activating channel " + (Ichan+1));
-  if (eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
     if (openBCI.isSerialPortOpen()) {
       verbosePrint("**");
       openBCI.changeChannelState(Ichan, true); //activate
     }
+  } else if (eegDataSource == DATASOURCE_GANGLION) {
+    // println("activating channel on ganglion");
+    ganglion.changeChannelState(Ichan, true);
   }
   if (Ichan < gui.chanButtons.length) {
-    channelSettingValues[Ichan][0] = '0'; 
+    channelSettingValues[Ichan][0] = '0';
     gui.cc.update();
   }
-}  
+}
 void deactivateChannel(int Ichan) {
   println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-  if (eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
     if (openBCI.isSerialPortOpen()) {
       verbosePrint("**");
       openBCI.changeChannelState(Ichan, false); //de-activate
     }
+  } else if (eegDataSource == DATASOURCE_GANGLION) {
+    // println("deactivating channel on ganglion");
+    ganglion.changeChannelState(Ichan, false);
   }
   if (Ichan < gui.chanButtons.length) {
-    channelSettingValues[Ichan][0] = '1'; 
+    channelSettingValues[Ichan][0] = '1';
     gui.cc.update();
   }
 }
@@ -104,7 +110,7 @@ class ChannelController {
   Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
   // char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 
-  //buttons just to the left of 
+  //buttons just to the left of
   Button[][] impedanceCheckButtons = new Button [nchan][2];
   // char [][] impedanceCheckValues = new char [nchan][2];
 
@@ -113,7 +119,7 @@ class ChannelController {
   // Array for storing SRB2 history settings of channels prior to shutting off .. so you can return to previous state when reactivating channel
   char[] previousBIAS = new char [nchan];
 
-  //maximum different values for the different settings (Power Down, Gain, Input Type, BIAS, SRB2, SRB1) of 
+  //maximum different values for the different settings (Power Down, Gain, Input Type, BIAS, SRB2, SRB1) of
   //refer to page 44 of ADS1299 Datasheet: http://www.ti.com/lit/ds/symlink/ads1299.pdf
   char[] maxValuesPerSetting = {
     '1', // Power Down :: (0)ON, (1)OFF
@@ -195,7 +201,7 @@ class ChannelController {
 
     for (int i = 0; i < nchan; i++) { //for every channel
       //update buttons based on channelSettingValues[i][j]
-      for (int j = 0; j < numSettingsPerChannel; j++) {		
+      for (int j = 0; j < numSettingsPerChannel; j++) {
         switch(j) {  //what setting are we looking at
           case 0: //on/off ??
             if (channelSettingValues[i][j] == '0') channelSettingButtons[i][0].setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
@@ -342,7 +348,7 @@ class ChannelController {
       fill(0, 0, 0, 100);
       rect(x1 + w1, y1, w2, h2);
 
-      // [numChan] x 5 ... all channel setting buttons (other than on/off) 
+      // [numChan] x 5 ... all channel setting buttons (other than on/off)
       for (int i = 0; i < nchan; i++) {
         for (int j = 1; j < 6; j++) {
           // println("drawing button " + i + "," + j);
@@ -360,7 +366,7 @@ class ChannelController {
       text("SRB1", x2 + (w2/10)*9, y1 - 12);
 
       //if mode is not from OpenBCI, draw a dark overlay to indicate that you cannot edit these settings
-      if (eegDataSource != DATASOURCE_NORMAL && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource != DATASOURCE_NORMAL_W_AUX && eegDataSource != DATASOURCE_GANGLION) {
         fill(0, 0, 0, 200);
         noStroke();
         rect(x2-2, y2, w2+1, h2);
@@ -368,9 +374,18 @@ class ChannelController {
         textSize(24);
         text("DATA SOURCE (LIVE) only", x2 + (w2/2), y2 + (h2/2));
       }
+      if (eegDataSource == DATASOURCE_GANGLION) {
+        fill(0, 0, 0, 200);
+        noStroke();
+        rect(x2-2, y2, w2+1, h2);
+        fill(255);
+        textSize(24);
+        text("COMING SOON FOR GANGLION!", x2 + (w2/2), y2 + (h2/2));
+      }
     }
 
-    if ((eegDataSource != DATASOURCE_NORMAL) && (eegDataSource != DATASOURCE_NORMAL_W_AUX)) {
+    // Do something if not in normal mode
+    if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
       fill(0, 0, 0, 200);
       rect(x1 + w1/3 + 1, y1, 2*(w1/3) - 3, h1 - 2);
     }
@@ -388,12 +403,12 @@ class ChannelController {
     //if fullChannelController and one of the buttons (other than ON/OFF) is clicked
 
       //if dataSource is coming from OpenBCI, allow user to interact with channel controller
-    if ( (eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX) ) {
+    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
       if (showFullController) {
         for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
-          for (int j = 1; j < numSettingsPerChannel; j++) {		
+          for (int j = 1; j < numSettingsPerChannel; j++) {
             if (channelSettingButtons[i][j].isMouseHere()) {
-              //increment [i][j] channelSettingValue by, until it reaches max values per setting [j], 
+              //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
               channelSettingButtons[i][j].wasPressed = true;
               channelSettingButtons[i][j].isActive = true;
             }
@@ -409,7 +424,7 @@ class ChannelController {
       }
 
       //only allow editing of impedance if dataSource == from OpenBCI
-      if ((eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX)) {
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         if (impedanceCheckButtons[i][0].isMouseHere()) {
           impedanceCheckButtons[i][0].wasPressed = true;
           impedanceCheckButtons[i][0].isActive = true;
@@ -426,13 +441,13 @@ class ChannelController {
     //if fullChannelController and one of the buttons (other than ON/OFF) is released
     if (showFullController) {
       for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
-        for (int j = 1; j < numSettingsPerChannel; j++) {		
+        for (int j = 1; j < numSettingsPerChannel; j++) {
           if (channelSettingButtons[i][j].isMouseHere() && channelSettingButtons[i][j].wasPressed == true) {
             if (channelSettingValues[i][j] < maxValuesPerSetting[j]) {
               channelSettingValues[i][j]++;	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
             } else {
               channelSettingValues[i][j] = '0';
-            }	
+            }
             // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
             if (!openBCI.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
               initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
@@ -455,7 +470,7 @@ class ChannelController {
       //was on/off clicked?
       if (channelSettingButtons[i][0].isMouseHere() && channelSettingButtons[i][0].wasPressed == true) {
         if (channelSettingValues[i][0] < maxValuesPerSetting[0]) {
-          channelSettingValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j], 
+          channelSettingValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
           // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
           // powerDownChannel(i);
           deactivateChannel(i);
@@ -471,7 +486,7 @@ class ChannelController {
       //was P imp check button clicked?
       if (impedanceCheckButtons[i][0].isMouseHere() && impedanceCheckButtons[i][0].wasPressed == true) {
         if (impedanceCheckValues[i][0] < '1') {
-          // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j], 
+          // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
           // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
           // writeImpedanceSettings(i);
           initImpWrite(i, 'p', '1');
@@ -630,7 +645,7 @@ class ChannelController {
         tempButton = new Button (buttonX, buttonY, buttonW, buttonW, buttonString, 14);
         impedanceCheckButtons[i][j-1] = tempButton;
       }
-    }	
+    }
 
     //create all other channel setting buttons... these are only visible when the user toggles to "showFullController = true"
     for (int i = 0; i < nchan; i++) {
