@@ -198,13 +198,13 @@ void stopButtonWasPressed() {
   if (isRunning) {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
     stopRunning();
-    gui.stopButton.setString(GUI_Manager.stopButton_pressToStart_txt);
-    gui.stopButton.setColorNotPressed(color(184, 220, 105));
+    topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
+    topNav.stopButton.setColorNotPressed(color(184, 220, 105));
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     startRunning();
-    gui.stopButton.setString(GUI_Manager.stopButton_pressToStop_txt);
-    gui.stopButton.setColorNotPressed(color(224, 56, 45));
+    topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
+    topNav.stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
   }
 }

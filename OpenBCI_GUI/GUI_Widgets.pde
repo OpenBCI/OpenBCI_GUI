@@ -8,6 +8,7 @@ FFT_Widget fft_widget;
 OpenBionics_Widget ob_widget;
 
 void setupGUIWidgets() {
+  timeSeries_widget = new W_TimeSeries(this, 4);
   headPlot_widget = new HeadPlot_Widget(this);
   fft_widget = new FFT_Widget(this);
   ob_widget = new OpenBionics_Widget(this);
@@ -15,25 +16,27 @@ void setupGUIWidgets() {
   Container accel_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
 
   emg_widget = new EMG_Widget(nchan, openBCI.get_fs_Hz(), motor_container, this);
-   
 
 }
 
 void updateGUIWidgets() {
+  timeSeries_widget.update();
   headPlot_widget.update();
   fft_widget.update();
   ob_widget.update();
 }
 
 void drawGUIWidgets() {
-  //if () {
-  headPlot_widget.draw();
-  fft_widget.draw();
-  ob_widget.draw();
-  //}
+  if(drawTimeSeries){
+    timeSeries_widget.draw();
+    headPlot_widget.draw();
+    fft_widget.draw();
+    ob_widget.draw();
+  }
 }
 
 void GUIWidgets_screenResized(int _winX, int _winY) {
+  timeSeries_widget.screenResized(this, _winX, _winY);
   headPlot_widget.screenResized(this, _winX, _winY);
   fft_widget.screenResized(this, _winX, _winY);
   ob_widget.screenResized(this,_winX,_winY);
@@ -46,8 +49,8 @@ void GUIWidgets_mousePressed() {
 }
 
 void GUIWidgets_mouseReleased() {
-
   emg_widget.mouseReleased();
+  timeSeries_widget.mouseReleased();
   headPlot_widget.mousePressed();
   fft_widget.mousePressed();
   ob_widget.mouseReleased();

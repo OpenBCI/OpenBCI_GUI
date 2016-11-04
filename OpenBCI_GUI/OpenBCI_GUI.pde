@@ -46,10 +46,10 @@ boolean hasIntroAnimation = false;
 PImage cog;
 
 //choose where to get the EEG data
-final int DATASOURCE_GANGLION = 3;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
-final int DATASOURCE_PLAYBACKFILE = 1;  //playback from a pre-recorded text file
-final int DATASOURCE_SYNTHETIC = 2;  //Synthetically generated data
 final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
+final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
+final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
+final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
@@ -239,7 +239,7 @@ void setup() {
 
   // println("..." + this);
   // controlPanelCollapser = new Button(2, 2, 256, int((float)win_y*(0.03f)), "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
-  controlPanelCollapser = new Button(2, 2, 256, 26, "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
+  controlPanelCollapser = new Button(3, 3, 256, 26, "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
   controlPanelCollapser.setIsActive(true);
   controlPanelCollapser.makeDropdownButton(true);
 
@@ -380,7 +380,8 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 --");
 
   //initilize the GUI
-  initializeGUI();
+  initializeGUI(); //will soon be destroyed...
+  topNav = new TopNav();
   setupGUIWidgets(); //####
 
   //final config
@@ -481,6 +482,7 @@ void systemUpdate() { // for updating data values and variables
             //-----------------------------------------------------------
             //-----------------------------------------------------------
             gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
+            topNav.update();
             updateGUIWidgets(); //####
             //-----------------------------------------------------------
             //-----------------------------------------------------------
@@ -536,12 +538,14 @@ void systemUpdate() { // for updating data values and variables
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized) {
       GUIWidgets_screenResized(width, height);
+      topNav.screenHasBeenResized(width, height);
     }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
       println("systemUpdate: reinitializing GUI");
       timeOfGUIreinitialize = millis();
       initializeGUI();
+      GUIWidgets_screenResized(width, height);
       playground.x = width; //reset the x for the playground...
       accelWidget.x = width;
       pulseWidget.x = width;
@@ -601,14 +605,10 @@ void systemDraw() { //for drawing to the screen
       // println("attempting to draw GUI...");
       try {
         // println("GUI DRAW!!! " + millis());
-        pushStyle();
-        fill(255);
-        noStroke();
-        rect(0, 0, width, navBarHeight);
-        popStyle();
-
+        topNav.draw();
         //----------------------------
         gui.draw(); //draw the GUI
+
         //updateGUIWidgets(); //####
         drawGUIWidgets();
 
