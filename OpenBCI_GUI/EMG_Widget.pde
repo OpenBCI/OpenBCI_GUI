@@ -43,7 +43,6 @@ class EMG_Widget extends Container {
   TripSlider[] tripSliders;
   TripSlider[] untripSliders;
 
-
   public Config_Widget configWidget;
 
   class Motor_Widget {
@@ -69,10 +68,8 @@ class EMG_Widget extends Container {
     boolean analogBool = true;        //Analog events?
     boolean digitalBool = true;       //Digital events?
   }
-
   //Constructor
   EMG_Widget(int NCHAN, float sample_rate_Hz, Container c, PApplet p) {
-
     super(c, "WHOLE");
     x = (int)container[parentContainer].x;
     y = (int)container[parentContainer].y;
@@ -82,10 +79,8 @@ class EMG_Widget extends Container {
     parent = p;
     cp5Serial = new ControlP5(p);
 
-
     this.nchan = NCHAN;
     this.fs_Hz = sample_rate_Hz;
-    // println("EMG_Widget: constructor: NCHAN " + NCHAN);
     tripSliders = new TripSlider[NCHAN];
     untripSliders = new TripSlider[NCHAN];
     motorWidgets = new Motor_Widget[NCHAN];
@@ -574,23 +569,23 @@ class EMG_Widget extends Container {
     if (isRunning) {
 
       switch (motorWidgets[0].switchCounter) {
-      case 1:
-        fill(255, 0, 0);
-        ellipse(width/2, height - 40, 20, 20);
-        break;
-      case 2:
-        fill(0, 255, 0);
-        ellipse(width/2, height - 40, 20, 20);
-        break;
-      case 3:
-        fill(0, 0, 255);
-        ellipse(width/2, height - 40, 20, 20);
-        break;
-      case 4:
-        fill(128, 0, 128);
-        ellipse(width/2, height - 40, 20, 20);
-        break;
-      }
+        case 1:
+          fill(255, 0, 0);
+          ellipse(width/2, height - 40, 20, 20);
+          break;
+        case 2:
+          fill(0, 255, 0);
+          ellipse(width/2, height - 40, 20, 20);
+          break;
+        case 3:
+          fill(0, 0, 255);
+          ellipse(width/2, height - 40, 20, 20);
+          break;
+        case 4:
+          fill(128, 0, 128);
+          ellipse(width/2, height - 40, 20, 20);
+          break;
+        }
     }
   }
 
