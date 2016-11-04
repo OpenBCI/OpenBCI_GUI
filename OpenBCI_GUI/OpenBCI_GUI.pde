@@ -42,7 +42,7 @@ import java.awt.MouseInfo;
 //used to switch between application states
 int systemMode = -10; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
-boolean hasIntroAnimation = false;
+boolean hasIntroAnimation = true;
 PImage cog;
 
 //choose where to get the EEG data
