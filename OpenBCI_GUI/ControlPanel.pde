@@ -26,6 +26,7 @@ ControlP5 cp5; //program-wide instance of ControlP5
 ControlP5 cp5Popup;
 CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
   public void controlEvent(CallbackEvent theEvent) {
+
     if (cp5.isMouseOver(cp5.get(Textfield.class, "fileName"))){
       println("CallbackListener: controlEvent: clearing");
       cp5.get(Textfield.class, "fileName").clear();
@@ -113,6 +114,7 @@ RadioConfigBox rcBox;
 //------------------------------------------------------------------------
 
 public void controlEvent(ControlEvent theEvent) {
+  
   if (theEvent.isFrom("serialListConfig")) {
      Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
      serialNameEMG = (String)bob.get("headline");

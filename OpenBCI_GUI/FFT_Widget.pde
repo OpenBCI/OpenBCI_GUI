@@ -284,72 +284,74 @@ class FFT_Widget {
 
   void draw() {
 
-    pushStyle();
-
-    //draw FFT Graph w/ all plots
-    noStroke();
-    fft_plot.beginDraw();
-    fft_plot.drawBackground();
-    fft_plot.drawBox();
-    fft_plot.drawXAxis();
-    fft_plot.drawYAxis();
-    //fft_plot.drawTopAxis();
-    //fft_plot.drawRightAxis();
-    //fft_plot.drawTitle();
-    fft_plot.drawGridLines(2);
-    //here is where we will update points & loop...
-    for (int i = 0; i < fft_points.length; i++) {
-      fft_plot.setLineColor(lineColor[i]);
-      fft_plot.setPoints(fft_points[i]);
-      fft_plot.drawLines();
-      //fft_plot.drawPoints(); //draw points
+    if(drawFFT){
+      pushStyle();
+  
+      //draw FFT Graph w/ all plots
+      noStroke();
+      fft_plot.beginDraw();
+      fft_plot.drawBackground();
+      fft_plot.drawBox();
+      fft_plot.drawXAxis();
+      fft_plot.drawYAxis();
+      //fft_plot.drawTopAxis();
+      //fft_plot.drawRightAxis();
+      //fft_plot.drawTitle();
+      fft_plot.drawGridLines(2);
+      //here is where we will update points & loop...
+      for (int i = 0; i < fft_points.length; i++) {
+        fft_plot.setLineColor(lineColor[i]);
+        fft_plot.setPoints(fft_points[i]);
+        fft_plot.drawLines();
+        //fft_plot.drawPoints(); //draw points
+      }
+      fft_plot.endDraw();
+  
+      //draw nav bars and button bars
+      fill(150, 150, 150);
+      rect(x, y, w, navHeight); //top bar
+      fill(200, 200, 200);
+      rect(x, y+navHeight, w, navHeight); //button bar
+      fill(255);
+      rect(x+2, y+2, navHeight-4, navHeight-4);
+      fill(bgColor, 100);
+      //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
+      rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
+      rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
+      rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
+      rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
+      //text("FFT Plot", x+w/2, y+navHeight/2)
+      fill(bgColor);
+      textAlign(LEFT, CENTER);
+      textFont(f);
+      textSize(18);
+      text("FFT Plot", x+navHeight+2, y+navHeight/2 - 2); //title of widget -- left
+      //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //title of widget -- left
+      //fill(255,0,0,150);
+      //rect(x,y,w,h);
+  
+      //draw dropdown titles
+      int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+      int dropdownWidth = 60;
+      textFont(f2);
+      textSize(12);
+      textAlign(CENTER, BOTTOM);
+      fill(bgColor);
+      text("Max Freq", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 3;
+      text("Max uV", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 2;
+      text("Log/Lin", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 1;
+      text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      dropdownPos = 0;
+      text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+  
+      //draw dropdown menus
+      cp5_FFT.draw();
+  
+      popStyle();
     }
-    fft_plot.endDraw();
-
-    //draw nav bars and button bars
-    fill(150, 150, 150);
-    rect(x, y, w, navHeight); //top bar
-    fill(200, 200, 200);
-    rect(x, y+navHeight, w, navHeight); //button bar
-    fill(255);
-    rect(x+2, y+2, navHeight-4, navHeight-4);
-    fill(bgColor, 100);
-    //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
-    rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
-    //text("FFT Plot", x+w/2, y+navHeight/2)
-    fill(bgColor);
-    textAlign(LEFT, CENTER);
-    textFont(f);
-    textSize(18);
-    text("FFT Plot", x+navHeight+2, y+navHeight/2 - 2); //title of widget -- left
-    //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //title of widget -- left
-    //fill(255,0,0,150);
-    //rect(x,y,w,h);
-
-    //draw dropdown titles
-    int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
-    int dropdownWidth = 60;
-    textFont(f2);
-    textSize(12);
-    textAlign(CENTER, BOTTOM);
-    fill(bgColor);
-    text("Max Freq", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 3;
-    text("Max uV", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 2;
-    text("Log/Lin", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 1;
-    text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-    dropdownPos = 0;
-    text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-
-    //draw dropdown menus
-    cp5_FFT.draw();
-
-    popStyle();
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -403,7 +405,7 @@ class FFT_Widget {
   void mousePressed() {
     //called by GUI_Widgets.pde
     if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
-      println("fft_widget.mousePressed()");
+      //println("fft_widget.mousePressed()");
     }
   }
   void mouseReleased() {
