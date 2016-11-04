@@ -1040,16 +1040,17 @@ class EMG_Widget extends Container {
 
       if (press) {
         //Some of this may need to be refactored in order to support window resizing
+        int mappedVal = int(map((mouseY - (ty + ly) ), ((ty+ly) + wid - (ly/2)) - (ty+ly), 0, 0, wid));
         println("ty: " + ty + " ly: " + ly + " mouseY: " + mouseY + " boxy: " + boxy + " stretch: " + stretch + " width: " + wid);
-        if (trip) stretch = lock(int(mouseY - (ty + ly)), int(parent.untripThreshold * (wid)), wid);
-        else stretch = lock(int(map(((ty + ly) - mouseY), (-1) * (ty + ly) + wid - (ly/2), 0, 0, wid)), 0, int(parent.tripThreshold * (wid)));
+        if (trip) stretch = lock(mappedVal, int(parent.untripThreshold * (wid)), wid);
+        else stretch =  lock(mappedVal, 0, int(parent.tripThreshold * (wid)));
 
-        if ((ly - mouseY) > wid && trip) parent.tripThreshold = 1;
-        else if ((ly - mouseY) > wid && !trip) parent.untripThreshold = 1;
-        else if ((ly - mouseY) < 0 && trip) parent.tripThreshold = 0;
-        else if ((ly - mouseY) < 0 && !trip) parent.untripThreshold = 0;
-        else if (trip) parent.tripThreshold = float(ly - mouseY) / (wid);
-        else if (!trip) parent.untripThreshold = float(ly - mouseY) / (wid);
+        if (mappedVal > wid && trip) parent.tripThreshold = 1;
+        else if (mappedVal > wid && !trip) parent.untripThreshold = 1;
+        else if (mappedVal < 0 && trip) parent.tripThreshold = 0;
+        else if (mappedVal < 0 && !trip) parent.untripThreshold = 0;
+        else if (trip) parent.tripThreshold = float(mappedVal) / (wid);
+        else if (!trip) parent.untripThreshold = float(mappedVal) / (wid);
       }
     }
 
