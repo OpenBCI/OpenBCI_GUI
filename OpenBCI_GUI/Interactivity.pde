@@ -39,11 +39,17 @@ void parseKey(char val) {
 
   //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
   switch (val) {
+    case ' ':
+      stopButtonWasPressed();
+      break;
     case '.':
       drawEMG = !drawEMG;
       break;
     case ',':
       drawContainers = !drawContainers;
+      break;
+    case '<':
+      drawTimeSeries = !drawTimeSeries;
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -418,9 +424,34 @@ void mousePressed() {
 
       //most of the logic below should be migrated into the GUI_Manager specific function above
 
-      if (gui.stopButton.isMouseHere()) {
-        gui.stopButton.setIsActive(true);
+      // if (gui.stopButton.isMouseHere()) {
+      //   gui.stopButton.setIsActive(true);
+      //   stopButtonWasPressed();
+      // }
+
+      if (topNav.stopButton.isMouseHere()) {
+        topNav.stopButton.setIsActive(true);
         stopButtonWasPressed();
+      }
+      if (topNav.filtBPButton.isMouseHere()) {
+        topNav.filtBPButton.setIsActive(true);
+        incrementFilterConfiguration();
+      }
+      if (topNav.filtNotchButton.isMouseHere()) {
+        topNav.filtNotchButton.setIsActive(true);
+        incrementNotchConfiguration();
+      }
+      if (topNav.intensityFactorButton.isMouseHere()) {
+        topNav.intensityFactorButton.setIsActive(true);
+        incrementVertScaleFactor();
+      }
+      if (topNav.questionMark.isMouseHere()) {
+        topNav.questionMark.setIsActive(true);
+        //toggle help/tutorial dropdown menu
+      }
+      if (topNav.layout.isMouseHere()) {
+        topNav.layout.setIsActive(true);
+        //toggle layout window to enable the selection of your container layout...
       }
 
       // //was the gui page button pressed?
@@ -462,47 +493,51 @@ void mousePressed() {
         // }
         // break;
       case GUI_Manager.GUI_PAGE_HEADPLOT_SETUP:
-        if (gui.intensityFactorButton.isMouseHere()) {
-          gui.intensityFactorButton.setIsActive(true);
-          gui.incrementVertScaleFactor();
-        }
-        if (gui.loglinPlotButton.isMouseHere()) {
-          gui.loglinPlotButton.setIsActive(true);
-          gui.set_vertScaleAsLog(!gui.vertScaleAsLog); //toggle the state
-        }
-        if (gui.filtBPButton.isMouseHere()) {
-          gui.filtBPButton.setIsActive(true);
-          incrementFilterConfiguration();
-        }
-        if (gui.filtNotchButton.isMouseHere()) {
-          gui.filtNotchButton.setIsActive(true);
-          incrementNotchConfiguration();
-        }
-        if (gui.smoothingButton.isMouseHere()) {
-          gui.smoothingButton.setIsActive(true);
-          incrementSmoothing();
-        }
-        if (gui.showPolarityButton.isMouseHere()) {
-          gui.showPolarityButton.setIsActive(true);
-          toggleShowPolarity();
-        }
-        if (gui.maxDisplayFreqButton.isMouseHere()) {
-          gui.maxDisplayFreqButton.setIsActive(true);
-          gui.incrementMaxDisplayFreq();
-        }
+        // if (gui.intensityFactorButton.isMouseHere()) {
+        //   topNav.intensityFactorButton.setIsActive(true);
+        //   incrementVertScaleFactor();
+        // }
+        // if (gui.loglinPlotButton.isMouseHere()) {
+        //   gui.loglinPlotButton.setIsActive(true);
+        //   gui.set_vertScaleAsLog(!gui.vertScaleAsLog); //toggle the state
+        // }
+        // if (gui.filtBPButton.isMouseHere()) {
+        //   gui.filtBPButton.setIsActive(true);
+        //   incrementFilterConfiguration();
+        // }
+        // if (gui.filtNotchButton.isMouseHere()) {
+        //   gui.filtNotchButton.setIsActive(true);
+        //   incrementNotchConfiguration();
+        // }
+        // if (gui.smoothingButton.isMouseHere()) {
+        //   gui.smoothingButton.setIsActive(true);
+        //   incrementSmoothing();
+        // }
+        // if (gui.showPolarityButton.isMouseHere()) {
+        //   gui.showPolarityButton.setIsActive(true);
+        //   toggleShowPolarity();
+        // }
+        // if (gui.maxDisplayFreqButton.isMouseHere()) {
+        //   gui.maxDisplayFreqButton.setIsActive(true);
+        //   gui.incrementMaxDisplayFreq();
+        // }
         break;
         //default:
       }
 
       //check the graphs
-      if (gui.isMouseOnFFT(mouseX, mouseY)) {
-        GraphDataPoint dataPoint = new GraphDataPoint();
-        gui.getFFTdataPoint(mouseX, mouseY, dataPoint);
-        println("OpenBCI_GUI: FFT data point: " + String.format("%4.2f", dataPoint.x) + " " + dataPoint.x_units + ", " + String.format("%4.2f", dataPoint.y) + " " + dataPoint.y_units);
-      } else if (gui.headPlot1.isPixelInsideHead(mouseX, mouseY)) {
-        //toggle the head plot contours
-        gui.headPlot1.drawHeadAsContours = !gui.headPlot1.drawHeadAsContours;
-      } else if (gui.isMouseOnMontage(mouseX, mouseY)) {
+      // if (gui.isMouseOnFFT(mouseX, mouseY)) {
+      //   GraphDataPoint dataPoint = new GraphDataPoint();
+      //   gui.getFFTdataPoint(mouseX, mouseY, dataPoint);
+      //   println("OpenBCI_GUI: FFT data point: " + String.format("%4.2f", dataPoint.x) + " " + dataPoint.x_units + ", " + String.format("%4.2f", dataPoint.y) + " " + dataPoint.y_units);
+      // } else if (gui.headPlot1.isPixelInsideHead(mouseX, mouseY)) {
+      //   //toggle the head plot contours
+      //   gui.headPlot1.drawHeadAsContours = !gui.headPlot1.drawHeadAsContours;
+      // } else if (gui.isMouseOnMontage(mouseX, mouseY)) {
+      //   //toggle the display of the montage values
+      //   gui.showMontageValues  = !gui.showMontageValues;
+      // }
+      if (gui.isMouseOnMontage(mouseX, mouseY)) {
         //toggle the display of the montage values
         gui.showMontageValues  = !gui.showMontageValues;
       }
@@ -555,7 +590,7 @@ void mousePressed() {
   if (playground.isMouseInButton()) {
     playground.toggleWindow();
   }
-  
+
   if (accelWidget.isMouseHere()) {
     accelWidget.mousePressed();
   }
@@ -563,7 +598,7 @@ void mousePressed() {
   if (accelWidget.isMouseInButton()) {
     accelWidget.toggleWindow();
   }
-  
+
   if (pulseWidget.isMouseHere()) {
     pulseWidget.mousePressed();
   }
@@ -589,6 +624,7 @@ void mouseReleased() {
   if (systemMode >= 10) {
 
     gui.mouseReleased();
+    topNav.mouseReleased();
     GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
 
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
@@ -608,16 +644,16 @@ void mouseReleased() {
   }
 }
 
-void incrementSmoothing() {
-  smoothFac_ind++;
-  if (smoothFac_ind >= smoothFac.length) smoothFac_ind = 0;
-
-  //tell the GUI
-  gui.setSmoothFac(smoothFac[smoothFac_ind]);
-
-  //update the button
-  gui.smoothingButton.but_txt = "Smooth\n" + smoothFac[smoothFac_ind];
-}
+// void incrementSmoothing() {
+//   smoothFac_ind++;
+//   if (smoothFac_ind >= smoothFac.length) smoothFac_ind = 0;
+//
+//   //tell the GUI
+//   gui.setSmoothFac(smoothFac[smoothFac_ind]);
+//
+//   //update the button
+//   gui.smoothingButton.but_txt = "Smooth\n" + smoothFac[smoothFac_ind];
+// }
 
 //------------------------------------------------------------------------
 //                       Classes

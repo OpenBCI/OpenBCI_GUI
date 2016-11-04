@@ -115,6 +115,8 @@ class GUI_Manager {
   public final static int GUI_PAGE_HEADPLOT_SETUP = 2;
   public final static int N_GUI_PAGES = 3;
 
+  PlaybackScrollbar scrollbar;
+
   GUI_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float default_yScale_uV,
     String filterDescription, float smooth_fac) {
 //  GUI_Manager(PApplet parent,int win_x, int win_y,int nchan,float displayTime_sec, float yScale_uV, float fs_Hz,
@@ -129,8 +131,8 @@ class GUI_Manager {
     float gutter_topbot = 0.03f;
     float gutter_left = 0.08f;  //edge around the GUI
     float gutter_right = 0.015f;  //edge around the GUI
-    float height_UI_tray = 0.15f + spacer_bottom; //0.1f;//0.10f;  //empty space along bottom for UI elements
-    float left_right_split = 0.48f;  //notional dividing line between left and right plots, measured from left
+    float height_UI_tray = 0.1f + spacer_bottom; //0.1f;//0.10f;  //empty space along bottom for UI elements
+    float left_right_split = 0.5f;  //notional dividing line between left and right plots, measured from left
     float available_top2bot = 1.0f - 2*gutter_topbot - height_UI_tray;
     float up_down_split = 0.5f;   //notional dividing line between top and bottom plots, measured from top
     float gutter_between_buttons = 0.005f; //space between buttons
@@ -184,10 +186,31 @@ class GUI_Manager {
     cc = new ChannelController(x_cc, y_cc, w_cc, h_cc, axes_x, axes_y);
 
 
+    //setup the FFT plot...bottom on left side
+    float[] axisFFT_relPos = {
+      gutter_left + left_right_split, // + 0.1f,
+      up_down_split*available_top2bot + height_UI_tray + gutter_topbot,
+      (1f-left_right_split)-gutter_left-gutter_right,
+      available_top2bot*(1.0f-up_down_split) - gutter_topbot-title_gutter - spacer_top
+    }; //from left, from top, width, height
+    axes_x = int(float(win_x)*axisFFT_relPos[2]);  //width of the axis in pixels
+    axes_y = int(float(win_y)*axisFFT_relPos[3]);  //height of the axis in pixels
+    gFFT = new Graph2D(parent, int(axes_x), int(axes_y), false);  //last argument is whether the axes cross at zero
+    setupFFTPlot(gFFT, win_x, win_y, axisFFT_relPos,fontInfo);
+
+    //setup the head plot...top on the left side
+    float[] axisHead_relPos = axisFFT_relPos.clone();
+    // axisHead_relPos[1] = gutter_topbot + spacer_top;  //set y position to be at top of left side
+    axisHead_relPos[1] = headPlot_fromTop;  //set y position to be at top of right side
+    axisHead_relPos[3] = available_top2bot*up_down_split  - gutter_topbot;
+    headPlot1 = new HeadPlot(axisHead_relPos[0],axisHead_relPos[1],axisHead_relPos[2],axisHead_relPos[3],win_x,win_y,nchan);
+    setSmoothFac(smooth_fac);
+
     //setup the buttons
     int w,h,x,y;
     h = 26;     //button height, was 25
     y = 2;      //button y position, measured top
+
     // //// Is this block used anymore?  Chip 2014-11-23
     //setup the gui page button
     w = 80; //button width
@@ -244,19 +267,24 @@ class GUI_Manager {
     // set_vertScaleAsLog(true);
 
     //set the initial display page for the GUI
-    // setGUIpage(GUI_PAGE_HEADPLOT_SETUP);
+    setGUIpage(GUI_PAGE_HEADPLOT_SETUP);
   }
   private int calcButtonXLocation(int Ibut,int win_x,int w, int xoffset, float gutter_between_buttons) {
     // return xoffset + (Ibut * (w + (int)(gutter_between_buttons*win_x)));
     return width - ((Ibut+1) * (w + 2)) - 1;
   }
 
+  public void setSmoothFac(float fac) {
+    headPlot1.smooth_fac = fac;
+  }
+
   public void setDoNotPlotOutsideXlim(boolean state) {
     if (state) {
-
+      //println("GUI_Manager: setDoNotPlotAboveXlim: " + gFFT.getXAxis().getMaxValue());
+      fftTrace.set_plotXlim(gFFT.getXAxis().getMinValue(),gFFT.getXAxis().getMaxValue());
       montageTrace.set_plotXlim(gMontage.getXAxis().getMinValue(),gMontage.getXAxis().getMaxValue());
     } else {
-      // fftTrace.set_plotXlim(Float.NaN,Float.NaN);
+      fftTrace.set_plotXlim(Float.NaN,Float.NaN);
     }
   }
   public void setDecimateFactor(int fac) {
@@ -355,6 +383,106 @@ class GUI_Manager {
     showMontageValues = true;  // default to having them NOT displayed
   }
 
+  public void setupFFTPlot(Graph2D g, int win_x, int win_y, float[] axis_relPos,PlotFontInfo fontInfo) {
+
+    g.setAxisColour(axisColor, axisColor, axisColor);
+    g.setFontColour(fontColor, fontColor, fontColor);
+
+    int x1,y1;
+    x1 = int(axis_relPos[0]*float(win_x));
+    g.position.x = x1;
+    y1 = int(axis_relPos[1]*float(win_y));
+    g.position.y = y1;
+    //g.position.y = 0;
+
+    //setup the y axis
+    g.setYAxisMin(vertScaleMin_uV_whenLog);
+    g.setYAxisMax(vertScale_uV);
+    g.setYAxisTickSpacing(1);
+    g.setYAxisMinorTicks(0);
+    g.setYAxisLabelAccuracy(0);
+    //g.setYAxisLabel("EEG Amplitude (uV/sqrt(Hz))");  // Some people prefer this...but you'll have to change the normalization in OpenBCI_GUI\processNewData()
+    g.setYAxisLabel("EEG Amplitude (uV per bin)");  // CHIP 2014-10-24...currently, this matches the normalization in OpenBCI_GUI\processNewData()
+    g.setYAxisLabelFont(fontInfo.fontName,fontInfo.axisLabel_size, false);
+    g.setYAxisTickFont(fontInfo.fontName,fontInfo.tickLabel_size, false);
+
+    //get the Y-axis and make it log
+    Axis2D ay=g.getYAxis();
+    ay.setLogarithmicAxis(true);
+
+    //setup the x axis
+    g.setXAxisMin(0f);
+    g.setXAxisMax(maxDisplayFreq_Hz[maxDisplayFreq_ind]);
+    g.setXAxisTickSpacing(10f);
+    g.setXAxisMinorTicks(2);
+    g.setXAxisLabelAccuracy(0);
+    g.setXAxisLabel("Frequency (Hz)");
+    g.setXAxisLabelFont(fontInfo.fontName,fontInfo.axisLabel_size, false);
+    g.setXAxisTickFont(fontInfo.fontName,fontInfo.tickLabel_size, false);
+
+
+    // switching on Grid, with differetn colours for X and Y lines
+    gbFFT = new  GridBackground(new GWColour(bgColorGraphs));
+    gbFFT.setGridColour(gridColor, gridColor, gridColor, gridColor, gridColor, gridColor);
+    g.setBackground(gbFFT);
+
+    g.setBorderColour(borderColor,borderColor,borderColor);
+
+    // add title
+    titleFFT = new TextBox("FFT Plot",0,0);
+    int x2 = x1 + int(round(0.5*axis_relPos[2]*float(win_x)));
+    int y2 = y1 - 2;  //deflect two pixels upward
+    titleFFT.x = x2;
+    titleFFT.y = y2;
+    titleFFT.textColor = color(255,255,255);
+    titleFFT.setFontSize(16);
+    titleFFT.alignH = CENTER;
+  }
+
+  public void setupSpectrogram(Graph2D g, int win_x, int win_y, float[] axis_relPos,float displayTime_sec, PlotFontInfo fontInfo) {
+    //start by setting up as if it were the montage plot
+    //setupMontagePlot(g, win_x, win_y, axis_relPos,displayTime_sec,fontInfo,title);
+
+    g.setAxisColour(220, 220, 220);
+    g.setFontColour(255, 255, 255);
+
+    int x1 = int(axis_relPos[0]*float(win_x));
+    g.position.x = x1;
+    int y1 = int(axis_relPos[1]*float(win_y));
+    g.position.y = y1;
+
+    //setup the x axis
+    g.setXAxisMin(-displayTime_sec);
+    g.setXAxisMax(0f);
+    g.setXAxisTickSpacing(1f);
+    g.setXAxisMinorTicks(1);
+    g.setXAxisLabelAccuracy(0);
+    g.setXAxisLabel("Time (sec)");
+    g.setXAxisLabelFont(fontInfo.fontName,fontInfo.axisLabel_size, false);
+    g.setXAxisTickFont(fontInfo.fontName,fontInfo.tickLabel_size, false);
+
+    //setup the y axis...frequency
+    g.setYAxisMin(0.0f-0.5f);
+    g.setYAxisMax(maxDisplayFreq_Hz[maxDisplayFreq_ind]);
+    g.setYAxisTickSpacing(10.0f);
+    g.setYAxisMinorTicks(2);
+    g.setYAxisLabelAccuracy(0);
+    g.setYAxisLabel("Frequency (Hz)");
+    g.setYAxisLabelFont(fontInfo.fontName,fontInfo.axisLabel_size, false);
+    g.setYAxisTickFont(fontInfo.fontName,fontInfo.tickLabel_size, false);
+
+
+    //make title
+    titleSpectrogram = new TextBox(makeSpectrogramTitle(),0,0);
+    int x2 = x1 + int(round(0.5*axis_relPos[2]*float(win_x)));
+    int y2 = y1 - 2;  //deflect two pixels upward
+    titleSpectrogram.x = x2;
+    titleSpectrogram.y = y2;
+    titleSpectrogram.textColor = color(255,255,255);
+    titleSpectrogram.setFontSize(16);
+    titleSpectrogram.alignH = CENTER;
+  }
+
 ///******CF START HERE TOMORROW**********/
   public void initializeMontageTraces(float[] dataBuffX, float [][] dataBuffY) {
 
@@ -373,6 +501,20 @@ class GUI_Manager {
     montageTrace.setYOffset_byRef(montage_yoffsets);
   }
 
+
+  public void initializeFFTTraces(ScatterTrace_FFT fftTrace,FFT[] fftBuff,float[] fftYOffset,Graph2D gFFT) {
+    for (int Ichan = 0; Ichan < fftYOffset.length; Ichan++) {
+      //set the Y-offste for the individual traces in the plots
+      fftYOffset[Ichan]= 0f;  //set so that there is no additional offset
+    }
+
+    //make the trace for the FFT and add it to the FFT Plot axis
+    //fftTrace = new ScatterTrace_FFT(fftBuff); //can't put this here...must be in setup()
+    fftTrace.setYOffset(fftYOffset);
+    gFFT.addTrace(fftTrace);
+  }
+
+
   public void initDataTraces(float[] dataBuffX,float[][] dataBuffY,FFT[] fftBuff,float[] dataBuffY_std, DataStatus[] is_railed, float[] dataBuffY_polarity) {
     //initialize the time-domain montage-plot traces
     montageTrace = new ScatterTrace();
@@ -380,6 +522,43 @@ class GUI_Manager {
     initializeMontageTraces(dataBuffX,dataBuffY);
     montageTrace.set_isRailed(is_railed);
 
+    //initialize the FFT traces
+    fftTrace = new ScatterTrace_FFT(fftBuff); //can't put this here...must be in setup()
+    fftYOffset = new float[nchan];
+    initializeFFTTraces(fftTrace,fftBuff,fftYOffset,gFFT);
+
+    //link the data to the head plot
+    headPlot1.setIntensityData_byRef(dataBuffY_std,is_railed);
+    headPlot1.setPolarityData_byRef(dataBuffY_polarity);
+  }
+
+  public void setShowSpectrogram(boolean show) {
+    showSpectrogram = show;
+  }
+
+  public void tellGUIWhichChannelForSpectrogram(int Ichan) { // Ichan starts at zero
+    if (Ichan != whichChannelForSpectrogram) {
+      whichChannelForSpectrogram = Ichan;
+      titleSpectrogram.string = makeSpectrogramTitle();
+    }
+  }
+  public String makeSpectrogramTitle() {
+    return ("Spectrogram, Channel " + (whichChannelForSpectrogram+1) + " (As Received)");
+  }
+
+
+  public void setGUIpage(int page) {
+    if ((page >= 0) && (page < N_GUI_PAGES)) {
+      guiPage = page;
+    } else {
+      guiPage = 0;
+    }
+    //update the text on the button
+    // guiPageButton.setString("Page\n" + (guiPage+1) + " of " + N_GUI_PAGES);
+  }
+
+  public void incrementGUIpage() {
+    setGUIpage( (guiPage+1) % N_GUI_PAGES );
   }
 
   public boolean isMouseOnGraph2D(Graph2D g, int mouse_x, int mouse_y) {
@@ -398,6 +577,9 @@ class GUI_Manager {
   public boolean isMouseOnMontage(int mouse_x, int mouse_y) {
     return isMouseOnGraph2D(gMontage,mouse_x,mouse_y);
   }
+  public boolean isMouseOnFFT(int mouse_x, int mouse_y) {
+    return isMouseOnGraph2D(gFFT,mouse_x,mouse_y);
+  }
 
   public void getGraph2DdataPoint(Graph2D g, int mouse_x,int mouse_y, GraphDataPoint dataPoint) {
     int rel_x = mouse_x - int(g.position.x);
@@ -410,13 +592,22 @@ class GUI_Manager {
     dataPoint.x_units = "sec";
     dataPoint.y_units = "uV";
   }
+  public void getFFTdataPoint(int mouse_x,int mouse_y,GraphDataPoint dataPoint) {
+    getGraph2DdataPoint(gFFT, mouse_x,mouse_y,dataPoint);
+    dataPoint.x_units = "Hz";
+    dataPoint.y_units = "uV/sqrt(Hz)";
+  }
+
+//  public boolean isMouseOnHeadPlot(int mouse_x, int mouse_y) {
+//    return headPlot1.isPixelInsideHead(mouse_x,mouse_y) {
+//  }
 
   public void update(float[] data_std_uV,float[] data_elec_imp_ohm) {
     //assume new data has already arrived via the pre-existing references to dataBuffX and dataBuffY and FftBuff
     montageTrace.generate();  //graph doesn't update without this
-    // fftTrace.generate(); //graph doesn't update without this
-    // headPlot1.update();
-    // //headPlot_widget.headPlot.update();
+    fftTrace.generate(); //graph doesn't update without this
+    headPlot1.update();
+    //headPlot_widget.headPlot.update();
     cc.update();
 
     //update the text strings
@@ -454,18 +645,165 @@ class GUI_Manager {
         fmt = "%.2f";
       }
       return fmt;
+
   }
 
   public void draw() {
+    if(!drawEMG){
+      headPlot1.draw();
+    }
 
     //draw montage or spectrogram
-    gMontage.draw();
+    if (showSpectrogram == false) {
+
+      //show time-domain montage, only if full channel controller is not visible, to save some processing
+      gMontage.draw();
+
+      //add annotations
+      if (showMontageValues) {
+        for (int Ichan = 0; Ichan < chanValuesMontage.length; Ichan++) {
+          chanValuesMontage[Ichan].draw();
+        }
+      }
+      if(has_processed){
+        if(scrollbar == null) scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices);
+        else {
+          float val_uV = 0.0f;
+          boolean foundIndex =true;
+          int startIndex = 0;
+
+          scrollbar.update();
+          scrollbar.display();
+          //println(index_of_times.get(scrollbar.get_index()));
+          SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
+          ArrayList<Date> keys_to_plot = new ArrayList();
+
+          try{
+            Date timeIndex = format.parse(index_of_times.get(scrollbar.get_index()));
+            Date fiveBefore = new Date(timeIndex.getTime());
+            fiveBefore.setTime(fiveBefore.getTime() - 5000);
+            Date fiveBeforeCopy = new Date(fiveBefore.getTime());
+
+            //START HERE TOMORROW
+
+            int i = 0;
+            int timeToBreak = 0;
+            while(true){
+              //println("in while i:" + i);
+              if(index_of_times.get(i).contains(format.format(fiveBeforeCopy).toString())){
+                println("found");
+                startIndex = i;
+                break;
+              }
+              if(i == index_of_times.size() -1){
+                i = 0;
+                fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
+                timeToBreak++;
+              }
+              if(timeToBreak > 3){
+                break;
+              }
+              i++;
+
+            }
+            println("after first while");
+
+            while(fiveBefore.before(timeIndex)){
+             //println("in while :" + fiveBefore);
+              if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
+                keys_to_plot.add(fiveBefore);
+                startIndex++;
+              }
+              //println(fiveBefore);
+              fiveBefore.setTime(fiveBefore.getTime() + 1);
+            }
+            println("keys_to_plot size: " + keys_to_plot.size());
+          }
+          catch(Exception e){}
+
+          float[][] data = new float[keys_to_plot.size()][nchan];
+          int i = 0;
+
+          for(Date elm : keys_to_plot){
+
+            for(int Ichan=0; Ichan < nchan; Ichan++){
+              val_uV = processed_file.get(elm)[Ichan][startIndex];
+
+
+              data[Ichan][i] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+            }
+            i++;
+          }
+
+          //println(keys_to_plot.size());
+          if(keys_to_plot.size() > 100){
+          for(int Ichan=0; Ichan<nchan; Ichan++){
+            update(data[Ichan],data_elec_imp_ohm);
+          }
+          }
+          //for(int index = 0; index <= scrollbar.get_index(); index++){
+          //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
+
+          //}
+
+          cc.update();
+          cc.draw();
+        }
+      }
+
+
+    } else {
+      //show the spectrogram
+      gSpectrogram.draw();  //draw the spectrogram axes
+      titleSpectrogram.draw(); //draw the spectrogram title
+
+      //draw the spectrogram image
+      PVector pos = gSpectrogram.position;
+      Axis2D ax = gSpectrogram.getXAxis();
+      int x = ax.valueToPosition(ax.getMinValue())+(int)pos.x;
+      int w = ax.valueToPosition(ax.getMaxValue());
+      ax = gSpectrogram.getYAxis();
+      int y =  (int) pos.y - ax.valueToPosition(ax.getMinValue()); //position needs top-left.  The MAX value is at the top-left for this plot.
+      int h = ax.valueToPosition(ax.getMaxValue());
+      //println("GUI_Manager.draw(): x,y,w,h = " + x + " " + y + " " + w + " " + h);
+      float max_freq_Hz = gSpectrogram.getYAxis().getMaxValue()-0.5f;
+      spectrogram.draw(x,y,w,h,max_freq_Hz);
+    }
+
+    //draw the regular FFT spectrum display
+    gFFT.draw();
+    titleFFT.draw();//println("completed FFT draw...");
+
+    switch (guiPage) {  //the rest of the elements depend upon what GUI page we're on
+      //note: GUI_PAGE_CHANNEL_ON_OFF is the default at the end
+      case GUI_PAGE_IMPEDANCE_CHECK:
+        //show impedance buttons and text
+        for (int Ichan = 0; Ichan < chanButtons.length; Ichan++) {
+          impedanceButtonsP[Ichan].draw(); //P-channel buttons
+          impedanceButtonsN[Ichan].draw(); //N-channel buttons
+        }
+        for (int Ichan = 0; Ichan < impValuesMontage.length; Ichan++) {
+          impValuesMontage[Ichan].draw();  //impedance values on montage plot
+        }
+        biasButton.draw();
+        break;
+      default:  //assume GUI_PAGE_CHANNEL_ONOFF:
+        //show channel buttons
+        for (int Ichan = 0; Ichan < chanButtons.length; Ichan++) { chanButtons[Ichan].draw(); }
+        //detectButton.draw();
+        //spectrogramButton.draw();
+    }
 
     if (showMontageValues) {
       for (int Ichan = 0; Ichan < chanValuesMontage.length; Ichan++) {
         chanValuesMontage[Ichan].draw();
       }
     }
+
+    // if(controlPanelCollapser.isActive){
+    //   controlPanel.draw();
+    // }
+    // controlPanelCollapser.draw();
 
     cc.draw();
     if(cc.showFullController == false){
@@ -506,4 +844,97 @@ class GUI_Manager {
     cc.mouseReleased();
   }
 
+};
+
+//============= PLAYBACKSLIDER =============
+class PlaybackScrollbar {
+  int swidth, sheight;    // width and height of bar
+  float xpos, ypos;       // x and y position of bar
+  float spos, newspos;    // x position of slider
+  float sposMin, sposMax; // max and min values of slider
+  boolean over;           // is the mouse over the slider?
+  boolean locked;
+  float ratio;
+  int num_indices;
+
+  PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
+    swidth = sw;
+    sheight = sh;
+    int widthtoheight = sw - sh;
+    ratio = (float)sw / (float)widthtoheight;
+    xpos = xp;
+    ypos = yp-sheight/2;
+    spos = xpos;
+    newspos = spos;
+    sposMin = xpos;
+    sposMax = xpos + swidth - sheight/2;
+    num_indices = is;
+  }
+
+  void update() {
+    if (overEvent()) {
+      over = true;
+    } else {
+      over = false;
+    }
+    if (mousePressed && over) {
+      locked = true;
+    }
+    if (!mousePressed) {
+      locked = false;
+    }
+    if (locked) {
+      newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
+    }
+    if (abs(newspos - spos) > 1) {
+      spos = spos + (newspos-spos);
+    }
+  }
+
+  float constrain(float val, float minv, float maxv) {
+    return min(max(val, minv), maxv);
+  }
+
+  boolean overEvent() {
+    if (mouseX > xpos && mouseX < xpos+swidth &&
+       mouseY > ypos && mouseY < ypos+sheight) {
+      cursor(HAND);
+      return true;
+    } else {
+      cursor(ARROW);
+      return false;
+    }
+  }
+
+  int get_index(){
+
+    float seperate_val = sposMax / num_indices;
+
+    int index;
+
+    for(index = 0; index < num_indices + 1; index++){
+      if(getPos() >= seperate_val * index && getPos() <= seperate_val * (index +1) ) return index;
+      else if(index == num_indices && getPos() >= seperate_val * index) return num_indices;
+    }
+
+    return -1;
+  }
+
+  void display() {
+    noStroke();
+    fill(204);
+    rect(xpos, ypos, swidth, sheight);
+    if (over || locked) {
+      fill(0, 0, 0);
+    } else {
+      fill(102, 102, 102);
+    }
+    rect(spos, ypos, sheight/2, sheight);
+  }
+
+  float getPos() {
+    // Convert spos to be values between
+    // 0 and the total width of the scrollbar
+    return spos * ratio;
+  }
 };
