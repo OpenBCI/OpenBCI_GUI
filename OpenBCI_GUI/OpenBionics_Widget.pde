@@ -150,7 +150,6 @@ class OpenBionics_Widget {
     //-------------------------------------------------------------
     dropdownPos = 4; //work down from 4 since we're starting on the right side now...
     configP5.addScrollableList("OpenBionicsSerialOut")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-((dropdownPos+1)), navHeight+(y+2)) //float right
       .setOpen(false)
       .setSize(dropdownWidth, (serialListOB.size()+1)*(navBarHeight-4))
@@ -164,10 +163,8 @@ class OpenBionics_Widget {
     configP5.getController("OpenBionicsSerialOut")
       .getCaptionLabel()
       .setText("Serial Port")
-      //.setFont(controlFonts[0])
       .setSize(12)
       .getStyle()
-      //.setPaddingTop(4)
       ;
  
     //-------------------------------------------------------------
@@ -189,10 +186,8 @@ class OpenBionics_Widget {
     configP5.getController("BaudList")
       .getCaptionLabel()
       .setText("BAUD")
-      //.setFont(controlFonts[0])
       .setSize(12)
       .getStyle()
-      //.setPaddingTop(4)
       ;
    
   }
@@ -348,10 +343,7 @@ class OpenBionics_Widget {
     
     configClose = new Button(int(x) + w/4,int(y) + 3*navHeight,int(w/25.3),int(w/25.3),"X",fontInfo.buttonLabel_size); 
     configConfirm = new Button(int(x) + w/2 + w/7,int(y) + 12*navHeight,int(w/10.12),int(w/25.3),"OKAY",fontInfo.buttonLabel_size);
-
-    //update position/size of FFT plot
-   //update dimensions
-
+    
     //update dropdown menu positions
     configP5.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
     int dropdownPos;
