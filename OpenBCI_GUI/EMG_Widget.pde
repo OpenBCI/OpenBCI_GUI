@@ -73,8 +73,6 @@ class EMG_Widget extends Container {
   //Constructor
   EMG_Widget(int NCHAN, float sample_rate_Hz, Container c, PApplet p) {
 
-
-
     super(c, "WHOLE");
     x = (int)container[parentContainer].x;
     y = (int)container[parentContainer].y;
@@ -134,40 +132,9 @@ class EMG_Widget extends Container {
     } else if (nchan == 8) {
       for (int i = 0; i < rowNum; i++) {
         for (int j = 0; j < colNum; j++) {      
-          //TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
-          //rect(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), int((4*rowOffset/8)));
-          //        ^X              ^Y                ^WIDTH              ^HEIGHT
-
-          //TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
-
-          //lx = ix;
-          //ly = iy;
-          //stretch = il;
-          //wid = iwid;
-          //len = ilen;
-          //boxx = lx - wid/2;
-          //boxy = ly-stretch - len/2;
-
-
-          //            if(i > 2){
-          //              //tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-          //              //untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
-
-          //              //done here
-          //              //tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-          //              tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8) , 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-
-          //              untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, untripSliders,false, motorWidgets[index]);
-
-          //            }
-          //  else{
-
-          //(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2_
 
           tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8), 0, int((3*colOffset/32)), 2, tripSliders, true, motorWidgets[index]);
           untripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8), 0, int(3*colOffset/32), 2, tripSliders, false, motorWidgets[index]);
-          //  }
-
 
           tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
           untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
@@ -243,74 +210,74 @@ class EMG_Widget extends Container {
 
       switch(cfc.ourChan) {
 
-      case 0:
-        if (configWidget.digital.wasPressed) digitalEventChan0(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan0(cfc);
-        break;
-      case 1:
-        if (configWidget.digital.wasPressed) digitalEventChan1(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan1(cfc);
-        break;
-      case 2:
-        if (configWidget.digital.wasPressed) digitalEventChan2(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan2(cfc);
-        break;
-      case 3:
-        if (configWidget.digital.wasPressed) digitalEventChan3(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan3(cfc);
-        break;
-      case 4:
-        if (configWidget.digital.wasPressed) digitalEventChan4(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan4(cfc);
-        break;
-      case 5:
-        if (configWidget.digital.wasPressed) digitalEventChan5(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan5(cfc);
-        break;
-      case 6:
-        if (configWidget.digital.wasPressed) digitalEventChan6(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan6(cfc);
-        break;
-      case 7:
-        if (configWidget.digital.wasPressed) digitalEventChan7(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan7(cfc);
-        break;
-      case 8:
-        if (configWidget.digital.wasPressed) digitalEventChan8(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan8(cfc);
-        break;
-      case 9:
-        if (configWidget.digital.wasPressed) digitalEventChan9(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan9(cfc);
-        break;
-      case 10:
-        if (configWidget.digital.wasPressed) digitalEventChan10(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan10(cfc);
-        break;
-      case 11:
-        if (configWidget.digital.wasPressed) digitalEventChan11(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan11(cfc);
-        break;
-      case 12:
-        if (configWidget.digital.wasPressed) digitalEventChan12(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan12(cfc);
-        break;
-      case 13:
-        if (configWidget.digital.wasPressed) digitalEventChan13(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan13(cfc);
-        break;
-      case 14:
-        if (configWidget.digital.wasPressed) digitalEventChan14(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan14(cfc);
-        break;
-      case 15:
-        if (configWidget.digital.wasPressed) digitalEventChan15(cfc);
-        if (configWidget.analog.wasPressed) analogEventChan15(cfc);
-        break;
-      default:
-        break;
+        case 0:
+          if (configWidget.digital.wasPressed) digitalEventChan0(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan0(cfc);
+          break;
+        case 1:
+          if (configWidget.digital.wasPressed) digitalEventChan1(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan1(cfc);
+          break;
+        case 2:
+          if (configWidget.digital.wasPressed) digitalEventChan2(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan2(cfc);
+          break;
+        case 3:
+          if (configWidget.digital.wasPressed) digitalEventChan3(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan3(cfc);
+          break;
+        case 4:
+          if (configWidget.digital.wasPressed) digitalEventChan4(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan4(cfc);
+          break;
+        case 5:
+          if (configWidget.digital.wasPressed) digitalEventChan5(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan5(cfc);
+          break;
+        case 6:
+          if (configWidget.digital.wasPressed) digitalEventChan6(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan6(cfc);
+          break;
+        case 7:
+          if (configWidget.digital.wasPressed) digitalEventChan7(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan7(cfc);
+          break;
+        case 8:
+          if (configWidget.digital.wasPressed) digitalEventChan8(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan8(cfc);
+          break;
+        case 9:
+          if (configWidget.digital.wasPressed) digitalEventChan9(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan9(cfc);
+          break;
+        case 10:
+          if (configWidget.digital.wasPressed) digitalEventChan10(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan10(cfc);
+          break;
+        case 11:
+          if (configWidget.digital.wasPressed) digitalEventChan11(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan11(cfc);
+          break;
+        case 12:
+          if (configWidget.digital.wasPressed) digitalEventChan12(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan12(cfc);
+          break;
+        case 13:
+          if (configWidget.digital.wasPressed) digitalEventChan13(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan13(cfc);
+          break;
+        case 14:
+          if (configWidget.digital.wasPressed) digitalEventChan14(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan14(cfc);
+          break;
+        case 15:
+          if (configWidget.digital.wasPressed) digitalEventChan15(cfc);
+          if (configWidget.analog.wasPressed) analogEventChan15(cfc);
+          break;
+        default:
+          break;
+        }
       }
-    }
 
     //=================== OpenBionics switch example ==============================
 
@@ -530,15 +497,11 @@ class EMG_Widget extends Container {
       dropdownPos = 0;
       text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
 
-
-
       configButton.draw();
       if (!configButton.wasPressed) {   
         cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false); 
         cp5Serial.get(MenuList.class, "baudList").setVisible(false);   
         float rx = x, ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
-
-
         float scaleFactor = 3.0;
         float scaleFactorJaw = 1.5;
         int rowNum = 4;
@@ -546,14 +509,18 @@ class EMG_Widget extends Container {
         float rowOffset = rh / rowNum;
         float colOffset = rw / colNum;
         int index = 0;
+        float currx, curry; 
 
         //new
         for (int i = 0; i < rowNum; i++) {
           for (int j = 0; j < colNum; j++) {
 
             pushMatrix();
-            translate(rx + j * colOffset, ry + i * rowOffset);
-            //draw visulizer
+            currx = rx + j * colOffset;
+            curry = ry + i * rowOffset; //never name variables on an empty stomach
+            translate(currx, curry);
+           
+            //draw visualizer
             noFill();
             stroke(0, 255, 0);
             strokeWeight(2);
@@ -568,50 +535,23 @@ class EMG_Widget extends Container {
             ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].myAverage, scaleFactor * motorWidgets[i * colNum + j].myAverage);
 
             //draw background bar for mapped uV value indication
-
             fill(0, 255, 255, 125);
             rect(5*colOffset/8, 2 * rowOffset / 8, (3*colOffset/32), int((4*rowOffset/8)));
 
             //draw real time bar of actually mapped value
             rect(5*colOffset/8, 6 *rowOffset / 8, (3*colOffset/32), map(motorWidgets[i * colNum + j].output_normalized, 0, 1, 0, (-1) * int((4*rowOffset/8) )));
 
-
-
-
-
-            //TripSlider(int ix, int iy, int il, int iwid, int ilen, TripSlider[] o, boolean wastrip, Motor_Widget p) {
-
-            //lx = ix;
-            //ly = iy;
-            //stretch = il;
-            //wid = iwid;
-            //len = ilen;
-            //boxx = lx - wid/2;
-            //boxy = ly-stretch - len/2;
-
-
-            //tripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
-            //untripSliders[index] = new TripSlider(int(752 + (j * 205)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
-
-
             //draw thresholds
-            tripSliders[index].update(rx + j * colOffset, ry + i * rowOffset);
+            tripSliders[index].update(currx, curry);
             tripSliders[index].display(5*colOffset/8, 2 * rowOffset / 8, (3*colOffset/32), 2);
-            //tripSliders[index].display(5*colOffset/8, 2 * rowOffset / 8 , (3*colOffset/32), 2);
-            //println("Col thing For Sliders: " + (5*colOffset/8));
-            untripSliders[index].update(rx + j * colOffset, ry + i * rowOffset);
+            untripSliders[index].update(currx, curry);
             untripSliders[index].display(5*colOffset/8, 2 * rowOffset / 8, (3*colOffset/32), 2);
 
-
-            //tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
-            //untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
             index++;
 
             popMatrix();
           }
         }
-
-
         popStyle();
       } else {
         configWidget.draw();
@@ -651,29 +591,6 @@ class EMG_Widget extends Container {
         ellipse(width/2, height - 40, 20, 20);
         break;
       }
-
-      //switch (motorWidgets[1].switchCounter){
-      //  case 1:
-      //    fill(255,0,0);
-      //    ellipse(width/2, height - 70 , 20, 20);
-      //    break;
-      //  case 2:
-      //    fill(0,255,0);
-      //    ellipse(width/2, height - 70 , 20, 20);
-      //    break;
-      //  case 3:
-      //    fill(0,0,255);
-      //    ellipse(width/2, height - 70 , 20, 20);
-      //    break;
-      //  case 4:
-      //    fill(128,0,128);
-      //    ellipse(width/2, height - 70 , 20, 20);
-      //    break;
-      //  case 5:
-      //    fill(255,255,0);
-      //    ellipse(width/2, height - 70 , 20, 20);
-      //    break;
-      //}
     }
   }
 

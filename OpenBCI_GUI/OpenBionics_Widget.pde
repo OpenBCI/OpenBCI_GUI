@@ -1,13 +1,14 @@
 
-////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //
-// This class creates an FFT Plot separate from the old Gui_Manager
+// OpenBionics Widget is an easy way to interface with your OpenBionics
+// hand using the OpenBCI gui! Use '\' to toggle between FFT and the widget!
 //
-// Conor Russomanno, July 2016
+// Colin Fausnaught, October 2016
 //
-// Requires the plotting library from grafica ... replacing the old gwoptics (which is now no longer supported)
+// KNOWN BUGS: Research mode is sometimes not toggled correctly, will need to fix this by v2 release.
 //
-///////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -86,12 +87,8 @@ class OpenBionics_Widget {
       String tempPort = serialPortsLocal[(serialPortsLocal.length-1) - i]; //list backwards... because usually our port is at the bottom
       if(!tempPort.equals(openBCI_portName)) serialListOB.add(tempPort);
     }
-    
     setupDropdownMenus(parent);
   }
-
-
-
   void process(){
     int output_normalized;
     StringBuilder researchCommand = new StringBuilder();
@@ -198,15 +195,10 @@ class OpenBionics_Widget {
       //.setPaddingTop(4)
       ;
    
-  
   }
   
+  void update() { }   //may be used later
 
-
-  void update() {
-
-
-  }
 
   void draw() {
 
@@ -340,7 +332,6 @@ class OpenBionics_Widget {
           break;
       }
       configP5.draw();
-      
   
       popStyle();
     }
@@ -367,16 +358,12 @@ class OpenBionics_Widget {
     int dropdownWidth = 60;
     dropdownPos = 1; //work down from 4 since we're starting on the right side now...
     configP5.getController("OpenBionicsSerialOut")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
     dropdownPos = 0;
     try{
     configP5.getController("LogLin")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
       .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
       ;
     }
     catch(Exception e){
@@ -423,7 +410,6 @@ class OpenBionics_Widget {
           println(e);
           verbosePrint("Could not connect to OpenBionics Hand");
         }
-      
       }
       
       thumbPressed = false;
@@ -447,8 +433,6 @@ class OpenBionics_Widget {
       }
     }
   }
-  
-  
   
   boolean overThumb(){
     if(mouseX >= x + w/3.9 && mouseX <=x + w/2.5 && mouseY >= y + h/1.8 && mouseY <= y + h/1.32){
