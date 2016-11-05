@@ -26,15 +26,18 @@ class TopNav {
   //constructor
   TopNav(){
 
-    stopButton = new Button(3, 35, 120, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
+    stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
+    stopButton.setFont(h2, 16);
     stopButton.setColorNotPressed(color(184, 220, 105));
 
-    filtNotchButton = new Button(7 + 120, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
-    filtBPButton = new Button(11 + 120 + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
-    intensityFactorButton = new Button(15 + 120 + 70 + 70, 35, 70, 26, "Vert Scale\n" + round(vertScale_uV) + "uV", fontInfo.buttonLabel_size);
+    filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
+    filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
+    intensityFactorButton = new Button(15 + stopButton.but_dx + 70 + 70, 35, 70, 26, "Vert Scale\n" + round(vertScale_uV) + "uV", fontInfo.buttonLabel_size);
 
     questionMark = new Button(width - 3 - 26, 3, 26, 26, "?", fontInfo.buttonLabel_size);
+    questionMark.setFont(h2, 16);
     layout = new Button(width - 3 - 70, 35, 70, 26, "Layout", fontInfo.buttonLabel_size);
+    layout.setFont(h2, 16);
   }
 
   void update(){

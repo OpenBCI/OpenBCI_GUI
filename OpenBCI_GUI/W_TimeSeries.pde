@@ -12,26 +12,75 @@
 W_TimeSeries timeSeries_widget;
 boolean drawTimeSeries = true;
 
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
+color[] channelColors = {
+  color(129, 129, 129),
+  color(124, 75, 141),
+  color(54, 87, 158),
+  color(49, 113, 89),
+  color(221, 178, 13),
+  color(253, 94, 52),
+  color(224, 56, 45),
+  color(162, 82, 49)
+};
+
 class W_TimeSeries{
 
   int numChannelBars;
-  int x, y, w, h;
+  float x, y, w, h;
+  float ts_padding;
+  float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+  float topNavHeight, playbackWidgetHeight;
+  int channelBarHeight;
   int parentContainer;
 
   PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
   PFont f2 = createFont("Arial", 18); //for dropdown name titles (above dropdown widgets)
 
+  ChannelBar[] channelBars;
+
   W_TimeSeries(PApplet _parent, int _parentContainer){
+
+    numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
+
     parentContainer = _parentContainer;
 
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
+    x = float(int(container[parentContainer].x)); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
+    y = float(int(container[parentContainer].y));
+    w = float(int(container[parentContainer].w));
+    h = float(int(container[parentContainer].h));
+
+    topNavHeight = navHeight * 2.0; //22*2 = 44
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+      playbackWidgetHeight = 80.0;
+    } else{
+      playbackWidgetHeight = 40.0;
+    }
+
+    ts_padding = 10.0;
+    ts_x = x + ts_padding;
+    ts_y = y + topNavHeight + ts_padding;
+    ts_w = w - ts_padding*2;
+    ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
+    channelBarHeight = int(ts_h/numChannelBars);
+
+    channelBars = new ChannelBar[numChannelBars];
+
+    //create our channel bars and populate our channelBars array!
+    for(int i = 0; i < numChannelBars; i++){
+      int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
+      ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+      channelBars[i] = tempBar;
+    }
 
   }
 
   void update(){
+
+    //update channel bars ... this means feeding new EEG data into plots
+    for(int i = 0; i < numChannelBars; i++){
+      channelBars[i].update();
+    }
 
   }
 
@@ -64,6 +113,11 @@ class W_TimeSeries{
     text("Time Series (uV/s)", x+navHeight+2, y+navHeight/2 - 2); //left
     //text("EEG Data (" + dataProcessing.getFilterDescription() + ")", x+navHeight+2, y+navHeight/2 - 3); //left
 
+    //draw channel bars
+    for(int i = 0; i < numChannelBars; i++){
+      channelBars[i].draw();
+    }
+
     popStyle();
   }
 
@@ -74,6 +128,17 @@ class W_TimeSeries{
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
+
+    ts_x = x + ts_padding;
+    ts_y = y + topNavHeight + ts_padding;
+    ts_w = w - ts_padding*2;
+    ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
+    channelBarHeight = int(ts_h/numChannelBars);
+
+    for(int i = 0; i < numChannelBars; i++){
+      int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
+      channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+    }
   }
 
   void mouseReleased(){
@@ -82,27 +147,155 @@ class W_TimeSeries{
 
 };
 
-
+//========================================================================================================================
+//                      CHANNEL BAR CLASS
+//========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
 class ChannelBar{
 
   int channelNumber; //duh
+  String channelString;
+  int x, y, w, h;
   boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
   Button onOffButton;
+  int onOff_diameter, impButton_diameter;
   Button impCheckButton;
-  GPlot channelPlot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+
+  GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+  GPointsArray channelPoints;
+  int nPoints;
+  int numSeconds;
+
   color channelColor; //color of plot trace
 
-  ChannelBar(){ // channel number, x/y location, height, width
+  ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
+
+    channelNumber = _channelNumber;
+    channelString = str(channelNumber);
+    isOn = true;
+
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+
+    onOff_diameter = 26;
+    onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
+    onOffButton.setFont(h2, 16);
+    onOffButton.setCircleButton(true);
+    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
+    onOffButton.hasStroke(false);
+
+    impButton_diameter = 22;
+    impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
+    impCheckButton.setFont(h2, 16);
+    impCheckButton.setCircleButton(true);
+    impCheckButton.setColorNotPressed(color(255));
+    impCheckButton.hasStroke(false);
+
+    numSeconds = 5;
+    plot = new GPlot(_parent);
+    plot.setPos(x + 36 + 4 + impButton_diameter, y);
+    plot.setDim(w - 36 - 4 - impButton_diameter, h);
+    plot.setMar(0f, 0f, 0f, 0f);
+    plot.setLineColor(channelColors[(channelNumber-1)%8]);
+    plot.setXLim(-5,0);
+    plot.setYLim(-10,10);
+    // plot.setBgColor(color(31,69,110));
+
+
+    // nPoints = numSeconds * openBCI.fs_Hz;
+    // for (int i = nPoints; i > 0; i--) {
+    //   float time = (-float(numSeconds))*(float(i)/float(nPoints));
+    //   // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
+    //   float filt_uV_value = 0.0;
+    //   points.add(time, filt_uV_value);
+    // }
+
+
+
+    nPoints = numSeconds * 50;
+    channelPoints = new GPointsArray(nPoints);
+    for (int i = nPoints; i > 0; i--) {
+      float time = (-float(numSeconds))*(float(i)/float(nPoints));
+      // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
+      float filt_uV_value = random(-10,10);
+      channelPoints.add(time, filt_uV_value);
+    }
 
   }
 
   void update(){
+    //update data in plot
+    for(int i = 0; i < nPoints; i++){ //remove all
+      channelPoints.remove(0);
+    }
+    for (int i = nPoints; i > 0; i--) { //new ones!
+      float time = (-float(numSeconds))*(float(i)/float(nPoints));
+      // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
+      float filt_uV_value = random(-10,10);
+      channelPoints.add(time, filt_uV_value);
+    }
+  }
+
+  void draw(){
+    pushStyle();
+
+    //draw channel holder background
+    stroke(31,69,110, 50);
+    fill(255);
+    rect(x,y,w,h);
+
+    //draw onOff Button
+    onOffButton.draw();
+    //draw impedance check Button
+    impCheckButton.draw();
+
+    //draw plot
+    stroke(31,69,110, 50);
+    fill(color(125,30,12,30));
+
+    rect(x + 36 + 4 + impButton_diameter, y, w - 36 - 4 - impButton_diameter, h);
+
+    plot.beginDraw();
+    plot.drawBox(); // we won't draw this eventually ...
+    plot.drawLines();
+    plot.endDraw();
+
+    popStyle();
+  }
+
+  void adjustTimeAxis(int _newTimeSize){
+
+  }
+
+  void adjustVertScale(){
+
+  }
+
+  void autoScale(){
+
+  }
+
+  void screenResized(int _x, int _y, int _w, int _h){
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+    onOffButton.but_x = x + 6;
+    onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
+    impCheckButton.but_x = x + 36;
+    impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
+  }
+
+  void mouseReleased(){
 
   }
 };
-
+//========================================================================================================================
+//                  END OF -- CHANNEL BAR CLASS
+//========================================================================================================================
 
 //============= PLAYBACKSLIDER =============
 class PlaybackScrollbar {

@@ -1947,10 +1947,10 @@ public class MenuList extends controlP5.Controller {
           updateMenu();
         }
         if (inside()) {
-          if(!drawHand){
-            cursor(HAND);
-            drawHand = true;
-          }
+          // if(!drawHand){
+          //   cursor(HAND);
+          //   drawHand = true;
+          // }
           menu.beginDraw();
           int len = -(itemHeight * items.size()) + getHeight();
           int ty;
@@ -1966,10 +1966,10 @@ public class MenuList extends controlP5.Controller {
           menu.endDraw();
         }
         else {
-          if(drawHand){
-            drawHand = false;
-            cursor(ARROW);
-          }
+          // if(drawHand){
+          //   drawHand = false;
+          //   cursor(ARROW);
+          // }
         }
         pg.image(menu, 0, 0);
       }
