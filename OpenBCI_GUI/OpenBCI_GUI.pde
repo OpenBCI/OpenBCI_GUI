@@ -172,6 +172,13 @@ PFont f1;
 PFont f2;
 PFont f3;
 
+PFont h1; //large Montserrat
+PFont h2; //medium Montserrat
+PFont h3; //small Montserrat
+
+PFont p1; //medium Open Sans
+PFont p2; //small Open Sans
+
 EMG_Widget emg_widget;
 Accelerometer_Widget accelWidget;
 PulseSensor_Widget pulseWidget;
@@ -213,6 +220,13 @@ void setup() {
   f2 = createFont("fonts/Raleway-Regular.otf", 15);
   f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
 
+  h1 = createFont("fonts/Montserrat-Regular.otf", 20);
+  h2 = createFont("fonts/Montserrat-Regular.otf", 16);
+  h3 = createFont("fonts/Montserrat-Regular.otf", 12);
+
+  p1 = createFont("fonts/OpenSans-Regular.ttf", 24);
+  p2 = createFont("fonts/OpenSans-Regular.ttf", 16);
+
   //V2 FONTS
   //f1 = createFont("fonts/Montserrat-SemiBold.otf", 16);
   //f2 = createFont("fonts/Montserrat-Light.otf", 15);
@@ -239,7 +253,8 @@ void setup() {
 
   // println("..." + this);
   // controlPanelCollapser = new Button(2, 2, 256, int((float)win_y*(0.03f)), "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
-  controlPanelCollapser = new Button(3, 3, 256, 26, "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
+  controlPanelCollapser = new Button(3, 3, 256, 26, "System Control Panel", fontInfo.buttonLabel_size);
+  controlPanelCollapser.setFont(h2, 16);
   controlPanelCollapser.setIsActive(true);
   controlPanelCollapser.makeDropdownButton(true);
 

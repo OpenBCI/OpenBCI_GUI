@@ -687,16 +687,20 @@ class Button {
   color textColorNotActive = bgColor;
   color rectHighlight;
   boolean drawHand = false;
+  boolean isCircleButton = false;
   //boolean isMouseHere = false;
   boolean buttonHasStroke = true;
   boolean isActive = false;
   boolean isDropdownButton = false;
   boolean wasPressed = false;
   public String but_txt;
-  PFont buttonFont = f2;
+  PFont buttonFont;
+  int buttonTextSize;
 
   public Button(int x, int y, int w, int h, String txt, int fontSize) {
     setup(x, y, w, h, txt);
+    buttonFont = f2;
+    buttonTextSize = fontSize;
     //println(PFont.list()); //see which fonts are available
     //font = createFont("SansSerif.plain",fontSize);
     //font = createFont("Lucida Sans Regular",fontSize);
@@ -710,6 +714,19 @@ class Button {
     but_dx = w;
     but_dy = h;
     setString(txt);
+  }
+
+  public void setFont(PFont _newFont){
+    buttonFont = _newFont;
+  }
+
+  public void setFont(PFont _newFont, int _newTextSize){
+    buttonFont = _newFont;
+    buttonTextSize = _newTextSize;
+  }
+
+  public void setCircleButton(boolean _isCircleButton){
+    isCircleButton = _isCircleButton;
   }
 
   public void setString(String txt) {
@@ -731,7 +748,7 @@ class Button {
 
   public boolean isMouseHere() {
     if ( overRect(but_x, but_y, but_dx, but_dy) ) {
-      cursor(HAND);
+      // cursor(HAND);
       return true;
     } else {
       return false;
@@ -784,6 +801,10 @@ class Button {
   }
 
   public void draw() {
+    pushStyle();
+    // rectMode(CENTER);
+    ellipseMode(CORNER);
+
     //draw the button
     fill(getColor());
     if (buttonHasStroke) {
@@ -792,7 +813,11 @@ class Button {
       noStroke();
     }
     // noStroke();
-    rect(but_x, but_y, but_dx, but_dy);
+    if(isCircleButton){
+      ellipse(but_x, but_y, but_dx, but_dy);
+    } else{
+      rect(but_x, but_y, but_dx, but_dy);
+    }
 
     //draw the text
     if (isActive) {
@@ -802,7 +827,7 @@ class Button {
     }
     stroke(255);
     textFont(buttonFont);  //load f2 ... from control panel
-    textSize(12);
+    textSize(buttonTextSize);
     textAlign(CENTER, CENTER);
     textLeading(round(0.9*(textAscent()+textDescent())));
     //    int x1 = but_x+but_dx/2;
@@ -811,7 +836,12 @@ class Button {
     //no auto wrap
     x1 = but_x+but_dx/2;
     y1 = but_y+but_dy/2;
-    text(but_txt, x1, y1);
+
+    if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
+      text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
+    } else{
+      text(but_txt, x1, y1); //as long as font is not Montserrat
+    }
 
     //draw open/close arrow if it's a dropdown button
     if (isDropdownButton) {
@@ -841,18 +871,21 @@ class Button {
       popStyle();
     }
 
-    if (true) {
-      if (!isMouseHere() && drawHand) {
-        cursor(ARROW);
-        drawHand = false;
-        //verbosePrint("don't draw hand");
-      }
-      //if cursor is over button change cursor icon to hand!
-      if (isMouseHere() && !drawHand) {
-        cursor(HAND);
-        drawHand = true;
-        //verbosePrint("draw hand");
-      }
-    }
-  }
+    //cursor = funny looking finger thing when hovering over buttons...
+    // if (true) {
+    //   if (!isMouseHere() && drawHand) {
+    //     cursor(ARROW);
+    //     drawHand = false;
+    //     //verbosePrint("don't draw hand");
+    //   }
+    //   //if cursor is over button change cursor icon to hand!
+    //   if (isMouseHere() && !drawHand) {
+    //     cursor(HAND);
+    //     drawHand = true;
+    //     //verbosePrint("draw hand");
+    //   }
+    // }
+
+    popStyle();
+  } //end of button draw
 };
