@@ -2,19 +2,20 @@
 //
 //  Accelerometer_Widget is used to visiualze accelerometer data
 //
-//  Created: Colin Fausnaught, September 2016
-//           Source Code by Joel Murphy
+//  Created: Joel Murphy
+//  Modified: Colin Fausnaught, September 2016
+//  Modified: Wangshu Sun, November 2016 
 //
 //  Use '/' to toggle between accelerometer and pulse sensor.
 ////////////////////////////////////////////////////////////////////////////////
 
-class Accelerometer_Widget extends Playground{
-  
+class Accelerometer_Widget{
 
-  //button for opening and closing
-  float x, y, w, h;
+  int x, y, w, h;
   color boxBG;
   color strokeColor;
+
+  PFont f4 = createFont("fonts/Raleway-SemiBold.otf", 64); 
 
   float topMargin, bottomMargin;
   float expandLimit = width/2.5;
@@ -22,35 +23,40 @@ class Accelerometer_Widget extends Playground{
   boolean collapsing;
 
   // Accelerometer Stuff
+  
+  // bottom xyz graph
   int AccelWindowWidth;
   int AccelWindowHeight; 
   int AccelWindowX;
   int AccelWindowY;
+  
+  // circular 3d xyz graph
   float PolarWindowX;
   float PolarWindowY;
   int PolarWindowWidth;
   int PolarWindowHeight;
   float PolarCorner;
+  
   color eggshell;
   color Xcolor;
   color Ycolor;
   color Zcolor;
+  
   float currentXvalue;
   float currentYvalue;
   float currentZvalue;
+  
   int[] X;
   int[] Y;      // 
   int[] Z;
+  
   float dummyX;
   float dummyY;
   float dummyZ;
   boolean Xrising;
   boolean Yrising;
   boolean Zrising;
-  boolean OBCI_inited= false;
-
-
-  OpenBCI_ADS1299 OBCI;  
+  boolean OBCI_inited= true;
 
   Button collapser;
 
@@ -60,6 +66,11 @@ class Accelerometer_Widget extends Playground{
     topMargin = _topMargin;
     bottomMargin = helpWidget.h;
 
+    x = width;
+    y = topMargin;
+    w = 0;
+    h = (height - (topMargin+bottomMargin))/2;
+
     isOpen = false;
     collapsing = true;
 
@@ -67,28 +78,31 @@ class Accelerometer_Widget extends Playground{
     strokeColor = color(138, 146, 153);
     collapser = new Button(0, 0, 20, 60, "<", 14);
 
-    x = width;
-    y = topMargin;
-    w = 0;
-    h = (height - (topMargin+bottomMargin))/2;
-
     // Accel Sensor Stuff
     eggshell = color(255, 253, 248);
     Xcolor = color(255, 36, 36);
     Ycolor = color(36, 255, 36);
     Zcolor = color(36, 100, 255);
+    
+    PolarWindowWidth = 155;
+    PolarWindowHeight = 155;
+    
     AccelWindowWidth = 440;
     AccelWindowHeight = 183;
     AccelWindowX = int(x)+5;
     AccelWindowY = int(y)-10+int(h)/2;
-    PolarWindowWidth = 155;
-    PolarWindowHeight = 155;
+    
+    // XYZ buffer for bottom graph
     X = new int[AccelWindowWidth];
     Y = new int[AccelWindowWidth];
     Z = new int[AccelWindowWidth];
+    
+    // for synthesizing values
     Xrising = true; 
     Yrising = false; 
     Zrising = true;
+    
+    // initialize data
     for (int i=0; i<X.length; i++) {  // initialize the accelerometer data
       X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
@@ -97,7 +111,6 @@ class Accelerometer_Widget extends Playground{
   }
 
   public void initPlayground(OpenBCI_ADS1299 _OBCI) {
-    OBCI = _OBCI;
     OBCI_inited = true;
   }
 
@@ -160,9 +173,9 @@ class Accelerometer_Widget extends Playground{
           fill(Zcolor);
           text("Z "+nf(dummyZ, 1, 3), x+10, y+120);
         } else {
-          currentXvalue = OBCI.validAuxValues[0]*OBCI.get_scale_fac_accel_G_per_count();
-          currentYvalue = OBCI.validAuxValues[1]*OBCI.get_scale_fac_accel_G_per_count();
-          currentZvalue = OBCI.validAuxValues[2]*OBCI.get_scale_fac_accel_G_per_count();
+          currentXvalue = openBCI.validAuxValues[0]*openBCI.get_scale_fac_accel_G_per_count();
+          currentYvalue = openBCI.validAuxValues[1]*openBCI.get_scale_fac_accel_G_per_count();
+          currentZvalue = openBCI.validAuxValues[2]*openBCI.get_scale_fac_accel_G_per_count();
           fill(Xcolor);
           text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
           fill(Ycolor);
