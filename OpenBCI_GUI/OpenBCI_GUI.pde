@@ -42,7 +42,7 @@ import java.awt.MouseInfo;
 //used to switch between application states
 int systemMode = -10; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
-boolean hasIntroAnimation = true;
+boolean hasIntroAnimation = false;
 PImage cog;
 
 //choose where to get the EEG data
@@ -739,15 +739,21 @@ void mouseOutOfBounds() {
     //  println("Window Y " + loc.y);
     //  println();
     //}
-    if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
-      MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
-      MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
-      MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
-      mouseX = 0;
-      mouseY = 0;
-
-      mouseInFrame = false;
+    try {
+      if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
+        MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
+        MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
+        MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
+        mouseX = 0;
+        mouseY = 0;
+        // println("Mouse out of bounds!");
+        mouseInFrame = false;
+      }
     }
+    catch (RuntimeException e) {
+      verbosePrint("Error happened while cursor left application...");
+    }
+
   } else {
     if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
       loc = getWindowLocation(P2D);

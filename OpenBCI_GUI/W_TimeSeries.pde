@@ -166,6 +166,7 @@ class ChannelBar{
   GPointsArray channelPoints;
   int nPoints;
   int numSeconds;
+  float timeBetweenPoints;
 
   color channelColor; //color of plot trace
 
@@ -199,43 +200,41 @@ class ChannelBar{
     plot.setPos(x + 36 + 4 + impButton_diameter, y);
     plot.setDim(w - 36 - 4 - impButton_diameter, h);
     plot.setMar(0f, 0f, 0f, 0f);
-    plot.setLineColor(channelColors[(channelNumber-1)%8]);
+    plot.setLineColor((int)channelColors[(channelNumber-1)%8]);
     plot.setXLim(-5,0);
-    plot.setYLim(-10,10);
+    plot.setYLim(-30,30);
+    plot.setPointSize(2);
+    plot.setPointColor(0);
     // plot.setBgColor(color(31,69,110));
 
 
-    // nPoints = numSeconds * openBCI.fs_Hz;
-    // for (int i = nPoints; i > 0; i--) {
-    //   float time = (-float(numSeconds))*(float(i)/float(nPoints));
-    //   // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
-    //   float filt_uV_value = 0.0;
-    //   points.add(time, filt_uV_value);
-    // }
-
-
-
-    nPoints = numSeconds * 50;
+    nPoints = numSeconds * (int)openBCI.fs_Hz;
     channelPoints = new GPointsArray(nPoints);
-    for (int i = nPoints; i > 0; i--) {
-      float time = (-float(numSeconds))*(float(i)/float(nPoints));
+    timeBetweenPoints = (float)numSeconds / (float)nPoints;
+
+    for (int i = 0; i < nPoints; i++) {
+      float time = -(float)numSeconds + (float)i*timeBetweenPoints;
+      // float time = (-float(numSeconds))*(float(i)/float(nPoints));
       // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
-      float filt_uV_value = random(-10,10);
-      channelPoints.add(time, filt_uV_value);
+      float filt_uV_value = 0.0; //0.0 for all points to start
+      GPoint tempPoint = new GPoint(time, filt_uV_value);
+      channelPoints.set(i, tempPoint);
     }
 
+    plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
   }
 
   void update(){
-    //update data in plot
-    for(int i = 0; i < nPoints; i++){ //remove all
-      channelPoints.remove(0);
-    }
-    for (int i = nPoints; i > 0; i--) { //new ones!
-      float time = (-float(numSeconds))*(float(i)/float(nPoints));
-      // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
-      float filt_uV_value = random(-10,10);
-      channelPoints.add(time, filt_uV_value);
+    // update data in plot
+    if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
+      for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
+        float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
+        float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
+        // float filt_uV_value = 0.0;
+        GPoint tempPoint = new GPoint(time, filt_uV_value);
+        channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), tempPoint);
+      }
+      plot.setPoints(channelPoints); //reset the plot with updated channelPoints
     }
   }
 
@@ -261,6 +260,11 @@ class ChannelBar{
     plot.beginDraw();
     plot.drawBox(); // we won't draw this eventually ...
     plot.drawLines();
+    // plot.drawPoints();
+    // plot.drawYAxis();
+    if(channelNumber == nchan){ //only draw the x axis label on the bottom channel bar
+      plot.drawXAxis();
+    }
     plot.endDraw();
 
     popStyle();
