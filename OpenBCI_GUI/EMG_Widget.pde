@@ -425,20 +425,35 @@ class EMG_Widget extends Container {
   }
   void update() {
 
-    //update position/size of FFT Plot
+    //update position/size of the widget
     x = (int)container[parentContainer].x;
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
+    
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
     //when screen is resized...
-    //update Head Plot widget position/size
+    //update widget position/size
     x = (int)container[parentContainer].x;
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
+    
+    //println("x: " + x + " y: " + y + " w: " + w + " h: " + h);
+    configWidget.update(x,y,w,h);
+    
+    if(configButton.wasPressed){
+      configButton = new Button(int(x), int(y + h/14), 20, 20, "X", fontInfo.buttonLabel_size); 
+      configButton.wasPressed = true;
+    }
+    else{
+      configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size); 
+      configButton.wasPressed = false;
+    }
+    
+
   }
 
 
@@ -662,7 +677,6 @@ class EMG_Widget extends Container {
         configButton.setString("O");
       }
     } else if (mouseX >= (x) && mouseX <= (x+20) && mouseY >= y + h/14 && mouseY <= y+ h/14 + 20) {
-      println("Mouse Here!");
 
       //Open configuration menu
       if (configButton.isMouseHere()) {
@@ -671,7 +685,7 @@ class EMG_Widget extends Container {
 
 
         if (configButton.wasPressed) {
-          println("Should turn back to O");
+          //edge case, sometimes this is needed
           configButton.wasPressed = false;
           configButton.setString("O");
         } else {
@@ -731,6 +745,7 @@ class EMG_Widget extends Container {
     public Button valueThreshold;
     public Button dynamicThreshold;
     public Button connectToSerial;
+    Container c;
 
     MenuList serialListLocal;
     MenuList baudList;
@@ -741,20 +756,21 @@ class EMG_Widget extends Container {
     //Constructor
     public Config_Widget(int NCHAN, float sample_rate_Hz, Container container, Motor_Widget[] parent) {
       super(container, "WHOLE");
+      c = container;
 
       // println("EMG_Widget: Config_Widget: nchan " + NCHAN);
 
       this.nchan = NCHAN;
       this.fs_Hz = sample_rate_Hz;
       this.parent = parent;
-
+      nchan = NCHAN;
 
       chans = new Button[NCHAN];
-      digital = new Button(int(x + 55), int(y + 60), 10, 10, "", fontInfo.buttonLabel_size);
-      analog = new Button(int(x - 15), int(y + 60), 10, 10, "", fontInfo.buttonLabel_size);
-      valueThreshold = new Button(int(x+235), int(y+60), 10, 10, "", fontInfo.buttonLabel_size);
-      dynamicThreshold = new Button(int(x+150), int(y+60), 10, 10, "", fontInfo.buttonLabel_size);  //CURRENTLY DOES NOTHING! Working on implementation
-      connectToSerial = new Button(int(x+235), int(y+297), 100, 25, "Connect", 18);
+      digital = new Button(int(x + w/7.5), int(y + h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
+      analog = new Button(int(x - w/27.3), int(y + h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
+      valueThreshold = new Button(int(x+ w/1.74), int(y+ h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
+      dynamicThreshold = new Button(int(x+w/2.73), int(y+h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);  //CURRENTLY DOES NOTHING! Working on implementation
+      connectToSerial = new Button(int(x+w/1.74), int(y+h/1.16), int(w/4.096), int(w/13.824), "Connect", 18);
 
       digital.setIsActive(true);
       digital.wasPressed = true;
@@ -764,8 +780,8 @@ class EMG_Widget extends Container {
       valueThreshold.wasPressed = true;
 
       //Available serial outputs
-      serialListLocal = new MenuList(cp5Serial, "serialListConfig", 236, 120, f2);
-      serialListLocal.setPosition(x - 10, y + 160);
+      serialListLocal = new MenuList(cp5Serial, "serialListConfig", int(w/1.74), int(h/2.88), f2);
+      serialListLocal.setPosition(x - w/40.96, y + h/2.56);
       serialPortsLocal = Serial.list();
       for (int i = 0; i < serialPortsLocal.length; i++) {
         String tempPort = serialPortsLocal[(serialPortsLocal.length-1) - i]; //list backwards... because usually our port is at the bottom
@@ -773,8 +789,8 @@ class EMG_Widget extends Container {
       }
 
       //List of BAUD values
-      baudList = new MenuList(cp5Serial, "baudList", 100, 120, f2);
-      baudList.setPosition(x+235, y + 160);
+      baudList = new MenuList(cp5Serial, "baudList", int(w/4.096), int(h/2.88), f2);
+      baudList.setPosition(x+w/1.74, y + h/2.16);
 
       baudList.addItem(makeItem("230400"));
       baudList.addItem(makeItem("115200"));
@@ -809,8 +825,86 @@ class EMG_Widget extends Container {
 
       //Buttons for different channels (Just displays number if 16 channel)
       for (int i = 0; i < NCHAN; i++) {
-        if (NCHAN == 8) chans[i] = new Button(int(x - 30 + (i * (w-10)/nchan )), int(y + 10), int((w-10)/nchan), 30, "CHAN " + (i+1), fontInfo.buttonLabel_size);
-        else chans[i] = new Button(int(x - 30 + (i * (w-10)/nchan )), int(y + 5), int((w-10)/nchan), 30, "" + (i+1), fontInfo.buttonLabel_size);
+        if (NCHAN == 8) chans[i] = new Button(int(x - w/13.65 + (i * (w-w/40.96)/nchan )), int(y + w/40.96), int((w-w/40.96)/nchan), 30, "CHAN " + (i+1), fontInfo.buttonLabel_size);
+        else chans[i] = new Button(int(x - w/13.65 + (i * (w-w/40.96)/nchan )), int(y + h/69.12), int((w-w/40.96)/nchan), int(w/13.65), "" + (i+1), fontInfo.buttonLabel_size);
+      }
+
+      //Set fist channel as active
+      chans[0].setIsActive(true);
+      chans[0].wasPressed = true;
+    }
+    public void update(float lx, float ly, float lw, float lh){
+      
+      println(" lx: " + lx + " ly: " + ly + " lw: " + lw + " lh: " + lh);
+      println(" x: " + x + " y: " + y + " w: " + w + " h: " + h);
+      x = lx + x/6.12;
+      y = ly + y/3.03;
+      w = lw - w/4.25;
+      h = lh - h/245.1;
+      
+      
+      chans = new Button[nchan];
+      digital = new Button(int(x + w/7.5), int(y + h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
+      analog = new Button(int(x - w/27.3), int(y + h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
+      valueThreshold = new Button(int(x+ w/1.74), int(y+ h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
+      dynamicThreshold = new Button(int(x+w/2.73), int(y+h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);  //CURRENTLY DOES NOTHING! Working on implementation
+      connectToSerial = new Button(int(x+w/1.74), int(y+h/1.16), int(w/4.096), int(w/13.824), "Connect", 18);
+
+      digital.setIsActive(true);
+      digital.wasPressed = true;
+      analog.setIsActive(true);
+      analog.wasPressed = true;
+      valueThreshold.setIsActive(true);
+      valueThreshold.wasPressed = true;
+
+      //Available serial outputs
+      serialListLocal = new MenuList(cp5Serial, "serialListConfig", int(w/1.74), int(h/2.88), f2);
+      serialListLocal.setPosition(x - w/40.96, y + h/2.56);
+      serialPortsLocal = Serial.list();
+      for (int i = 0; i < serialPortsLocal.length; i++) {
+        String tempPort = serialPortsLocal[(serialPortsLocal.length-1) - i]; //list backwards... because usually our port is at the bottom
+        if (!tempPort.equals(openBCI_portName)) serialListLocal.addItem(makeItem(tempPort));
+      }
+
+      //List of BAUD values
+      baudList = new MenuList(cp5Serial, "baudList", int(w/4.096), int(h/2.88), f2);
+      baudList.setPosition(x+w/1.74, y + h/2.16);
+
+      baudList.addItem(makeItem("230400"));
+      baudList.addItem(makeItem("115200"));
+      baudList.addItem(makeItem("57600"));
+      baudList.addItem(makeItem("38400"));
+      baudList.addItem(makeItem("28800"));
+      baudList.addItem(makeItem("19200"));
+      baudList.addItem(makeItem("14400"));
+      baudList.addItem(makeItem("9600"));
+      baudList.addItem(makeItem("7200"));
+      baudList.addItem(makeItem("4800"));
+      baudList.addItem(makeItem("3600"));
+      baudList.addItem(makeItem("2400"));
+      baudList.addItem(makeItem("1800"));
+      baudList.addItem(makeItem("1200"));
+      baudList.addItem(makeItem("600"));
+      baudList.addItem(makeItem("300"));
+
+
+      //Set first items to active
+      Map bob = ((MenuList)baudList).getItem(0);
+      baudEMG = (String)bob.get("headline");
+      baudList.activeItem = 0;
+
+      Map bobSer = ((MenuList)serialListLocal).getItem(0);
+      serialNameEMG = (String)bobSer.get("headline");
+      serialListLocal.activeItem = 0;
+
+      //Hide the list until open button clicked
+      cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false);
+      cp5Serial.get(MenuList.class, "baudList").setVisible(false);
+
+      //Buttons for different channels (Just displays number if 16 channel)
+      for (int i = 0; i < nchan; i++) {
+        if (nchan == 8) chans[i] = new Button(int(x - w/13.65 + (i * (w-w/40.96)/nchan )), int(y + w/40.96), int((w-w/40.96)/nchan), 30, "CHAN " + (i+1), fontInfo.buttonLabel_size);
+        else chans[i] = new Button(int(x - w/13.65 + (i * (w-w/40.96)/nchan )), int(y + h/69.12), int((w-w/40.96)/nchan), int(w/13.65), "" + (i+1), fontInfo.buttonLabel_size);
       }
 
       //Set fist channel as active
@@ -818,17 +912,19 @@ class EMG_Widget extends Container {
       chans[0].wasPressed = true;
     }
 
+
     public void draw() {
       pushStyle();
 
       float rx = x, ry = y, rw = w, rh =h;
+      //println("x: " + rx + " y: " + ry + " w: " + rw + " h: " + rh);
       //Config Window Rectangle
       fill(211, 211, 211);
-      rect(rx - 35, ry, rw, rh);
+      rect(rx - w/11.7, ry, rw, rh);
 
       //Serial Config Rectangle
       fill(190, 190, 190);
-      rect(rx - 30, ry+90, rw- 10, rh-95);
+      rect(rx - w/13.65, ry+h/3.84, rw- w/40.96, rh-h/3.64);
 
 
       //Channel Configs
@@ -845,26 +941,26 @@ class EMG_Widget extends Container {
 
     void drawAnalogSelection() {
       fill(233, 233, 233);
-      rect(x-30, y+50, 165, 30);
+      rect(x-w/13.65, y+h/6.91, w/2.48, h/11.52);
       analog.draw();
       digital.draw();
       fill(50);
-      text("Analog", x+20, y+63);
-      text("Digital", x+90, y+63);
+      text("Analog", x+w/20.48, y+h/5.49);
+      text("Digital", x+w/4.55, y+h/5.49);
     }
 
     void drawThresholdSelection() {
       fill(233, 233, 233);
-      rect(x+140, y+50, 230, 30);
+      rect(x+w/2.93, y+h/6.91, w/1.78, h/11.52);
       valueThreshold.draw();
       dynamicThreshold.draw();
 
       fill(50);
       textAlign(LEFT);
       textSize(13);
-      text("Dynamic", x+167, y+68);
-      text("Trip Value     %" + (double)Math.round((parent[lastChan].tripThreshold * 100) * 10d) / 10d, x+250, y+63);
-      text("Untrip Value %"+ (double)Math.round((parent[lastChan].untripThreshold * 100) * 10d) / 10d, x+250, y+78);
+      text("Dynamic", x+w/2.45, y+h/5.08);
+      text("Trip Value     %" + (double)Math.round((parent[lastChan].tripThreshold * 100) * 10d) / 10d, x+w/1.64, y+h/5.49);
+      text("Untrip Value %"+ (double)Math.round((parent[lastChan].untripThreshold * 100) * 10d) / 10d, x+w/1.64, y+h/4.43);
     }
 
     void drawMenuLists() {
@@ -872,12 +968,12 @@ class EMG_Widget extends Container {
       textFont(f1);
       textAlign(CENTER);
       textSize(18);
-      text("Serial Out Configuration", x+160, y+120);
+      text("Serial Out Configuration", x+w/2.56, y+h/2.88);
 
       textSize(14);
       textAlign(LEFT);
-      text("Serial Port", x-10, y + 150);
-      text("BAUD Rate", x+235, y+150);
+      text("Serial Port", x-w/40.96, y + h/2.3);
+      text("BAUD Rate", x+w/1.74, y+h/2.3);
       cp5Serial.get(MenuList.class, "serialListConfig").setVisible(true); //make sure the serialList menulist is visible
       cp5Serial.get(MenuList.class, "baudList").setVisible(true); //make sure the baudList menulist is visible
 
@@ -887,18 +983,18 @@ class EMG_Widget extends Container {
     public void print_onscreen(String localstring) {
       textAlign(LEFT);
       fill(0);
-      rect(x - 10, y + 290, (w-175), 40);
+      rect(x - w/40.96, y + h/1.19, (w-w/2.34), h/8.64);
       fill(255);
-      text(localstring, x, y + 290 + 15, ( w - 180), 40 -15);
+      text(localstring, x, y + h/1.13, ( w - w/2.28), h/13.82);
       this.last_message = localstring;
     }
 
     void print_lastmessage() {
       textAlign(LEFT);
       fill(0);
-      rect(x - 10, y + 290, (w-175), 40);
+      rect(x - w/40.96, y + h/1.19, (w-w/2.34), h/8.64);
       fill(255);
-      text(this.last_message, x, y + 290 + 15, ( w - 180), 40 -15);
+      text(this.last_message, x, y + h/1.13, ( w - w/2.28), h/13.82);
     }
   }
 
