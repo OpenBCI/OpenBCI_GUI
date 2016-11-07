@@ -92,7 +92,7 @@ class EMG_Widget extends Container {
 
     initSliders(w, h);
 
-    configButton = new Button(int(x), int(y), 20, 20, "O", fontInfo.buttonLabel_size);  
+    configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);  
     configWidget = new Config_Widget(NCHAN, sample_rate_Hz, c, motorWidgets);
   }
 
@@ -549,7 +549,11 @@ class EMG_Widget extends Container {
         }
         popStyle();
       } else {
+        //println("Pressed");
+        //pushMatrix();
+        //translate(x,y);
         configWidget.draw();
+        //popMatrix();
       }
     } else {
       cp5Serial.setVisible(false);
@@ -651,14 +655,23 @@ class EMG_Widget extends Container {
         emg_widget.configWidget.connectToSerial.wasPressed = true;
         emg_widget.configWidget.connectToSerial.setIsActive(true);
       }
-    } else if (mouseX >= (x) && mouseX <= (x-20) && mouseY >= y && mouseY <= y+20) {
-
+      
+      //Close button stuff
+      if(mouseX >= x && mouseX <= (x+20) && mouseY >= y + h/14 && mouseY <= y + h/14 + 20){
+        configButton.wasPressed = false;
+        configButton.setString("O");
+      }
+    } else if (mouseX >= (x) && mouseX <= (x+20) && mouseY >= y + h/14 && mouseY <= y+ h/14 + 20) {
+      println("Mouse Here!");
 
       //Open configuration menu
       if (configButton.isMouseHere()) {
         configButton.setIsActive(true);
+        //configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);  
+
 
         if (configButton.wasPressed) {
+          println("Should turn back to O");
           configButton.wasPressed = false;
           configButton.setString("O");
         } else {
