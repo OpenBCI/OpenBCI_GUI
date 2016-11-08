@@ -29,6 +29,7 @@ class TopNav {
     stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
     stopButton.setFont(h2, 16);
     stopButton.setColorNotPressed(color(184, 220, 105));
+    stopButton.setHelpText("Press this button to Stop/Start the data stream.");
 
     filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
     filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
@@ -83,6 +84,12 @@ class TopNav {
   }
 
 }
+
+
+
+
+
+
 
 //=============== OLD STUFF FROM Gui_Manger.pde ===============//
 
