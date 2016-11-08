@@ -694,6 +694,10 @@ class Button {
   boolean isDropdownButton = false;
   boolean wasPressed = false;
   public String but_txt;
+  boolean showHelpText;
+  boolean helpTimerStarted;
+  String helpText= "";
+  int mouseOverButtonStart = 0;
   PFont buttonFont;
   int buttonTextSize;
 
@@ -734,6 +738,10 @@ class Button {
     //println("Button: setString: string = " + txt);
   }
 
+  public void setHelpText(String _helpText){
+    helpText = _helpText;
+  }
+
   public boolean isActive() {
     return isActive;
   }
@@ -749,8 +757,19 @@ class Button {
   public boolean isMouseHere() {
     if ( overRect(but_x, but_y, but_dx, but_dy) ) {
       // cursor(HAND);
+      if(!helpTimerStarted){
+        helpTimerStarted = true;
+        mouseOverButtonStart = millis();
+      } else {
+        if(millis()-mouseOverButtonStart >= 1000){
+          showHelpText = true;
+          // println("showww");
+        }
+      }
       return true;
     } else {
+      showHelpText = false;
+      helpTimerStarted = false;
       return false;
     }
   }
@@ -841,6 +860,17 @@ class Button {
       text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
     } else{
       text(but_txt, x1, y1); //as long as font is not Montserrat
+    }
+
+    if(showHelpText && helpText != ""){
+      pushStyle();
+      textFont(p2);
+      stroke(31,69,110);
+      fill(255);
+      rect(but_x + (3*but_dx)/4, but_y + (3*but_dy)/4, 100, 50);
+      fill(31,69,110);
+      text(helpText, but_x + 50, but_y + 25);
+      popStyle();
     }
 
     //draw open/close arrow if it's a dropdown button
