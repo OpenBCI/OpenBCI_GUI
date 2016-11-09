@@ -39,6 +39,13 @@ import java.awt.MouseInfo;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
+// acc test
+float [] validAuxValues = {0,0,0};
+float[] X_buff;
+float[] Y_buff;       
+float[] Z_buff;
+boolean acc_newData = false;
+
 //used to switch between application states
 int systemMode = -10; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
@@ -172,10 +179,6 @@ PFont f1;
 PFont f2;
 PFont f3;
 
-EMG_Widget emg_widget;
-Accelerometer_Widget accelWidget;
-PulseSensor_Widget pulseWidget;
-
 boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
@@ -256,8 +259,8 @@ void setup() {
   playground = new Playground(navBarHeight);
 
 
-  accelWidget = new Accelerometer_Widget(navBarHeight);
-  accelWidget.initPlayground(openBCI);
+  //accelWidget = new Accelerometer_Widget(navBarHeight);
+  //accelWidget.initPlayground(openBCI);
 
   pulseWidget = new PulseSensor_Widget(navBarHeight);
   pulseWidget.initPlayground(openBCI);
@@ -312,6 +315,9 @@ void initSystem() {
   dataBuffX = new float[(int)(dataBuff_len_sec * get_fs_Hz_safe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  X_buff = new float[500];
+  Y_buff = new float[500];
+  Z_buff = new float[500];
   //data_std_uV = new float[nchan];
   data_elec_imp_ohm = new float[nchan];
   is_railed = new DataStatus[nchan];
@@ -345,7 +351,6 @@ void initSystem() {
   //prepare the source of the input data
   switch (eegDataSource) {
   case DATASOURCE_NORMAL_W_AUX:
-
     int nEEDataValuesPerPacket = nchan;
     boolean useAux = false;
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
@@ -353,7 +358,6 @@ void initSystem() {
     break;
   case DATASOURCE_SYNTHETIC:
     synthesizeData = true;
-
     //do nothing
     break;
   case DATASOURCE_PLAYBACKFILE:
@@ -422,6 +426,7 @@ void haltSystem() {
   curDataPacketInd = -1;
   lastReadDataPacketInd = -1;
   pointCounter = 0;
+  currentTableRowIndex = 0;
   prevBytes = 0;
   prevMillis = millis();
   byteRate_perSec = 0;
