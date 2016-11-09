@@ -556,13 +556,13 @@ void mousePressed() {
     playground.toggleWindow();
   }
   
-  //if (accelWidget.isMouseHere()) {
-  //  accelWidget.mousePressed();
-  //}
+  if (accelWidget.isMouseHere()) {
+    accelWidget.mousePressed();
+  }
 
-  //if (accelWidget.isMouseInButton()) {
-  //  accelWidget.toggleWindow();
-  //}
+  if (accelWidget.isMouseInButton()) {
+    accelWidget.toggleWindow();
+  }
   
   if (pulseWidget.isMouseHere()) {
     pulseWidget.mousePressed();

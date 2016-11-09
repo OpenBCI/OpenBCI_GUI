@@ -741,7 +741,7 @@ class OpenBCI_ADS1299 {
             freshAuxValuesAvailable[localChannelCounter] = true;
             freshAuxValues = true;
           }
-          else freshAuxValues = false;
+          else freshAuxValues = true;
           localChannelCounter++;
           if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {
             // all Accelerometer channels arrived !
