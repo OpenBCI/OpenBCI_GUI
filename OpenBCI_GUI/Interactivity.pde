@@ -49,6 +49,10 @@ void parseKey(char val) {
       drawAccel = !drawAccel;
       drawPulse = !drawPulse;
       break;
+    case '\\':
+      drawFFT = !drawFFT;
+      drawBionics = !drawBionics;
+      break;
     case '1':
       deactivateChannel(1-1);
       break;
@@ -571,7 +575,7 @@ void mousePressed() {
 
 void mouseReleased() {
 
-  verbosePrint("OpenBCI_GUI: mouseReleased: mouse released");
+  //verbosePrint("OpenBCI_GUI: mouseReleased: mouse released");
 
   //some buttons light up only when being actively pressed.  Now that we've
   //released the mouse button, turn off those buttons.
