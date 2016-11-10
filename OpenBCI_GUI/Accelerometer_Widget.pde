@@ -116,7 +116,7 @@ class Accelerometer_Widget{
         currentYvalue = map(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
         currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
         shiftWave();
-      } else if (useAux) {
+      } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         currentXvalue = openBCI.validAuxValues[0]*openBCI.get_scale_fac_accel_G_per_count();
         currentYvalue = openBCI.validAuxValues[1]*openBCI.get_scale_fac_accel_G_per_count();
         currentZvalue = openBCI.validAuxValues[2]*openBCI.get_scale_fac_accel_G_per_count();
@@ -172,7 +172,7 @@ class Accelerometer_Widget{
         fill(50);
         textFont(f4, 30);
         
-        if (useAux) {  // LIVE
+        if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE
           fill(Xcolor);
           text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
           fill(Ycolor);
