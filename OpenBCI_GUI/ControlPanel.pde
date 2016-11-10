@@ -288,7 +288,6 @@ class ControlPanel {
 
     // Ganglion
     bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
-
   }
 
   public void update() {
@@ -329,7 +328,7 @@ class ControlPanel {
 
     if (!calledForBLEList) {
       calledForBLEList = true;
-      ganglion.getBLEDevices();
+      ganglion.searchDeviceStart();
     }
   }
 
@@ -825,7 +824,7 @@ class ControlPanel {
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
       output("BLE Devices Refreshing");
-      ganglion.getBLEDevices();
+      ganglion.searchDeviceStart();
     }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)

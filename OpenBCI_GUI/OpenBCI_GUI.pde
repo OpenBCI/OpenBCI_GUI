@@ -303,14 +303,15 @@ void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-void tcpEvent(String msg) {
-  // println("GanglionSync: udpEvent " + msg);
-  if (ganglion.parseMessage(msg)) {
-    // Refresh the BLE list
-    controlPanel.bleBox.refreshBLEList();
-  }
-
-}
+// void tcpEvent(String msg) {
+//   // println("GanglionSync: udpEvent " + msg);
+//   ganglion.parseMessage(msg);
+//   if (ganglion.deviceListUpdated) {
+//     // Refresh the BLE list
+//     ganglion.deviceListUpdated = false;
+//     controlPanel.bleBox.refreshBLEList();
+//   }
+// }
 
 int pointCounter = 0;
 int prevBytes = 0;

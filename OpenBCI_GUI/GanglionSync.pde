@@ -29,7 +29,10 @@ void clientEvent(Client someClient) {
       // Get a string from the tcp buffer
       String msg = new String(ganglion.tcpBuffer, 0, p);
       // Send the new string message to be processed
-      if(ganglion.parseMessage(msg)) {
+      ganglion.parseMessage(msg);
+      // Check to see if the ganglion ble list needs to be updated
+      if (ganglion.deviceListUpdated) {
+        ganglion.deviceListUpdated = false;
         controlPanel.bleBox.refreshBLEList();
       }
       // Reset the buffer position
@@ -49,6 +52,10 @@ class OpenBCI_Ganglion {
   final static String TCP_CMD_STATUS = "q";
   final static String TCP_STOP = ",;\n";
 
+  final static String TCP_ACTION_START = "start";
+  final static String TCP_ACTION_STATUS = "status";
+  final static String TCP_ACTION_STOP = "stop";
+
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
 
@@ -60,8 +67,25 @@ class OpenBCI_Ganglion {
   final static int STATE_STOPPED = 4;
   final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
 
-  final static int RESP_SUCCESS = 200;
+  final static int RESP_ERROR_UNKNOWN = 499;
   final static int RESP_ERROR_BAD_PACKET = 500;
+  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
+  final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 406;
+  final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
+  final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
+  final static int RESP_ERROR_UNABLE_TO_CONNECT = 402;
+  final static int RESP_ERROR_UNABLE_TO_DISCONNECT = 401;
+  final static int RESP_ERROR_SCAN_ALREADY_SCANNING = 409;
+  final static int RESP_ERROR_SCAN_NONE_FOUND = 407;
+  final static int RESP_ERROR_SCAN_NO_SCAN_TO_STOP = 410;
+  final static int RESP_ERROR_SCAN_COULD_NOT_START = 412;
+  final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
+  final static int RESP_GANGLION_FOUND = 201;
+  final static int RESP_SUCCESS = 200;
+  final static int RESP_STATUS_CONNECTED = 300;
+  final static int RESP_STATUS_DISCONNECTED = 301;
+  final static int RESP_STATUS_SCANNING = 302;
+  final static int RESP_STATUS_NOT_SCANNING = 303;
 
   private int state = STATE_NOCOM;
   int prevState_millis = 0; // Used for calculating connect time out
@@ -88,11 +112,15 @@ class OpenBCI_Ganglion {
   private boolean portIsOpen = false;
   private boolean connected = false;
 
-  public String[] deviceList = new String[0];
   public int numberOfDevices = 0;
+  public int maxNumberOfDevices = 10;
+  public String[] deviceList = new String[0];
+  public boolean deviceListUpdated = false;
 
   public char[] tcpBuffer = new char[1024];
   public int tcpBufferPositon = 0;
+
+  private boolean waitingForResponse = false;
 
   // Getters
   public float get_fs_Hz() { return fs_Hz; }
@@ -103,9 +131,16 @@ class OpenBCI_Ganglion {
   OpenBCI_Ganglion() {};  //only use this if you simply want access to some of the constants
   OpenBCI_Ganglion(PApplet applet) {
 
-    // Initialize TCP connection
-    tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
+    println("Launching application");
+    Process p = launch("/Applications/Electron Boilerplate");
 
+    if (p != null) {
+
+      // Initialize TCP connection
+      tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
+    } else {
+      output("Unable to start ganglion connector!");
+    }
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
@@ -117,9 +152,8 @@ class OpenBCI_Ganglion {
   }
 
   // Return true if the display needs to be updated for the BLE list
-  public boolean parseMessage(String msg) {
+  public void parseMessage(String msg) {
     String[] list = split(msg, ',');
-    int index = 0;
     switch (list[0].charAt(0)) {
       case 'c': // Connect
         if (isSuccessCode(Integer.parseInt(list[1]))) {
@@ -132,66 +166,115 @@ class OpenBCI_Ganglion {
           output("Unable to connect to ganglion!");
           connected = false;
         }
-        return false;
+        break;
       case 't': // Data
-        if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>// //<>//
-          if (isSuccessCode(Integer.parseInt(list[1]))) { //<>// //<>//
-            // Sample number stuff
-            dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
-            if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-              if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
-                bleErrorCounter++;
-                println("OpenBCI_Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-              }
-            }
-            prevSampleIndex = dataPacket.sampleIndex;
-
-            // Channel data storage
-            for (int i = 0; i < 4; i++) {
-              dataPacket.values[i] = Integer.parseInt(list[3 + i]);
-            }
-            getRawValues(dataPacket);
-            // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>// //<>//
-            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-            ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
-            switch (outputDataSource) {
-              case OUTPUT_SOURCE_ODF:
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), 0);
-                break;
-              case OUTPUT_SOURCE_BDF:
-                // curBDFDataPacketInd = curDataPacketInd;
-                // thread("writeRawData_dataPacket_bdf");
-                fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-                break;
-              case OUTPUT_SOURCE_NONE:
-              default:
-                // Do nothing...
-                break;
-            }
-            newPacketCounter++;
-          } else {
-            bleErrorCounter++;
-            println("OpenBCI_Ganglion: parseMessage: data: bad");
-          }
-        } //<>// //<>// //<>// //<>// //<>// //<>// //<>//
-        return false;
+        processData(msg);
+        break;
       case 'e': // Error
         println("OpenBCI_Ganglion: parseMessage: error: " + list[2]);
-        return false;
+        break;
       case 's': // Scan
-        this.deviceList = new String[list.length - 3];
-        for (int i = 2; i < (list.length - 1); i++) {
-          // Last element has the stop command
-          this.deviceList[index] = list[i];
-          index++;
-        }
-        return true;
+        processScan(msg);
+        break;
       case 'l':
         println("OpenBCI_Ganglion: Log: " + list[1]);
-        return false;
+        break;
+      case 'q':
+        println("OpenBCI_Ganglion: Status: 200");
+        break;
       default:
         println("OpenBCI_Ganglion: parseMessage: default: " + msg);
-        return false;
+        break;
+    }
+  }
+
+  private void processData(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
+      if (isSuccessCode(Integer.parseInt(list[1]))) { //<>//
+        // Sample number stuff
+        dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
+        if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
+          if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
+            bleErrorCounter++;
+            println("OpenBCI_Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+          }
+        }
+        prevSampleIndex = dataPacket.sampleIndex;
+
+        // Channel data storage
+        for (int i = 0; i < 4; i++) {
+          dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+        }
+        getRawValues(dataPacket);
+        // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+        curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+        ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+        switch (outputDataSource) {
+          case OUTPUT_SOURCE_ODF:
+            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), 0);
+            break;
+          case OUTPUT_SOURCE_BDF:
+            // curBDFDataPacketInd = curDataPacketInd;
+            // thread("writeRawData_dataPacket_bdf");
+            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+            break;
+          case OUTPUT_SOURCE_NONE:
+          default:
+            // Do nothing...
+            break;
+        }
+        newPacketCounter++;
+      } else {
+        bleErrorCounter++;
+        println("OpenBCI_Ganglion: parseMessage: data: bad");
+      }
+    }
+  }
+
+  private void processScan(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    switch(code) {
+      case RESP_GANGLION_FOUND:
+        // Sent every time a new ganglion device is found
+        if (searchDeviceAdd(list[2])) {
+          deviceListUpdated = true;
+        }
+        break;
+      case RESP_ERROR_SCAN_ALREADY_SCANNING:
+        // Sent when a start send command is sent and the module is already
+        //  scanning.
+        break;
+      case RESP_SUCCESS:
+        // Sent when either a scan was stopped or started Successfully
+        String action = list[2];
+        switch (action) {
+          case TCP_ACTION_START:
+            break;
+          case TCP_ACTION_STOP:
+            break;
+        }
+        break;
+      case RESP_ERROR_SCAN_COULD_NOT_START:
+        // Sent when err on search start
+        break;
+      case RESP_ERROR_SCAN_COULD_NOT_STOP:
+        // Send when err on search stop
+        break;
+      case RESP_STATUS_SCANNING:
+        // Sent when after status action sent to node and module is searching
+        break;
+      case RESP_STATUS_NOT_SCANNING:
+        // Sent when after status action sent to node and module is NOT searching
+        break;
+      case RESP_ERROR_SCAN_NO_SCAN_TO_STOP:
+        // Sent when a 'stop' action is sent to node and there is no scan to stop.
+        break;
+      case RESP_ERROR_UNKNOWN:
+      default:
+        break;
     }
   }
 
@@ -225,11 +308,45 @@ class OpenBCI_Ganglion {
     return c == RESP_SUCCESS;
   }
 
-  public void getBLEDevices() {
+  // SCANNING/SEARHING FOR DEVICES
+
+  public void searchDeviceStart() {
     deviceList = null;
-    tcpClient.write(TCP_CMD_SCAN + TCP_STOP);
+    numberOfDevices = 0;
+    tcpClient.write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 
+  public void searchDeviceStop() {
+    tcpClient.write(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
+  }
+
+  public boolean searchDeviceAdd(String ganglionLocalName) {
+    if (numberOfDevices == 0) {
+      numberOfDevices++;
+      deviceList = new String[numberOfDevices];
+      deviceList[0] = ganglionLocalName;
+      return true;
+    } else {
+      boolean willAddToDeviceList = true;
+      for (int i = 0; i < numberOfDevices; i++) {
+        if (deviceList[i] == ganglionLocalName) {
+          willAddToDeviceList = false;
+          break;
+        }
+      }
+      if (willAddToDeviceList) {
+        numberOfDevices++;
+        String[] tempList = new String[numberOfDevices];
+        arrayCopy(deviceList, tempList);
+        tempList[numberOfDevices - 1] = ganglionLocalName;
+        deviceList = tempList;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // CONNECTION
   public void connectBLE(String id) {
     tcpClient.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
