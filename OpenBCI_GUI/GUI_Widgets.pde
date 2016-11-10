@@ -53,28 +53,17 @@ void GUIWidgets_screenResized(int _winX, int _winY) {
 }
 
 void GUIWidgets_mousePressed() {
+  timeSeries_widget.mousePressed();
+  headPlot_widget.mousePressed();
+  fft_widget.mousePressed();
   emg_widget.mousePressed();
   ob_widget.mousePressed();
 }
 
 void GUIWidgets_mouseReleased() {
-
-  emg_widget.mouseReleased();
   timeSeries_widget.mouseReleased();
-  headPlot_widget.mousePressed();
-  fft_widget.mousePressed();
+  headPlot_widget.mouseReleased();
+  fft_widget.mouseReleased();
+  emg_widget.mouseReleased();
   ob_widget.mouseReleased();
-
 }
-
-
-
-//void GUIWidgets_keyPressed() {
-//  headPlot_widget.keyPressed();
-//  fft_widget.keyPressed();
-//}
-
-//void GUIWidgets_keyReleased() {
-//  headPlot_widget.keyReleased();
-//  fft_widget.keyReleased();
-//}

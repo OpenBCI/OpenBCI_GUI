@@ -29,7 +29,7 @@ class TopNav {
     stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
     stopButton.setFont(h2, 16);
     stopButton.setColorNotPressed(color(184, 220, 105));
-    stopButton.setHelpText("Press this button to Stop/Start the data stream.");
+    stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
 
     filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
     filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
@@ -37,6 +37,7 @@ class TopNav {
 
     questionMark = new Button(width - 3 - 26, 3, 26, 26, "?", fontInfo.buttonLabel_size);
     questionMark.setFont(h2, 16);
+    questionMark.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
     layout = new Button(width - 3 - 70, 35, 70, 26, "Layout", fontInfo.buttonLabel_size);
     layout.setFont(h2, 16);
   }
@@ -70,6 +71,33 @@ class TopNav {
   void screenHasBeenResized(int _x, int _y){
     questionMark.but_x = width - 3 - 26;
     layout.but_x = width - 3 - 70;
+  }
+
+  void mousePressed(){
+    if (stopButton.isMouseHere()) {
+      stopButton.setIsActive(true);
+      stopButtonWasPressed();
+    }
+    if (filtBPButton.isMouseHere()) {
+      filtBPButton.setIsActive(true);
+      incrementFilterConfiguration();
+    }
+    if (topNav.filtNotchButton.isMouseHere()) {
+      filtNotchButton.setIsActive(true);
+      incrementNotchConfiguration();
+    }
+    if (intensityFactorButton.isMouseHere()) {
+      intensityFactorButton.setIsActive(true);
+      incrementVertScaleFactor();
+    }
+    if (questionMark.isMouseHere()) {
+      questionMark.setIsActive(true);
+      //toggle help/tutorial dropdown menu
+    }
+    if (layout.isMouseHere()) {
+      layout.setIsActive(true);
+      //toggle layout window to enable the selection of your container layout...
+    }
   }
 
   void mouseReleased(){

@@ -33,6 +33,9 @@ class W_TimeSeries{
   float topNavHeight, playbackWidgetHeight;
   int channelBarHeight;
   int parentContainer;
+  boolean showHardwareSettings = false;
+
+  Button hardwareSettingsButton;
 
   PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
   PFont f2 = createFont("Arial", 18); //for dropdown name titles (above dropdown widgets)
@@ -72,6 +75,15 @@ class W_TimeSeries{
       ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       channelBars[i] = tempBar;
     }
+
+    hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+    hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
+    hardwareSettingsButton.setFont(p2,10);
+    hardwareSettingsButton.setStrokeColor((int)(color(150)));
+    // hardwareSettingsButton.setStrokeColor((int)(color(138, 182, 229, 100)));
+    // hardwareSettingsButton.hasStroke(false);
+    // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
+    hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
 
   }
 
@@ -119,6 +131,8 @@ class W_TimeSeries{
     }
 
     popStyle();
+
+    hardwareSettingsButton.draw();
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -141,8 +155,26 @@ class W_TimeSeries{
     }
   }
 
+  void mousePressed(){
+    if (hardwareSettingsButton.isMouseHere()) {
+      hardwareSettingsButton.setIsActive(true);
+    }
+  }
+
   void mouseReleased(){
-    //
+    if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
+      println("toggle...");
+      if(showHardwareSettings){
+        showHardwareSettings = false;
+        hardwareSettingsButton.setString("Hardware Settings");
+      } else{
+        showHardwareSettings = true;
+        hardwareSettingsButton.setString("Time Series");
+      }
+    }
+    
+    hardwareSettingsButton.setIsActive(false);
+
   }
 
 };
@@ -291,6 +323,11 @@ class ChannelBar{
     onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
     impCheckButton.but_x = x + 36;
     impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
+
+    //reposition & resize the plot
+    plot.setPos(x + 36 + 4 + impButton_diameter, y);
+    plot.setDim(w - 36 - 4 - impButton_diameter, h);
+
   }
 
   void mouseReleased(){

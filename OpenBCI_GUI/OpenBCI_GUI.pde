@@ -47,7 +47,11 @@ float[] Z_buff;
 boolean acc_newData = false;
 
 //used to switch between application states
-int systemMode = -10; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
+
+final int SYSTEMMODE_INTROANIMATION = -10;
+final int SYSTEMMODE_PREINIT = 0;
+final int SYSTEMMODE_POSTINIT = 10;
+int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
 boolean hasIntroAnimation = false;
 PImage cog;
@@ -188,6 +192,8 @@ PFont h3; //small Montserrat
 PFont p1; //medium Open Sans
 PFont p2; //small Open Sans
 
+ButtonHelpText buttonHelpText;
+
 EMG_Widget emg_widget;
 Accelerometer_Widget accelWidget;
 PulseSensor_Widget pulseWidget;
@@ -287,6 +293,8 @@ void setup() {
   catch (RuntimeException e) {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
+
+  buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
 }
@@ -413,7 +421,7 @@ void initSystem() {
   nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
 
   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
-    systemMode = 10; //tell system it's ok to leave control panel and start interfacing GUI
+    systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
   }
   //sync GUI default settings with OpenBCI's default settings...
   // openBCI.syncWithHardware(); //this starts the sequence off ... read in OpenBCI_ADS1299 iterates through the rest based on the ASCII trigger "$$$"
@@ -459,7 +467,7 @@ void haltSystem() {
     closeLogFile();  //close log file
     ganglion.disconnectBLE();
   }
-  systemMode = 0;
+  systemMode = SYSTEMMODE_PREINIT;
 }
 
 void systemUpdate() { // for updating data values and variables
@@ -471,10 +479,11 @@ void systemUpdate() { // for updating data values and variables
   win_x = width;
   win_y = height;
 
-  //updates while in intro screen
-  if (systemMode == 0) {
+
+  if (systemMode == SYSTEMMODE_PREINIT) {
+    //updates while in system control panel before START SYSTEM
   }
-  if (systemMode == 10) {
+  if (systemMode == SYSTEMMODE_POSTINIT) {
     if (isRunning) {
       //get the data, if it is available
       pointCounter = getDataIfAvailable(pointCounter);
@@ -580,7 +589,7 @@ void systemDraw() { //for drawing to the screen
   background(bgColor);  //clear the screen
   //background(255);  //clear the screen
 
-  if (systemMode == 10) {
+  if (systemMode == SYSTEMMODE_POSTINIT) {
     int drawLoopCounter_thresh = 100;
     if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
       //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
@@ -648,6 +657,9 @@ void systemDraw() { //for drawing to the screen
     pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
+
+
+
   } else { //systemMode != 10
     //still print title information about fps
     surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");
@@ -661,7 +673,7 @@ void systemDraw() { //for drawing to the screen
   controlPanelCollapser.draw();
   helpWidget.draw();
 
-  if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == 0) {
+  if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     if (millis()%1000 < 500) {
       output("Iniitializing communication w/ your OpenBCI board...");
@@ -686,12 +698,14 @@ void systemDraw() { //for drawing to the screen
   // println("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
   // timeOfLastFrame = millis();
 
-  if (systemMode == -10) {
+  buttonHelpText.draw();
+
+  if (systemMode == SYSTEMMODE_INTROANIMATION) {
     //intro animation sequence
     if (hasIntroAnimation) {
       introAnimation();
     } else {
-      systemMode = 0;
+      systemMode = SYSTEMMODE_PREINIT;
     }
   }
 
@@ -716,7 +730,7 @@ void introAnimation() {
 
   //exit intro animation at t2
   if (millis() >= t3) {
-    systemMode = 0;
+    systemMode = SYSTEMMODE_PREINIT;
     controlPanel.isOpen = true;
   }
   popStyle();
