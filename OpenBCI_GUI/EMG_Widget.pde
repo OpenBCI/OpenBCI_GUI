@@ -835,8 +835,6 @@ class EMG_Widget extends Container {
     }
     public void update(float lx, float ly, float lw, float lh){
       
-      println(" lx: " + lx + " ly: " + ly + " lw: " + lw + " lh: " + lh);
-      println(" x: " + x + " y: " + y + " w: " + w + " h: " + h);
       x = lx + x/6.12;
       y = ly + y/3.03;
       w = lw - w/4.25;
