@@ -59,8 +59,8 @@ class Playground {
       expand();
     }
     
-    if(accelWidget.collapsing) accelWidget.collapse();
-    else accelWidget.expand();
+    // if(accelWidget.collapsing) accelWidget.collapse();
+    // else accelWidget.expand();
     
     if(pulseWidget.collapsing) pulseWidget.collapse();
     else pulseWidget.expand();
@@ -118,21 +118,21 @@ class Playground {
     //  collapser.but_txt = ">";
     //}
     
-    if(drawAccel){
-      if (accelWidget.isOpen) {//if open
-        verbosePrint("close");
-        accelWidget.collapsing = true;//collapsing = true;
-        accelWidget.isOpen = false;
-        accelWidget.collapser.but_txt = "<";
-      } else {//if closed
-        verbosePrint("open");
-        accelWidget.collapsing = false;//expanding = true;
-        accelWidget.isOpen = true;
-        accelWidget.collapser.but_txt = ">";
-      }
-    }
+    //if(drawAccel){
+    //  if (accelWidget.isOpen) {//if open
+    //    verbosePrint("close");
+    //    accelWidget.collapsing = true;//collapsing = true;
+    //    accelWidget.isOpen = false;
+    //    accelWidget.collapser.but_txt = "<";
+    //  } else {//if closed
+    //    verbosePrint("open");
+    //    accelWidget.collapsing = false;//expanding = true;
+    //    accelWidget.isOpen = true;
+    //    accelWidget.collapser.but_txt = ">";
+    //  }
+    //}
     
-    else if(drawPulse){
+    if(drawPulse){
       if (pulseWidget.isOpen) {//if open
         verbosePrint("close");
         pulseWidget.collapsing = true;//collapsing = true;
