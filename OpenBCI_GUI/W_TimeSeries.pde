@@ -24,12 +24,19 @@ color[] channelColors = {
   color(162, 82, 49)
 };
 
+ControlP5 cp5_TimeSeries;
+
+List durationList = Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec");
+List vertScaleList_TS = Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV");
+List spillOverList = Arrays.asList("False", "True");
+
 class W_TimeSeries{
 
   int numChannelBars;
   float x, y, w, h;
   float ts_padding;
   float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+  float plotBottomWell;
   float topNavHeight, playbackWidgetHeight;
   int channelBarHeight;
   int parentContainer;
@@ -42,7 +49,17 @@ class W_TimeSeries{
 
   ChannelBar[] channelBars;
 
+  int[] xLimOptions = {3, 5, 8}; // number of seconds (x axis of graph)
+  int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+
+  int xLim = xLimOptions[1];  //start at 5s
+  int xMax = xLimOptions[0];  //start w/ autoscale
+
+  boolean allowSpillover = false;
+
   W_TimeSeries(PApplet _parent, int _parentContainer){
+
+    cp5_TimeSeries = new ControlP5(_parent);
 
     numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
@@ -55,17 +72,23 @@ class W_TimeSeries{
 
     topNavHeight = navHeight * 2.0; //22*2 = 44
     if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-      playbackWidgetHeight = 80.0;
+      playbackWidgetHeight = 60.0;
     } else{
-      playbackWidgetHeight = 40.0;
+      playbackWidgetHeight = 0.0;
     }
 
+    plotBottomWell = 42; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
     ts_padding = 10.0;
     ts_x = x + ts_padding;
-    ts_y = y + topNavHeight + ts_padding;
+    ts_y = y + topNavHeight + (ts_padding*2.5);
     ts_w = w - ts_padding*2;
-    ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
+    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*3);
     channelBarHeight = int(ts_h/numChannelBars);
+    // ts_x = x + ts_padding;
+    // ts_y = y + topNavHeight + ts_padding;
+    // ts_w = w - ts_padding*2;
+    // ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
+    // channelBarHeight = int(ts_h/numChannelBars);
 
     channelBars = new ChannelBar[numChannelBars];
 
@@ -84,6 +107,8 @@ class W_TimeSeries{
     // hardwareSettingsButton.hasStroke(false);
     // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
     hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
+
+    setupDropdownMenus(_parent); //setup our dropdown menus for the Time Series
 
   }
 
@@ -130,6 +155,22 @@ class W_TimeSeries{
       channelBars[i].draw();
     }
 
+    //draw dropdown titles
+    int dropdownPos = 2; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+    int dropdownWidth = 60;
+    textFont(f2);
+    textSize(12);
+    textAlign(CENTER, BOTTOM);
+    fill(bgColor);
+    text("Duration", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    dropdownPos = 1;
+    text("Vert Scale", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+    dropdownPos = 0;
+    text("Spillover", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+
+    //draw dropdown menus
+    cp5_TimeSeries.draw();
+
     popStyle();
 
     hardwareSettingsButton.draw();
@@ -143,16 +184,47 @@ class W_TimeSeries{
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
 
+    // ts_x = x + ts_padding;
+    // ts_y = y + topNavHeight + ts_padding;
+    // ts_w = w - ts_padding*2;
+    // ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
+    // channelBarHeight = int(ts_h/numChannelBars);
+
     ts_x = x + ts_padding;
-    ts_y = y + topNavHeight + ts_padding;
+    ts_y = y + topNavHeight + (ts_padding*2.5);
     ts_w = w - ts_padding*2;
-    ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
+    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*3);
     channelBarHeight = int(ts_h/numChannelBars);
 
     for(int i = 0; i < numChannelBars; i++){
       int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
       channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
     }
+
+    //update dropdown menu positions
+    cp5_TimeSeries.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
+    int dropdownPos;
+    int dropdownWidth = 60;
+    dropdownPos = 2; //work down from 4 since we're starting on the right side now...
+    cp5_TimeSeries.getController("Duration")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+    dropdownPos = 1;
+    cp5_TimeSeries.getController("VertScale_TS")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+    dropdownPos = 0;
+    cp5_TimeSeries.getController("Spillover")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      ;
+
+
   }
 
   void mousePressed(){
@@ -172,12 +244,168 @@ class W_TimeSeries{
         hardwareSettingsButton.setString("Time Series");
       }
     }
-    
+
     hardwareSettingsButton.setIsActive(false);
 
   }
 
+  void setupDropdownMenus(PApplet _parent) {
+    //ControlP5 Stuff
+    int dropdownPos;
+    int dropdownWidth = 60;
+    cp5_colors = new CColor();
+    cp5_colors.setActive(color(150, 170, 200)); //when clicked
+    cp5_colors.setForeground(color(125)); //when hovering
+    cp5_colors.setBackground(color(255)); //color of buttons
+    cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
+    cp5_colors.setValueLabel(color(0, 0, 255));
+
+    cp5_TimeSeries.setColor(cp5_colors);
+    cp5_TimeSeries.setAutoDraw(false);
+
+
+    //-------------------------------------------------------------
+    // MAX XAXIS DURATION ... 5 sec by default ... DROPDOWN
+    //-------------------------------------------------------------
+    dropdownPos = 2; //work down from 4 since we're starting on the right side now...
+    cp5_TimeSeries.addScrollableList("Duration")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(durationList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_TimeSeries.getController("Duration")
+      .getCaptionLabel()
+      .setText("5 sec")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+
+    //-------------------------------------------------------------
+    // VERTICAL SCALE - uV (ie Y Axis) DROPDOWN
+    //-------------------------------------------------------------
+    dropdownPos = 1;
+    cp5_TimeSeries.addScrollableList("VertScale_TS")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(vertScaleList_TS)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_TimeSeries.getController("VertScale_TS")
+      .getCaptionLabel()
+      .setText("Auto")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+    //-------------------------------------------------------------
+    // Allow Channel Bars to spill into other Channel Bars? DROPDOWN
+    //-------------------------------------------------------------
+    dropdownPos = 0;
+    cp5_TimeSeries.addScrollableList("Spillover")
+      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      .setOpen(false)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setScrollSensitivity(0.0)
+      .setBarHeight(navHeight - 4)
+      .setItemHeight(navHeight - 4)
+      .addItems(spillOverList)
+      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+      ;
+
+    cp5_TimeSeries.getController("Spillover")
+      .getCaptionLabel()
+      .setText("False")
+      //.setFont(controlFonts[0])
+      .setSize(12)
+      .getStyle()
+      //.setPaddingTop(4)
+      ;
+
+  }
+
 };
+
+//triggered when there is an event in the LogLin Dropdown
+void VertScale_TS(int n) {
+  if (n==0) { //autoscale
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(0);
+    }
+  } else if(n==1) { //50uV
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(50);
+    }
+  } else if(n==2) { //100uV
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(100);
+    }
+  } else if(n==3) { //200uV
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(200);
+    }
+  } else if(n==4) { //400uV
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(400);
+    }
+  } else if(n==5) { //1000uV
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(1000);
+    }
+  } else if(n==6) { //10000uV
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustVertScale(10000);
+    }
+  }
+}
+
+//triggered when there is an event in the LogLin Dropdown
+void Duration(int n) {
+  // println("adjust duration to: ");
+  if(n==0){ //set time series x axis to 2 secconds
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustTimeAxis(1);
+    }
+  } else if(n==1){ //set time series x axis to 2 secconds
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustTimeAxis(3);
+    }
+  } else if(n==2){ //set to 5 seconds
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustTimeAxis(5);
+    }
+  } else if(n==3){ //set to 8 seconds (max due to arry size ... 2000 total packets saved)
+    for(int i = 0; i < timeSeries_widget.numChannelBars; i++){
+      timeSeries_widget.channelBars[i].adjustTimeAxis(7);
+    }
+  }
+
+}
+
+//triggered when there is an event in the LogLin Dropdown
+void Spillover(int n) {
+  if (n==0) {
+    timeSeries_widget.allowSpillover = false;
+  } else {
+    timeSeries_widget.allowSpillover = true;
+  }
+}
 
 //========================================================================================================================
 //                      CHANNEL BAR CLASS
@@ -201,6 +429,9 @@ class ChannelBar{
   float timeBetweenPoints;
 
   color channelColor; //color of plot trace
+
+  boolean isAutoscale = true; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+  int autoScaleYLim = 0;
 
   ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
@@ -237,6 +468,10 @@ class ChannelBar{
     plot.setYLim(-30,30);
     plot.setPointSize(2);
     plot.setPointColor(0);
+
+    if(channelNumber == nchan){
+      plot.getXAxis().setAxisLabelText("Time (s)");
+    }
     // plot.setBgColor(color(31,69,110));
 
 
@@ -257,6 +492,14 @@ class ChannelBar{
   }
 
   void update(){
+    // update data in plot
+    updatePlotPoints();
+    if(isAutoscale){
+      autoScale();
+    }
+  }
+
+  void updatePlotPoints(){
     // update data in plot
     if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
       for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
@@ -291,11 +534,13 @@ class ChannelBar{
 
     plot.beginDraw();
     plot.drawBox(); // we won't draw this eventually ...
+    plot.drawGridLines(0);
     plot.drawLines();
     // plot.drawPoints();
     // plot.drawYAxis();
     if(channelNumber == nchan){ //only draw the x axis label on the bottom channel bar
       plot.drawXAxis();
+      plot.getXAxis().draw();
     }
     plot.endDraw();
 
@@ -303,15 +548,36 @@ class ChannelBar{
   }
 
   void adjustTimeAxis(int _newTimeSize){
-
+    numSeconds = _newTimeSize;
+    plot.setXLim(-_newTimeSize,0);
+    nPoints = numSeconds * (int)openBCI.fs_Hz;
+    channelPoints = new GPointsArray(nPoints);
+    if(_newTimeSize > 1){
+      plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
+    }else{
+      plot.getXAxis().setNTicks(10);
+    }
+    updatePlotPoints();
+    // println("New X axis = " + _newTimeSize);
   }
 
-  void adjustVertScale(){
-
+  void adjustVertScale(int _vertScaleValue){
+    if(_vertScaleValue == 0){
+      isAutoscale = true;
+    } else {
+      isAutoscale = false;
+      plot.setYLim(-_vertScaleValue, _vertScaleValue);
+    }
   }
 
   void autoScale(){
-
+    autoScaleYLim = 0;
+    for(int i = 0; i < nPoints; i++){
+      if(int(abs(channelPoints.getY(i))) > autoScaleYLim){
+        autoScaleYLim = int(abs(channelPoints.getY(i)));
+      }
+    }
+    plot.setYLim(-autoScaleYLim, autoScaleYLim);
   }
 
   void screenResized(int _x, int _y, int _w, int _h){

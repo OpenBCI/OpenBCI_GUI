@@ -286,7 +286,7 @@ class HeadPlot_Widget {
       textAlign(LEFT, CENTER);
       textFont(f);
       textSize(18);
-      text("Head Plot", x+navHeight+2, y+navHeight/2 - 2); //left
+      text("Head Montage", x+navHeight+2, y+navHeight/2 - 2); //left
       //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
       //fill(255,0,0,150);
       //rect(x,y,w,h);
