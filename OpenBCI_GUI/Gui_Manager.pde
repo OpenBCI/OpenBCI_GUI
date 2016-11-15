@@ -98,7 +98,7 @@ class GUI_Manager {
   int fontColor = 255;
 
   // MontageController mc;
-  ChannelController cc;
+  // ChannelController cc;
 
   private float fftYOffset[];
   private float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
@@ -181,7 +181,7 @@ class GUI_Manager {
     showChannelControllerButton.textColorActive = bgColor;
 
     //setup montage controller
-    cc = new ChannelController(x_cc, y_cc, w_cc, h_cc, axes_x, axes_y);
+    // cc = new ChannelController(x_cc, y_cc, w_cc, h_cc, axes_x, axes_y);
 
 
     //setup the buttons
@@ -310,6 +310,9 @@ class GUI_Manager {
     titleMontage.setFontSize(14);
     titleMontage.alignH = CENTER;
 
+
+
+
     //add channel data values and impedance values
     int x3, y3;
     //float w = int(round(axis_relPos[2]*win_x));
@@ -417,7 +420,7 @@ class GUI_Manager {
     // fftTrace.generate(); //graph doesn't update without this
     // headPlot1.update();
     // //headPlot_widget.headPlot.update();
-    cc.update();
+    // cc.update();
 
     //update the text strings
     String fmt; float val;
@@ -467,43 +470,43 @@ class GUI_Manager {
       }
     }
 
-    cc.draw();
-    if(cc.showFullController == false){
-      titleMontage.draw();
-    }
+    // cc.draw();
+    // if(cc.showFullController == false){
+    //   titleMontage.draw();
+    // }
     showMontageButton.draw();
     showChannelControllerButton.draw();
 
   }
 
   public void mousePressed(){
-    verbosePrint("GUI_Manager: mousePressed: mouse pressed.");
-    //if showMontage button pressed
-
-    if(showMontageButton.isMouseHere()){
-      //turn off visibility of channel full controller
-      cc.showFullController = false;
-      showMontageButton.setIsActive(true);
-      showMontageButton.buttonFont = f1;
-      showChannelControllerButton.setIsActive(false);
-      showChannelControllerButton.buttonFont = f2;
-    }
-    //if showChannelController is pressed
-    if(showChannelControllerButton.isMouseHere()){
-      cc.showFullController = true;
-      showMontageButton.setIsActive(false);
-      showMontageButton.buttonFont = f2;
-      showChannelControllerButton.setIsActive(true);
-      showChannelControllerButton.buttonFont = f1;
-    }
-
-    verbosePrint("GUI_Manager: mousePressed: Channel Controller mouse pressed...");
-    cc.mousePressed();
+    // verbosePrint("GUI_Manager: mousePressed: mouse pressed.");
+    // //if showMontage button pressed
+    //
+    // if(showMontageButton.isMouseHere()){
+    //   //turn off visibility of channel full controller
+    //   cc.showFullController = false;
+    //   showMontageButton.setIsActive(true);
+    //   showMontageButton.buttonFont = f1;
+    //   showChannelControllerButton.setIsActive(false);
+    //   showChannelControllerButton.buttonFont = f2;
+    // }
+    // //if showChannelController is pressed
+    // if(showChannelControllerButton.isMouseHere()){
+    //   cc.showFullController = true;
+    //   showMontageButton.setIsActive(false);
+    //   showMontageButton.buttonFont = f2;
+    //   showChannelControllerButton.setIsActive(true);
+    //   showChannelControllerButton.buttonFont = f1;
+    // }
+    //
+    // verbosePrint("GUI_Manager: mousePressed: Channel Controller mouse pressed...");
+    // cc.mousePressed();
   }
 
   public void mouseReleased(){
-    verbosePrint("GUI_Manager: mouseReleased(): Channel Controller mouse released...");
-    cc.mouseReleased();
+    // verbosePrint("GUI_Manager: mouseReleased(): Channel Controller mouse released...");
+    // cc.mouseReleased();
   }
 
 };

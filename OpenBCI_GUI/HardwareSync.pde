@@ -624,7 +624,8 @@ class OpenBCI_ADS1299 {
           println("OpenBCI_ADS1299: read(): x");
           println(defaultChannelSettings);
           println("OpenBCI_ADS1299: read(): y");
-          gui.cc.loadDefaultChannelSettings();
+          // gui.cc.loadDefaultChannelSettings();
+          timeSeries_widget.hsc.loadDefaultChannelSettings();
           println("OpenBCI_ADS1299: read(): z");
         }
         readyToSend = true;
@@ -788,10 +789,12 @@ class OpenBCI_ADS1299 {
       if ((Ichan >= 0)) {
         if (activate) {
           // serial_openBCI.write(command_activate_channel[Ichan]);
-          gui.cc.powerUpChannel(Ichan);
+          // gui.cc.powerUpChannel(Ichan);
+          timeSeries_widget.hsc.powerUpChannel(Ichan);
         } else {
           // serial_openBCI.write(command_deactivate_channel[Ichan]);
-          gui.cc.powerDownChannel(Ichan);
+          // gui.cc.powerDownChannel(Ichan);
+          timeSeries_widget.hsc.powerDownChannel(Ichan);
         }
       }
     }

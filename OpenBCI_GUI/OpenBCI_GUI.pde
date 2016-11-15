@@ -552,7 +552,7 @@ void systemUpdate() { // for updating data values and variables
       }
     }
 
-    gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
+    // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
 
     //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
     if (widthOfLastScreen != width || heightOfLastScreen != height) {

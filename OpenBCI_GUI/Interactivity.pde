@@ -238,7 +238,8 @@ void parseKey(char val) {
 
     case 'd':
       verbosePrint("Updating GUI's channel settings to default...");
-      gui.cc.loadDefaultChannelSettings();
+      // gui.cc.loadDefaultChannelSettings();
+      timeSeries_widget.hsc.loadDefaultChannelSettings();
       //openBCI.serial_openBCI.write('d');
       openBCI.configureAllChannelsToDefault();
       break;

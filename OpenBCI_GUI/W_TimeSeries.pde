@@ -57,6 +57,11 @@ class W_TimeSeries{
 
   boolean allowSpillover = false;
 
+  HardwareSettingsController hsc;
+  TextBox[] chanValuesMontage;
+  TextBox[] impValuesMontage;
+  boolean showMontageValues;
+
   W_TimeSeries(PApplet _parent, int _parentContainer){
 
     cp5_TimeSeries = new ControlP5(_parent);
@@ -72,17 +77,17 @@ class W_TimeSeries{
 
     topNavHeight = navHeight * 2.0; //22*2 = 44
     if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-      playbackWidgetHeight = 60.0;
+      playbackWidgetHeight = 50.0;
     } else{
       playbackWidgetHeight = 0.0;
     }
 
-    plotBottomWell = 42; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
+    plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
     ts_padding = 10.0;
     ts_x = x + ts_padding;
-    ts_y = y + topNavHeight + (ts_padding*2.5);
+    ts_y = y + topNavHeight + (ts_padding);
     ts_w = w - ts_padding*2;
-    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*3);
+    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
     channelBarHeight = int(ts_h/numChannelBars);
     // ts_x = x + ts_padding;
     // ts_y = y + topNavHeight + ts_padding;
@@ -110,9 +115,20 @@ class W_TimeSeries{
 
     setupDropdownMenus(_parent); //setup our dropdown menus for the Time Series
 
+    int x_hsc = int(ts_x);
+    int y_hsc = int(ts_y);
+    int w_hsc = int(ts_w); //width of montage controls (on left of montage)
+    int h_hsc = int(ts_h); //height of montage controls (on left of montage)
+    hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+
   }
 
   void update(){
+
+    //update channel controller
+    hsc.update();
+
+    //update the text strings
 
     //update channel bars ... this means feeding new EEG data into plots
     for(int i = 0; i < numChannelBars; i++){
@@ -174,6 +190,19 @@ class W_TimeSeries{
     popStyle();
 
     hardwareSettingsButton.draw();
+
+    //temporary placeholder for playback controller widget
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+      pushStyle();
+      fill(0,0,0,20);
+      stroke(31,69,110);
+      rect(x, ts_y + ts_h + playbackWidgetHeight + 5, w, playbackWidgetHeight);
+    } else{
+      //dont draw anything at the bottom
+    }
+
+    //draw channel controller
+    hsc.draw();
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -184,22 +213,18 @@ class W_TimeSeries{
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
 
-    // ts_x = x + ts_padding;
-    // ts_y = y + topNavHeight + ts_padding;
-    // ts_w = w - ts_padding*2;
-    // ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
-    // channelBarHeight = int(ts_h/numChannelBars);
-
     ts_x = x + ts_padding;
-    ts_y = y + topNavHeight + (ts_padding*2.5);
+    ts_y = y + topNavHeight + (ts_padding);
     ts_w = w - ts_padding*2;
-    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*3);
+    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
     channelBarHeight = int(ts_h/numChannelBars);
 
     for(int i = 0; i < numChannelBars; i++){
       int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
       channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
     }
+
+    hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
     //update dropdown menu positions
     cp5_TimeSeries.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
@@ -238,9 +263,11 @@ class W_TimeSeries{
       println("toggle...");
       if(showHardwareSettings){
         showHardwareSettings = false;
+        hsc.isVisible = false;
         hardwareSettingsButton.setString("Hardware Settings");
       } else{
         showHardwareSettings = true;
+        hsc.isVisible = true;
         hardwareSettingsButton.setString("Time Series");
       }
     }
