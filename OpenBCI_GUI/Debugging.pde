@@ -98,7 +98,7 @@ class HelpWidget {
 };
 
 public void output(String _output) {
-  helpWidget.output(_output);
+  helpWidget.output(_output); //<>//
 }
 
 // created 2/10/16 by Conor Russomanno to dissect the aspects of the GUI that are slowing it down

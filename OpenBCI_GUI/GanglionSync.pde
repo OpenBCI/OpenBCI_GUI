@@ -38,7 +38,7 @@ void clientEvent(Client someClient) {
       // Reset the buffer position
       ganglion.tcpBufferPositon = 0;
     }
-  } //<>// //<>//
+  } //<>//
 }
 
 class OpenBCI_Ganglion {
@@ -46,7 +46,7 @@ class OpenBCI_Ganglion {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA= "t";
-  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>//
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";
   final static String TCP_CMD_STATUS = "q";
@@ -130,17 +130,10 @@ class OpenBCI_Ganglion {
   //constructors
   OpenBCI_Ganglion() {};  //only use this if you simply want access to some of the constants
   OpenBCI_Ganglion(PApplet applet) {
-
-    println("Launching application");
-    Process p = launch("/Applications/Electron Boilerplate");
-
-    if (p != null) {
-
-      // Initialize TCP connection
-      tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
-    } else {
-      output("Unable to start ganglion connector!");
-    }
+ //<>//
+    // Initialize TCP connection
+    tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
+    
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
@@ -296,7 +289,7 @@ class OpenBCI_Ganglion {
       //println("rawValue[2] " + binary(rawValue[2], 8));
       rawValue[1] = byte((val & (0xFF << 8)) >> 8);
       //println("rawValue[1] " + binary(rawValue[1], 8));
-      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>// //<>//
+      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>//
       //println("rawValue[0] " + binary(rawValue[0], 8));
       // Store to the target raw values
       packet.rawValues[i] = rawValue;
@@ -313,11 +306,11 @@ class OpenBCI_Ganglion {
   public void searchDeviceStart() {
     deviceList = null;
     numberOfDevices = 0;
-    tcpClient.write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
+    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 
   public void searchDeviceStop() {
-    tcpClient.write(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
+    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
   }
 
   public boolean searchDeviceAdd(String ganglionLocalName) {
@@ -348,11 +341,11 @@ class OpenBCI_Ganglion {
 
   // CONNECTION
   public void connectBLE(String id) {
-    tcpClient.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    safeTCPWrite(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
 
   public void disconnectBLE() {
-    tcpClient.write(TCP_CMD_DISCONNECT + TCP_STOP);
+    safeTCPWrite(TCP_CMD_DISCONNECT + TCP_STOP);
   }
 
   public void updateSyncState() {
@@ -371,7 +364,7 @@ class OpenBCI_Ganglion {
   void startDataTransfer(){
     changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
     println("OpenBCI_Ganglion: startDataTransfer(): sending \'" + command_startBinary);
-    tcpClient.write(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
+    safeTCPWrite(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
   }
 
   /**
@@ -380,7 +373,17 @@ class OpenBCI_Ganglion {
   public void stopDataTransfer() {
     changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
     println("OpenBCI_Ganglion: stopDataTransfer(): sending \'" + command_stop);
-    tcpClient.write(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
+    safeTCPWrite(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
+  }
+  
+  public boolean safeTCPWrite(String out) {
+    if (tcpClient != null) { //<>//
+      tcpClient.write(out);
+      return true;
+    } else {
+      println("Error: Attempted to TCP write with no tcpClient initialized");
+      return false;
+    }
   }
 
   private void printGanglion(String msg) {

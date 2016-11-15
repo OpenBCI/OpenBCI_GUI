@@ -74,6 +74,7 @@ int openBCI_baud = 115200; //baud rate from the Arduino
 
 OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
 String ganglion_portName = "N/A";
+boolean hubRunning = false;
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from openBCI...first EEG channels, then aux channels
@@ -200,6 +201,8 @@ int indices = 0;
 
 boolean synthesizeData = false;
 
+Process nodeHubby;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -253,7 +256,13 @@ void setup() {
   }
   );
 
-  ganglion = new OpenBCI_Ganglion(this);
+  // Try to start the node hub
+  if (hubStart()) {
+    ganglion = new OpenBCI_Ganglion(this); 
+    hubRunning = true;
+  } else {
+    println("failed to start node hub");
+  }
 
   //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
@@ -289,6 +298,9 @@ void setup() {
   }
 
   myPresentation = new Presentation();
+  
+  // prepare the exit handler to stop the node hub process on shut down
+  prepareExitHandler();
 }
 //====================== END-OF-SETUP ==========================//
 
@@ -302,6 +314,45 @@ void draw() {
 }
 
 //====================== END-OF-DRAW ==========================//
+
+// must add "prepareExitHandler();" in setup() for Processing sketches 
+private void prepareExitHandler () {
+ Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+   public void run () {
+   System.out.println("SHUTDOWN HOOK");
+     try {
+       if (hubStop()) {
+         System.out.println("SHUTDOWN HUB");
+       } else {
+         System.out.println("FAILED TO SHUTDOWN HUB"); 
+       }
+     } catch (Exception ex){
+       ex.printStackTrace(); // not much else to do at this point
+     } 
+   }
+  }));
+}  
+
+boolean hubStart() {
+  println("Launching application");
+  //nodeHubby = launch("/Applications/Electron Boilerplate.app");
+  return true;
+  //delay(1000);
+  //if (nodeHubby != null) {
+    //return true;
+  //} else {
+    //return false;
+  //}
+}
+
+boolean hubStop() {
+  if (nodeHubby != null) {
+    nodeHubby.destroy();
+    return true;
+  } else {
+    return false;
+  }
+}
 
 // void tcpEvent(String msg) {
 //   // println("GanglionSync: udpEvent " + msg);
