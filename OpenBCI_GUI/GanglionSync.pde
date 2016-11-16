@@ -95,6 +95,7 @@ class OpenBCI_Ganglion {
 
   private int tcpGanglionPort = 10996;
   private String tcpGanglionIP = "127.0.0.1";
+  private boolean tcpClientActive = false;
 
   private final float fs_Hz = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
@@ -132,8 +133,12 @@ class OpenBCI_Ganglion {
   OpenBCI_Ganglion(PApplet applet) {
  //<>//
     // Initialize TCP connection
-    tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
-    
+    if (startTCPClient(applet)) {
+      println("Connection established with node server.");
+    } else {
+      println("Connection failed to establish with node server.");
+    }
+
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
@@ -141,6 +146,21 @@ class OpenBCI_Ganglion {
     }
     for(int i = 0; i < nAuxValuesPerPacket; i++){
       dataPacket.auxValues[i] = 0;
+    }
+  }
+
+  /**
+   * @descirpiton Used to `try` and start the tcpClient
+   * @param applet {PApplet} - The main applet.
+   * @return {boolean} - True if able to start.
+   */
+  public boolean startTCPClient(PApplet applet) {
+    try {
+      tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
+      return true;
+    } catch (Exception e) {
+      println("startTCPClient: ConnectException: " + e);
+      return false;
     }
   }
 
@@ -375,13 +395,19 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: stopDataTransfer(): sending \'" + command_stop);
     safeTCPWrite(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
   }
-  
+
+  /**
+   * @description Write to TCP server
+   * @params out {String} - The string message to write to the server.
+   * @returns {boolean} - True if able to write, false otherwise.
+   */
   public boolean safeTCPWrite(String out) {
-    if (tcpClient != null) { //<>//
+    if (tcpClient == null) return false;
+    try {
       tcpClient.write(out);
       return true;
-    } else {
-      println("Error: Attempted to TCP write with no tcpClient initialized");
+    } catch (NullPointerException e) {
+      println("Error: Attempted to TCP write with no server connection initialized");
       return false;
     }
   }
@@ -413,3 +439,38 @@ class OpenBCI_Ganglion {
     }
   }
 };
+
+// Potential use for windows systems
+// public class ApplicationUtilities
+// {
+//     public static void runApplication(String applicationFilePath) throws IOException, InterruptedException
+//     {
+//         File application = new File(applicationFilePath);
+//         String applicationName = application.getName();
+//
+//         if (!isProcessRunning(applicationName))
+//         {
+//             Desktop.getDesktop().open(application);
+//         }
+//     }
+//
+//     // http://stackoverflow.com/a/19005828/3764804
+//     private static boolean isProcessRunning(String processName) throws IOException, InterruptedException
+//     {
+//         ProcessBuilder processBuilder = new ProcessBuilder("tasklist.exe");
+//         Process process = processBuilder.start();
+//         String tasksList = toString(process.getInputStream());
+//
+//         return tasksList.contains(processName);
+//     }
+//
+//     // http://stackoverflow.com/a/5445161/3764804
+//     private static String toString(InputStream inputStream)
+//     {
+//         Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
+//         String string = scanner.hasNext() ? scanner.next() : "";
+//         scanner.close();
+//
+//         return string;
+//     }
+// }

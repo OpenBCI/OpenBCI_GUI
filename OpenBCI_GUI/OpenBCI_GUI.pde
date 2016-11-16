@@ -30,7 +30,7 @@ import hypermedia.net.*; //for UDP networking
 import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
-
+import java.io.InputStreamReader; // For input
 import java.awt.MouseInfo;
 
 
@@ -202,6 +202,7 @@ int indices = 0;
 boolean synthesizeData = false;
 
 Process nodeHubby;
+int hubPid = 0;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -209,6 +210,9 @@ Process nodeHubby;
 
 //========================SETUP============================//
 void setup() {
+  // Try to start the node hub
+  hubStart();
+
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 6/25/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");
@@ -256,14 +260,6 @@ void setup() {
   }
   );
 
-  // Try to start the node hub
-  if (hubStart()) {
-    ganglion = new OpenBCI_Ganglion(this); 
-    hubRunning = true;
-  } else {
-    println("failed to start node hub");
-  }
-
   //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
   helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
@@ -298,9 +294,11 @@ void setup() {
   }
 
   myPresentation = new Presentation();
-  
+
   // prepare the exit handler to stop the node hub process on shut down
   prepareExitHandler();
+
+  ganglion = new OpenBCI_Ganglion(this);
 }
 //====================== END-OF-SETUP ==========================//
 
@@ -315,7 +313,7 @@ void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-// must add "prepareExitHandler();" in setup() for Processing sketches 
+// must add "prepareExitHandler();" in setup() for Processing sketches
 private void prepareExitHandler () {
  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
    public void run () {
@@ -324,33 +322,75 @@ private void prepareExitHandler () {
        if (hubStop()) {
          System.out.println("SHUTDOWN HUB");
        } else {
-         System.out.println("FAILED TO SHUTDOWN HUB"); 
+         System.out.println("FAILED TO SHUTDOWN HUB");
        }
      } catch (Exception ex){
        ex.printStackTrace(); // not much else to do at this point
-     } 
+     }
    }
   }));
-}  
+  getRunningProcessMac();
+}
 
-boolean hubStart() {
+void hubStart() {
   println("Launching application");
-  //nodeHubby = launch("/Applications/Electron Boilerplate.app");
-  return true;
-  //delay(1000);
-  //if (nodeHubby != null) {
-    //return true;
-  //} else {
-    //return false;
-  //}
+  try {
+    // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
+    getRunningProcessMac();
+    if (isWindows()) {
+      nodeHubby = launch(dataPath("Ganglion Hub.exe"));
+    } else {
+      nodeHubby = launch(dataPath("Ganglion Hub.app"));
+    }
+    hubPid = nodeHubby.pid;
+    println("\n\n\n hubPid " + hubPid);
+    hubRunning = true;
+  } catch (Exception e) {
+    println("hubStart: " + e);
+    hubRunning = false;
+  }
 }
 
 boolean hubStop() {
-  if (nodeHubby != null) {
-    nodeHubby.destroy();
-    return true;
-  } else {
-    return false;
+
+  endProcess();
+  return true;
+  // if (nodeHubby != null) {
+  //   nodeHubby.destroy();
+  //   return true;
+  // } else {
+  //   return false;
+  // }
+}
+
+private boolean isWindows() {
+  return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+}
+
+void endProcess() {
+  Runtime rt = Runtime.getRuntime();
+  try {
+    if (isWindows())
+      rt.exec("taskkill Ganglion Hub.exe");
+    else
+      rt.exec("kill -9 Ganglion Hub");
+  } catch (IOException err) {
+    err.printStackTrace();
+  }
+}
+
+void getRunningProcessMac() {
+  try {
+    String line;
+    Process p = Runtime.getRuntime().exec("ps -e");
+    BufferedReader input =
+            new BufferedReader(new InputStreamReader(p.getInputStream()));
+    while ((line = input.readLine()) != null) {
+        System.out.println(line); //<-- Parse data here.
+    }
+    input.close();
+  } catch (Exception err) {
+    err.printStackTrace();
   }
 }
 
