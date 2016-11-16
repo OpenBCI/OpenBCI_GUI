@@ -138,7 +138,6 @@ class Accelerometer_Widget{
     if (true) {
       fill(boxBG);
       stroke(strokeColor);
-      println(x);
       rect(x, y, w, h);
       textFont(f4, 24);
       textAlign(LEFT, TOP);
@@ -340,12 +339,12 @@ class Accelerometer_Widget{
 
 
 
-  public void mousePressed() {
-    verbosePrint("Playground >> mousePressed()");
-  }
-
-  public void mouseReleased() {
-    verbosePrint("Playground >> mouseReleased()");
-  }
+  // public void mousePressed() {
+  //   verbosePrint("Playground >> mousePressed()");
+  // }
+  //
+  // public void mouseReleased() {
+  //   verbosePrint("Playground >> mouseReleased()");
+  // }
 
 }

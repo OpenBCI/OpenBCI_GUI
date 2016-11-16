@@ -92,7 +92,7 @@ class EMG_Widget extends Container {
 
     initSliders(w, h);
 
-    configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);  
+    configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);
     configWidget = new Config_Widget(NCHAN, sample_rate_Hz, c, motorWidgets);
   }
 
@@ -126,7 +126,7 @@ class EMG_Widget extends Container {
       }
     } else if (nchan == 8) {
       for (int i = 0; i < rowNum; i++) {
-        for (int j = 0; j < colNum; j++) {      
+        for (int j = 0; j < colNum; j++) {
 
           tripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8), 0, int((3*colOffset/32)), 2, tripSliders, true, motorWidgets[index]);
           untripSliders[index] = new TripSlider(int(5*colOffset/8), int(2 * rowOffset / 8), 0, int(3*colOffset/32), 2, tripSliders, false, motorWidgets[index]);
@@ -138,7 +138,7 @@ class EMG_Widget extends Container {
       }
     } else if (nchan == 16) {
       for (int i = 0; i < rowNum; i++) {
-        for (int j = 0; j < colNum; j++) {    
+        for (int j = 0; j < colNum; j++) {
 
           if ( j < 2) {
             //tripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
@@ -430,7 +430,7 @@ class EMG_Widget extends Container {
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
-    
+
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -440,19 +440,19 @@ class EMG_Widget extends Container {
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
-    
+
     //println("x: " + x + " y: " + y + " w: " + w + " h: " + h);
     configWidget.update(x,y,w,h);
-    
+
     if(configButton.wasPressed){
-      configButton = new Button(int(x), int(y + h/14), 20, 20, "X", fontInfo.buttonLabel_size); 
+      configButton = new Button(int(x), int(y + h/14), 20, 20, "X", fontInfo.buttonLabel_size);
       configButton.wasPressed = true;
     }
     else{
-      configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size); 
+      configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);
       configButton.wasPressed = false;
     }
-    
+
 
   }
 
@@ -508,18 +508,18 @@ class EMG_Widget extends Container {
       text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
 
       configButton.draw();
-      if (!configButton.wasPressed) {   
-        cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false); 
-        cp5Serial.get(MenuList.class, "baudList").setVisible(false);   
+      if (!configButton.wasPressed) {
+        cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false);
+        cp5Serial.get(MenuList.class, "baudList").setVisible(false);
         float rx = x, ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
-        float scaleFactor = 3.0;
+        float scaleFactor = 1.0;
         float scaleFactorJaw = 1.5;
         int rowNum = 4;
         int colNum = motorWidgets.length / rowNum;
         float rowOffset = rh / rowNum;
         float colOffset = rw / colNum;
         int index = 0;
-        float currx, curry; 
+        float currx, curry;
 
         //new
         for (int i = 0; i < rowNum; i++) {
@@ -529,7 +529,7 @@ class EMG_Widget extends Container {
             currx = rx + j * colOffset;
             curry = ry + i * rowOffset; //never name variables on an empty stomach
             translate(currx, curry);
-           
+
             //draw visualizer
             noFill();
             stroke(0, 255, 0);
@@ -670,7 +670,7 @@ class EMG_Widget extends Container {
         emg_widget.configWidget.connectToSerial.wasPressed = true;
         emg_widget.configWidget.connectToSerial.setIsActive(true);
       }
-      
+
       //Close button stuff
       if(mouseX >= x && mouseX <= (x+20) && mouseY >= y + h/14 && mouseY <= y + h/14 + 20){
         configButton.wasPressed = false;
@@ -681,7 +681,7 @@ class EMG_Widget extends Container {
       //Open configuration menu
       if (configButton.isMouseHere()) {
         configButton.setIsActive(true);
-        //configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);  
+        //configButton = new Button(int(x), int(y + h/14), 20, 20, "O", fontInfo.buttonLabel_size);
 
 
         if (configButton.wasPressed) {
@@ -834,13 +834,13 @@ class EMG_Widget extends Container {
       chans[0].wasPressed = true;
     }
     public void update(float lx, float ly, float lw, float lh){
-      
+
       x = lx + x/6.12;
       y = ly + y/3.03;
       w = lw - w/4.25;
       h = lh - h/245.1;
-      
-      
+
+
       chans = new Button[nchan];
       digital = new Button(int(x + w/7.5), int(y + h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
       analog = new Button(int(x - w/27.3), int(y + h/5.77), int(w/40.96), int(w/40.96), "", fontInfo.buttonLabel_size);
@@ -1140,7 +1140,7 @@ class EMG_Widget extends Container {
 
     //Check if the mouse is here
     boolean overRect(int lx, int ly, int twidth, int theight) {
-      if (mouseX >= lx && mouseX <= lx+twidth && 
+      if (mouseX >= lx && mouseX <= lx+twidth &&
         mouseY >= ly && mouseY <= ly+theight) {
 
         return true;
