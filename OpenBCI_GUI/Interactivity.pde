@@ -555,7 +555,7 @@ void mousePressed() {
   if (playground.isMouseInButton()) {
     playground.toggleWindow();
   }
-  
+
   //if (accelWidget.isMouseHere()) {
   //  accelWidget.mousePressed();
   //}
@@ -563,14 +563,14 @@ void mousePressed() {
   //if (accelWidget.isMouseInButton()) {
   //  accelWidget.toggleWindow();
   //}
-  
-  if (pulseWidget.isMouseHere()) {
-    pulseWidget.mousePressed();
-  }
 
-  if (pulseWidget.isMouseInButton()) {
-    pulseWidget.toggleWindow();
-  }
+  //if (pulseWidget.isMouseHere()) {
+  //  pulseWidget.mousePressed();
+  //}
+
+  //if (pulseWidget.isMouseInButton()) {
+  //  pulseWidget.toggleWindow();
+  //}
 }
 
 void mouseReleased() {

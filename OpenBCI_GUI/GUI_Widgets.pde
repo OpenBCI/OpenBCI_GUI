@@ -18,8 +18,8 @@ void setupGUIWidgets() {
   Container accel_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
 
   emg_widget = new EMG_Widget(nchan, openBCI.get_fs_Hz(), motor_container, this);
-  accelWidget = new Accelerometer_Widget();
-
+  accelWidget = new Accelerometer_Widget(this);
+  pulseWidget = new PulseSensor_Widget(this);
 }
 
 void updateGUIWidgets() {
@@ -27,14 +27,16 @@ void updateGUIWidgets() {
   fft_widget.update();
   ob_widget.update();
   accelWidget.update();
+  pulseWidget.update();
 }
 
 void drawGUIWidgets() {
   //if () {
   headPlot_widget.draw();
-  fft_widget.draw();
+  //fft_widget.draw();
   ob_widget.draw();
   accelWidget.draw();
+  pulseWidget.draw();
   //}
 }
 
@@ -44,6 +46,7 @@ void GUIWidgets_screenResized(int _winX, int _winY) {
   ob_widget.screenResized(this,_winX,_winY);
   emg_widget.screenResized(this, _winX, _winY);
   accelWidget.screenResized(this, _winX, _winY);
+  pulseWidget.screenResized(this, _winX, _winY);
 }
 
 void GUIWidgets_mousePressed() {

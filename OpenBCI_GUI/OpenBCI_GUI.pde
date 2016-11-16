@@ -42,7 +42,7 @@ import java.awt.MouseInfo;
 // acc test
 float [] validAuxValues = {0,0,0};
 float[] X_buff;
-float[] Y_buff;       
+float[] Y_buff;
 float[] Z_buff;
 boolean acc_newData = false;
 
@@ -164,7 +164,7 @@ int hexToInt = 0;
 boolean screenHasBeenResized = false;
 float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
-int reinitializeGUIdelay = 125; 
+int reinitializeGUIdelay = 125;
 //Tao's variabiles
 int widthOfLastScreen = 0;
 int heightOfLastScreen = 0;
@@ -178,6 +178,7 @@ PImage logo;
 PFont f1;
 PFont f2;
 PFont f3;
+PFont f4;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
@@ -215,6 +216,7 @@ void setup() {
   f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
   f2 = createFont("fonts/Raleway-Regular.otf", 15);
   f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
+  f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 
   //V2 FONTS
   //f1 = createFont("fonts/Montserrat-SemiBold.otf", 16);
@@ -258,12 +260,6 @@ void setup() {
 
   playground = new Playground(navBarHeight);
 
-
-  //accelWidget = new Accelerometer_Widget(navBarHeight);
-  //accelWidget.initPlayground(openBCI);
-
-  pulseWidget = new PulseSensor_Widget(navBarHeight);
-  pulseWidget.initPlayground(openBCI);
   //attempt to open a serial port for "output"
   try {
     verbosePrint("OpenBCI_GUI.pde:  attempting to open serial port for data output = " + serial_output_portName);
@@ -548,13 +544,9 @@ void systemUpdate() { // for updating data values and variables
       timeOfGUIreinitialize = millis();
       initializeGUI();
       playground.x = width; //reset the x for the playground...
-      accelWidget.x = width;
-      pulseWidget.x = width;
     }
 
     playground.update();
-    accelWidget.update();
-    pulseWidget.update();
   }
 
   controlPanel.update();
@@ -633,8 +625,6 @@ void systemDraw() { //for drawing to the screen
 
     playground.draw();
     emg_widget.draw();
-    accelWidget.draw();
-    pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10
