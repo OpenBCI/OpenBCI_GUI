@@ -33,6 +33,11 @@ import java.lang.reflect.*; // For callbacks
 
 import java.awt.MouseInfo;
 
+import java.util.Random;
+
+import java.awt.Robot; //used for simulating mouse clicks
+import java.awt.AWTException;
+
 
 
 //------------------------------------------------------------------------
@@ -206,6 +211,8 @@ int indices = 0;
 
 boolean synthesizeData = false;
 
+Robot rob3115;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -297,6 +304,13 @@ void setup() {
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
+
+  try{
+    rob3115 = new Robot();
+  } catch (AWTException e){
+    println("couldn't create robot...");
+  }
+
 }
 //====================== END-OF-SETUP ==========================//
 
@@ -510,8 +524,8 @@ void systemUpdate() { // for updating data values and variables
             //-----------------------------------------------------------
             //-----------------------------------------------------------
             gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
-            topNav.update();
-            updateGUIWidgets(); //####
+            // topNav.update();
+            // updateGUIWidgets(); //####
             //-----------------------------------------------------------
             //-----------------------------------------------------------
           }
@@ -577,6 +591,8 @@ void systemUpdate() { // for updating data values and variables
       playground.x = width; //reset the x for the playground...
     }
 
+    topNav.update();
+    updateGUIWidgets(); //####
     playground.update();
   }
 

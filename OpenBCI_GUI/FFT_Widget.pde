@@ -10,8 +10,8 @@
 ///////////////////////////////////////////////////
 
 
-import grafica.*;
-import java.util.Random;
+// Robot bot;
+// int mask;
 
 //fft constants
 int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
@@ -19,6 +19,7 @@ FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 ControlP5 cp5_FFT;
+// List maxFreqList = Arrays.asList("20 Hz", "40 Hz", "60 Hz", "120 Hz", "test", "test2");
 List maxFreqList = Arrays.asList("20 Hz", "40 Hz", "60 Hz", "120 Hz");
 List logLinList = Arrays.asList("Log", "Linear");
 List vertScaleList = Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV");
@@ -66,6 +67,11 @@ class FFT_Widget {
   int FFT_indexLim = int(1.0*xMax*(Nfft/get_fs_Hz_safe()));   // maxim value of FFT index
   int yLim = 100;  //maximum value of y axis ... 100 uV
 
+  int dropdownPos;
+  int dropdownWidth = 60;
+
+
+
 
   //constructor 1
   FFT_Widget(PApplet parent) {
@@ -87,6 +93,8 @@ class FFT_Widget {
 
     initializeFFTPlot(parent);
     setupDropdownMenus(parent);
+
+
   }
 
   void initializeFFTPlot(PApplet _parent) {
@@ -127,14 +135,18 @@ class FFT_Widget {
 
   void setupDropdownMenus(PApplet _parent) {
     //ControlP5 Stuff
-    int dropdownPos;
-    int dropdownWidth = 60;
     cp5_colors = new CColor();
-    cp5_colors.setActive(color(150, 170, 200)); //when clicked
-    cp5_colors.setForeground(color(125)); //when hovering
-    cp5_colors.setBackground(color(255)); //color of buttons
-    cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
-    cp5_colors.setValueLabel(color(0, 0, 255));
+    // cp5_colors.setActive(int(color(150, 170, 200))); //when clicked
+    // cp5_colors.setForeground(color(125)); //when hovering
+    // cp5_colors.setBackground(color(255)); //color of buttons
+    // cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
+    // cp5_colors.setValueLabel(color(0, 0, 255));
+
+    cp5_colors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
+    cp5_colors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
+    cp5_colors.setBackground((int)color(255)); //bg color of boxes (including primary)
+    cp5_colors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
+    cp5_colors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
 
     cp5_FFT.setColor(cp5_colors);
     cp5_FFT.setAutoDraw(false);
@@ -144,12 +156,13 @@ class FFT_Widget {
     dropdownPos = 4; //work down from 4 since we're starting on the right side now...
     cp5_FFT.addScrollableList("MaxFreq")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
+      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), y + navHeight + 2) //float right
       .setOpen(false)
-      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+      .setColor(cp5_colors)
+      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navHeight-4) )// + maxFreqList.size())
       .setScrollSensitivity(0.0)
-      .setBarHeight(navHeight - 4)
-      .setItemHeight(navHeight - 4)
+      .setBarHeight(navHeight-4)
+      .setItemHeight(navHeight-4)
       .addItems(maxFreqList)
       // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
       ;
@@ -280,13 +293,39 @@ class FFT_Widget {
 
     //remap fft point arrays to fft plots
     fft_plot.setPoints(fft_points[0]);
+
+    if(cp5_FFT.get(ScrollableList.class, "MaxFreq").isOpen()){
+      // println("1");
+      if(!cp5_FFT.getController("MaxFreq").isMouseOver()){
+        // println("2");
+        cp5_FFT.get(ScrollableList.class, "MaxFreq").close();
+      }
+    } else {
+
+    }
+
+    // println("height = " + cp5_FFT.get(ScrollableList.class, "MaxFreq").getHeight());
+    // println("position = " + cp5_FFT.getController("MaxFreq").getPosition()[0] + " | " + cp5_FFT.getController("MaxFreq").getPosition()[1]);
+    // pushStyle();
+    // fill(31,69,110);
+    // rect(cp5_FFT.getController("MaxFreq").getPosition()[0] - 1, cp5_FFT.getController("MaxFreq").getPosition()[1] - 1, dropdownWidth + 2, cp5_FFT.get(ScrollableList.class, "MaxFreq").getHeight() + 2);
+    // popStyle();
+
+    // if(cp5_FFT.getController("MaxFreq").isMouseOver()){
+    //   println("1");
+    //   // cp5_FFT.getController("MaxFreq").setMousePressed(true);
+    //   // cp5_FFT.get(ScrollableList.class, "MaxFreq").setMousePressed(true);
+    //   rob3115.mousePress(InputEvent.BUTTON1_MASK);
+    //   // rob3115.mouseRelease(InputEvent.BUTTON1_MASK);
+    // }
+
   }
 
   void draw() {
 
     if(drawFFT){
       pushStyle();
-  
+
       //draw FFT Graph w/ all plots
       noStroke();
       fft_plot.beginDraw();
@@ -306,7 +345,7 @@ class FFT_Widget {
         //fft_plot.drawPoints(); //draw points
       }
       fft_plot.endDraw();
-  
+
       //draw nav bars and button bars
       fill(150, 150, 150);
       rect(x, y, w, navHeight); //top bar
@@ -329,7 +368,7 @@ class FFT_Widget {
       //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //title of widget -- left
       //fill(255,0,0,150);
       //rect(x,y,w,h);
-  
+
       //draw dropdown titles
       int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
       int dropdownWidth = 60;
@@ -346,10 +385,14 @@ class FFT_Widget {
       text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
       dropdownPos = 0;
       text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-  
+
       //draw dropdown menus
+      pushStyle();
+      fill(200);
+      rect(cp5_FFT.getController("MaxFreq").getPosition()[0] - 1, cp5_FFT.getController("MaxFreq").getPosition()[1] - 1, dropdownWidth + 2, cp5_FFT.get(ScrollableList.class, "MaxFreq").getHeight()+2);
+      popStyle();
       cp5_FFT.draw();
-  
+
       popStyle();
     }
   }
@@ -368,8 +411,6 @@ class FFT_Widget {
 
     //update dropdown menu positions
     cp5_FFT.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
-    int dropdownPos;
-    int dropdownWidth = 60;
     dropdownPos = 4; //work down from 4 since we're starting on the right side now...
     cp5_FFT.getController("MaxFreq")
       //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
@@ -407,6 +448,17 @@ class FFT_Widget {
     if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
       //println("fft_widget.mousePressed()");
     }
+
+    // if(cp5_FFT.getController("MaxFreq").isMouseOver()){
+    //   println("1");
+    //   // cp5_FFT.getController("MaxFreq").setMousePressed(true);
+    //   // cp5_FFT.get(ScrollableList.class, "MaxFreq").setMousePressed(true);
+    //   // rob3115.mousePress(InputEvent.BUTTON1_MASK);
+    //   // rob3115.mouseRelease(InputEvent.BUTTON1_MASK);
+    // }
+
+
+
   }
   void mouseReleased() {
     //called by GUI_Widgets.pde
@@ -479,4 +531,8 @@ void UnfiltFilt(int n) {
     //have FFT use unfiltered data
     isFFTFiltered = false;
   }
+}
+
+void mouseDragged(){
+  fft_widget.mousePressed();
 }
