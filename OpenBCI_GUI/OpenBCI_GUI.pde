@@ -32,6 +32,7 @@ import grafica.*;
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
 import java.awt.MouseInfo;
+import java.lang.Process;
 
 
 
@@ -203,6 +204,7 @@ boolean synthesizeData = false;
 
 Process nodeHubby;
 int hubPid = 0;
+String nodeHubName = "Ganglion Hub";
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -329,21 +331,20 @@ private void prepareExitHandler () {
      }
    }
   }));
-  getRunningProcessMac();
 }
 
 void hubStart() {
+  // Comment in below lines to kill hubs on start
+  //println("Attempting to kill running hub processes");
+  //killRunningProcessMac();
   println("Launching application");
   try {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
-    getRunningProcessMac();
     if (isWindows()) {
       nodeHubby = launch(dataPath("Ganglion Hub.exe"));
     } else {
       nodeHubby = launch(dataPath("Ganglion Hub.app"));
     }
-    hubPid = nodeHubby.pid;
-    println("\n\n\n hubPid " + hubPid);
     hubRunning = true;
   } catch (Exception e) {
     println("hubStart: " + e);
@@ -351,45 +352,71 @@ void hubStart() {
   }
 }
 
+/**
+ * @description Single function to call at the termination program hook.
+ */
 boolean hubStop() {
-
-  endProcess();
-  return true;
-  // if (nodeHubby != null) {
-  //   nodeHubby.destroy();
-  //   return true;
-  // } else {
-  //   return false;
-  // }
+  if (isWindows()) {
+    println("Cannot stop windows processes yet");
+    return false; 
+  } else {
+    killRunningProcessMac();
+    return true;
+  }
 }
 
+/**
+ * @description Helper function to determine if the system is windows or not.
+ * @return {boolean} true if os is windows, false otherwise.
+ */
 private boolean isWindows() {
   return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
 }
 
-void endProcess() {
-  Runtime rt = Runtime.getRuntime();
-  try {
-    if (isWindows())
-      rt.exec("taskkill Ganglion Hub.exe");
-    else
-      rt.exec("kill -9 Ganglion Hub");
-  } catch (IOException err) {
-    err.printStackTrace();
-  }
-}
-
-void getRunningProcessMac() {
+/**
+ * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
+ *  function dubbed "death dealer"
+ */
+void killRunningProcessMac() {
   try {
     String line;
     Process p = Runtime.getRuntime().exec("ps -e");
     BufferedReader input =
             new BufferedReader(new InputStreamReader(p.getInputStream()));
     while ((line = input.readLine()) != null) {
-        System.out.println(line); //<-- Parse data here.
+      if (line.contains(nodeHubName)) {
+        try {
+          endProcess(getProcessIdFromLineMac(line));
+          println("Killed: " + line);
+        } catch (Exception err) {
+          println("Failed to stop process: " + line + "\n\n");
+          err.printStackTrace();
+        } 
+      }
     }
     input.close();
   } catch (Exception err) {
+    err.printStackTrace();
+  }
+}
+
+/**
+ * @description Parses a mac process line and grabs the pid, the first component.
+ * @return {int} the process id
+ */
+int getProcessIdFromLineMac(String line) {
+  String[] components = line.split(" ");
+  return Integer.parseInt(components[0]);
+}
+
+void endProcess(int pid) {
+  Runtime rt = Runtime.getRuntime();
+  try {
+    if (isWindows())
+      rt.exec("taskkill " + pid);
+    else
+      rt.exec("kill -9 " + pid);
+  } catch (IOException err) {
     err.printStackTrace();
   }
 }

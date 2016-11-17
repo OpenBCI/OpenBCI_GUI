@@ -19,13 +19,17 @@
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
 
-  int p = ganglion.tcpBufferPositon;
+  int p = ganglion.tcpBufferPositon; //<>//
   ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
   ganglion.tcpBufferPositon++;
 
   if(p > 2) {
     String posMatch  = new String(ganglion.tcpBuffer, p - 2, 3);
     if (posMatch.equals(ganglion.TCP_STOP)) {
+      if (!ganglion.nodeProcessHandshakeComplete) {
+        ganglion.nodeProcessHandshakeComplete = true;
+        println("GanglionSync: clientEvent: handshake complete");
+      }
       // Get a string from the tcp buffer
       String msg = new String(ganglion.tcpBuffer, 0, p);
       // Send the new string message to be processed
@@ -122,21 +126,30 @@ class OpenBCI_Ganglion {
   public int tcpBufferPositon = 0;
 
   private boolean waitingForResponse = false;
+  private boolean nodeProcessHandshakeComplete = false;
 
   // Getters
   public float get_fs_Hz() { return fs_Hz; }
   public boolean isPortOpen() { return portIsOpen; }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
 
+  private PApplet mainApplet;
+
   //constructors
   OpenBCI_Ganglion() {};  //only use this if you simply want access to some of the constants
   OpenBCI_Ganglion(PApplet applet) {
- //<>//
-    // Initialize TCP connection
-    if (startTCPClient(applet)) {
-      println("Connection established with node server.");
+    mainApplet = applet;
+    // Is the node process running?
+    if (!getStatus()) { //<>//
+      // Initialize TCP connection
+      if (startTCPClient(applet)) {
+        println("Connection established with node server.");
+        getStatus();
+      } else {
+        println("Connection failed to establish with node server.");
+      }
     } else {
-      println("Connection failed to establish with node server.");
+      // We are now waitingForResponse
     }
 
     // For storing data into
@@ -193,6 +206,10 @@ class OpenBCI_Ganglion {
         println("OpenBCI_Ganglion: Log: " + list[1]);
         break;
       case 'q':
+        if (waitingForResponse) {
+          waitingForResponse = false;
+          output("Node process up!");
+        }
         println("OpenBCI_Ganglion: Status: 200");
         break;
       default:
@@ -317,6 +334,18 @@ class OpenBCI_Ganglion {
     }
   }
 
+  /**
+   * Sends a status message to the node process.
+   */
+  public boolean getStatus() {
+    if(safeTCPWrite(TCP_CMD_STATUS + TCP_STOP)) {
+      waitingForResponse = true;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   public boolean isSuccessCode(int c) {
     return c == RESP_SUCCESS;
   }
@@ -402,12 +431,16 @@ class OpenBCI_Ganglion {
    * @returns {boolean} - True if able to write, false otherwise.
    */
   public boolean safeTCPWrite(String out) {
-    if (tcpClient == null) return false;
-    try {
-      tcpClient.write(out);
-      return true;
-    } catch (NullPointerException e) {
-      println("Error: Attempted to TCP write with no server connection initialized");
+    if (nodeProcessHandshakeComplete) { //<>//
+      try {
+        tcpClient.write(out);
+        return true;
+      } catch (NullPointerException e) {
+        println("Error: Attempted to TCP write with no server connection initialized");
+        return false;
+      }
+    } else {
+      println("Waiting on node handshake!");
       return false;
     }
   }
