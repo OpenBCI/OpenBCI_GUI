@@ -30,7 +30,7 @@ List durationList = Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec");
 List vertScaleList_TS = Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV");
 List spillOverList = Arrays.asList("False", "True");
 
-class W_TimeSeries{
+class W_TimeSeries {
 
   int numChannelBars;
   float x, y, w, h;

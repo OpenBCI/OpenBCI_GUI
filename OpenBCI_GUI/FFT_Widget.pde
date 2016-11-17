@@ -26,7 +26,7 @@ List vertScaleList = Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV");
 List smoothList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
 List filterList = Arrays.asList("Filtered", "Unfilt.");
 
-CColor cp5_colors;
+// CColor cp5_colors;
 
 class FFT_Widget {
 
@@ -300,8 +300,6 @@ class FFT_Widget {
         // println("2");
         cp5_FFT.get(ScrollableList.class, "MaxFreq").close();
       }
-    } else {
-
     }
 
     // println("height = " + cp5_FFT.get(ScrollableList.class, "MaxFreq").getHeight());
@@ -472,7 +470,7 @@ class FFT_Widget {
   //void keyReleased() {
   //  //called by GUI_Widgets.pde
   //}
-}
+};
 
 //triggered when there is an event in the MaxFreq. Dropdown
 void MaxFreq(int n) {
@@ -533,6 +531,6 @@ void UnfiltFilt(int n) {
   }
 }
 
-void mouseDragged(){
-  fft_widget.mousePressed();
-}
+// void mouseDragged(){
+//   fft_widget.mousePressed();
+// }
