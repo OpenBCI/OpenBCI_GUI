@@ -59,11 +59,11 @@ class Playground {
       expand();
     }
     
-    if(accelWidget.collapsing) accelWidget.collapse();
-    else accelWidget.expand();
+    // if(accelWidget.collapsing) accelWidget.collapse();
+    // else accelWidget.expand();
     
-    if(pulseWidget.collapsing) pulseWidget.collapse();
-    else pulseWidget.expand();
+    //if(pulseWidget.collapsing) pulseWidget.collapse();
+    //else pulseWidget.expand();
 
     if (x > width) {
       x = width;
@@ -118,35 +118,34 @@ class Playground {
     //  collapser.but_txt = ">";
     //}
     
-    if(drawAccel){
-      if (accelWidget.isOpen) {//if open
-        verbosePrint("close");
-        accelWidget.collapsing = true;//collapsing = true;
-        accelWidget.isOpen = false;
-        accelWidget.collapser.but_txt = "<";
-      } else {//if closed
-        verbosePrint("open");
-        accelWidget.collapsing = false;//expanding = true;
-        accelWidget.isOpen = true;
-        accelWidget.collapser.but_txt = ">";
-      }
-    }
+    //if(drawAccel){
+    //  if (accelWidget.isOpen) {//if open
+    //    verbosePrint("close");
+    //    accelWidget.collapsing = true;//collapsing = true;
+    //    accelWidget.isOpen = false;
+    //    accelWidget.collapser.but_txt = "<";
+    //  } else {//if closed
+    //    verbosePrint("open");
+    //    accelWidget.collapsing = false;//expanding = true;
+    //    accelWidget.isOpen = true;
+    //    accelWidget.collapser.but_txt = ">";
+    //  }
+    //}
     
-    else if(drawPulse){
-      if (pulseWidget.isOpen) {//if open
-        verbosePrint("close");
-        pulseWidget.collapsing = true;//collapsing = true;
-        pulseWidget.isOpen = false;
-        pulseWidget.collapser.but_txt = "<";
-      } else {//if closed
-        verbosePrint("open");
-        pulseWidget.collapsing = false;//expanding = true;
-        pulseWidget.isOpen = true;
-        pulseWidget.collapser.but_txt = ">";
-      }
+    //if(drawPulse){
+    //  if (pulseWidget.isOpen) {//if open
+    //    verbosePrint("close");
+    //    pulseWidget.collapsing = true;//collapsing = true;
+    //    pulseWidget.isOpen = false;
+    //    pulseWidget.collapser.but_txt = "<";
+    //  } else {//if closed
+    //    verbosePrint("open");
+    //    pulseWidget.collapsing = false;//expanding = true;
+    //    pulseWidget.isOpen = true;
+    //    pulseWidget.collapser.but_txt = ">";
+    //  }
+    //}
     
-    
-    }
   }
 
   public void mousePressed() {

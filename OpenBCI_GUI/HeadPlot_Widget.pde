@@ -77,7 +77,7 @@ class HeadPlot_Widget {
     //setup dropdown menus
     setupDropdownMenus(_parent);
   }
-  
+
   void setupDropdownMenus(PApplet _parent) {
     //ControlP5 Stuff
     int dropdownPos;
@@ -253,7 +253,7 @@ class HeadPlot_Widget {
 
   void draw() {
 
-    if(!drawEMG){
+    if(drawHead){
       pushStyle();
       noStroke();
 

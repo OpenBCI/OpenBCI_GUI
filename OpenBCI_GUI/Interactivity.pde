@@ -43,7 +43,31 @@ void parseKey(char val) {
       stopButtonWasPressed();
       break;
     case '.':
-      drawEMG = !drawEMG;
+
+      if(drawEMG){
+        drawAccel = true;
+        drawPulse = false;
+        drawHead = false;
+        drawEMG = false;
+      }
+      else if(drawAccel){
+        drawAccel = false;
+        drawPulse = true;
+        drawHead = false;
+        drawEMG = false;
+      }
+      else if(drawPulse){
+        drawAccel = false;
+        drawPulse = false;
+        drawHead = true;
+        drawEMG = false;
+      }
+      else if(drawHead){
+        drawAccel = false;
+        drawPulse = false;
+        drawHead = false;
+        drawEMG = true;
+      }
       break;
     case ',':
       drawContainers = !drawContainers;
@@ -591,21 +615,30 @@ void mousePressed() {
     playground.toggleWindow();
   }
 
-  if (accelWidget.isMouseHere()) {
-    accelWidget.mousePressed();
-  }
 
-  if (accelWidget.isMouseInButton()) {
-    accelWidget.toggleWindow();
-  }
+  //if (accelWidget.isMouseHere()) {
+  //  accelWidget.mousePressed();
+  //}
 
-  if (pulseWidget.isMouseHere()) {
-    pulseWidget.mousePressed();
-  }
+  //if (accelWidget.isMouseInButton()) {
+  //  accelWidget.toggleWindow();
+  //}
 
-  if (pulseWidget.isMouseInButton()) {
-    pulseWidget.toggleWindow();
-  }
+  //if (pulseWidget.isMouseHere()) {
+  //  pulseWidget.mousePressed();
+  //}
+
+  //if (accelWidget.isMouseInButton()) {
+  //  accelWidget.toggleWindow();
+  //}
+
+  //if (pulseWidget.isMouseHere()) {
+  //  pulseWidget.mousePressed();
+  //}
+
+  //if (pulseWidget.isMouseInButton()) {
+  //  pulseWidget.toggleWindow();
+  //}
 }
 
 void mouseReleased() {

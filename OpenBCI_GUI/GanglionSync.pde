@@ -35,7 +35,7 @@ void clientEvent(Client someClient) {
       // Reset the buffer position
       ganglion.tcpBufferPositon = 0;
     }
-  } //<>//
+  } //<>// //<>//
 }
 
 class OpenBCI_Ganglion {
@@ -43,7 +43,7 @@ class OpenBCI_Ganglion {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA= "t";
-  final static String TCP_CMD_ERROR = "e"; //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";
   final static String TCP_CMD_STATUS = "q";
@@ -134,8 +134,8 @@ class OpenBCI_Ganglion {
         }
         return false;
       case 't': // Data
-        if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
-          if (isSuccessCode(Integer.parseInt(list[1]))) { //<>//
+        if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>// //<>//
+          if (isSuccessCode(Integer.parseInt(list[1]))) { //<>// //<>//
             // Sample number stuff
             dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
             if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
@@ -151,7 +151,7 @@ class OpenBCI_Ganglion {
               dataPacket.values[i] = Integer.parseInt(list[3 + i]);
             }
             getRawValues(dataPacket);
-            // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+            // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>// //<>//
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
             ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
             switch (outputDataSource) {
@@ -173,7 +173,7 @@ class OpenBCI_Ganglion {
             bleErrorCounter++;
             println("OpenBCI_Ganglion: parseMessage: data: bad");
           }
-        } //<>// //<>// //<>// //<>// //<>// //<>//
+        } //<>// //<>// //<>// //<>// //<>// //<>// //<>//
         return false;
       case 'e': // Error
         println("OpenBCI_Ganglion: parseMessage: error: " + list[2]);
@@ -213,7 +213,7 @@ class OpenBCI_Ganglion {
       //println("rawValue[2] " + binary(rawValue[2], 8));
       rawValue[1] = byte((val & (0xFF << 8)) >> 8);
       //println("rawValue[1] " + binary(rawValue[1], 8));
-      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>//
+      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>// //<>//
       //println("rawValue[0] " + binary(rawValue[0], 8));
       // Store to the target raw values
       packet.rawValues[i] = rawValue;
