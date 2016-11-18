@@ -4,7 +4,7 @@
 //    Channel Controller
 //    - responsible for addressing channel data (Ganglion 1-4, 32bit
 //    - Select default configuration (EEG, EKG, EMG)
-//    - Select Electrode Count (8 vs 16)
+//    - Select Electrode Count (4 vs 8 vs 16)
 //    - Select data mode (synthetic, playback file, real-time)
 //    - Record data? (y/n)
 //      - select output location
@@ -24,17 +24,7 @@ int numSettingsPerChannel = 6; //each channel has 6 different settings
 char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 char[][] impedanceCheckValues = new char [nchan][2];
 
-//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
-color[] channelColors = {
-  color(129, 129, 129),
-  color(124, 75, 141),
-  color(54, 87, 158),
-  color(49, 113, 89),
-  color(221, 178, 13),
-  color(253, 94, 52),
-  color(224, 56, 45),
-  color(162, 82, 49)
-};
+
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -328,7 +318,7 @@ class ChannelController {
     line(x1 + 2*(w1/3) - 1, y1 + 1, x1 + 2*(w1/3) - 1, y1 + (h1-1) - 1);
     strokeWeight(0);
 
-    //channel buttons
+    //draw channel buttons
     for (int i = 0; i < nchan; i++) {
       channelSettingButtons[i][0].draw(); //draw on/off channel buttons
       //draw impedance buttons

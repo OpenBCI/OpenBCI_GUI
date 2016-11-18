@@ -9,6 +9,7 @@ boolean drawAccel = true;
 boolean drawPulse = false;
 boolean drawFFT = true;
 boolean drawBionics = false;
+boolean drawHead = true;
 
 
 String oldCommand = "";
@@ -20,16 +21,16 @@ boolean hasGestured = false;
 
 class DataProcessing_User {
   private float fs_Hz;  //sample rate
-  private int nchan;  
-  
+  private int nchan;
+
   boolean switchesActive = false;
 
-  
+
   Button leftConfig = new Button(3*(width/4) - 65,height/4 - 120,20,20,"\\/",fontInfo.buttonLabel_size);
   Button midConfig = new Button(3*(width/4) + 63,height/4 - 120,20,20,"\\/",fontInfo.buttonLabel_size);
   Button rightConfig = new Button(3*(width/4) + 190,height/4 - 120,20,20,"\\/",fontInfo.buttonLabel_size);
-  
-  
+
+
 
   //class constructor
   DataProcessing_User(int NCHAN, float sample_rate_Hz) {
@@ -45,15 +46,13 @@ class DataProcessing_User {
     float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
     FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
-    //for example, you could loop over each EEG channel to do some sort of time-domain processing 
+    //for example, you could loop over each EEG channel to do some sort of time-domain processing
     //using the sample values that have already been filtered, as will be plotted on the display
     float EEG_value_uV;
 
 
-      
-   
+
+
     }
 
   }
-
-  

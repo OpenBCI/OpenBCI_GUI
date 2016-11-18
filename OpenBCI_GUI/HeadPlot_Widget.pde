@@ -22,11 +22,11 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
-void toggleShowPolarity() {
-  gui.headPlot1.use_polarity = !gui.headPlot1.use_polarity;
-  //update the button
-  gui.showPolarityButton.but_txt = "Polarity\n" + gui.headPlot1.getUsePolarityTrueFalse();
-}
+// void toggleShowPolarity() {
+//   gui.headPlot1.use_polarity = !gui.headPlot1.use_polarity;
+//   //update the button
+//   gui.showPolarityButton.but_txt = "Polarity\n" + gui.headPlot1.getUsePolarityTrueFalse();
+// }
 
 //------------------------------------------------------------------------
 //                            Classes
@@ -43,9 +43,11 @@ List polarityList = Arrays.asList("+/-", " + ");
 List smoothingHeadPlotList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
 List filterHeadplotList = Arrays.asList("Unfilt.", "Filtered");
 
+PlaybackScrollbar scrollBar;
+
 class HeadPlot_Widget {
 
-  int x, y, w, h; 
+  int x, y, w, h;
   int parentContainer = 3;
 
   PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
@@ -75,7 +77,7 @@ class HeadPlot_Widget {
     //setup dropdown menus
     setupDropdownMenus(_parent);
   }
-  
+
   void setupDropdownMenus(PApplet _parent) {
     //ControlP5 Stuff
     int dropdownPos;
@@ -250,11 +252,11 @@ class HeadPlot_Widget {
   }
 
   void draw() {
-    
-    if(!drawEMG){
+
+    if(drawHead){
       pushStyle();
       noStroke();
-  
+
       fill(255);
       rect(x, y, w, h); //widget background
       //fill(150,150,150);
@@ -266,7 +268,7 @@ class HeadPlot_Widget {
       //text("Head Plot", x+w/2, y+navHeight/2);
       ////fill(255,0,0,150);
       ////rect(x,y,w,h);
-  
+
       fill(150, 150, 150);
       rect(x, y, w, navHeight); //top bar
       fill(200, 200, 200);
@@ -288,30 +290,30 @@ class HeadPlot_Widget {
       //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
       //fill(255,0,0,150);
       //rect(x,y,w,h);
-  
+
       headPlot.draw(); //draw the actual headplot
-  
+
       //draw dropdown titles
-      int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
+      int dropdownPos = 3; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
       int dropdownWidth = 60;
       textFont(f2);
       textSize(12);
       textAlign(CENTER, BOTTOM);
       fill(bgColor);
       text("Layout", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      dropdownPos = 3;
+      dropdownPos = 2;
       text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
       //dropdownPos = 3;
       //text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      dropdownPos = 2;
-      text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
       dropdownPos = 1;
-      text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
       dropdownPos = 0;
-      text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-  
+      text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+      // dropdownPos = 0;
+      // text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
+
       cp5_HeadPlot.draw(); //draw all dropdown menus
-  
+
       popStyle();
     }
   }
@@ -401,7 +403,7 @@ void Ten20(int n) {
    * text, the given text of the item by default the same as name
    * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
    * color, the given color of the item, how to change, see below
-   * view, a customizable view, is of type CDrawable 
+   * view, a customizable view, is of type CDrawable
    */
 
   //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
@@ -476,14 +478,14 @@ class HeadPlot {
   private int image_x, image_y;
   public boolean drawHeadAsContours;
   private boolean plot_color_as_log = true;
-  public float smooth_fac = 0.0f;  
+  public float smooth_fac = 0.0f;
   private boolean use_polarity = true;
 
   HeadPlot(float x, float y, float w, float h, int win_x, int win_y, int n) {
     final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
-    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?) 
+    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)
     //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
     ref_electrode_xy = new float[2];  //x-y position of reference electrode
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
@@ -503,7 +505,7 @@ class HeadPlot {
     final int n_elec = nchan;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
-    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?) 
+    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)
     //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
     ref_electrode_xy = new float[2];  //x-y position of reference electrode
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
@@ -580,9 +582,9 @@ class HeadPlot {
     float nose_relWidth = 0.05f;
     float nose_relGutter = 0.02f;
     float ear_relLen = 0.15f;
-    float ear_relWidth = 0.075;   
+    float ear_relWidth = 0.075;
 
-    float square_width = min(rel_width*(float)win_width, 
+    float square_width = min(rel_width*(float)win_width,
       rel_height*(float)win_height);  //choose smaller of the two
 
     float total_width = square_width;
@@ -631,7 +633,7 @@ class HeadPlot {
       for (int Ix = 0; Ix < headImage.width; Ix++) {
         headImage.set(Ix, Iy, color(0, 0, 0, 0));
       }
-    }  
+    }
 
     //define the weighting factors to go from the electrode voltages
     //outward to the full the contour plot
@@ -643,7 +645,7 @@ class HeadPlot {
       //here is the better solution that is more physical.  It involves an iterative
       //solution, which could be really slow or could fail.  If it does poorly,
       //switch to using the algorithm above.
-      int n_wide_full = int(total_width); 
+      int n_wide_full = int(total_width);
       int n_tall_full = int(total_height);
       computePixelWeightingFactors_multiScale(n_wide_full, n_tall_full);
     }
@@ -658,7 +660,7 @@ class HeadPlot {
     //String default_fname = "electrode_positions_12elec_scalp9.txt";
     try {
       elec_relXY = loadTable(default_fname, "header,csv"); //try loading the default file
-    } 
+    }
     catch (NullPointerException e) {
     };
 
@@ -683,55 +685,55 @@ class HeadPlot {
   private Table createDefaultElectrodeLocations(String fname, float elec_relDiam) {
 
     //regular electrodes
-    float[][] elec_relXY = new float[16][2]; 
-    elec_relXY[0][0] = -0.125f;             
+    float[][] elec_relXY = new float[16][2];
+    elec_relXY[0][0] = -0.125f;
     elec_relXY[0][1] = -0.5f + elec_relDiam*(0.5f+0.2f); //FP1
-    elec_relXY[1][0] = -elec_relXY[0][0];  
+    elec_relXY[1][0] = -elec_relXY[0][0];
     elec_relXY[1][1] = elec_relXY[0][1]; //FP2
 
-    elec_relXY[2][0] = -0.2f;            
+    elec_relXY[2][0] = -0.2f;
     elec_relXY[2][1] = 0f; //C3
-    elec_relXY[3][0] = -elec_relXY[2][0];  
+    elec_relXY[3][0] = -elec_relXY[2][0];
     elec_relXY[3][1] = elec_relXY[2][1]; //C4
 
-    elec_relXY[4][0] = -0.3425f;            
+    elec_relXY[4][0] = -0.3425f;
     elec_relXY[4][1] = 0.27f; //T5 (aka P7)
-    elec_relXY[5][0] = -elec_relXY[4][0];  
+    elec_relXY[5][0] = -elec_relXY[4][0];
     elec_relXY[5][1] = elec_relXY[4][1]; //T6 (aka P8)
 
-    elec_relXY[6][0] = -0.125f;             
+    elec_relXY[6][0] = -0.125f;
     elec_relXY[6][1] = +0.5f - elec_relDiam*(0.5f+0.2f); //O1
-    elec_relXY[7][0] = -elec_relXY[6][0];  
+    elec_relXY[7][0] = -elec_relXY[6][0];
     elec_relXY[7][1] = elec_relXY[6][1];  //O2
 
-    elec_relXY[8][0] = elec_relXY[4][0];  
+    elec_relXY[8][0] = elec_relXY[4][0];
     elec_relXY[8][1] = -elec_relXY[4][1]; //F7
-    elec_relXY[9][0] = -elec_relXY[8][0];  
+    elec_relXY[9][0] = -elec_relXY[8][0];
     elec_relXY[9][1] = elec_relXY[8][1]; //F8
 
-    elec_relXY[10][0] = -0.18f;            
+    elec_relXY[10][0] = -0.18f;
     elec_relXY[10][1] = -0.15f; //C3
-    elec_relXY[11][0] = -elec_relXY[10][0];  
-    elec_relXY[11][1] = elec_relXY[10][1]; //C4    
+    elec_relXY[11][0] = -elec_relXY[10][0];
+    elec_relXY[11][1] = elec_relXY[10][1]; //C4
 
-    elec_relXY[12][0] =  -0.5f +elec_relDiam*(0.5f+0.15f);  
+    elec_relXY[12][0] =  -0.5f +elec_relDiam*(0.5f+0.15f);
     elec_relXY[12][1] = 0f; //T3 (aka T7?)
-    elec_relXY[13][0] = -elec_relXY[12][0];  
-    elec_relXY[13][1] = elec_relXY[12][1]; //T4 (aka T8)    
+    elec_relXY[13][0] = -elec_relXY[12][0];
+    elec_relXY[13][1] = elec_relXY[12][1]; //T4 (aka T8)
 
-    elec_relXY[14][0] = elec_relXY[10][0];   
+    elec_relXY[14][0] = elec_relXY[10][0];
     elec_relXY[14][1] = -elec_relXY[10][1]; //CP3
-    elec_relXY[15][0] = -elec_relXY[14][0];  
-    elec_relXY[15][1] = elec_relXY[14][1]; //CP4    
+    elec_relXY[15][0] = -elec_relXY[14][0];
+    elec_relXY[15][1] = elec_relXY[14][1]; //CP4
 
     //reference electrode
     float[] ref_elec_relXY = new float[2];
-    ref_elec_relXY[0] = 0.0f;    
-    ref_elec_relXY[1] = 0.0f;   
+    ref_elec_relXY[0] = 0.0f;
+    ref_elec_relXY[1] = 0.0f;
 
     //put it all into a table
     Table table_elec_relXY = new Table();
-    table_elec_relXY.addColumn("X", Table.FLOAT);  
+    table_elec_relXY.addColumn("X", Table.FLOAT);
     table_elec_relXY.addColumn("Y", Table.FLOAT);
     for (int I = 0; I < elec_relXY.length; I++) {
       table_elec_relXY.addRow();
@@ -746,9 +748,9 @@ class HeadPlot {
 
     //try writing it to a file
     String full_fname = "Data\\" + fname;
-    try { 
+    try {
       saveTable(table_elec_relXY, full_fname, "csv");
-    } 
+    }
     catch (NullPointerException e) {
       println("headPlot: createDefaultElectrodeLocations: could not write file to " + full_fname);
     };
@@ -757,7 +759,7 @@ class HeadPlot {
     return table_elec_relXY;
   } //end of method
 
-  //Here, we do a two-step solution to get the weighting factors.  
+  //Here, we do a two-step solution to get the weighting factors.
   //We do a coarse grid first.  We do our iterative solution on the coarse grid.
   //Then, we formulate the full resolution fine grid.  We interpolate these points
   //from the data resulting from the coarse grid.
@@ -766,13 +768,13 @@ class HeadPlot {
 
     //define the coarse grid data structures and pixel locations
     int decimation = 10;
-    int n_wide_small = n_wide_full / decimation + 1;  
+    int n_wide_small = n_wide_full / decimation + 1;
     int n_tall_small = n_tall_full / decimation + 1;
     float weightFac[][][] = new float[n_elec][n_wide_small][n_tall_small];
     int pixelAddress[][][] = new int[n_wide_small][n_tall_small][2];
-    for (int Ix=0; Ix<n_wide_small; Ix++) { 
-      for (int Iy=0; Iy<n_tall_small; Iy++) { 
-        pixelAddress[Ix][Iy][0] = Ix*decimation; 
+    for (int Ix=0; Ix<n_wide_small; Ix++) {
+      for (int Iy=0; Iy<n_tall_small; Iy++) {
+        pixelAddress[Ix][Iy][0] = Ix*decimation;
         pixelAddress[Ix][Iy][1] = Iy*decimation;
       };
     };
@@ -791,12 +793,12 @@ class HeadPlot {
       dx_frac = float(Ix - Ix_source*decimation)/float(decimation);
       for (int Iy=0; Iy < n_tall_full; Iy++) {
         int Iy_source = Iy/decimation;
-        dy_frac = float(Iy - Iy_source*decimation)/float(decimation);           
+        dy_frac = float(Iy - Iy_source*decimation)/float(decimation);
 
         for (int Ielec=0; Ielec<n_elec; Ielec++) {
           //println("    : Ielec = " + Ielec);
           if ((Ix_source < (n_wide_small-1)) && (Iy_source < (n_tall_small-1))) {
-            //normal 2-D interpolation    
+            //normal 2-D interpolation
             electrode_color_weightFac[Ielec][Ix][Iy] = interpolate2D(weightFac[Ielec], Ix_source, Iy_source, Ix_source+1, Iy_source+1, dx_frac, dy_frac);
           } else if (Ix_source < (n_wide_small-1)) {
             //1-D interpolation in X
@@ -806,7 +808,7 @@ class HeadPlot {
             //1-D interpolation in Y
             dx_frac = 0.0f;
             electrode_color_weightFac[Ielec][Ix][Iy] = interpolate2D(weightFac[Ielec], Ix_source, Iy_source, Ix_source, Iy_source+1, dx_frac, dy_frac);
-          } else { 
+          } else {
             //no interpolation, just use the last value
             electrode_color_weightFac[Ielec][Ix][Iy] = weightFac[Ielec][Ix_source][Iy_source];
           }  //close the if block selecting the interpolation configuration
@@ -816,9 +818,9 @@ class HeadPlot {
 
     //clean up the boundaries of our interpolated results to make the look nicer
     int pixelAddress_full[][][] = new int[n_wide_full][n_tall_full][2];
-    for (int Ix=0; Ix<n_wide_full; Ix++) { 
-      for (int Iy=0; Iy<n_tall_full; Iy++) { 
-        pixelAddress_full[Ix][Iy][0] = Ix; 
+    for (int Ix=0; Ix<n_wide_full; Ix++) {
+      for (int Iy=0; Iy<n_tall_full; Iy++) {
+        pixelAddress_full[Ix][Iy][0] = Ix;
         pixelAddress_full[Ix][Iy][1] = Iy;
       };
     };
@@ -838,7 +840,7 @@ class HeadPlot {
 
   //here is the simpler and more robust algorithm.  It's not necessarily physically real, though.
   //but, it will work every time.  So, if the other method fails, go with this one.
-  private void computePixelWeightingFactors() { 
+  private void computePixelWeightingFactors() {
     int n_elec = electrode_xy.length;
     float dist;
     int withinElecInd = -1;
@@ -879,7 +881,7 @@ class HeadPlot {
 
           //finalize the weight factor
           for (int Ielec=0; Ielec < n_elec; Ielec++) {
-            //is this pixel within an electrode? 
+            //is this pixel within an electrode?
             if (withinElecInd > -1) {
               //yes, it is within an electrode
               if (Ielec == withinElecInd) {
@@ -890,7 +892,7 @@ class HeadPlot {
                 electrode_color_weightFac[Ielec][Ix][Iy] = 0.0f;
               }
             } else {
-              //no, this pixel is not in an electrode.  So, use the distance-based weight factor, 
+              //no, this pixel is not in an electrode.  So, use the distance-based weight factor,
               //after dividing by the sum of the weight factors, resulting in an averaging operation
               electrode_color_weightFac[Ielec][Ix][Iy] = weight_fac[Ielec]/sum_weight_fac;
             }
@@ -967,7 +969,7 @@ class HeadPlot {
     } // close Ix
   } //close method
 
-  //find the closest legitimate weightFac          
+  //find the closest legitimate weightFac
   private float getClosestWeightFac(float weightFac[][], int Ix, int Iy) {
     int n_wide = weightFac.length;
     int n_tall = weightFac[0].length;
@@ -1100,8 +1102,8 @@ class HeadPlot {
       max_val = -1000.f; //init to a small val
 
       //copy current values
-      for (int Ix=0; Ix<n_wide; Ix++) { 
-        for (int Iy=0; Iy<n_tall; Iy++) { 
+      for (int Ix=0; Ix<n_wide; Ix++) {
+        for (int Iy=0; Iy<n_tall; Iy++) {
           prevVal[Ix][Iy]=pixelVal[Ielec][Ix][Iy];
         };
       };
@@ -1166,19 +1168,19 @@ class HeadPlot {
   //    int n_wide = toPixels.length;
   //    int n_tall = toPixels[0].length;
   //    int n_dir = toPixels[0][0].length;
-  //    
+  //
   //    //loop over each pixel
-  //    for (int Ix=0; Ix<n_wide;Ix++) { 
+  //    for (int Ix=0; Ix<n_wide;Ix++) {
   //      for (int Iy=0; Iy<n_tall;Iy++) {
-  //        
+  //
   //        //initialize
   //        numConnections[Ix][Iy]=0;
-  //        
+  //
   //        //loop through the four directions
   //        for (int Idir=0;Idir<n_dir;Idir++) {
   //          //is it a connection to another pixel (anything > -1 is a connection)
   //          if (toPixels[Ix][Iy][Idir][0] > -1) numConnections[Ix][Iy]++;
-  //          
+  //
   //          //is it a connection to an electrode?
   //          if (toElectrodes[Ix][Iy][Idir] > -1) numConnections[Ix][Iy]++;
   //        }
@@ -1203,23 +1205,23 @@ class HeadPlot {
         //loop over the four connections: left, right, up, down
         for (int Idirection = 0; Idirection < 4; Idirection++) {
 
-          Ix_try = -1; 
+          Ix_try = -1;
           Iy_try=-1; //nonsense values
           switch (Idirection) {
           case 0:
-            Ix_try = Ix-1; 
+            Ix_try = Ix-1;
             Iy_try = Iy; //left
             break;
           case 1:
-            Ix_try = Ix+1; 
+            Ix_try = Ix+1;
             Iy_try = Iy; //right
             break;
           case 2:
-            Ix_try = Ix; 
+            Ix_try = Ix;
             Iy_try = Iy-1; //up
             break;
           case 3:
-            Ix_try = Ix; 
+            Ix_try = Ix;
             Iy_try = Iy+1; //down
             break;
           }
@@ -1283,7 +1285,7 @@ class HeadPlot {
     for (int Ielec=0; Ielec<n_elec; Ielec++) {
       //find closest pixel
       float min_dist = 1.0e10;  //some huge number
-      int best_Ix=0, best_Iy=0; 
+      int best_Ix=0, best_Iy=0;
       for (int Iy=0; Iy < n_tall; Iy++) {
         //pixel_y = image_y + Iy;
         for (int Ix = 0; Ix < n_wide; Ix++) {
@@ -1325,7 +1327,7 @@ class HeadPlot {
     }
   }
 
-  private void convertVoltagesToHeadImage() { 
+  private void convertVoltagesToHeadImage() {
     for (int Iy=0; Iy < headImage.height; Iy++) {
       for (int Ix = 0; Ix < headImage.width; Ix++) {
         //is this pixel inside the head?
@@ -1354,7 +1356,7 @@ class HeadPlot {
         }
       }
     }
-  }    
+  }
 
   int count_call=0;
   private float calcPixelVoltage(int pixel_Ix, int pixel_Iy, float prev_val) {
@@ -1375,7 +1377,7 @@ class HeadPlot {
     }
 
     //smooth in time
-    if (smooth_fac > 0.0f) voltage = smooth_fac*prev_val + (1.0-smooth_fac)*voltage;     
+    if (smooth_fac > 0.0f) voltage = smooth_fac*prev_val + (1.0-smooth_fac)*voltage;
 
     return voltage;
   }
@@ -1394,14 +1396,14 @@ class HeadPlot {
 
     float intensity = constrain(abs(pixel_volt_uV), intense_min_uV, intense_max_uV);
     if (plot_color_as_log) {
-      intensity = map(log10(intensity), 
-        log10_intense_min_uV, 
-        log10_intense_max_uV, 
+      intensity = map(log10(intensity),
+        log10_intense_min_uV,
+        log10_intense_max_uV,
         0.0f, 1.0f);
     } else {
-      intensity = map(intensity, 
-        intense_min_uV, 
-        intense_max_uV, 
+      intensity = map(intensity,
+        intense_min_uV,
+        intense_max_uV,
         0.0f, 1.0f);
     }
 
@@ -1525,8 +1527,8 @@ class HeadPlot {
     ellipse(earL_x, earL_y, ear_width, ear_height); //little circle for the ear
     ellipse(earR_x, earR_y, ear_width, ear_height); //little circle for the ear
 
-    //draw head itself   
-    fill(255, 255, 255, 255);  //fill in a white head 
+    //draw head itself
+    fill(255, 255, 255, 255);  //fill in a white head
     strokeWeight(1);
     ellipse(circ_x, circ_y, circ_diam, circ_diam); //big circle for the head
     if (drawHeadAsContours) {

@@ -270,7 +270,7 @@ class ControlPanel {
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
-    networkingBoxLive = new NetworkingBox(x + w, (sdBox.y + sdBox.h), w, 150, globalPadding);
+    networkingBoxLive = new NetworkingBox(x + w, (sdBox.y + sdBox.h), w, 135, globalPadding);
     udpOptionsBox = new UDPOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
     oscOptionsBox = new OSCOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
     lslOptionsBox = new LSLOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
@@ -343,10 +343,11 @@ class ControlPanel {
     rect(0, 0, width, height);
 
     pushStyle();
-    fill(255);
     noStroke();
-    rect(0, 0, width, 32);
+    fill(255);
+    rect(0, 0, width, navBarHeight);
     popStyle();
+    image(logo, width/2 - (128/2) - 2, 6, 128, 22);
 
     // //background pane of control panel
     // fill(35,35,35);
@@ -445,7 +446,8 @@ class ControlPanel {
           lslOptionsBox.draw();
         }
 
-      } else if (eegDataSource == 1) { //when data source is from playback file
+      } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
+        hideAllBoxes(); //clear lists, so they don't appear
         playbackFileBox.draw();
         sdConverterBox.draw();
         //networkingBoxPlayback.draw();
@@ -465,7 +467,7 @@ class ControlPanel {
 
         cp5Popup.get(MenuList.class, "channelList").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-      } else if (eegDataSource == 2) {
+      } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
         //set other CP5 controllers invisible
         hideAllBoxes();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -642,7 +644,7 @@ class ControlPanel {
       }
 
       //active buttons during DATASOURCE_PLAYBACKFILE
-      if (eegDataSource == 1) {
+      if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         if (selectPlaybackFile.isMouseHere()) {
           selectPlaybackFile.setIsActive(true);
           selectPlaybackFile.wasPressed = true;
@@ -911,6 +913,12 @@ public void system_init(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
+      // } else if (eegDataSource == DATASOURCE_SYNTHETIC){
+      //   nchan = 16;
+      //   output("Starting system with 16 channels of synthetically generated data...");
+      //   initSystemButton.wasPressed = false;
+      //   initSystemButton.setIsActive(false);
+      //   return;
       } else if (eegDataSource == -1) {//if no data source selected
         output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
         initSystemButton.wasPressed = false;
@@ -926,8 +934,20 @@ public void system_init(){
           if (openBCI.isSerialPortOpen() == true) {
             openBCI.closeSerialPort();
           }
-        } else { // Must be Ganglion
-          nchan = 4;
+        // } else { // Must be Ganglion
+        //   nchan = 4;
+        //   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+        //   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
+        //   output("channel count set to " + str(nchan));
+        //   updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
+        //
+        //   println("ControlPanel — port is open: " + ganglion.isPortOpen());
+        //   if (ganglion.isPortOpen()) {
+        //     ganglion.disconnectBLE();
+        //   }
+        // }
+        } else { // Must be Synthetics, no?
+          nchan = 16;
           fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
           yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
           output("channel count set to " + str(nchan));
@@ -998,10 +1018,11 @@ class DataSourceBox {
     // sourceList.itemHeight = 28;
     // sourceList.padding = 9;
     sourceList.setPosition(x + padding, y + padding*2 + 13);
-    sourceList.addItem(makeItem("LIVE (from OpenBCI)                   >"));
-    sourceList.addItem(makeItem("PLAYBACK (from file)                  >"));
-    sourceList.addItem(makeItem("SYNTHETIC (algorithmic)           >"));
-    sourceList.addItem(makeItem("LIVE (from Ganglion)                   >"));
+    sourceList.addItem(makeItem("LIVE (from Cyton)"));
+    sourceList.addItem(makeItem("LIVE (from Ganglion)"));
+    sourceList.addItem(makeItem("PLAYBACK (from file)"));
+    sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));
+
     sourceList.scrollerLength = 10;
   }
 
@@ -1341,12 +1362,12 @@ class NetworkingBox{
     w = _w;
     h = _h;
     padding = _padding;
-    networkList = new MenuList(cp5, "networkList", w - padding*2, 100, f2);
+    networkList = new MenuList(cp5, "networkList", w - padding*2, 96, f2);
     networkList.setPosition(x + padding, y+padding+20);
     networkList.addItem(makeItem("None"));
-    networkList.addItem(makeItem("UDP                                             >"));
-    networkList.addItem(makeItem("OSC                                             >"));
-    networkList.addItem(makeItem("LabStreamingLayer (LSL)       >"));
+    networkList.addItem(makeItem("UDP"));
+    networkList.addItem(makeItem("OSC"));
+    networkList.addItem(makeItem("LabStreamingLayer (LSL)"));
     networkList.scrollerLength = 0;
     networkList.activeItem = 0;
   }
@@ -1926,10 +1947,10 @@ public class MenuList extends controlP5.Controller {
           updateMenu();
         }
         if (inside()) {
-          if(!drawHand){
-            cursor(HAND);
-            drawHand = true;
-          }
+          // if(!drawHand){
+          //   cursor(HAND);
+          //   drawHand = true;
+          // }
           menu.beginDraw();
           int len = -(itemHeight * items.size()) + getHeight();
           int ty;
@@ -1945,10 +1966,10 @@ public class MenuList extends controlP5.Controller {
           menu.endDraw();
         }
         else {
-          if(drawHand){
-            drawHand = false;
-            cursor(ARROW);
-          }
+          // if(drawHand){
+          //   drawHand = false;
+          //   cursor(ARROW);
+          // }
         }
         pg.image(menu, 0, 0);
       }
