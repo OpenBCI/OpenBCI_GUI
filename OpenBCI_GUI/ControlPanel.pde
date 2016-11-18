@@ -114,7 +114,7 @@ RadioConfigBox rcBox;
 //------------------------------------------------------------------------
 
 public void controlEvent(ControlEvent theEvent) {
-  
+
   if (theEvent.isFrom("serialListConfig")) {
      Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
      serialNameEMG = (String)bob.get("headline");
@@ -1418,6 +1418,18 @@ class RadioConfigBox {
     systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "STATUS", fontInfo.buttonLabel_size);
     autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
 
+    //Set help text
+    getChannel.setHelpText("Gets the current channel that your OpenBCI board and radio is on.");
+    setChannel.setHelpText("Sets the current channel that your OpenBCI board and radio are on.");
+    ovrChannel.setHelpText("Overrides the current channel of the OpenBCI radio, and sets it to that channel.");
+    getPoll.setHelpText("Gets the current POLL value.");
+    setPoll.setHelpText("Sets the current POLL value.");
+    defaultBAUD.setHelpText("Sets the BAUD rate to 115200.");
+    highBAUD.setHelpText("Sets the BAUD rate to 230400.");
+    autoscan.setHelpText("Scans through channels and finds a nearby OpenBCI board, then connects to that board.");
+    systemStatus.setHelpText("Gets the connection status of your OpenBCI board.");
+    autoconnectNoStartDefault.setHelpText("Automatically connects to a board with the DEFAULT (115200) BAUD");
+    autoconnectNoStartHigh.setHelpText("Automatically connects to a board with the HIGH (230400) BAUD");
 
   }
   public void update() {
