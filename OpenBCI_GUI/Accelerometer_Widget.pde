@@ -135,7 +135,7 @@ class Accelerometer_Widget{
 
   public void draw() {
     // verbosePrint("yeaaa");
-    if (true) {
+    if (drawAccel) {
       fill(boxBG);
       stroke(strokeColor);
       rect(x, y, w, h);

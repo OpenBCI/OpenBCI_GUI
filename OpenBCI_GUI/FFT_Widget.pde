@@ -29,7 +29,7 @@ CColor cp5_colors;
 
 class FFT_Widget {
 
-  int x, y, w, h; 
+  int x, y, w, h;
   int[] positioning = {0, 0, 0, 0}; // {x0, y0, w, h} retreived from corresponding container
   GPlot fft_plot; //create an fft plot for each active channel
   GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
@@ -40,21 +40,21 @@ class FFT_Widget {
   int parentContainer = 9; //which container is it mapped to by default?
 
   int[] lineColor = {
-    (int)color(129, 129, 129), 
-    (int)color(124, 75, 141), 
-    (int)color(54, 87, 158), 
-    (int)color(49, 113, 89), 
-    (int)color(221, 178, 13), 
-    (int)color(253, 94, 52), 
-    (int)color(224, 56, 45), 
-    (int)color(162, 82, 49), 
-    (int)color(129, 129, 129), 
-    (int)color(124, 75, 141), 
-    (int)color(54, 87, 158), 
-    (int)color(49, 113, 89), 
-    (int)color(221, 178, 13), 
-    (int)color(253, 94, 52), 
-    (int)color(224, 56, 45), 
+    (int)color(129, 129, 129),
+    (int)color(124, 75, 141),
+    (int)color(54, 87, 158),
+    (int)color(49, 113, 89),
+    (int)color(221, 178, 13),
+    (int)color(253, 94, 52),
+    (int)color(224, 56, 45),
+    (int)color(162, 82, 49),
+    (int)color(129, 129, 129),
+    (int)color(124, 75, 141),
+    (int)color(54, 87, 158),
+    (int)color(49, 113, 89),
+    (int)color(221, 178, 13),
+    (int)color(253, 94, 52),
+    (int)color(224, 56, 45),
     (int)color(162, 82, 49)
   };
 
@@ -112,7 +112,7 @@ class FFT_Widget {
     }
 
     //fill fft point arrays
-    for (int i = 0; i < fft_points.length; i++) {
+    for (int i = 0; i < fft_points.length; i++) { //loop through each channel
       for (int j = 0; j < FFT_indexLim; j++) {
         //GPoint temp = new GPoint(i, 15*noise(0.1*i));
         //println(i + " " + j);
@@ -432,7 +432,7 @@ void MaxFreq(int n) {
    * text, the given text of the item by default the same as name
    * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
    * color, the given color of the item, how to change, see below
-   * view, a customizable view, is of type CDrawable 
+   * view, a customizable view, is of type CDrawable
    */
 
   //for (int i =0; i < maxFreqList.size(); i++) {

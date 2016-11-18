@@ -91,6 +91,7 @@ class PulseSensor_Widget{
   }
 
   public void draw() {
+    if(drawPulse){
     // verbosePrint("yeaaa");
       fill(boxBG);
       stroke(strokeColor);
@@ -140,6 +141,7 @@ class PulseSensor_Widget{
       }
       endShape();
 
+    }
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -149,6 +151,7 @@ class PulseSensor_Widget{
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
+
 
     PulseWindowX = int(x)+5;
     PulseWindowY = int(y)-10+int(h)/2;

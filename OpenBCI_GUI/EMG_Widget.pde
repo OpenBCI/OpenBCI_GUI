@@ -140,6 +140,7 @@ class EMG_Widget extends Container {
       for (int i = 0; i < rowNum; i++) {
         for (int j = 0; j < colNum; j++) {
 
+
           if ( j < 2) {
             //tripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,true, motorWidgets[index]);
             //untripSliders[index] = new TripSlider(int(683 + (j * 103)), int(118 + (i * 86)), 0, int(3*colOffset/32), 2, tripSliders,false, motorWidgets[index]);
@@ -430,7 +431,6 @@ class EMG_Widget extends Container {
     y = (int)container[parentContainer].y;
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
-
   }
 
   void screenResized(PApplet _parent, int _winX, int _winY) {
@@ -441,7 +441,6 @@ class EMG_Widget extends Container {
     w = (int)container[parentContainer].w;
     h = (int)container[parentContainer].h;
 
-    //println("x: " + x + " y: " + y + " w: " + w + " h: " + h);
     configWidget.update(x,y,w,h);
 
     if(configButton.wasPressed){
@@ -508,11 +507,12 @@ class EMG_Widget extends Container {
       text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
 
       configButton.draw();
+
       if (!configButton.wasPressed) {
         cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false);
         cp5Serial.get(MenuList.class, "baudList").setVisible(false);
         float rx = x, ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
-        float scaleFactor = 1.0;
+        float scaleFactor = 3.0;
         float scaleFactorJaw = 1.5;
         int rowNum = 4;
         int colNum = motorWidgets.length / rowNum;
@@ -529,7 +529,6 @@ class EMG_Widget extends Container {
             currx = rx + j * colOffset;
             curry = ry + i * rowOffset; //never name variables on an empty stomach
             translate(currx, curry);
-
             //draw visualizer
             noFill();
             stroke(0, 255, 0);
@@ -564,11 +563,7 @@ class EMG_Widget extends Container {
         }
         popStyle();
       } else {
-        //println("Pressed");
-        //pushMatrix();
-        //translate(x,y);
         configWidget.draw();
-        //popMatrix();
       }
     } else {
       cp5Serial.setVisible(false);
@@ -670,6 +665,7 @@ class EMG_Widget extends Container {
         emg_widget.configWidget.connectToSerial.wasPressed = true;
         emg_widget.configWidget.connectToSerial.setIsActive(true);
       }
+    } else if (mouseX >= (x) && mouseX <= (x-20) && mouseY >= y && mouseY <= y+20) {
 
       //Close button stuff
       if(mouseX >= x && mouseX <= (x+20) && mouseY >= y + h/14 && mouseY <= y + h/14 + 20){
@@ -858,6 +854,7 @@ class EMG_Widget extends Container {
       //Available serial outputs
       serialListLocal = new MenuList(cp5Serial, "serialListConfig", int(w/1.74), int(h/2.88), f2);
       serialListLocal.setPosition(x - w/40.96, y + h/2.56);
+
       serialPortsLocal = Serial.list();
       for (int i = 0; i < serialPortsLocal.length; i++) {
         String tempPort = serialPortsLocal[(serialPortsLocal.length-1) - i]; //list backwards... because usually our port is at the bottom
@@ -903,13 +900,13 @@ class EMG_Widget extends Container {
       for (int i = 0; i < nchan; i++) {
         if (nchan == 8) chans[i] = new Button(int(x - w/13.65 + (i * (w-w/40.96)/nchan )), int(y + w/40.96), int((w-w/40.96)/nchan), 30, "CHAN " + (i+1), fontInfo.buttonLabel_size);
         else chans[i] = new Button(int(x - w/13.65 + (i * (w-w/40.96)/nchan )), int(y + h/69.12), int((w-w/40.96)/nchan), int(w/13.65), "" + (i+1), fontInfo.buttonLabel_size);
+
       }
 
       //Set fist channel as active
       chans[0].setIsActive(true);
       chans[0].wasPressed = true;
     }
-
 
     public void draw() {
       pushStyle();
@@ -945,6 +942,7 @@ class EMG_Widget extends Container {
       fill(50);
       text("Analog", x+w/20.48, y+h/5.49);
       text("Digital", x+w/4.55, y+h/5.49);
+
     }
 
     void drawThresholdSelection() {
@@ -959,6 +957,7 @@ class EMG_Widget extends Container {
       text("Dynamic", x+w/2.45, y+h/5.08);
       text("Trip Value     %" + (double)Math.round((parent[lastChan].tripThreshold * 100) * 10d) / 10d, x+w/1.64, y+h/5.49);
       text("Untrip Value %"+ (double)Math.round((parent[lastChan].untripThreshold * 100) * 10d) / 10d, x+w/1.64, y+h/4.43);
+
     }
 
     void drawMenuLists() {
@@ -984,6 +983,7 @@ class EMG_Widget extends Container {
       rect(x - w/40.96, y + h/1.19, (w-w/2.34), h/8.64);
       fill(255);
       text(localstring, x, y + h/1.13, ( w - w/2.28), h/13.82);
+
       this.last_message = localstring;
     }
 
@@ -993,6 +993,7 @@ class EMG_Widget extends Container {
       rect(x - w/40.96, y + h/1.19, (w-w/2.34), h/8.64);
       fill(255);
       text(this.last_message, x, y + h/1.13, ( w - w/2.28), h/13.82);
+
     }
   }
 

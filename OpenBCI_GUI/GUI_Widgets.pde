@@ -6,11 +6,10 @@ color bgColor = color(1, 18, 41);
 
 FFT_Widget fft_widget;
 OpenBionics_Widget ob_widget;
-EMG_Widget emg_widget;
-Accelerometer_Widget accelWidget;
-PulseSensor_Widget pulseWidget;
+
 
 void setupGUIWidgets() {
+  timeSeries_widget = new W_TimeSeries(this, 4);
   headPlot_widget = new HeadPlot_Widget(this);
   fft_widget = new FFT_Widget(this);
   ob_widget = new OpenBionics_Widget(this);
@@ -20,9 +19,11 @@ void setupGUIWidgets() {
   emg_widget = new EMG_Widget(nchan, openBCI.get_fs_Hz(), motor_container, this);
   accelWidget = new Accelerometer_Widget(this);
   pulseWidget = new PulseSensor_Widget(this);
+
 }
 
 void updateGUIWidgets() {
+  timeSeries_widget.update();
   headPlot_widget.update();
   fft_widget.update();
   ob_widget.update();
@@ -30,17 +31,19 @@ void updateGUIWidgets() {
   pulseWidget.update();
 }
 
+
+
 void drawGUIWidgets() {
-  //if () {
-  headPlot_widget.draw();
-  //fft_widget.draw();
-  ob_widget.draw();
-  accelWidget.draw();
-  pulseWidget.draw();
-  //}
+  if(drawTimeSeries){
+    timeSeries_widget.draw();
+    headPlot_widget.draw();
+    fft_widget.draw();
+    ob_widget.draw();
+  }
 }
 
 void GUIWidgets_screenResized(int _winX, int _winY) {
+  timeSeries_widget.screenResized(this, _winX, _winY);
   headPlot_widget.screenResized(this, _winX, _winY);
   fft_widget.screenResized(this, _winX, _winY);
   ob_widget.screenResized(this,_winX,_winY);
@@ -57,6 +60,7 @@ void GUIWidgets_mousePressed() {
 void GUIWidgets_mouseReleased() {
 
   emg_widget.mouseReleased();
+  timeSeries_widget.mouseReleased();
   headPlot_widget.mousePressed();
   fft_widget.mousePressed();
   ob_widget.mouseReleased();

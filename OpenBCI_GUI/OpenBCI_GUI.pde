@@ -53,10 +53,10 @@ boolean hasIntroAnimation = false;
 PImage cog;
 
 //choose where to get the EEG data
-final int DATASOURCE_GANGLION = 3;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
-final int DATASOURCE_PLAYBACKFILE = 1;  //playback from a pre-recorded text file
-final int DATASOURCE_SYNTHETIC = 2;  //Synthetically generated data
 final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
+final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
+final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
+final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
@@ -180,6 +180,18 @@ PFont f2;
 PFont f3;
 PFont f4;
 
+
+PFont h1; //large Montserrat
+PFont h2; //medium Montserrat
+PFont h3; //small Montserrat
+
+PFont p1; //medium Open Sans
+PFont p2; //small Open Sans
+
+EMG_Widget emg_widget;
+Accelerometer_Widget accelWidget;
+PulseSensor_Widget pulseWidget;
+
 boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
@@ -192,8 +204,6 @@ boolean synthesizeData = false;
 //                       Global Functions
 //------------------------------------------------------------------------
 
-//========================SETUP============================//
-//========================SETUP============================//
 //========================SETUP============================//
 void setup() {
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
@@ -217,6 +227,13 @@ void setup() {
   f2 = createFont("fonts/Raleway-Regular.otf", 15);
   f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
   f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
+
+  h1 = createFont("fonts/Montserrat-Regular.otf", 20);
+  h2 = createFont("fonts/Montserrat-Regular.otf", 16);
+  h3 = createFont("fonts/Montserrat-Regular.otf", 12);
+
+  p1 = createFont("fonts/OpenSans-Regular.ttf", 24);
+  p2 = createFont("fonts/OpenSans-Regular.ttf", 16);
 
   //V2 FONTS
   //f1 = createFont("fonts/Montserrat-SemiBold.otf", 16);
@@ -244,7 +261,8 @@ void setup() {
 
   // println("..." + this);
   // controlPanelCollapser = new Button(2, 2, 256, int((float)win_y*(0.03f)), "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
-  controlPanelCollapser = new Button(2, 2, 256, 26, "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
+  controlPanelCollapser = new Button(3, 3, 256, 26, "System Control Panel", fontInfo.buttonLabel_size);
+  controlPanelCollapser.setFont(h2, 16);
   controlPanelCollapser.setIsActive(true);
   controlPanelCollapser.makeDropdownButton(true);
 
@@ -380,7 +398,8 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 --");
 
   //initilize the GUI
-  initializeGUI();
+  initializeGUI(); //will soon be destroyed...
+  topNav = new TopNav();
   setupGUIWidgets(); //####
 
   //final config
@@ -482,6 +501,7 @@ void systemUpdate() { // for updating data values and variables
             //-----------------------------------------------------------
             //-----------------------------------------------------------
             gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
+            topNav.update();
             updateGUIWidgets(); //####
             //-----------------------------------------------------------
             //-----------------------------------------------------------
@@ -537,12 +557,14 @@ void systemUpdate() { // for updating data values and variables
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized) {
       GUIWidgets_screenResized(width, height);
+      topNav.screenHasBeenResized(width, height);
     }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
       println("systemUpdate: reinitializing GUI");
       timeOfGUIreinitialize = millis();
       initializeGUI();
+      GUIWidgets_screenResized(width, height);
       playground.x = width; //reset the x for the playground...
     }
 
@@ -598,14 +620,10 @@ void systemDraw() { //for drawing to the screen
       // println("attempting to draw GUI...");
       try {
         // println("GUI DRAW!!! " + millis());
-        pushStyle();
-        fill(255);
-        noStroke();
-        rect(0, 0, width, navBarHeight);
-        popStyle();
-
+        topNav.draw();
         //----------------------------
         gui.draw(); //draw the GUI
+
         //updateGUIWidgets(); //####
         drawGUIWidgets();
 
@@ -625,6 +643,9 @@ void systemDraw() { //for drawing to the screen
 
     playground.draw();
     emg_widget.draw();
+
+    accelWidget.draw();
+    pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
   } else { //systemMode != 10
@@ -719,15 +740,22 @@ void mouseOutOfBounds() {
     //  println("Window Y " + loc.y);
     //  println();
     //}
-    if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
-      MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
-      MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
-      MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
-      mouseX = 0;
-      mouseY = 0;
 
-      mouseInFrame = false;
+    try {
+      if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
+        MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
+        MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
+        MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
+        mouseX = 0;
+        mouseY = 0;
+        // println("Mouse out of bounds!");
+        mouseInFrame = false;
+      }
     }
+    catch (RuntimeException e) {
+      verbosePrint("Error happened while cursor left application...");
+    }
+
   } else {
     if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
       loc = getWindowLocation(P2D);

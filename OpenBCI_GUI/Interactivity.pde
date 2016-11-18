@@ -39,11 +39,41 @@ void parseKey(char val) {
 
   //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
   switch (val) {
+    case ' ':
+      stopButtonWasPressed();
+      break;
     case '.':
-      drawEMG = !drawEMG;
+
+      if(drawEMG){
+        drawAccel = true;
+        drawPulse = false;
+        drawHead = false;
+        drawEMG = false;
+      }
+      else if(drawAccel){
+        drawAccel = false;
+        drawPulse = true;
+        drawHead = false;
+        drawEMG = false;
+      }
+      else if(drawPulse){
+        drawAccel = false;
+        drawPulse = false;
+        drawHead = true;
+        drawEMG = false;
+      }
+      else if(drawHead){
+        drawAccel = false;
+        drawPulse = false;
+        drawHead = false;
+        drawEMG = true;
+      }
       break;
     case ',':
       drawContainers = !drawContainers;
+      break;
+    case '<':
+      drawTimeSeries = !drawTimeSeries;
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -418,9 +448,34 @@ void mousePressed() {
 
       //most of the logic below should be migrated into the GUI_Manager specific function above
 
-      if (gui.stopButton.isMouseHere()) {
-        gui.stopButton.setIsActive(true);
+      // if (gui.stopButton.isMouseHere()) {
+      //   gui.stopButton.setIsActive(true);
+      //   stopButtonWasPressed();
+      // }
+
+      if (topNav.stopButton.isMouseHere()) {
+        topNav.stopButton.setIsActive(true);
         stopButtonWasPressed();
+      }
+      if (topNav.filtBPButton.isMouseHere()) {
+        topNav.filtBPButton.setIsActive(true);
+        incrementFilterConfiguration();
+      }
+      if (topNav.filtNotchButton.isMouseHere()) {
+        topNav.filtNotchButton.setIsActive(true);
+        incrementNotchConfiguration();
+      }
+      if (topNav.intensityFactorButton.isMouseHere()) {
+        topNav.intensityFactorButton.setIsActive(true);
+        incrementVertScaleFactor();
+      }
+      if (topNav.questionMark.isMouseHere()) {
+        topNav.questionMark.setIsActive(true);
+        //toggle help/tutorial dropdown menu
+      }
+      if (topNav.layout.isMouseHere()) {
+        topNav.layout.setIsActive(true);
+        //toggle layout window to enable the selection of your container layout...
       }
 
       // //was the gui page button pressed?
@@ -462,47 +517,51 @@ void mousePressed() {
         // }
         // break;
       case GUI_Manager.GUI_PAGE_HEADPLOT_SETUP:
-        if (gui.intensityFactorButton.isMouseHere()) {
-          gui.intensityFactorButton.setIsActive(true);
-          gui.incrementVertScaleFactor();
-        }
-        if (gui.loglinPlotButton.isMouseHere()) {
-          gui.loglinPlotButton.setIsActive(true);
-          gui.set_vertScaleAsLog(!gui.vertScaleAsLog); //toggle the state
-        }
-        if (gui.filtBPButton.isMouseHere()) {
-          gui.filtBPButton.setIsActive(true);
-          incrementFilterConfiguration();
-        }
-        if (gui.filtNotchButton.isMouseHere()) {
-          gui.filtNotchButton.setIsActive(true);
-          incrementNotchConfiguration();
-        }
-        if (gui.smoothingButton.isMouseHere()) {
-          gui.smoothingButton.setIsActive(true);
-          incrementSmoothing();
-        }
-        if (gui.showPolarityButton.isMouseHere()) {
-          gui.showPolarityButton.setIsActive(true);
-          toggleShowPolarity();
-        }
-        if (gui.maxDisplayFreqButton.isMouseHere()) {
-          gui.maxDisplayFreqButton.setIsActive(true);
-          gui.incrementMaxDisplayFreq();
-        }
+        // if (gui.intensityFactorButton.isMouseHere()) {
+        //   topNav.intensityFactorButton.setIsActive(true);
+        //   incrementVertScaleFactor();
+        // }
+        // if (gui.loglinPlotButton.isMouseHere()) {
+        //   gui.loglinPlotButton.setIsActive(true);
+        //   gui.set_vertScaleAsLog(!gui.vertScaleAsLog); //toggle the state
+        // }
+        // if (gui.filtBPButton.isMouseHere()) {
+        //   gui.filtBPButton.setIsActive(true);
+        //   incrementFilterConfiguration();
+        // }
+        // if (gui.filtNotchButton.isMouseHere()) {
+        //   gui.filtNotchButton.setIsActive(true);
+        //   incrementNotchConfiguration();
+        // }
+        // if (gui.smoothingButton.isMouseHere()) {
+        //   gui.smoothingButton.setIsActive(true);
+        //   incrementSmoothing();
+        // }
+        // if (gui.showPolarityButton.isMouseHere()) {
+        //   gui.showPolarityButton.setIsActive(true);
+        //   toggleShowPolarity();
+        // }
+        // if (gui.maxDisplayFreqButton.isMouseHere()) {
+        //   gui.maxDisplayFreqButton.setIsActive(true);
+        //   gui.incrementMaxDisplayFreq();
+        // }
         break;
         //default:
       }
 
       //check the graphs
-      if (gui.isMouseOnFFT(mouseX, mouseY)) {
-        GraphDataPoint dataPoint = new GraphDataPoint();
-        gui.getFFTdataPoint(mouseX, mouseY, dataPoint);
-        println("OpenBCI_GUI: FFT data point: " + String.format("%4.2f", dataPoint.x) + " " + dataPoint.x_units + ", " + String.format("%4.2f", dataPoint.y) + " " + dataPoint.y_units);
-      } else if (gui.headPlot1.isPixelInsideHead(mouseX, mouseY)) {
-        //toggle the head plot contours
-        gui.headPlot1.drawHeadAsContours = !gui.headPlot1.drawHeadAsContours;
-      } else if (gui.isMouseOnMontage(mouseX, mouseY)) {
+      // if (gui.isMouseOnFFT(mouseX, mouseY)) {
+      //   GraphDataPoint dataPoint = new GraphDataPoint();
+      //   gui.getFFTdataPoint(mouseX, mouseY, dataPoint);
+      //   println("OpenBCI_GUI: FFT data point: " + String.format("%4.2f", dataPoint.x) + " " + dataPoint.x_units + ", " + String.format("%4.2f", dataPoint.y) + " " + dataPoint.y_units);
+      // } else if (gui.headPlot1.isPixelInsideHead(mouseX, mouseY)) {
+      //   //toggle the head plot contours
+      //   gui.headPlot1.drawHeadAsContours = !gui.headPlot1.drawHeadAsContours;
+      // } else if (gui.isMouseOnMontage(mouseX, mouseY)) {
+      //   //toggle the display of the montage values
+      //   gui.showMontageValues  = !gui.showMontageValues;
+      // }
+      if (gui.isMouseOnMontage(mouseX, mouseY)) {
         //toggle the display of the montage values
         gui.showMontageValues  = !gui.showMontageValues;
       }
@@ -556,8 +615,17 @@ void mousePressed() {
     playground.toggleWindow();
   }
 
+
   //if (accelWidget.isMouseHere()) {
   //  accelWidget.mousePressed();
+  //}
+
+  //if (accelWidget.isMouseInButton()) {
+  //  accelWidget.toggleWindow();
+  //}
+
+  //if (pulseWidget.isMouseHere()) {
+  //  pulseWidget.mousePressed();
   //}
 
   //if (accelWidget.isMouseInButton()) {
@@ -589,6 +657,7 @@ void mouseReleased() {
   if (systemMode >= 10) {
 
     gui.mouseReleased();
+    topNav.mouseReleased();
     GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
 
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
@@ -608,16 +677,16 @@ void mouseReleased() {
   }
 }
 
-void incrementSmoothing() {
-  smoothFac_ind++;
-  if (smoothFac_ind >= smoothFac.length) smoothFac_ind = 0;
-
-  //tell the GUI
-  gui.setSmoothFac(smoothFac[smoothFac_ind]);
-
-  //update the button
-  gui.smoothingButton.but_txt = "Smooth\n" + smoothFac[smoothFac_ind];
-}
+// void incrementSmoothing() {
+//   smoothFac_ind++;
+//   if (smoothFac_ind >= smoothFac.length) smoothFac_ind = 0;
+//
+//   //tell the GUI
+//   gui.setSmoothFac(smoothFac[smoothFac_ind]);
+//
+//   //update the button
+//   gui.smoothingButton.but_txt = "Smooth\n" + smoothFac[smoothFac_ind];
+// }
 
 //------------------------------------------------------------------------
 //                       Classes
@@ -651,16 +720,24 @@ class Button {
   color textColorNotActive = bgColor;
   color rectHighlight;
   boolean drawHand = false;
+  boolean isCircleButton = false;
   //boolean isMouseHere = false;
   boolean buttonHasStroke = true;
   boolean isActive = false;
   boolean isDropdownButton = false;
   boolean wasPressed = false;
   public String but_txt;
-  PFont buttonFont = f2;
+  boolean showHelpText;
+  boolean helpTimerStarted;
+  String helpText= "";
+  int mouseOverButtonStart = 0;
+  PFont buttonFont;
+  int buttonTextSize;
 
   public Button(int x, int y, int w, int h, String txt, int fontSize) {
     setup(x, y, w, h, txt);
+    buttonFont = f2;
+    buttonTextSize = fontSize;
     //println(PFont.list()); //see which fonts are available
     //font = createFont("SansSerif.plain",fontSize);
     //font = createFont("Lucida Sans Regular",fontSize);
@@ -676,9 +753,26 @@ class Button {
     setString(txt);
   }
 
+  public void setFont(PFont _newFont){
+    buttonFont = _newFont;
+  }
+
+  public void setFont(PFont _newFont, int _newTextSize){
+    buttonFont = _newFont;
+    buttonTextSize = _newTextSize;
+  }
+
+  public void setCircleButton(boolean _isCircleButton){
+    isCircleButton = _isCircleButton;
+  }
+
   public void setString(String txt) {
     but_txt = txt;
     //println("Button: setString: string = " + txt);
+  }
+
+  public void setHelpText(String _helpText){
+    helpText = _helpText;
   }
 
   public boolean isActive() {
@@ -695,9 +789,20 @@ class Button {
 
   public boolean isMouseHere() {
     if ( overRect(but_x, but_y, but_dx, but_dy) ) {
-      cursor(HAND);
+      // cursor(HAND);
+      if(!helpTimerStarted){
+        helpTimerStarted = true;
+        mouseOverButtonStart = millis();
+      } else {
+        if(millis()-mouseOverButtonStart >= 1000){
+          showHelpText = true;
+          // println("showww");
+        }
+      }
       return true;
     } else {
+      showHelpText = false;
+      helpTimerStarted = false;
       return false;
     }
   }
@@ -748,6 +853,10 @@ class Button {
   }
 
   public void draw() {
+    pushStyle();
+    // rectMode(CENTER);
+    ellipseMode(CORNER);
+
     //draw the button
     fill(getColor());
     if (buttonHasStroke) {
@@ -756,7 +865,11 @@ class Button {
       noStroke();
     }
     // noStroke();
-    rect(but_x, but_y, but_dx, but_dy);
+    if(isCircleButton){
+      ellipse(but_x, but_y, but_dx, but_dy);
+    } else{
+      rect(but_x, but_y, but_dx, but_dy);
+    }
 
     //draw the text
     if (isActive) {
@@ -766,7 +879,7 @@ class Button {
     }
     stroke(255);
     textFont(buttonFont);  //load f2 ... from control panel
-    textSize(12);
+    textSize(buttonTextSize);
     textAlign(CENTER, CENTER);
     textLeading(round(0.9*(textAscent()+textDescent())));
     //    int x1 = but_x+but_dx/2;
@@ -775,7 +888,23 @@ class Button {
     //no auto wrap
     x1 = but_x+but_dx/2;
     y1 = but_y+but_dy/2;
-    text(but_txt, x1, y1);
+
+    if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
+      text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
+    } else{
+      text(but_txt, x1, y1); //as long as font is not Montserrat
+    }
+
+    if(showHelpText && helpText != ""){
+      pushStyle();
+      textFont(p2);
+      stroke(31,69,110);
+      fill(255);
+      rect(but_x + (3*but_dx)/4, but_y + (3*but_dy)/4, 100, 50);
+      fill(31,69,110);
+      text(helpText, but_x + 50, but_y + 25);
+      popStyle();
+    }
 
     //draw open/close arrow if it's a dropdown button
     if (isDropdownButton) {
@@ -805,18 +934,21 @@ class Button {
       popStyle();
     }
 
-    if (true) {
-      if (!isMouseHere() && drawHand) {
-        cursor(ARROW);
-        drawHand = false;
-        //verbosePrint("don't draw hand");
-      }
-      //if cursor is over button change cursor icon to hand!
-      if (isMouseHere() && !drawHand) {
-        cursor(HAND);
-        drawHand = true;
-        //verbosePrint("draw hand");
-      }
-    }
-  }
+    //cursor = funny looking finger thing when hovering over buttons...
+    // if (true) {
+    //   if (!isMouseHere() && drawHand) {
+    //     cursor(ARROW);
+    //     drawHand = false;
+    //     //verbosePrint("don't draw hand");
+    //   }
+    //   //if cursor is over button change cursor icon to hand!
+    //   if (isMouseHere() && !drawHand) {
+    //     cursor(HAND);
+    //     drawHand = true;
+    //     //verbosePrint("draw hand");
+    //   }
+    // }
+
+    popStyle();
+  } //end of button draw
 };
