@@ -26,7 +26,7 @@ List vertScaleList = Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV");
 List smoothList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
 List filterList = Arrays.asList("Filtered", "Unfilt.");
 
-// CColor cp5_colors;
+CColor cp5_colors;
 
 class FFT_Widget {
 
@@ -446,57 +446,20 @@ class FFT_Widget {
     if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
       //println("fft_widget.mousePressed()");
     }
-
-    // if(cp5_FFT.getController("MaxFreq").isMouseOver()){
-    //   println("1");
-    //   // cp5_FFT.getController("MaxFreq").setMousePressed(true);
-    //   // cp5_FFT.get(ScrollableList.class, "MaxFreq").setMousePressed(true);
-    //   // rob3115.mousePress(InputEvent.BUTTON1_MASK);
-    //   // rob3115.mouseRelease(InputEvent.BUTTON1_MASK);
-    // }
-
-
-
   }
+
   void mouseReleased() {
     //called by GUI_Widgets.pde
     if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
       //println("fft_widget.mouseReleased()");
     }
   }
-  //void keyPressed() {
-  //  //called by GUI_Widgets.pde
-  //}
-  //void keyReleased() {
-  //  //called by GUI_Widgets.pde
-  //}
 };
 
 //triggered when there is an event in the MaxFreq. Dropdown
 void MaxFreq(int n) {
   /* request the selected item based on index n */
   println(n, cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(n));
-
-  /* here an item is stored as a Map  with the following key-value pairs:
-   * name, the given name of the item
-   * text, the given text of the item by default the same as name
-   * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
-   * color, the given color of the item, how to change, see below
-   * view, a customizable view, is of type CDrawable
-   */
-
-  //for (int i =0; i < maxFreqList.size(); i++) {
-  //  if (i != n) {
-  //    cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(i).put("color", cp5_colors);
-  //  }
-  //}
-
-  //CColor c = new CColor();
-  ////c.setBackground(color(1, 18, 41));
-  //c.setBackground(color(0, 255, 0));
-  //c.setCaptionLabel(color(255, 255, 255));
-  //cp5_FFT.get(ScrollableList.class, "MaxFreq").getItem(n).put("color", c);
-
   fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
 }
 
@@ -530,7 +493,3 @@ void UnfiltFilt(int n) {
     isFFTFiltered = false;
   }
 }
-
-// void mouseDragged(){
-//   fft_widget.mousePressed();
-// }

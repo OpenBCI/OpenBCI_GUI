@@ -1,4 +1,3 @@
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //    Widget
@@ -8,9 +7,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CColor cp5_colors; //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
 
 class Widget{
+
+  PApplet pApplet;
 
   int x, y, w, h;
   int parentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
@@ -19,28 +19,36 @@ class Widget{
 
   ArrayList<WidgetDropdown> dropdowns;
   ControlP5 cp5;
-  String widgetTitle = "Not Title Set";
+  String widgetTitle = "No Title Set";
   Button widgetSelector;
 
   int navH = 22;
   int dropdownWidth = 60;
 
+  CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
 
-  Widget(PApplet _parent){
-    cp5 = new ControlP5(_parent);
+  Widget(PApplet _parent, int _parentContainer){
+    pApplet = _parent;
+    cp5 = new ControlP5(pApplet);
+    dropdowns = new ArrayList<WidgetDropdown>();
     //setup dropdown menus
+
+    parentContainer = _parentContainer;
+    x = (int)container[parentContainer].x;
+    y = (int)container[parentContainer].y;
+    w = (int)container[parentContainer].w;
+    h = (int)container[parentContainer].h;
 
   }
 
-  void updateWidget(){
+  void update(){
     updateDropdowns();
 
   }
-  void drawWidget(){
-
+  void draw(){
     pushStyle();
     fill(255);
-    ; //draw white widget background
+    rect(x,y,w,h); //draw white widget background
 
     //draw nav bars and button bars
     fill(150, 150, 150);
@@ -66,17 +74,51 @@ class Widget{
 
   }
 
-  void addDropdown(String _id, String _title, String[] _items, int _defaultItem){
+  void addDropdown(String _id, String _title, List _items, int _defaultItem){
     WidgetDropdown dropdownToAdd = new WidgetDropdown(_id, _title, _items, _defaultItem);
     dropdowns.add(dropdownToAdd);
   }
 
   void setupDropdowns(){
+    dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
+    dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
+    dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
+    dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
+    dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
 
+    cp5.setColor(dropdownColors);
+    println("Setting up dropdowns...");
+    for(int i = 0; i < dropdowns.size(); i++){
+      int dropdownPos = dropdowns.size() - i;
+      println("dropdowns.get(i).id = " + dropdowns.get(i).id);
+      cp5.addScrollableList(dropdowns.get(i).id)
+        //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+        // .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), y + navH + 2) //float right
+        .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y + navH + 2) //float right
+        .setOpen(false)
+        .setColor(dropdownColors)
+        .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
+        .setScrollSensitivity(0.0)
+        .setBarHeight(navH-4)
+        .setItemHeight(navH-4)
+        .addItems(dropdowns.get(i).items) // used to be .addItems(maxFreqList)
+        // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+        ;
+
+      cp5.getController(dropdowns.get(i).id)
+        .getCaptionLabel()
+        .setText(dropdowns.get(i).returnDefaultAsString())
+        .setSize(12)
+        .getStyle()
+        //.setPaddingTop(4)
+        ;
+    }
   }
   void updateDropdowns(){
     //if a dropdown is open and mouseX/mouseY is outside of dropdown, then close it
+    // println("dropdowns.size() = " + dropdowns.size());
     for(int i = 0; i < dropdowns.size(); i++){
+      // println("i = " + i);
       if(cp5.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
         // println("1");
         if(!cp5.getController(dropdowns.get(i).id).isMouseOver()){
@@ -96,7 +138,9 @@ class Widget{
     fill(bgColor);
     for(int i = 0; i < dropdowns.size(); i++){
       int dropdownPos = dropdowns.size() - i;
-      text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
+      // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
+      text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
+
     }
 
     //drop backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
@@ -110,6 +154,22 @@ class Widget{
 
   }
   void screenResized(){
+    x = (int)container[parentContainer].x;
+    y = (int)container[parentContainer].y;
+    w = (int)container[parentContainer].w;
+    h = (int)container[parentContainer].h;
+
+
+    cp5.setGraphics(pApplet, 0, 0);
+    for(int i = 0; i < dropdowns.size(); i++){
+      int dropdownPos = dropdowns.size() - i;
+      cp5.getController(dropdowns.get(i).id)
+        //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+        .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y+2)) //float right
+        //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+        ;
+    }
+
 
   }
   void mousePressed(){
@@ -137,14 +197,17 @@ class WidgetDropdown{
 
   String id;
   String title;
-  String[] items;
+  // String[] items;
+  List<String> items;
   int defaultItem;
 
-  WidgetDropdown(String _id, String _title, String[] _items, int _defaultItem){
+  WidgetDropdown(String _id, String _title, List _items, int _defaultItem){
     id = _id;
     title = _title;
     // int dropdownSize = _items.length;
-    items = new String[_items.length];
+    // items = new String[_items.length];
+    items = _items;
+
     defaultItem = _defaultItem;
 
   }
@@ -168,6 +231,11 @@ class WidgetDropdown{
 
   void mouseReleased(){
 
+  }
+
+  String returnDefaultAsString(){
+    String _defaultItem = items.get(defaultItem);
+    return _defaultItem;
   }
 
 }

@@ -666,11 +666,6 @@ void systemDraw() { //for drawing to the screen
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
 
-    playground.draw();
-    emg_widget.draw();
-
-    accelWidget.draw();
-    pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
 

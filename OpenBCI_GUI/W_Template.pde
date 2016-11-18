@@ -9,49 +9,74 @@
 //
 ///////////////////////////////////////////////////
 
-W_Template widget_FFT;
+class W_template extends Widget {
 
-class W_Template extends Widget {
+  //to see the variables
 
+  W_template(PApplet _parent, int _parentContainer){
+    super(_parent, _parentContainer);
 
-  W_FFT(PApplet _parent){
-    super(_parent);
-
-    parentContainer = 9;
-
-    // String[] dropdownItems = {"20 Hz", "40 Hz", "60 Hz", "120 Hz"};
-    addDropdown("Dropdown1", "Dropdown 1", new String[]{"A", "B"}, 0);
-    addDropdown("Dropdown2", "Dropdown 2", new String[]{"C", "D", "E"}, 1);
-    addDropdown("Dropdown3", "Dropdown 3", new String[]{"F", "G", "H", "I"}, 3);
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+    addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
+    addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
+    addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+    setupDropdowns();
 
   }
 
   void update(){
+    super.update(); //calls the parent update() method of Widget
+
+    //put your code here
 
   }
 
   void draw(){
+    super.draw(); //calls the parent draw() method of Widget
+    //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+    //put your code here
+
+  }
+
+  void screenResized(){
+    super.screenResized(); //calls the parent screenResized() method of Widget
+
+    //put your code here
 
   }
 
   void mousePressed(){
+    super.mousePressed(); //calls the parent mousePressed() method of Widget
+
+    //put your code here
 
   }
 
   void mouseReleased(){
+    super.mouseReleased(); //calls the parent mouseReleased() method of Widget
 
-  }
+    //put your code here
 
-  void Dropdown1(int n){
-    println("Option " + (n+1) " selected..")
-  }
-
-  void Dropdown2(int n){
-    println("Option " + (n+1) " selected..")
-  }
-
-  void Dropdown3(int n){
-    println("Option " + (n+1) " selected..")
   }
 
 };
+
+//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+void Dropdown1(int n){
+  println("Item " + (n+1) + " selected from Dropdown 1");
+  if(n==0){
+    //do this
+  } else if(n==1){
+    //do this instead
+  }
+}
+
+void Dropdown2(int n){
+  println("Item " + (n+1) + " selected from Dropdown 2");
+}
+
+void Dropdown3(int n){
+  println("Item " + (n+1) + " selected from Dropdown 3");
+}

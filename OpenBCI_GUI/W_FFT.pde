@@ -10,35 +10,35 @@
 //
 ///////////////////////////////////////////////////
 
-W_FFT widget_FFT;
-
-class W_FFT extends Widget {
+class W_fft extends Widget {
 
 
-  W_FFT(PApplet _parent){
-    super(_parent);
+  W_fft(PApplet _parent, int _parentContainer){
+    super(_parent, _parentContainer);
 
     parentContainer = 9;
 
     // String[] dropdownItems = {"20 Hz", "40 Hz", "60 Hz", "120 Hz"};
-    addDropdown("MaxFreq", "Max Freq", new String[]{"20 Hz", "40 Hz", "60 Hz", "120 Hz"}, 2);
-    addDropdown("VertScale", "Vert Scale", new String[]{"10 uV", "50 uV", "100 uV", "1000 uV"}, 1);
-    addDropdown("LogLin", "Log/Lin", new String[]{"10 uV", "50 uV", "100 uV", "1000 uV"}, 0);
-    addDropdown("Smoothing", "Smooth Fac", new String[]{"10 uV", "50 uV", "100 uV", "1000 uV"}, 0);
-    addDropdown("UnfiltFilt", "Filters?", new String[]{"Filtered", "Unfilt."}, 0);
-
+    // addDropdown("MaxFreq", "Max Freq", new String[]{"20 Hz", "40 Hz", "60 Hz", "120 Hz"}, 2);
+    // addDropdown("VertScale", "Vert Scale", new String[]{"10 uV", "50 uV", "100 uV", "1000 uV"}, 1);
+    // addDropdown("LogLin", "Log/Lin", new String[]{"10 uV", "50 uV", "100 uV", "1000 uV"}, 0);
+    // addDropdown("Smoothing", "Smooth Fac", new String[]{"10 uV", "50 uV", "100 uV", "1000 uV"}, 0);
+    // addDropdown("UnfiltFilt", "Filters?", new String[]{"Filtered", "Unfilt."}, 0);
 
   }
 
   void update(){
 
   }
+
   void draw(){
 
   }
+
   void mousePressed(){
 
   }
+
   void mouseReleased(){
 
   }
