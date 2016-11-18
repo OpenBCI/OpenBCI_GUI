@@ -512,7 +512,7 @@ class EMG_Widget extends Container {
         cp5Serial.get(MenuList.class, "serialListConfig").setVisible(false);
         cp5Serial.get(MenuList.class, "baudList").setVisible(false);
         float rx = x, ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
-        float scaleFactor = 3.0;
+        float scaleFactor = 1.0;
         float scaleFactorJaw = 1.5;
         int rowNum = 4;
         int colNum = motorWidgets.length / rowNum;

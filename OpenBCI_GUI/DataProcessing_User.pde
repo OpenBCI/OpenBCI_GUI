@@ -5,7 +5,7 @@
 
 DataProcessing_User dataProcessing_user;
 boolean drawEMG = false; //if true... toggles on EEG_Processing_User.draw and toggles off the headplot in Gui_Manager
-boolean drawAccel = true;
+boolean drawAccel = false;
 boolean drawPulse = false;
 boolean drawFFT = true;
 boolean drawBionics = false;
