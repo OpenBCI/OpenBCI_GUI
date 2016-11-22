@@ -420,9 +420,11 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 --");
 
   //initilize the GUI
-  initializeGUI(); //will soon be destroyed...
+  initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
+  wm = new WidgetManager(this);
   topNav = new TopNav();
   setupGUIWidgets(); //####
+
 
   //final config
   // setBiasState(openBCI.isBiasAuto);
@@ -581,6 +583,7 @@ void systemUpdate() { // for updating data values and variables
     if (screenHasBeenResized) {
       GUIWidgets_screenResized(width, height);
       topNav.screenHasBeenResized(width, height);
+      wm.screenResized();
     }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
@@ -593,9 +596,12 @@ void systemUpdate() { // for updating data values and variables
 
     topNav.update();
     updateGUIWidgets(); //####
-    playground.update();
-  }
 
+    wm.update();
+    playground.update();
+    accelWidget.update();
+    pulseWidget.update();
+  }
   controlPanel.update();
 }
 
@@ -648,6 +654,8 @@ void systemDraw() { //for drawing to the screen
         topNav.draw();
         //----------------------------
         gui.draw(); //draw the GUI
+
+        wm.draw();
 
         //updateGUIWidgets(); //####
         drawGUIWidgets();

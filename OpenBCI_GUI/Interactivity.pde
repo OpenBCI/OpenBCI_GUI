@@ -75,6 +75,9 @@ void parseKey(char val) {
     case '<':
       drawTimeSeries = !drawTimeSeries;
       break;
+    case '>':
+      wmVisible = !wmVisible;
+      break;
     case '/':
       drawAccel = !drawAccel;
       drawPulse = !drawPulse;
@@ -446,6 +449,7 @@ void mousePressed() {
       gui.mousePressed(); // trigger mousePressed function in GUI
       topNav.mousePressed();
       GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+      wm.mousePressed();
 
       //check the graphs
       // if (gui.isMouseOnFFT(mouseX, mouseY)) {
@@ -556,6 +560,7 @@ void mouseReleased() {
     gui.mouseReleased();
     topNav.mouseReleased();
     GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+    wm.mousePressed();
 
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
   }

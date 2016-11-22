@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //    Widget
 //      the idea here is that the widget class takes care of all of the responsiveness/structural stuff in the bg so that it is very easy to create a new custom widget to add to the GUI
@@ -13,12 +13,13 @@ class Widget{
   PApplet pApplet;
 
   int x, y, w, h;
-  int parentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
-  boolean isVisible;
+  int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
+
+  boolean isActive;
 
   ArrayList<WidgetDropdown> dropdowns;
-  ControlP5 cp5;
+  ControlP5 cp5_widget;
   String widgetTitle = "No Title Set";
   Button widgetSelector;
 
@@ -27,17 +28,17 @@ class Widget{
 
   CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
 
-  Widget(PApplet _parent, int _parentContainer){
+  Widget(PApplet _parent, int _currentContainer){
     pApplet = _parent;
-    cp5 = new ControlP5(pApplet);
+    cp5_widget = new ControlP5(pApplet);
     dropdowns = new ArrayList<WidgetDropdown>();
     //setup dropdown menus
 
-    parentContainer = _parentContainer;
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
+    currentContainer = _currentContainer;
+    x = (int)container[currentContainer].x;
+    y = (int)container[currentContainer].y;
+    w = (int)container[currentContainer].w;
+    h = (int)container[currentContainer].h;
 
   }
 
@@ -65,7 +66,7 @@ class Widget{
     fill(bgColor);
     textAlign(LEFT, CENTER);
     textFont(h2);
-    textSize(18);
+    textSize(16);
     text(widgetTitle, x+navH+2, y+navH/2 - 2); //title of widget -- left
 
     drawDropdowns();
@@ -80,18 +81,21 @@ class Widget{
   }
 
   void setupDropdowns(){
+
+    cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
+
     dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
     dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
     dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
     dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
     dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
 
-    cp5.setColor(dropdownColors);
+    cp5_widget.setColor(dropdownColors);
     println("Setting up dropdowns...");
     for(int i = 0; i < dropdowns.size(); i++){
       int dropdownPos = dropdowns.size() - i;
       println("dropdowns.get(i).id = " + dropdowns.get(i).id);
-      cp5.addScrollableList(dropdowns.get(i).id)
+      cp5_widget.addScrollableList(dropdowns.get(i).id)
         //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
         // .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), y + navH + 2) //float right
         .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y + navH + 2) //float right
@@ -105,7 +109,7 @@ class Widget{
         // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
         ;
 
-      cp5.getController(dropdowns.get(i).id)
+      cp5_widget.getController(dropdowns.get(i).id)
         .getCaptionLabel()
         .setText(dropdowns.get(i).returnDefaultAsString())
         .setSize(12)
@@ -119,11 +123,11 @@ class Widget{
     // println("dropdowns.size() = " + dropdowns.size());
     for(int i = 0; i < dropdowns.size(); i++){
       // println("i = " + i);
-      if(cp5.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
+      if(cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
         // println("1");
-        if(!cp5.getController(dropdowns.get(i).id).isMouseOver()){
+        if(!cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
           // println("2");
-          cp5.get(ScrollableList.class, dropdowns.get(i).id).close();
+          cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).close();
         }
       }
     }
@@ -146,24 +150,24 @@ class Widget{
     //drop backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
     fill(200);
     for(int i = 0; i < dropdowns.size(); i++){
-      rect(cp5.getController(dropdowns.get(i).id).getPosition()[0] - 1, cp5.getController(dropdowns.get(i).id).getPosition()[1] - 1, dropdownWidth + 2, cp5.get(ScrollableList.class, dropdowns.get(i).id).getHeight()+2);
+      rect(cp5_widget.getController(dropdowns.get(i).id).getPosition()[0] - 1, cp5_widget.getController(dropdowns.get(i).id).getPosition()[1] - 1, dropdownWidth + 2, cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).getHeight()+2);
 
     }
 
-    cp5.draw();
+    cp5_widget.draw(); //this draws all cp5 elements... in this case, the scrollable lists that populate our dropdowns<>
 
   }
   void screenResized(){
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
+    x = (int)container[currentContainer].x;
+    y = (int)container[currentContainer].y;
+    w = (int)container[currentContainer].w;
+    h = (int)container[currentContainer].h;
 
 
-    cp5.setGraphics(pApplet, 0, 0);
+    cp5_widget.setGraphics(pApplet, 0, 0);
     for(int i = 0; i < dropdowns.size(); i++){
       int dropdownPos = dropdowns.size() - i;
-      cp5.getController(dropdowns.get(i).id)
+      cp5_widget.getController(dropdowns.get(i).id)
         //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
         .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y+2)) //float right
         //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
@@ -181,8 +185,8 @@ class Widget{
   void setTitle(String _widgetTitle){
     widgetTitle = _widgetTitle;
   }
-  void setContainer(int _parentContainer){
-    parentContainer = _parentContainer;
+  void setContainer(int _currentContainer){
+    currentContainer = _currentContainer;
   }
 
 };

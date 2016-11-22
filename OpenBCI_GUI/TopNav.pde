@@ -101,6 +101,12 @@ class TopNav {
   }
 
   void mouseReleased(){
+
+    if (layout.isMouseHere()) {
+      layout.setIsActive(true);
+      wm.printLayouts();
+    }
+
     stopButton.setIsActive(false);
 
     filtBPButton.setIsActive(false);

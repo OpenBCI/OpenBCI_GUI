@@ -1,20 +1,22 @@
 
 ////////////////////////////////////////////////////
 //
-// This class creates an FFT Plot separate from the old Gui_Manager
+//    W_template.pde (ie "Widget Template")
 //
-// Conor Russomanno, July 2016
+//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
+//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
 //
-// Requires the plotting library from grafica ... replacing the old gwoptics (which is now no longer supported)
+//    Created by: Conor Russomanno, November 2016
 //
-///////////////////////////////////////////////////
+///////////////////////////////////////////////////,
 
 class W_template extends Widget {
 
-  //to see the variables
+  //to see all core variables/methods of the Widget class, refer to Widget.pde
+  //put your custom variables here...
 
   W_template(PApplet _parent, int _parentContainer){
-    super(_parent, _parentContainer);
+    super(_parent, _parentContainer); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -22,42 +24,43 @@ class W_template extends Widget {
     addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
     addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+    setTitle("Widget Template");
     setupDropdowns();
 
   }
 
   void update(){
-    super.update(); //calls the parent update() method of Widget
+    super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-    //put your code here
+    //put your code here...
 
   }
 
   void draw(){
-    super.draw(); //calls the parent draw() method of Widget
+    super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
     //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-    //put your code here
+    //put your code here...
 
   }
 
   void screenResized(){
-    super.screenResized(); //calls the parent screenResized() method of Widget
+    super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-    //put your code here
+    //put your code here...
 
   }
 
   void mousePressed(){
-    super.mousePressed(); //calls the parent mousePressed() method of Widget
+    super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    //put your code here
+    //put your code here...
 
   }
 
   void mouseReleased(){
-    super.mouseReleased(); //calls the parent mouseReleased() method of Widget
+    super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-    //put your code here
+    //put your code here...
 
   }
 
