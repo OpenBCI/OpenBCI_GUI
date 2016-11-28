@@ -51,6 +51,7 @@ class OpenBCI_Ganglion {
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA= "t";
   final static String TCP_CMD_ERROR = "e"; //<>//
+  final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";
   final static String TCP_CMD_STATUS = "q";
@@ -193,6 +194,8 @@ class OpenBCI_Ganglion {
           connected = false;
         }
         break;
+      case 'i': // Impedance
+        processImpedance(msg);
       case 't': // Data
         processData(msg);
         break;
@@ -260,6 +263,17 @@ class OpenBCI_Ganglion {
         bleErrorCounter++;
         println("OpenBCI_Ganglion: parseMessage: data: bad");
       }
+    }
+  }
+
+  private void processImpedance(String msg) {
+    String[] list = split(msg, ',');
+    int channel = Integer.parseInt(list[1]);
+    int value = Integer.parseInt(list[2]);
+    if (channel == 0) {
+      println("Impedance for channel reference is " + value + " ohms.");
+    } else {
+      println("Impedance for channel " + channel + " is " + value + " ohms.");
     }
   }
 
