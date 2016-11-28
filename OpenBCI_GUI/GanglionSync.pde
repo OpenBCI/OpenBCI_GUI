@@ -100,7 +100,9 @@ class OpenBCI_Ganglion {
 
   private int tcpGanglionPort = 10996;
   private String tcpGanglionIP = "127.0.0.1";
+  private String tcpGanglionFull = tcpGanglionIP + ":" + tcpGanglionPort;
   private boolean tcpClientActive = false;
+  private int tcpTimeout = 1000;
 
   private final float fs_Hz = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
@@ -128,6 +130,7 @@ class OpenBCI_Ganglion {
 
   private boolean waitingForResponse = false;
   private boolean nodeProcessHandshakeComplete = false;
+  public boolean shouldStartNodeApp = false;
 
   // Getters
   public float get_fs_Hz() { return fs_Hz; }
@@ -141,16 +144,20 @@ class OpenBCI_Ganglion {
   OpenBCI_Ganglion(PApplet applet) {
     mainApplet = applet;
     // Is the node process running?
-    if (!getStatus()) { //<>//
-      // Initialize TCP connection
-      if (startTCPClient(applet)) {
-        println("Connection established with node server.");
-        getStatus();
-      } else {
-        println("Connection failed to establish with node server.");
-      }
+
+    if (getStatus()) {
+      println("Able to send status message, now waiting for response.");
     } else {
-      // We are now waitingForResponse
+      // We should try to start the node process because we were not able to
+      //  establish a connection with the node process.
+      println("Failure: Not able to send status message. Trying to start tcpConnection.");
+      startTCPClient(applet);
+      if (getStatus()) {
+        println("Connection established with node server.");
+      } else {
+        println("Connection failed to establish with node server. Recommend trying to launch application from data dir.");
+        shouldStartNodeApp = true;
+      }
     }
 
     // For storing data into
@@ -174,6 +181,19 @@ class OpenBCI_Ganglion {
       return true;
     } catch (Exception e) {
       println("startTCPClient: ConnectException: " + e);
+      return false;
+    }
+  }
+
+
+  /**
+   * Sends a status message to the node process.
+   */
+  public boolean getStatus() {
+    if(safeTCPWrite(TCP_CMD_STATUS + TCP_STOP)) {
+      waitingForResponse = true;
+      return true;
+    } else {
       return false;
     }
   }
@@ -348,17 +368,25 @@ class OpenBCI_Ganglion {
     }
   }
 
-  /**
-   * Sends a status message to the node process.
-   */
-  public boolean getStatus() {
-    if(safeTCPWrite(TCP_CMD_STATUS + TCP_STOP)) {
-      waitingForResponse = true;
-      return true;
-    } else {
-      return false;
-    }
-  }
+  // TODO: Figure out how to ping the server at localhost listening on port 10996
+  // /**
+  //  * Used to ping the local hub tcp server and check it's status.
+  //  */
+  // public boolean pingHub() {
+  //   boolean pingStat;
+  //
+  //   try {
+  //     println("GanglionSync: pingHub: trying... ");
+  //     pingStat = InetAddress.getByName("127.0.0.1:10996").isReachable(tcpTimeout);
+  //     print("GanglionSync: pingHub: ");
+  //     println(pingStat);
+  //     return pingStat;
+  //   }
+  //   catch(Exception E){
+  //     E.printStackTrace();
+  //     return false;
+  //   }
+  // }
 
   public boolean isSuccessCode(int c) {
     return c == RESP_SUCCESS;

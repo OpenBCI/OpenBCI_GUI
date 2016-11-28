@@ -33,7 +33,7 @@ import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
 import java.awt.MouseInfo;
 import java.lang.Process;
-
+// import java.net.InetAddress; // Used for ping, however not working right now.
 
 
 //------------------------------------------------------------------------
@@ -212,8 +212,12 @@ String nodeHubName = "Ganglion Hub";
 
 //========================SETUP============================//
 void setup() {
-  // Try to start the node hub
-  hubStart();
+  // Step 1: Prepare the exit handler that will attempt to close a running node
+  //  server on shut down of this app, the main process.
+  prepareExitHandler();
+
+  // Fire up Ganglion
+  ganglion = new OpenBCI_Ganglion(this);
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 6/25/2016"); //Welcome line.
@@ -297,10 +301,15 @@ void setup() {
 
   myPresentation = new Presentation();
 
-  // prepare the exit handler to stop the node hub process on shut down
-  prepareExitHandler();
+  // STEP 3: Check to see if this main process should try and start the node app
+  if (ganglion.shouldStartNodeApp) {
+    println("OpenBCI_GUI: Try to start the node app because tcp connection failed.");
+    // hubStart();
+  } else {
+    hubRunning = true;
+    println("OpenBCI_GUI: Will not try to start the node app because tcp connection established already.");
+  }
 
-  ganglion = new OpenBCI_Ganglion(this);
 }
 //====================== END-OF-SETUP ==========================//
 
@@ -334,15 +343,14 @@ private void prepareExitHandler () {
 }
 
 void hubStart() {
-  // Comment in below lines to kill hubs on start
-  //println("Attempting to kill running hub processes");
-  //killRunningProcessMac();
-  println("Launching application");
+  println("Launching application from local data dir");
   try {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
+      println("OpenBCI_GUI: hubStart: OS Detected: Windows");
       nodeHubby = launch(dataPath("Ganglion Hub.exe"));
     } else {
+      println("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("Ganglion Hub.app"));
     }
     hubRunning = true;
@@ -358,7 +366,7 @@ void hubStart() {
 boolean hubStop() {
   if (isWindows()) {
     println("Cannot stop windows processes yet");
-    return false; 
+    return false;
   } else {
     killRunningProcessMac();
     return true;
@@ -391,7 +399,7 @@ void killRunningProcessMac() {
         } catch (Exception err) {
           println("Failed to stop process: " + line + "\n\n");
           err.printStackTrace();
-        } 
+        }
       }
     }
     input.close();
