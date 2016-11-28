@@ -485,6 +485,23 @@ class OpenBCI_Ganglion {
       }
     }
   }
+
+  /**
+   * Used to start impedance testing. Impedances will arrive asynchronously!
+   */
+  public void impedanceStart() {
+    println("OpenBCI_Ganglion: impedance: START");
+    safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
+  }
+
+  /**
+   * Used to stop impedance testing. Some impedances may arrive after stop command
+   *  was sent by this function.
+   */
+  public void impedanceStop() {
+    println("OpenBCI_Ganglion: impedance: STOP");
+    safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
+  }
 };
 
 // Potential use for windows systems
