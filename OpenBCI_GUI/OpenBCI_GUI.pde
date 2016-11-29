@@ -304,6 +304,7 @@ void setup() {
   // STEP 3: Check to see if this main process should try and start the node app
   if (ganglion.shouldStartNodeApp) {
     println("OpenBCI_GUI: Try to start the node app because tcp connection failed.");
+    ganglion.getStatus();
     // hubStart();
   } else {
     hubRunning = true;

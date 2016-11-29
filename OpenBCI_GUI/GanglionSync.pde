@@ -473,18 +473,25 @@ class OpenBCI_Ganglion {
    * @returns {boolean} - True if able to write, false otherwise.
    */
   public boolean safeTCPWrite(String out) {
-    if (nodeProcessHandshakeComplete) { //<>//
-      try {
-        tcpClient.write(out);
-        return true;
-      } catch (NullPointerException e) {
-        println("Error: Attempted to TCP write with no server connection initialized");
-        return false;
-      }
-    } else {
-      println("Waiting on node handshake!");
+    try {
+      tcpClient.write(out);
+      return true;
+    } catch (NullPointerException e) {
+      println("Error: Attempted to TCP write with no server connection initialized");
       return false;
     }
+    // if (nodeProcessHandshakeComplete) { //<>//
+    //   try {
+    //     tcpClient.write(out);
+    //     return true;
+    //   } catch (NullPointerException e) {
+    //     println("Error: Attempted to TCP write with no server connection initialized");
+    //     return false;
+    //   }
+    // } else {
+    //   println("Waiting on node handshake!");
+    //   return false;
+    // }
   }
 
   private void printGanglion(String msg) {
