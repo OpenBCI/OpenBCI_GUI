@@ -28,6 +28,7 @@ void clientEvent(Client someClient) {
     if (posMatch.equals(ganglion.TCP_STOP)) {
       if (!ganglion.nodeProcessHandshakeComplete) {
         ganglion.nodeProcessHandshakeComplete = true;
+        ganglion.setHubIsRunning(true);
         println("GanglionSync: clientEvent: handshake complete");
       }
       // Get a string from the tcp buffer
@@ -146,13 +147,13 @@ class OpenBCI_Ganglion {
     mainApplet = applet;
 
     // Able to start tcpClient connection?
-    // if (startTCPClient(applet)) {
-    if (getStatus()) {
-      println("Able to start tcpClient connection -- YES");
-      hubRunning = true;
-    } else {
-      println("Able to start tcpClient connection -- NO");
-    }
+    startTCPClient(mainApplet);
+    // if (getStatus()) {
+    //   println("Able to start tcpClient connection -- YES");
+    //   hubRunning = true;
+    // } else {
+    //   println("Able to start tcpClient connection -- NO");
+    // }
 
     // if (getStatus()) {
     //   println("Able to send status message, now waiting for response.");
@@ -199,16 +200,24 @@ class OpenBCI_Ganglion {
    * Sends a status message to the node process.
    */
   public boolean getStatus() {
-    if(safeTCPWrite(TCP_CMD_STATUS + TCP_STOP)) {
+    try {
+      safeTCPWrite(TCP_CMD_STATUS + TCP_STOP);
       waitingForResponse = true;
       return true;
-    } else {
+    } catch (NullPointerException E) {
+      // The tcp client is not initalized, try now
+
       return false;
     }
   }
 
+  public void setHubIsRunning(boolean isRunning) {
+    hubRunning = isRunning;
+  }
+
   // Return true if the display needs to be updated for the BLE list
   public void parseMessage(String msg) {
+    println(msg);
     String[] list = split(msg, ',');
     switch (list[0].charAt(0)) {
       case 'c': // Connect
@@ -240,7 +249,7 @@ class OpenBCI_Ganglion {
       case 'q':
         if (waitingForResponse) {
           waitingForResponse = false;
-          output("Node process up!");
+          println("Node process up!");
         }
         println("OpenBCI_Ganglion: Status: 200");
         break;
@@ -295,6 +304,11 @@ class OpenBCI_Ganglion {
     }
   }
 
+  private void handleError(int code, String msg) {
+    output("Code " + code + "Error: " + msg);
+    println("Code " + code + "Error: " + msg);
+  }
+
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
     int channel = Integer.parseInt(list[1]);
@@ -319,6 +333,7 @@ class OpenBCI_Ganglion {
       case RESP_ERROR_SCAN_ALREADY_SCANNING:
         // Sent when a start send command is sent and the module is already
         //  scanning.
+        handleError(code, list[2]);
         break;
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
@@ -332,9 +347,11 @@ class OpenBCI_Ganglion {
         break;
       case RESP_ERROR_SCAN_COULD_NOT_START:
         // Sent when err on search start
+        handleError(code, list[2]);
         break;
       case RESP_ERROR_SCAN_COULD_NOT_STOP:
         // Send when err on search stop
+        handleError(code, list[2]);
         break;
       case RESP_STATUS_SCANNING:
         // Sent when after status action sent to node and module is searching
@@ -344,9 +361,11 @@ class OpenBCI_Ganglion {
         break;
       case RESP_ERROR_SCAN_NO_SCAN_TO_STOP:
         // Sent when a 'stop' action is sent to node and there is no scan to stop.
+        handleError(code, list[2]);
         break;
       case RESP_ERROR_UNKNOWN:
       default:
+        handleError(code, list[2]);
         break;
     }
   }
@@ -485,10 +504,11 @@ class OpenBCI_Ganglion {
     try {
       tcpClient.write(out);
       return true;
-    } catch (NullPointerException e) {
+    } catch (Exception e) {
       println("Error: Attempted to TCP write with no server connection initialized");
       return false;
     }
+    // return false;
     // if (nodeProcessHandshakeComplete) { //<>//
     //   try {
     //     tcpClient.write(out);

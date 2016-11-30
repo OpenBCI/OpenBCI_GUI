@@ -160,6 +160,7 @@ boolean isGettingPoll = false;
 boolean spaceFound = false;
 boolean scanningChannels = false;
 int hexToInt = 0;
+boolean dev = false;
 
 //for screen resizing
 boolean screenHasBeenResized = false;
@@ -214,9 +215,10 @@ void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
   //  server on shut down of this app, the main process.
   // prepareExitHandler();
-
-  // Fire up Ganglion
-  ganglion = new OpenBCI_Ganglion(this);
+  if (dev == false) {
+    hubStart();
+    prepareExitHandler();
+  }
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 6/25/2016"); //Welcome line.
@@ -298,9 +300,13 @@ void setup() {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
 
+  ganglion = new OpenBCI_Ganglion(this);
+
   myPresentation = new Presentation();
 
   // STEP 3: Check to see if this main process should try and start the node app
+  // Fire up Ganglion
+
   // if (ganglion.shouldStartNodeApp) {
   //   println("OpenBCI_GUI: Try to start the node app because tcp connection failed.");
   //   // hubStart();
@@ -309,6 +315,7 @@ void setup() {
   //   println("OpenBCI_GUI: Will not try to start the node app because tcp connection established already.");
   // }
 
+  println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
 }
 //====================== END-OF-SETUP ==========================//
 
