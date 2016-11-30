@@ -80,10 +80,11 @@ class HelpWidget {
     fill(color(0, 5, 11));
     rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
+    textFont(p2);
     textSize(14);
     fill(255);
     textAlign(LEFT, TOP);
-    text(currentOutput, padding*2, height - h + padding + 4);
+    text(currentOutput, padding*2, height - h + padding);
 
     //draw OpenBCI LOGO
     // image(logo, width - (128+padding*2), height - 26, 128, 22);

@@ -7,6 +7,9 @@ color bgColor = color(1, 18, 41);
 FFT_Widget fft_widget;
 OpenBionics_Widget ob_widget;
 
+W_TimeSeries timeSeries_widget;
+boolean drawTimeSeries = false;
+
 void setupGUIWidgets() {
   timeSeries_widget = new W_TimeSeries(this, 4);
   headPlot_widget = new HeadPlot_Widget(this);

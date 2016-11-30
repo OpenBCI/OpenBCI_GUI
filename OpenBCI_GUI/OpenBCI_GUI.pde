@@ -651,14 +651,15 @@ void systemDraw() { //for drawing to the screen
       // println("attempting to draw GUI...");
       try {
         // println("GUI DRAW!!! " + millis());
-        topNav.draw();
+
         //----------------------------
         gui.draw(); //draw the GUI
 
         wm.draw();
-
         //updateGUIWidgets(); //####
         drawGUIWidgets();
+
+        topNav.draw();
 
         //----------------------------
 

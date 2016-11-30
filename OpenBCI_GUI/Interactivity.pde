@@ -625,6 +625,8 @@ class Button {
   int mouseOverButtonStart = 0;
   PFont buttonFont;
   int buttonTextSize;
+  PImage bgImage;
+  boolean hasbgImage = false;
 
   public Button(int x, int y, int w, int h, String txt) {
     setup(x, y, w, h, txt);
@@ -649,6 +651,14 @@ class Button {
     but_dx = w;
     but_dy = h;
     setString(txt);
+  }
+
+  public void setX(int _but_x){
+    but_x = _but_x;
+  }
+
+  public void setY(int _but_y){
+    but_y = _but_y;
   }
 
   public void setFont(PFont _newFont){
@@ -680,6 +690,11 @@ class Button {
 
   public void setHelpText(String _helpText){
     helpText = _helpText;
+  }
+
+  public void setBackgroundImage(PImage _bgImage){
+    bgImage = _bgImage;
+    hasbgImage = true;
   }
 
   public boolean isActive() {
@@ -804,12 +819,17 @@ class Button {
     x1 = but_x+but_dx/2;
     y1 = but_y+but_dy/2;
 
-    if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
-      text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
-    } else if(buttonFont == p1 || buttonFont == p2){
-      text(but_txt, x1, y1 - 2); //for some reason y looks better at -2 w/ Open Sans
-    } else{
-      text(but_txt, x1, y1); //as long as font is not Montserrat
+    if(hasbgImage){ //if there is a bg image ... don't draw text
+      imageMode(CENTER);
+      image(bgImage, but_x + (but_dx/2), but_y + (but_dy/2), but_dx-8, but_dy-8);
+    } else{  //otherwise draw text
+      if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
+        text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
+      } else if(buttonFont == p1 || buttonFont == p2){
+        text(but_txt, x1, y1 - 2); //for some reason y looks better at -2 w/ Open Sans
+      } else{
+        text(but_txt, x1, y1); //as long as font is not Montserrat
+      }
     }
 
     //send some info to the HelpButtonText object to be drawn last in OpenBCI_GUI.pde ... we want to make sure it is render last, and on top of all other GUI stuff

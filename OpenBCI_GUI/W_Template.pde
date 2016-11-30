@@ -38,8 +38,14 @@ class W_template extends Widget {
 
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-    //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-    //put your code here...
+
+    //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+    pushStyle();
+    textFont(h1,24);
+    fill(bgColor);
+    textAlign(CENTER,CENTER);
+    text(widgetTitle, x + w/2, y + h/2);
+    popStyle();
 
   }
 

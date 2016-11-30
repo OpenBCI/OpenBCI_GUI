@@ -128,7 +128,7 @@ public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom("sourceList")) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
-    str = str.substring(0, str.length()-5);
+    // str = str.substring(0, str.length()-5);
     //output("Data Source = " + str);
     int newDataSource = int(theEvent.getValue());
     eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list

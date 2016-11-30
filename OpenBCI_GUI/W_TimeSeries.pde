@@ -9,8 +9,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
-W_TimeSeries timeSeries_widget;
-boolean drawTimeSeries = true;
+
 
 //Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
 color[] channelColors = {
