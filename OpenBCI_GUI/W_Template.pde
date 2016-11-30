@@ -15,8 +15,8 @@ class W_template extends Widget {
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
 
-  W_template(PApplet _parent, int _parentContainer){
-    super(_parent, _parentContainer); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+  W_template(PApplet _parent){
+    super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -24,7 +24,6 @@ class W_template extends Widget {
     addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
     addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
-    setTitle("Widget Template");
     setupDropdowns();
 
   }

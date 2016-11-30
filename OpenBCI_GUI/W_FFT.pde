@@ -14,9 +14,7 @@ class W_fft extends Widget {
 
 
   W_fft(PApplet _parent, int _currentContainer){
-    super(_parent, _currentContainer);
-
-    currentContainer = 9;
+    super(_parent);
 
     // String[] dropdownItems = {"20 Hz", "40 Hz", "60 Hz", "120 Hz"};
     // addDropdown("MaxFreq", "Max Freq", new String[]{"20 Hz", "40 Hz", "60 Hz", "120 Hz"}, 2);

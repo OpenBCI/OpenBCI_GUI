@@ -197,8 +197,8 @@ class LayoutSelector{
 
   LayoutSelector(){
     w = 180;
-    x = width - w;
-    y = navBarHeight * 2;
+    x = width - w - 3;
+    y = (navBarHeight * 2) - 3;
     margin = 6;
     b_w = (w - 5*margin)/4;
     b_h = b_w;
@@ -223,7 +223,8 @@ class LayoutSelector{
 
       // println("it's happening");
       stroke(31,69,110);
-      fill(229); //bg
+      // fill(229); //bg
+      fill(255); //bg
       rect(x, y, w, h);
 
       for(int i = 0; i < layoutOptions.size(); i++){
@@ -259,6 +260,7 @@ class LayoutSelector{
           output("Layout [" + layoutSelected + "] selected.");
           layoutOptions.get(i).setIsActive(false);
           toggleVisibility(); //shut layoutSelector if something is selected
+          wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
         }
       }
     }
@@ -267,7 +269,7 @@ class LayoutSelector{
   void screenResized(){
     //update position of outer box and buttons
     int oldX = x;
-    x = width - w;
+    x = width - w - 3;
     int dx = oldX - x;
     for(int i = 0; i < layoutOptions.size(); i++){
       layoutOptions.get(i).setX(layoutOptions.get(i).but_x - dx);
@@ -279,13 +281,18 @@ class LayoutSelector{
     isVisible = !isVisible;
     if(isVisible){
       //the very convoluted way of locking all controllers of a single controlP5 instance...
-      for(int i = 0; i < cp5_HeadPlot.getAll().size(); i++){
-        cp5_HeadPlot.getController(cp5_HeadPlot.getAll().get(i).getAddress()).lock();
+      for(int i = 0; i < wm.widgets.size(); i++){
+        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+          wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+        }
       }
+
     }else{
       //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-      for(int i = 0; i < cp5_HeadPlot.getAll().size(); i++){
-        cp5_HeadPlot.getController(cp5_HeadPlot.getAll().get(i).getAddress()).unlock();
+      for(int i = 0; i < wm.widgets.size(); i++){
+        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+          wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+        }
       }
     }
   }
@@ -345,7 +352,7 @@ class LayoutSelector{
     layoutOptions.add(tempLayoutButton);
 
     //THIRD ROW -- commented until more widgets are added
-    
+
     // h = margin*4 + b_h*3;
     // //setup button 9
     // tempLayoutButton = new Button(x + margin, y + 3*margin + 2*b_h, b_w, b_h, "N/A");

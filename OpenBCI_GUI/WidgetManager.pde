@@ -85,6 +85,7 @@ class WidgetManager{
   W_template w_template;
   W_template w_template2;
   W_template w_template3;
+  W_template w_template4;
   // W_fft w_fft;
   // W_timeSeries w_timeSeries;
 
@@ -98,22 +99,33 @@ class WidgetManager{
   WidgetManager(PApplet _this){
     widgets = new ArrayList<Widget>();
 
-    currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-    setupWidgets(_this);
     setupLayouts();
+    setupWidgets(_this);
+
+    currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
+    setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
 
   }
 
   void setupWidgets(PApplet _this){
-    w_template = new W_template(_this, 3);
-    w_template2 = new W_template(_this, 9);
-    w_template3 = new W_template(_this, 4);
+    w_template = new W_template(_this);
+    w_template.setTitle("Widget 1");
+
+    w_template2 = new W_template(_this);
+    w_template2.setTitle("Widget 2");
+
+    w_template3 = new W_template(_this);
+    w_template3.setTitle("Widget 3");
+
+    w_template4 = new W_template(_this);
+    w_template4.setTitle("Widget 4");
     // w_fft = new W_fft(_this, 9);
     // w_timeSeries = new W_timeSeries(_this, 4);
 
     widgets.add(w_template);
     widgets.add(w_template2);
     widgets.add(w_template3);
+    widgets.add(w_template4);
     // widgets.add(w_fft);
     // widgets.add(w_timeSeries);
   }
@@ -129,7 +141,9 @@ class WidgetManager{
   void draw(){
     if(wmVisible){
       for(int i = 0; i < widgets.size(); i++){
-        widgets.get(i).draw();
+        if(widgets.get(i).isActive){
+          widgets.get(i).draw();
+        }
       }
     }
   }
@@ -154,10 +168,11 @@ class WidgetManager{
 
   void setupLayouts(){
     //refer to [PUT_LINK_HERE] for layouts/numbers image
-    layouts.add(new Layout(new int[]{5}));
-    layouts.add(new Layout(new int[]{4,6}));
-    layouts.add(new Layout(new int[]{2,8}));
-    layouts.add(new Layout(new int[]{1,3,7,9}));
+    //note that the order you create/add these layouts matters... if you reorganize these, the LayoutSelector will be out of order
+    layouts.add(new Layout(new int[]{5})); //layout 1
+    layouts.add(new Layout(new int[]{1,3,7,9})); //layout 2
+    layouts.add(new Layout(new int[]{4,6})); //layout 3
+    layouts.add(new Layout(new int[]{2,8})); //etc.
     layouts.add(new Layout(new int[]{4,3,9}));
     layouts.add(new Layout(new int[]{1,7,6}));
     layouts.add(new Layout(new int[]{1,3,8}));
@@ -179,25 +194,102 @@ class WidgetManager{
   }
 
   void setNewContainerLayout(int _newLayout){
-    //find the "layout" that matchies the incoming "New Layout"
-    for(int i = 0; i < layouts.size(); i++){
-      if(_newLayout == i){
 
-        //use layouts[i] to construct the new Widget Layout of the GUI
-
-        //if (layouts[i].size() > numActiveWidgets)
-          //fill the new vacant containers w/ non-active widgets (pick in order of the list of all widgets)
-          //make those new widgets active as well
-        //else if(layouts.size() < numActiveWidgets)
-          //deactivate additional widgets
-        //else
-          //the new layout has the same number of active widgets ... just need to remap
-
-        //map new containers to new active widgets ... (these numbers should match now, based on above logic)
-        //map x/y/w/h values of new Layout containers onto corresponding active widgets
-
+    //find out how many active widgets we need...
+    int numActiveWidgetsNeeded = layouts.get(_newLayout).myContainers.length;
+    //calculate the number of current active widgets & keep track of which widgets are active
+    int numActiveWidgets = 0;
+    // ArrayList<int> activeWidgets = new ArrayList<int>();
+    for(int i = 0; i < widgets.size(); i++){
+      if(widgets.get(i).isActive){
+        numActiveWidgets++; //increment numActiveWidgets
+        // activeWidgets.add(i); //keep track of the active widget
       }
     }
+
+    if(numActiveWidgets > numActiveWidgetsNeeded){ //if there are more active widgets than needed
+      //shut some down
+      int numToShutDown = numActiveWidgets - numActiveWidgetsNeeded;
+      int counter = 0;
+      println("Powering " + numToShutDown + " widgets down, and remapping.");
+      for(int i = widgets.size()-1; i >= 0; i--){
+        if(widgets.get(i).isActive && counter < numToShutDown){
+          println("Deactivating widget [" + i + "]");
+          widgets.get(i).isActive = false;
+          counter++;
+        }
+      }
+
+      //and map active widgets
+      counter = 0;
+      for(int i = 0; i < widgets.size(); i++){
+        if(widgets.get(i).isActive){
+          widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
+          counter++;
+        }
+      }
+
+    } else if(numActiveWidgetsNeeded > numActiveWidgets){ //if there are less active widgets than needed
+      //power some up
+      int numToPowerUp = numActiveWidgetsNeeded - numActiveWidgets;
+      int counter = 0;
+      println("Powering " + numToPowerUp + " widgets up, and remapping.");
+      for(int i = 0; i < widgets.size(); i++){
+        if(!widgets.get(i).isActive && counter < numToPowerUp){
+          println("Activating widget [" + i + "]");
+          widgets.get(i).isActive = true;
+          counter++;
+        }
+      }
+
+      //and map active widgets
+      counter = 0;
+      for(int i = 0; i < widgets.size(); i++){
+        if(widgets.get(i).isActive){
+          widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
+          counter++;
+        }
+      }
+
+    } else{ //if there are the same mount
+      //simply remap active widgets
+      println("Remapping widgets.");
+      int counter = 0;
+      for(int i = 0; i < widgets.size(); i++){
+        if(widgets.get(i).isActive){
+          widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
+          counter++;
+        }
+      }
+
+    }
+
+    //for however many containers there are in the new layout
+
+    // for(int i = 0; i < layouts.get(_newLayout).myContainers.length; i++){
+    //   //map the xywh coordinates of widget i to container i
+    //   println("yep " + i);
+    //   widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[i]);
+    // }
+
+    // for(int i = 0; i < layouts.size(); i++){
+    //   if(_newLayout == i){
+    //
+    //     //use layouts[i] to construct the new Widget Layout of the GUI
+    //
+    //     //if (layouts[i].size() > numActiveWidgets)
+    //       //fill the new vacant containers w/ non-active widgets (pick in order of the list of all widgets)
+    //       //make those new widgets active as well
+    //     //else if(layouts.size() < numActiveWidgets)
+    //       //deactivate additional widgets
+    //     //else
+    //       //the new layout has the same number of active widgets ... just need to remap
+    //
+    //     //map new containers to new active widgets ... (these numbers should match now, based on above logic)
+    //     //map x/y/w/h values of new Layout containers onto corresponding active widgets
+    //
+    //   }
+    // }
   }
 };
 
@@ -205,12 +297,15 @@ class WidgetManager{
 class Layout{
 
   Container[] myContainers;
+  int[] containerInts;
 
   Layout(int[] _myContainers){ //when creating a new layout, you pass in the integer #s of the containers you want as part of the layout ... so if I pass in the array {5}, my layout is 1 container that takes up the whole GUI body
     //constructor stuff
     myContainers = new Container[_myContainers.length]; //make the myContainers array equal to the size of the incoming array of ints
+    containerInts = new int[_myContainers.length];
     for(int i = 0; i < _myContainers.length; i++){
       myContainers[i] = container[_myContainers[i]];
+      containerInts[i] = _myContainers[i];
     }
   }
 

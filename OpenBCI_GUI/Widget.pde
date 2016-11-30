@@ -16,7 +16,7 @@ class Widget{
 
   int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
-  boolean isActive;
+  boolean isActive = false;
 
   ArrayList<WidgetDropdown> dropdowns;
   ControlP5 cp5_widget;
@@ -28,17 +28,14 @@ class Widget{
 
   CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
 
-  Widget(PApplet _parent, int _currentContainer){
+  Widget(PApplet _parent){
     pApplet = _parent;
     cp5_widget = new ControlP5(pApplet);
     dropdowns = new ArrayList<WidgetDropdown>();
     //setup dropdown menus
 
-    currentContainer = _currentContainer;
-    x = (int)container[currentContainer].x;
-    y = (int)container[currentContainer].y;
-    w = (int)container[currentContainer].w;
-    h = (int)container[currentContainer].h;
+    currentContainer = 5; //central container by default
+    mapToCurrentContainer();
 
   }
 
@@ -158,23 +155,7 @@ class Widget{
 
   }
   void screenResized(){
-    x = (int)container[currentContainer].x;
-    y = (int)container[currentContainer].y;
-    w = (int)container[currentContainer].w;
-    h = (int)container[currentContainer].h;
-
-
-    cp5_widget.setGraphics(pApplet, 0, 0);
-    for(int i = 0; i < dropdowns.size(); i++){
-      int dropdownPos = dropdowns.size() - i;
-      cp5_widget.getController(dropdowns.get(i).id)
-        //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-        .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y+2)) //float right
-        //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-        ;
-    }
-
-
+    mapToCurrentContainer();
   }
   void mousePressed(){
 
@@ -187,8 +168,26 @@ class Widget{
   }
   void setContainer(int _currentContainer){
     currentContainer = _currentContainer;
+    mapToCurrentContainer();
+
   }
 
+  void mapToCurrentContainer(){
+    x = (int)container[currentContainer].x;
+    y = (int)container[currentContainer].y;
+    w = (int)container[currentContainer].w;
+    h = (int)container[currentContainer].h;
+
+    cp5_widget.setGraphics(pApplet, 0, 0);
+    for(int i = 0; i < dropdowns.size(); i++){
+      int dropdownPos = dropdowns.size() - i;
+      cp5_widget.getController(dropdowns.get(i).id)
+        //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+        .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y+2)) //float right
+        //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
+        ;
+    }
+  }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
