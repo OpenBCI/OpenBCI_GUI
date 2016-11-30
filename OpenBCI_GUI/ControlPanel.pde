@@ -328,7 +328,7 @@ class ControlPanel {
 
     if (!calledForBLEList) {
       calledForBLEList = true;
-      if (hubRunning) {
+      if (ganglion.isHubRunning()) {
         ganglion.searchDeviceStart();
       }
     }

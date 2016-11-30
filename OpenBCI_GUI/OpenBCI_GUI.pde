@@ -75,7 +75,6 @@ int openBCI_baud = 115200; //baud rate from the Arduino
 
 OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
 String ganglion_portName = "N/A";
-boolean hubRunning = false;
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from openBCI...first EEG channels, then aux channels
@@ -214,7 +213,7 @@ String nodeHubName = "Ganglion Hub";
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
   //  server on shut down of this app, the main process.
-  prepareExitHandler();
+  // prepareExitHandler();
 
   // Fire up Ganglion
   ganglion = new OpenBCI_Ganglion(this);
@@ -302,13 +301,13 @@ void setup() {
   myPresentation = new Presentation();
 
   // STEP 3: Check to see if this main process should try and start the node app
-  if (ganglion.shouldStartNodeApp) {
-    println("OpenBCI_GUI: Try to start the node app because tcp connection failed.");
-    // hubStart();
-  } else {
-    hubRunning = true;
-    println("OpenBCI_GUI: Will not try to start the node app because tcp connection established already.");
-  }
+  // if (ganglion.shouldStartNodeApp) {
+  //   println("OpenBCI_GUI: Try to start the node app because tcp connection failed.");
+  //   // hubStart();
+  // } else {
+  //   hubRunning = true;
+  //   println("OpenBCI_GUI: Will not try to start the node app because tcp connection established already.");
+  // }
 
 }
 //====================== END-OF-SETUP ==========================//
@@ -353,10 +352,10 @@ void hubStart() {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("Ganglion Hub.app"));
     }
-    hubRunning = true;
+    // hubRunning = true;
   } catch (Exception e) {
     println("hubStart: " + e);
-    hubRunning = false;
+    // hubRunning = false;
   }
 }
 

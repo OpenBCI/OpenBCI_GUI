@@ -124,7 +124,7 @@ class OpenBCI_Ganglion {
   public int maxNumberOfDevices = 10;
   public String[] deviceList = new String[0];
   public boolean deviceListUpdated = false;
-
+  private boolean hubRunning = false;
   public char[] tcpBuffer = new char[1024];
   public int tcpBufferPositon = 0;
 
@@ -136,6 +136,7 @@ class OpenBCI_Ganglion {
   public float get_fs_Hz() { return fs_Hz; }
   public boolean isPortOpen() { return portIsOpen; }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
+  public boolean isHubRunning() { return hubRunning; }
 
   private PApplet mainApplet;
 
@@ -143,22 +144,30 @@ class OpenBCI_Ganglion {
   OpenBCI_Ganglion() {};  //only use this if you simply want access to some of the constants
   OpenBCI_Ganglion(PApplet applet) {
     mainApplet = applet;
-    // Is the node process running?
 
+    // Able to start tcpClient connection?
+    // if (startTCPClient(applet)) {
     if (getStatus()) {
-      println("Able to send status message, now waiting for response.");
+      println("Able to start tcpClient connection -- YES");
+      hubRunning = true;
     } else {
-      // We should try to start the node process because we were not able to
-      //  establish a connection with the node process.
-      println("Failure: Not able to send status message. Trying to start tcpConnection.");
-      startTCPClient(applet);
-      if (getStatus()) {
-        println("Connection established with node server.");
-      } else {
-        println("Connection failed to establish with node server. Recommend trying to launch application from data dir.");
-        shouldStartNodeApp = true;
-      }
+      println("Able to start tcpClient connection -- NO");
     }
+
+    // if (getStatus()) {
+    //   println("Able to send status message, now waiting for response.");
+    // } else {
+    //   // We should try to start the node process because we were not able to
+    //   //  establish a connection with the node process.
+    //   println("Failure: Not able to send status message. Trying to start tcpConnection.");
+    //   startTCPClient(applet);
+    //   if (getStatus()) {
+    //     println("Connection established with node server.");
+    //   } else {
+    //     println("Connection failed to establish with node server. Recommend trying to launch application from data dir.");
+    //     shouldStartNodeApp = true;
+    //   }
+    // }
 
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
