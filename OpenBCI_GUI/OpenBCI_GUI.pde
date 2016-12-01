@@ -612,8 +612,6 @@ void systemUpdate() { // for updating data values and variables
     // updateGUIWidgets(); //####
     wm.update();
     playground.update();
-    accelWidget.update();
-    pulseWidget.update();
   }
   controlPanel.update();
 }
