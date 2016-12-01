@@ -2,74 +2,6 @@
 int navHeight = 22;
 color bgColor = color(1, 18, 41);
 
-FFT_Widget fft_widget;
-OpenBionics_Widget ob_widget;
-
-TimeSeries timeSeries_widget;
-boolean drawTimeSeries = false;
-
-void setupGUIWidgets() {
-  timeSeries_widget = new TimeSeries(this, 4);
-  headPlot_widget = new HeadPlot_Widget(this);
-  fft_widget = new FFT_Widget(this);
-  ob_widget = new OpenBionics_Widget(this);
-  Container motor_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
-  Container accel_container = new Container(0.6 * width, 0.07 * height, 0.4 * width, 0.45 * height, 0);
-
-  emg_widget = new EMG_Widget(nchan, openBCI.get_fs_Hz(), motor_container, this);
-
-}
-
-void updateGUIWidgets() {
-  timeSeries_widget.update();
-  headPlot_widget.update();
-  fft_widget.update();
-  ob_widget.update();
-
-  // wm.update();
-}
-
-void drawGUIWidgets() {
-  if(drawTimeSeries){
-    timeSeries_widget.draw();
-    headPlot_widget.draw();
-    fft_widget.draw();
-    ob_widget.draw();
-  }
-
-  // wm.draw();
-}
-
-void GUIWidgets_screenResized(int _winX, int _winY) {
-  timeSeries_widget.screenResized(this, _winX, _winY);
-  headPlot_widget.screenResized(this, _winX, _winY);
-  fft_widget.screenResized(this, _winX, _winY);
-  ob_widget.screenResized(this,_winX,_winY);
-  emg_widget.screenResized(this, _winX, _winY);
-
-  // wm.screenResized();
-}
-
-void GUIWidgets_mousePressed() {
-  timeSeries_widget.mousePressed();
-  headPlot_widget.mousePressed();
-  fft_widget.mousePressed();
-  emg_widget.mousePressed();
-  ob_widget.mousePressed();
-
-  // wm.mousePressed();
-}
-
-void GUIWidgets_mouseReleased() {
-  timeSeries_widget.mouseReleased();
-  headPlot_widget.mouseReleased();
-  fft_widget.mouseReleased();
-  emg_widget.mouseReleased();
-  ob_widget.mouseReleased();
-
-  // wm.mouseReleased();
-}
-
 //========================================================================================
 //=================              ADD NEW WIDGETS HERE            =========================
 //========================================================================================
@@ -123,6 +55,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_template5 = new W_template(_this);
   w_template5.setTitle("Widget 5");
   addWidget(w_template5, w);
+
 }
 
 //========================================================================================
@@ -131,6 +64,20 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
 
 WidgetManager wm;
 boolean wmVisible = true;
+CColor cp5_colors;
+
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
+color[] channelColors = {
+  color(129, 129, 129),
+  color(124, 75, 141),
+  color(54, 87, 158),
+  color(49, 113, 89),
+  color(221, 178, 13),
+  color(253, 94, 52),
+  color(224, 56, 45),
+  color(162, 82, 49)
+};
+
 
 class WidgetManager{
 
@@ -141,6 +88,9 @@ class WidgetManager{
   //Variables for
   int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
   ArrayList<Layout> layouts = new ArrayList<Layout>();  //this holds all of the different layouts ...
+
+  private boolean visible = true;
+  private boolean updating = true;
 
   WidgetManager(PApplet _this){
     widgets = new ArrayList<Widget>();
@@ -155,7 +105,19 @@ class WidgetManager{
     setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
 
   }
+  public boolean isVisible() {
+    return visible;
+  }
+  public boolean isUpdating() {
+    return updating;
+  }
 
+  public void setVisible(boolean _visible) {
+    visible = _visible;
+  }
+  public void setUpdating(boolean _updating) {
+    updating = _updating;
+  }
   void setupWidgetSelectorDropdowns(){
       //create the widgetSelector dropdown of each widget
       println("widgets.size() = " + widgets.size());
@@ -173,7 +135,7 @@ class WidgetManager{
   }
 
   void update(){
-    if(wmVisible){
+    if(visible && updating){
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).update();
@@ -183,7 +145,7 @@ class WidgetManager{
   }
 
   void draw(){
-    if(wmVisible){
+    if(visible){
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).draw();

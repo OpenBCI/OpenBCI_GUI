@@ -125,6 +125,9 @@ float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer us
 float auxBuff[][] = new float[3][nPointsPerUpdate];
 float data_elec_imp_ohm[];
 
+float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
+
 //variables for writing EEG data out to a file
 OutputFile_rawtxt fileoutput_odf;
 OutputFile_BDF fileoutput_bdf;
@@ -431,10 +434,10 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 --");
 
   //initilize the GUI
-  initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
+  // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
   wm = new WidgetManager(this);
   topNav = new TopNav();
-  setupGUIWidgets(); //####
+  // setupGUIWidgets(); //####
 
 
   //final config
@@ -536,7 +539,7 @@ void systemUpdate() { // for updating data values and variables
 
             //-----------------------------------------------------------
             //-----------------------------------------------------------
-            gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
+            // gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
             // topNav.update();
             // updateGUIWidgets(); //####
             //-----------------------------------------------------------
@@ -592,7 +595,7 @@ void systemUpdate() { // for updating data values and variables
 
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized) {
-      GUIWidgets_screenResized(width, height);
+      // GUIWidgets_screenResized(width, height);
       topNav.screenHasBeenResized(width, height);
       wm.screenResized();
     }
@@ -600,14 +603,13 @@ void systemUpdate() { // for updating data values and variables
       screenHasBeenResized = false;
       println("systemUpdate: reinitializing GUI");
       timeOfGUIreinitialize = millis();
-      initializeGUI();
-      GUIWidgets_screenResized(width, height);
+      // initializeGUI();
+      // GUIWidgets_screenResized(width, height);
       playground.x = width; //reset the x for the playground...
     }
 
     topNav.update();
-    updateGUIWidgets(); //####
-
+    // updateGUIWidgets(); //####
     wm.update();
     playground.update();
     accelWidget.update();
@@ -620,6 +622,7 @@ void systemDraw() { //for drawing to the screen
 
   //redraw the screen...not every time, get paced by when data is being plotted
   background(bgColor);  //clear the screen
+  noStroke();
   //background(255);  //clear the screen
 
   if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -664,11 +667,11 @@ void systemDraw() { //for drawing to the screen
         // println("GUI DRAW!!! " + millis());
 
         //----------------------------
-        gui.draw(); //draw the GUI
+        // gui.draw(); //draw the GUI
 
         wm.draw();
         //updateGUIWidgets(); //####
-        drawGUIWidgets();
+        // drawGUIWidgets();
 
         topNav.draw();
 

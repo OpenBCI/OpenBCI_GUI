@@ -45,7 +45,7 @@ void activateChannel(int Ichan) {
     // println("activating channel on ganglion");
     ganglion.changeChannelState(Ichan, true);
   }
-  if (Ichan < gui.chanButtons.length) {
+  if (Ichan < nchan) {
     channelSettingValues[Ichan][0] = '0';
     // gui.cc.update();
   }
@@ -61,7 +61,7 @@ void deactivateChannel(int Ichan) {
     // println("deactivating channel on ganglion");
     ganglion.changeChannelState(Ichan, false);
   }
-  if (Ichan < gui.chanButtons.length) {
+  if (Ichan < nchan) {
     channelSettingValues[Ichan][0] = '1';
     // gui.cc.update();
   }
@@ -380,7 +380,8 @@ class ChannelController {
 
     for (int i = 0; i < nchan; i++) {
       if (drawImpedanceValues[i] == true) {
-        gui.impValuesMontage[i].draw();  //impedance values on montage plot
+        // gui.impValuesMontage[i].draw();  //impedance values on montage plot
+        //THIS IS WHERE WE NEED TO DRAW NEW TIME SERIES IMPEDANCE VALUES %%%
       }
     }
 

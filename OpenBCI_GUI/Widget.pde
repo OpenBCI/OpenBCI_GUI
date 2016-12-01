@@ -43,7 +43,9 @@ class Widget{
   }
 
   void update(){
+
     updateDropdowns();
+
   }
 
   void draw(){
@@ -75,7 +77,6 @@ class Widget{
     // drawDropdowns(); //moved to WidgetManager, so that dropdowns draw on top of widget content
 
     popStyle();
-
   }
 
   void addDropdown(String _id, String _title, List _items, int _defaultItem){
@@ -238,6 +239,9 @@ class Widget{
   void drawDropdowns(){
 
     //draw dropdown titles
+    pushStyle();
+
+    noStroke();
     textFont(h5);
     textSize(12);
     textAlign(CENTER, BOTTOM);
@@ -261,6 +265,7 @@ class Widget{
     textAlign(RIGHT, TOP);
     cp5_widget.draw(); //this draws all cp5 elements... in this case, the scrollable lists that populate our dropdowns<>
 
+    popStyle();
   }
 
   void screenResized(){

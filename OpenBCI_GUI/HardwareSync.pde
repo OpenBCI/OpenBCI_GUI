@@ -198,11 +198,13 @@ void stopButtonWasPressed() {
   if (isRunning) {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
     stopRunning();
+    wm.setUpdating(false);
     topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     startRunning();
+    wm.setUpdating(true);
     topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
@@ -625,7 +627,7 @@ class OpenBCI_ADS1299 {
           println(defaultChannelSettings);
           println("OpenBCI_ADS1299: read(): y");
           // gui.cc.loadDefaultChannelSettings();
-          timeSeries_widget.hsc.loadDefaultChannelSettings();
+          w_timeSeries.hsc.loadDefaultChannelSettings();
           println("OpenBCI_ADS1299: read(): z");
         }
         readyToSend = true;
@@ -790,11 +792,11 @@ class OpenBCI_ADS1299 {
         if (activate) {
           // serial_openBCI.write(command_activate_channel[Ichan]);
           // gui.cc.powerUpChannel(Ichan);
-          timeSeries_widget.hsc.powerUpChannel(Ichan);
+          w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
           // serial_openBCI.write(command_deactivate_channel[Ichan]);
           // gui.cc.powerDownChannel(Ichan);
-          timeSeries_widget.hsc.powerDownChannel(Ichan);
+          w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
     }

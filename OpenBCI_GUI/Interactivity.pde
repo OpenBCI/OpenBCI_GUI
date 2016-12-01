@@ -73,10 +73,12 @@ void parseKey(char val) {
       drawContainers = !drawContainers;
       break;
     case '<':
-      drawTimeSeries = !drawTimeSeries;
+      w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
+      // drawTimeSeries = !drawTimeSeries;
       break;
     case '>':
-      wmVisible = !wmVisible;
+      wm.setVisible(!wm.isVisible());
+      // wmVisible = !wmVisible;
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -242,7 +244,7 @@ void parseKey(char val) {
     case 'd':
       verbosePrint("Updating GUI's channel settings to default...");
       // gui.cc.loadDefaultChannelSettings();
-      timeSeries_widget.hsc.loadDefaultChannelSettings();
+      w_timeSeries.hsc.loadDefaultChannelSettings();
       //openBCI.serial_openBCI.write('d');
       openBCI.configureAllChannelsToDefault();
       break;
@@ -446,9 +448,9 @@ void mousePressed() {
     if (controlPanel.isOpen == false) {
       //was the stopButton pressed?
 
-      gui.mousePressed(); // trigger mousePressed function in GUI
+      // gui.mousePressed(); // trigger mousePressed function in GUI
       topNav.mousePressed();
-      GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+      // GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
       wm.mousePressed();
 
       //check the graphs
@@ -464,10 +466,10 @@ void mousePressed() {
       //   gui.showMontageValues  = !gui.showMontageValues;
       // }
 
-      if (gui.isMouseOnMontage(mouseX, mouseY)) {
-        //toggle the display of the montage values
-        gui.showMontageValues  = !gui.showMontageValues;
-      }
+      // if (gui.isMouseOnMontage(mouseX, mouseY)) {
+      //   //toggle the display of the montage values
+      //   gui.showMontageValues  = !gui.showMontageValues;
+      // }
     }
   }
 
@@ -557,10 +559,10 @@ void mouseReleased() {
 
   if (systemMode >= SYSTEMMODE_POSTINIT) {
 
-    gui.mouseReleased();
+    // gui.mouseReleased();
     topNav.mouseReleased();
-    GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
-    wm.mousePressed();
+    // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+    wm.mouseReleased();
 
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
   }
@@ -659,6 +661,11 @@ class Button {
 
   public void setY(int _but_y){
     but_y = _but_y;
+    but_y = _but_y;
+  }
+
+  public void setPos(int _but_x, int _but_y){
+    but_x = _but_x;
   }
 
   public void setFont(PFont _newFont){

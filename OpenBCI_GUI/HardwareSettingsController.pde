@@ -74,8 +74,8 @@ class HardwareSettingsController{
         switch(j) {  //what setting are we looking at
           case 0: //on/off ??
             // if (channelSettingValues[i][j] == '0') channelSettingButtons[i][0].setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
-            if (channelSettingValues[i][j] == '0') timeSeries_widget.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
-            if (channelSettingValues[i][j] == '1') timeSeries_widget.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
+            if (channelSettingValues[i][j] == '0') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
+            if (channelSettingValues[i][j] == '1') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
             break;
 
           case 1: //GAIN ??
@@ -254,9 +254,9 @@ class HardwareSettingsController{
       // println("activating channel on ganglion");
       ganglion.changeChannelState(Ichan, true);
     }
-    if (Ichan < gui.chanButtons.length) {
+    if (Ichan < nchan) {
       channelSettingValues[Ichan][0] = '0';
-      timeSeries_widget.hsc.update(); //previously gui.cc.update();
+      w_timeSeries.hsc.update(); //previously gui.cc.update();
     }
   }
 
@@ -271,9 +271,9 @@ class HardwareSettingsController{
       // println("deactivating channel on ganglion");
       ganglion.changeChannelState(Ichan, false);
     }
-    if (Ichan < gui.chanButtons.length) {
+    if (Ichan < nchan) {
       channelSettingValues[Ichan][0] = '1';
-      timeSeries_widget.hsc.update();
+      w_timeSeries.hsc.update();
     }
   }
 

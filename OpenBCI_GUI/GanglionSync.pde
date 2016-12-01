@@ -285,11 +285,11 @@ class OpenBCI_Ganglion {
         if (activate) {
           // serial_openBCI.write(command_activate_channel[Ichan]);
           // gui.cc.powerUpChannel(Ichan);
-          timeSeries_widget.hsc.powerUpChannel(Ichan);
+          w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
           // serial_openBCI.write(command_deactivate_channel[Ichan]);
           // gui.cc.powerDownChannel(Ichan);
-          timeSeries_widget.hsc.powerUpChannel(Ichan);
+          w_timeSeries.hsc.powerUpChannel(Ichan);
         }
       }
     }

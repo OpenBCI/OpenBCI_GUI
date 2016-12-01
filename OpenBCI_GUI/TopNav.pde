@@ -181,9 +181,9 @@ void updateVertScale() {
   //println("GUI_Manager: updateVertScale: vertScale_uV = " + vertScale_uV);
 
   //update how the plots are scaled
-  if (gui.montageTrace != null) gui.montageTrace.setYScale_uV(vertScale_uV);  //the Y-axis on the montage plot is fixed...the data is simply scaled prior to plotting
-  if (gui.gFFT != null) gui.gFFT.setYAxisMax(vertScale_uV);
-  headPlot_widget.headPlot.setMaxIntensity_uV(vertScale_uV);
+  // if (gui.montageTrace != null) gui.montageTrace.setYScale_uV(vertScale_uV);  //the Y-axis on the montage plot is fixed...the data is simply scaled prior to plotting
+  // if (gui.gFFT != null) gui.gFFT.setYAxisMax(vertScale_uV);
+  w_headPlot.headPlot.setMaxIntensity_uV(vertScale_uV);
   topNav.intensityFactorButton.setString("Vert Scale\n" + round(vertScale_uV) + "uV");
 
 }
