@@ -15,9 +15,9 @@ import processing.event.KeyEvent;
 
 /**
  * controlP5 is a processing gui library.
- * 
+ *
  * 2006-2012 by Andreas Schlegel
- * 
+ *
  * This library is free software; you can redistribute it
  * and/or modify it under the terms of the GNU Lesser
  * General Public License as published by the Free Software
@@ -28,22 +28,22 @@ import processing.event.KeyEvent;
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; if not, write to
  * the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
- * 
+ *
  * @author Andreas Schlegel (http://www.sojamo.de)
  * @modified 09/08/2014
  * @version 2.2.2
- * 
+ *
  */
 
 /**
  * A ScrollableList is a list of vertically aligned items
  * which can be scrolled if required.
- * 
+ *
  * @example controllers/ControlP5scrollableList
  */
 public class ScrollableList extends Controller< ScrollableList > implements ControlListener {
