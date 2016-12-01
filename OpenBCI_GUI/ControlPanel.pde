@@ -935,20 +935,8 @@ public void system_init(){
           if (openBCI.isSerialPortOpen() == true) {
             openBCI.closeSerialPort();
           }
-        // } else { // Must be Ganglion
-        //   nchan = 4;
-        //   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-        //   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-        //   output("channel count set to " + str(nchan));
-        //   updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
-        //
-        //   println("ControlPanel — port is open: " + ganglion.isPortOpen());
-        //   if (ganglion.isPortOpen()) {
-        //     ganglion.disconnectBLE();
-        //   }
-        // }
         } else { // Must be Synthetics, no?
-          nchan = 16;
+          nchan = 4;
           fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
           yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
           output("channel count set to " + str(nchan));
