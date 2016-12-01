@@ -1,17 +1,15 @@
 
 int navHeight = 22;
-float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
-int smoothFac_ind = 2;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 color bgColor = color(1, 18, 41);
 
 FFT_Widget fft_widget;
 OpenBionics_Widget ob_widget;
 
-W_TimeSeries timeSeries_widget;
+TimeSeries timeSeries_widget;
 boolean drawTimeSeries = false;
 
 void setupGUIWidgets() {
-  timeSeries_widget = new W_TimeSeries(this, 4);
+  timeSeries_widget = new TimeSeries(this, 4);
   headPlot_widget = new HeadPlot_Widget(this);
   fft_widget = new FFT_Widget(this);
   ob_widget = new OpenBionics_Widget(this);
@@ -73,6 +71,61 @@ void GUIWidgets_mouseReleased() {
 }
 
 //========================================================================================
+//=================              ADD NEW WIDGETS HERE            =========================
+//========================================================================================
+/*
+  Notes:
+  - In this file all you have to do is MAKE YOUR WIDGET GLOBALLY, and then ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER in the setupWidgets() function below
+  - the order in which they are added will effect the order in which they appear in the GUI and in the WidgetSelector dropdown menu of each widget
+  - use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_timeSeries.pde, W_fft.pde, and W_headPlot.pde)
+*/
+
+// MAKE YOUR WIDGET GLOBALLY
+W_timeSeries w_timeSeries;
+W_headPlot w_headPlot;
+W_fft w_fft;
+W_template w_template1;
+W_template w_template2;
+W_template w_template3;
+W_template w_template4;
+W_template w_template5;
+
+//ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
+void setupWidgets(PApplet _this, ArrayList<Widget> w){
+  w_timeSeries = new W_timeSeries(_this);
+  w_timeSeries.setTitle("Time Series");
+  addWidget(w_timeSeries, w);
+
+  w_headPlot = new W_headPlot(_this);
+  w_headPlot.setTitle("Head Plot");
+  addWidget(w_headPlot, w);
+
+  w_fft = new W_fft(_this);
+  w_fft.setTitle("FFT Plot");
+  addWidget(w_fft, w);
+
+  w_template1 = new W_template(_this);
+  w_template1.setTitle("Widget 1");
+  addWidget(w_template1, w);
+
+  w_template2 = new W_template(_this);
+  w_template2.setTitle("Widget 2");
+  addWidget(w_template2, w);
+
+  w_template3 = new W_template(_this);
+  w_template3.setTitle("Widget 3");
+  addWidget(w_template3, w);
+
+  w_template4 = new W_template(_this);
+  w_template4.setTitle("Widget 4");
+  addWidget(w_template4, w);
+
+  w_template5 = new W_template(_this);
+  w_template5.setTitle("Widget 5");
+  addWidget(w_template5, w);
+}
+
+//========================================================================================
 //========================================================================================
 //========================================================================================
 
@@ -81,16 +134,9 @@ boolean wmVisible = true;
 
 class WidgetManager{
 
-  //List of all Widgets
-  W_template w_template;
-  W_template w_template2;
-  W_template w_template3;
-  W_template w_template4;
-  // W_fft w_fft;
-  // W_timeSeries w_timeSeries;
-
   //this holds all of the widgets ... when creating/adding new widgets, we will add them to this ArrayList (below)
   ArrayList<Widget> widgets;
+  ArrayList<String> widgetOptions; //List of Widget Titles, used to populate cp5 widgetSelector dropdown of all widgets
 
   //Variables for
   int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
@@ -98,42 +144,40 @@ class WidgetManager{
 
   WidgetManager(PApplet _this){
     widgets = new ArrayList<Widget>();
+    widgetOptions = new ArrayList<String>();
 
+    //DO NOT re-order the functions below
     setupLayouts();
-    setupWidgets(_this);
+    setupWidgets(_this, widgets);
+    setupWidgetSelectorDropdowns();
 
     currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
     setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
 
   }
 
-  void setupWidgets(PApplet _this){
-    w_template = new W_template(_this);
-    w_template.setTitle("Widget 1");
-
-    w_template2 = new W_template(_this);
-    w_template2.setTitle("Widget 2");
-
-    w_template3 = new W_template(_this);
-    w_template3.setTitle("Widget 3");
-
-    w_template4 = new W_template(_this);
-    w_template4.setTitle("Widget 4");
-    // w_fft = new W_fft(_this, 9);
-    // w_timeSeries = new W_timeSeries(_this, 4);
-
-    widgets.add(w_template);
-    widgets.add(w_template2);
-    widgets.add(w_template3);
-    widgets.add(w_template4);
-    // widgets.add(w_fft);
-    // widgets.add(w_timeSeries);
+  void setupWidgetSelectorDropdowns(){
+      //create the widgetSelector dropdown of each widget
+      println("widgets.size() = " + widgets.size());
+      //create list of WidgetTitles.. we will use this to populate the dropdown (widget selector) of each widget
+      for(int i = 0; i < widgets.size(); i++){
+        widgetOptions.add(widgets.get(i).widgetTitle);
+      }
+      println("widgetOptions.size() = " + widgetOptions.size());
+      for(int i = 0; i <widgetOptions.size(); i++){
+        widgets.get(i).setupWidgetSelectorDropdown(widgetOptions);
+        widgets.get(i).setupNavDropdowns();
+      }
+      println("widgetOptions:");
+      println(widgetOptions);
   }
 
   void update(){
     if(wmVisible){
       for(int i = 0; i < widgets.size(); i++){
-        widgets.get(i).update();
+        if(widgets.get(i).isActive){
+          widgets.get(i).update();
+        }
       }
     }
   }
@@ -143,6 +187,7 @@ class WidgetManager{
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).draw();
+          widgets.get(i).drawDropdowns();
         }
       }
     }
@@ -247,6 +292,7 @@ class WidgetManager{
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
+          // widgets.get(i).screenResized(); // do this to make sure the container is updated
           counter++;
         }
       }
@@ -261,37 +307,14 @@ class WidgetManager{
           counter++;
         }
       }
-
     }
-
-    //for however many containers there are in the new layout
-
-    // for(int i = 0; i < layouts.get(_newLayout).myContainers.length; i++){
-    //   //map the xywh coordinates of widget i to container i
-    //   println("yep " + i);
-    //   widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[i]);
-    // }
-
-    // for(int i = 0; i < layouts.size(); i++){
-    //   if(_newLayout == i){
-    //
-    //     //use layouts[i] to construct the new Widget Layout of the GUI
-    //
-    //     //if (layouts[i].size() > numActiveWidgets)
-    //       //fill the new vacant containers w/ non-active widgets (pick in order of the list of all widgets)
-    //       //make those new widgets active as well
-    //     //else if(layouts.size() < numActiveWidgets)
-    //       //deactivate additional widgets
-    //     //else
-    //       //the new layout has the same number of active widgets ... just need to remap
-    //
-    //     //map new containers to new active widgets ... (these numbers should match now, based on above logic)
-    //     //map x/y/w/h values of new Layout containers onto corresponding active widgets
-    //
-    //   }
-    // }
   }
 };
+
+//this is a global function for adding new widgets--and their children (timeSeries, FFT, headPlot, etc.)--to the WidgetManager's widget ArrayList
+void addWidget(Widget myNewWidget, ArrayList<Widget> w){
+  w.add(myNewWidget);
+}
 
 //the Layout class is an orgnanizational tool ... a layout consists of a combination of containers ... refer to Container.pde
 class Layout{
@@ -317,5 +340,4 @@ class Layout{
       return myContainers[myContainers.length-1];
     }
   }
-
-}
+};

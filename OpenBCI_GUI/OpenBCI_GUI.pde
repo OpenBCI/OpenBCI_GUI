@@ -191,11 +191,16 @@ PFont f4;
 
 
 PFont h1; //large Montserrat
-PFont h2; //medium Montserrat
-PFont h3; //small Montserrat
+PFont h2; //large/medium Montserrat
+PFont h3; //medium Montserrat
+PFont h4; //small/medium Montserrat
+PFont h5; //small Montserrat
 
-PFont p1; //medium Open Sans
-PFont p2; //small Open Sans
+PFont p1; //large Open Sans
+PFont p2; //large/medium Open Sans
+PFont p3; //medium Open Sans
+PFont p4; //medium/small Open Sans
+PFont p5; //small Open Sans
 
 ButtonHelpText buttonHelpText;
 
@@ -242,11 +247,17 @@ void setup() {
   f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 
   h1 = createFont("fonts/Montserrat-Regular.otf", 20);
-  h2 = createFont("fonts/Montserrat-Regular.otf", 16);
-  h3 = createFont("fonts/Montserrat-Regular.otf", 12);
+  h2 = createFont("fonts/Montserrat-Regular.otf", 18);
+  h3 = createFont("fonts/Montserrat-Regular.otf", 16);
+  h4 = createFont("fonts/Montserrat-Regular.otf", 14);
+  h5 = createFont("fonts/Montserrat-Regular.otf", 12);
 
-  p1 = createFont("fonts/OpenSans-Regular.ttf", 24);
-  p2 = createFont("fonts/OpenSans-Regular.ttf", 16);
+  p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
+  p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
+  p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
+  p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
+  p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
+
 
   //V2 FONTS
   //f1 = createFont("fonts/Montserrat-SemiBold.otf", 16);

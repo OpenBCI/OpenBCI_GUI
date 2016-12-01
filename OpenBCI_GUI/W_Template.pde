@@ -24,7 +24,6 @@ class W_template extends Widget {
     addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
     addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
-    setupDropdowns();
 
   }
 
@@ -69,6 +68,11 @@ class W_template extends Widget {
 
   }
 
+  //add custom classes functions here
+  void customFunction(){
+    //this is a fake function... replace it with something relevant to this widget
+  }
+
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
@@ -79,12 +83,16 @@ void Dropdown1(int n){
   } else if(n==1){
     //do this instead
   }
+
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
 void Dropdown2(int n){
   println("Item " + (n+1) + " selected from Dropdown 2");
+  closeAllDropdowns();
 }
 
 void Dropdown3(int n){
   println("Item " + (n+1) + " selected from Dropdown 3");
+  closeAllDropdowns();
 }

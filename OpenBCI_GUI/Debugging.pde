@@ -80,7 +80,7 @@ class HelpWidget {
     fill(color(0, 5, 11));
     rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
-    textFont(p2);
+    textFont(p4);
     textSize(14);
     fill(255);
     textAlign(LEFT, TOP);
