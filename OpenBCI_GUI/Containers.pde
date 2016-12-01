@@ -26,21 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 boolean drawContainers = false;
-
 Container[] container = new Container[11];
-// Container container0;
-// Container container1;
-// Container container2;
-// Container container3;
-// Container container4;
-// Container container5;
-// Container container6;
-// Container container7;
-// Container container8;
-// Container container9;
-// Container container10;
-//Container container11;
-//Container container12;
 
 //Viz extends container (example below)
 //Viz viz1;
@@ -55,10 +41,6 @@ int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
 int rightNav_w = 0; //not used currently
 
 void setupContainers() {
-  //size(1024, 768, P2D);
-  //frameRate(30);
-  //smooth();
-  //surface.setResizable(true);
 
   widthOfLastScreen_C = width;
   heightOfLastScreen_C = height;
@@ -218,7 +200,6 @@ public class Container {
   }
 
   public void draw() {
-
     if(drawContainers){
       pushStyle();
 
