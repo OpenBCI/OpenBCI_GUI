@@ -30,14 +30,13 @@ import hypermedia.net.*; //for UDP networking
 import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
-
+import java.io.InputStreamReader; // For input
 import java.awt.MouseInfo;
-
+import java.lang.Process;
+// import java.net.InetAddress; // Used for ping, however not working right now.
 import java.util.Random;
-
 import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
-
 
 
 //------------------------------------------------------------------------
@@ -171,6 +170,7 @@ boolean isGettingPoll = false;
 boolean spaceFound = false;
 boolean scanningChannels = false;
 int hexToInt = 0;
+boolean dev = false;
 
 //for screen resizing
 boolean screenHasBeenResized = false;
@@ -219,6 +219,9 @@ int indices = 0;
 
 boolean synthesizeData = false;
 
+Process nodeHubby;
+int hubPid = 0;
+String nodeHubName = "Ganglion Hub";
 Robot rob3115;
 
 //------------------------------------------------------------------------
@@ -227,6 +230,14 @@ Robot rob3115;
 
 //========================SETUP============================//
 void setup() {
+  // Step 1: Prepare the exit handler that will attempt to close a running node
+  //  server on shut down of this app, the main process.
+  // prepareExitHandler();
+  if (dev == false) {
+    hubStart();
+    prepareExitHandler();
+  }
+
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 6/25/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");
@@ -280,8 +291,6 @@ void setup() {
   }
   );
 
-  ganglion = new OpenBCI_Ganglion(this);
-
   //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
   helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
@@ -315,6 +324,9 @@ void setup() {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
 
+  ganglion = new OpenBCI_Ganglion(this);
+
+  println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
@@ -339,14 +351,120 @@ void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-void tcpEvent(String msg) {
-  // println("GanglionSync: udpEvent " + msg);
-  if (ganglion.parseMessage(msg)) {
-    // Refresh the BLE list
-    controlPanel.bleBox.refreshBLEList();
-  }
-
+// must add "prepareExitHandler();" in setup() for Processing sketches
+private void prepareExitHandler () {
+ Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+   public void run () {
+   System.out.println("SHUTDOWN HOOK");
+     try {
+       if (hubStop()) {
+         System.out.println("SHUTDOWN HUB");
+       } else {
+         System.out.println("FAILED TO SHUTDOWN HUB");
+       }
+     } catch (Exception ex){
+       ex.printStackTrace(); // not much else to do at this point
+     }
+   }
+  }));
 }
+
+void hubStart() {
+  println("Launching application from local data dir");
+  try {
+    // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
+    if (isWindows()) {
+      println("OpenBCI_GUI: hubStart: OS Detected: Windows");
+      nodeHubby = launch(dataPath("Ganglion Hub.exe"));
+    } else {
+      println("OpenBCI_GUI: hubStart: OS Detected: Mac");
+      nodeHubby = launch(dataPath("Ganglion Hub.app"));
+    }
+    // hubRunning = true;
+  } catch (Exception e) {
+    println("hubStart: " + e);
+    // hubRunning = false;
+  }
+}
+
+/**
+ * @description Single function to call at the termination program hook.
+ */
+boolean hubStop() {
+  if (isWindows()) {
+    println("Cannot stop windows processes yet");
+    return false;
+  } else {
+    killRunningProcessMac();
+    return true;
+  }
+}
+
+/**
+ * @description Helper function to determine if the system is windows or not.
+ * @return {boolean} true if os is windows, false otherwise.
+ */
+private boolean isWindows() {
+  return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+}
+
+/**
+ * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
+ *  function dubbed "death dealer"
+ */
+void killRunningProcessMac() {
+  try {
+    String line;
+    Process p = Runtime.getRuntime().exec("ps -e");
+    BufferedReader input =
+            new BufferedReader(new InputStreamReader(p.getInputStream()));
+    while ((line = input.readLine()) != null) {
+      if (line.contains(nodeHubName)) {
+        try {
+          endProcess(getProcessIdFromLineMac(line));
+          println("Killed: " + line);
+        } catch (Exception err) {
+          println("Failed to stop process: " + line + "\n\n");
+          err.printStackTrace();
+        }
+      }
+    }
+    input.close();
+  } catch (Exception err) {
+    err.printStackTrace();
+  }
+}
+
+/**
+ * @description Parses a mac process line and grabs the pid, the first component.
+ * @return {int} the process id
+ */
+int getProcessIdFromLineMac(String line) {
+  String[] components = line.split(" ");
+  return Integer.parseInt(components[0]);
+}
+
+void endProcess(int pid) {
+  Runtime rt = Runtime.getRuntime();
+  try {
+    if (isWindows())
+      rt.exec("taskkill " + pid);
+    else
+      rt.exec("kill -9 " + pid);
+  } catch (IOException err) {
+    err.printStackTrace();
+  }
+}
+
+// void tcpEvent(String msg) {
+//   // println("GanglionSync: udpEvent " + msg);
+//   ganglion.parseMessage(msg);
+//   if (ganglion.deviceListUpdated) {
+//     // Refresh the BLE list
+//     ganglion.deviceListUpdated = false;
+//     controlPanel.bleBox.refreshBLEList();
+//   }
+// }
 
 int pointCounter = 0;
 int prevBytes = 0;

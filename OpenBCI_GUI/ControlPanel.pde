@@ -288,7 +288,6 @@ class ControlPanel {
 
     // Ganglion
     bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
-
   }
 
   public void update() {
@@ -329,7 +328,9 @@ class ControlPanel {
 
     if (!calledForBLEList) {
       calledForBLEList = true;
-      ganglion.getBLEDevices();
+      if (ganglion.isHubRunning()) {
+        ganglion.searchDeviceStart();
+      }
     }
   }
 
@@ -825,7 +826,7 @@ class ControlPanel {
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
       output("BLE Devices Refreshing");
-      ganglion.getBLEDevices();
+      ganglion.searchDeviceStart();
     }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
@@ -934,20 +935,8 @@ public void system_init(){
           if (openBCI.isSerialPortOpen() == true) {
             openBCI.closeSerialPort();
           }
-        // } else { // Must be Ganglion
-        //   nchan = 4;
-        //   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-        //   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-        //   output("channel count set to " + str(nchan));
-        //   updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
-        //
-        //   println("ControlPanel — port is open: " + ganglion.isPortOpen());
-        //   if (ganglion.isPortOpen()) {
-        //     ganglion.disconnectBLE();
-        //   }
-        // }
         } else { // Must be Synthetics, no?
-          nchan = 16;
+          nchan = 4;
           fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
           yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
           output("channel count set to " + str(nchan));
