@@ -57,6 +57,10 @@ final int SYSTEMMODE_PREINIT = 0;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
+final int NCHAN_CYTON = 8;
+final int NCHAN_CYTON_DAISY = 16;
+final int NCHAN_GANGLION = 4;
+
 boolean hasIntroAnimation = false;
 PImage cog;
 
@@ -85,7 +89,7 @@ String ganglion_portName = "N/A";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from openBCI...first EEG channels, then aux channels
-int nchan = 8; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
+int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
 int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
@@ -229,6 +233,9 @@ Robot rob3115;
 //------------------------------------------------------------------------
 
 //========================SETUP============================//
+int timeOfSetup = 0;
+boolean isGanglion = false;
+
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
   //  server on shut down of this app, the main process.
@@ -324,9 +331,9 @@ void setup() {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
 
-  ganglion = new OpenBCI_Ganglion(this);
 
-  println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
+
+  // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
@@ -337,6 +344,9 @@ void setup() {
     println("couldn't create robot...");
   }
 
+  // ganglion = new OpenBCI_Ganglion(this);
+
+  timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
 //====================== END-OF-SETUP ==========================//
 
@@ -620,6 +630,12 @@ void haltSystem() {
 }
 
 void systemUpdate() { // for updating data values and variables
+
+  if(millis() - timeOfSetup >= 1000 && isGanglion == false){
+    ganglion = new OpenBCI_Ganglion(this);
+    println("Instantiating Ganglion object...");
+    isGanglion = true;
+  }
 
   //update the sync state with the OpenBCI hardware
   openBCI.updateSyncState(sdSetting);

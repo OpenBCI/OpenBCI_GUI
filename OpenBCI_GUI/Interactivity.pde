@@ -80,6 +80,16 @@ void parseKey(char val) {
       wm.setVisible(!wm.isVisible());
       // wmVisible = !wmVisible;
       break;
+    case ':':
+      println("Start/stop impedance check...");
+      if(isGanglion){
+        if(ganglion.isCheckingImpedance()){
+          ganglion.impedanceStop();
+        } else {
+          ganglion.impedanceStart();
+        }
+      }
+      break;
     case '/':
       drawAccel = !drawAccel;
       drawPulse = !drawPulse;

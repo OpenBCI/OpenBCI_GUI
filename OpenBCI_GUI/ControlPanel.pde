@@ -339,10 +339,12 @@ class ControlPanel {
       convertSDFile();
     }
 
-    if (!calledForBLEList) {
-      calledForBLEList = true;
-      if (ganglion.isHubRunning()) {
-        ganglion.searchDeviceStart();
+    if (isGanglion) {
+      if (!calledForBLEList) {
+        calledForBLEList = true;
+        if (ganglion.isHubRunning()) {
+          ganglion.searchDeviceStart();
+        }
       }
     }
   }
@@ -2028,8 +2030,16 @@ public class MenuList extends controlP5.Controller {
       }
       menu.fill(bgColor);
       menu.textFont(menuFont);
-      menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
-      menu.translate( 0, itemHeight );
+
+      //make sure there is something in the Ganglion serial list...
+      try {
+        menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
+        menu.translate( 0, itemHeight );
+      } catch(Exception e){
+        println("Nothing in list...");
+      }
+
+
     }
     menu.popMatrix();
     menu.popMatrix();
