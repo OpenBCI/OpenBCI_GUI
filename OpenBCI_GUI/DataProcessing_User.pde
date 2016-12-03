@@ -21,7 +21,7 @@ boolean hasGestured = false;
 
 class DataProcessing_User {
   private float fs_Hz;  //sample rate
-  private int nchan;
+  private int n_chan;
 
   boolean switchesActive = false;
 
@@ -34,7 +34,7 @@ class DataProcessing_User {
 
   //class constructor
   DataProcessing_User(int NCHAN, float sample_rate_Hz) {
-    nchan = NCHAN;
+    n_chan = NCHAN;
     fs_Hz = sample_rate_Hz;
   }
 

@@ -145,7 +145,8 @@ class Widget{
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
     dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-    dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
+    dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
+    // dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
     dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
     dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
     // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
