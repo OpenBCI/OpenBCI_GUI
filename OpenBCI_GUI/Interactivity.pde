@@ -80,6 +80,16 @@ void parseKey(char val) {
       wm.setVisible(!wm.isVisible());
       // wmVisible = !wmVisible;
       break;
+    case ':':
+      println("Start/stop impedance check...");
+      if(isGanglion){
+        if(ganglion.isCheckingImpedance()){
+          ganglion.impedanceStop();
+        } else {
+          ganglion.impedanceStart();
+        }
+      }
+      break;
     case '/':
       drawAccel = !drawAccel;
       drawPulse = !drawPulse;
@@ -604,7 +614,8 @@ class Button {
   //int rectSize = 90;     // Diameter of rect
 
   color currentColor;
-  color color_hover = color(127, 134, 143);//color(252, 221, 198);
+  // color color_hover = color(127, 134, 143);//color(252, 221, 198);
+  color color_hover = color(177, 184, 193);//color(252, 221, 198);
   color color_pressed = color(150,170,200); //bgColor;
   color color_highlight = color(102);
   color color_notPressed = color(255); //color(227,118,37);

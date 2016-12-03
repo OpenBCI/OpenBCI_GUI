@@ -96,7 +96,7 @@ class OpenBCI_Ganglion {
   private int state = STATE_NOCOM;
   int prevState_millis = 0; // Used for calculating connect time out
 
-  private int nEEGValuesPerPacket = 4; // Defined by the data format sent by openBCI boards
+  private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by openBCI boards
   private int nAuxValuesPerPacket = 0; // Defined by the arduino code
 
   private int tcpGanglionPort = 10996;
@@ -132,12 +132,17 @@ class OpenBCI_Ganglion {
   private boolean waitingForResponse = false;
   private boolean nodeProcessHandshakeComplete = false;
   public boolean shouldStartNodeApp = false;
+  private boolean checkingImpedance = false;
+
+  public boolean impedanceUpdated = false;
+  public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
   // Getters
   public float get_fs_Hz() { return fs_Hz; }
   public boolean isPortOpen() { return portIsOpen; }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
   public boolean isHubRunning() { return hubRunning; }
+  public boolean isCheckingImpedance() { return checkingImpedance; }
 
   private PApplet mainApplet;
 
@@ -234,6 +239,7 @@ class OpenBCI_Ganglion {
         break;
       case 'i': // Impedance
         processImpedance(msg);
+        break;
       case 't': // Data
         processData(msg);
         break;
@@ -312,12 +318,20 @@ class OpenBCI_Ganglion {
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
     int channel = Integer.parseInt(list[1]);
-    int value = Integer.parseInt(list[2]);
-    if (channel == 0) {
-      println("Impedance for channel reference is " + value + " ohms.");
+    if (channel < 5) { //<>//
+      int value = Integer.parseInt(list[2]);
+      impedanceArray[channel] = value;
+
+      if (channel == 0) {
+        impedanceUpdated = true;
+        //println("Impedance for channel reference is " + value + " ohms.");
+      } else {
+        //println("? for channel " + channel + " is " + value + " ohms.");
+      }
     } else {
-      println("Impedance for channel " + channel + " is " + value + " ohms.");
+      //println("Impedance " + list[2]);
     }
+
   }
 
   private void processScan(String msg) {
@@ -539,12 +553,12 @@ class OpenBCI_Ganglion {
     if (connected) {
       if ((Ichan >= 0)) {
         if (activate) {
-          println("OpenBCI_Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]));
-          safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan]) + TCP_STOP);
+          println("OpenBCI_Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
+          safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan] + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
-          println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]));
-          safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan]) + TCP_STOP);
+          println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
+          safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         }
       }
@@ -557,6 +571,8 @@ class OpenBCI_Ganglion {
   public void impedanceStart() {
     println("OpenBCI_Ganglion: impedance: START");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
+    checkingImpedance = true;
+
   }
 
   /**
@@ -566,6 +582,8 @@ class OpenBCI_Ganglion {
   public void impedanceStop() {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
+    checkingImpedance = false;
+
   }
 };
 

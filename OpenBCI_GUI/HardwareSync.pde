@@ -609,7 +609,7 @@ class OpenBCI_ADS1299 {
         // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
         if(nchan == 16 && daisyOrNot.charAt(daisyOrNot.length() - 1) == '8'){
           verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
-          nchan = 8;
+          updateToNChan(8);
         }
       }
 
