@@ -19,7 +19,7 @@
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
 
-  int p = ganglion.tcpBufferPositon; //<>//
+  int p = ganglion.tcpBufferPositon;
   ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
   ganglion.tcpBufferPositon++;
 
@@ -388,7 +388,7 @@ class OpenBCI_Ganglion {
       //println("rawValue[2] " + binary(rawValue[2], 8));
       rawValue[1] = byte((val & (0xFF << 8)) >> 8);
       //println("rawValue[1] " + binary(rawValue[1], 8));
-      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>//
+      rawValue[0] = byte((val & (0xFF << 16)) >> 16);
       //println("rawValue[0] " + binary(rawValue[0], 8));
       // Store to the target raw values
       packet.rawValues[i] = rawValue;
@@ -537,15 +537,14 @@ class OpenBCI_Ganglion {
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {
     if (connected) {
-      // if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
       if ((Ichan >= 0)) {
         if (activate) {
-          // serial_openBCI.write(command_activate_channel[Ichan]);
-          // gui.cc.powerUpChannel(Ichan);
+          println("OpenBCI_Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]));
+          safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan]) + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
-          // serial_openBCI.write(command_deactivate_channel[Ichan]);
-          // gui.cc.powerDownChannel(Ichan);
+          println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]));
+          safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan]) + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         }
       }
