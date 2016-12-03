@@ -19,7 +19,7 @@
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
 
-  int p = ganglion.tcpBufferPositon; //<>//
+  int p = ganglion.tcpBufferPositon;
   ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
   ganglion.tcpBufferPositon++;
 
@@ -388,7 +388,7 @@ class OpenBCI_Ganglion {
       //println("rawValue[2] " + binary(rawValue[2], 8));
       rawValue[1] = byte((val & (0xFF << 8)) >> 8);
       //println("rawValue[1] " + binary(rawValue[1], 8));
-      rawValue[0] = byte((val & (0xFF << 16)) >> 16); //<>//
+      rawValue[0] = byte((val & (0xFF << 16)) >> 16);
       //println("rawValue[0] " + binary(rawValue[0], 8));
       // Store to the target raw values
       packet.rawValues[i] = rawValue;
