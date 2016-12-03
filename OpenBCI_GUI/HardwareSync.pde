@@ -198,13 +198,15 @@ void stopButtonWasPressed() {
   if (isRunning) {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
     stopRunning();
-    gui.stopButton.setString(GUI_Manager.stopButton_pressToStart_txt);
-    gui.stopButton.setColorNotPressed(color(184, 220, 105));
+    wm.setUpdating(false);
+    topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
+    topNav.stopButton.setColorNotPressed(color(184, 220, 105));
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     startRunning();
-    gui.stopButton.setString(GUI_Manager.stopButton_pressToStop_txt);
-    gui.stopButton.setColorNotPressed(color(224, 56, 45));
+    wm.setUpdating(true);
+    topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
+    topNav.stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
   }
 }
@@ -607,7 +609,7 @@ class OpenBCI_ADS1299 {
         // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
         if(nchan == 16 && daisyOrNot.charAt(daisyOrNot.length() - 1) == '8'){
           verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
-          nchan = 8;
+          updateToNChan(8);
         }
       }
 
@@ -624,7 +626,8 @@ class OpenBCI_ADS1299 {
           println("OpenBCI_ADS1299: read(): x");
           println(defaultChannelSettings);
           println("OpenBCI_ADS1299: read(): y");
-          gui.cc.loadDefaultChannelSettings();
+          // gui.cc.loadDefaultChannelSettings();
+          w_timeSeries.hsc.loadDefaultChannelSettings();
           println("OpenBCI_ADS1299: read(): z");
         }
         readyToSend = true;
@@ -741,7 +744,7 @@ class OpenBCI_ADS1299 {
             freshAuxValuesAvailable[localChannelCounter] = true;
             freshAuxValues = true;
           }
-          else freshAuxValues = true;
+          else freshAuxValues = false;
           localChannelCounter++;
           if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {
             // all Accelerometer channels arrived !
@@ -788,10 +791,12 @@ class OpenBCI_ADS1299 {
       if ((Ichan >= 0)) {
         if (activate) {
           // serial_openBCI.write(command_activate_channel[Ichan]);
-          gui.cc.powerUpChannel(Ichan);
+          // gui.cc.powerUpChannel(Ichan);
+          w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
           // serial_openBCI.write(command_deactivate_channel[Ichan]);
-          gui.cc.powerDownChannel(Ichan);
+          // gui.cc.powerDownChannel(Ichan);
+          w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
     }

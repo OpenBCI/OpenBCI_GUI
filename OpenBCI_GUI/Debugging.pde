@@ -67,25 +67,27 @@ class HelpWidget {
   public void draw() {
 
     pushStyle();
-    noStroke();
 
     // draw background of widget
+    stroke(31,69,110);
     fill(255);
-    rect(x, height-h, width, h);
+    rect(-1, height-h, width+2, h);
+    noStroke();
 
     //draw bg of text field of widget
     strokeWeight(1);
     stroke(color(0, 5, 11));
     fill(color(0, 5, 11));
-    rect(x + padding, height-h + padding, width - padding*5 - 128, h - padding *2);
+    rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
+    textFont(p4);
     textSize(14);
     fill(255);
     textAlign(LEFT, TOP);
-    text(currentOutput, padding*2, height - h + padding + 4);
+    text(currentOutput, padding*2, height - h + padding);
 
     //draw OpenBCI LOGO
-    image(logo, width - (128+padding*2), height - 26, 128, 22);
+    // image(logo, width - (128+padding*2), height - 26, 128, 22);
 
     popStyle();
   }

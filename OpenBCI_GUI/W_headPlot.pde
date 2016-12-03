@@ -1,5 +1,151 @@
 
+////////////////////////////////////////////////////
+//
+//    W_template.pde (ie "Widget Template")
+//
+//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
+//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
+//
+//    Created by: Conor Russomanno, November 2016
+//    Based on code written by: Chip Audette, Oct 2013
+//
+///////////////////////////////////////////////////,
+
+float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
+int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
+
+class W_headPlot extends Widget {
+
+  //to see all core variables/methods of the Widget class, refer to Widget.pde
+  //put your custom variables here...
+
+  HeadPlot headPlot;
+
+  W_headPlot(PApplet _parent){
+    super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+    // addDropdown("Ten20", "Layout", Arrays.asList("10-20", "5-10"), 0);
+    // addDropdown("Headset", "Headset", Arrays.asList("None", "Mark II", "Mark III", "Mark IV "), 0);
+    addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), 0);
+    addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), 0);
+    addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
+
+    //add your code here
+    headPlot = new HeadPlot(x, y, w, h, win_x, win_y);
+    //FROM old Gui_Manager
+    headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
+    headPlot.setPolarityData_byRef(dataProcessing.polarity);
+    setSmoothFac(smoothFac[smoothFac_ind]);
+
+  }
+
+  void update(){
+    super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    headPlot.update();
+  }
+
+  void draw(){
+    super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+
+    //put your code here
+    headPlot.draw(); //draw the actual headplot
+
+  }
+
+  void screenResized(){
+    super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    headPlot.setPositionSize(x, y, w, h, width, height);     //update position of headplot
+
+  }
+
+  void mousePressed(){
+    super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+
+  }
+
+  void mouseReleased(){
+    super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+
+  }
+
+  //add custom class functions here
+  void setSmoothFac(float fac) {
+    headPlot.smooth_fac = fac;
+  }
+
+};
+
+//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+void Ten20(int n) { //triggered when there is an event in the Ten20 Dropdown
+  /* here an item is stored as a Map  with the following key-value pairs:
+   * name, the given name of the item
+   * text, the given text of the item by default the same as name
+   * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
+   * color, the given color of the item, how to change, see below
+   * view, a customizable view, is of type CDrawable
+   */
+
+  //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
+  println("BOOOOM!" + n);
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
+
+}
+
+//triggered when there is an event in the Headset Dropdown
+void Headset(int n) {
+  //fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
+}
+
+//triggered when there is an event in the Polarity Dropdown
+void Polarity(int n) {
+
+  if (n==0) {
+    w_headPlot.headPlot.use_polarity = true;
+  } else {
+    w_headPlot.headPlot.use_polarity = false;
+  }
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
+}
+
+void ShowContours(int n){
+  if(n==0){
+    //turn headplot contours on
+    w_headPlot.headPlot.drawHeadAsContours = true;
+  } else if(n==1){
+    //turn headplot contours off
+    w_headPlot.headPlot.drawHeadAsContours = false;
+  }
+  closeAllDropdowns();
+}
+
+//triggered when there is an event in the SmoothingHeadPlot Dropdown
+void SmoothingHeadPlot(int n) {
+  w_headPlot.setSmoothFac(smoothFac[n]);
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
+}
+
+//triggered when there is an event in the UnfiltFiltHeadPlot Dropdown
+void UnfiltFiltHeadPlot(int n) {
+  //currently not in use
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
+}
+
+
 //////////////////////////////////////////////////////////////
+//
+// HeadPlot Class
 //
 // This class creates and manages the head-shaped plot used by the GUI.
 // The head includes circles representing the different EEG electrodes.
@@ -7,453 +153,12 @@
 // electrodes' brightness values dynamically reflect the intensity of the
 // EEG signal.  All EEG processing must happen outside of this class.
 //
-// Created: Chip Audette, Oct 2013
-//
-// Note: This routine uses aliasing to know which data should be used to
-// set the brightness of the electrodes.
+// Created by: Chip Audette 2013
 //
 ///////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
-
-//------------------------------------------------------------------------
-//                       Global Functions
-//------------------------------------------------------------------------
-
-void toggleShowPolarity() {
-  gui.headPlot1.use_polarity = !gui.headPlot1.use_polarity;
-  //update the button
-  gui.showPolarityButton.but_txt = "Polarity\n" + gui.headPlot1.getUsePolarityTrueFalse();
-}
-
-//------------------------------------------------------------------------
-//                            Classes
-//------------------------------------------------------------------------
-
-
-
-HeadPlot_Widget headPlot_widget;
-ControlP5 cp5_HeadPlot;
-List ten20List = Arrays.asList("10-20", "5-10");
-List headsetList = Arrays.asList("None", "Mark II", "Mark III (N)", "Mark III (SN)", "Mark IV");
-List numChanList = Arrays.asList("4 chan", "8 chan", "16 chan");
-List polarityList = Arrays.asList("+/-", " + ");
-List smoothingHeadPlotList = Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98");
-List filterHeadplotList = Arrays.asList("Unfilt.", "Filtered");
-
-class HeadPlot_Widget {
-
-  int x, y, w, h; 
-  int parentContainer = 3;
-
-  PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
-  PFont f2 = createFont("Arial", 18); //for dropdown name titles (above dropdown widgets)
-
-  HeadPlot headPlot;
-
-  //constructor 1
-  HeadPlot_Widget(PApplet _parent) {
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
-
-    cp5_HeadPlot = new ControlP5(_parent);
-
-    //headPlot = new HeadPlot(float(x)/win_x, float(y)/win_y, float(w)/win_x, float(h)/win_y, win_x, win_y, nchan);
-    headPlot = new HeadPlot(x, y, w, h, win_x, win_y);
-
-    //FROM old Gui_Manager
-    //dataProcessing.data_std_uV, is_railed, dataProcessing.polarity
-    headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
-    headPlot.setPolarityData_byRef(dataProcessing.polarity);
-
-    setSmoothFac(smoothFac[smoothFac_ind]);
-
-    //setup dropdown menus
-    setupDropdownMenus(_parent);
-  }
-  
-  void setupDropdownMenus(PApplet _parent) {
-    //ControlP5 Stuff
-    int dropdownPos;
-    int dropdownWidth = 60;
-    cp5_colors = new CColor();
-    cp5_colors.setActive(color(150, 170, 200)); //when clicked
-    cp5_colors.setForeground(color(125)); //when hovering
-    cp5_colors.setBackground(color(255)); //color of buttons
-    cp5_colors.setCaptionLabel(color(1, 18, 41)); //color of text
-    cp5_colors.setValueLabel(color(0, 0, 255));
-
-    cp5_HeadPlot.setColor(cp5_colors);
-    cp5_HeadPlot.setAutoDraw(false);
-    //-------------------------------------------------------------
-    //MAX FREQUENCY (ie X Axis) DROPDOWN
-    //-------------------------------------------------------------
-    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
-    cp5_HeadPlot.addScrollableList("Ten20")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      .setOpen(false)
-      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      .setScrollSensitivity(0.0)
-      .setBarHeight(navHeight - 4)
-      .setItemHeight(navHeight - 4)
-      .addItems(ten20List)
-      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-      ;
-
-    cp5_HeadPlot.getController("Ten20")
-      .getCaptionLabel()
-      .setText("10-20")
-      //.setFont(controlFonts[0])
-      .setSize(12)
-      .getStyle()
-      //.setPaddingTop(4)
-      ;
-    //-------------------------------------------------------------
-    //VERTICAL SCALE (ie Y Axis) DROPDOWN
-    //-------------------------------------------------------------
-    dropdownPos = 2;
-    cp5_HeadPlot.addScrollableList("Headset")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
-      .setOpen(false)
-      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      .setScrollSensitivity(0.0)
-      .setBarHeight(navHeight - 4)
-      .setItemHeight(navHeight - 4)
-      .addItems(headsetList)
-      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-      ;
-
-    cp5_HeadPlot.getController("Headset")
-      .getCaptionLabel()
-      .setText("None")
-      //.setFont(controlFonts[0])
-      .setSize(12)
-      .getStyle()
-      //.setPaddingTop(4)
-      ;
-    //-------------------------------------------------------------
-    //Logarithmic vs. Linear DROPDOWN
-    //-------------------------------------------------------------
-    //dropdownPos = 3;
-    //cp5_HeadPlot.addScrollableList("NumChan")
-    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
-    //  .setOpen(false)
-    //  .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-    //  .setScrollSensitivity(0.0)
-    //  .setBarHeight(navHeight - 4)
-    //  .setItemHeight(navHeight - 4)
-    //  .addItems(numChanList)
-    //  // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-    //  ;
-
-    //cp5_HeadPlot.getController("NumChan")
-    //  .getCaptionLabel()
-    //  .setText("8 chan")
-    //  //.setFont(controlFonts[0])
-    //  .setSize(12)
-    //  .getStyle()
-    //  //.setPaddingTop(4)
-    //  ;
-    //-------------------------------------------------------------
-    // SMOOTHING DROPDOWN (ie FFT bin size)
-    //-------------------------------------------------------------
-    dropdownPos = 1;
-    cp5_HeadPlot.addScrollableList("Polarity")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
-      .setOpen(false)
-      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      .setScrollSensitivity(0.0)
-      .setBarHeight(navHeight - 4)
-      .setItemHeight(navHeight - 4)
-      .addItems(polarityList)
-      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-      ;
-
-
-    cp5_HeadPlot.getController("Polarity")
-      .getCaptionLabel()
-      .setText("+/-")
-      //.setFont(controlFonts[0])
-      .setSize(12)
-      .getStyle()
-      //.setPaddingTop(4)
-      ;
-    //-------------------------------------------------------------
-    // UNFILTERED VS FILT DROPDOWN
-    //-------------------------------------------------------------
-    dropdownPos = 0;
-    cp5_HeadPlot.addScrollableList("SmoothingHeadPlot")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
-      .setOpen(false)
-      .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      .setScrollSensitivity(0.0)
-      .setBarHeight(navHeight - 4)
-      .setItemHeight(navHeight - 4)
-      .addItems(smoothingHeadPlotList)
-      // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-      ;
-
-    String initSmooth = smoothFac[smoothFac_ind] + "";
-    cp5_HeadPlot.getController("SmoothingHeadPlot")
-      .getCaptionLabel()
-      .setText(initSmooth)
-      //.setFont(controlFonts[0])
-      .setSize(12)
-      .getStyle()
-      //.setPaddingTop(4)
-      ;
-    //-------------------------------------------------------------
-    // UNFILTERED VS FILT DROPDOWN
-    //-------------------------------------------------------------
-    //dropdownPos = 0;
-    //cp5_HeadPlot.addScrollableList("UnfiltFiltHeadPlot")
-    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2))
-    //  .setOpen(false)
-    //  .setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-    //  .setScrollSensitivity(0.0)
-    //  .setBarHeight(navHeight - 4)
-    //  .setItemHeight(navHeight - 4)
-    //  .addItems(filterHeadplotList)
-    //  // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
-    //  ;
-
-    //cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
-    //  .getCaptionLabel()
-    //  .setText("Filtered")
-    //  //.setFont(controlFonts[0])
-    //  .setSize(12)
-    //  .getStyle()
-    //  //.setPaddingTop(4)
-    //  ;
-    //-------------------------------------------------------------
-  }
-
-  void update() {
-
-    //update position/size of FFT Plot
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
-
-    headPlot.update();
-  }
-
-  void draw() {
-    
-    if(!drawEMG){
-      pushStyle();
-      noStroke();
-  
-      fill(255);
-      rect(x, y, w, h); //widget background
-      //fill(150,150,150);
-      //rect(x, y, w, navHeight); //top bar
-      //fill(200, 200, 200);
-      //rect(x, y+navHeight, w, navHeight); //top bar
-      //fill(bgColor);
-      //textSize(18);
-      //text("Head Plot", x+w/2, y+navHeight/2);
-      ////fill(255,0,0,150);
-      ////rect(x,y,w,h);
-  
-      fill(150, 150, 150);
-      rect(x, y, w, navHeight); //top bar
-      fill(200, 200, 200);
-      rect(x, y+navHeight, w, navHeight); //button bar
-      fill(255);
-      rect(x+2, y+2, navHeight-4, navHeight-4);
-      fill(bgColor, 100);
-      //rect(x+3,y+3, (navHeight-7)/2, navHeight-10);
-      rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
-      rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
-      rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
-      rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
-      //text("FFT Plot", x+w/2, y+navHeight/2)
-      fill(bgColor);
-      textAlign(LEFT, CENTER);
-      textFont(f);
-      textSize(18);
-      text("Head Plot", x+navHeight+2, y+navHeight/2 - 2); //left
-      //textAlign(CENTER,CENTER); text("FFT Plot", w/2, y+navHeight/2 - 2); //center
-      //fill(255,0,0,150);
-      //rect(x,y,w,h);
-  
-      headPlot.draw(); //draw the actual headplot
-  
-      //draw dropdown titles
-      int dropdownPos = 4; //used to loop through drop down titles ... should use for loop with titles in String array, but... laziness has ensued. -Conor
-      int dropdownWidth = 60;
-      textFont(f2);
-      textSize(12);
-      textAlign(CENTER, BOTTOM);
-      fill(bgColor);
-      text("Layout", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      dropdownPos = 3;
-      text("Headset", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      //dropdownPos = 3;
-      //text("# Chan.", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      dropdownPos = 2;
-      text("Polarity", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      dropdownPos = 1;
-      text("Smoothing", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-      dropdownPos = 0;
-      text("Filters?", x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navHeight-2));
-  
-      cp5_HeadPlot.draw(); //draw all dropdown menus
-  
-      popStyle();
-    }
-  }
-
-  void screenResized(PApplet _parent, int _winX, int _winY) {
-    //when screen is resized...
-    //update Head Plot widget position/size
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
-
-    //update position of headplot
-    headPlot.setPositionSize(x, y, w, h, width, height);
-
-    cp5_HeadPlot.setGraphics(_parent, 0, 0); //remaps the cp5 controller to the new PApplet window size
-
-    //update dropdown menu positions
-    int dropdownPos;
-    int dropdownWidth = 60;
-    dropdownPos = 3; //work down from 4 since we're starting on the right side now...
-    cp5_HeadPlot.getController("Ten20")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
-    dropdownPos = 2; //work down from 4 since we're starting on the right side now...
-    cp5_HeadPlot.getController("Headset")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
-    //dropdownPos = 2;
-    //cp5_HeadPlot.getController("NumChan")
-    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-    //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-    //  ;
-    dropdownPos = 1;
-    cp5_HeadPlot.getController("Polarity")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
-    dropdownPos = 0;
-    cp5_HeadPlot.getController("SmoothingHeadPlot")
-      //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-      .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-      //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-      ;
-    //dropdownPos = 0;
-    //cp5_HeadPlot.getController("UnfiltFiltHeadPlot")
-    //  //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-    //  .setPosition(x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1)), navHeight+(y+2)) //float right
-    //  //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
-    //  ;
-  }
-
-  public void setSmoothFac(float fac) {
-    headPlot.smooth_fac = fac;
-  }
-
-  void mousePressed() {
-    //called by GUI_Widgets.pde
-    if(mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h){
-      //println("headPlot.mousePressed()");
-    }
-  }
-  void mouseReleased() {
-    //called by GUI_Widgets.pde
-    if (mouseX >= x && mouseX <= x+w && mouseY >= y && mouseY <= y+h) {
-      println("headPlot.mouseReleased()");
-    }
-  }
-  void keyPressed() {
-    //called by GUI_Widgets.pde
-  }
-  void keyReleased() {
-    //called by GUI_Widgets.pde
-  }
-};
-
-//triggered when there is an event in the Ten20 Dropdown
-void Ten20(int n) {
-  /* here an item is stored as a Map  with the following key-value pairs:
-   * name, the given name of the item
-   * text, the given text of the item by default the same as name
-   * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
-   * color, the given color of the item, how to change, see below
-   * view, a customizable view, is of type CDrawable 
-   */
-
-  //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
-  println("BOOOOM!" + n);
-}
-
-//triggered when there is an event in the Headset Dropdown
-void Headset(int n) {
-  //fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
-}
-
-//triggered when there is an event in the NumChan Dropdown
-void NumChan(int n) {
-  //if (n==0) {
-  //  fft_widget.fft_plot.setLogScale("y");
-  //} else {
-  //  fft_widget.fft_plot.setLogScale("");
-  //}
-}
-
-//triggered when there is an event in the Polarity Dropdown
-void Polarity(int n) {
-
-  if (n==0) {
-    headPlot_widget.headPlot.use_polarity = true;
-  } else {
-    headPlot_widget.headPlot.use_polarity = false;
-  }
-}
-
-//triggered when there is an event in the SmoothingHeadPlot Dropdown
-void SmoothingHeadPlot(int n) {
-  headPlot_widget.setSmoothFac(smoothFac[n]);
-}
-
-//triggered when there is an event in the UnfiltFiltHeadPlot Dropdown
-void UnfiltFiltHeadPlot(int n) {
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Note: This routine uses aliasing to know which data should be used to
+// set the brightness of the electrodes.
 
 class HeadPlot {
   private float rel_posX, rel_posY, rel_width, rel_height;
@@ -476,14 +181,14 @@ class HeadPlot {
   private int image_x, image_y;
   public boolean drawHeadAsContours;
   private boolean plot_color_as_log = true;
-  public float smooth_fac = 0.0f;  
+  public float smooth_fac = 0.0f;
   private boolean use_polarity = true;
 
   HeadPlot(float x, float y, float w, float h, int win_x, int win_y, int n) {
     final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
-    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?) 
+    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)
     //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
     ref_electrode_xy = new float[2];  //x-y position of reference electrode
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
@@ -503,7 +208,7 @@ class HeadPlot {
     final int n_elec = nchan;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
-    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?) 
+    electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)
     //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
     ref_electrode_xy = new float[2];  //x-y position of reference electrode
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
@@ -580,9 +285,9 @@ class HeadPlot {
     float nose_relWidth = 0.05f;
     float nose_relGutter = 0.02f;
     float ear_relLen = 0.15f;
-    float ear_relWidth = 0.075;   
+    float ear_relWidth = 0.075;
 
-    float square_width = min(rel_width*(float)win_width, 
+    float square_width = min(rel_width*(float)win_width,
       rel_height*(float)win_height);  //choose smaller of the two
 
     float total_width = square_width;
@@ -631,7 +336,7 @@ class HeadPlot {
       for (int Ix = 0; Ix < headImage.width; Ix++) {
         headImage.set(Ix, Iy, color(0, 0, 0, 0));
       }
-    }  
+    }
 
     //define the weighting factors to go from the electrode voltages
     //outward to the full the contour plot
@@ -643,7 +348,7 @@ class HeadPlot {
       //here is the better solution that is more physical.  It involves an iterative
       //solution, which could be really slow or could fail.  If it does poorly,
       //switch to using the algorithm above.
-      int n_wide_full = int(total_width); 
+      int n_wide_full = int(total_width);
       int n_tall_full = int(total_height);
       computePixelWeightingFactors_multiScale(n_wide_full, n_tall_full);
     }
@@ -658,7 +363,7 @@ class HeadPlot {
     //String default_fname = "electrode_positions_12elec_scalp9.txt";
     try {
       elec_relXY = loadTable(default_fname, "header,csv"); //try loading the default file
-    } 
+    }
     catch (NullPointerException e) {
     };
 
@@ -683,55 +388,55 @@ class HeadPlot {
   private Table createDefaultElectrodeLocations(String fname, float elec_relDiam) {
 
     //regular electrodes
-    float[][] elec_relXY = new float[16][2]; 
-    elec_relXY[0][0] = -0.125f;             
+    float[][] elec_relXY = new float[16][2];
+    elec_relXY[0][0] = -0.125f;
     elec_relXY[0][1] = -0.5f + elec_relDiam*(0.5f+0.2f); //FP1
-    elec_relXY[1][0] = -elec_relXY[0][0];  
+    elec_relXY[1][0] = -elec_relXY[0][0];
     elec_relXY[1][1] = elec_relXY[0][1]; //FP2
 
-    elec_relXY[2][0] = -0.2f;            
+    elec_relXY[2][0] = -0.2f;
     elec_relXY[2][1] = 0f; //C3
-    elec_relXY[3][0] = -elec_relXY[2][0];  
+    elec_relXY[3][0] = -elec_relXY[2][0];
     elec_relXY[3][1] = elec_relXY[2][1]; //C4
 
-    elec_relXY[4][0] = -0.3425f;            
+    elec_relXY[4][0] = -0.3425f;
     elec_relXY[4][1] = 0.27f; //T5 (aka P7)
-    elec_relXY[5][0] = -elec_relXY[4][0];  
+    elec_relXY[5][0] = -elec_relXY[4][0];
     elec_relXY[5][1] = elec_relXY[4][1]; //T6 (aka P8)
 
-    elec_relXY[6][0] = -0.125f;             
+    elec_relXY[6][0] = -0.125f;
     elec_relXY[6][1] = +0.5f - elec_relDiam*(0.5f+0.2f); //O1
-    elec_relXY[7][0] = -elec_relXY[6][0];  
+    elec_relXY[7][0] = -elec_relXY[6][0];
     elec_relXY[7][1] = elec_relXY[6][1];  //O2
 
-    elec_relXY[8][0] = elec_relXY[4][0];  
+    elec_relXY[8][0] = elec_relXY[4][0];
     elec_relXY[8][1] = -elec_relXY[4][1]; //F7
-    elec_relXY[9][0] = -elec_relXY[8][0];  
+    elec_relXY[9][0] = -elec_relXY[8][0];
     elec_relXY[9][1] = elec_relXY[8][1]; //F8
 
-    elec_relXY[10][0] = -0.18f;            
+    elec_relXY[10][0] = -0.18f;
     elec_relXY[10][1] = -0.15f; //C3
-    elec_relXY[11][0] = -elec_relXY[10][0];  
-    elec_relXY[11][1] = elec_relXY[10][1]; //C4    
+    elec_relXY[11][0] = -elec_relXY[10][0];
+    elec_relXY[11][1] = elec_relXY[10][1]; //C4
 
-    elec_relXY[12][0] =  -0.5f +elec_relDiam*(0.5f+0.15f);  
+    elec_relXY[12][0] =  -0.5f +elec_relDiam*(0.5f+0.15f);
     elec_relXY[12][1] = 0f; //T3 (aka T7?)
-    elec_relXY[13][0] = -elec_relXY[12][0];  
-    elec_relXY[13][1] = elec_relXY[12][1]; //T4 (aka T8)    
+    elec_relXY[13][0] = -elec_relXY[12][0];
+    elec_relXY[13][1] = elec_relXY[12][1]; //T4 (aka T8)
 
-    elec_relXY[14][0] = elec_relXY[10][0];   
+    elec_relXY[14][0] = elec_relXY[10][0];
     elec_relXY[14][1] = -elec_relXY[10][1]; //CP3
-    elec_relXY[15][0] = -elec_relXY[14][0];  
-    elec_relXY[15][1] = elec_relXY[14][1]; //CP4    
+    elec_relXY[15][0] = -elec_relXY[14][0];
+    elec_relXY[15][1] = elec_relXY[14][1]; //CP4
 
     //reference electrode
     float[] ref_elec_relXY = new float[2];
-    ref_elec_relXY[0] = 0.0f;    
-    ref_elec_relXY[1] = 0.0f;   
+    ref_elec_relXY[0] = 0.0f;
+    ref_elec_relXY[1] = 0.0f;
 
     //put it all into a table
     Table table_elec_relXY = new Table();
-    table_elec_relXY.addColumn("X", Table.FLOAT);  
+    table_elec_relXY.addColumn("X", Table.FLOAT);
     table_elec_relXY.addColumn("Y", Table.FLOAT);
     for (int I = 0; I < elec_relXY.length; I++) {
       table_elec_relXY.addRow();
@@ -746,9 +451,9 @@ class HeadPlot {
 
     //try writing it to a file
     String full_fname = "Data\\" + fname;
-    try { 
+    try {
       saveTable(table_elec_relXY, full_fname, "csv");
-    } 
+    }
     catch (NullPointerException e) {
       println("headPlot: createDefaultElectrodeLocations: could not write file to " + full_fname);
     };
@@ -757,7 +462,7 @@ class HeadPlot {
     return table_elec_relXY;
   } //end of method
 
-  //Here, we do a two-step solution to get the weighting factors.  
+  //Here, we do a two-step solution to get the weighting factors.
   //We do a coarse grid first.  We do our iterative solution on the coarse grid.
   //Then, we formulate the full resolution fine grid.  We interpolate these points
   //from the data resulting from the coarse grid.
@@ -766,13 +471,13 @@ class HeadPlot {
 
     //define the coarse grid data structures and pixel locations
     int decimation = 10;
-    int n_wide_small = n_wide_full / decimation + 1;  
+    int n_wide_small = n_wide_full / decimation + 1;
     int n_tall_small = n_tall_full / decimation + 1;
     float weightFac[][][] = new float[n_elec][n_wide_small][n_tall_small];
     int pixelAddress[][][] = new int[n_wide_small][n_tall_small][2];
-    for (int Ix=0; Ix<n_wide_small; Ix++) { 
-      for (int Iy=0; Iy<n_tall_small; Iy++) { 
-        pixelAddress[Ix][Iy][0] = Ix*decimation; 
+    for (int Ix=0; Ix<n_wide_small; Ix++) {
+      for (int Iy=0; Iy<n_tall_small; Iy++) {
+        pixelAddress[Ix][Iy][0] = Ix*decimation;
         pixelAddress[Ix][Iy][1] = Iy*decimation;
       };
     };
@@ -791,12 +496,12 @@ class HeadPlot {
       dx_frac = float(Ix - Ix_source*decimation)/float(decimation);
       for (int Iy=0; Iy < n_tall_full; Iy++) {
         int Iy_source = Iy/decimation;
-        dy_frac = float(Iy - Iy_source*decimation)/float(decimation);           
+        dy_frac = float(Iy - Iy_source*decimation)/float(decimation);
 
         for (int Ielec=0; Ielec<n_elec; Ielec++) {
           //println("    : Ielec = " + Ielec);
           if ((Ix_source < (n_wide_small-1)) && (Iy_source < (n_tall_small-1))) {
-            //normal 2-D interpolation    
+            //normal 2-D interpolation
             electrode_color_weightFac[Ielec][Ix][Iy] = interpolate2D(weightFac[Ielec], Ix_source, Iy_source, Ix_source+1, Iy_source+1, dx_frac, dy_frac);
           } else if (Ix_source < (n_wide_small-1)) {
             //1-D interpolation in X
@@ -806,7 +511,7 @@ class HeadPlot {
             //1-D interpolation in Y
             dx_frac = 0.0f;
             electrode_color_weightFac[Ielec][Ix][Iy] = interpolate2D(weightFac[Ielec], Ix_source, Iy_source, Ix_source, Iy_source+1, dx_frac, dy_frac);
-          } else { 
+          } else {
             //no interpolation, just use the last value
             electrode_color_weightFac[Ielec][Ix][Iy] = weightFac[Ielec][Ix_source][Iy_source];
           }  //close the if block selecting the interpolation configuration
@@ -816,9 +521,9 @@ class HeadPlot {
 
     //clean up the boundaries of our interpolated results to make the look nicer
     int pixelAddress_full[][][] = new int[n_wide_full][n_tall_full][2];
-    for (int Ix=0; Ix<n_wide_full; Ix++) { 
-      for (int Iy=0; Iy<n_tall_full; Iy++) { 
-        pixelAddress_full[Ix][Iy][0] = Ix; 
+    for (int Ix=0; Ix<n_wide_full; Ix++) {
+      for (int Iy=0; Iy<n_tall_full; Iy++) {
+        pixelAddress_full[Ix][Iy][0] = Ix;
         pixelAddress_full[Ix][Iy][1] = Iy;
       };
     };
@@ -838,7 +543,7 @@ class HeadPlot {
 
   //here is the simpler and more robust algorithm.  It's not necessarily physically real, though.
   //but, it will work every time.  So, if the other method fails, go with this one.
-  private void computePixelWeightingFactors() { 
+  private void computePixelWeightingFactors() {
     int n_elec = electrode_xy.length;
     float dist;
     int withinElecInd = -1;
@@ -879,7 +584,7 @@ class HeadPlot {
 
           //finalize the weight factor
           for (int Ielec=0; Ielec < n_elec; Ielec++) {
-            //is this pixel within an electrode? 
+            //is this pixel within an electrode?
             if (withinElecInd > -1) {
               //yes, it is within an electrode
               if (Ielec == withinElecInd) {
@@ -890,7 +595,7 @@ class HeadPlot {
                 electrode_color_weightFac[Ielec][Ix][Iy] = 0.0f;
               }
             } else {
-              //no, this pixel is not in an electrode.  So, use the distance-based weight factor, 
+              //no, this pixel is not in an electrode.  So, use the distance-based weight factor,
               //after dividing by the sum of the weight factors, resulting in an averaging operation
               electrode_color_weightFac[Ielec][Ix][Iy] = weight_fac[Ielec]/sum_weight_fac;
             }
@@ -967,7 +672,7 @@ class HeadPlot {
     } // close Ix
   } //close method
 
-  //find the closest legitimate weightFac          
+  //find the closest legitimate weightFac
   private float getClosestWeightFac(float weightFac[][], int Ix, int Iy) {
     int n_wide = weightFac.length;
     int n_tall = weightFac[0].length;
@@ -1100,8 +805,8 @@ class HeadPlot {
       max_val = -1000.f; //init to a small val
 
       //copy current values
-      for (int Ix=0; Ix<n_wide; Ix++) { 
-        for (int Iy=0; Iy<n_tall; Iy++) { 
+      for (int Ix=0; Ix<n_wide; Ix++) {
+        for (int Iy=0; Iy<n_tall; Iy++) {
           prevVal[Ix][Iy]=pixelVal[Ielec][Ix][Iy];
         };
       };
@@ -1166,19 +871,19 @@ class HeadPlot {
   //    int n_wide = toPixels.length;
   //    int n_tall = toPixels[0].length;
   //    int n_dir = toPixels[0][0].length;
-  //    
+  //
   //    //loop over each pixel
-  //    for (int Ix=0; Ix<n_wide;Ix++) { 
+  //    for (int Ix=0; Ix<n_wide;Ix++) {
   //      for (int Iy=0; Iy<n_tall;Iy++) {
-  //        
+  //
   //        //initialize
   //        numConnections[Ix][Iy]=0;
-  //        
+  //
   //        //loop through the four directions
   //        for (int Idir=0;Idir<n_dir;Idir++) {
   //          //is it a connection to another pixel (anything > -1 is a connection)
   //          if (toPixels[Ix][Iy][Idir][0] > -1) numConnections[Ix][Iy]++;
-  //          
+  //
   //          //is it a connection to an electrode?
   //          if (toElectrodes[Ix][Iy][Idir] > -1) numConnections[Ix][Iy]++;
   //        }
@@ -1203,23 +908,23 @@ class HeadPlot {
         //loop over the four connections: left, right, up, down
         for (int Idirection = 0; Idirection < 4; Idirection++) {
 
-          Ix_try = -1; 
+          Ix_try = -1;
           Iy_try=-1; //nonsense values
           switch (Idirection) {
           case 0:
-            Ix_try = Ix-1; 
+            Ix_try = Ix-1;
             Iy_try = Iy; //left
             break;
           case 1:
-            Ix_try = Ix+1; 
+            Ix_try = Ix+1;
             Iy_try = Iy; //right
             break;
           case 2:
-            Ix_try = Ix; 
+            Ix_try = Ix;
             Iy_try = Iy-1; //up
             break;
           case 3:
-            Ix_try = Ix; 
+            Ix_try = Ix;
             Iy_try = Iy+1; //down
             break;
           }
@@ -1283,7 +988,7 @@ class HeadPlot {
     for (int Ielec=0; Ielec<n_elec; Ielec++) {
       //find closest pixel
       float min_dist = 1.0e10;  //some huge number
-      int best_Ix=0, best_Iy=0; 
+      int best_Ix=0, best_Iy=0;
       for (int Iy=0; Iy < n_tall; Iy++) {
         //pixel_y = image_y + Iy;
         for (int Ix = 0; Ix < n_wide; Ix++) {
@@ -1325,7 +1030,7 @@ class HeadPlot {
     }
   }
 
-  private void convertVoltagesToHeadImage() { 
+  private void convertVoltagesToHeadImage() {
     for (int Iy=0; Iy < headImage.height; Iy++) {
       for (int Ix = 0; Ix < headImage.width; Ix++) {
         //is this pixel inside the head?
@@ -1354,7 +1059,7 @@ class HeadPlot {
         }
       }
     }
-  }    
+  }
 
   int count_call=0;
   private float calcPixelVoltage(int pixel_Ix, int pixel_Iy, float prev_val) {
@@ -1375,7 +1080,7 @@ class HeadPlot {
     }
 
     //smooth in time
-    if (smooth_fac > 0.0f) voltage = smooth_fac*prev_val + (1.0-smooth_fac)*voltage;     
+    if (smooth_fac > 0.0f) voltage = smooth_fac*prev_val + (1.0-smooth_fac)*voltage;
 
     return voltage;
   }
@@ -1394,14 +1099,14 @@ class HeadPlot {
 
     float intensity = constrain(abs(pixel_volt_uV), intense_min_uV, intense_max_uV);
     if (plot_color_as_log) {
-      intensity = map(log10(intensity), 
-        log10_intense_min_uV, 
-        log10_intense_max_uV, 
+      intensity = map(log10(intensity),
+        log10_intense_min_uV,
+        log10_intense_max_uV,
         0.0f, 1.0f);
     } else {
-      intensity = map(intensity, 
-        intense_min_uV, 
-        intense_max_uV, 
+      intensity = map(intensity,
+        intense_min_uV,
+        intense_max_uV,
         0.0f, 1.0f);
     }
 
@@ -1525,8 +1230,8 @@ class HeadPlot {
     ellipse(earL_x, earL_y, ear_width, ear_height); //little circle for the ear
     ellipse(earR_x, earR_y, ear_width, ear_height); //little circle for the ear
 
-    //draw head itself   
-    fill(255, 255, 255, 255);  //fill in a white head 
+    //draw head itself
+    fill(255, 255, 255, 255);  //fill in a white head
     strokeWeight(1);
     ellipse(circ_x, circ_y, circ_diam, circ_diam); //big circle for the head
     if (drawHeadAsContours) {
