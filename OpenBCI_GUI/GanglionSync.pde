@@ -537,15 +537,14 @@ class OpenBCI_Ganglion {
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {
     if (connected) {
-      // if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
       if ((Ichan >= 0)) {
         if (activate) {
-          // serial_openBCI.write(command_activate_channel[Ichan]);
-          // gui.cc.powerUpChannel(Ichan);
+          println("OpenBCI_Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]));
+          safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan]) + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
-          // serial_openBCI.write(command_deactivate_channel[Ichan]);
-          // gui.cc.powerDownChannel(Ichan);
+          println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]));
+          safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan]) + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         }
       }
