@@ -228,10 +228,11 @@ controlP5.Toggle : Toggle toggle()
 controlP5.Toggle : Toggle update() 
 controlP5.Toggle : boolean getBooleanValue() 
 controlP5.Toggle : boolean getState() 
+controlP5.Toggle : int getMode() 
 java.lang.Object : String toString() 
 java.lang.Object : boolean equals(Object) 
 
-created: 2014/09/08 01:19:26
+created: 2015/03/24 12:21:35
 
 */
 

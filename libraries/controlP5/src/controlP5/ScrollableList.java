@@ -1,5 +1,30 @@
 package controlP5;
 
+/**
+ * controlP5 is a processing gui library.
+ * 
+ * 2006-2015 by Andreas Schlegel
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA
+ * 
+ * @author Andreas Schlegel (http://www.sojamo.de)
+ * @modified 04/14/2016
+ * @version 2.2.6
+ * 
+ */
+
 import static controlP5.ControlP5.b;
 
 import java.util.ArrayList;
@@ -14,36 +39,9 @@ import processing.core.PGraphics;
 import processing.event.KeyEvent;
 
 /**
- * controlP5 is a processing gui library.
- *
- * 2006-2012 by Andreas Schlegel
- *
- * This library is free software; you can redistribute it
- * and/or modify it under the terms of the GNU Lesser
- * General Public License as published by the Free Software
- * Foundation; either version 2.1 of the License, or (at
- * your option) any later version. This library is
- * distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more
- * details.
- *
- * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to
- * the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
- *
- * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
- *
- */
-
-/**
  * A ScrollableList is a list of vertically aligned items
  * which can be scrolled if required.
- *
+ * 
  * @example controllers/ControlP5scrollableList
  */
 public class ScrollableList extends Controller< ScrollableList > implements ControlListener {
@@ -75,6 +73,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 		super( theControlP5 , theGroup , theName , theX , theY , theW , theH );
 		items = new ArrayList< Map< String , Object > >( );
 		updateHeight( );
+		getValueLabel( ).align( PApplet.LEFT , PApplet.CENTER );
 	}
 
 	public boolean isOpen( ) {
@@ -133,29 +132,41 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 
 				// n += itemRange; /* UP */
 				int index = ( int ) n + itemIndexOffset;
-
-				Map m = items.get( index );
-
-				switch ( _myType ) {
-				case ( LIST ):
-					setValue( index );
-					for ( Object o : items ) {
-						( ( Map ) o ).put( "state" , false );
-					}
-					m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
-					break;
-				case ( DROPDOWN ):
-					setValue( index );
-					setOpen( false );
-					getCaptionLabel( ).setText( ( m.get( "text" ).toString( ) ) );
-					break;
-				case ( CHECKBOX ):
-					m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
-					break;
-				}
-
+				updateIndex( index );
 			}
 		}
+	}
+
+	private void updateIndex( int theIndex ) {
+		if ( theIndex >= items.size( ) ) {
+			return;
+		}
+
+		Map m = items.get( theIndex );
+
+		switch ( _myType ) {
+		case ( LIST ):
+			super.setValue( theIndex );
+			for ( Object o : items ) {
+				( ( Map ) o ).put( "state" , false );
+			}
+			m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
+			break;
+		case ( DROPDOWN ):
+			super.setValue( theIndex );
+			setOpen( false );
+			getCaptionLabel( ).setText( ( m.get( "text" ).toString( ) ) );
+			break;
+		case ( CHECKBOX ):
+			m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
+			break;
+		}
+
+	}
+
+	public ScrollableList setValue( float theValue ) {
+		updateIndex( ( int ) ( theValue ) );
+		return this;
 	}
 
 	@Override protected void onDrag( ) {
@@ -397,7 +408,8 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 				}
 				g.popMatrix( );
 
-				c.getCaptionLabel( ).align( PApplet.LEFT , PApplet.CENTER ).draw( g , 4 , c.barHeight / 2 );
+				c.getCaptionLabel( ).draw( g , 4 , c.barHeight / 2 );
+
 			}
 
 			if ( c.isOpen( ) ) {
@@ -419,7 +431,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 					CColor color = ( CColor ) item.get( "color" );
 					g.fill( ( b( item.get( "state" ) ) ) ? color.getActive( ) : ( i == c.itemHover ) ? ( c.isMousePressed ? color.getActive( ) : color.getForeground( ) ) : color.getBackground( ) );
 					g.rect( 0 , 0 , c.getWidth( ) , c.itemHeight - 1 );
-					c.getValueLabel( ).align( PApplet.LEFT , PApplet.CENTER ).set( item.get( "text" ).toString( ) ).draw( g , 4 , c.itemHeight / 2 );
+					c.getValueLabel( ).set( item.get( "text" ).toString( ) ).draw( g , 4 , c.itemHeight / 2 );
 					g.translate( 0 , c.itemHeight );
 				}
 				g.popMatrix( );

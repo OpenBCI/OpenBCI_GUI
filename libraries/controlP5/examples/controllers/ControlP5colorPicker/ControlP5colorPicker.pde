@@ -42,13 +42,13 @@ public void controlEvent(ControlEvent c) {
     int b = int(c.getArrayValue(2));
     int a = int(c.getArrayValue(3));
     color col = color(r,g,b,a);
-    println("event\talpha:"+a+"\tred:"+r+"\tgreen:"+g+"\tblue:"+b+"\tcol"+col);
+    println("event \talpha:"+a+"\tred:"+r+"\tgreen:"+g+"\tblue:"+b+"\tcol"+col);
   }
 }
 
 // color information from ColorPicker 'picker' are forwarded to the picker(int) function
 void picker(int col) {
-  println("picker\talpha:"+alpha(col)+"\tred:"+red(col)+"\tgreen:"+green(col)+"\tblue:"+blue(col)+"\tcol"+col);
+  println("picker\talpha:"+int(alpha(col))+"\tred:"+int(red(col))+"\tgreen:"+int(green(col))+"\tblue:"+int(blue(col))+"\tcol"+col);
 }
 
 
@@ -181,8 +181,6 @@ controlP5.ControllerGroup : void remove()
 java.lang.Object : String toString() 
 java.lang.Object : boolean equals(Object) 
 
-created: 2014/09/08 01:18:53
+created: 2015/03/24 12:20:58
 
 */
-
-

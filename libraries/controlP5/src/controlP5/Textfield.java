@@ -1,21 +1,9 @@
 package controlP5;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import processing.core.PApplet;
-import processing.core.PFont;
-import processing.core.PGraphics;
-import processing.event.Event;
-import processing.event.KeyEvent;
-
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -32,10 +20,23 @@ import processing.event.KeyEvent;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import processing.core.PApplet;
+import processing.core.PFont;
+import processing.core.PGraphics;
+import processing.event.Event;
+import processing.event.KeyEvent;
+
 
 /**
  * A singleline input textfield, use arrow keys to go back and forth, use backspace to delete
@@ -109,7 +110,7 @@ public class Textfield extends Controller< Textfield > {
 	public Textfield( ControlP5 theControlP5 , ControllerGroup< ? > theParent , String theName , String theDefaultValue , int theX , int theY , int theWidth , int theHeight ) {
 		super( theControlP5 , theParent , theName , theX , theY , theWidth , theHeight );
 
-		_myCaptionLabel = new Label( cp5 , theName.toUpperCase( ) , 0 , 0 , color.getCaptionLabel( ) );
+		_myCaptionLabel = new Label( cp5 , theName , 0 , 0 , color.getCaptionLabel( ) );
 		_myValueLabel.setFont( cp5.controlFont == cp5.defaultFont ? cp5.defaultFontForText : cp5.controlFont );
 		_myCaptionLabel.align( ControlP5.LEFT , ControlP5.BOTTOM_OUTSIDE );
 		_myCaptionLabel.setPaddingX( 0 );
@@ -183,15 +184,15 @@ public class Textfield extends Controller< Textfield > {
 		return this;
 	}
 
-	public Textfield setFont( PFont thePFont ) {
-		getValueLabel( ).setFont( thePFont );
-		return this;
-	}
-
-	public Textfield setFont( ControlFont theFont ) {
-		getValueLabel( ).setFont( theFont );
-		return this;
-	}
+//	public Textfield setFont( PFont thePFont ) {
+//		getValueLabel( ).setFont( thePFont );
+//		return this;
+//	}
+//
+//	public Textfield setFont( ControlFont theFont ) {
+//		getValueLabel( ).setFont( theFont );
+//		return this;
+//	}
 
 	public Textfield setFont( int theFont ) {
 		getValueLabel( ).setFont( theFont );

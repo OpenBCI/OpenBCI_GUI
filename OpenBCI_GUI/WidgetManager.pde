@@ -38,7 +38,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   addWidget(w_fft, w);
 
   w_accelerometer = new W_accelerometer(_this);
-  w_accelerometer.setTitle("Accelerometer Plot");
+  w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
 
   w_template1 = new W_template(_this);
