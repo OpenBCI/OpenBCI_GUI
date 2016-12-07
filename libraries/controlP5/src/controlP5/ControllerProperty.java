@@ -1,5 +1,30 @@
 package controlP5;
 
+/**
+ * controlP5 is a processing gui library.
+ * 
+ * 2006-2015 by Andreas Schlegel
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA
+ * 
+ * @author Andreas Schlegel (http://www.sojamo.de)
+ * @modified 04/14/2016
+ * @version 2.2.6
+ * 
+ */
+
 import java.io.Serializable;
 
 /**
@@ -11,21 +36,13 @@ import java.io.Serializable;
 public class ControllerProperty implements Serializable , Cloneable {
 
 	private static final long serialVersionUID = 4506431150330867327L;
-
 	private String setter;
-
 	private String getter;
-
 	private Class< ? > type;
-
 	private Object value;
-
 	private String address;
-
 	private int id;
-
 	private transient boolean active;
-
 	private transient ControllerInterface< ? > controller;
 
 	ControllerProperty( ControllerInterface< ? > theController , String theSetter , String theGetter ) {
@@ -37,8 +54,7 @@ public class ControllerProperty implements Serializable , Cloneable {
 		setId( theController.getId( ) );
 	}
 
-	@Override
-	protected Object clone( ) throws CloneNotSupportedException {
+	@Override protected Object clone( ) throws CloneNotSupportedException {
 		ControllerProperty clone = ( ControllerProperty ) super.clone( );
 		clone.setSetter( getSetter( ) );
 		clone.setGetter( getGetter( ) );
@@ -54,8 +70,7 @@ public class ControllerProperty implements Serializable , Cloneable {
 	/**
 	 * @exclude {@inheritDoc}
 	 */
-	@Override
-	public boolean equals( Object o ) {
+	@Override public boolean equals( Object o ) {
 
 		if ( this == o ) {
 			return true;
@@ -74,8 +89,7 @@ public class ControllerProperty implements Serializable , Cloneable {
 	/**
 	 * @exclude {@inheritDoc}
 	 */
-	@Override
-	public int hashCode( ) {
+	@Override public int hashCode( ) {
 		int result = 17;
 		result = 37 * result + ( address != null ? address.hashCode( ) : 0 );
 		result = 37 * result + ( setter != null ? setter.hashCode( ) : 0 );
@@ -91,8 +105,7 @@ public class ControllerProperty implements Serializable , Cloneable {
 		active = true;
 	}
 
-	@Override
-	public String toString( ) {
+	@Override public String toString( ) {
 		return address + " " + setter + ", " + getter;
 	}
 

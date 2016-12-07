@@ -1,5 +1,30 @@
 package controlP5;
 
+/**
+ * controlP5 is a processing gui library.
+ * 
+ * 2006-2015 by Andreas Schlegel
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA
+ * 
+ * @author Andreas Schlegel (http://www.sojamo.de)
+ * @modified 04/14/2016
+ * @version 2.2.6
+ * 
+ */
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -175,9 +200,9 @@ public class ColorWheel extends Controller< ColorWheel > {
 		buffer.ellipse( buffer.width / 2 , buffer.height / 2 , ( inner_radius + 1 ) * 2 , ( inner_radius + 1 ) * 2 );
 
 		for ( int y = 0 ; y < h ; y++ ) {
-			int dy = ( int ) ( y(center) - y );
+			int dy = ( int ) ( y( center ) - y );
 			for ( int x = 0 ; x < w ; x++ ) {
-				int dx = ( int ) ( x(center) - x );
+				int dx = ( int ) ( x( center ) - x );
 				double dist = Math.sqrt( dx * dx + dy * dy );
 				if ( dist >= inner_radius && dist <= outer_radius ) {
 					double theta = Math.atan2( dy , dx );
@@ -234,9 +259,9 @@ public class ColorWheel extends Controller< ColorWheel > {
 		float y = _myColorResources.get( "default" ).height / 2 - ( float ) Math.sin( theta ) * s;
 		set( _myCursor , x , y );
 		setSaturation( t[ 1 ] );
+		// TODO resolve rounding error issue as reported here https://github.com/sojamo/controlp5/issues/21
 		_myColorValue = HSLtoRGB( hsl );
 		setValue( _myColorValue );
-
 		return this;
 	}
 

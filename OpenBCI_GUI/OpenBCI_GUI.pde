@@ -43,13 +43,6 @@ import java.awt.AWTException;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
-// acc test
-float [] validAuxValues = {0,0,0};
-float[] X_buff;
-float[] Y_buff;
-float[] Z_buff;
-boolean acc_newData = false;
-
 //used to switch between application states
 
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -125,6 +118,7 @@ float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is
 float dataBuffY_filtY_uV[][];
 float yLittleBuff[] = new float[nPointsPerUpdate];
 float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][] = new float[3][nPointsPerUpdate];
 float data_elec_imp_ohm[];
 
@@ -494,9 +488,12 @@ void initSystem() {
   dataBuffX = new float[(int)(dataBuff_len_sec * get_fs_Hz_safe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
-  X_buff = new float[500];
-  Y_buff = new float[500];
-  Z_buff = new float[500];
+  accelerometerBuff = new float[3][500]; // 500 points
+  for (int i=0; i<n_aux_ifEnabled; i++) {
+    for (int j=0; j<accelerometerBuff[0].length; j++) {
+      accelerometerBuff[i][j] = 0;
+    }
+  }
   //data_std_uV = new float[nchan];
   data_elec_imp_ohm = new float[nchan];
   is_railed = new DataStatus[nchan];
@@ -536,7 +533,6 @@ void initSystem() {
     openBCI = new OpenBCI_ADS1299(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
     break;
   case DATASOURCE_SYNTHETIC:
-    synthesizeData = true;
     //do nothing
     break;
   case DATASOURCE_PLAYBACKFILE:

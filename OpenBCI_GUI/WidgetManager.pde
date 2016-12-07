@@ -16,6 +16,7 @@ color bgColor = color(1, 18, 41);
 W_timeSeries w_timeSeries;
 W_headPlot w_headPlot;
 W_fft w_fft;
+W_accelerometer w_accelerometer;
 W_template w_template1;
 W_template w_template2;
 W_template w_template3;
@@ -35,6 +36,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_fft = new W_fft(_this);
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
+
+  w_accelerometer = new W_accelerometer(_this);
+  w_accelerometer.setTitle("Accelerometer");
+  addWidget(w_accelerometer, w);
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget 1");

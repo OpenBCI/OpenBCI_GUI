@@ -3,27 +3,25 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
- * This library is free software; you can redistribute it
- * and/or modify it under the terms of the GNU Lesser
- * General Public License as published by the Free Software
- * Foundation; either version 2.1 of the License, or (at
- * your option) any later version. This library is
- * distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty
- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more
- * details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General
- * Public License along with this library; if not, write to
- * the Free Software Foundation, Inc., 59 Temple Place,
- * Suite 330, Boston, MA 02111-1307 USA
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -33,11 +31,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -87,12 +88,15 @@ public class ControlP5 extends ControlP5Base {
 	 */
 	@ControlP5.Invisible PGraphics pg;
 	int pgx = 0 , pgy = 0 , pgw = 0 , pgh = 0;
+	int ox = 0;
+	int oy = 0;
+
 	boolean isGraphics = false;
 
 	/**
 	 * @exclude
 	 */
-	@ControlP5.Invisible public static final String VERSION = "2.2.2";// "2.2.2";
+	@ControlP5.Invisible public static final String VERSION = "2.2.6";// "2.2.6";
 
 	/**
 	 * @exclude
@@ -237,7 +241,7 @@ public class ControlP5 extends ControlP5Base {
 	static int welcome = 0;
 
 	private void welcome( ) {
-		// System.out.println( "ControlP5 " + VERSION + " " + "infos, comments, questions at http://www.sojamo.de/libraries/controlP5" );
+		System.out.println( "ControlP5 " + VERSION + " " + "infos, comments, questions at http://www.sojamo.de/libraries/controlP5" );
 	}
 
 	public ControlP5 setGraphics( PApplet theApplet , int theX , int theY ) {
@@ -253,6 +257,12 @@ public class ControlP5 extends ControlP5Base {
 		pgw = pg.width;
 		pgh = pg.height;
 		isGraphics = true;
+		return this;
+	}
+
+	public ControlP5 setPosition( int theX , int theY ) {
+		ox = theX;
+		oy = theY;
 		return this;
 	}
 
@@ -942,7 +952,8 @@ public class ControlP5 extends ControlP5Base {
 	public boolean loadProperties( final String theFilePath ) {
 		String path = theFilePath.endsWith( _myProperties.format.getExtension( ) ) ? theFilePath : theFilePath + "." + _myProperties.format.getExtension( );
 		path = checkPropertiesPath( path );
-		File f = new File( path );
+		File f = new File( path);
+		
 		if ( f.exists( ) ) {
 			return _myProperties.load( path );
 		}
@@ -1214,8 +1225,14 @@ public class ControlP5 extends ControlP5Base {
 	/* static helper functions including Object-to-Type
 	 * conversions, invokes */
 
-	static public Object invoke( Object theObject , String theMember , Object ... theParams ) {
+	static public Object invoke( final Object theObject , final String theMember , final Object ... theParams ) {
+		return invoke( theObject , theObject.getClass( ) , theMember , theParams );
+	}
 
+	static public Object invoke( final Object theObject , final Class< ? > theClass , final String theMember , final Object ... theParams ) {
+		if ( theClass == null ) {
+			return null;
+		}
 		Class[] cs = new Class[ theParams.length ];
 
 		for ( int i = 0 ; i < theParams.length ; i++ ) {
@@ -1223,7 +1240,7 @@ public class ControlP5 extends ControlP5Base {
 			cs[ i ] = classmap.containsKey( c ) ? classmap.get( c ) : c;
 		}
 		try {
-			final Field f = theObject.getClass( ).getDeclaredField( theMember );
+			final Field f = theClass.getDeclaredField( theMember );
 			/* TODO check super */
 			f.setAccessible( true );
 			Object o = theParams[ 0 ];
@@ -1245,8 +1262,7 @@ public class ControlP5 extends ControlP5Base {
 			}
 		} catch ( NoSuchFieldException e1 ) {
 			try {
-				final Method m = theObject.getClass( ).getDeclaredMethod( theMember , cs );
-				/* TODO check super */
+				final Method m = theClass.getDeclaredMethod( theMember , cs );
 				m.setAccessible( true );
 				try {
 					return m.invoke( theObject , theParams );
@@ -1261,7 +1277,7 @@ public class ControlP5 extends ControlP5Base {
 			} catch ( SecurityException e ) {
 				System.err.println( e );
 			} catch ( NoSuchMethodException e ) {
-				System.err.println( e );
+				invoke( theObject , theClass.getSuperclass( ) , theMember , theParams );
 			}
 		} catch ( IllegalArgumentException e ) {
 			System.err.println( e );
@@ -1359,12 +1375,42 @@ public class ControlP5 extends ControlP5Base {
 		return str.matches( "(-|\\+)?\\d+(\\.\\d+)?" );
 	}
 
+	static public List toList( final Object ... args ) {
+		List l = new ArrayList( );
+		Collections.addAll( l , args );
+		return l;
+	}
+
 	static public List toList( Object o ) {
 		return o != null ? ( o instanceof List ) ? ( List ) o : ( o instanceof String ) ? toList( o.toString( ) ) : Collections.EMPTY_LIST : Collections.EMPTY_LIST;
 	}
 
+	static public Map toMap( final String s ) {
+		/* similar to mapFrom(Object ... args) but with type
+		 * (Number,String) sensitivity */
+		String[] arr = s.trim( ).split( delimiter );
+		Map m = new LinkedHashMap( );
+		if ( arr.length % 2 == 0 ) {
+			for ( int i = 0 ; i < arr.length ; i += 2 ) {
+				String s1 = arr[ i + 1 ];
+				m.put( arr[ i ] , isNumeric( s1 ) ? s1.indexOf( "." ) == -1 ? i( s1 ) : f( s1 ) : s1 );
+			}
+		}
+		return m;
+	}
+
 	static public Map toMap( Object o ) {
 		return o != null ? ( o instanceof Map ) ? ( Map ) o : Collections.EMPTY_MAP : Collections.EMPTY_MAP;
+	}
+
+	static public Map toMap( final Object ... args ) {
+		Map m = new LinkedHashMap( );
+		if ( args.length % 2 == 0 ) {
+			for ( int i = 0 ; i < args.length ; i += 2 ) {
+				m.put( args[ i ] , args[ i + 1 ] );
+			}
+		}
+		return m;
 	}
 
 	static public String s( String o ) {
@@ -1381,6 +1427,18 @@ public class ControlP5 extends ControlP5Base {
 			put( Long.class , long.class );
 		}
 	};
+
+	static public void sleep( long theMillis ) {
+		try {
+			Thread.sleep( theMillis );
+		} catch ( Exception e ) {
+
+		}
+	}
+
+	static public String timestamp( ) {
+		return new SimpleDateFormat( "yyyyMMdd-HHmmss" ).format( new Date( ) );
+	}
 
 	/* add Objects with Annotation */
 

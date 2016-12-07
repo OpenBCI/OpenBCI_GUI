@@ -3,7 +3,7 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 
 import processing.core.PApplet;
+import processing.core.PFont;
 import processing.core.PGraphics;
-import processing.core.PVector;
 import controlP5.ControlP5.Invisible;
 
 /**
@@ -66,7 +66,7 @@ public class Range extends Controller< Range > {
 	protected boolean isSnapToTickMarks;
 	public static int autoWidth = 99;
 	public static int autoHeight = 9;
-	public static PVector autoSpacing = new PVector( 0 , 5 , 0 );
+	public static float[] autoSpacing = new float[]{ 0 , 5 , 0 };
 	public int alignValueLabel = CENTER;
 	protected int _myColorTickMark = 0xffffffff;
 	private int mode = -1;
@@ -489,7 +489,17 @@ public class Range extends Controller< Range > {
 		}
 
 	}
+	
+	@Override public Range setFont( PFont thePFont ) {
+		_myHighValueLabel.setFont( thePFont );
+		return super.setFont( thePFont );
+	}
 
+	@Override public Range setFont( ControlFont theFont ) {
+		_myHighValueLabel.setFont( theFont );
+		return super.setFont( theFont );
+	}
+	
 	@Override @ControlP5.Invisible public String toString( ) {
 		return "type:\tRange\n" + super.toString( );
 	}

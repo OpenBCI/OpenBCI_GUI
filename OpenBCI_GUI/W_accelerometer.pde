@@ -1,20 +1,25 @@
-/////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////
 //
-//  Accelerometer_Widget is used to visiualze accelerometer data
+//  W_accelerometer is used to visiualze accelerometer data
 //
 //  Created: Joel Murphy
 //  Modified: Colin Fausnaught, September 2016
 //  Modified: Wangshu Sun, November 2016
 //
-//  Use '/' to toggle between accelerometer and pulse sensor.
-////////////////////////////////////////////////////////////////////////////////
+//
+///////////////////////////////////////////////////,
 
-class Accelerometer_Widget{
+class W_accelerometer extends Widget {
 
-  int x, y, w, h;
-  int parentContainer = 9;  // bottomright
+  //to see all core variables/methods of the Widget class, refer to Widget.pde
+  //put your custom variables here...
 
-  color boxBG;
+  // color boxBG;
+  color graphStroke = #d2d2d2;
+  color graphBG = #f5f5f5;
+  color textColor = #000000;
+
   color strokeColor;
 
   // Accelerometer Stuff
@@ -43,7 +48,7 @@ class Accelerometer_Widget{
   float currentZvalue;
 
   int[] X;
-  int[] Y;      //
+  int[] Y;
   int[] Z;
 
   float dummyX;
@@ -54,13 +59,10 @@ class Accelerometer_Widget{
   boolean Zrising;
   boolean OBCI_inited= true;
 
-  Accelerometer_Widget(PApplet parent) {
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
+  W_accelerometer(PApplet _parent){
+    super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    boxBG = bgColor;
+    // boxBG = bgColor;
     strokeColor = color(138, 146, 153);
 
     // Accel Sensor Stuff
@@ -96,15 +98,26 @@ class Accelerometer_Widget{
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
     }
+
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+    // addDropdown("Thisdrop", "Drop 1", Arrays.asList("A", "B"), 0);
+    // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
+    // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+
   }
 
   public void initPlayground(OpenBCI_ADS1299 _OBCI) {
     OBCI_inited = true;
   }
 
-  public void update() {
+  void update(){
+    super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+
+    //put your code here...
     if (isRunning) {
-      if (synthesizeData) {
+      if (eegDataSource == DATASOURCE_SYNTHETIC) {
         synthesizeAccelerometerData();
         currentXvalue = map(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
         currentYvalue = map(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
@@ -133,15 +146,18 @@ class Accelerometer_Widget{
     }
   }
 
-  public void draw() {
-    // verbosePrint("yeaaa");
-    if (drawAccel) {
-      fill(boxBG);
-      stroke(strokeColor);
-      rect(x, y, w, h);
+  void draw(){
+    super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+    if (true) {
+      // fill(graphBG);
+      // stroke(strokeColor);
+      // rect(x, y, w, h);
       textFont(f4, 24);
       textAlign(LEFT, TOP);
-      fill(eggshell);
+      fill(textColor);
       text("Acellerometer Gs", x + 10, y + 10);
 
       fill(50);
@@ -150,12 +166,12 @@ class Accelerometer_Widget{
       text("x", (PolarWindowX-PolarWindowWidth/2)+2, PolarWindowY-15);
       text("y", (PolarWindowX-PolarCorner)-5, (PolarWindowY+PolarCorner)-20);
 
-      fill(eggshell);  // pulse window background
-      stroke(eggshell);
+      fill(graphBG);  // pulse window background
+      stroke(graphStroke);
       rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
 
-      fill(eggshell);  // pulse window background
-      stroke(eggshell);
+      fill(graphBG);  // pulse window background
+      stroke(graphStroke);
       ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
 
       stroke(180);
@@ -176,7 +192,7 @@ class Accelerometer_Widget{
         draw3DGraph();
         drawAccWave();
       }
-      else if (synthesizeData) {  // SYNTHETIC
+      else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
         fill(Xcolor);
         text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
         fill(Ycolor);
@@ -193,16 +209,19 @@ class Accelerometer_Widget{
       }
     }
 
+    // pushStyle();
+    // textFont(h1,24);
+    // fill(bgColor);
+    // textAlign(CENTER,CENTER);
+    // text(widgetTitle, x + w/2, y + h/2);
+    // popStyle();
+
   }
 
-  void screenResized(PApplet _parent, int _winX, int _winY) {
-    //when screen is resized...
-    //update position/size of Accelerometer Widget
-    x = (int)container[parentContainer].x;
-    y = (int)container[parentContainer].y;
-    w = (int)container[parentContainer].w;
-    h = (int)container[parentContainer].h;
+  void screenResized(){
+    super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
+    //put your code here...
     AccelWindowWidth = int(w) - 10;
     AccelWindowX = int(x)+5;
     AccelWindowY = int(y)-10+int(h)/2;
@@ -212,6 +231,21 @@ class Accelerometer_Widget{
     PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
   }
 
+  void mousePressed(){
+    super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+
+  }
+
+  void mouseReleased(){
+    super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+
+  }
+
+  //add custom classes functions here
   void drawAccValues() {
     fill(Xcolor);
     text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
@@ -302,49 +336,61 @@ class Accelerometer_Widget{
   void synthesizeAccelerometerData() {
     if (Xrising) {  // MAKE A SAW WAVE FOR TESTING
       X[X.length-1]--;   // place the new raw datapoint at the end of the array
-      if (X[X.length-1] == AccelWindowY) {
+      if (X[X.length-1] <= AccelWindowY) {
         Xrising = false;
       }
     } else {
       X[X.length-1]++;   // place the new raw datapoint at the end of the array
-      if (X[X.length-1] == AccelWindowY+AccelWindowHeight) {
+      if (X[X.length-1] >= AccelWindowY+AccelWindowHeight) {
         Xrising = true;
       }
     }
 
     if (Yrising) {  // MAKE A SAW WAVE FOR TESTING
       Y[Y.length-1]--;   // place the new raw datapoint at the end of the array
-      if (Y[Y.length-1] == AccelWindowY) {
+      if (Y[Y.length-1] <= AccelWindowY) {
         Yrising = false;
       }
     } else {
       Y[Y.length-1]++;   // place the new raw datapoint at the end of the array
-      if (Y[Y.length-1] == AccelWindowY+AccelWindowHeight) {
+      if (Y[Y.length-1] >= AccelWindowY+AccelWindowHeight) {
         Yrising = true;
       }
     }
 
     if (Zrising) {  // MAKE A SAW WAVE FOR TESTING
       Z[Z.length-1]--;   // place the new raw datapoint at the end of the array
-      if (Z[Z.length-1] == AccelWindowY) {
+      if (Z[Z.length-1] <= AccelWindowY) {
         Zrising = false;
       }
     } else {
       Z[Z.length-1]++;   // place the new raw datapoint at the end of the array
-      if (Z[Z.length-1] == AccelWindowY+AccelWindowHeight) {
+      if (Z[Z.length-1] >= AccelWindowY+AccelWindowHeight) {
         Zrising = true;
       }
     }
   }
 
+};
 
-
-  // public void mousePressed() {
-  //   verbosePrint("Playground >> mousePressed()");
-  // }
-  //
-  // public void mouseReleased() {
-  //   verbosePrint("Playground >> mouseReleased()");
-  // }
-
-}
+// //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+// void Thisdrop(int n){
+//   println("Item " + (n+1) + " selected from Dropdown 1");
+//   if(n==0){
+//     //do this
+//   } else if(n==1){
+//     //do this instead
+//   }
+//
+//   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
+// }
+//
+// void Dropdown2(int n){
+//   println("Item " + (n+1) + " selected from Dropdown 2");
+//   closeAllDropdowns();
+// }
+//
+// void Dropdown3(int n){
+//   println("Item " + (n+1) + " selected from Dropdown 3");
+//   closeAllDropdowns();
+// }

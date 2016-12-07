@@ -1,3 +1,17 @@
+2016-14-04  Andreas Schlegel  <andi at sojamo.de>
+	
+      mostly bug fixes, see github issues
+      removed all PVector references, variables, and functions using processing.core.PVector
+      		
+2015-08-02  Andreas Schlegel  <andi at sojamo.de>
+
+      changes see github change log
+
+2015-03-29  Andreas Schlegel  <andi at sojamo.de>
+
+      * src controlP5.ScrollabelList:
+      fixing ArrayOutOfBounds error as reported on github under issue 3 https://github.com/sojamo/controlp5/issues/3
+
 2014-09-08  Andreas Schlegel  <andi at sojamo.de>
 
       * src controlP5.Icon:

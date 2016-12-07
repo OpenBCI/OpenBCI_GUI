@@ -3,7 +3,7 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -35,6 +35,7 @@ import java.io.ObjectOutputStream;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,6 +71,8 @@ public class ControllerProperties {
 	public final static int OPEN = 0;
 	public final static int CLOSE = 1;
 	public static String defaultName = "controlP5";
+	
+	
 	PropertiesStorageFormat format;
 
 	/**
@@ -420,14 +423,7 @@ public class ControllerProperties {
 			for ( ControllerProperty cp : l ) {
 				ControllerInterface< ? > ci = controlP5.getController( cp.getAddress( ) );
 				ci = ( ci == null ) ? controlP5.getGroup( cp.getAddress( ) ) : ci;
-				Method method;
-				try {
-					method = ci.getClass( ).getMethod( cp.getSetter( ) , new Class[] { cp.getType( ) } );
-					method.setAccessible( true );
-					method.invoke( ci , new Object[] { cp.getValue( ) } );
-				} catch ( Exception e ) {
-					logger.severe( e.toString( ) );
-				}
+				ControlP5.invoke( ( Controller ) ci , cp.getSetter( ) , cp.getValue( ) );
 			}
 		}
 		return this;
@@ -451,7 +447,7 @@ public class ControllerProperties {
 	public boolean load( String thePropertiesPath ) {
 		return format.load( getPathWithExtension( format , controlP5.checkPropertiesPath( thePropertiesPath ) ) );
 	}
-
+	
 	/**
 	 * use ControllerProperties.SERIALIZED, ControllerProperties.XML or ControllerProperties.JSON as parameter.
 	 */
@@ -473,7 +469,7 @@ public class ControllerProperties {
 	 * saves all registered properties into the default 'controlP5.properties' file into your sketch folder.
 	 */
 	public boolean save( ) {
-		System.out.println( "saving with format " + format + " (" + format.getExtension( ) + ") " + controlP5.papplet.sketchPath( defaultName ) );
+		System.out.println( "save properties using format " + format + " (" + format.getExtension( ) + ") " + controlP5.papplet.sketchPath( defaultName ) );
 		format.compile( allProperties.keySet( ) , getPathWithExtension( format , controlP5.papplet.sketchPath( defaultName ) ) );
 		return true;
 	}
@@ -688,11 +684,13 @@ public class ControllerProperties {
 		}
 	}
 
-	class JSONFormat implements PropertiesStorageFormat {
+	public class JSONFormat implements PropertiesStorageFormat {
+
 		public void compile( Set< ControllerProperty > theProperties , String thePropertiesPath ) {
 			long t = System.currentTimeMillis( );
 			JSONObject json = new JSONObject( );
 			for ( ControllerProperty cp : theProperties ) {
+
 				if ( cp.isActive( ) ) {
 					if ( updatePropertyValue( cp ) ) {
 						cp.setId( cp.getController( ).getId( ) );
@@ -714,7 +712,22 @@ public class ControllerProperties {
 						} else if ( cp.getValue( ) instanceof Boolean ) {
 							item.setBoolean( key , ControlP5.b( cp.getValue( ) ) );
 						} else {
-							item.setString( key , cp.getValue( ).toString( ) );
+
+							if ( cp.getValue( ).getClass( ).isArray( ) ) {
+								JSONArray arr = new JSONArray( );
+								if ( cp.getValue( ) instanceof int[] ) {
+									for ( Object o : ( int[] ) cp.getValue( ) ) {
+										arr.append( ControlP5.i( o ) );
+									}
+								} else if ( cp.getValue( ) instanceof float[] ) {
+									for ( Object o : ( float[] ) cp.getValue( ) ) {
+										arr.append( ControlP5.f( o ) );
+									}
+								}
+								item.setJSONArray( key , arr );
+							} else {
+								item.setString( key , cp.getValue( ).toString( ) );
+							}
 						}
 					}
 				}
@@ -741,8 +754,20 @@ public class ControllerProperties {
 						ControlP5.invoke( c , member , ControlP5.f( value.getValue( ) ) );
 					} else if ( i1 instanceof String ) {
 						ControlP5.invoke( c , member , ControlP5.s( value.getValue( ) ) );
+					} else if ( i1 instanceof float[] ) {
+						ControlP5.invoke( c , member , (float[])i1 );
 					} else {
-						ControlP5.invoke( c , member , value.getValue( ) );
+						if ( i1 instanceof List ) {
+							List l = ( List ) i1;
+							float[] arr = new float[ l.size( ) ];
+							for ( int i = 0 ; i < l.size( ) ; i++ ) {
+								arr[ i ] = ControlP5.f( l.get( i ) );
+							}
+							ControlP5.invoke( c , member , arr );
+						} else {
+							ControlP5.invoke( c , member , value.getValue( ) );
+						}
+
 					}
 				}
 			}
@@ -818,7 +843,7 @@ public class ControllerProperties {
 
 	}
 
-	class SerializedFormat implements PropertiesStorageFormat {
+	public class SerializedFormat implements PropertiesStorageFormat {
 
 		public boolean load( String thePropertiesPath ) {
 			try {
