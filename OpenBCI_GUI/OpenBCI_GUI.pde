@@ -396,8 +396,7 @@ void hubStart() {
  */
 boolean hubStop() {
   if (isWindows()) {
-    println("Cannot stop windows processes yet");
-    return false;
+    return killRunningprocessWin();
   } else {
     killRunningProcessMac();
     return true;
@@ -436,6 +435,20 @@ void killRunningProcessMac() {
     input.close();
   } catch (Exception err) {
     err.printStackTrace();
+  }
+}
+
+/**
+ * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
+ *  function dubbed "death dealer" aka "cat killer"
+ */
+boolean killRunningprocessWin() {
+  try {
+    Runtime.getRuntime().exec("taskkill /F /IM Ganglion Hub.exe");
+    return true;
+  } catch (Exception err) {
+    err.printStackTrace();
+    return false;
   }
 }
 
