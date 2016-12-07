@@ -119,7 +119,7 @@ class Widget{
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText(widgetTitle)
-      .setFont(h3)
+      // .setFont(h3)
       .setSize(16)
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
@@ -128,7 +128,7 @@ class Widget{
       .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText(widgetTitle)
-      .setFont(h4)
+      // .setFont(h4)
       .setSize(14) //set the font size of the item bars to 14pt
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(3) //4-pixel vertical offset to center text
@@ -159,7 +159,7 @@ class Widget{
       // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
       cp5_widget.addScrollableList(dropdowns.get(i).id)
         .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y + navH + 2) //float right
-        .setFont(h5)
+        // .setFont(h5)
         .setOpen(false)
         .setColor(dropdownColors)
         .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
