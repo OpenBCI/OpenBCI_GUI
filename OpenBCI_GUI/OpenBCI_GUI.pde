@@ -206,7 +206,6 @@ PFont p5; //small Open Sans
 ButtonHelpText buttonHelpText;
 
 EMG_Widget emg_widget;
-Accelerometer_Widget accelWidget;
 PulseSensor_Widget pulseWidget;
 
 boolean no_start_connection = false;
