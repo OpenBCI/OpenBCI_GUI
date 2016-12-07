@@ -25,6 +25,8 @@ class W_accelerometer extends Widget {
   // Accelerometer Stuff
   int AccelBuffSize = 500; //points registered in accelerometer buff
 
+  int padding = 5;
+
   // bottom xyz graph
   int AccelWindowWidth;
   int AccelWindowHeight;
@@ -59,6 +61,8 @@ class W_accelerometer extends Widget {
   boolean Zrising;
   boolean OBCI_inited= true;
 
+  int navOffset = 44;
+
   W_accelerometer(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -70,17 +74,8 @@ class W_accelerometer extends Widget {
     Xcolor = color(255, 36, 36);
     Ycolor = color(36, 255, 36);
     Zcolor = color(36, 100, 255);
-
-    AccelWindowWidth = 500;
-    AccelWindowHeight = 183;
-    AccelWindowX = int(x)+5;
-    AccelWindowY = int(y)-10+int(h)/2;
-
-    PolarWindowWidth = 155;
-    PolarWindowHeight = 155;
-    PolarWindowX = x+AccelWindowWidth-90;
-    PolarWindowY = y+83;
-    PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+    
+    setGraphDimensions();
 
     // XYZ buffer for bottom graph
     X = new int[AccelBuffSize];
@@ -155,10 +150,10 @@ class W_accelerometer extends Widget {
       // fill(graphBG);
       // stroke(strokeColor);
       // rect(x, y, w, h);
-      textFont(f4, 24);
-      textAlign(LEFT, TOP);
-      fill(textColor);
-      text("Acellerometer Gs", x + 10, y + 10);
+      // textFont(f4, 24);
+      // textAlign(LEFT, TOP);
+      // fill(textColor);
+      // text("Acellerometer Gs", x + 10, y + 10);
 
       fill(50);
       textFont(f4, 16);
@@ -183,22 +178,24 @@ class W_accelerometer extends Widget {
       textFont(f4, 30);
 
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE
-        fill(Xcolor);
-        text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
-        fill(Ycolor);
-        text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
-        fill(Zcolor);
-        text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
+        // fill(Xcolor);
+        // text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
+        // fill(Ycolor);
+        // text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
+        // fill(Zcolor);
+        // text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
+        drawAccValues();
         draw3DGraph();
         drawAccWave();
       }
       else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-        fill(Xcolor);
-        text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
-        fill(Ycolor);
-        text("Y "+nf(currentYvalue, 1, 3), x+10, y+80);
-        fill(Zcolor);
-        text("Z "+nf(currentZvalue, 1, 3), x+10, y+120);
+        // fill(Xcolor);
+        // text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
+        // fill(Ycolor);
+        // text("Y "+nf(currentYvalue, 1, 3), x+10, y+80);
+        // fill(Zcolor);
+        // text("Z "+nf(currentZvalue, 1, 3), x+10, y+120);
+        drawAccValues();
         draw3DGraph();
         drawAccWave();
       }
@@ -218,17 +215,33 @@ class W_accelerometer extends Widget {
 
   }
 
+  void setGraphDimensions(){
+    AccelWindowWidth = w - padding*2;
+    AccelWindowHeight = int((float(h) - float(navOffset) - float(padding*3))/2.0);
+    AccelWindowX = x + padding;
+    AccelWindowY = y + h - AccelWindowHeight - padding;
+
+    // PolarWindowWidth = 155;
+    // PolarWindowHeight = 155;
+    PolarWindowWidth = AccelWindowHeight;
+    PolarWindowHeight = AccelWindowHeight;
+    PolarWindowX = x + w - padding - PolarWindowWidth/2;
+    PolarWindowY = y + navOffset + padding + PolarWindowHeight/2;
+    PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+  }
+
   void screenResized(){
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    AccelWindowWidth = int(w) - 10;
-    AccelWindowX = int(x)+5;
-    AccelWindowY = int(y)-10+int(h)/2;
-
-    PolarWindowX = x+AccelWindowWidth-90;
-    PolarWindowY = y+83;
-    PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+    // AccelWindowWidth = int(w) - 10;
+    // AccelWindowX = int(x)+5;
+    // AccelWindowY = int(y)-10+int(h)/2;
+    //
+    // PolarWindowX = x+AccelWindowWidth-90;
+    // PolarWindowY = y+83;
+    // PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+    setGraphDimensions();
   }
 
   void mousePressed(){
@@ -248,11 +261,11 @@ class W_accelerometer extends Widget {
   //add custom classes functions here
   void drawAccValues() {
     fill(Xcolor);
-    text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
+    text("X " + nf(currentXvalue, 1, 3), x+10, y + 30 + navOffset);
     fill(Ycolor);
-    text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
+    text("Y " + nf(currentYvalue, 1, 3), x+10, y + 70 + navOffset);
     fill(Zcolor);
-    text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
+    text("Z " + nf(currentZvalue, 1, 3), x+10, y + 110 + navOffset);
   }
 
   void shiftWave() {
