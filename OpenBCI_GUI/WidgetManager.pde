@@ -151,12 +151,14 @@ class WidgetManager{
 
   void draw(){
     if(visible){
+      pushStyle();
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).draw();
           widgets.get(i).drawDropdowns();
         }
       }
+      popStyle();
     }
   }
 
