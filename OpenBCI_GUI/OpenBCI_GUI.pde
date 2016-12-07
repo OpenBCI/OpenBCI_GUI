@@ -324,8 +324,6 @@ void setup() {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
 
-
-
   // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
 
@@ -346,7 +344,6 @@ void setup() {
 //======================== DRAW LOOP =============================//
 
 void draw() {
-
   drawLoop_counter++; //signPost("10");
   systemUpdate(); //signPost("20");
   systemDraw();   //signPost("30");
@@ -354,7 +351,9 @@ void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-// must add "prepareExitHandler();" in setup() for Processing sketches
+/**
+ * This allows us to kill the running node process on quit.
+ */
 private void prepareExitHandler () {
  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
    public void run () {
@@ -372,6 +371,9 @@ private void prepareExitHandler () {
   }));
 }
 
+/**
+ * Starts the node hub working, tested on mac and windows.
+ */
 void hubStart() {
   println("Launching application from local data dir");
   try {
@@ -386,7 +388,6 @@ void hubStart() {
     // hubRunning = true;
   } catch (Exception e) {
     println("hubStart: " + e);
-    // hubRunning = false;
   }
 }
 
@@ -464,24 +465,11 @@ int getProcessIdFromLineMac(String line) {
 void endProcess(int pid) {
   Runtime rt = Runtime.getRuntime();
   try {
-    if (isWindows())
-      rt.exec("taskkill " + pid);
-    else
-      rt.exec("kill -9 " + pid);
+    rt.exec("kill -9 " + pid);
   } catch (IOException err) {
     err.printStackTrace();
   }
 }
-
-// void tcpEvent(String msg) {
-//   // println("GanglionSync: udpEvent " + msg);
-//   ganglion.parseMessage(msg);
-//   if (ganglion.deviceListUpdated) {
-//     // Refresh the BLE list
-//     ganglion.deviceListUpdated = false;
-//     controlPanel.bleBox.refreshBLEList();
-//   }
-// }
 
 int pointCounter = 0;
 int prevBytes = 0;
