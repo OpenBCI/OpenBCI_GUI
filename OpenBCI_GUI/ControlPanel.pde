@@ -103,6 +103,10 @@ Button autoconnectNoStartDefault;
 Button autoconnectNoStartHigh;
 Button systemStatus;
 
+Button synthChanButton4;
+Button synthChanButton8;
+Button synthChanButton16;
+
 Serial board;
 
 ChannelPopup channelPopup;
@@ -143,6 +147,9 @@ public void controlEvent(ControlEvent theEvent) {
       updateToNChan(8);
     } else if(newDataSource == DATASOURCE_SYNTHETIC){
       updateToNChan(8);
+      synthChanButton4.color_notPressed = autoFileName.color_notPressed;
+      synthChanButton8.color_notPressed = isSelected_color;
+      synthChanButton16.color_notPressed = autoFileName.color_notPressed;
     }
 
     output("The new data source is " + str + " and NCHAN = [" + nchan + "]");
@@ -231,6 +238,7 @@ class ControlPanel {
   DataLogBox dataLogBox;
   ChannelCountBox channelCountBox;
   InitBox initBox;
+  SyntheticChannelCountBox synthChannelCountBox;
 
   NetworkingBox networkingBoxLive;
   UDPOptionsBox udpOptionsBox;
@@ -254,8 +262,8 @@ class ControlPanel {
 
   ControlPanel(OpenBCI_GUI mainClass) {
 
-    x = 2;
-    y = 2 + controlPanelCollapser.but_dy;
+    x = 3;
+    y = 3 + controlPanelCollapser.but_dy;
     w = controlPanelCollapser.but_dx;
     h = height - int(helpWidget.h);
 
@@ -276,12 +284,15 @@ class ControlPanel {
 
     cp5 = new ControlP5(mainClass);
     cp5Popup = new ControlP5(mainClass);
+    cp5.setAutoDraw(false);
+    cp5Popup.setAutoDraw(false);
 
     //boxes active when eegDataSource = Normal (OpenBCI)
     dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
     serialBox = new SerialBox(x + w, dataSourceBox.y, w, h, globalPadding);
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
+    synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
     networkingBoxLive = new NetworkingBox(x + w, (sdBox.y + sdBox.h), w, 135, globalPadding);
     udpOptionsBox = new UDPOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
@@ -313,7 +324,7 @@ class ControlPanel {
     } else { //the opposite of above
       if (cp5.isVisible()) {
         cp5.hide();
-        cp5Popup.show();
+        cp5Popup.hide();
       }
     }
 
@@ -323,6 +334,7 @@ class ControlPanel {
     bleBox.update();
     dataLogBox.update();
     channelCountBox.update();
+    synthChannelCountBox.update();
     sdBox.update();
     rcBox.update();
     initBox.update();
@@ -352,6 +364,7 @@ class ControlPanel {
   public void draw() {
 
     pushStyle();
+
     noStroke();
 
     //dark overlay of rest of interface to indicate it's not clickable
@@ -368,8 +381,6 @@ class ControlPanel {
     // //background pane of control panel
     // fill(35,35,35);
     // rect(0,0,w,h);
-
-    popStyle();
 
     initBox.draw();
 
@@ -486,6 +497,7 @@ class ControlPanel {
       } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
         //set other CP5 controllers invisible
         hideAllBoxes();
+        synthChannelCountBox.draw();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         hideAllBoxes();
 
@@ -519,6 +531,13 @@ class ControlPanel {
       text(stopInstructions, x + globalPadding*2, y + globalPadding*4, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
       popStyle();
     }
+
+    //draw the ControlP5 stuff
+    cp5Popup.draw();
+    cp5.draw();
+
+    popStyle();
+
   }
 
   public void hideAllBoxes() {
@@ -659,19 +678,6 @@ class ControlPanel {
 
       }
 
-      //active buttons during DATASOURCE_PLAYBACKFILE
-      if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        if (selectPlaybackFile.isMouseHere()) {
-          selectPlaybackFile.setIsActive(true);
-          selectPlaybackFile.wasPressed = true;
-        }
-
-        if (selectSDFile.isMouseHere()) {
-          selectSDFile.setIsActive(true);
-          selectSDFile.wasPressed = true;
-        }
-      }
-
       if (eegDataSource == DATASOURCE_GANGLION) {
         // This is where we check for button presses if we are searching for BLE devices
 
@@ -695,6 +701,47 @@ class ControlPanel {
         }
 
       }
+
+      //active buttons during DATASOURCE_PLAYBACKFILE
+      if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        if (selectPlaybackFile.isMouseHere()) {
+          selectPlaybackFile.setIsActive(true);
+          selectPlaybackFile.wasPressed = true;
+        }
+
+        if (selectSDFile.isMouseHere()) {
+          selectSDFile.setIsActive(true);
+          selectSDFile.wasPressed = true;
+        }
+      }
+
+      //active buttons during DATASOURCE_PLAYBACKFILE
+      if (eegDataSource == DATASOURCE_SYNTHETIC) {
+        if (synthChanButton4.isMouseHere()) {
+          synthChanButton4.setIsActive(true);
+          synthChanButton4.wasPressed = true;
+          synthChanButton4.color_notPressed = isSelected_color;
+          synthChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
+          synthChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (synthChanButton8.isMouseHere()) {
+          synthChanButton8.setIsActive(true);
+          synthChanButton8.wasPressed = true;
+          synthChanButton8.color_notPressed = isSelected_color;
+          synthChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
+          synthChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (synthChanButton16.isMouseHere()) {
+          synthChanButton16.setIsActive(true);
+          synthChanButton16.wasPressed = true;
+          synthChanButton16.color_notPressed = isSelected_color;
+          synthChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
+          synthChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+      }
+
     }
     // output("Text File Name: " + cp5.get(Textfield.class,"fileName").getText());
   }
@@ -707,7 +754,10 @@ class ControlPanel {
       popOut.setIsActive(false);
       if(rcBox.isShowing){
         rcBox.isShowing = false;
+        cp5Popup.hide(); // make sure to hide the controlP5 object
         cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+        // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOut.setString(">");
       }
       else{
@@ -868,6 +918,18 @@ class ControlPanel {
       updateToNChan(16);
     }
 
+    if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
+      updateToNChan(4);
+    }
+
+    if (synthChanButton8.isMouseHere() && synthChanButton8.wasPressed) {
+      updateToNChan(8);
+    }
+
+    if (synthChanButton16.isMouseHere() && synthChanButton16.wasPressed) {
+      updateToNChan(16);
+    }
+
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelected");
@@ -894,6 +956,12 @@ class ControlPanel {
     outputODF.wasPressed = false;
     chanButton8.setIsActive(false);
     chanButton8.wasPressed = false;
+    synthChanButton4.setIsActive(false);
+    synthChanButton4.wasPressed = false;
+    synthChanButton8.setIsActive(false);
+    synthChanButton8.wasPressed = false;
+    synthChanButton16.setIsActive(false);
+    synthChanButton16.wasPressed = false;
     chanButton16.setIsActive(false);
     chanButton16.wasPressed  = false;
     selectPlaybackFile.setIsActive(false);
@@ -1263,6 +1331,52 @@ class ChannelCountBox {
 
     chanButton8.draw();
     chanButton16.draw();
+  }
+};
+
+class SyntheticChannelCountBox {
+  int x, y, w, h, padding; //size and position
+
+  boolean isSystemInitialized;
+  // button for init/halt system
+
+  SyntheticChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    synthChanButton4 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
+    if (nchan == 4) synthChanButton4.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    synthChanButton8 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
+    if (nchan == 8) synthChanButton8.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    synthChanButton16 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
+    if (nchan == 16) synthChanButton16.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(f1);
+    textAlign(LEFT, TOP);
+    text("CHANNEL COUNT", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(f1);
+    textAlign(LEFT, TOP);
+    text("(" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    popStyle();
+
+    synthChanButton4.draw();
+    synthChanButton8.draw();
+    synthChanButton16.draw();
   }
 };
 

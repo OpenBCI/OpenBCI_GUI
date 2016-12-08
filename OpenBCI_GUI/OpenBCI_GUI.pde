@@ -54,7 +54,7 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = false;
+boolean hasIntroAnimation = true;
 PImage cog;
 
 //choose where to get the EEG data
@@ -202,6 +202,7 @@ PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
 PFont p4; //medium/small Open Sans
 PFont p5; //small Open Sans
+PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
 
@@ -221,7 +222,7 @@ int hubPid = 0;
 String nodeHubName = "Ganglion Hub";
 Robot rob3115;
 
-//------------------------------------------------------------------------
+//-----------------------------------------1-------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
 
@@ -271,6 +272,7 @@ void setup() {
   p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
   p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
   p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
+  p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
 
   //V2 FONTS

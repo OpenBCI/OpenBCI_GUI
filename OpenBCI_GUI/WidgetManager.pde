@@ -14,8 +14,8 @@ color bgColor = color(1, 18, 41);
 
 // MAKE YOUR WIDGET GLOBALLY
 W_timeSeries w_timeSeries;
-W_headPlot w_headPlot;
 W_fft w_fft;
+W_headPlot w_headPlot;
 W_accelerometer w_accelerometer;
 W_template w_template1;
 W_template w_template2;
@@ -29,13 +29,13 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_timeSeries.setTitle("Time Series");
   addWidget(w_timeSeries, w);
 
-  w_headPlot = new W_headPlot(_this);
-  w_headPlot.setTitle("Head Plot");
-  addWidget(w_headPlot, w);
-
   w_fft = new W_fft(_this);
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
+
+  w_headPlot = new W_headPlot(_this);
+  w_headPlot.setTitle("Head Plot");
+  addWidget(w_headPlot, w);
 
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
@@ -151,14 +151,14 @@ class WidgetManager{
 
   void draw(){
     if(visible){
-      pushStyle();
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
+          pushStyle();
           widgets.get(i).draw();
           widgets.get(i).drawDropdowns();
+          popStyle();
         }
       }
-      popStyle();
     }
   }
 
@@ -191,6 +191,10 @@ class WidgetManager{
     layouts.add(new Layout(new int[]{1,7,6}));
     layouts.add(new Layout(new int[]{1,3,8}));
     layouts.add(new Layout(new int[]{2,7,9}));
+    layouts.add(new Layout(new int[]{4,11,12,13,14}));
+    layouts.add(new Layout(new int[]{4,15,16,17,18}));
+    layouts.add(new Layout(new int[]{1,7,11,12,13,14}));
+    layouts.add(new Layout(new int[]{1,7,15,16,17,18}));
   }
 
   void printLayouts(){
