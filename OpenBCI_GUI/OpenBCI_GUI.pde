@@ -54,7 +54,7 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = true;
+boolean hasIntroAnimation = false;
 PImage cog;
 
 //choose where to get the EEG data
@@ -658,15 +658,6 @@ void systemUpdate() { // for updating data values and variables
         //process the data
         processNewData();
 
-        //try to detect the desired signals, do it in frequency space...for OpenBCI_GUI_Simpler
-        //detectInFreqDomain(fftBuff,inband_Hz,guard_Hz,detData_freqDomain);
-        //gui.setDetectionData_freqDomain(detData_freqDomain);
-        //tell the GUI that it has received new data via dumping new data into arrays that the GUI has pointers to
-
-        // println("packet counter = " + newPacketCounter);
-        // for(int i = 0; i < dataProcessing.data_std_uV.length; i++){
-        //   println("dataProcessing.data_std_uV[" + i + "] = " + dataProcessing.data_std_uV[i]);
-        // }
         if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { //wait 1 second for GUI to reinitialize
           try {
 
@@ -687,29 +678,19 @@ void systemUpdate() { // for updating data values and variables
           println("OpenBCI_GUI: systemUpdate: reinitializing GUI after resize... not updating GUI");
         }
 
-        ///add raw data to spectrogram...if the correct channel...
-        //...look for the first channel that is active (meaning button is not active) or, if it
-        //     hasn't yet sent any data, send the last channel even if the channel is off
-        //      if (sendToSpectrogram & (!(gui.chanButtons[Ichan].isActive()) | (Ichan == (nchan-1)))) { //send data to spectrogram
-        //        sendToSpectrogram = false;  //prevent us from sending more data after this time through
-        //        for (int Idata=0;Idata < nPointsPerUpdate;Idata++) {
-        //          gui.spectrogram.addDataPoint(yLittleBuff_uV[Ichan][Idata]);
-        //          gui.tellGUIWhichChannelForSpectrogram(Ichan);
-        //          //gui.spectrogram.addDataPoint(100.0f+(float)Idata);
-        //        }
-        //      }
-
         redrawScreenNow=true;
+
       } else {
         //not enough data has arrived yet... only update the channel controller
       }
-    }else if(eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
+
+    } else if(eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
       lastReadDataPacketInd = 0;
       pointCounter = 0;
-      try{
+      try {
         process_input_file();
       }
-      catch(Exception e){
+      catch(Exception e) {
         isOldData = true;
         output("Error processing timestamps, are you using old data?");
       }
@@ -742,10 +723,11 @@ void systemUpdate() { // for updating data values and variables
     }
 
     topNav.update();
-    // updateGUIWidgets(); //####
     wm.update();
     playground.update();
+
   }
+
   controlPanel.update();
 }
 

@@ -12,6 +12,7 @@ class Widget{
 
   PApplet pApplet;
 
+  int x0, y0, w0, h0;
   int x, y, w, h;
 
   int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container

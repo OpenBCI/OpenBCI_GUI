@@ -13,6 +13,7 @@
 
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
+int intensityFac_ind = 2;
 
 class W_headPlot extends Widget {
 
@@ -29,6 +30,7 @@ class W_headPlot extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
     // addDropdown("Ten20", "Layout", Arrays.asList("10-20", "5-10"), 0);
     // addDropdown("Headset", "Headset", Arrays.asList("None", "Mark II", "Mark III", "Mark IV "), 0);
+    addDropdown("Intensity", "Intensity", Arrays.asList("4x", "2x", "1x", "0.5x", "0.2x", "0.02x"), vertScaleFactor_ind);
     addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), 0);
     addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), 0);
     addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
@@ -142,6 +144,29 @@ void UnfiltFiltHeadPlot(int n) {
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
+void Intensity(int n){
+  vertScaleFactor_ind = n;
+  updateVertScale();
+  closeAllDropdowns();
+}
+
+// ----- these variable/methods are used for adjusting the intensity factor of the headplot opacity ---------------------------------------------------------------------------------------------------------
+float default_vertScale_uV = 200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
+float[] vertScaleFactor = { 0.25f, 0.5f, 1.0f, 2.0f, 5.0f, 50.0f};
+int vertScaleFactor_ind = 2;
+float vertScale_uV = default_vertScale_uV;
+
+void setVertScaleFactor_ind(int ind) {
+  vertScaleFactor_ind = max(0,ind);
+  if (ind >= vertScaleFactor.length) vertScaleFactor_ind = 0;
+  updateVertScale();
+}
+
+void updateVertScale() {
+  vertScale_uV = default_vertScale_uV * vertScaleFactor[vertScaleFactor_ind];
+  w_headPlot.headPlot.setMaxIntensity_uV(vertScale_uV);
+}
+//---------------------------------------------------------------------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////
 //

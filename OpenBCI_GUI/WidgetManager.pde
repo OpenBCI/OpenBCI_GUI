@@ -144,6 +144,12 @@ class WidgetManager{
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).update();
+          //if the widgets are not mapped to containers correctly, remap them..
+          // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
+          if(widgets.get(i).x != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h != (int)container[widgets.get(i).currentContainer].h){
+            screenResized();
+            println("WidgetManager.pde: Remapping widgets to container layout...");
+          }
         }
       }
     }

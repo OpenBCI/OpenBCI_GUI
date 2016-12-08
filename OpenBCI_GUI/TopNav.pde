@@ -5,6 +5,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
+import java.awt.Desktop;
+import java.net.*;
+
 int navBarHeight = 32;
 TopNav topNav;
 
@@ -18,12 +21,16 @@ class TopNav {
 
   Button filtBPButton;
   Button filtNotchButton;
-  Button intensityFactorButton;
 
-  Button questionMark;
-  Button layout;
+  Button tutorialsButton;
+  Button shopButton;
+  Button issuesButton;
+
+
+  Button layoutButton;
 
   LayoutSelector layoutSelector;
+  TutorialSelector tutorialSelector;
 
   //constructor
   TopNav(){
@@ -34,21 +41,36 @@ class TopNav {
     stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
 
     filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
+    filtNotchButton.setFont(p5, 12);
     filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
-    intensityFactorButton = new Button(15 + stopButton.but_dx + 70 + 70, 35, 70, 26, "Vert Scale\n" + round(vertScale_uV) + "uV", fontInfo.buttonLabel_size);
+    filtBPButton.setFont(p5, 12);
 
-    questionMark = new Button(width - 3 - 26, 3, 26, 26, "?", fontInfo.buttonLabel_size);
-    questionMark.setFont(h3, 16);
-    questionMark.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
-    layout = new Button(width - 3 - 70, 35, 70, 26, "Layout", fontInfo.buttonLabel_size);
-    layout.setFont(h3, 16);
+    tutorialsButton = new Button(width - 3 - 80, 3, 80, 26, "Tutorials", fontInfo.buttonLabel_size);
+    tutorialsButton.setFont(h3, 16);
+    tutorialsButton.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+
+    layoutButton = new Button(width - 3 - 70, 35, 70, 26, "Layout", fontInfo.buttonLabel_size);
+    layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+    layoutButton.setFont(h3, 16);
+
+    issuesButton = new Button(width - 3*2 - 70 - tutorialsButton.but_dx, 3, 70, 26, "Issues", fontInfo.buttonLabel_size);
+    issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
+    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI_v2.0/issues");
+    issuesButton.setFont(h3, 16);
+
+    shopButton = new Button(width - 3*3 - 70 - issuesButton.but_dx - tutorialsButton.but_dx, 3, 70, 26, "Shop", fontInfo.buttonLabel_size);
+    shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+    shopButton.setURL("http://shop.openbci.com/");
+    shopButton.setFont(h3, 16);
 
     layoutSelector = new LayoutSelector();
+    tutorialSelector = new TutorialSelector();
 
   }
 
   void update(){
-
+    layoutSelector.update();
+    tutorialSelector.update();
   }
 
   void draw(){
@@ -65,22 +87,27 @@ class TopNav {
 
     filtBPButton.draw();
     filtNotchButton.draw();
-    intensityFactorButton.draw();
 
-    questionMark.draw();
-    layout.draw();
+    tutorialsButton.draw();
+    layoutButton.draw();
+    issuesButton.draw();
+    shopButton.draw();
 
     image(logo, width/2 - (128/2) - 2, 6, 128, 22);
 
     layoutSelector.draw();
+    tutorialSelector.draw();
 
   }
 
   void screenHasBeenResized(int _x, int _y){
-    questionMark.but_x = width - 3 - 26;
-    layout.but_x = width - 3 - 70;
+    tutorialsButton.but_x = width - 3 - 26;
+    layoutButton.but_x = width - 3 - 70;
+    issuesButton.but_x = width - 3*2 - 70 - tutorialsButton.but_dx;
+    shopButton.but_x = width - 3*3 - 70 - issuesButton.but_dx - tutorialsButton.but_dx;
 
     layoutSelector.screenResized();     //pass screenResized along to layoutSelector
+    tutorialSelector.screenResized();
   }
 
   void mousePressed(){
@@ -96,50 +123,69 @@ class TopNav {
       filtNotchButton.setIsActive(true);
       incrementNotchConfiguration();
     }
-    if (intensityFactorButton.isMouseHere()) {
-      intensityFactorButton.setIsActive(true);
-      incrementVertScaleFactor();
-    }
-    if (questionMark.isMouseHere()) {
-      questionMark.setIsActive(true);
+    if (tutorialsButton.isMouseHere()) {
+      tutorialsButton.setIsActive(true);
       //toggle help/tutorial dropdown menu
     }
-    if (layout.isMouseHere()) {
-      layout.setIsActive(true);
-      //toggle layout window to enable the selection of your container layout...
+    if (issuesButton.isMouseHere()) {
+      issuesButton.setIsActive(true);
+      //toggle help/tutorial dropdown menu
+    }
+    if (shopButton.isMouseHere()) {
+      shopButton.setIsActive(true);
+      //toggle help/tutorial dropdown menu
+    }
+    if (layoutButton.isMouseHere()) {
+      layoutButton.setIsActive(true);
+      //toggle layout window to enable the selection of your container layoutButton...
     }
 
     layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
+    tutorialSelector.mousePressed();
   }
 
   void mouseReleased(){
 
-    if (layout.isMouseHere() && layout.isActive()) {
-      layoutSelector.toggleVisibility();
-      layout.setIsActive(true);
-      wm.printLayouts();
+    if(!tutorialSelector.isVisible){ //make sure that you can't open the layout selector accidentally
+      if (layoutButton.isMouseHere() && layoutButton.isActive()) {
+        layoutSelector.toggleVisibility();
+        layoutButton.setIsActive(true);
+        wm.printLayouts();
+      }
+    }
+
+    if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
+      tutorialSelector.toggleVisibility();
+      tutorialsButton.setIsActive(true);
+    }
+
+    if (issuesButton.isMouseHere() && issuesButton.isActive()) {
+      //go to Github issues
+      issuesButton.goToURL();
+    }
+
+    if (shopButton.isMouseHere() && shopButton.isActive()) {
+      //go to OpenBCI Shop
+      shopButton.goToURL();
     }
 
     stopButton.setIsActive(false);
 
     filtBPButton.setIsActive(false);
     filtNotchButton.setIsActive(false);
-    intensityFactorButton.setIsActive(false);
 
-    questionMark.setIsActive(false);
-    layout.setIsActive(false);
+    tutorialsButton.setIsActive(false);
+    layoutButton.setIsActive(false);
+    issuesButton.setIsActive(false);
+    shopButton.setIsActive(false);
 
     layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
+    tutorialSelector.mouseReleased();
   }
 
 }
 
 //=============== OLD STUFF FROM Gui_Manger.pde ===============//
-
-float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
-float[] vertScaleFactor = {1.0f, 2.0f, 5.0f, 50.0f, 0.25f, 0.5f};
-int vertScaleFactor_ind = 0;
-float vertScale_uV=default_vertScale_uV;
 
 void incrementFilterConfiguration() {
   dataProcessing.incrementFilterConfiguration();
@@ -156,33 +202,6 @@ void incrementNotchConfiguration() {
   topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessing.getShortNotchDescription();
   // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
 }
-
-void setDefaultVertScale(float val_uV) {
-  default_vertScale_uV = val_uV;
-  updateVertScale();
-}
-
-void setVertScaleFactor_ind(int ind) {
-  vertScaleFactor_ind = max(0,ind);
-  if (ind >= vertScaleFactor.length) vertScaleFactor_ind = 0;
-  updateVertScale();
-}
-void incrementVertScaleFactor() {
-  setVertScaleFactor_ind(vertScaleFactor_ind+1);  //wrap-around is handled inside the function
-}
-void updateVertScale() {
-  vertScale_uV = default_vertScale_uV*vertScaleFactor[vertScaleFactor_ind];
-  //println("GUI_Manager: updateVertScale: vertScale_uV = " + vertScale_uV);
-
-  //update how the plots are scaled
-  // if (gui.montageTrace != null) gui.montageTrace.setYScale_uV(vertScale_uV);  //the Y-axis on the montage plot is fixed...the data is simply scaled prior to plotting
-  // if (gui.gFFT != null) gui.gFFT.setYAxisMax(vertScale_uV);
-  w_headPlot.headPlot.setMaxIntensity_uV(vertScale_uV);
-  topNav.intensityFactorButton.setString("Vert Scale\n" + round(vertScale_uV) + "uV");
-
-}
-
-
 
 class LayoutSelector{
 
@@ -209,7 +228,10 @@ class LayoutSelector{
 
   void update(){
     if(isVisible){ //only update if visible
-
+      //close dropdown when mouse leaves
+      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
+        toggleVisibility();
+      }
     }
   }
 
@@ -227,9 +249,10 @@ class LayoutSelector{
         layoutOptions.get(i).draw();
       }
 
-      fill(255);
+      // fill(255);
+      fill(177, 184, 193);
       noStroke();
-      rect(x+w-69, y-1, 69 , 2);
+      rect(x+w-(topNav.layoutButton.but_dx-1), y, (topNav.layoutButton.but_dx-1), 1);
 
       popStyle();
     }
@@ -253,7 +276,7 @@ class LayoutSelector{
   void mouseReleased(){
     //only allow button interactivity if isVisible==true
     if(isVisible){
-      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layout.isMouseHere()){
+      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
         toggleVisibility();
       }
       for(int i = 0; i < layoutOptions.size(); i++){
@@ -380,6 +403,160 @@ class LayoutSelector{
     tempBackgroundImage = loadImage("layout_buttons/layout_12.png");
     tempLayoutButton.setBackgroundImage(tempBackgroundImage);
     layoutOptions.add(tempLayoutButton);
+
+  }
+
+  void updateLayoutOptionButtons(){
+
+  }
+
+}
+
+class TutorialSelector{
+
+  int x, y, w, h, margin, b_w, b_h;
+  boolean isVisible;
+
+  ArrayList<Button> tutorialOptions; //
+
+  TutorialSelector(){
+    w = 180;
+    x = width - w - 3;
+    y = (navBarHeight) - 3;
+    margin = 6;
+    b_w = w - margin*2;
+    b_h = 22;
+    h = margin*3 + b_h*2;
+
+
+    isVisible = false;
+
+    tutorialOptions = new ArrayList<Button>();
+    addTutorialButtons();
+  }
+
+  void update(){
+    if(isVisible){ //only update if visible
+      //close dropdown when mouse leaves
+      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
+        toggleVisibility();
+      }
+    }
+  }
+
+  void draw(){
+    if(isVisible){ //only draw if visible
+      pushStyle();
+
+      // println("it's happening");
+      stroke(31,69,110);
+      // fill(229); //bg
+      fill(255); //bg
+      rect(x, y, w, h);
+
+      for(int i = 0; i < tutorialOptions.size(); i++){
+        tutorialOptions.get(i).draw();
+      }
+
+      // fill(255);
+      fill(177, 184, 193);
+      noStroke();
+      rect(x+w-(topNav.tutorialsButton.but_dx-1), y, (topNav.tutorialsButton.but_dx-1) , 1);
+
+      popStyle();
+    }
+  }
+
+  void isMouseHere(){
+
+  }
+
+  void mousePressed(){
+    //only allow button interactivity if isVisible==true
+    if(isVisible){
+      for(int i = 0; i < tutorialOptions.size(); i++){
+        if(tutorialOptions.get(i).isMouseHere()){
+          tutorialOptions.get(i).setIsActive(true);
+        }
+      }
+    }
+  }
+
+  void mouseReleased(){
+    //only allow button interactivity if isVisible==true
+    if(isVisible){
+      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
+        toggleVisibility();
+      }
+      for(int i = 0; i < tutorialOptions.size(); i++){
+        if(tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()){
+          int tutorialSelected = i+1;
+          tutorialOptions.get(i).setIsActive(false);
+          tutorialOptions.get(i).goToURL();
+          println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
+          output("Layout [" + tutorialSelected + "] selected.");
+          toggleVisibility(); //shut layoutSelector if something is selected
+          //open corresponding link
+        }
+      }
+    }
+  }
+
+  void screenResized(){
+    //update position of outer box and buttons
+    int oldX = x;
+    x = width - w - 3;
+    int dx = oldX - x;
+    for(int i = 0; i < tutorialOptions.size(); i++){
+      tutorialOptions.get(i).setX(tutorialOptions.get(i).but_x - dx);
+    }
+
+  }
+
+  void toggleVisibility(){
+    isVisible = !isVisible;
+    if(isVisible) {
+      //the very convoluted way of locking all controllers of a single controlP5 instance...
+      for(int i = 0; i < wm.widgets.size(); i++){
+        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+          wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+        }
+      }
+
+    } else {
+      //the very convoluted way of unlocking all controllers of a single controlP5 instance...
+      for(int i = 0; i < wm.widgets.size(); i++) {
+        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
+          wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+        }
+      }
+    }
+  }
+
+  void addTutorialButtons(){
+
+    //FIRST ROW
+
+    //setup button 1 -- full screen
+    int buttonNumber = 0;
+    Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
+    tempTutorialButton.setFont(p5, 12);
+    tempTutorialButton.setURL("http://docs.openbci.com/");
+    tutorialOptions.add(tempTutorialButton);
+
+    buttonNumber = 1;
+    h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Widgets");
+    tempTutorialButton.setFont(p5, 12);
+    tempTutorialButton.setURL("http://docs.openbci.com/software/01-OpenBCI_SDK");
+    tutorialOptions.add(tempTutorialButton);
+
+    buttonNumber = 2;
+    h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
+    tempTutorialButton.setFont(p5, 12);
+    tempTutorialButton.setURL("http://docs.openbci.com/hardware/01-OpenBCI_Hardware");
+    tutorialOptions.add(tempTutorialButton);
 
   }
 
