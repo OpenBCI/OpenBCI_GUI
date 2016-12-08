@@ -53,7 +53,7 @@ class W_timeSeries extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
     addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), 0);
     addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
-    addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
+    // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
@@ -93,7 +93,7 @@ class W_timeSeries extends Widget {
 
     hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
     hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
-    hardwareSettingsButton.setFont(p2,10);
+    hardwareSettingsButton.setFont(p5,12);
     hardwareSettingsButton.setStrokeColor((int)(color(150)));
     // hardwareSettingsButton.setStrokeColor((int)(color(138, 182, 229, 100)));
     // hardwareSettingsButton.hasStroke(false);

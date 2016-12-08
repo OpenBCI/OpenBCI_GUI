@@ -841,9 +841,9 @@ class Button {
       imageMode(CENTER);
       image(bgImage, but_x + (but_dx/2), but_y + (but_dy/2), but_dx-8, but_dy-8);
     } else{  //otherwise draw text
-      if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
+      if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3 || buttonFont == h4 || buttonFont == h5){
         text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
-      } else if(buttonFont == p1 || buttonFont == p2){
+      } else if(buttonFont == p1 || buttonFont == p2 || buttonFont == p3 || buttonFont == p4 || buttonFont == p5 || buttonFont == p6){
         text(but_txt, x1, y1 - 2); //for some reason y looks better at -2 w/ Open Sans
       } else{
         text(but_txt, x1, y1); //as long as font is not Montserrat
@@ -930,7 +930,7 @@ class ButtonHelpText{
       pushStyle();
       textAlign(CENTER, TOP);
 
-      textFont(p2,12);
+      textFont(p5,12);
       textLeading(lineSpacing); //line spacing
       stroke(31,69,110);
       fill(255);

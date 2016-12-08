@@ -29,7 +29,7 @@ class TopNav {
   TopNav(){
 
     stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
-    stopButton.setFont(h2, 16);
+    stopButton.setFont(h3, 16);
     stopButton.setColorNotPressed(color(184, 220, 105));
     stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
 
@@ -38,10 +38,10 @@ class TopNav {
     intensityFactorButton = new Button(15 + stopButton.but_dx + 70 + 70, 35, 70, 26, "Vert Scale\n" + round(vertScale_uV) + "uV", fontInfo.buttonLabel_size);
 
     questionMark = new Button(width - 3 - 26, 3, 26, 26, "?", fontInfo.buttonLabel_size);
-    questionMark.setFont(h2, 16);
+    questionMark.setFont(h3, 16);
     questionMark.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
     layout = new Button(width - 3 - 70, 35, 70, 26, "Layout", fontInfo.buttonLabel_size);
-    layout.setFont(h2, 16);
+    layout.setFont(h3, 16);
 
     layoutSelector = new LayoutSelector();
 
@@ -134,12 +134,6 @@ class TopNav {
 
 }
 
-
-
-
-
-
-
 //=============== OLD STUFF FROM Gui_Manger.pde ===============//
 
 float default_vertScale_uV=200.0; //this defines the Y-scale on the montage plots...this is the vertical space between traces
@@ -188,6 +182,8 @@ void updateVertScale() {
 
 }
 
+
+
 class LayoutSelector{
 
   int x, y, w, h, margin, b_w, b_h;
@@ -231,6 +227,10 @@ class LayoutSelector{
         layoutOptions.get(i).draw();
       }
 
+      fill(255);
+      noStroke();
+      rect(x+w-69, y-1, 69 , 2);
+
       popStyle();
     }
   }
@@ -253,6 +253,9 @@ class LayoutSelector{
   void mouseReleased(){
     //only allow button interactivity if isVisible==true
     if(isVisible){
+      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layout.isMouseHere()){
+        toggleVisibility();
+      }
       for(int i = 0; i < layoutOptions.size(); i++){
         if(layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()){
           int layoutSelected = i+1;
@@ -353,30 +356,30 @@ class LayoutSelector{
 
     //THIRD ROW -- commented until more widgets are added
 
-    // h = margin*4 + b_h*3;
-    // //setup button 9
-    // tempLayoutButton = new Button(x + margin, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-    // tempBackgroundImage = loadImage("layout_buttons/layout_9.png");
-    // tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-    // layoutOptions.add(tempLayoutButton);
-    //
-    // //setup button 10
-    // tempLayoutButton = new Button(x + 2*margin + b_w*1, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-    // tempBackgroundImage = loadImage("layout_buttons/layout_10.png");
-    // tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-    // layoutOptions.add(tempLayoutButton);
-    //
-    // //setup button 11
-    // tempLayoutButton = new Button(x + 3*margin + b_w*2, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-    // tempBackgroundImage = loadImage("layout_buttons/layout_11.png");
-    // tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-    // layoutOptions.add(tempLayoutButton);
-    //
-    // //setup button 12
-    // tempLayoutButton = new Button(x + 4*margin + b_w*3, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-    // tempBackgroundImage = loadImage("layout_buttons/layout_12.png");
-    // tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-    // layoutOptions.add(tempLayoutButton);
+    h = margin*4 + b_h*3;
+    //setup button 9
+    tempLayoutButton = new Button(x + margin, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+    tempBackgroundImage = loadImage("layout_buttons/layout_9.png");
+    tempLayoutButton.setBackgroundImage(tempBackgroundImage);
+    layoutOptions.add(tempLayoutButton);
+
+    //setup button 10
+    tempLayoutButton = new Button(x + 2*margin + b_w*1, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+    tempBackgroundImage = loadImage("layout_buttons/layout_10.png");
+    tempLayoutButton.setBackgroundImage(tempBackgroundImage);
+    layoutOptions.add(tempLayoutButton);
+
+    //setup button 11
+    tempLayoutButton = new Button(x + 3*margin + b_w*2, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+    tempBackgroundImage = loadImage("layout_buttons/layout_11.png");
+    tempLayoutButton.setBackgroundImage(tempBackgroundImage);
+    layoutOptions.add(tempLayoutButton);
+
+    //setup button 12
+    tempLayoutButton = new Button(x + 4*margin + b_w*3, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+    tempBackgroundImage = loadImage("layout_buttons/layout_12.png");
+    tempLayoutButton.setBackgroundImage(tempBackgroundImage);
+    layoutOptions.add(tempLayoutButton);
 
   }
 
