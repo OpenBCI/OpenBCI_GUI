@@ -635,6 +635,7 @@ class Button {
   boolean showHelpText;
   boolean helpTimerStarted;
   String helpText= "";
+  String myURL= "";
   int mouseOverButtonStart = 0;
   PFont buttonFont;
   int buttonTextSize;
@@ -708,6 +709,16 @@ class Button {
 
   public void setHelpText(String _helpText){
     helpText = _helpText;
+  }
+
+  public void setURL(String _myURL){
+    myURL = _myURL;
+  }
+
+  public void goToURL(){
+    if(myURL != ""){
+      openURLInBrowser(myURL);
+    }
   }
 
   public void setBackgroundImage(PImage _bgImage){
@@ -844,6 +855,7 @@ class Button {
       if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3 || buttonFont == h4 || buttonFont == h5){
         text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
       } else if(buttonFont == p1 || buttonFont == p2 || buttonFont == p3 || buttonFont == p4 || buttonFont == p5 || buttonFont == p6){
+        textLeading(12); //line spacing
         text(but_txt, x1, y1 - 2); //for some reason y looks better at -2 w/ Open Sans
       } else{
         text(but_txt, x1, y1); //as long as font is not Montserrat
@@ -950,3 +962,15 @@ class ButtonHelpText{
     }
   }
 };
+
+void openURLInBrowser(String _url){
+  try {
+    //Set your page url in this string. For eg, I m using URL for Google Search engine
+    String url = _url;
+    java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+    output("Attempting to use your default browser to launch: " + url);
+  }
+  catch (java.io.IOException e) {
+      System.out.println(e.getMessage());
+  }
+}

@@ -148,7 +148,7 @@ class W_fft extends Widget {
       fft_plot.setLineColor(lineColor[i]);
       fft_plot.setPoints(fft_points[i]);
       fft_plot.drawLines();
-      //fft_plot.drawPoints(); //draw points
+      // fft_plot.drawPoints(); //draw points
     }
     fft_plot.endDraw();
 
