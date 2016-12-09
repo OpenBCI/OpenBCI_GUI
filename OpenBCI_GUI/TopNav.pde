@@ -15,6 +15,8 @@ class TopNav {
 
   // PlotFontInfo fontInfo;
 
+  Button controlPanelCollapser;
+
   Button stopButton;
   public final static String stopButton_pressToStop_txt = "Stop Data Stream";
   public final static String stopButton_pressToStart_txt = "Start Data Stream";
@@ -32,11 +34,46 @@ class TopNav {
   LayoutSelector layoutSelector;
   TutorialSelector tutorialSelector;
 
+  boolean finishedInit = false;
+
   //constructor
   TopNav(){
 
+    controlPanelCollapser = new Button(3, 3, 256, 26, "System Control Panel", fontInfo.buttonLabel_size);
+    controlPanelCollapser.setFont(h3, 16);
+    controlPanelCollapser.setIsActive(true);
+    controlPanelCollapser.isDropdownButton = true;
+
+    //top right buttons from right to left
+    int butNum = 1;
+    tutorialsButton = new Button(width - 3*(butNum) - 80, 3, 80, 26, "Tutorials", fontInfo.buttonLabel_size);
+    tutorialsButton.setFont(h3, 16);
+    tutorialsButton.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+
+    butNum = 2;
+    issuesButton = new Button(width - 3*(butNum) - 80 - tutorialsButton.but_dx, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
+    issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
+    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI_v2.0/issues");
+    issuesButton.setFont(h3, 16);
+
+    butNum = 3;
+    shopButton = new Button(width - 3*(butNum) - 80 - issuesButton.but_dx - tutorialsButton.but_dx, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
+    shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+    shopButton.setURL("http://shop.openbci.com/");
+    shopButton.setFont(h3, 16);
+
+
+
+    layoutSelector = new LayoutSelector();
+    tutorialSelector = new TutorialSelector();
+
+    updateNavButtonsBasedOnColorScheme();
+
+  }
+
+  void initSecondaryNav(){
     stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
-    stopButton.setFont(h3, 16);
+    stopButton.setFont(h4, 14);
     stopButton.setColorNotPressed(color(184, 220, 105));
     stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
 
@@ -45,55 +82,137 @@ class TopNav {
     filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
     filtBPButton.setFont(p5, 12);
 
-    tutorialsButton = new Button(width - 3 - 80, 3, 80, 26, "Tutorials", fontInfo.buttonLabel_size);
-    tutorialsButton.setFont(h3, 16);
-    tutorialsButton.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
-
-    layoutButton = new Button(width - 3 - 70, 35, 70, 26, "Layout", fontInfo.buttonLabel_size);
+    //right to left in top right (secondary nav)
+    layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
     layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
-    layoutButton.setFont(h3, 16);
+    layoutButton.setFont(h4, 14);
 
-    issuesButton = new Button(width - 3*2 - 70 - tutorialsButton.but_dx, 3, 70, 26, "Issues", fontInfo.buttonLabel_size);
-    issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
-    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI_v2.0/issues");
-    issuesButton.setFont(h3, 16);
+    updateSecondaryNavButtonsColor();
+  }
 
-    shopButton = new Button(width - 3*3 - 70 - issuesButton.but_dx - tutorialsButton.but_dx, 3, 70, 26, "Shop", fontInfo.buttonLabel_size);
-    shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
-    shopButton.setURL("http://shop.openbci.com/");
-    shopButton.setFont(h3, 16);
+  void updateNavButtonsBasedOnColorScheme(){
+    if(colorScheme == COLOR_SCHEME_DEFAULT){
+      controlPanelCollapser.setColorNotPressed(color(255));
+      issuesButton.setColorNotPressed(color(255));
+      shopButton.setColorNotPressed(color(255));
+      tutorialsButton.setColorNotPressed(color(255));
 
-    layoutSelector = new LayoutSelector();
-    tutorialSelector = new TutorialSelector();
+      controlPanelCollapser.textColorNotActive = color(bgColor);
+      issuesButton.textColorNotActive = color(bgColor);
+      shopButton.textColorNotActive = color(bgColor);
+      tutorialsButton.textColorNotActive = color(bgColor);
+
+
+    } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+      // controlPanelCollapser.setColorNotPressed(color(150));
+      // issuesButton.setColorNotPressed(color(150));
+      // shopButton.setColorNotPressed(color(150));
+      // tutorialsButton.setColorNotPressed(color(150));
+
+      // controlPanelCollapser.setColorNotPressed(bgColor);
+      // issuesButton.setColorNotPressed(bgColor);
+      // shopButton.setColorNotPressed(bgColor);
+      // tutorialsButton.setColorNotPressed(bgColor);
+
+      controlPanelCollapser.setColorNotPressed(openbciBlue);
+      issuesButton.setColorNotPressed(openbciBlue);
+      shopButton.setColorNotPressed(openbciBlue);
+      tutorialsButton.setColorNotPressed(openbciBlue);
+
+      controlPanelCollapser.textColorNotActive = color(255);
+      issuesButton.textColorNotActive = color(255);
+      shopButton.textColorNotActive = color(255);
+      tutorialsButton.textColorNotActive = color(255);
+
+      // controlPanelCollapser.textColorNotActive = color(openbciBlue);
+      // issuesButton.textColorNotActive = color(openbciBlue);
+      // shopButton.textColorNotActive = color(openbciBlue);
+      // tutorialsButton.textColorNotActive = color(openbciBlue);
+      //
+      // controlPanelCollapser.textColorNotActive = color(bgColor);
+      // issuesButton.textColorNotActive = color(bgColor);
+      // shopButton.textColorNotActive = color(bgColor);
+      // tutorialsButton.textColorNotActive = color(bgColor);
+    }
+
+    if(systemMode >= SYSTEMMODE_POSTINIT){
+      updateSecondaryNavButtonsColor();
+    }
+  }
+
+  void updateSecondaryNavButtonsColor(){
+    if(colorScheme == COLOR_SCHEME_DEFAULT){
+      filtBPButton.setColorNotPressed(color(255));
+      filtNotchButton.setColorNotPressed(color(255));
+      layoutButton.setColorNotPressed(color(255));
+
+      filtBPButton.textColorNotActive = color(bgColor);
+      filtNotchButton.textColorNotActive = color(bgColor);
+      layoutButton.textColorNotActive = color(bgColor);
+    }
+    else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+      filtBPButton.setColorNotPressed(color(57,128,204));
+      filtNotchButton.setColorNotPressed(color(57,128,204));
+      layoutButton.setColorNotPressed(color(57,128,204));
+
+      filtBPButton.textColorNotActive = color(255);
+      filtNotchButton.textColorNotActive = color(255);
+      layoutButton.textColorNotActive = color(255);
+    }
 
   }
 
   void update(){
-    layoutSelector.update();
-    tutorialSelector.update();
+    if(systemMode >= SYSTEMMODE_POSTINIT){
+      layoutSelector.update();
+      tutorialSelector.update();
+    }
   }
 
   void draw(){
     pushStyle();
-    noStroke();
-    fill(229);
-    rect(0, 0, width, topNav_h);
-    stroke(31,69,110);
-    fill(255);
-    rect(-1, 0, width+2, navBarHeight);
+
+    if(colorScheme == COLOR_SCHEME_DEFAULT){
+      noStroke();
+      fill(229);
+      rect(0, 0, width, topNav_h);
+      stroke(bgColor);
+      fill(255);
+      rect(-1, 0, width+2, navBarHeight);
+      image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+      noStroke();
+      fill(100);
+      fill(57,128,204);
+      rect(0, 0, width, topNav_h);
+      stroke(bgColor);
+      fill(31,69,110);
+      rect(-1, 0, width+2, navBarHeight);
+      image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
+    }
+
+    // if(colorScheme == COLOR_SCHEME_DEFAULT){
+    //
+    // } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+    //
+    // }
+
     popStyle();
 
-    stopButton.draw();
+    if(systemMode == SYSTEMMODE_POSTINIT){
+      stopButton.draw();
+      filtBPButton.draw();
+      filtNotchButton.draw();
+      layoutButton.draw();
+    }
 
-    filtBPButton.draw();
-    filtNotchButton.draw();
-
+    controlPanelCollapser.draw();
     tutorialsButton.draw();
-    layoutButton.draw();
     issuesButton.draw();
     shopButton.draw();
 
-    image(logo, width/2 - (128/2) - 2, 6, 128, 22);
+    // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+
 
     layoutSelector.draw();
     tutorialSelector.draw();
@@ -101,28 +220,59 @@ class TopNav {
   }
 
   void screenHasBeenResized(int _x, int _y){
-    tutorialsButton.but_x = width - 3 - 26;
-    layoutButton.but_x = width - 3 - 70;
-    issuesButton.but_x = width - 3*2 - 70 - tutorialsButton.but_dx;
-    shopButton.but_x = width - 3*3 - 70 - issuesButton.but_dx - tutorialsButton.but_dx;
+    tutorialsButton.but_x = width - 3 - tutorialsButton.but_dx;
+    issuesButton.but_x = width - 3*2 - issuesButton.but_dx - tutorialsButton.but_dx;
+    shopButton.but_x = width - 3*3 - shopButton.but_dx - issuesButton.but_dx - tutorialsButton.but_dx;
 
-    layoutSelector.screenResized();     //pass screenResized along to layoutSelector
-    tutorialSelector.screenResized();
+    if(systemMode == SYSTEMMODE_POSTINIT){
+      layoutButton.but_x = width - 3 - layoutButton.but_dx;
+      layoutSelector.screenResized();     //pass screenResized along to layoutSelector
+      tutorialSelector.screenResized();
+    }
   }
 
   void mousePressed(){
-    if (stopButton.isMouseHere()) {
-      stopButton.setIsActive(true);
-      stopButtonWasPressed();
+    if(systemMode >= SYSTEMMODE_POSTINIT){
+      if (stopButton.isMouseHere()) {
+        stopButton.setIsActive(true);
+        stopButtonWasPressed();
+      }
+      if (filtBPButton.isMouseHere()) {
+        filtBPButton.setIsActive(true);
+        incrementFilterConfiguration();
+      }
+      if (topNav.filtNotchButton.isMouseHere()) {
+        filtNotchButton.setIsActive(true);
+        incrementNotchConfiguration();
+      }
+      if (layoutButton.isMouseHere()) {
+        layoutButton.setIsActive(true);
+        //toggle layout window to enable the selection of your container layoutButton...
+      }
     }
-    if (filtBPButton.isMouseHere()) {
-      filtBPButton.setIsActive(true);
-      incrementFilterConfiguration();
+
+    //was control panel button pushed
+    if (controlPanelCollapser.isMouseHere()) {
+      if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
+        controlPanelCollapser.setIsActive(false);
+        controlPanel.close();
+      } else {
+        controlPanelCollapser.setIsActive(true);
+        // controlPanelCollapser.setIsActive(false);
+        controlPanel.open();
+      }
     }
-    if (topNav.filtNotchButton.isMouseHere()) {
-      filtNotchButton.setIsActive(true);
-      incrementNotchConfiguration();
+    else {
+      if (controlPanel.isOpen) {
+        controlPanel.CPmousePressed();
+      }
     }
+
+    //this is super hacky... but needs to be done otherwise... the controlPanelCollapser doesn't match the open control panel
+    if(controlPanel.isOpen){
+      controlPanelCollapser.setIsActive(true);
+    }
+
     if (tutorialsButton.isMouseHere()) {
       tutorialsButton.setIsActive(true);
       //toggle help/tutorial dropdown menu
@@ -135,24 +285,12 @@ class TopNav {
       shopButton.setIsActive(true);
       //toggle help/tutorial dropdown menu
     }
-    if (layoutButton.isMouseHere()) {
-      layoutButton.setIsActive(true);
-      //toggle layout window to enable the selection of your container layoutButton...
-    }
 
     layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
     tutorialSelector.mousePressed();
   }
 
   void mouseReleased(){
-
-    if(!tutorialSelector.isVisible){ //make sure that you can't open the layout selector accidentally
-      if (layoutButton.isMouseHere() && layoutButton.isActive()) {
-        layoutSelector.toggleVisibility();
-        layoutButton.setIsActive(true);
-        wm.printLayouts();
-      }
-    }
 
     if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
       tutorialSelector.toggleVisibility();
@@ -169,13 +307,25 @@ class TopNav {
       shopButton.goToURL();
     }
 
-    stopButton.setIsActive(false);
 
-    filtBPButton.setIsActive(false);
-    filtNotchButton.setIsActive(false);
+
+    if(systemMode == SYSTEMMODE_POSTINIT){
+
+      if(!tutorialSelector.isVisible){ //make sure that you can't open the layout selector accidentally
+        if (layoutButton.isMouseHere() && layoutButton.isActive()) {
+          layoutSelector.toggleVisibility();
+          layoutButton.setIsActive(true);
+          wm.printLayouts();
+        }
+      }
+
+      stopButton.setIsActive(false);
+      filtBPButton.setIsActive(false);
+      filtNotchButton.setIsActive(false);
+      layoutButton.setIsActive(false);
+    }
 
     tutorialsButton.setIsActive(false);
-    layoutButton.setIsActive(false);
     issuesButton.setIsActive(false);
     shopButton.setIsActive(false);
 
@@ -228,10 +378,10 @@ class LayoutSelector{
 
   void update(){
     if(isVisible){ //only update if visible
-      //close dropdown when mouse leaves
-      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
-        toggleVisibility();
-      }
+      // //close dropdown when mouse leaves
+      // if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
+      //   toggleVisibility();
+      // }
     }
   }
 
@@ -437,10 +587,10 @@ class TutorialSelector{
 
   void update(){
     if(isVisible){ //only update if visible
-      //close dropdown when mouse leaves
-      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
-        toggleVisibility();
-      }
+      // //close dropdown when mouse leaves
+      // if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
+      //   toggleVisibility();
+      // }
     }
   }
 
@@ -515,19 +665,21 @@ class TutorialSelector{
 
   void toggleVisibility(){
     isVisible = !isVisible;
-    if(isVisible) {
-      //the very convoluted way of locking all controllers of a single controlP5 instance...
-      for(int i = 0; i < wm.widgets.size(); i++){
-        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
-          wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+    if(systemMode >= SYSTEMMODE_POSTINIT){
+      if(isVisible) {
+        //the very convoluted way of locking all controllers of a single controlP5 instance...
+        for(int i = 0; i < wm.widgets.size(); i++){
+          for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+            wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+          }
         }
-      }
 
-    } else {
-      //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-      for(int i = 0; i < wm.widgets.size(); i++) {
-        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
-          wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+      } else {
+        //the very convoluted way of unlocking all controllers of a single controlP5 instance...
+        for(int i = 0; i < wm.widgets.size(); i++) {
+          for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
+            wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+          }
         }
       }
     }

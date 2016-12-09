@@ -152,7 +152,6 @@ Serial serial_output;
 int serial_output_baud = 115200; //baud rate from the Arduino
 
 //Control Panel for (re)configuring system settings
-Button controlPanelCollapser;
 PlotFontInfo fontInfo;
 
 //program constants
@@ -183,7 +182,8 @@ int heightOfLastScreen = 0;
 int win_x = 1024;  //window width
 int win_y = 768; //window height
 
-PImage logo;
+PImage logo_blue;
+PImage logo_white;
 
 PFont f1;
 PFont f2;
@@ -217,6 +217,15 @@ int indices = 0;
 
 boolean synthesizeData = false;
 
+int timeOfSetup = 0;
+boolean isGanglion = false;
+color bgColor = color(1, 18, 41);
+color openbciBlue = color(31, 69, 110);
+int COLOR_SCHEME_DEFAULT = 1;
+int COLOR_SCHEME_ALTERNATIVE_A = 2;
+// int COLOR_SCHEME_ALTERNATIVE_B = 3;
+int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
+
 Process nodeHubby;
 int hubPid = 0;
 String nodeHubName = "Ganglion Hub";
@@ -227,8 +236,7 @@ Robot rob3115;
 //------------------------------------------------------------------------
 
 //========================SETUP============================//
-int timeOfSetup = 0;
-boolean isGanglion = false;
+
 
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
@@ -253,7 +261,6 @@ void setup() {
   heightOfLastScreen = height;
 
   setupContainers();
-  //setupGUIWidgets();
 
   //V1 FONTS
   f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
@@ -274,12 +281,6 @@ void setup() {
   p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
   p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
-
-  //V2 FONTS
-  //f1 = createFont("fonts/Montserrat-SemiBold.otf", 16);
-  //f2 = createFont("fonts/Montserrat-Light.otf", 15);
-  //f3 = createFont("fonts/Montserrat-SemiBold.otf", 15);
-
   //listen for window resize ... used to adjust elements in application
   frame.addComponentListener(new ComponentAdapter() {
     public void componentResized(ComponentEvent e) {
@@ -293,16 +294,11 @@ void setup() {
   }
   );
 
-  //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
   helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
 
-  // println("..." + this);
-  // controlPanelCollapser = new Button(2, 2, 256, int((float)win_y*(0.03f)), "SYSTEM CONTROL PANEL", fontInfo.buttonLabel_size);
-  controlPanelCollapser = new Button(3, 3, 256, 26, "System Control Panel", fontInfo.buttonLabel_size);
-  controlPanelCollapser.setFont(h2, 16);
-  controlPanelCollapser.setIsActive(true);
-  controlPanelCollapser.makeDropdownButton(true);
+  //setup topNav
+  topNav = new TopNav();
 
   //from the user's perspective, the program hangs out on the ControlPanel until the user presses "Start System".
   print("Graphics & GUI Library: ");
@@ -311,7 +307,8 @@ void setup() {
   //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.
   //Once the hardware is synchronized, the main GUI is drawn and the user switches over to the main GUI.
 
-  logo = loadImage("logo2.png");
+  logo_blue = loadImage("logo_blue.png");
+  logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
 
   playground = new Playground(navBarHeight);
@@ -562,8 +559,8 @@ void initSystem() {
 
   //initilize the GUI
   // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
+  topNav.initSecondaryNav();
   wm = new WidgetManager(this);
-  topNav = new TopNav();
   // setupGUIWidgets(); //####
 
 
@@ -580,9 +577,9 @@ void initSystem() {
   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
     systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
   }
-  //sync GUI default settings with OpenBCI's default settings...
-  // openBCI.syncWithHardware(); //this starts the sequence off ... read in OpenBCI_ADS1299 iterates through the rest based on the ASCII trigger "$$$"
-  // verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 [COMPLETE] --");
+
+  controlPanel.close();
+
 }
 
 /**
@@ -645,6 +642,14 @@ void systemUpdate() { // for updating data values and variables
 
   if (systemMode == SYSTEMMODE_PREINIT) {
     //updates while in system control panel before START SYSTEM
+    controlPanel.update();
+    topNav.update();
+
+    if (widthOfLastScreen != width || heightOfLastScreen != height) {
+      topNav.screenHasBeenResized(width, height);
+    }
+
+
   }
   if (systemMode == SYSTEMMODE_POSTINIT) {
     if (isRunning) {
@@ -722,13 +727,10 @@ void systemUpdate() { // for updating data values and variables
       playground.x = width; //reset the x for the playground...
     }
 
-    topNav.update();
     wm.update();
     playground.update();
 
   }
-
-  controlPanel.update();
 }
 
 void systemDraw() { //for drawing to the screen
@@ -738,7 +740,7 @@ void systemDraw() { //for drawing to the screen
   noStroke();
   //background(255);  //clear the screen
 
-  if (systemMode == SYSTEMMODE_POSTINIT) {
+  if (systemMode >= SYSTEMMODE_POSTINIT) {
     int drawLoopCounter_thresh = 100;
     if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
       //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
@@ -786,7 +788,7 @@ void systemDraw() { //for drawing to the screen
         //updateGUIWidgets(); //####
         // drawGUIWidgets();
 
-        topNav.draw();
+        // topNav.draw();
 
         //----------------------------
 
@@ -812,13 +814,27 @@ void systemDraw() { //for drawing to the screen
     surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");
   }
 
-  //control panel
-  if (controlPanel.isOpen) {
-    controlPanel.draw();
+  if (systemMode >= SYSTEMMODE_PREINIT) {
+    topNav.draw();
+
+    //control panel
+    if (controlPanel.isOpen) {
+      controlPanel.draw();
+    }
+
+    helpWidget.draw();
   }
 
-  controlPanelCollapser.draw();
-  helpWidget.draw();
+
+  if (systemMode == SYSTEMMODE_INTROANIMATION) {
+    //intro animation sequence
+    if (hasIntroAnimation) {
+      introAnimation();
+    } else {
+      systemMode = SYSTEMMODE_PREINIT;
+    }
+  }
+
 
   if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
@@ -846,16 +862,6 @@ void systemDraw() { //for drawing to the screen
   // timeOfLastFrame = millis();
 
   buttonHelpText.draw();
-
-  if (systemMode == SYSTEMMODE_INTROANIMATION) {
-    //intro animation sequence
-    if (hasIntroAnimation) {
-      introAnimation();
-    } else {
-      systemMode = SYSTEMMODE_PREINIT;
-    }
-  }
-
   mouseOutOfBounds(); // to fix
 }
 
@@ -892,15 +898,6 @@ PVector loc;
 
 void mouseOutOfBounds() {
   if (windowOriginSet && mouseInFrame) {
-    //if (mouseX >= 0 && mouseX <= width && mouseY >= 0 && mouseY <= height) {
-    //  println("mouseX " + mouseX);
-    //  println("mouseY " + mouseY);
-    //  println("true X " + MouseInfo.getPointerInfo().getLocation().x);
-    //  println("true Y " + MouseInfo.getPointerInfo().getLocation().y);
-    //  println("Window X " + loc.x);
-    //  println("Window Y " + loc.y);
-    //  println();
-    //}
 
     try {
       if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||

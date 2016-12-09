@@ -120,8 +120,8 @@ class Widget{
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText(widgetTitle)
-      .setFont(h3)
-      .setSize(16)
+      .setFont(h4)
+      .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
       ;
@@ -129,8 +129,8 @@ class Widget{
       .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText(widgetTitle)
-      .setFont(h4)
-      .setSize(14) //set the font size of the item bars to 14pt
+      .setFont(h5)
+      .setSize(12) //set the font size of the item bars to 14pt
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(3) //4-pixel vertical offset to center text
       ;
@@ -255,7 +255,7 @@ class Widget{
     }
 
     //draw background/stroke of widgetSelector dropdown
-    fill(200);
+    fill(150);
     rect(cp5_widget.getController("WidgetSelector").getPosition()[0]-1, cp5_widget.getController("WidgetSelector").getPosition()[1]-1, widgetSelectorWidth+2, cp5_widget.get(ScrollableList.class, "WidgetSelector").getHeight()+2);
 
     //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...

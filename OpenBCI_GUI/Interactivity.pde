@@ -90,6 +90,15 @@ void parseKey(char val) {
         }
       }
       break;
+    case '{':
+      if(colorScheme == COLOR_SCHEME_DEFAULT){
+        colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
+      } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+        colorScheme = COLOR_SCHEME_DEFAULT;
+      }
+      topNav.updateNavButtonsBasedOnColorScheme();
+      println("Changing color scheme.");
+      break;
     case '/':
       drawAccel = !drawAccel;
       drawPulse = !drawPulse;
@@ -459,7 +468,6 @@ void mousePressed() {
       //was the stopButton pressed?
 
       // gui.mousePressed(); // trigger mousePressed function in GUI
-      topNav.mousePressed();
       // GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
       wm.mousePressed();
 
@@ -487,20 +495,23 @@ void mousePressed() {
   // CONTROL PANEL INTERACTIVITY //
   //=============================//
 
-  //was control panel button pushed
-  if (controlPanelCollapser.isMouseHere()) {
-    if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
-      controlPanelCollapser.setIsActive(false);
-      controlPanel.isOpen = false;
-    } else {
-      controlPanelCollapser.setIsActive(true);
-      controlPanel.isOpen = true;
-    }
-  } else {
-    if (controlPanel.isOpen) {
-      controlPanel.CPmousePressed();
-    }
-  }
+  // //was control panel button pushed
+  // if (controlPanelCollapser.isMouseHere()) {
+  //   if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
+  //     controlPanelCollapser.setIsActive(false);
+  //     controlPanel.isOpen = false;
+  //   } else {
+  //     controlPanelCollapser.setIsActive(true);
+  //     controlPanel.isOpen = true;
+  //   }
+  // } else {
+  //   if (controlPanel.isOpen) {
+  //     controlPanel.CPmousePressed();
+  //   }
+  // }
+
+  //topNav is always clickable
+  topNav.mousePressed();
 
   //interacting with control panel
   if (controlPanel.isOpen) {
@@ -514,7 +525,7 @@ void mousePressed() {
       else {
         println("OpenBCI_GUI: mousePressed: outside of CP clicked");
         controlPanel.isOpen = false;
-        controlPanelCollapser.setIsActive(false);
+        topNav.controlPanelCollapser.setIsActive(false);
         output("Press the \"Press to Start\" button to initialize the data stream.");
       }
     }
@@ -567,10 +578,11 @@ void mouseReleased() {
     controlPanel.CPmouseReleased();
   }
 
+  // gui.mouseReleased();
+  topNav.mouseReleased();
+
   if (systemMode >= SYSTEMMODE_POSTINIT) {
 
-    // gui.mouseReleased();
-    topNav.mouseReleased();
     // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
     wm.mouseReleased();
 
