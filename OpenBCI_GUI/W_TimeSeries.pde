@@ -93,10 +93,13 @@ class W_timeSeries extends Widget {
 
     hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
     hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
-    hardwareSettingsButton.setFont(p5,12);
-    hardwareSettingsButton.setStrokeColor((int)(color(150)));
+    hardwareSettingsButton.setFont(p6,10);
+    // hardwareSettingsButton.setStrokeColor((int)(color(150)));
+    // hardwareSettingsButton.setColorNotPressed(openbciBlue);
+    hardwareSettingsButton.setColorNotPressed(color(57,128,204));
+    hardwareSettingsButton.textColorNotActive = color(255);
     // hardwareSettingsButton.setStrokeColor((int)(color(138, 182, 229, 100)));
-    // hardwareSettingsButton.hasStroke(false);
+    hardwareSettingsButton.hasStroke(false);
     // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
     hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
 

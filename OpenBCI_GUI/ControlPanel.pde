@@ -263,8 +263,8 @@ class ControlPanel {
   ControlPanel(OpenBCI_GUI mainClass) {
 
     x = 3;
-    y = 3 + controlPanelCollapser.but_dy;
-    w = controlPanelCollapser.but_dx;
+    y = 3 + topNav.controlPanelCollapser.but_dy;
+    w = topNav.controlPanelCollapser.but_dx;
     h = height - int(helpWidget.h);
 
     if(hasIntroAnimation){
@@ -312,6 +312,14 @@ class ControlPanel {
 
     // Ganglion
     bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
+  }
+
+  public void open(){
+    isOpen = true;
+  }
+
+  public void close(){
+    isOpen = false;
   }
 
   public void update() {
@@ -367,20 +375,36 @@ class ControlPanel {
 
     noStroke();
 
-    //dark overlay of rest of interface to indicate it's not clickable
-    fill(0, 0, 0, 185);
-    rect(0, 0, width, height);
+    // //dark overlay of rest of interface to indicate it's not clickable
+    // fill(0, 0, 0, 185);
+    // rect(0, 0, width, height);
 
-    pushStyle();
-    noStroke();
-    fill(255);
-    rect(0, 0, width, navBarHeight);
-    popStyle();
-    image(logo, width/2 - (128/2) - 2, 6, 128, 22);
+    // pushStyle();
+    // noStroke();
+    // // fill(255);
+    // fill(31,69,110);
+    // rect(0, 0, width, navBarHeight);
+    // popStyle();
+    // // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+    // image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
 
-    // //background pane of control panel
-    // fill(35,35,35);
-    // rect(0,0,w,h);
+    // if(colorScheme == COLOR_SCHEME_DEFAULT){
+    //   noStroke();
+    //   fill(229);
+    //   rect(0, 0, width, topNav_h);
+    //   stroke(bgColor);
+    //   fill(255);
+    //   rect(-1, 0, width+2, navBarHeight);
+    //   image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+    // } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+    //   noStroke();
+    //   fill(100);
+    //   rect(0, 0, width, topNav_h);
+    //   stroke(bgColor);
+    //   fill(31,69,110);
+    //   rect(-1, 0, width+2, navBarHeight);
+    //   image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
+    // }
 
     initBox.draw();
 
