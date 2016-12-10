@@ -515,6 +515,7 @@ void initSystem() {
     verbosePrint("a--"+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
   }  //make the FFT objects
+
   verbosePrint("OpenBCI_GUI: initSystem: b");
   initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
 
@@ -576,9 +577,8 @@ void initSystem() {
 
   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
     systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-  }
 
-  controlPanel.close();
+  }
 
 }
 

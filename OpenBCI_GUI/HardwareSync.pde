@@ -509,6 +509,8 @@ class OpenBCI_ADS1299 {
         output("OpenBCI_ADS1299: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
         changeState(STATE_STOPPED);
         systemMode = 10;
+        controlPanel.close();
+        topNav.controlPanelCollapser.setIsActive(false);
         //renitialize GUI if nchan has been updated... needs to be built
         break;
     }
