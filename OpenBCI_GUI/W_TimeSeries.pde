@@ -38,6 +38,8 @@ class W_timeSeries extends Widget {
   boolean allowSpillover = false;
 
   HardwareSettingsController hsc;
+
+
   TextBox[] chanValuesMontage;
   TextBox[] impValuesMontage;
   boolean showMontageValues;
@@ -107,8 +109,8 @@ class W_timeSeries extends Widget {
     int y_hsc = int(ts_y);
     int w_hsc = int(ts_w); //width of montage controls (on left of montage)
     int h_hsc = int(ts_h); //height of montage controls (on left of montage)
-    hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
 
+    hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
   }
 
   public boolean isVisible() {
@@ -205,6 +207,11 @@ class W_timeSeries extends Widget {
     if (hardwareSettingsButton.isMouseHere()) {
       hardwareSettingsButton.setIsActive(true);
     }
+
+    for(int i = 0; i < channelBars.length; i++){
+      channelBars[i].mousePressed();
+    }
+
   }
 
   void mouseReleased(){
@@ -222,6 +229,10 @@ class W_timeSeries extends Widget {
         hsc.isVisible = true;
         hardwareSettingsButton.setString("Time Series");
       }
+    }
+
+    for(int i = 0; i < channelBars.length; i++){
+      channelBars[i].mouseReleased();
     }
 
     hardwareSettingsButton.setIsActive(false);
@@ -499,8 +510,37 @@ class ChannelBar{
 
   }
 
-  void mouseReleased(){
+  void mousePressed(){
+    if(onOffButton.isMouseHere()){
+      println("[" + channelNumber + "] onOff pressed");
+      onOffButton.setIsActive(true);
+    }
+    if(impCheckButton.isMouseHere()){
+      println("[" + channelNumber + "] imp pressed");
+      impCheckButton.setIsActive(true);
+    }
+  }
 
+  void mouseReleased(){
+    if(onOffButton.isMouseHere()){
+      println("[" + channelNumber + "] onOff released");
+      if(isOn){  // if channel is active
+        isOn = false; // deactivate it
+        deactivateChannel(channelNumber - 1); //got to - 1 to make 0 indexed
+        onOffButton.setColorNotPressed(color(50));
+      }
+      else { // if channel is not active
+        isOn = true;
+        activateChannel(channelNumber - 1);       // activate it
+        onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
+      }
+    }
+    if(impCheckButton.isMouseHere()){
+      println("[" + channelNumber + "] imp released");
+    }
+
+    onOffButton.setIsActive(false);
+    impCheckButton.setIsActive(false);
   }
 };
 //========================================================================================================================

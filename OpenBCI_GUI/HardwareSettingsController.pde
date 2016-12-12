@@ -4,8 +4,65 @@
 //    - this is the user interface for allowing you to control the hardware settings of the 32bit Board & 16chan Setup (32bit + Daisy)
 //
 //    Written by: Conor Russomanno (Oct. 2016) ... adapted from ChannelController.pde of GUI V1 ... it's a little bit simpler now :|
+//    Based on some original GUI code by: Chip Audette 2013/2014
 //
 //////////////////////////////////////////////////////////////////////////
+
+
+//these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
+int numSettingsPerChannel = 6; //each channel has 6 different settings
+char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+char[][] impedanceCheckValues = new char [nchan][2];
+
+public void updateChannelArrays(int _nchan) {
+  channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+  impedanceCheckValues = new char [_nchan][2];
+}
+
+//activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
+void activateChannel(int Ichan) {
+  println("OpenBCI_GUI: activating channel " + (Ichan+1));
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (openBCI.isSerialPortOpen()) {
+      verbosePrint("**");
+      openBCI.changeChannelState(Ichan, true); //activate
+    }
+  } else if (eegDataSource == DATASOURCE_GANGLION) {
+    // println("activating channel on ganglion");
+    ganglion.changeChannelState(Ichan, true);
+  }
+  if (Ichan < nchan) {
+    channelSettingValues[Ichan][0] = '0';
+    // gui.cc.update();
+  }
+}
+void deactivateChannel(int Ichan) {
+  println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (openBCI.isSerialPortOpen()) {
+      verbosePrint("**");
+      openBCI.changeChannelState(Ichan, false); //de-activate
+    }
+  } else if (eegDataSource == DATASOURCE_GANGLION) {
+    // println("deactivating channel on ganglion");
+    ganglion.changeChannelState(Ichan, false);
+  }
+  if (Ichan < nchan) {
+    channelSettingValues[Ichan][0] = '1';
+    // gui.cc.update();
+  }
+}
+
+//Ichan is zero referenced (not one referenced)
+boolean isChannelActive(int Ichan) {
+  boolean return_val = false;
+  if (channelSettingValues[Ichan][0] == '1') {
+    return_val = false;
+  } else {
+    return_val = true;
+  }
+  return return_val;
+}
 
 class HardwareSettingsController{
 
