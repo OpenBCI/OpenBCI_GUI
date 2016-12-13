@@ -356,6 +356,7 @@ class ChannelBar{
     w = _w;
     h = _h;
 
+
     onOff_diameter = 26;
     onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
     onOffButton.setFont(h2, 16);
@@ -363,12 +364,16 @@ class ChannelBar{
     onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
     onOffButton.hasStroke(false);
 
-    impButton_diameter = 22;
-    impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
-    impCheckButton.setFont(h2, 16);
-    impCheckButton.setCircleButton(true);
-    impCheckButton.setColorNotPressed(color(255));
-    impCheckButton.hasStroke(false);
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      impButton_diameter = 22;
+      impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
+      impCheckButton.setFont(h2, 16);
+      impCheckButton.setCircleButton(true);
+      impCheckButton.setColorNotPressed(color(255));
+      impCheckButton.hasStroke(false);
+    } else {
+      impButton_diameter = 0;
+    }
 
     numSeconds = 5;
     plot = new GPlot(_parent);
@@ -436,7 +441,9 @@ class ChannelBar{
     //draw onOff Button
     onOffButton.draw();
     //draw impedance check Button
-    impCheckButton.draw();
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      impCheckButton.draw();
+    }
 
     //draw plot
     stroke(31,69,110, 50);
@@ -501,8 +508,11 @@ class ChannelBar{
     h = _h;
     onOffButton.but_x = x + 6;
     onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
-    impCheckButton.but_x = x + 36;
-    impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
+
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      impCheckButton.but_x = x + 36;
+      impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
+    }
 
     //reposition & resize the plot
     plot.setPos(x + 36 + 4 + impButton_diameter, y);
@@ -515,10 +525,14 @@ class ChannelBar{
       println("[" + channelNumber + "] onOff pressed");
       onOffButton.setIsActive(true);
     }
-    if(impCheckButton.isMouseHere()){
-      println("[" + channelNumber + "] imp pressed");
-      impCheckButton.setIsActive(true);
+
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      if(impCheckButton.isMouseHere()){
+        println("[" + channelNumber + "] imp pressed");
+        impCheckButton.setIsActive(true);
+      }
     }
+
   }
 
   void mouseReleased(){
@@ -535,12 +549,15 @@ class ChannelBar{
         onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
       }
     }
-    if(impCheckButton.isMouseHere()){
-      println("[" + channelNumber + "] imp released");
-    }
 
     onOffButton.setIsActive(false);
-    impCheckButton.setIsActive(false);
+
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      if(impCheckButton.isMouseHere()){
+        println("[" + channelNumber + "] imp released");
+      }
+      impCheckButton.setIsActive(false);
+    }
   }
 };
 //========================================================================================================================
