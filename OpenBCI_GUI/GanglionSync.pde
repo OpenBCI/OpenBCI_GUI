@@ -47,6 +47,7 @@ void clientEvent(Client someClient) {
 }
 
 class OpenBCI_Ganglion {
+  final static String TCP_CMD_ACCEL = "a";
   final static String TCP_CMD_CONNECT = "c";
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
@@ -72,6 +73,8 @@ class OpenBCI_Ganglion {
   final static int STATE_NORMAL = 3;
   final static int STATE_STOPPED = 4;
   final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
+
+  final static int NUM_ACCEL_DIMS = 3;
 
   final static int RESP_ERROR_UNKNOWN = 499;
   final static int RESP_ERROR_BAD_PACKET = 500;
@@ -133,6 +136,8 @@ class OpenBCI_Ganglion {
   private boolean nodeProcessHandshakeComplete = false;
   public boolean shouldStartNodeApp = false;
   private boolean checkingImpedance = false;
+  private boolean newAccelData = false;
+  private int[] accelArray = new int[NUM_ACCEL_DIMS];
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
@@ -237,6 +242,9 @@ class OpenBCI_Ganglion {
           connected = false;
         }
         break;
+      case 'a': // Accel
+        processAccel(msg);
+        break;
       case 'i': // Impedance
         processImpedance(msg);
         break;
@@ -265,6 +273,14 @@ class OpenBCI_Ganglion {
     }
   }
 
+  private void processAccel(String msg) {
+    String[] list = split(msg, ',');
+    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+      accelArray[i] = Integer.parseInt(list[i + 1]);
+    }
+    newAccelData = true;
+  }
+
   private void processData(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
@@ -281,8 +297,15 @@ class OpenBCI_Ganglion {
         prevSampleIndex = dataPacket.sampleIndex;
 
         // Channel data storage
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < NCHAN_GANGLION; i++) {
           dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+        }
+        if (newAccelData) {
+          newAccelData = false;
+          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+            dataPacket.auxValues[i] = accelArray[i];
+            dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+          }
         }
         getRawValues(dataPacket);
         // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
