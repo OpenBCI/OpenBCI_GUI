@@ -19,6 +19,7 @@ W_accelerometer w_accelerometer;
 W_ganglionImpedance w_ganglionImpedance;
 W_template w_template1;
 W_template w_template2;
+W_template w_template3;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -49,6 +50,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_template2 = new W_template(_this);
   w_template2.setTitle("Template Widget 2");
   addWidget(w_template2, w);
+
+  w_template3 = new W_template(_this);
+  w_template3.setTitle("LSL Stream");
+  addWidget(w_template3, w);
 
 }
 

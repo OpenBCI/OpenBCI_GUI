@@ -238,7 +238,6 @@ class OpenBCI_Ganglion {
         }
         break;
       case 'i': // Impedance
-        println("in i...");
         processImpedance(msg);
         break;
       case 't': // Data
