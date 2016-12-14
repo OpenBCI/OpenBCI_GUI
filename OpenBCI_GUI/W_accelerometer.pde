@@ -74,7 +74,7 @@ class W_accelerometer extends Widget {
     Xcolor = color(255, 36, 36);
     Ycolor = color(36, 255, 36);
     Zcolor = color(36, 100, 255);
-    
+
     setGraphDimensions();
 
     // XYZ buffer for bottom graph
@@ -119,9 +119,24 @@ class W_accelerometer extends Widget {
         currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
         shiftWave();
       } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-        currentXvalue = openBCI.validAuxValues[0]*openBCI.get_scale_fac_accel_G_per_count();
-        currentYvalue = openBCI.validAuxValues[1]*openBCI.get_scale_fac_accel_G_per_count();
-        currentZvalue = openBCI.validAuxValues[2]*openBCI.get_scale_fac_accel_G_per_count();
+        currentXvalue = openBCI.validAuxValues[0] * openBCI.get_scale_fac_accel_G_per_count();
+        currentYvalue = openBCI.validAuxValues[1] * openBCI.get_scale_fac_accel_G_per_count();
+        currentZvalue = openBCI.validAuxValues[2] * openBCI.get_scale_fac_accel_G_per_count();
+        X[X.length-1] =
+          int(map(currentXvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        Y[Y.length-1] =
+          int(map(currentYvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        Y[Y.length-1] = constrain(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        Z[Z.length-1] =
+          int(map(currentZvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        Z[Z.length-1] = constrain(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+
+        shiftWave();
+      } else if (eegDataSource == DATASOURCE_GANGLION) {
+        currentXvalue = ganglion.accelArray[0] * ganglion.get_scale_fac_accel_G_per_count();
+        currentYvalue = ganglion.accelArray[1] * ganglion.get_scale_fac_accel_G_per_count();
+        currentZvalue = ganglion.accelArray[2] * ganglion.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
           int(map(currentXvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
