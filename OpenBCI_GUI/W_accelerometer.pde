@@ -97,7 +97,7 @@ class W_accelerometer extends Widget {
     }
 
     if(eegDataSource == DATASOURCE_GANGLION){
-      accelModeButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+      accelModeButton = new Button((int)(x + w/2), (int)(y +80), 120, navHeight - 6, "Turn Accel. On", 12);
       accelModeButton.setCornerRoundess((int)(navHeight-6));
       accelModeButton.setFont(p6,10);
       // accelModeButton.setStrokeColor((int)(color(150)));
@@ -107,7 +107,7 @@ class W_accelerometer extends Widget {
       // accelModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
       accelModeButton.hasStroke(false);
       // accelModeButton.setColorNotPressed((int)(color(138, 182, 229)));
-      accelModeButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
+      accelModeButton.setHelpText("Click this button to activate/deactivate the accelerometer of your Ganglion board!");
     }
 
     //This is the protocol for setting up dropdowns.
@@ -279,7 +279,7 @@ class W_accelerometer extends Widget {
     setGraphDimensions();
 
     if(eegDataSource == DATASOURCE_GANGLION){
-      accelModeButton.setPos((int)(x + 3), (int)(y + navHeight + 3));
+      accelModeButton.setPos((int)(x + w/2 - accelModeButton.but_dx/2), (int)(y + 80));
     }
   }
 
