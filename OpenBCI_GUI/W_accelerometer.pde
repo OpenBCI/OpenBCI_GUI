@@ -63,6 +63,8 @@ class W_accelerometer extends Widget {
 
   int navOffset = 44;
 
+  Button accelModeButton;
+
   W_accelerometer(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -92,6 +94,20 @@ class W_accelerometer extends Widget {
       X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
+    }
+
+    if(eegDataSource == DATASOURCE_GANGLION){
+      accelModeButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+      accelModeButton.setCornerRoundess((int)(navHeight-6));
+      accelModeButton.setFont(p6,10);
+      // accelModeButton.setStrokeColor((int)(color(150)));
+      // accelModeButton.setColorNotPressed(openbciBlue);
+      accelModeButton.setColorNotPressed(color(57,128,204));
+      accelModeButton.textColorNotActive = color(255);
+      // accelModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
+      accelModeButton.hasStroke(false);
+      // accelModeButton.setColorNotPressed((int)(color(138, 182, 229)));
+      accelModeButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
     }
 
     //This is the protocol for setting up dropdowns.
@@ -202,8 +218,12 @@ class W_accelerometer extends Widget {
         drawAccValues();
         draw3DGraph();
         drawAccWave();
-      }
-      else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
+      } else if (eegDataSource == DATASOURCE_GANGLION) {
+        accelModeButton.draw();
+        drawAccValues();
+        draw3DGraph();
+        drawAccWave();
+      } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
         // fill(Xcolor);
         // text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
         // fill(Ycolor);
@@ -257,19 +277,43 @@ class W_accelerometer extends Widget {
     // PolarWindowY = y+83;
     // PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
     setGraphDimensions();
+
+    if(eegDataSource == DATASOURCE_GANGLION){
+      accelModeButton.setPos((int)(x + 3), (int)(y + navHeight + 3));
+    }
   }
 
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
     //put your code here...
-
+    if(eegDataSource == DATASOURCE_GANGLION){
+      //put your code here...
+      if (accelModeButton.isMouseHere()) {
+        accelModeButton.setIsActive(true);
+      }
+    }
   }
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    if(eegDataSource == DATASOURCE_GANGLION){
+      //put your code here...
+      if(accelModeButton.isActive && accelModeButton.isMouseHere()){
+        println("toggle...");
+        if(ganglion.isAccelModeActive()){
+          ganglion.accelStop();
+
+          accelModeButton.setString("Turn Accel On");
+        } else{
+          ganglion.accelStart();
+          accelModeButton.setString("Turn Accel Off");
+        }
+      }
+      accelModeButton.setIsActive(false);
+    }
 
   }
 
