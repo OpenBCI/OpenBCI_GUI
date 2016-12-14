@@ -274,11 +274,12 @@ class OpenBCI_Ganglion {
   }
 
   private void processAccel(String msg) {
-    String[] list = split(msg, ',');
-    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-      accelArray[i] = Integer.parseInt(list[i + 1]);
-    }
-    newAccelData = true;
+    println(msg);
+    // String[] list = split(msg, ',');
+    // for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+    //   accelArray[i] = Integer.parseInt(list[i + 1]);
+    // }
+    // newAccelData = true;
   }
 
   private void processData(String msg) {
