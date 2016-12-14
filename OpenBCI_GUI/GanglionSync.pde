@@ -112,6 +112,7 @@ class OpenBCI_Ganglion {
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
+  private float scale_fac_accel_G_per_count = 0.032;
   // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
@@ -136,6 +137,7 @@ class OpenBCI_Ganglion {
   private boolean nodeProcessHandshakeComplete = false;
   public boolean shouldStartNodeApp = false;
   private boolean checkingImpedance = false;
+  private boolean accelModeActive = false;
   private boolean newAccelData = false;
   private int[] accelArray = new int[NUM_ACCEL_DIMS];
 
@@ -146,8 +148,10 @@ class OpenBCI_Ganglion {
   public float get_fs_Hz() { return fs_Hz; }
   public boolean isPortOpen() { return portIsOpen; }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
+  public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
+  public boolean isAccelModeActive() { return accelModeActive; }
 
   private PApplet mainApplet;
 
@@ -595,13 +599,31 @@ class OpenBCI_Ganglion {
   }
 
   /**
+   * Used to start accel data mode. Accel arrays will arrive asynchronously!
+   */
+  public void accelStart() {
+    println("OpenBCI_Ganglion: accell: START");
+    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
+    accelModeActive = true;
+  }
+
+  /**
+   * Used to stop accel data mode. Some accel arrays may arrive after stop command
+   *  was sent by this function.
+   */
+  public void accelStop() {
+    println("OpenBCI_Ganglion: accel: STOP");
+    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
+    accelModeActive = false;
+  }
+
+  /**
    * Used to start impedance testing. Impedances will arrive asynchronously!
    */
   public void impedanceStart() {
     println("OpenBCI_Ganglion: impedance: START");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
     checkingImpedance = true;
-
   }
 
   /**
@@ -612,6 +634,5 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
-
   }
 };
