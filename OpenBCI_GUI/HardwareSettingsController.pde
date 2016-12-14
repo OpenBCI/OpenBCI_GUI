@@ -431,6 +431,7 @@ class HardwareSettingsController{
     //     channelSettingButtons[i][j] = tempButton;
     //   }
     // }
+
     for (int i = 0; i < nchan; i++) {
       for (int j = 1; j < 6; j++) {
         buttonW = int((w - (spaceBetweenButtons*6)) / 5);
@@ -468,6 +469,34 @@ class HardwareSettingsController{
         channelSettingButtons[i][j].but_y = buttonY;
         channelSettingButtons[i][j].but_dx = buttonW;
         channelSettingButtons[i][j].but_dy = buttonH;
+      }
+    }
+  }
+
+  void toggleImpedanceCheck(int _channelNumber){
+
+    if(channelSettingValues[_channelNumber][4] == '1'){     //is N pin being used...
+      if (impedanceCheckValues[_channelNumber][1] < '1') { //if not checking/drawing impedance
+        initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
+        println("Imp[" + _channelNumber + "] is on.");
+      } else {
+        initImpWrite(_channelNumber, 'n', '0'); //turn off impedance check for desired channel
+        println("Imp[" + _channelNumber + "] is off.");
+      }
+    }
+
+    if(channelSettingValues[_channelNumber][4] == '0'){     //is P pin being used
+      if (impedanceCheckValues[_channelNumber][0] < '1') {    //is channel on
+        // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+        // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
+        // writeImpedanceSettings(i);
+        initImpWrite(_channelNumber, 'p', '1');
+        //initImpWrite
+      } else {
+        // impedanceCheckValues[i][0] = '0';
+        // channelSettingButtons[i][0].setColorNotPressed(color(255));
+        // writeImpedanceSettings(i);
+        initImpWrite(_channelNumber, 'p', '0');
       }
     }
   }
@@ -556,37 +585,7 @@ class HardwareSettingsController{
   //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
   //     }
   //
-  //     //was P imp check button clicked?
-  //     if (impedanceCheckButtons[i][0].isMouseHere() && impedanceCheckButtons[i][0].wasPressed == true) {
-  //       if (impedanceCheckValues[i][0] < '1') {
-  //         // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-  //         // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
-  //         // writeImpedanceSettings(i);
-  //         initImpWrite(i, 'p', '1');
-  //         //initImpWrite
-  //         verbosePrint("a");
-  //       } else {
-  //         // impedanceCheckValues[i][0] = '0';
-  //         // channelSettingButtons[i][0].setColorNotPressed(color(255));
-  //         // writeImpedanceSettings(i);
-  //         initImpWrite(i, 'p', '0');
-  //         verbosePrint("b");
-  //       }
-  //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-  //     }
-  //
-  //     //was N imp check button clicked?
-  //     if (impedanceCheckButtons[i][1].isMouseHere() && impedanceCheckButtons[i][1].wasPressed == true) {
-  //       if (impedanceCheckValues[i][1] < '1') {
-  //         initImpWrite(i, 'n', '1');
-  //         //initImpWrite
-  //         verbosePrint("c");
-  //       } else {
-  //         initImpWrite(i, 'n', '0');
-  //         verbosePrint("d");
-  //       }
-  //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-  //     }
+
   //
   //     channelSettingButtons[i][0].isActive = false;
   //     channelSettingButtons[i][0].wasPressed = false;

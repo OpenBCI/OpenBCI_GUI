@@ -47,13 +47,17 @@ class W_timeSeries extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
+  int startingVertScaleIndex = 3;
+
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), 0);
+
+
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
     addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
@@ -93,17 +97,19 @@ class W_timeSeries extends Widget {
       channelBars[i] = tempBar;
     }
 
-    hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
-    hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
-    hardwareSettingsButton.setFont(p6,10);
-    // hardwareSettingsButton.setStrokeColor((int)(color(150)));
-    // hardwareSettingsButton.setColorNotPressed(openbciBlue);
-    hardwareSettingsButton.setColorNotPressed(color(57,128,204));
-    hardwareSettingsButton.textColorNotActive = color(255);
-    // hardwareSettingsButton.setStrokeColor((int)(color(138, 182, 229, 100)));
-    hardwareSettingsButton.hasStroke(false);
-    // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
-    hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+      hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
+      hardwareSettingsButton.setFont(p6,10);
+      // hardwareSettingsButton.setStrokeColor((int)(color(150)));
+      // hardwareSettingsButton.setColorNotPressed(openbciBlue);
+      hardwareSettingsButton.setColorNotPressed(color(57,128,204));
+      hardwareSettingsButton.textColorNotActive = color(255);
+      // hardwareSettingsButton.setStrokeColor((int)(color(138, 182, 229, 100)));
+      hardwareSettingsButton.hasStroke(false);
+      // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
+      hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
+    }
 
     int x_hsc = int(ts_x);
     int y_hsc = int(ts_y);
@@ -153,7 +159,9 @@ class W_timeSeries extends Widget {
         channelBars[i].draw();
       }
 
-      hardwareSettingsButton.draw();
+      if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+        hardwareSettingsButton.draw();
+      }
 
       //temporary placeholder for playback controller widget
       if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
@@ -195,17 +203,20 @@ class W_timeSeries extends Widget {
 
     hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-    hardwareSettingsButton.setPos((int)(x + 3), (int)(y + navHeight + 3));
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      hardwareSettingsButton.setPos((int)(x + 3), (int)(y + navHeight + 3));
+    }
   }
 
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
 
-
-    //put your code here...
-    if (hardwareSettingsButton.isMouseHere()) {
-      hardwareSettingsButton.setIsActive(true);
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      //put your code here...
+      if (hardwareSettingsButton.isMouseHere()) {
+        hardwareSettingsButton.setIsActive(true);
+      }
     }
 
     for(int i = 0; i < channelBars.length; i++){
@@ -217,25 +228,28 @@ class W_timeSeries extends Widget {
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-    //put your code here...
-    if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
-      println("toggle...");
-      if(showHardwareSettings){
-        showHardwareSettings = false;
-        hsc.isVisible = false;
-        hardwareSettingsButton.setString("Hardware Settings");
-      } else{
-        showHardwareSettings = true;
-        hsc.isVisible = true;
-        hardwareSettingsButton.setString("Time Series");
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      //put your code here...
+      if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
+        println("toggle...");
+        if(showHardwareSettings){
+          showHardwareSettings = false;
+          hsc.isVisible = false;
+          hardwareSettingsButton.setString("Hardware Settings");
+        } else{
+          showHardwareSettings = true;
+          hsc.isVisible = true;
+          hardwareSettingsButton.setString("Time Series");
+        }
       }
+      hardwareSettingsButton.setIsActive(false);
     }
 
     for(int i = 0; i < channelBars.length; i++){
       channelBars[i].mouseReleased();
     }
 
-    hardwareSettingsButton.setIsActive(false);
+
   }
 
 };
@@ -342,8 +356,14 @@ class ChannelBar{
 
   color channelColor; //color of plot trace
 
-  boolean isAutoscale = true; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+  boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
   int autoScaleYLim = 0;
+
+  TextBox voltageValue;
+  TextBox impValue;
+
+  boolean drawVoltageValue;
+  boolean drawImpValue;
 
   ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
@@ -355,7 +375,6 @@ class ChannelBar{
     y = _y;
     w = _w;
     h = _h;
-
 
     onOff_diameter = 26;
     onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
@@ -382,7 +401,7 @@ class ChannelBar{
     plot.setMar(0f, 0f, 0f, 0f);
     plot.setLineColor((int)channelColors[(channelNumber-1)%8]);
     plot.setXLim(-5,0);
-    plot.setYLim(-30,30);
+    plot.setYLim(-200,200);
     plot.setPointSize(2);
     plot.setPointColor(0);
 
@@ -406,14 +425,68 @@ class ChannelBar{
     }
 
     plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
+
+    voltageValue = new TextBox("", x + 36 + 4 + impButton_diameter + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+    voltageValue.textColor = color(bgColor);
+    voltageValue.alignH = RIGHT;
+    // voltageValue.alignV = TOP;
+    voltageValue.drawBackground = true;
+    voltageValue.backgroundColor = color(255,255,255,125);
+
+    impValue = new TextBox("", x + 36 + 4 + impButton_diameter + 2, y + h);
+    impValue.textColor = color(bgColor);
+    impValue.alignH = LEFT;
+    // impValue.alignV = TOP;
+    impValue.drawBackground = true;
+    impValue.backgroundColor = color(255,255,255,125);
+
+    drawVoltageValue = true;
+    drawImpValue = false;
+
   }
 
   void update(){
+
+    //update the voltage value text string
+    String fmt; float val;
+
+    //update the voltage values
+    val = dataProcessing.data_std_uV[channelNumber-1];
+    voltageValue.string = String.format(getFmt(val),val) + " uVrms";
+    if (is_railed != null) {
+      if (is_railed[channelNumber-1].is_railed == true) {
+        voltageValue.string = "RAILED";
+      } else if (is_railed[channelNumber-1].is_railed_warn == true) {
+        voltageValue.string = "NEAR RAILED";
+      }
+    }
+
+    //update the impedance values
+    val = data_elec_imp_ohm[channelNumber-1]/1000;
+    impValue.string = String.format(getFmt(val),val) + " kOhm";
+    if (is_railed != null) {
+      if (is_railed[channelNumber-1].is_railed == true) {
+        impValue.string = "RAILED";
+      }
+    }
+
     // update data in plot
     updatePlotPoints();
     if(isAutoscale){
       autoScale();
     }
+  }
+
+  private String getFmt(float val) {
+    String fmt;
+      if (val > 100.0f) {
+        fmt = "%.0f";
+      } else if (val > 10.0f) {
+        fmt = "%.1f";
+      } else {
+        fmt = "%.2f";
+      }
+      return fmt;
   }
 
   void updatePlotPoints(){
@@ -463,7 +536,18 @@ class ChannelBar{
     }
     plot.endDraw();
 
+    if(drawImpValue){
+      impValue.draw();
+    }
+    if(drawVoltageValue){
+      voltageValue.draw();
+    }
+
     popStyle();
+  }
+
+  void setDrawImp(boolean _trueFalse){
+    drawImpValue = _trueFalse;
   }
 
   void adjustTimeAxis(int _newTimeSize){
@@ -518,6 +602,11 @@ class ChannelBar{
     plot.setPos(x + 36 + 4 + impButton_diameter, y);
     plot.setDim(w - 36 - 4 - impButton_diameter, h);
 
+    voltageValue.x = x + 36 + 4 + impButton_diameter + (w - 36 - 4 - impButton_diameter) - 2;
+    voltageValue.y = y + h;
+    impValue.x = x + 36 + 4 + impButton_diameter + 2;
+    impValue.y = y + h;
+
   }
 
   void mousePressed(){
@@ -553,8 +642,16 @@ class ChannelBar{
     onOffButton.setIsActive(false);
 
     if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      if(impCheckButton.isMouseHere()){
+      if(impCheckButton.isMouseHere() && impCheckButton.isActive()){
         println("[" + channelNumber + "] imp released");
+        w_timeSeries.hsc.toggleImpedanceCheck(channelNumber-1);  // 'n' indicates the N inputs and '1' indicates test impedance
+        if(drawImpValue){
+          drawImpValue = false;
+          impCheckButton.setColorNotPressed(color(255));
+        } else {
+          drawImpValue = true;
+          impCheckButton.setColorNotPressed(color(50));
+        }
       }
       impCheckButton.setIsActive(false);
     }
