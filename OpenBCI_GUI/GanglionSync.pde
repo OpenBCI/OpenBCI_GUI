@@ -137,6 +137,7 @@ class OpenBCI_Ganglion {
   private boolean nodeProcessHandshakeComplete = false;
   public boolean shouldStartNodeApp = false;
   private boolean checkingImpedance = false;
+  private boolean accelModeActive = false;
   private boolean newAccelData = false;
   private int[] accelArray = new int[NUM_ACCEL_DIMS];
 
@@ -150,6 +151,7 @@ class OpenBCI_Ganglion {
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
+  public boolean isAccelModeActive() { return accelModeActive; }
 
   private PApplet mainApplet;
 
@@ -597,13 +599,31 @@ class OpenBCI_Ganglion {
   }
 
   /**
+   * Used to start accel data mode. Accel arrays will arrive asynchronously!
+   */
+  public void accelStart() {
+    println("OpenBCI_Ganglion: accell: START");
+    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
+    accelModeActive = true;
+  }
+
+  /**
+   * Used to stop accel data mode. Some accel arrays may arrive after stop command
+   *  was sent by this function.
+   */
+  public void accelStop() {
+    println("OpenBCI_Ganglion: accel: STOP");
+    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
+    accelModeActive = false;
+  }
+
+  /**
    * Used to start impedance testing. Impedances will arrive asynchronously!
    */
   public void impedanceStart() {
     println("OpenBCI_Ganglion: impedance: START");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
     checkingImpedance = true;
-
   }
 
   /**
@@ -614,6 +634,5 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
-
   }
 };
