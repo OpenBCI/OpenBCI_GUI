@@ -100,14 +100,16 @@ class W_ganglionImpedance extends Widget {
 
 public float convertRawGanglionImpedanceToTarget(float _actual){
 
-  //the following Impedance Adjustment calculations were derived using empirical values from resistors between 1,2,3,4,REF-->D_G
+  //the following impedance adjustment calculations were derived using empirical values from resistors between 1,2,3,4,REF-->D_G
   float _target;
 
-  if(_actual < 20){
-      //V1 -- more accurate for lower impedances
-    _target = (0.0004)*(pow(_actual,3)) - (0.0262)*(pow(_actual,2)) + (1.8349)*(_actual) - 6.6006;
-  } else {
-    //V2 -- more accurate for higher impedances
+  //V1 -- more accurate for lower impedances (< 22kOhcm) -> y = 0.0034x^3 - 0.1443x^2 + 3.1324x - 10.59
+  if(_actual <= 22){
+    // _target = (0.0004)*(pow(_actual,3)) - (0.0262)*(pow(_actual,2)) + (1.8349)*(_actual) - 6.6006;
+    _target = (0.0034)*(pow(_actual,3)) - (0.1443)*(pow(_actual,2)) + (3.1324)*(_actual) - 10.59;
+  }
+  //V2 -- more accurate for higher impedances (> 22kOhm) -> y = 0.000009x^4 - 0.001x^3 + 0.0409x^2 + 0.6445x - 1
+  else {
     _target = (0.000009)*(pow(_actual,4)) - (0.001)*pow(_actual,3) + (0.0409)*(pow(_actual,2)) + (0.6445)*(pow(_actual,1)) - 1;
   }
 
