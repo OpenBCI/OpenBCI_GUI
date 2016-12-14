@@ -69,7 +69,6 @@ void serialEvent(Serial port) {
     } else {
       echoBytes = false;
     }
-
     openBCI.read(echoBytes);
     openBCI_byteCount++;
     if (openBCI.get_isNewDataPacketAvailable()) {
@@ -520,6 +519,8 @@ class OpenBCI_ADS1299 {
 
   public void updateSyncState(int sdSetting) {
     //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
+    // println("0");
+
     if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == openBCI.STATE_COMINIT) ) {
       state = STATE_SYNCWITHHARDWARE;
       timeOfLastCommand = millis();
@@ -635,15 +636,20 @@ class OpenBCI_ADS1299 {
         if(hardwareSyncStep == 0) {
           // Failure: Communications timeout - Device failed to poll Host$$$
           if (potentialFailureMessage.equals(failureMessage)) {
-            changeState(STATE_NOCOM);
-            serial_openBCI = null;
+            // changeState(STATE_NOCOM);
+            // serial_openBCI = null;
             output("Failed to establish communication with Cyton, please ensure Cyton is powered on and Board/Dongle are on the same radio channel!");
-            portIsOpen = false;
+            // portIsOpen = false;
             systemMode = 0;
             initSystemButton.setString("START SYSTEM");
             controlPanel.open();
-            dataMode = -1;
             prevState_millis = 0;
+            timeOfInit = 0;
+            closeLogFile();
+            closeSerialPort();
+            serial_openBCI = null;
+            println();
+            println("--------------------------------------------------------------------------------------------------------");
           } else {
             println("not failure");
           }

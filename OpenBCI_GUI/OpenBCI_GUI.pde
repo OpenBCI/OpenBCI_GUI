@@ -633,7 +633,9 @@ void systemUpdate() { // for updating data values and variables
   }
 
   //update the sync state with the OpenBCI hardware
-  openBCI.updateSyncState(sdSetting);
+  if(openBCI.state == openBCI.STATE_NOCOM || openBCI.state == openBCI.STATE_COMINIT || openBCI.state == openBCI.STATE_SYNCWITHHARDWARE){
+    openBCI.updateSyncState(sdSetting);
+  }
 
   //prepare for updating the GUI
   win_x = width;
