@@ -87,7 +87,7 @@ int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
 final int threshold_railed = int(pow(2, 23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
-final int threshold_railed_warn = int(pow(2, 23)*0.75); //set a somewhat smaller value as the warning threshold
+final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller value as the warning threshold
 //OpenBCI SD Card setting (if eegDataSource == 0)
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
@@ -515,6 +515,7 @@ void initSystem() {
     verbosePrint("a--"+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
   }  //make the FFT objects
+
   verbosePrint("OpenBCI_GUI: initSystem: b");
   initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
 
@@ -576,9 +577,8 @@ void initSystem() {
 
   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
     systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-  }
 
-  controlPanel.close();
+  }
 
 }
 

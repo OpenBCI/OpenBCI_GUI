@@ -27,7 +27,7 @@ class Widget{
 
   //some variables for the dropdowns
   int navH = 22;
-  int widgetSelectorWidth = 140;
+  int widgetSelectorWidth = 160;
   int dropdownWidth = 64;
 
   CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
