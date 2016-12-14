@@ -69,7 +69,6 @@ void serialEvent(Serial port) {
     } else {
       echoBytes = false;
     }
-
     openBCI.read(echoBytes);
     openBCI_byteCount++;
     if (openBCI.get_isNewDataPacketAvailable()) {
@@ -275,12 +274,14 @@ class OpenBCI_ADS1299 {
   private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   //final float scale_fac_accel_G_per_count = 1.0;
   private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
+  private final String failureMessage = "Failure: Communications timeout - Device failed to poll Host";
 
   boolean isBiasAuto = true; //not being used?
 
   //data related to Conor's setup for V3 boards
   final char[] EOT = {'$','$','$'};
   char[] prev3chars = {'#','#','#'};
+  private String potentialFailureMessage = "";
   private String defaultChannelSettings = "";
   private String daisyOrNot = "";
   private int hardwareSyncStep = 0; //start this at 0...
@@ -518,10 +519,13 @@ class OpenBCI_ADS1299 {
 
   public void updateSyncState(int sdSetting) {
     //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
+    // println("0");
+
     if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == openBCI.STATE_COMINIT) ) {
       state = STATE_SYNCWITHHARDWARE;
       timeOfLastCommand = millis();
       serial_openBCI.clear();
+      potentialFailureMessage = "";
       defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
       daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
       println("OpenBCI_ADS1299: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
@@ -593,7 +597,9 @@ class OpenBCI_ADS1299 {
     byte inByte = byte(serial_openBCI.read());
 
     //write the most recent char to the console
+    // If the GUI is in streaming mode then echoChar will be false
     if (echoChar){  //if not in interpret binary (NORMAL) mode
+      // print("hardwareSyncStep: "); println(hardwareSyncStep);
       // print(".");
       char inASCII = char(inByte);
       if(isRunning == false && (millis() - timeSinceStopRunning) > 500){
@@ -604,6 +610,10 @@ class OpenBCI_ADS1299 {
       prev3chars[0] = prev3chars[1];
       prev3chars[1] = prev3chars[2];
       prev3chars[2] = inASCII;
+
+      if(hardwareSyncStep == 0 && inASCII != '$'){
+        potentialFailureMessage+=inASCII;
+      }
 
       if(hardwareSyncStep == 1 && inASCII != '$'){
         daisyOrNot+=inASCII;
@@ -622,6 +632,28 @@ class OpenBCI_ADS1299 {
       //if the last three chars are $$$, it means we are moving on to the next stage of initialization
       if(prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]){
         verbosePrint(" > EOT detected...");
+        // Added for V2 system down rejection line
+        if(hardwareSyncStep == 0) {
+          // Failure: Communications timeout - Device failed to poll Host$$$
+          if (potentialFailureMessage.equals(failureMessage)) {
+            // changeState(STATE_NOCOM);
+            // serial_openBCI = null;
+            output("Failed to establish communication with Cyton, please ensure Cyton is powered on and Board/Dongle are on the same radio channel!");
+            // portIsOpen = false;
+            systemMode = 0;
+            initSystemButton.setString("START SYSTEM");
+            controlPanel.open();
+            prevState_millis = 0;
+            timeOfInit = 0;
+            closeLogFile();
+            closeSerialPort();
+            serial_openBCI = null;
+            println();
+            println("--------------------------------------------------------------------------------------------------------");
+          } else {
+            println("not failure");
+          }
+        }
         // hardwareSyncStep++;
         prev3chars[2] = '#';
         if(hardwareSyncStep == 3){
