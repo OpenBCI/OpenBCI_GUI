@@ -334,7 +334,7 @@ class TextBox {
     backgroundColor = color(255,255,255);
     textColor = color(0,0,0);
     fontSize = 12;
-    font = createFont("Arial",fontSize);
+    font = p5;
     backgroundEdge_pixels = 1;
     drawBackground = false;
     alignH = LEFT;
@@ -342,7 +342,7 @@ class TextBox {
   }
   public void setFontSize(int size) {
     fontSize = size;
-    font = createFont("fonts/Raleway-SemiBold.otf",fontSize);
+    font = p5;
   }
   public void draw() {
     //define text

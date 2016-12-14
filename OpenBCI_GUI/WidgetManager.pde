@@ -16,11 +16,10 @@ W_timeSeries w_timeSeries;
 W_fft w_fft;
 W_headPlot w_headPlot;
 W_accelerometer w_accelerometer;
+W_ganglionImpedance w_ganglionImpedance;
 W_template w_template1;
 W_template w_template2;
 W_template w_template3;
-W_template w_template4;
-W_template w_template5;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -40,25 +39,21 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
 
+  w_ganglionImpedance = new W_ganglionImpedance(_this);
+  w_ganglionImpedance.setTitle("Ganglion Signal");
+  addWidget(w_ganglionImpedance, w);
+
   w_template1 = new W_template(_this);
-  w_template1.setTitle("Widget 1");
+  w_template1.setTitle("Template Widget 1");
   addWidget(w_template1, w);
 
   w_template2 = new W_template(_this);
-  w_template2.setTitle("Widget 2");
+  w_template2.setTitle("Template Widget 2");
   addWidget(w_template2, w);
 
   w_template3 = new W_template(_this);
-  w_template3.setTitle("Widget 3");
+  w_template3.setTitle("LSL Stream");
   addWidget(w_template3, w);
-
-  w_template4 = new W_template(_this);
-  w_template4.setTitle("Widget 4");
-  addWidget(w_template4, w);
-
-  w_template5 = new W_template(_this);
-  w_template5.setTitle("Widget 5");
-  addWidget(w_template5, w);
 
 }
 
