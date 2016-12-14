@@ -100,7 +100,7 @@ class OpenBCI_Ganglion {
   int prevState_millis = 0; // Used for calculating connect time out
 
   private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by openBCI boards
-  private int nAuxValuesPerPacket = 0; // Defined by the arduino code
+  private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
 
   private int tcpGanglionPort = 10996;
   private String tcpGanglionIP = "127.0.0.1";
@@ -278,12 +278,12 @@ class OpenBCI_Ganglion {
   }
 
   private void processAccel(String msg) {
-    println(msg);
-    // String[] list = split(msg, ',');
-    // for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-    //   accelArray[i] = Integer.parseInt(list[i + 1]);
-    // }
-    // newAccelData = true;
+    // println(msg);
+    String[] list = split(msg, ',');
+    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+      accelArray[i] = Integer.parseInt(list[i + 1]);
+    }
+    newAccelData = true;
   }
 
   private void processData(String msg) {

@@ -685,11 +685,11 @@ class Button {
 
   public void setY(int _but_y){
     but_y = _but_y;
-    but_y = _but_y;
   }
 
   public void setPos(int _but_x, int _but_y){
     but_x = _but_x;
+    but_y = _but_y;
   }
 
   public void setFont(PFont _newFont){
