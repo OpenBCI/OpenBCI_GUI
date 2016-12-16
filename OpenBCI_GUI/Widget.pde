@@ -302,7 +302,7 @@ class Widget{
     x = x0;
     y = y0 + navH*2;
     w = w0;
-    h = h0 - navH-2;
+    h = h0 - navH*2;
 
     cp5_widget.setGraphics(pApplet, 0, 0);
 

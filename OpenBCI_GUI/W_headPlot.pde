@@ -237,7 +237,7 @@ class HeadPlot {
     //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
     ref_electrode_xy = new float[2];  //x-y position of reference electrode
     electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
-    font = createFont("Arial", 16);
+    font = p5;
     drawHeadAsContours = true; //set this to be false for slower computers
 
     //float percentMargin = 0.1;
@@ -259,7 +259,7 @@ class HeadPlot {
   public void setPositionSize(int _x, int _y, int _w, int _h, int _win_x, int _win_y) {
     float percentMargin = 0.1;
     _x = _x + (int)(float(_w)*percentMargin);
-    _y = _y + (int)(float(_h)*percentMargin) + navHeight/2;
+    _y = _y + (int)(float(_h)*percentMargin)-navHeight/2;
     _w = (int)(float(_w)-(2*(float(_w)*percentMargin)));
     _h = (int)(float(_h)-(2*(float(_h)*percentMargin)));
 
@@ -1112,12 +1112,19 @@ class HeadPlot {
 
 
   private color calcPixelColor(float pixel_volt_uV) {
-    float new_rgb[] = {255.0, 0.0, 0.0}; //init to red
+    // float new_rgb[] = {255.0, 0.0, 0.0}; //init to red
+    //224, 56, 45
+    float new_rgb[] = {224.0, 56.0, 45.0}; //init to red
+    // float new_rgb[] = {0.0, 255.0, 0.0}; //init to red
+    //54, 87, 158
     if (pixel_volt_uV < 0.0) {
       //init to blue instead
-      new_rgb[0]=0.0;
-      new_rgb[1]=0.0;
-      new_rgb[2]=255.0;
+      new_rgb[0]=54.0;
+      new_rgb[1]=87.0;
+      new_rgb[2]=158.0;
+      // new_rgb[0]=0.0;
+      // new_rgb[1]=0.0;
+      // new_rgb[2]=255.0;
     }
     float val;
 
