@@ -425,20 +425,13 @@ class OpenBCI_ADS1299 {
   }
 
   public int closeSerialPort() {
-    // if (serial_openBCI != null) {
-    println("OpenBCI_ADS1299: closeSerialPort: d");
     portIsOpen = false;
-    println("OpenBCI_ADS1299: closeSerialPort: e");
-    println("OpenBCI_ADS1299: closeSerialPort: e2");
     serial_openBCI.stop();
-    println("OpenBCI_ADS1299: closeSerialPort: f");
     serial_openBCI = null;
-    println("OpenBCI_ADS1299: closeSerialPort: g");
     state = STATE_NOCOM;
-    println("OpenBCI_ADS1299: closeSerialPort: h");
+    println("OpenBCI_ADS1299: closeSerialPort");
     return 0;
   }
-
 
   public void syncWithHardware(int sdSetting){
     switch (hardwareSyncStep) {
