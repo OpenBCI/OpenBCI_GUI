@@ -536,7 +536,8 @@ class OpenBCI_ADS1299 {
     if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
       if(millis() - timeOfLastCommand > 200 && readyToSend == true){
         timeOfLastCommand = millis();
-
+        hardwareSyncStep++;
+        syncWithHardware(sdSetting);
       }
     }
   }

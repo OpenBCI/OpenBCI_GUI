@@ -25,7 +25,7 @@ class W_accelerometer extends Widget {
   // Accelerometer Stuff
   int AccelBuffSize = 500; //points registered in accelerometer buff
 
-  int padding = 5;
+  int padding = 20;
 
   // bottom xyz graph
   int AccelWindowWidth;
@@ -61,8 +61,6 @@ class W_accelerometer extends Widget {
   boolean Zrising;
   boolean OBCI_inited= true;
 
-  int navOffset = 44;
-
   Button accelModeButton;
 
   W_accelerometer(PApplet _parent){
@@ -73,9 +71,9 @@ class W_accelerometer extends Widget {
 
     // Accel Sensor Stuff
     eggshell = color(255, 253, 248);
-    Xcolor = color(255, 36, 36);
-    Ycolor = color(36, 255, 36);
-    Zcolor = color(36, 100, 255);
+    Xcolor = color(224, 56, 45);
+    Ycolor = color(49, 113, 89);
+    Zcolor = color(54, 87, 158);
 
     setGraphDimensions();
 
@@ -175,6 +173,7 @@ class W_accelerometer extends Widget {
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
+    pushStyle();
     //put your code here...
     //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     if (true) {
@@ -187,10 +186,11 @@ class W_accelerometer extends Widget {
       // text("Acellerometer Gs", x + 10, y + 10);
 
       fill(50);
-      textFont(f4, 16);
-      text("z", PolarWindowX-12, (PolarWindowY-PolarWindowHeight/2));
-      text("x", (PolarWindowX-PolarWindowWidth/2)+2, PolarWindowY-15);
-      text("y", (PolarWindowX-PolarCorner)-5, (PolarWindowY+PolarCorner)-20);
+      textFont(p4, 14);
+      textAlign(CENTER,CENTER);
+      text("z", PolarWindowX, (PolarWindowY-PolarWindowHeight/2)-12);
+      text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
+      text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
 
       fill(graphBG);  // pulse window background
       stroke(graphStroke);
@@ -206,7 +206,7 @@ class W_accelerometer extends Widget {
       line(PolarWindowX-PolarCorner, PolarWindowY+PolarCorner, PolarWindowX+PolarCorner, PolarWindowY-PolarCorner);
 
       fill(50);
-      textFont(f4, 30);
+      textFont(p3, 16);
 
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE
         // fill(Xcolor);
@@ -247,12 +247,12 @@ class W_accelerometer extends Widget {
     // textAlign(CENTER,CENTER);
     // text(widgetTitle, x + w/2, y + h/2);
     // popStyle();
-
+    popStyle();
   }
 
   void setGraphDimensions(){
     AccelWindowWidth = w - padding*2;
-    AccelWindowHeight = int((float(h) - float(navOffset) - float(padding*3))/2.0);
+    AccelWindowHeight = int((float(h) - float(padding*3))/2.0);
     AccelWindowX = x + padding;
     AccelWindowY = y + h - AccelWindowHeight - padding;
 
@@ -261,7 +261,7 @@ class W_accelerometer extends Widget {
     PolarWindowWidth = AccelWindowHeight;
     PolarWindowHeight = AccelWindowHeight;
     PolarWindowX = x + w - padding - PolarWindowWidth/2;
-    PolarWindowY = y + navOffset + padding + PolarWindowHeight/2;
+    PolarWindowY = y + padding + PolarWindowHeight/2;
     PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
   }
 
@@ -276,7 +276,16 @@ class W_accelerometer extends Widget {
     // PolarWindowX = x+AccelWindowWidth-90;
     // PolarWindowY = y+83;
     // PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+    println("Acc Widget -- Screen Resized.");
+
     setGraphDimensions();
+
+    //empty arrays to start redrawing from scratch
+    for (int i=0; i<X.length; i++) {  // initialize the accelerometer data
+      X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
+      Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
+      Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
+    }
 
     if(eegDataSource == DATASOURCE_GANGLION){
       accelModeButton.setPos((int)(x + w/2 - accelModeButton.but_dx/2), (int)(y + 80));
@@ -319,12 +328,14 @@ class W_accelerometer extends Widget {
 
   //add custom classes functions here
   void drawAccValues() {
+    textAlign(LEFT,CENTER);
+    textFont(h1,20);
     fill(Xcolor);
-    text("X " + nf(currentXvalue, 1, 3), x+10, y + 30 + navOffset);
+    text("X = " + nf(currentXvalue, 1, 3) + " g", x+padding , y + (h/12)*1.5);
     fill(Ycolor);
-    text("Y " + nf(currentYvalue, 1, 3), x+10, y + 70 + navOffset);
+    text("Y = " + nf(currentYvalue, 1, 3) + " g", x+padding, y + (h/12)*3);
     fill(Zcolor);
-    text("Z " + nf(currentZvalue, 1, 3), x+10, y + 110 + navOffset);
+    text("Z = " + nf(currentZvalue, 1, 3) + " g", x+padding, y + (h/12)*4.5);
   }
 
   void shiftWave() {
@@ -339,11 +350,11 @@ class W_accelerometer extends Widget {
     noFill();
     strokeWeight(3);
     stroke(Xcolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -4.0, 4.0, -77, 77), PolarWindowY);
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -4.0, 4.0, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
     stroke(Ycolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -4.0, 4.0, -77, 77), PolarWindowY-map((sqrt(2)*currentYvalue/2), -4.0, 4.0, -77, 77));
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -4.0, 4.0, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentYvalue/2), -4.0, 4.0, PolarWindowWidth/2, -PolarWindowWidth/2));
     stroke(Zcolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -4.0, 4.0, -77, 77));
+    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -4.0, 4.0, PolarWindowWidth/2, -PolarWindowWidth/2));
   }
 
   void drawAccWave() {
@@ -352,7 +363,11 @@ class W_accelerometer extends Widget {
     beginShape();                                  // using beginShape() renders fast
     stroke(Xcolor);
     for (int i = 0; i < X.length; i++) {
+      // int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
+      // vertex(AccelWindowX+xi, X[i]);                    //draw a line connecting the data points
       int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
+      // int yi = int(map(X[i], 4.0, -4.0, 0.0, AccelWindowHeight-1));
+      // int yi = 2;
       vertex(AccelWindowX+xi, X[i]);                    //draw a line connecting the data points
     }
     endShape();

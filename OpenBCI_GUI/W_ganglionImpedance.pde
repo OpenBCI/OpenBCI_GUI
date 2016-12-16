@@ -43,28 +43,43 @@ class W_ganglionImpedance extends Widget {
     // fill(bgColor);
     // textAlign(CENTER,CENTER);
     // text(widgetTitle, x + w/2, y + h/2);
-    fill(0);
+    // fill(0);
+
+    // //without dividing by 2
+    // for(int i = 0; i < ganglion.impedanceArray.length; i++){
+    //   String toPrint;
+    //   if(i == 0){
+    //     toPrint = "Reference Impedance = " + ganglion.impedanceArray[i] + " k\u2126";
+    //   } else {
+    //     toPrint = "Channel[" + i + "] Impedance = " + ganglion.impedanceArray[i] + " k\u2126";
+    //   }
+    //   text(toPrint, x + 10, y + 60 + 20*(i));
+    // }
+
+    //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
+    fill(bgColor);
+    textFont(p5, 12);
     for(int i = 0; i < ganglion.impedanceArray.length; i++){
       String toPrint;
       if(i == 0){
-        toPrint = "Reference Impedance = " + ganglion.impedanceArray[i]/1000.0 + " k\u2126";
+        toPrint = "Reference Impedance = " + ganglion.impedanceArray[i]/2.0 + " k\u2126";
       } else {
-        toPrint = "Channel[" + i + "] Impedance = " + ganglion.impedanceArray[i]/1000.0 + " k\u2126";
+        toPrint = "Channel[" + i + "] Impedance = " + ganglion.impedanceArray[i]/2.0 + " k\u2126";
       }
       text(toPrint, x + 10, y + 60 + 20*(i));
     }
 
-    for(int i = 0; i < ganglion.impedanceArray.length; i++){
-      String toPrint;
-      float target = convertRawGanglionImpedanceToTarget(ganglion.impedanceArray[i]/1000.0);
-      if(i == 0){
-        toPrint = "Reference Impedance = " + target + " k\u2126";
-      } else {
-        toPrint = "Channel[" + i + "] Impedance = " + target + " k\u2126";
-      }
-      text(toPrint, x + 10, y + 220 + 20*(i));
-    }
-
+    // // no longer need to do this because the math was moved to the firmware...
+    // for(int i = 0; i < ganglion.impedanceArray.length; i++){
+    //   String toPrint;
+    //   float target = convertRawGanglionImpedanceToTarget(ganglion.impedanceArray[i]/1000.0);
+    //   if(i == 0){
+    //     toPrint = "Reference Impedance = " + target + " k\u2126";
+    //   } else {
+    //     toPrint = "Channel[" + i + "] Impedance = " + target + " k\u2126";
+    //   }
+    //   text(toPrint, x + 10, y + 220 + 20*(i));
+    // }
 
     popStyle();
 

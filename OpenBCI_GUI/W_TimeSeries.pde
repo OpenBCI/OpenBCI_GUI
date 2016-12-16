@@ -20,9 +20,8 @@ class W_timeSeries extends Widget {
   float ts_padding;
   float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
   float plotBottomWell;
-  float topNavHeight, playbackWidgetHeight;
+  float playbackWidgetHeight;
   int channelBarHeight;
-  // int parentContainer;
   boolean showHardwareSettings = false;
 
   Button hardwareSettingsButton;
@@ -68,7 +67,6 @@ class W_timeSeries extends Widget {
     wF = float(w);
     hF = float(h);
 
-    topNavHeight = navHeight * 2.0; //22*2 = 44
     if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
       playbackWidgetHeight = 50.0;
     } else{
@@ -77,16 +75,11 @@ class W_timeSeries extends Widget {
 
     plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
     ts_padding = 10.0;
-    ts_x = x + ts_padding;
-    ts_y = y + topNavHeight + (ts_padding);
-    ts_w = w - ts_padding*2;
-    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
+    ts_x = xF + ts_padding;
+    ts_y = yF + (ts_padding);
+    ts_w = wF - ts_padding*2;
+    ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
     channelBarHeight = int(ts_h/numChannelBars);
-    // ts_x = x + ts_padding;
-    // ts_y = y + topNavHeight + ts_padding;
-    // ts_w = w - ts_padding*2;
-    // ts_h = h - topNavHeight - playbackWidgetHeight - ts_padding*2;
-    // channelBarHeight = int(ts_h/numChannelBars);
 
     channelBars = new ChannelBar[numChannelBars];
 
@@ -168,7 +161,7 @@ class W_timeSeries extends Widget {
         pushStyle();
         fill(0,0,0,20);
         stroke(31,69,110);
-        rect(x, ts_y + ts_h + playbackWidgetHeight + 5, w, playbackWidgetHeight);
+        rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
         popStyle();
       } else{
         //dont draw anything at the bottom
@@ -190,10 +183,10 @@ class W_timeSeries extends Widget {
     wF = float(w);
     hF = float(h);
 
-    ts_x = x + ts_padding;
-    ts_y = y + topNavHeight + (ts_padding);
-    ts_w = w - ts_padding*2;
-    ts_h = h - topNavHeight - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
+    ts_x = xF + ts_padding;
+    ts_y = yF + (ts_padding);
+    ts_w = wF - ts_padding*2;
+    ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
     channelBarHeight = int(ts_h/numChannelBars);
 
     for(int i = 0; i < numChannelBars; i++){
@@ -204,7 +197,7 @@ class W_timeSeries extends Widget {
     hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
     if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      hardwareSettingsButton.setPos((int)(x + 3), (int)(y + navHeight + 3));
+      hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
     }
   }
 

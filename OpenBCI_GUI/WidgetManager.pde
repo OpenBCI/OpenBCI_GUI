@@ -31,6 +31,13 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
 
+  //only instantiate this widget if you are using a Ganglion board for live streaming
+  if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    w_ganglionImpedance = new W_ganglionImpedance(_this);
+    w_ganglionImpedance.setTitle("Ganglion Signal");
+    addWidget(w_ganglionImpedance, w);
+  }
+
   w_headPlot = new W_headPlot(_this);
   w_headPlot.setTitle("Head Plot");
   addWidget(w_headPlot, w);
@@ -38,10 +45,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
-
-  w_ganglionImpedance = new W_ganglionImpedance(_this);
-  w_ganglionImpedance.setTitle("Ganglion Signal");
-  addWidget(w_ganglionImpedance, w);
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Template Widget 1");
@@ -100,9 +103,13 @@ class WidgetManager{
     setupWidgets(_this, widgets);
     setupWidgetSelectorDropdowns();
 
-    currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-    setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
-
+    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+      currentContainerLayout = 1;
+      setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+    } else {
+      currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
+      setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+    }
   }
   public boolean isVisible() {
     return visible;
@@ -140,7 +147,7 @@ class WidgetManager{
           widgets.get(i).update();
           //if the widgets are not mapped to containers correctly, remap them..
           // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
-          if(widgets.get(i).x != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h != (int)container[widgets.get(i).currentContainer].h){
+          if(widgets.get(i).x0 != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y0 != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w0 != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h0 != (int)container[widgets.get(i).currentContainer].h){
             screenResized();
             println("WidgetManager.pde: Remapping widgets to container layout...");
           }
