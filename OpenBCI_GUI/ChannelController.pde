@@ -24,8 +24,6 @@ int numSettingsPerChannel = 6; //each channel has 6 different settings
 char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 char[][] impedanceCheckValues = new char [nchan][2];
 
-
-
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -47,9 +45,9 @@ void activateChannel(int Ichan) {
     // println("activating channel on ganglion");
     ganglion.changeChannelState(Ichan, true);
   }
-  if (Ichan < gui.chanButtons.length) {
+  if (Ichan < nchan) {
     channelSettingValues[Ichan][0] = '0';
-    gui.cc.update();
+    // gui.cc.update();
   }
 }
 void deactivateChannel(int Ichan) {
@@ -63,9 +61,9 @@ void deactivateChannel(int Ichan) {
     // println("deactivating channel on ganglion");
     ganglion.changeChannelState(Ichan, false);
   }
-  if (Ichan < gui.chanButtons.length) {
+  if (Ichan < nchan) {
     channelSettingValues[Ichan][0] = '1';
-    gui.cc.update();
+    // gui.cc.update();
   }
 }
 
@@ -154,12 +152,12 @@ class ChannelController {
     w2 = _montage_w;
     h2 = h1;
 
-    createChannelSettingButtons();
+    // createChannelSettingButtons(); //%%%
 
     // set on/off buttons to default channel colors
-    for (int i = 0; i < nchan; i++) {
-      channelSettingButtons[i][0].setColorNotPressed(channelColors[i%8]);
-    }
+    // for (int i = 0; i < nchan; i++) {
+    //   channelSettingButtons[i][0].setColorNotPressed(channelColors[i%8]);
+    // }
   }
 
   public void loadDefaultChannelSettings() {
@@ -382,7 +380,8 @@ class ChannelController {
 
     for (int i = 0; i < nchan; i++) {
       if (drawImpedanceValues[i] == true) {
-        gui.impValuesMontage[i].draw();  //impedance values on montage plot
+        // gui.impValuesMontage[i].draw();  //impedance values on montage plot
+        //THIS IS WHERE WE NEED TO DRAW NEW TIME SERIES IMPEDANCE VALUES %%%
       }
     }
 
@@ -455,63 +454,63 @@ class ChannelController {
         }
       }
     }
-    //ON/OFF button can always be clicked/released
-    for (int i = 0; i < nchan; i++) {
-      //was on/off clicked?
-      if (channelSettingButtons[i][0].isMouseHere() && channelSettingButtons[i][0].wasPressed == true) {
-        if (channelSettingValues[i][0] < maxValuesPerSetting[0]) {
-          channelSettingValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-          // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
-          // powerDownChannel(i);
-          deactivateChannel(i);
-        } else {
-          channelSettingValues[i][0] = '0';
-          // channelSettingButtons[i][0].setColorNotPressed(color(255));
-          // powerUpChannel(i);
-          activateChannel(i);
-        }
-        // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-      }
-
-      //was P imp check button clicked?
-      if (impedanceCheckButtons[i][0].isMouseHere() && impedanceCheckButtons[i][0].wasPressed == true) {
-        if (impedanceCheckValues[i][0] < '1') {
-          // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-          // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
-          // writeImpedanceSettings(i);
-          initImpWrite(i, 'p', '1');
-          //initImpWrite
-          verbosePrint("a");
-        } else {
-          // impedanceCheckValues[i][0] = '0';
-          // channelSettingButtons[i][0].setColorNotPressed(color(255));
-          // writeImpedanceSettings(i);
-          initImpWrite(i, 'p', '0');
-          verbosePrint("b");
-        }
-        // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-      }
-
-      //was N imp check button clicked?
-      if (impedanceCheckButtons[i][1].isMouseHere() && impedanceCheckButtons[i][1].wasPressed == true) {
-        if (impedanceCheckValues[i][1] < '1') {
-          initImpWrite(i, 'n', '1');
-          //initImpWrite
-          verbosePrint("c");
-        } else {
-          initImpWrite(i, 'n', '0');
-          verbosePrint("d");
-        }
-        // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-      }
-
-      channelSettingButtons[i][0].isActive = false;
-      channelSettingButtons[i][0].wasPressed = false;
-      impedanceCheckButtons[i][0].isActive = false;
-      impedanceCheckButtons[i][0].wasPressed = false;
-      impedanceCheckButtons[i][1].isActive = false;
-      impedanceCheckButtons[i][1].wasPressed = false;
-    }
+    // //ON/OFF button can always be clicked/released
+    // for (int i = 0; i < nchan; i++) {
+    //   //was on/off clicked?
+    //   if (channelSettingButtons[i][0].isMouseHere() && channelSettingButtons[i][0].wasPressed == true) {
+    //     if (channelSettingValues[i][0] < maxValuesPerSetting[0]) {
+    //       channelSettingValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+    //       // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
+    //       // powerDownChannel(i);
+    //       deactivateChannel(i);
+    //     } else {
+    //       channelSettingValues[i][0] = '0';
+    //       // channelSettingButtons[i][0].setColorNotPressed(color(255));
+    //       // powerUpChannel(i);
+    //       activateChannel(i);
+    //     }
+    //     // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
+    //   }
+    //
+    //   //was P imp check button clicked?
+    //   if (impedanceCheckButtons[i][0].isMouseHere() && impedanceCheckButtons[i][0].wasPressed == true) {
+    //     if (impedanceCheckValues[i][0] < '1') {
+    //       // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+    //       // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
+    //       // writeImpedanceSettings(i);
+    //       initImpWrite(i, 'p', '1');
+    //       //initImpWrite
+    //       verbosePrint("a");
+    //     } else {
+    //       // impedanceCheckValues[i][0] = '0';
+    //       // channelSettingButtons[i][0].setColorNotPressed(color(255));
+    //       // writeImpedanceSettings(i);
+    //       initImpWrite(i, 'p', '0');
+    //       verbosePrint("b");
+    //     }
+    //     // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
+    //   }
+    //
+    //   //was N imp check button clicked?
+    //   if (impedanceCheckButtons[i][1].isMouseHere() && impedanceCheckButtons[i][1].wasPressed == true) {
+    //     if (impedanceCheckValues[i][1] < '1') {
+    //       initImpWrite(i, 'n', '1');
+    //       //initImpWrite
+    //       verbosePrint("c");
+    //     } else {
+    //       initImpWrite(i, 'n', '0');
+    //       verbosePrint("d");
+    //     }
+    //     // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
+    //   }
+    //
+    //   channelSettingButtons[i][0].isActive = false;
+    //   channelSettingButtons[i][0].wasPressed = false;
+    //   impedanceCheckButtons[i][0].isActive = false;
+    //   impedanceCheckButtons[i][0].wasPressed = false;
+    //   impedanceCheckButtons[i][1].isActive = false;
+    //   impedanceCheckButtons[i][1].wasPressed = false;
+    // }
 
     update(); //update once to refresh button values
   }

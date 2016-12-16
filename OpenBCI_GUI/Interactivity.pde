@@ -73,7 +73,22 @@ void parseKey(char val) {
       drawContainers = !drawContainers;
       break;
     case '<':
-      drawTimeSeries = !drawTimeSeries;
+      w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
+      // drawTimeSeries = !drawTimeSeries;
+      break;
+    case '>':
+      wm.setVisible(!wm.isVisible());
+      // wmVisible = !wmVisible;
+      break;
+    case ':':
+      println("Start/stop impedance check...");
+      if(isGanglion){
+        if(ganglion.isCheckingImpedance()){
+          ganglion.impedanceStop();
+        } else {
+          ganglion.impedanceStart();
+        }
+      }
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -238,7 +253,8 @@ void parseKey(char val) {
 
     case 'd':
       verbosePrint("Updating GUI's channel settings to default...");
-      gui.cc.loadDefaultChannelSettings();
+      // gui.cc.loadDefaultChannelSettings();
+      w_timeSeries.hsc.loadDefaultChannelSettings();
       //openBCI.serial_openBCI.write('d');
       openBCI.configureAllChannelsToDefault();
       break;
@@ -435,119 +451,17 @@ void mousePressed() {
 
   verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
 
-  //if not in initial setup...
-  if (systemMode >= 10) {
+  //if not before "Start System" ... i.e. after initial setup
+  if (systemMode >= SYSTEMMODE_POSTINIT) {
 
     //limit interactivity of main GUI if control panel is open
     if (controlPanel.isOpen == false) {
       //was the stopButton pressed?
 
-      gui.mousePressed(); // trigger mousePressed function in GUI
-
-      GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
-
-      //most of the logic below should be migrated into the GUI_Manager specific function above
-
-      // if (gui.stopButton.isMouseHere()) {
-      //   gui.stopButton.setIsActive(true);
-      //   stopButtonWasPressed();
-      // }
-
-      if (topNav.stopButton.isMouseHere()) {
-        topNav.stopButton.setIsActive(true);
-        stopButtonWasPressed();
-      }
-      if (topNav.filtBPButton.isMouseHere()) {
-        topNav.filtBPButton.setIsActive(true);
-        incrementFilterConfiguration();
-      }
-      if (topNav.filtNotchButton.isMouseHere()) {
-        topNav.filtNotchButton.setIsActive(true);
-        incrementNotchConfiguration();
-      }
-      if (topNav.intensityFactorButton.isMouseHere()) {
-        topNav.intensityFactorButton.setIsActive(true);
-        incrementVertScaleFactor();
-      }
-      if (topNav.questionMark.isMouseHere()) {
-        topNav.questionMark.setIsActive(true);
-        //toggle help/tutorial dropdown menu
-      }
-      if (topNav.layout.isMouseHere()) {
-        topNav.layout.setIsActive(true);
-        //toggle layout window to enable the selection of your container layout...
-      }
-
-      // //was the gui page button pressed?
-      // if (gui.guiPageButton.isMouseHere()) {
-      //   gui.guiPageButton.setIsActive(true);
-      //   gui.incrementGUIpage();
-      // }
-
-      //check the buttons
-      switch (gui.guiPage) {
-      case GUI_Manager.GUI_PAGE_CHANNEL_ONOFF:
-        //check the channel buttons
-        // for (int Ibut = 0; Ibut < gui.chanButtons.length; Ibut++) {
-        //   if (gui.chanButtons[Ibut].isMouseHere()) {
-        //     toggleChannelState(Ibut);
-        //   }
-        // }
-
-        //check the detection button
-        //if (gui.detectButton.updateIsMouseHere()) toggleDetectionState();
-        //check spectrogram button
-        //if (gui.spectrogramButton.updateIsMouseHere()) toggleSpectrogramState();
-
-        break;
-      case GUI_Manager.GUI_PAGE_IMPEDANCE_CHECK:
-        // ============ DEPRECATED ============== //
-        // //check the impedance buttons
-        // for (int Ibut = 0; Ibut < gui.impedanceButtonsP.length; Ibut++) {
-        //   if (gui.impedanceButtonsP[Ibut].isMouseHere()) {
-        //     toggleChannelImpedanceState(gui.impedanceButtonsP[Ibut],Ibut,0);
-        //   }
-        //   if (gui.impedanceButtonsN[Ibut].isMouseHere()) {
-        //     toggleChannelImpedanceState(gui.impedanceButtonsN[Ibut],Ibut,1);
-        //   }
-        // }
-        // if (gui.biasButton.isMouseHere()) {
-        //   gui.biasButton.setIsActive(true);
-        //   setBiasState(!openBCI.isBiasAuto);
-        // }
-        // break;
-      case GUI_Manager.GUI_PAGE_HEADPLOT_SETUP:
-        // if (gui.intensityFactorButton.isMouseHere()) {
-        //   topNav.intensityFactorButton.setIsActive(true);
-        //   incrementVertScaleFactor();
-        // }
-        // if (gui.loglinPlotButton.isMouseHere()) {
-        //   gui.loglinPlotButton.setIsActive(true);
-        //   gui.set_vertScaleAsLog(!gui.vertScaleAsLog); //toggle the state
-        // }
-        // if (gui.filtBPButton.isMouseHere()) {
-        //   gui.filtBPButton.setIsActive(true);
-        //   incrementFilterConfiguration();
-        // }
-        // if (gui.filtNotchButton.isMouseHere()) {
-        //   gui.filtNotchButton.setIsActive(true);
-        //   incrementNotchConfiguration();
-        // }
-        // if (gui.smoothingButton.isMouseHere()) {
-        //   gui.smoothingButton.setIsActive(true);
-        //   incrementSmoothing();
-        // }
-        // if (gui.showPolarityButton.isMouseHere()) {
-        //   gui.showPolarityButton.setIsActive(true);
-        //   toggleShowPolarity();
-        // }
-        // if (gui.maxDisplayFreqButton.isMouseHere()) {
-        //   gui.maxDisplayFreqButton.setIsActive(true);
-        //   gui.incrementMaxDisplayFreq();
-        // }
-        break;
-        //default:
-      }
+      // gui.mousePressed(); // trigger mousePressed function in GUI
+      topNav.mousePressed();
+      // GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+      wm.mousePressed();
 
       //check the graphs
       // if (gui.isMouseOnFFT(mouseX, mouseY)) {
@@ -561,10 +475,11 @@ void mousePressed() {
       //   //toggle the display of the montage values
       //   gui.showMontageValues  = !gui.showMontageValues;
       // }
-      if (gui.isMouseOnMontage(mouseX, mouseY)) {
-        //toggle the display of the montage values
-        gui.showMontageValues  = !gui.showMontageValues;
-      }
+
+      // if (gui.isMouseOnMontage(mouseX, mouseY)) {
+      //   //toggle the display of the montage values
+      //   gui.showMontageValues  = !gui.showMontageValues;
+      // }
     }
   }
 
@@ -574,7 +489,7 @@ void mousePressed() {
 
   //was control panel button pushed
   if (controlPanelCollapser.isMouseHere()) {
-    if (controlPanelCollapser.isActive && systemMode == 10) {
+    if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
       controlPanelCollapser.setIsActive(false);
       controlPanel.isOpen = false;
     } else {
@@ -590,7 +505,7 @@ void mousePressed() {
   //interacting with control panel
   if (controlPanel.isOpen) {
     //close control panel if you click outside...
-    if (systemMode == 10) {
+    if (systemMode == SYSTEMMODE_POSTINIT) {
       if (mouseX > 0 && mouseX < controlPanel.w && mouseY > 0 && mouseY < controlPanel.initBox.y+controlPanel.initBox.h) {
         println("OpenBCI_GUI: mousePressed: clicked in CP box");
         controlPanel.CPmousePressed();
@@ -643,8 +558,6 @@ void mousePressed() {
 
 void mouseReleased() {
 
-  //verbosePrint("OpenBCI_GUI: mouseReleased: mouse released");
-
   //some buttons light up only when being actively pressed.  Now that we've
   //released the mouse button, turn off those buttons.
 
@@ -654,11 +567,12 @@ void mouseReleased() {
     controlPanel.CPmouseReleased();
   }
 
-  if (systemMode >= 10) {
+  if (systemMode >= SYSTEMMODE_POSTINIT) {
 
-    gui.mouseReleased();
+    // gui.mouseReleased();
     topNav.mouseReleased();
-    GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+    // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
+    wm.mouseReleased();
 
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
   }
@@ -676,17 +590,6 @@ void mouseReleased() {
     // playground.toggleWindow();
   }
 }
-
-// void incrementSmoothing() {
-//   smoothFac_ind++;
-//   if (smoothFac_ind >= smoothFac.length) smoothFac_ind = 0;
-//
-//   //tell the GUI
-//   gui.setSmoothFac(smoothFac[smoothFac_ind]);
-//
-//   //update the button
-//   gui.smoothingButton.but_txt = "Smooth\n" + smoothFac[smoothFac_ind];
-// }
 
 //------------------------------------------------------------------------
 //                       Classes
@@ -711,7 +614,8 @@ class Button {
   //int rectSize = 90;     // Diameter of rect
 
   color currentColor;
-  color color_hover = color(127, 134, 143);//color(252, 221, 198);
+  // color color_hover = color(127, 134, 143);//color(252, 221, 198);
+  color color_hover = color(177, 184, 193);//color(252, 221, 198);
   color color_pressed = color(150,170,200); //bgColor;
   color color_highlight = color(102);
   color color_notPressed = color(255); //color(227,118,37);
@@ -721,6 +625,7 @@ class Button {
   color rectHighlight;
   boolean drawHand = false;
   boolean isCircleButton = false;
+  int cornerRoundness = 0;
   //boolean isMouseHere = false;
   boolean buttonHasStroke = true;
   boolean isActive = false;
@@ -733,6 +638,14 @@ class Button {
   int mouseOverButtonStart = 0;
   PFont buttonFont;
   int buttonTextSize;
+  PImage bgImage;
+  boolean hasbgImage = false;
+
+  public Button(int x, int y, int w, int h, String txt) {
+    setup(x, y, w, h, txt);
+    buttonFont = f2;
+    buttonTextSize = 12;
+  }
 
   public Button(int x, int y, int w, int h, String txt, int fontSize) {
     setup(x, y, w, h, txt);
@@ -753,6 +666,19 @@ class Button {
     setString(txt);
   }
 
+  public void setX(int _but_x){
+    but_x = _but_x;
+  }
+
+  public void setY(int _but_y){
+    but_y = _but_y;
+    but_y = _but_y;
+  }
+
+  public void setPos(int _but_x, int _but_y){
+    but_x = _but_x;
+  }
+
   public void setFont(PFont _newFont){
     buttonFont = _newFont;
   }
@@ -764,6 +690,15 @@ class Button {
 
   public void setCircleButton(boolean _isCircleButton){
     isCircleButton = _isCircleButton;
+    if(isCircleButton){
+      cornerRoundness = 0;
+    }
+  }
+
+  public void setCornerRoundess(int _cornerRoundness){
+    if(!isCircleButton){
+      cornerRoundness = _cornerRoundness;
+    }
   }
 
   public void setString(String txt) {
@@ -773,6 +708,11 @@ class Button {
 
   public void setHelpText(String _helpText){
     helpText = _helpText;
+  }
+
+  public void setBackgroundImage(PImage _bgImage){
+    bgImage = _bgImage;
+    hasbgImage = true;
   }
 
   public boolean isActive() {
@@ -796,13 +736,17 @@ class Button {
       } else {
         if(millis()-mouseOverButtonStart >= 1000){
           showHelpText = true;
-          // println("showww");
         }
       }
       return true;
-    } else {
-      showHelpText = false;
-      helpTimerStarted = false;
+    }
+    else {
+      setIsActive(false);
+      if(helpTimerStarted){
+        buttonHelpText.setVisible(false);
+        showHelpText = false;
+        helpTimerStarted = false;
+      }
       return false;
     }
   }
@@ -866,9 +810,13 @@ class Button {
     }
     // noStroke();
     if(isCircleButton){
-      ellipse(but_x, but_y, but_dx, but_dy);
+      ellipse(but_x, but_y, but_dx, but_dy); //draw circular button
     } else{
-      rect(but_x, but_y, but_dx, but_dy);
+      if(cornerRoundness == 0){
+        rect(but_x, but_y, but_dx, but_dy); //draw normal rectangle button
+      } else {
+        rect(but_x, but_y, but_dx, but_dy, cornerRoundness); //draw button with rounded corners
+      }
     }
 
     //draw the text
@@ -889,23 +837,24 @@ class Button {
     x1 = but_x+but_dx/2;
     y1 = but_y+but_dy/2;
 
-    if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
-      text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
-    } else{
-      text(but_txt, x1, y1); //as long as font is not Montserrat
+    if(hasbgImage){ //if there is a bg image ... don't draw text
+      imageMode(CENTER);
+      image(bgImage, but_x + (but_dx/2), but_y + (but_dy/2), but_dx-8, but_dy-8);
+    } else{  //otherwise draw text
+      if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
+        text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
+      } else if(buttonFont == p1 || buttonFont == p2){
+        text(but_txt, x1, y1 - 2); //for some reason y looks better at -2 w/ Open Sans
+      } else{
+        text(but_txt, x1, y1); //as long as font is not Montserrat
+      }
     }
 
+    //send some info to the HelpButtonText object to be drawn last in OpenBCI_GUI.pde ... we want to make sure it is render last, and on top of all other GUI stuff
     if(showHelpText && helpText != ""){
-      pushStyle();
-      textFont(p2);
-      stroke(31,69,110);
-      fill(255);
-      rect(but_x + (3*but_dx)/4, but_y + (3*but_dy)/4, 100, 50);
-      fill(31,69,110);
-      text(helpText, but_x + 50, but_y + 25);
-      popStyle();
+      buttonHelpText.setButtonHelpText(helpText, but_x + but_dx/2, but_y + (3*but_dy)/4);
+      buttonHelpText.setVisible(true);
     }
-
     //draw open/close arrow if it's a dropdown button
     if (isDropdownButton) {
       pushStyle();
@@ -951,4 +900,53 @@ class Button {
 
     popStyle();
   } //end of button draw
+};
+
+class ButtonHelpText{
+  int x, y, w, h;
+  String myText = "";
+  boolean isVisible;
+  int numLines;
+  int lineSpacing = 14;
+  int padding = 10;
+
+  ButtonHelpText(){
+
+  }
+
+  public void setVisible(boolean _isVisible){
+    isVisible = _isVisible;
+  }
+
+  public void setButtonHelpText(String _myText, int _x, int _y){
+    myText = _myText;
+    x = _x;
+    y = _y;
+  }
+
+  public void draw(){
+    // println("4");
+    if(isVisible){
+      pushStyle();
+      textAlign(CENTER, TOP);
+
+      textFont(p2,12);
+      textLeading(lineSpacing); //line spacing
+      stroke(31,69,110);
+      fill(255);
+      numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
+      // println("numLines: " + numLines);
+      //if on left side of screen, draw box brightness to prevent box off screen
+      if(x <= width/2){
+        rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
+        fill(31,69,110); //text colof
+        text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
+      } else{ //if on right side of screen, draw box left to prevent box off screen
+        rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
+        fill(31,69,110); //text colof
+        text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
+      }
+      popStyle();
+    }
+  }
 };

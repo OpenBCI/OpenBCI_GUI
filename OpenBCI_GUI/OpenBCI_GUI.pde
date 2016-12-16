@@ -30,9 +30,13 @@ import hypermedia.net.*; //for UDP networking
 import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
-
+import java.io.InputStreamReader; // For input
 import java.awt.MouseInfo;
-
+import java.lang.Process;
+// import java.net.InetAddress; // Used for ping, however not working right now.
+import java.util.Random;
+import java.awt.Robot; //used for simulating mouse clicks
+import java.awt.AWTException;
 
 
 //------------------------------------------------------------------------
@@ -47,7 +51,15 @@ float[] Z_buff;
 boolean acc_newData = false;
 
 //used to switch between application states
-int systemMode = -10; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
+
+final int SYSTEMMODE_INTROANIMATION = -10;
+final int SYSTEMMODE_PREINIT = 0;
+final int SYSTEMMODE_POSTINIT = 10;
+int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
+
+final int NCHAN_CYTON = 8;
+final int NCHAN_CYTON_DAISY = 16;
+final int NCHAN_GANGLION = 4;
 
 boolean hasIntroAnimation = false;
 PImage cog;
@@ -77,7 +89,7 @@ String ganglion_portName = "N/A";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from openBCI...first EEG channels, then aux channels
-int nchan = 8; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
+int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
 int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
@@ -115,6 +127,9 @@ float yLittleBuff[] = new float[nPointsPerUpdate];
 float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
 float auxBuff[][] = new float[3][nPointsPerUpdate];
 float data_elec_imp_ohm[];
+
+float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
 OutputFile_rawtxt fileoutput_odf;
@@ -159,6 +174,7 @@ boolean isGettingPoll = false;
 boolean spaceFound = false;
 boolean scanningChannels = false;
 int hexToInt = 0;
+boolean dev = false;
 
 //for screen resizing
 boolean screenHasBeenResized = false;
@@ -182,11 +198,18 @@ PFont f4;
 
 
 PFont h1; //large Montserrat
-PFont h2; //medium Montserrat
-PFont h3; //small Montserrat
+PFont h2; //large/medium Montserrat
+PFont h3; //medium Montserrat
+PFont h4; //small/medium Montserrat
+PFont h5; //small Montserrat
 
-PFont p1; //medium Open Sans
-PFont p2; //small Open Sans
+PFont p1; //large Open Sans
+PFont p2; //large/medium Open Sans
+PFont p3; //medium Open Sans
+PFont p4; //medium/small Open Sans
+PFont p5; //small Open Sans
+
+ButtonHelpText buttonHelpText;
 
 EMG_Widget emg_widget;
 Accelerometer_Widget accelWidget;
@@ -200,12 +223,28 @@ int indices = 0;
 
 boolean synthesizeData = false;
 
+Process nodeHubby;
+int hubPid = 0;
+String nodeHubName = "Ganglion Hub";
+Robot rob3115;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
 
 //========================SETUP============================//
+int timeOfSetup = 0;
+boolean isGanglion = false;
+
 void setup() {
+  // Step 1: Prepare the exit handler that will attempt to close a running node
+  //  server on shut down of this app, the main process.
+  // prepareExitHandler();
+  if (dev == false) {
+    hubStart();
+    prepareExitHandler();
+  }
+
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 6/25/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");
@@ -229,11 +268,17 @@ void setup() {
   f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 
   h1 = createFont("fonts/Montserrat-Regular.otf", 20);
-  h2 = createFont("fonts/Montserrat-Regular.otf", 16);
-  h3 = createFont("fonts/Montserrat-Regular.otf", 12);
+  h2 = createFont("fonts/Montserrat-Regular.otf", 18);
+  h3 = createFont("fonts/Montserrat-Regular.otf", 16);
+  h4 = createFont("fonts/Montserrat-Regular.otf", 14);
+  h5 = createFont("fonts/Montserrat-Regular.otf", 12);
 
-  p1 = createFont("fonts/OpenSans-Regular.ttf", 24);
-  p2 = createFont("fonts/OpenSans-Regular.ttf", 16);
+  p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
+  p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
+  p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
+  p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
+  p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
+
 
   //V2 FONTS
   //f1 = createFont("fonts/Montserrat-SemiBold.otf", 16);
@@ -252,8 +297,6 @@ void setup() {
     }
   }
   );
-
-  ganglion = new OpenBCI_Ganglion(this);
 
   //set up controlPanelCollapser button
   fontInfo = new PlotFontInfo();
@@ -288,7 +331,22 @@ void setup() {
     verbosePrint("OpenBCI_GUI.pde: *** ERROR ***: Could not open " + serial_output_portName);
   }
 
+
+
+  // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
+  buttonHelpText = new ButtonHelpText();
+
   myPresentation = new Presentation();
+
+  try{
+    rob3115 = new Robot();
+  } catch (AWTException e){
+    println("couldn't create robot...");
+  }
+
+  // ganglion = new OpenBCI_Ganglion(this);
+
+  timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
 //====================== END-OF-SETUP ==========================//
 
@@ -303,14 +361,121 @@ void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-void tcpEvent(String msg) {
-  // println("GanglionSync: udpEvent " + msg);
-  if (ganglion.parseMessage(msg)) {
-    // Refresh the BLE list
-    controlPanel.bleBox.refreshBLEList();
-  }
-
+// must add "prepareExitHandler();" in setup() for Processing sketches
+private void prepareExitHandler () {
+ Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+   public void run () {
+   System.out.println("SHUTDOWN HOOK");
+     try {
+       if (hubStop()) {
+         System.out.println("SHUTDOWN HUB");
+       } else {
+         System.out.println("FAILED TO SHUTDOWN HUB");
+       }
+     } catch (Exception ex){
+       ex.printStackTrace(); // not much else to do at this point
+     }
+   }
+  }));
 }
+
+void hubStart() {
+  println("Launching application from local data dir");
+  try {
+    // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
+    if (isWindows()) {
+      println("OpenBCI_GUI: hubStart: OS Detected: Windows");
+      nodeHubby = launch(dataPath("Ganglion Hub.exe"));
+    } else {
+      println("OpenBCI_GUI: hubStart: OS Detected: Mac");
+      nodeHubby = launch(dataPath("Ganglion Hub.app"));
+    }
+    // hubRunning = true;
+  } catch (Exception e) {
+    println("hubStart: " + e);
+    // hubRunning = false;
+  }
+}
+
+/**
+ * @description Single function to call at the termination program hook.
+ */
+boolean hubStop() {
+  if (isWindows()) {
+    println("Cannot stop windows processes yet");
+    return false;
+  } else {
+    killRunningProcessMac();
+    return true;
+  }
+}
+
+/**
+ * @description Helper function to determine if the system is windows or not.
+ * @return {boolean} true if os is windows, false otherwise.
+ */
+private boolean isWindows() {
+  return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+}
+
+/**
+ * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
+ *  function dubbed "death dealer"
+ */
+void killRunningProcessMac() {
+  try {
+    String line;
+    Process p = Runtime.getRuntime().exec("ps -e");
+    BufferedReader input =
+            new BufferedReader(new InputStreamReader(p.getInputStream()));
+    while ((line = input.readLine()) != null) {
+      if (line.contains(nodeHubName)) {
+        try {
+          endProcess(getProcessIdFromLineMac(line));
+          println("Killed: " + line);
+        } catch (Exception err) {
+          println("Failed to stop process: " + line + "\n\n");
+          err.printStackTrace();
+        }
+      }
+    }
+    input.close();
+  } catch (Exception err) {
+    err.printStackTrace();
+  }
+}
+
+/**
+ * @description Parses a mac process line and grabs the pid, the first component.
+ * @return {int} the process id
+ */
+int getProcessIdFromLineMac(String line) {
+  line = trim(line);
+  String[] components = line.split(" ");
+  return Integer.parseInt(components[0]); //<>//
+}
+
+void endProcess(int pid) {
+  Runtime rt = Runtime.getRuntime();
+  try {
+    if (isWindows())
+      rt.exec("taskkill " + pid);
+    else
+      rt.exec("kill -9 " + pid);
+  } catch (IOException err) {
+    err.printStackTrace();
+  }
+}
+
+// void tcpEvent(String msg) {
+//   // println("GanglionSync: udpEvent " + msg);
+//   ganglion.parseMessage(msg);
+//   if (ganglion.deviceListUpdated) {
+//     // Refresh the BLE list
+//     ganglion.deviceListUpdated = false;
+//     controlPanel.bleBox.refreshBLEList();
+//   }
+// }
 
 int pointCounter = 0;
 int prevBytes = 0;
@@ -398,9 +563,11 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 --");
 
   //initilize the GUI
-  initializeGUI(); //will soon be destroyed...
+  // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
+  wm = new WidgetManager(this);
   topNav = new TopNav();
-  setupGUIWidgets(); //####
+  // setupGUIWidgets(); //####
+
 
   //final config
   // setBiasState(openBCI.isBiasAuto);
@@ -413,7 +580,7 @@ void initSystem() {
   nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
 
   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
-    systemMode = 10; //tell system it's ok to leave control panel and start interfacing GUI
+    systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
   }
   //sync GUI default settings with OpenBCI's default settings...
   // openBCI.syncWithHardware(); //this starts the sequence off ... read in OpenBCI_ADS1299 iterates through the rest based on the ASCII trigger "$$$"
@@ -459,10 +626,16 @@ void haltSystem() {
     closeLogFile();  //close log file
     ganglion.disconnectBLE();
   }
-  systemMode = 0;
+  systemMode = SYSTEMMODE_PREINIT;
 }
 
 void systemUpdate() { // for updating data values and variables
+
+  if(millis() - timeOfSetup >= 1000 && isGanglion == false){
+    ganglion = new OpenBCI_Ganglion(this);
+    println("Instantiating Ganglion object...");
+    isGanglion = true;
+  }
 
   //update the sync state with the OpenBCI hardware
   openBCI.updateSyncState(sdSetting);
@@ -471,10 +644,11 @@ void systemUpdate() { // for updating data values and variables
   win_x = width;
   win_y = height;
 
-  //updates while in intro screen
-  if (systemMode == 0) {
+
+  if (systemMode == SYSTEMMODE_PREINIT) {
+    //updates while in system control panel before START SYSTEM
   }
-  if (systemMode == 10) {
+  if (systemMode == SYSTEMMODE_POSTINIT) {
     if (isRunning) {
       //get the data, if it is available
       pointCounter = getDataIfAvailable(pointCounter);
@@ -500,9 +674,9 @@ void systemUpdate() { // for updating data values and variables
 
             //-----------------------------------------------------------
             //-----------------------------------------------------------
-            gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
-            topNav.update();
-            updateGUIWidgets(); //####
+            // gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
+            // topNav.update();
+            // updateGUIWidgets(); //####
             //-----------------------------------------------------------
             //-----------------------------------------------------------
           }
@@ -543,7 +717,7 @@ void systemUpdate() { // for updating data values and variables
       }
     }
 
-    gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
+    // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
 
     //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
     if (widthOfLastScreen != width || heightOfLastScreen != height) {
@@ -556,21 +730,24 @@ void systemUpdate() { // for updating data values and variables
 
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized) {
-      GUIWidgets_screenResized(width, height);
+      // GUIWidgets_screenResized(width, height);
       topNav.screenHasBeenResized(width, height);
+      wm.screenResized();
     }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
       println("systemUpdate: reinitializing GUI");
       timeOfGUIreinitialize = millis();
-      initializeGUI();
-      GUIWidgets_screenResized(width, height);
+      // initializeGUI();
+      // GUIWidgets_screenResized(width, height);
       playground.x = width; //reset the x for the playground...
     }
 
+    topNav.update();
+    // updateGUIWidgets(); //####
+    wm.update();
     playground.update();
   }
-
   controlPanel.update();
 }
 
@@ -578,9 +755,10 @@ void systemDraw() { //for drawing to the screen
 
   //redraw the screen...not every time, get paced by when data is being plotted
   background(bgColor);  //clear the screen
+  noStroke();
   //background(255);  //clear the screen
 
-  if (systemMode == 10) {
+  if (systemMode == SYSTEMMODE_POSTINIT) {
     int drawLoopCounter_thresh = 100;
     if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
       //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
@@ -620,12 +798,15 @@ void systemDraw() { //for drawing to the screen
       // println("attempting to draw GUI...");
       try {
         // println("GUI DRAW!!! " + millis());
-        topNav.draw();
-        //----------------------------
-        gui.draw(); //draw the GUI
 
+        //----------------------------
+        // gui.draw(); //draw the GUI
+
+        wm.draw();
         //updateGUIWidgets(); //####
-        drawGUIWidgets();
+        // drawGUIWidgets();
+
+        topNav.draw();
 
         //----------------------------
 
@@ -641,13 +822,11 @@ void systemDraw() { //for drawing to the screen
       println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
 
-    playground.draw();
-    emg_widget.draw();
-
-    accelWidget.draw();
-    pulseWidget.draw();
     //dataProcessing_user.draw();
     drawContainers();
+
+
+
   } else { //systemMode != 10
     //still print title information about fps
     surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");
@@ -661,7 +840,7 @@ void systemDraw() { //for drawing to the screen
   controlPanelCollapser.draw();
   helpWidget.draw();
 
-  if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == 0) {
+  if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     if (millis()%1000 < 500) {
       output("Iniitializing communication w/ your OpenBCI board...");
@@ -686,12 +865,14 @@ void systemDraw() { //for drawing to the screen
   // println("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
   // timeOfLastFrame = millis();
 
-  if (systemMode == -10) {
+  buttonHelpText.draw();
+
+  if (systemMode == SYSTEMMODE_INTROANIMATION) {
     //intro animation sequence
     if (hasIntroAnimation) {
       introAnimation();
     } else {
-      systemMode = 0;
+      systemMode = SYSTEMMODE_PREINIT;
     }
   }
 
@@ -716,7 +897,7 @@ void introAnimation() {
 
   //exit intro animation at t2
   if (millis() >= t3) {
-    systemMode = 0;
+    systemMode = SYSTEMMODE_PREINIT;
     controlPanel.isOpen = true;
   }
   popStyle();

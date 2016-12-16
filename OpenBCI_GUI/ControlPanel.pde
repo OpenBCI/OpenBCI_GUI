@@ -128,11 +128,24 @@ public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isFrom("sourceList")) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
-    str = str.substring(0, str.length()-5);
+    // str = str.substring(0, str.length()-5);
     //output("Data Source = " + str);
     int newDataSource = int(theEvent.getValue());
     eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
-    output("The new data source is " + str);
+
+    if(newDataSource == DATASOURCE_NORMAL_W_AUX){
+      updateToNChan(8);
+      chanButton8.color_notPressed = isSelected_color;
+      chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+    } else if(newDataSource == DATASOURCE_GANGLION){
+      updateToNChan(4);
+    } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
+      updateToNChan(8);
+    } else if(newDataSource == DATASOURCE_SYNTHETIC){
+      updateToNChan(8);
+    }
+
+    output("The new data source is " + str + " and NCHAN = [" + nchan + "]");
   }
 
   if (theEvent.isFrom("serialList")) {
@@ -288,7 +301,6 @@ class ControlPanel {
 
     // Ganglion
     bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
-
   }
 
   public void update() {
@@ -327,9 +339,13 @@ class ControlPanel {
       convertSDFile();
     }
 
-    if (!calledForBLEList) {
-      calledForBLEList = true;
-      ganglion.getBLEDevices();
+    if (isGanglion) {
+      if (!calledForBLEList) {
+        calledForBLEList = true;
+        if (ganglion.isHubRunning()) {
+          ganglion.searchDeviceStart();
+        }
+      }
     }
   }
 
@@ -486,7 +502,7 @@ class ControlPanel {
     } else {
       cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
       cp5Popup.setVisible(false);
-      cp5Serial.setVisible(false);
+      // cp5Serial.setVisible(false);    //%%%
     }
 
     //draw the box that tells you to stop the system in order to edit control settings
@@ -825,7 +841,7 @@ class ControlPanel {
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
       output("BLE Devices Refreshing");
-      ganglion.getBLEDevices();
+      ganglion.searchDeviceStart();
     }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
@@ -845,19 +861,11 @@ class ControlPanel {
     }
 
     if (chanButton8.isMouseHere() && chanButton8.wasPressed) {
-      nchan = 8;
-      fftBuff = new FFT[nchan];   //from the minim library
-      yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-      output("channel count set to " + str(nchan));
-      updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
+      updateToNChan(8);
     }
 
     if (chanButton16.isMouseHere() && chanButton16.wasPressed ) {
-      nchan = 16;
-      fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-      yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-      output("channel count set to " + str(nchan));
-      updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
+      updateToNChan(16);
     }
 
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
@@ -934,50 +942,32 @@ public void system_init(){
           if (openBCI.isSerialPortOpen() == true) {
             openBCI.closeSerialPort();
           }
-        // } else { // Must be Ganglion
-        //   nchan = 4;
-        //   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-        //   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-        //   output("channel count set to " + str(nchan));
-        //   updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
-        //
-        //   println("ControlPanel — port is open: " + ganglion.isPortOpen());
-        //   if (ganglion.isPortOpen()) {
-        //     ganglion.disconnectBLE();
-        //   }
-        // }
-        } else { // Must be Synthetics, no?
-          nchan = 16;
-          fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-          yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-          output("channel count set to " + str(nchan));
-          updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
-
-          println("ControlPanel — port is open: " + ganglion.isPortOpen());
+        } else if(eegDataSource == DATASOURCE_GANGLION){
+          verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
           if (ganglion.isPortOpen()) {
             ganglion.disconnectBLE();
           }
         }
 
+        //Network Protocol Initiation -- based on Gabe's Code
         if (networkType == 1){
-            ip = cp5.get(Textfield.class, "udp_ip").getText();
-            port = int(cp5.get(Textfield.class, "udp_port").getText());
-            println(port);
-            udp = new UDPSend(port, ip);
-          }else if (networkType == 2){
-            ip = cp5.get(Textfield.class, "osc_ip").getText();
-            port = int(cp5.get(Textfield.class, "osc_port").getText());
-            address = cp5.get(Textfield.class, "osc_address").getText();
-            osc = new OSCSend(port, ip, address);
-          }else if (networkType == 3){
-            data_stream = cp5.get(Textfield.class, "lsl_data").getText();
-            aux_stream = cp5.get(Textfield.class, "lsl_aux").getText();
-            lsl = new LSLSend(data_stream, aux_stream);
-          }
-
+          ip = cp5.get(Textfield.class, "udp_ip").getText();
+          port = int(cp5.get(Textfield.class, "udp_port").getText());
+          println(port);
+          udp = new UDPSend(port, ip);
+        } else if (networkType == 2){
+          ip = cp5.get(Textfield.class, "osc_ip").getText();
+          port = int(cp5.get(Textfield.class, "osc_port").getText());
+          address = cp5.get(Textfield.class, "osc_address").getText();
+          osc = new OSCSend(port, ip, address);
+        } else if (networkType == 3){
+          data_stream = cp5.get(Textfield.class, "lsl_data").getText();
+          aux_stream = cp5.get(Textfield.class, "lsl_aux").getText();
+          lsl = new LSLSend(data_stream, aux_stream);
+        }
 
         fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
-        initSystem();
+        initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
     }
 
@@ -987,6 +977,14 @@ public void system_init(){
       initSystemButton.setString("START SYSTEM");
       haltSystem();
     }
+}
+
+void updateToNChan(int _nchan) {
+  nchan = _nchan;
+  fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+  yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
+  output("channel count set to " + str(nchan));
+  updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
 public void set_channel_popup(){;
@@ -2034,8 +2032,16 @@ public class MenuList extends controlP5.Controller {
       }
       menu.fill(bgColor);
       menu.textFont(menuFont);
-      menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
-      menu.translate( 0, itemHeight );
+
+      //make sure there is something in the Ganglion serial list...
+      try {
+        menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
+        menu.translate( 0, itemHeight );
+      } catch(Exception e){
+        println("Nothing in list...");
+      }
+
+
     }
     menu.popMatrix();
     menu.popMatrix();
