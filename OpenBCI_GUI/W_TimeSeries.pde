@@ -369,7 +369,12 @@ class ChannelBar{
     w = _w;
     h = _h;
 
-    onOff_diameter = 26;
+    if(h > 26){
+      onOff_diameter = 26;
+    } else{
+      onOff_diameter = h - 2;
+    }
+
     onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
     onOffButton.setFont(h2, 16);
     onOffButton.setCircleButton(true);
@@ -378,7 +383,7 @@ class ChannelBar{
 
     if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
       impButton_diameter = 22;
-    impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
+      impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
       impCheckButton.setFont(h2, 16);
       impCheckButton.setCircleButton(true);
       impCheckButton.setColorNotPressed(color(255));
@@ -583,6 +588,18 @@ class ChannelBar{
     y = _y;
     w = _w;
     h = _h;
+
+    if(h > 26){
+      onOff_diameter = 26;
+      onOffButton.but_dx = onOff_diameter;
+      onOffButton.but_dy = onOff_diameter;
+    } else{
+      println("h = " + h);
+      onOff_diameter = h - 2;
+      onOffButton.but_dx = onOff_diameter;
+      onOffButton.but_dy = onOff_diameter;
+    }
+
     onOffButton.but_x = x + 6;
     onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
 

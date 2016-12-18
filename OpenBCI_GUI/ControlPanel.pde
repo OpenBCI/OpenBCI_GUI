@@ -2189,16 +2189,27 @@ public class MenuList extends controlP5.Controller {
    * otherwise do whatever this item of the list is supposed to do.
    */
   public void onClick() {
-    if (getPointer().x()>getWidth()-scrollerWidth) {
-      npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
+    println("click");
+    try{
+      if (getPointer().x()>getWidth()-scrollerWidth) {
+        if(getHeight() != 0){
+          npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
+        }
+        updateMenu = true;
+      } else {
+        int len = itemHeight * items.size();
+        int index = 0;
+        if(len != 0){
+          index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
+        }
+        setValue(index);
+        activeItem = index;
+      }
       updateMenu = true;
-    } else {
-      int len = itemHeight * items.size();
-      int index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
-      setValue(index);
-      activeItem = index;
-    }
-    updateMenu = true;
+    } finally{}
+    // catch(IOException e){
+    //   println("Nothing to click...");
+    // }
   }
 
   public void onMove() {
@@ -2206,7 +2217,10 @@ public class MenuList extends controlP5.Controller {
       hoverItem = -1;
     } else {
       int len = itemHeight * items.size();
-      int index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
+      int index = 0;
+      if(len != 0){
+        index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
+      }
       hoverItem = index;
     }
     updateMenu = true;

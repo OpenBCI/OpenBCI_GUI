@@ -47,16 +47,16 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   addWidget(w_accelerometer, w);
 
   w_template1 = new W_template(_this);
-  w_template1.setTitle("Template Widget 1");
+  w_template1.setTitle("Widget Template 1");
   addWidget(w_template1, w);
 
   w_template2 = new W_template(_this);
-  w_template2.setTitle("Template Widget 2");
+  w_template2.setTitle("Widget Template 2");
   addWidget(w_template2, w);
 
-  w_template3 = new W_template(_this);
-  w_template3.setTitle("LSL Stream");
-  addWidget(w_template3, w);
+  // w_template3 = new W_template(_this);
+  // w_template3.setTitle("LSL Stream");
+  // addWidget(w_template3, w);
 
 }
 
@@ -177,13 +177,18 @@ class WidgetManager{
 
   void mousePressed(){
     for(int i = 0; i < widgets.size(); i++){
-      widgets.get(i).mousePressed();
+      if(widgets.get(i).isActive){
+        widgets.get(i).mousePressed();
+      }
+
     }
   }
 
   void mouseReleased(){
     for(int i = 0; i < widgets.size(); i++){
-      widgets.get(i).mouseReleased();
+      if(widgets.get(i).isActive){
+        widgets.get(i).mouseReleased();
+      }
     }
   }
 

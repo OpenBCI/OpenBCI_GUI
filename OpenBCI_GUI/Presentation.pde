@@ -26,30 +26,30 @@ boolean drawPresentation = false;
 class Presentation {
   //presentation images
   PImage presentationSlides[] = new PImage[16];
-  float timeOfLastSlideChange = 0;  
+  float timeOfLastSlideChange = 0;
   int currentSlide = 1;
   int slideCount = 0;
   boolean lockSlides = false;
-  
+
   Presentation (){
     //loading presentation images
     println("attempting to load images for presentation...");
-    presentationSlides[0] = loadImage("prez-images/DemocratizationOfNeurotech.001.jpg");
-    presentationSlides[1] = loadImage("prez-images/DemocratizationOfNeurotech.001.jpg");
-    presentationSlides[2] = loadImage("prez-images/DemocratizationOfNeurotech.002.jpg");
-    presentationSlides[3] = loadImage("prez-images/DemocratizationOfNeurotech.003.jpg");
-    presentationSlides[4] = loadImage("prez-images/DemocratizationOfNeurotech.004.jpg");
-    presentationSlides[5] = loadImage("prez-images/DemocratizationOfNeurotech.005.jpg");
-    presentationSlides[6] = loadImage("prez-images/DemocratizationOfNeurotech.006.jpg");
-    presentationSlides[7] = loadImage("prez-images/DemocratizationOfNeurotech.007.jpg");
-    presentationSlides[8] = loadImage("prez-images/DemocratizationOfNeurotech.008.jpg");
-    presentationSlides[9] = loadImage("prez-images/DemocratizationOfNeurotech.009.jpg");
-    presentationSlides[10] = loadImage("prez-images/DemocratizationOfNeurotech.010.jpg");
-    presentationSlides[11] = loadImage("prez-images/DemocratizationOfNeurotech.011.jpg");
-    presentationSlides[12] = loadImage("prez-images/DemocratizationOfNeurotech.012.jpg");
-    presentationSlides[13] = loadImage("prez-images/DemocratizationOfNeurotech.013.jpg");
-    presentationSlides[14] = loadImage("prez-images/DemocratizationOfNeurotech.014.jpg");
-    presentationSlides[15] = loadImage("prez-images/DemocratizationOfNeurotech.015.jpg");
+    // presentationSlides[0] = loadImage("prez-images/DemocratizationOfNeurotech.001.jpg");
+    // presentationSlides[1] = loadImage("prez-images/DemocratizationOfNeurotech.001.jpg");
+    // presentationSlides[2] = loadImage("prez-images/DemocratizationOfNeurotech.002.jpg");
+    // presentationSlides[3] = loadImage("prez-images/DemocratizationOfNeurotech.003.jpg");
+    // presentationSlides[4] = loadImage("prez-images/DemocratizationOfNeurotech.004.jpg");
+    // presentationSlides[5] = loadImage("prez-images/DemocratizationOfNeurotech.005.jpg");
+    // presentationSlides[6] = loadImage("prez-images/DemocratizationOfNeurotech.006.jpg");
+    // presentationSlides[7] = loadImage("prez-images/DemocratizationOfNeurotech.007.jpg");
+    // presentationSlides[8] = loadImage("prez-images/DemocratizationOfNeurotech.008.jpg");
+    // presentationSlides[9] = loadImage("prez-images/DemocratizationOfNeurotech.009.jpg");
+    // presentationSlides[10] = loadImage("prez-images/DemocratizationOfNeurotech.010.jpg");
+    // presentationSlides[11] = loadImage("prez-images/DemocratizationOfNeurotech.011.jpg");
+    // presentationSlides[12] = loadImage("prez-images/DemocratizationOfNeurotech.012.jpg");
+    // presentationSlides[13] = loadImage("prez-images/DemocratizationOfNeurotech.013.jpg");
+    // presentationSlides[14] = loadImage("prez-images/DemocratizationOfNeurotech.014.jpg");
+    // presentationSlides[15] = loadImage("prez-images/DemocratizationOfNeurotech.015.jpg");
     //presentationSlides[16] = loadImage("prez-images/DemocratizationOfNeurotech.016.jpg");
     //presentationSlides[17] = loadImage("prez-images/DemocratizationOfNeurotech.017.jpg");
     //presentationSlides[18] = loadImage("prez-images/DemocratizationOfNeurotech.018.jpg");
@@ -83,31 +83,31 @@ class Presentation {
     //presentationSlides[46] = loadImage("prez-images/DemocratizationOfNeurotech.046.jpg");
     //presentationSlides[47] = loadImage("prez-images/DemocratizationOfNeurotech.047.jpg");
     //presentationSlides[48] = loadImage("prez-images/DemocratizationOfNeurotech.048.jpg");
-    slideCount = 28;
+    slideCount = 0;
     println("DONE loading images!");
-    
+
   }
-  
+
   public void slideForward() {
     if(currentSlide < slideCount - 1 && drawPresentation && !lockSlides){
       println("Slide Forward!");
       currentSlide++;
     }
   }
-  
+
   public void slideBack() {
     if(currentSlide > 0 && drawPresentation && !lockSlides){
       println("Slide Back!");
       currentSlide--;
     }
   }
-  
+
   public void draw() {
       // ----- Drawing Presentation -------
     if (drawPresentation == true) {
       image(presentationSlides[currentSlide], 0, 0, width, height);
     }
-    
+
     if(lockSlides){
       //draw red rectangle to indicate that slides are locked
       pushStyle();

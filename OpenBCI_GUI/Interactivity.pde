@@ -349,8 +349,8 @@ void parseKeycode(int val) {
       // gui.incrementGUIpage(); //deprecated with new channel controller
       break;
     case 10:
-      println("Entering Presentation Mode");
-      drawPresentation = !drawPresentation;
+      println("Enter was pressed.");
+      // drawPresentation = !drawPresentation;
       break;
     case 16:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");

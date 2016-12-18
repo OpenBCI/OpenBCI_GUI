@@ -294,23 +294,28 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
     }
 
    // get accelerometer data
-   for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
-      if (Iacc < datatable.getColumnCount()) {
-        acc_G[Iacc] = row.getFloat(Iacc + nchan);
-      } else {
-        //use zeros for bad data :)
-        acc_G[Iacc] = 0.0f;
-      }
+   try{
+     for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
+        if (Iacc < datatable.getColumnCount()) {
+          acc_G[Iacc] = row.getFloat(Iacc + nchan);
+        } else {
+          //use zeros for bad data :)
+          acc_G[Iacc] = 0.0f;
+        }
 
-      //put into data structure
-      curDataPacket.auxValues[Iacc] = (int) (0.5f+ acc_G[Iacc] / scale_fac_accel_G_per_count); //convert to counts, the 0.5 is to ensure rounding
+        //put into data structure
+        curDataPacket.auxValues[Iacc] = (int) (0.5f+ acc_G[Iacc] / scale_fac_accel_G_per_count); //convert to counts, the 0.5 is to ensure rounding
 
-      // Wangshu Dec.6 2016
-      // as long as xyz are not zero at the same time, it should be fine...otherwise it will ignore it.
-      if (acc_G[Iacc]!= 0) {
-        acc_newData = true;
+        // Wangshu Dec.6 2016
+        // as long as xyz are not zero at the same time, it should be fine...otherwise it will ignore it.
+        if (acc_G[Iacc]!= 0) {
+          acc_newData = true;
+        }
       }
-    }
+   } catch (ArrayIndexOutOfBoundsException e){
+      // println("Data does not exist... possibly an old file.");
+   }
+
 
     if (acc_newData) {
       for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
