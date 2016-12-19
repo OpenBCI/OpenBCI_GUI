@@ -587,7 +587,13 @@ class OpenBCI_ADS1299 {
   public int read(boolean echoChar) {
     //println("OpenBCI_ADS1299: read(): State: " + state);
     //get the byte
-    byte inByte = byte(serial_openBCI.read());
+    byte inByte;
+    if (openBCI.isSerialPortOpen()) {
+      inByte = byte(serial_openBCI.read());
+    } else {
+      println("serial port not open aborting read");
+      return 0;
+    }
 
     //write the most recent char to the console
     // If the GUI is in streaming mode then echoChar will be false
@@ -632,15 +638,14 @@ class OpenBCI_ADS1299 {
             // changeState(STATE_NOCOM);
             // serial_openBCI = null;
             output("Failed to establish communication with Cyton, please ensure Cyton is powered on and Board/Dongle are on the same radio channel!");
-            // portIsOpen = false;
+            closeSerialPort();
             systemMode = 0;
             initSystemButton.setString("START SYSTEM");
             controlPanel.open();
             prevState_millis = 0;
             timeOfInit = 0;
             closeLogFile();
-            closeSerialPort();
-            serial_openBCI = null;
+            // serial_openBCI = null;
             println();
             println("--------------------------------------------------------------------------------------------------------");
           } else {
