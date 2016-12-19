@@ -285,6 +285,7 @@ class ControlPanel {
     cp5 = new ControlP5(mainClass);
     cp5Popup = new ControlP5(mainClass);
     cp5.setAutoDraw(false);
+    // cp5.set
     cp5Popup.setAutoDraw(false);
 
     //boxes active when eegDataSource = Normal (OpenBCI)
