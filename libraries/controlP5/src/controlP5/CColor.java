@@ -3,7 +3,7 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -18,8 +18,8 @@ package controlP5;
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -34,33 +34,20 @@ import java.io.Serializable;
 public class CColor implements Serializable {
 
 	private int colorBackground = 0xff003652;
-
 	private int colorForeground = 0xff00698c;
-
 	private int colorActive = 0xff08a2cf; // 0699C4;
-
 	private int colorCaptionLabel = 0xffffffff;
-
 	private int colorValueLabel = 0xffffffff;
-
 	private int colorBackgroundAlpha = 0xff;
-
 	private int colorForegroundAlpha = 0xff;
-
 	private int colorActiveAlpha = 0xff; // 0699C4;
-
 	private int colorCaptionLabelAlpha = 0xff;
-
 	private int colorValueLabelAlpha = 0xff;
 
 	private int alpha = 0xff;
-
 	private int maskA = 0x00ffffff;
-
 	int maskR = 0xff00ffff;
-
 	int maskG = 0xffff00ff;
-
 	int maskB = 0xffffff00;
 
 	protected CColor set( CColor theColor ) {

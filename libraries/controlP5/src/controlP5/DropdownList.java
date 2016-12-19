@@ -16,7 +16,7 @@ import processing.event.KeyEvent;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -33,8 +33,8 @@ import processing.event.KeyEvent;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -67,6 +67,7 @@ public class DropdownList extends Controller< DropdownList > implements ControlL
 		super( theControlP5 , theGroup , theName , theX , theY , theW , theH );
 		items = new ArrayList< Map< String , Object > >( );
 		updateHeight( );
+		getValueLabel( ).align( PApplet.LEFT , PApplet.CENTER );
 	}
 
 	public boolean isOpen( ) {
@@ -126,24 +127,26 @@ public class DropdownList extends Controller< DropdownList > implements ControlL
 				// n += itemRange; /* UP */
 				int index = ( int ) n + itemIndexOffset;
 
-				Map m = items.get( index );
-
-				switch ( _myType ) {
-				case ( LIST ):
-					setValue( index );
-					for ( Object o : items ) {
-						( ( Map ) o ).put( "state" , false );
+				if (index < items.size()) {
+					Map m = items.get( index );
+	
+					switch ( _myType ) {
+					case ( LIST ):
+						setValue( index );
+						for ( Object o : items ) {
+							( ( Map ) o ).put( "state" , false );
+						}
+						m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
+						break;
+					case ( DROPDOWN ):
+						setValue( index );
+						setOpen( false );
+						getCaptionLabel( ).setText( ( m.get( "text" ).toString( ) ) );
+						break;
+					case ( CHECKBOX ):
+						m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
+						break;
 					}
-					m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
-					break;
-				case ( DROPDOWN ):
-					setValue( index );
-					setOpen( false );
-					getCaptionLabel( ).setText( ( m.get( "text" ).toString( ) ) );
-					break;
-				case ( CHECKBOX ):
-					m.put( "state" , !ControlP5.b( m.get( "state" ) ) );
-					break;
 				}
 
 			}
@@ -389,7 +392,7 @@ public class DropdownList extends Controller< DropdownList > implements ControlL
 				}
 				g.popMatrix( );
 
-				c.getCaptionLabel( ).align( PApplet.LEFT , PApplet.CENTER ).draw( g , 4 , c.barHeight / 2 );
+				c.getCaptionLabel( ).draw( g , 4 , c.barHeight / 2 );
 			}
 
 			if ( c.isOpen( ) ) {
@@ -411,7 +414,7 @@ public class DropdownList extends Controller< DropdownList > implements ControlL
 					CColor color = ( CColor ) item.get( "color" );
 					g.fill( ( b( item.get( "state" ) ) ) ? color.getActive( ) : ( i == c.itemHover ) ? ( c.isMousePressed ? color.getActive( ) : color.getForeground( ) ) : color.getBackground( ) );
 					g.rect( 0 , 0 , c.getWidth( ) , c.itemHeight - 1 );
-					c.getValueLabel( ).align( PApplet.LEFT , PApplet.CENTER ).set( item.get( "text" ).toString( ) ).draw( g , 4 , c.itemHeight / 2 );
+					c.getValueLabel( ).set( item.get( "text" ).toString( ) ).draw( g , 4 , c.itemHeight / 2 );
 					g.translate( 0 , c.itemHeight );
 				}
 				g.popMatrix( );

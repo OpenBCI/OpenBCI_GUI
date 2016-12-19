@@ -47,6 +47,7 @@ void clientEvent(Client someClient) {
 }
 
 class OpenBCI_Ganglion {
+  final static String TCP_CMD_ACCEL = "a";
   final static String TCP_CMD_CONNECT = "c";
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
@@ -73,6 +74,8 @@ class OpenBCI_Ganglion {
   final static int STATE_STOPPED = 4;
   final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
 
+  final static int NUM_ACCEL_DIMS = 3;
+
   final static int RESP_ERROR_UNKNOWN = 499;
   final static int RESP_ERROR_BAD_PACKET = 500;
   final static int RESP_ERROR_ALREADY_CONNECTED = 408;
@@ -97,7 +100,7 @@ class OpenBCI_Ganglion {
   int prevState_millis = 0; // Used for calculating connect time out
 
   private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by openBCI boards
-  private int nAuxValuesPerPacket = 0; // Defined by the arduino code
+  private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
 
   private int tcpGanglionPort = 10996;
   private String tcpGanglionIP = "127.0.0.1";
@@ -109,6 +112,7 @@ class OpenBCI_Ganglion {
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
+  private float scale_fac_accel_G_per_count = 0.032;
   // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
@@ -133,6 +137,9 @@ class OpenBCI_Ganglion {
   private boolean nodeProcessHandshakeComplete = false;
   public boolean shouldStartNodeApp = false;
   private boolean checkingImpedance = false;
+  private boolean accelModeActive = false;
+  private boolean newAccelData = false;
+  private int[] accelArray = new int[NUM_ACCEL_DIMS];
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
@@ -141,8 +148,10 @@ class OpenBCI_Ganglion {
   public float get_fs_Hz() { return fs_Hz; }
   public boolean isPortOpen() { return portIsOpen; }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
+  public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
+  public boolean isAccelModeActive() { return accelModeActive; }
 
   private PApplet mainApplet;
 
@@ -237,6 +246,9 @@ class OpenBCI_Ganglion {
           connected = false;
         }
         break;
+      case 'a': // Accel
+        processAccel(msg);
+        break;
       case 'i': // Impedance
         processImpedance(msg);
         break;
@@ -265,6 +277,15 @@ class OpenBCI_Ganglion {
     }
   }
 
+  private void processAccel(String msg) {
+    // println(msg);
+    String[] list = split(msg, ',');
+    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+      accelArray[i] = Integer.parseInt(list[i + 1]);
+    }
+    newAccelData = true;
+  }
+
   private void processData(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
@@ -281,8 +302,15 @@ class OpenBCI_Ganglion {
         prevSampleIndex = dataPacket.sampleIndex;
 
         // Channel data storage
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < NCHAN_GANGLION; i++) {
           dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+        }
+        if (newAccelData) {
+          newAccelData = false;
+          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+            dataPacket.auxValues[i] = accelArray[i];
+            dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+          }
         }
         getRawValues(dataPacket);
         // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
@@ -317,16 +345,21 @@ class OpenBCI_Ganglion {
 
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
+    println("Length = " + list.length);
+    for(int i = 0; i < list.length; i++){
+      println(i + " " + list[i]);
+    }
     int channel = Integer.parseInt(list[1]);
     if (channel < 5) { //<>//
+      println("channel - " + channel);
       int value = Integer.parseInt(list[2]);
       impedanceArray[channel] = value;
 
       if (channel == 0) {
         impedanceUpdated = true;
-        //println("Impedance for channel reference is " + value + " ohms.");
+        println("Impedance for channel reference is " + value + " ohms.");
       } else {
-        //println("? for channel " + channel + " is " + value + " ohms.");
+        println("? for channel " + channel + " is " + value + " ohms.");
       }
     } else {
       //println("Impedance " + list[2]);
@@ -566,13 +599,31 @@ class OpenBCI_Ganglion {
   }
 
   /**
+   * Used to start accel data mode. Accel arrays will arrive asynchronously!
+   */
+  public void accelStart() {
+    println("OpenBCI_Ganglion: accell: START");
+    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
+    accelModeActive = true;
+  }
+
+  /**
+   * Used to stop accel data mode. Some accel arrays may arrive after stop command
+   *  was sent by this function.
+   */
+  public void accelStop() {
+    println("OpenBCI_Ganglion: accel: STOP");
+    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
+    accelModeActive = false;
+  }
+
+  /**
    * Used to start impedance testing. Impedances will arrive asynchronously!
    */
   public void impedanceStart() {
     println("OpenBCI_Ganglion: impedance: START");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
     checkingImpedance = true;
-
   }
 
   /**
@@ -583,41 +634,5 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
-
   }
 };
-
-// Potential use for windows systems
-// public class ApplicationUtilities
-// {
-//     public static void runApplication(String applicationFilePath) throws IOException, InterruptedException
-//     {
-//         File application = new File(applicationFilePath);
-//         String applicationName = application.getName();
-//
-//         if (!isProcessRunning(applicationName))
-//         {
-//             Desktop.getDesktop().open(application);
-//         }
-//     }
-//
-//     // http://stackoverflow.com/a/19005828/3764804
-//     private static boolean isProcessRunning(String processName) throws IOException, InterruptedException
-//     {
-//         ProcessBuilder processBuilder = new ProcessBuilder("tasklist.exe");
-//         Process process = processBuilder.start();
-//         String tasksList = toString(process.getInputStream());
-//
-//         return tasksList.contains(processName);
-//     }
-//
-//     // http://stackoverflow.com/a/5445161/3764804
-//     private static String toString(InputStream inputStream)
-//     {
-//         Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
-//         String string = scanner.hasNext() ? scanner.next() : "";
-//         scanner.close();
-//
-//         return string;
-//     }
-// }

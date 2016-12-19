@@ -3,7 +3,7 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -20,12 +20,13 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
 import processing.core.PApplet;
+import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.event.KeyEvent;
 
@@ -64,11 +65,11 @@ public interface ControllerInterface< T > {
 
 	@ControlP5.Invisible public T setPosition( float theX , float theY );
 
-	@ControlP5.Invisible public T setPosition( float[] thePVector );
+	@ControlP5.Invisible public T setPosition( float[] thePosition );
 
 	public float[] getAbsolutePosition( );
 
-	public T setAbsolutePosition( float[] thePVector );
+	public T setAbsolutePosition( float[] thePosition );
 
 	public T updateAbsolutePosition( );
 
@@ -163,7 +164,11 @@ public interface ControllerInterface< T > {
 	public boolean isMouseOver( );
 
 	public T setMouseOver( boolean theFlag );
-
+	
+	public T setFont( PFont theFont );
+	
+	public T setFont( ControlFont theFont );
+	
 	public T addListener( ControlListener theListener );
 
 	public T setCaptionLabel( String theValue );

@@ -1,6 +1,5 @@
 
 int navHeight = 22;
-color bgColor = color(1, 18, 41);
 
 //========================================================================================
 //=================              ADD NEW WIDGETS HERE            =========================
@@ -14,13 +13,13 @@ color bgColor = color(1, 18, 41);
 
 // MAKE YOUR WIDGET GLOBALLY
 W_timeSeries w_timeSeries;
-W_headPlot w_headPlot;
 W_fft w_fft;
+W_headPlot w_headPlot;
+W_accelerometer w_accelerometer;
+W_ganglionImpedance w_ganglionImpedance;
 W_template w_template1;
 W_template w_template2;
 W_template w_template3;
-W_template w_template4;
-W_template w_template5;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -28,33 +27,36 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_timeSeries.setTitle("Time Series");
   addWidget(w_timeSeries, w);
 
-  w_headPlot = new W_headPlot(_this);
-  w_headPlot.setTitle("Head Plot");
-  addWidget(w_headPlot, w);
-
   w_fft = new W_fft(_this);
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
 
+  //only instantiate this widget if you are using a Ganglion board for live streaming
+  if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    w_ganglionImpedance = new W_ganglionImpedance(_this);
+    w_ganglionImpedance.setTitle("Ganglion Signal");
+    addWidget(w_ganglionImpedance, w);
+  }
+
+  w_headPlot = new W_headPlot(_this);
+  w_headPlot.setTitle("Head Plot");
+  addWidget(w_headPlot, w);
+
+  w_accelerometer = new W_accelerometer(_this);
+  w_accelerometer.setTitle("Accelerometer");
+  addWidget(w_accelerometer, w);
+
   w_template1 = new W_template(_this);
-  w_template1.setTitle("Widget 1");
+  w_template1.setTitle("Widget Template 1");
   addWidget(w_template1, w);
 
   w_template2 = new W_template(_this);
-  w_template2.setTitle("Widget 2");
+  w_template2.setTitle("Widget Template 2");
   addWidget(w_template2, w);
 
-  w_template3 = new W_template(_this);
-  w_template3.setTitle("Widget 3");
-  addWidget(w_template3, w);
-
-  w_template4 = new W_template(_this);
-  w_template4.setTitle("Widget 4");
-  addWidget(w_template4, w);
-
-  w_template5 = new W_template(_this);
-  w_template5.setTitle("Widget 5");
-  addWidget(w_template5, w);
+  // w_template3 = new W_template(_this);
+  // w_template3.setTitle("LSL Stream");
+  // addWidget(w_template3, w);
 
 }
 
@@ -101,9 +103,13 @@ class WidgetManager{
     setupWidgets(_this, widgets);
     setupWidgetSelectorDropdowns();
 
-    currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-    setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
-
+    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+      currentContainerLayout = 1;
+      setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+    } else {
+      currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
+      setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+    }
   }
   public boolean isVisible() {
     return visible;
@@ -139,6 +145,12 @@ class WidgetManager{
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).update();
+          //if the widgets are not mapped to containers correctly, remap them..
+          // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
+          if(widgets.get(i).x0 != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y0 != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w0 != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h0 != (int)container[widgets.get(i).currentContainer].h){
+            screenResized();
+            println("WidgetManager.pde: Remapping widgets to container layout...");
+          }
         }
       }
     }
@@ -148,8 +160,10 @@ class WidgetManager{
     if(visible){
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
+          pushStyle();
           widgets.get(i).draw();
           widgets.get(i).drawDropdowns();
+          popStyle();
         }
       }
     }
@@ -163,13 +177,18 @@ class WidgetManager{
 
   void mousePressed(){
     for(int i = 0; i < widgets.size(); i++){
-      widgets.get(i).mousePressed();
+      if(widgets.get(i).isActive){
+        widgets.get(i).mousePressed();
+      }
+
     }
   }
 
   void mouseReleased(){
     for(int i = 0; i < widgets.size(); i++){
-      widgets.get(i).mouseReleased();
+      if(widgets.get(i).isActive){
+        widgets.get(i).mouseReleased();
+      }
     }
   }
 
@@ -184,6 +203,10 @@ class WidgetManager{
     layouts.add(new Layout(new int[]{1,7,6}));
     layouts.add(new Layout(new int[]{1,3,8}));
     layouts.add(new Layout(new int[]{2,7,9}));
+    layouts.add(new Layout(new int[]{4,11,12,13,14}));
+    layouts.add(new Layout(new int[]{4,15,16,17,18}));
+    layouts.add(new Layout(new int[]{1,7,11,12,13,14}));
+    layouts.add(new Layout(new int[]{1,7,15,16,17,18}));
   }
 
   void printLayouts(){

@@ -81,14 +81,23 @@ void parseKey(char val) {
       // wmVisible = !wmVisible;
       break;
     case ':':
-      println("Start/stop impedance check...");
-      if(isGanglion){
+      if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
+        println("Start/stop impedance check...");
         if(ganglion.isCheckingImpedance()){
           ganglion.impedanceStop();
         } else {
           ganglion.impedanceStart();
         }
       }
+      break;
+    case '{':
+      if(colorScheme == COLOR_SCHEME_DEFAULT){
+        colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
+      } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+        colorScheme = COLOR_SCHEME_DEFAULT;
+      }
+      topNav.updateNavButtonsBasedOnColorScheme();
+      println("Changing color scheme.");
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -340,8 +349,8 @@ void parseKeycode(int val) {
       // gui.incrementGUIpage(); //deprecated with new channel controller
       break;
     case 10:
-      println("Entering Presentation Mode");
-      drawPresentation = !drawPresentation;
+      println("Enter was pressed.");
+      // drawPresentation = !drawPresentation;
       break;
     case 16:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
@@ -459,7 +468,6 @@ void mousePressed() {
       //was the stopButton pressed?
 
       // gui.mousePressed(); // trigger mousePressed function in GUI
-      topNav.mousePressed();
       // GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
       wm.mousePressed();
 
@@ -487,20 +495,23 @@ void mousePressed() {
   // CONTROL PANEL INTERACTIVITY //
   //=============================//
 
-  //was control panel button pushed
-  if (controlPanelCollapser.isMouseHere()) {
-    if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
-      controlPanelCollapser.setIsActive(false);
-      controlPanel.isOpen = false;
-    } else {
-      controlPanelCollapser.setIsActive(true);
-      controlPanel.isOpen = true;
-    }
-  } else {
-    if (controlPanel.isOpen) {
-      controlPanel.CPmousePressed();
-    }
-  }
+  // //was control panel button pushed
+  // if (controlPanelCollapser.isMouseHere()) {
+  //   if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
+  //     controlPanelCollapser.setIsActive(false);
+  //     controlPanel.isOpen = false;
+  //   } else {
+  //     controlPanelCollapser.setIsActive(true);
+  //     controlPanel.isOpen = true;
+  //   }
+  // } else {
+  //   if (controlPanel.isOpen) {
+  //     controlPanel.CPmousePressed();
+  //   }
+  // }
+
+  //topNav is always clickable
+  topNav.mousePressed();
 
   //interacting with control panel
   if (controlPanel.isOpen) {
@@ -514,7 +525,7 @@ void mousePressed() {
       else {
         println("OpenBCI_GUI: mousePressed: outside of CP clicked");
         controlPanel.isOpen = false;
-        controlPanelCollapser.setIsActive(false);
+        topNav.controlPanelCollapser.setIsActive(false);
         output("Press the \"Press to Start\" button to initialize the data stream.");
       }
     }
@@ -567,10 +578,11 @@ void mouseReleased() {
     controlPanel.CPmouseReleased();
   }
 
+  // gui.mouseReleased();
+  topNav.mouseReleased();
+
   if (systemMode >= SYSTEMMODE_POSTINIT) {
 
-    // gui.mouseReleased();
-    topNav.mouseReleased();
     // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
     wm.mouseReleased();
 
@@ -635,6 +647,7 @@ class Button {
   boolean showHelpText;
   boolean helpTimerStarted;
   String helpText= "";
+  String myURL= "";
   int mouseOverButtonStart = 0;
   PFont buttonFont;
   int buttonTextSize;
@@ -643,14 +656,14 @@ class Button {
 
   public Button(int x, int y, int w, int h, String txt) {
     setup(x, y, w, h, txt);
-    buttonFont = f2;
+    buttonFont = p5;
     buttonTextSize = 12;
   }
 
   public Button(int x, int y, int w, int h, String txt, int fontSize) {
     setup(x, y, w, h, txt);
-    buttonFont = f2;
-    buttonTextSize = fontSize;
+    buttonFont = p5;
+    buttonTextSize = 12;
     //println(PFont.list()); //see which fonts are available
     //font = createFont("SansSerif.plain",fontSize);
     //font = createFont("Lucida Sans Regular",fontSize);
@@ -672,11 +685,11 @@ class Button {
 
   public void setY(int _but_y){
     but_y = _but_y;
-    but_y = _but_y;
   }
 
   public void setPos(int _but_x, int _but_y){
     but_x = _but_x;
+    but_y = _but_y;
   }
 
   public void setFont(PFont _newFont){
@@ -708,6 +721,16 @@ class Button {
 
   public void setHelpText(String _helpText){
     helpText = _helpText;
+  }
+
+  public void setURL(String _myURL){
+    myURL = _myURL;
+  }
+
+  public void goToURL(){
+    if(myURL != ""){
+      openURLInBrowser(myURL);
+    }
   }
 
   public void setBackgroundImage(PImage _bgImage){
@@ -841,9 +864,10 @@ class Button {
       imageMode(CENTER);
       image(bgImage, but_x + (but_dx/2), but_y + (but_dy/2), but_dx-8, but_dy-8);
     } else{  //otherwise draw text
-      if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3){
+      if(buttonFont == h1 || buttonFont == h2 || buttonFont == h3 || buttonFont == h4 || buttonFont == h5){
         text(but_txt, x1, y1 - 1); //for some reason y looks better at -1 with montserrat
-      } else if(buttonFont == p1 || buttonFont == p2){
+      } else if(buttonFont == p1 || buttonFont == p2 || buttonFont == p3 || buttonFont == p4 || buttonFont == p5 || buttonFont == p6){
+        textLeading(12); //line spacing
         text(but_txt, x1, y1 - 2); //for some reason y looks better at -2 w/ Open Sans
       } else{
         text(but_txt, x1, y1); //as long as font is not Montserrat
@@ -930,7 +954,7 @@ class ButtonHelpText{
       pushStyle();
       textAlign(CENTER, TOP);
 
-      textFont(p2,12);
+      textFont(p5,12);
       textLeading(lineSpacing); //line spacing
       stroke(31,69,110);
       fill(255);
@@ -950,3 +974,15 @@ class ButtonHelpText{
     }
   }
 };
+
+void openURLInBrowser(String _url){
+  try {
+    //Set your page url in this string. For eg, I m using URL for Google Search engine
+    String url = _url;
+    java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+    output("Attempting to use your default browser to launch: " + url);
+  }
+  catch (java.io.IOException e) {
+      System.out.println(e.getMessage());
+  }
+}

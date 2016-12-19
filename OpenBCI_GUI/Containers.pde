@@ -10,13 +10,13 @@
 //   ------------------------------------------------
 //   |                      [0]                     |
 //   ------------------------------------------------
-//   |                       |                      |
-//   |         [1]          [2]         [3]         |
-//   |                       |                      |
+//   |                       |         [11]         |
+//   |         [1]          [2]---[15]--[3]---[16]--|
+//   |                       |         [12]         |
 //   |---------[4]----------[5]---------[6]---------|
-//   |                       |                      |
-//   |         [7]          [8]         [9]         |
-//   |                       |                      |
+//   |                       |         [13]         |
+//   |         [7]          [8]---[17]--[9]---[18]--|
+//   |                       |         [14]         |
 //   ------------------------------------------------
 //   |                      [10]                    |
 //   ------------------------------------------------
@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 boolean drawContainers = false;
-Container[] container = new Container[11];
+Container[] container = new Container[19];
 
 //Viz extends container (example below)
 //Viz viz1;
@@ -56,6 +56,14 @@ void setupContainers() {
   container[8] = new Container(container[5], "BOTTOM");
   container[9] = new Container(container[5], "BOTTOM_RIGHT");
   container[10] = new Container(0, height - bottomNav_h, width, 50, 0);
+  container[11] = new Container(container[3], "TOP");
+  container[12] = new Container(container[3], "BOTTOM");
+  container[13] = new Container(container[9], "TOP");
+  container[14] = new Container(container[9], "BOTTOM");
+  container[15] = new Container(container[6], "TOP_LEFT");
+  container[16] = new Container(container[6], "TOP_RIGHT");
+  container[17] = new Container(container[6], "BOTTOM_LEFT");
+  container[18] = new Container(container[6], "BOTTOM_RIGHT");
   //container11 = new Container(container1, "LEFT");
   //container12 = new Container(container1, "RIGHT");
 
