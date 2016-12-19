@@ -207,7 +207,9 @@ PFont h5; //small Montserrat
 PFont p1; //large Open Sans
 PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
+PFont p15;
 PFont p4; //medium/small Open Sans
+PFont p13;
 PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
@@ -284,7 +286,9 @@ void setup() {
   p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
   p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
   p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
+  p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
   p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
+  p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
   p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
   p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
