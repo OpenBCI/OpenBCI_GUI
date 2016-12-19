@@ -25,7 +25,7 @@ class W_accelerometer extends Widget {
   // Accelerometer Stuff
   int AccelBuffSize = 500; //points registered in accelerometer buff
 
-  int padding = 20;
+  int padding = 30;
 
   // bottom xyz graph
   int AccelWindowWidth;
@@ -195,6 +195,7 @@ class W_accelerometer extends Widget {
       fill(graphBG);  // pulse window background
       stroke(graphStroke);
       rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
+      line(AccelWindowX, AccelWindowY + AccelWindowHeight/2, AccelWindowX+AccelWindowWidth, AccelWindowY + AccelWindowHeight/2); //midline
 
       fill(graphBG);  // pulse window background
       stroke(graphStroke);
@@ -266,7 +267,15 @@ class W_accelerometer extends Widget {
   }
 
   void screenResized(){
+    int prevX = x;
+    int prevY = y;
+    int prevW = w;
+    int prevH = h;
+
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+    int dy = y - prevY;
+    println("dy = " + dy);
 
     //put your code here...
     // AccelWindowWidth = int(w) - 10;
@@ -285,6 +294,9 @@ class W_accelerometer extends Widget {
       X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
+      // X[i] = X[i] + dy;
+      // Y[i] = Y[i] + dy;
+      // Z[i] = Z[i] + dy;
     }
 
     if(eegDataSource == DATASOURCE_GANGLION){

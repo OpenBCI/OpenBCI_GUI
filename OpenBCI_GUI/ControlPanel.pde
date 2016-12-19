@@ -67,7 +67,7 @@ MenuList channelList;
 MenuList pollList;
 
 color boxColor = color(200);
-color boxStrokeColor = color(138, 146, 153);
+color boxStrokeColor = color(bgColor);
 color isSelected_color = color(184, 220, 105);
 
 // Button openClosePort;
@@ -316,10 +316,12 @@ class ControlPanel {
 
   public void open(){
     isOpen = true;
+    topNav.controlPanelCollapser.setIsActive(true);
   }
 
   public void close(){
     isOpen = false;
+    topNav.controlPanelCollapser.setIsActive(false);
   }
 
   public void update() {
@@ -880,7 +882,7 @@ class ControlPanel {
 
     if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
       autoconnect();
-      system_init();
+      initButtonPressed();
       autoconnect.wasPressed = false;
       autoconnect.setIsActive(false);
     }
@@ -895,7 +897,7 @@ class ControlPanel {
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
       if(board != null) board.stop();
       //if system is not active ... initate system and flip button state
-      system_init();
+      initButtonPressed();
       //cursor(ARROW); //this this back to ARROW
     }
 
@@ -995,7 +997,7 @@ class ControlPanel {
   }
 };
 
-public void system_init(){
+public void initButtonPressed(){
   if (initSystemButton.but_txt == "START SYSTEM") {
 
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
@@ -1059,6 +1061,7 @@ public void system_init(){
         }
 
         fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+        midInit = true;
         initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
     }
@@ -1104,7 +1107,7 @@ class DataSourceBox {
     h = spacing + (numItems * boxHeight);
     padding = _padding;
 
-    sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, f2);
+    sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p4);
     // sourceList.itemHeight = 28;
     // sourceList.padding = 9;
     sourceList.setPosition(x + padding, y + padding*2 + 13);
@@ -1127,7 +1130,7 @@ class DataSourceBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("DATA SOURCE", x + padding, y + padding);
     popStyle();
@@ -1154,7 +1157,7 @@ class SerialBox {
     refreshPort = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
     popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
 
-    serialList = new MenuList(cp5, "serialList", w - padding*2, 72, f2);
+    serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
     // println(w-padding*2);
     serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
     serialPorts = Serial.list();
@@ -1175,7 +1178,7 @@ class SerialBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("SERIAL/COM PORT", x + padding, y + padding);
     popStyle();
@@ -1204,7 +1207,7 @@ class BLEBox {
     padding = _padding;
 
     refreshBLE = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    bleList = new MenuList(cp5, "bleList", w - padding * 2, 84, f2);
+    bleList = new MenuList(cp5, "bleList", w - padding * 2, 84, p4);
     // println(w-padding*2);
     bleList.setPosition(x + padding, y + padding * 3);
     // Call to update the list
@@ -1223,7 +1226,7 @@ class BLEBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("BLE DEVICES", x + padding, y + padding);
     popStyle();
@@ -1299,10 +1302,10 @@ class DataLogBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("DATA LOG FILE", x + padding, y + padding);
-    textFont(f3);
+    textFont(p4, 14);;
     text("File Name", x + padding, y + padding*2 + 18);
     popStyle();
     cp5.get(Textfield.class, "fileName").setPosition(x + 90, y + 32);
@@ -1344,11 +1347,11 @@ class ChannelCountBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("CHANNEL COUNT", x + padding, y + padding);
     fill(bgColor); //set color to green
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("(" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
@@ -1389,11 +1392,11 @@ class SyntheticChannelCountBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("CHANNEL COUNT", x + padding, y + padding);
     fill(bgColor); //set color to green
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("(" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
@@ -1427,7 +1430,7 @@ class PlaybackFileBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("PLAYBACK FILE", x + padding, y + padding);
     popStyle();
@@ -1447,7 +1450,7 @@ class SDBox {
     h = 150;
     padding = _padding;
 
-    sdTimes = new MenuList(cp5, "sdTimes", w - padding*2, 108, f2);
+    sdTimes = new MenuList(cp5, "sdTimes", w - padding*2, 108, p4);
     sdTimes.setPosition(x + padding, y + padding*2 + 13);
     serialPorts = Serial.list();
 
@@ -1475,7 +1478,7 @@ class SDBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("WRITE TO SD (Y/N)?", x + padding, y + padding);
     popStyle();
@@ -1498,7 +1501,7 @@ class NetworkingBox{
     w = _w;
     h = _h;
     padding = _padding;
-    networkList = new MenuList(cp5, "networkList", w - padding*2, 96, f2);
+    networkList = new MenuList(cp5, "networkList", w - padding*2, 96, p4);
     networkList.setPosition(x + padding, y+padding+20);
     networkList.addItem(makeItem("None"));
     networkList.addItem(makeItem("UDP"));
@@ -1517,11 +1520,11 @@ class NetworkingBox{
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("NETWORK PROTOCOLS", x + padding, y + padding);
     fill(bgColor); //set color to green
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     popStyle();
   }
@@ -1578,7 +1581,7 @@ class RadioConfigBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("RADIO CONFIGURATION (V2)", x + padding, y + padding);
     popStyle();
@@ -1676,7 +1679,7 @@ class UDPOptionsBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("Options", x + padding, y + padding);
     pushStyle();
@@ -1686,10 +1689,10 @@ class UDPOptionsBox {
     rect(x, y, w, h);
     fill(bgColor);
     text("UDP OPTIONS", x + padding, y + padding);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("IP", x + padding, y + 50 + padding);
-    textFont(f3);
+    textFont(p4, 14);;
     text("Port", x + padding, y + 82 + padding);
     popStyle();
   }
@@ -1769,7 +1772,7 @@ class OSCOptionsBox{
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("Options", x + padding, y + padding);
     pushStyle();
@@ -1779,10 +1782,10 @@ class OSCOptionsBox{
     rect(x, y, w, h);
     fill(bgColor);
     text("OSC OPTIONS", x + padding, y + padding);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("IP", x + padding, y + 35 + padding);
-    textFont(f3);
+    textFont(p4, 14);;
     text("Port", x + padding, y + 67 + padding);
     text("Address", x + padding, y + 99 + padding);
     popStyle();
@@ -1846,7 +1849,7 @@ class LSLOptionsBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("Options", x + padding, y + padding);
     pushStyle();
@@ -1856,10 +1859,10 @@ class LSLOptionsBox {
     rect(x, y, w, h);
     fill(bgColor);
     text("LSL OPTIONS", x + padding, y + padding);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("Data Stream", x + padding, y + 50 + padding);
-    textFont(f3);
+    textFont(p4, 14);;
     text("Aux Stream", x + padding, y + 82 + padding);
     popStyle();
   }
@@ -1888,7 +1891,7 @@ class SDConverterBox {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("CONVERT SD FOR PLAYBACK", x + padding, y + padding);
     popStyle();
@@ -1913,7 +1916,7 @@ class ChannelPopup {
     padding = _padding;
     clicked = false;
 
-    channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, f2);
+    channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, p4);
     channelList.setPosition(x+padding, y+padding*3);
 
     for (int i = 1; i < 26; i++) {
@@ -1932,7 +1935,7 @@ class ChannelPopup {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("CHANNEL SELECTION", x + padding, y + padding);
     popStyle();
@@ -1964,7 +1967,7 @@ class PollPopup {
     clicked = false;
 
 
-    pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, f2);
+    pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p4);
     pollList.setPosition(x+padding, y+padding*3);
 
     for (int i = 0; i < 256; i++) {
@@ -1983,7 +1986,7 @@ class PollPopup {
     strokeWeight(1);
     rect(x, y, w, h);
     fill(bgColor);
-    textFont(f1);
+    textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("POLL SELECTION", x + padding, y + padding);
     popStyle();
@@ -2076,7 +2079,7 @@ public class MenuList extends controlP5.Controller {
   boolean drawHand;
   int hoverItem = -1;
   int activeItem = -1;
-  PFont menuFont = f2;
+  PFont menuFont = p4;
   int padding = 7;
 
 
@@ -2086,7 +2089,7 @@ public class MenuList extends controlP5.Controller {
     c.register( this );
     menu = createGraphics(getWidth(),getHeight());
 
-    menuFont = theFont;
+    menuFont = p4;
 
     setView(new ControllerView<MenuList>() {
 
@@ -2135,7 +2138,8 @@ public class MenuList extends controlP5.Controller {
     menu.beginDraw();
     menu.noStroke();
     menu.background(255, 64);
-    menu.textFont(cp5.getFont().getFont());
+    // menu.textFont(cp5.getFont().getFont());
+    menu.textFont(menuFont);
     menu.pushMatrix();
     menu.translate( 0, pos );
     menu.pushMatrix();
@@ -2189,16 +2193,27 @@ public class MenuList extends controlP5.Controller {
    * otherwise do whatever this item of the list is supposed to do.
    */
   public void onClick() {
-    if (getPointer().x()>getWidth()-scrollerWidth) {
-      npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
+    println("click");
+    try{
+      if (getPointer().x()>getWidth()-scrollerWidth) {
+        if(getHeight() != 0){
+          npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
+        }
+        updateMenu = true;
+      } else {
+        int len = itemHeight * items.size();
+        int index = 0;
+        if(len != 0){
+          index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
+        }
+        setValue(index);
+        activeItem = index;
+      }
       updateMenu = true;
-    } else {
-      int len = itemHeight * items.size();
-      int index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
-      setValue(index);
-      activeItem = index;
-    }
-    updateMenu = true;
+    } finally{}
+    // catch(IOException e){
+    //   println("Nothing to click...");
+    // }
   }
 
   public void onMove() {
@@ -2206,7 +2221,10 @@ public class MenuList extends controlP5.Controller {
       hoverItem = -1;
     } else {
       int len = itemHeight * items.size();
-      int index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
+      int index = 0;
+      if(len != 0){
+        index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
+      }
       hoverItem = index;
     }
     updateMenu = true;

@@ -38,6 +38,8 @@ import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
 
+import gifAnimation.*;
+
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -47,8 +49,12 @@ import java.awt.AWTException;
 
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
+final int SYSTEMMODE_MIDINIT = 5;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
+
+boolean midInit = false;
+boolean abandonInit = false;
 
 final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
@@ -56,6 +62,7 @@ final int NCHAN_GANGLION = 4;
 
 boolean hasIntroAnimation = false;
 PImage cog;
+Gif loadingGIF;
 
 //choose where to get the EEG data
 final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -243,14 +250,14 @@ void setup() {
   //  server on shut down of this app, the main process.
   // prepareExitHandler();
   if (dev == false) {
+    hubStop(); //kill any existing hubs before starting a new one..
     hubStart();
     prepareExitHandler();
   }
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 6/25/2016"); //Welcome line.
-  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");
-  println("For specific questions, please post them to the Software section of the OpenBCI Forum: http://openbci.com/index.php/forum/#/categories/software");
+  println("Last update: 12/20/2016"); //Welcome line.
+  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
   frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
@@ -310,6 +317,8 @@ void setup() {
   logo_blue = loadImage("logo_blue.png");
   logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
+  loadingGIF = new Gif(this, "OBCI-6.gif");
+  loadingGIF.loop();
 
   playground = new Playground(navBarHeight);
 
@@ -479,8 +488,16 @@ int drawLoop_counter = 0;
 //used to init system based on initial settings...Called from the "Start System" button in the GUI's ControlPanel
 void initSystem() {
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 --");
+  println();
+  println();
+  println("=================================================");
+  println("||             INITIALIZING SYSTEM             ||");
+  println("=================================================");
+  println();
+
+  verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + millis());
   timeOfInit = millis(); //store this for timeout in case init takes too long
+  verbosePrint("timeOfInit = " + timeOfInit);
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
@@ -508,21 +525,20 @@ void initSystem() {
   //initialize the data
   prepareData(dataBuffX, dataBuffY_uV, get_fs_Hz_safe());
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 --");
+  verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
-    verbosePrint("a--"+Ichan);
+    verbosePrint("Init FFT Buff – "+Ichan);
     fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
   }  //make the FFT objects
 
-  verbosePrint("OpenBCI_GUI: initSystem: b");
   initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 --");
+  verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
 
   //prepare the source of the input data
   switch (eegDataSource) {
@@ -556,29 +572,41 @@ void initSystem() {
   default:
   }
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 --");
+  verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
-  //initilize the GUI
-  // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
-  topNav.initSecondaryNav();
-  wm = new WidgetManager(this);
-  // setupGUIWidgets(); //####
+  if(abandonInit){
+    haltSystem();
+    println("Failed to connect to data source...");
+    output("Failed to connect to data source...");
+  } else{
+    println("  3a -- " + millis());
+    //initilize the GUI
+    // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
+    topNav.initSecondaryNav();
+    println("  3b -- " + millis());
 
+    wm = new WidgetManager(this);
 
-  //final config
-  // setBiasState(openBCI.isBiasAuto);
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 --");
+    println("  3c -- " + millis());
+    // setupGUIWidgets(); //####
 
-  //open data file
-  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) openNewLogFile(fileName);  //open a new log file
-  if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
+    //open data file
+    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) openNewLogFile(fileName);  //open a new log file
+    if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
 
-  nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
 
-  if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
-    systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+    if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
+      systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
 
+    }
+    controlPanel.close();
   }
+
+  verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
+  midInit = false;
+  abandonInit = false;
+
 
 }
 
@@ -597,6 +625,9 @@ float get_fs_Hz_safe() {
 //halt the data collection
 void haltSystem() {
   println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
+  if(initSystemButton.but_txt == "STOP SYSTEM"){
+    initSystemButton.but_txt = "START SYSTEM";
+  }
   stopRunning();  //stop data transfer
 
   //reset variables for data processing
@@ -840,8 +871,12 @@ void systemDraw() { //for drawing to the screen
 
   if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
+    pushStyle();
+    imageMode(CENTER);
+    image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
+    popStyle();
     if (millis()%1000 < 500) {
-      output("Iniitializing communication w/ your OpenBCI board...");
+      output("Attempting to establish a connection with your OpenBCI Board...");
     } else {
       output("");
     }
@@ -850,6 +885,7 @@ void systemDraw() { //for drawing to the screen
       haltSystem();
       initSystemButton.but_txt = "START SYSTEM";
       output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
+      controlPanel.open();
     }
   }
 
@@ -881,6 +917,11 @@ void introAnimation() {
     tint(255, transparency);
     //draw OpenBCI Logo Front & Center
     image(cog, width/2, height/2, width/6, width/6);
+    textFont(p3,16);
+    textLeading(24);
+    fill(31,69,110, transparency);
+    textAlign(CENTER,CENTER);
+    text("OpenBCI GUI v2.0\nDecember 2016", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
