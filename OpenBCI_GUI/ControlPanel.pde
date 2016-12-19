@@ -316,10 +316,12 @@ class ControlPanel {
 
   public void open(){
     isOpen = true;
+    topNav.controlPanelCollapser.setIsActive(true);
   }
 
   public void close(){
     isOpen = false;
+    topNav.controlPanelCollapser.setIsActive(false);
   }
 
   public void update() {
@@ -880,7 +882,7 @@ class ControlPanel {
 
     if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
       autoconnect();
-      system_init();
+      initButtonPressed();
       autoconnect.wasPressed = false;
       autoconnect.setIsActive(false);
     }
@@ -895,7 +897,7 @@ class ControlPanel {
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
       if(board != null) board.stop();
       //if system is not active ... initate system and flip button state
-      system_init();
+      initButtonPressed();
       //cursor(ARROW); //this this back to ARROW
     }
 
@@ -995,7 +997,7 @@ class ControlPanel {
   }
 };
 
-public void system_init(){
+public void initButtonPressed(){
   if (initSystemButton.but_txt == "START SYSTEM") {
 
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
@@ -1059,6 +1061,7 @@ public void system_init(){
         }
 
         fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+        midInit = true;
         initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
     }

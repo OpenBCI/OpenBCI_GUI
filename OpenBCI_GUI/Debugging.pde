@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------
 
 //set true if you want more verbosity in console.. verbosePrint("print_this_thing") is used to output feedback when isVerbose = true
-boolean isVerbose = false;
+boolean isVerbose = true;
 
 //Help Widget initiation
 HelpWidget helpWidget;
@@ -109,9 +109,7 @@ class HelpWidget {
       textAlign(LEFT, TOP);
       text(currentOutput, padding*2, height - h + padding);
     }
-
-
-
+    
     popStyle();
   }
 
