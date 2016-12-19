@@ -48,6 +48,8 @@ class W_timeSeries extends Widget {
 
   int startingVertScaleIndex = 3;
 
+  private boolean hasScrollbar = false;
+
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -67,7 +69,7 @@ class W_timeSeries extends Widget {
     wF = float(w);
     hF = float(h);
 
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
       playbackWidgetHeight = 50.0;
     } else{
       playbackWidgetHeight = 0.0;
@@ -157,7 +159,7 @@ class W_timeSeries extends Widget {
       }
 
       //temporary placeholder for playback controller widget
-      if(eegDataSource == DATASOURCE_PLAYBACKFILE){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+      if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
         pushStyle();
         fill(0,0,0,20);
         stroke(31,69,110);

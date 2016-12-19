@@ -250,14 +250,14 @@ void setup() {
   //  server on shut down of this app, the main process.
   // prepareExitHandler();
   if (dev == false) {
+    hubStop(); //kill any existing hubs before starting a new one..
     hubStart();
     prepareExitHandler();
   }
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 6/25/2016"); //Welcome line.
-  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/tutorials/01-GettingStarted");
-  println("For specific questions, please post them to the Software section of the OpenBCI Forum: http://openbci.com/index.php/forum/#/categories/software");
+  println("Last update: 12/20/2016"); //Welcome line.
+  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
   frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
@@ -917,6 +917,11 @@ void introAnimation() {
     tint(255, transparency);
     //draw OpenBCI Logo Front & Center
     image(cog, width/2, height/2, width/6, width/6);
+    textFont(p3,16);
+    textLeading(24);
+    fill(31,69,110, transparency);
+    textAlign(CENTER,CENTER);
+    text("OpenBCI GUI v2.0\nDecember 2016", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

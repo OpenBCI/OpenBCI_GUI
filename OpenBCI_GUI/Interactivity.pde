@@ -81,8 +81,8 @@ void parseKey(char val) {
       // wmVisible = !wmVisible;
       break;
     case ':':
-      println("Start/stop impedance check...");
-      if(isGanglion){
+      if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
+        println("Start/stop impedance check...");
         if(ganglion.isCheckingImpedance()){
           ganglion.impedanceStop();
         } else {
@@ -656,14 +656,14 @@ class Button {
 
   public Button(int x, int y, int w, int h, String txt) {
     setup(x, y, w, h, txt);
-    buttonFont = f2;
+    buttonFont = p5;
     buttonTextSize = 12;
   }
 
   public Button(int x, int y, int w, int h, String txt, int fontSize) {
     setup(x, y, w, h, txt);
-    buttonFont = f2;
-    buttonTextSize = fontSize;
+    buttonFont = p5;
+    buttonTextSize = 12;
     //println(PFont.list()); //see which fonts are available
     //font = createFont("SansSerif.plain",fontSize);
     //font = createFont("Lucida Sans Regular",fontSize);
