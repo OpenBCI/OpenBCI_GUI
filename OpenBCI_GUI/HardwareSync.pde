@@ -354,9 +354,9 @@ class OpenBCI_ADS1299 {
       closeSerialPort();
     }
 
-    println("OpenBCI_ADS1299: i");
+    println("OpenBCI_ADS1299: i = " + millis());
     openSerialPort(applet, comPort, baud);
-    println("OpenBCI_ADS1299: j");
+    println("OpenBCI_ADS1299: j = " + millis());
 
     //open file for raw bytes
     //output = createOutput("rawByteDumpFromProcessing.bin");  //for debugging  WEA 2014-01-26
@@ -365,8 +365,9 @@ class OpenBCI_ADS1299 {
   // //manage the serial port
   private int openSerialPort(PApplet applet, String comPort, int baud) {
 
+    output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {
-      println("OpenBCI_ADS1299: openSerialPort: attempting to open serial port " + openBCI_portName);
+      println("OpenBCI_ADS1299: openSerialPort: attempting to open serial port: " + openBCI_portName);
       serial_openBCI = new Serial(applet,comPort,baud); //open the com port
       serial_openBCI.clear(); // clear anything in the com port's buffer
       portIsOpen = true;
@@ -379,6 +380,10 @@ class OpenBCI_ADS1299 {
         serial_openBCI = null;
         System.out.println("OpenBCI_ADS1299: openSerialPort: port in use, trying again later...");
         portIsOpen = false;
+      } else{
+        println("RunttimeException: " + e);
+        output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
+        abandonInit = true; //global variable in OpenBCI_GUI.pde
       }
       return 0;
     }
@@ -430,8 +435,10 @@ class OpenBCI_ADS1299 {
     portIsOpen = false;
     println("OpenBCI_ADS1299: closeSerialPort: e");
     println("OpenBCI_ADS1299: closeSerialPort: e2");
-    serial_openBCI.stop();
-    println("OpenBCI_ADS1299: closeSerialPort: f");
+    if(serial_openBCI != null){
+      serial_openBCI.stop();
+      println("OpenBCI_ADS1299: closeSerialPort: f");
+    }
     serial_openBCI = null;
     println("OpenBCI_ADS1299: closeSerialPort: g");
     state = STATE_NOCOM;

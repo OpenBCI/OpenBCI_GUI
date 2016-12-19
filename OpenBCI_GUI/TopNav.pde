@@ -46,7 +46,7 @@ class TopNav {
 
     //top right buttons from right to left
     int butNum = 1;
-    tutorialsButton = new Button(width - 3*(butNum) - 80, 3, 80, 26, "Tutorials", fontInfo.buttonLabel_size);
+    tutorialsButton = new Button(width - 3*(butNum) - 80, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
     tutorialsButton.setFont(h3, 16);
     tutorialsButton.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
 
@@ -390,17 +390,17 @@ class LayoutSelector{
       pushStyle();
 
       // println("it's happening");
-      stroke(31,69,110);
+      stroke(bgColor);
       // fill(229); //bg
-      fill(255); //bg
+      fill(57,128,204); //bg
       rect(x, y, w, h);
 
       for(int i = 0; i < layoutOptions.size(); i++){
         layoutOptions.get(i).draw();
       }
 
-      // fill(255);
-      fill(177, 184, 193);
+      fill(57,128,204);
+      // fill(177, 184, 193);
       noStroke();
       rect(x+w-(topNav.layoutButton.but_dx-1), y, (topNav.layoutButton.but_dx-1), 1);
 
@@ -599,17 +599,17 @@ class TutorialSelector{
       pushStyle();
 
       // println("it's happening");
-      stroke(31,69,110);
+      stroke(bgColor);
       // fill(229); //bg
-      fill(255); //bg
+      fill(31,69,110); //bg
       rect(x, y, w, h);
 
       for(int i = 0; i < tutorialOptions.size(); i++){
         tutorialOptions.get(i).draw();
       }
 
-      // fill(255);
-      fill(177, 184, 193);
+      fill(openbciBlue);
+      // fill(177, 184, 193);
       noStroke();
       rect(x+w-(topNav.tutorialsButton.but_dx-1), y, (topNav.tutorialsButton.but_dx-1) , 1);
 
@@ -698,16 +698,23 @@ class TutorialSelector{
 
     buttonNumber = 1;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Widgets");
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/software/01-OpenBCI_SDK");
+    tempTutorialButton.setURL("http://docs.openbci.com/hardware/01-OpenBCI_Hardware");
     tutorialOptions.add(tempTutorialButton);
 
     buttonNumber = 2;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/hardware/01-OpenBCI_Hardware");
+    tempTutorialButton.setURL("http://openbci.com/index.php/forum/");
+    tutorialOptions.add(tempTutorialButton);
+
+    buttonNumber = 3;
+    h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Widgets");
+    tempTutorialButton.setFont(p5, 12);
+    tempTutorialButton.setURL("http://docs.openbci.com/software/01-OpenBCI_SDK");
     tutorialOptions.add(tempTutorialButton);
 
   }
