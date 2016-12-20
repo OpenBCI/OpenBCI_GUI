@@ -318,7 +318,7 @@ class OpenBCI_Ganglion {
         ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
         switch (outputDataSource) {
           case OUTPUT_SOURCE_ODF:
-            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), 0);
+            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), get_scale_fac_accel_G_per_count());
             break;
           case OUTPUT_SOURCE_BDF:
             // curBDFDataPacketInd = curDataPacketInd;
@@ -488,7 +488,7 @@ class OpenBCI_Ganglion {
     } else {
       boolean willAddToDeviceList = true;
       for (int i = 0; i < numberOfDevices; i++) {
-        if (deviceList[i] == ganglionLocalName) {
+        if (ganglionLocalName.equals(deviceList[i])) {
           willAddToDeviceList = false;
           break;
         }
