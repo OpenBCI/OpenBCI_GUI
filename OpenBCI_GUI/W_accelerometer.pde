@@ -197,6 +197,14 @@ class W_accelerometer extends Widget {
       rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
       line(AccelWindowX, AccelWindowY + AccelWindowHeight/2, AccelWindowX+AccelWindowWidth, AccelWindowY + AccelWindowHeight/2); //midline
 
+      fill(50);
+      textFont(p5, 12);
+      textAlign(CENTER,CENTER);
+      text("+4g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
+      text("0g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight/2);
+      text("-4g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
+
+
       fill(graphBG);  // pulse window background
       stroke(graphStroke);
       ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);

@@ -15,6 +15,9 @@ class W_ganglionImpedance extends Widget {
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
 
+  Button startStopCheck;
+  int padding = 24;
+
   W_ganglionImpedance(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -24,6 +27,9 @@ class W_ganglionImpedance extends Widget {
     addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
     addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+
+    startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
+    startStopCheck.setFont(p4, 14);
 
   }
 
@@ -39,11 +45,8 @@ class W_ganglionImpedance extends Widget {
 
     //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     pushStyle();
-    // textFont(h1,24);
-    // fill(bgColor);
-    // textAlign(CENTER,CENTER);
-    // text(widgetTitle, x + w/2, y + h/2);
-    // fill(0);
+
+    startStopCheck.draw();
 
     // //without dividing by 2
     // for(int i = 0; i < ganglion.impedanceArray.length; i++){
@@ -58,15 +61,36 @@ class W_ganglionImpedance extends Widget {
 
     //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
     fill(bgColor);
-    textFont(p5, 12);
+    textFont(p4, 14);
     for(int i = 0; i < ganglion.impedanceArray.length; i++){
       String toPrint;
+      float adjustedImpedance = ganglion.impedanceArray[i]/2.0;
       if(i == 0){
-        toPrint = "Reference Impedance = " + ganglion.impedanceArray[i]/2.0 + " k\u2126";
+        toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
       } else {
-        toPrint = "Channel[" + i + "] Impedance = " + ganglion.impedanceArray[i]/2.0 + " k\u2126";
+        toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
       }
-      text(toPrint, x + 10, y + 60 + 20*(i));
+      text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
+
+      pushStyle();
+      stroke(bgColor);
+      //change the fill color based on the signal quality...
+      if(adjustedImpedance <= 0){ //no data yet...
+        fill(255);
+      } else if(adjustedImpedance > 0 && adjustedImpedance <= 10){ //very good signal quality
+        fill(49, 113, 89); //dark green
+      } else if(adjustedImpedance > 10 && adjustedImpedance <= 50){ //good signal quality
+        fill(184, 220, 105); //yellow green
+      } else if(adjustedImpedance > 50 && adjustedImpedance <= 100){ //acceptable signal quality
+        fill(221, 178, 13); //yellow
+      } else if(adjustedImpedance > 100 && adjustedImpedance <= 150){ //questionable signal quality
+        fill(253, 94, 52); //orange
+      } else if(adjustedImpedance > 150){ //bad signal quality
+        fill(224, 56, 45); //red
+      }
+
+      ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
+      popStyle();
     }
 
     // // no longer need to do this because the math was moved to the firmware...
@@ -89,6 +113,7 @@ class W_ganglionImpedance extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    startStopCheck.setPos(x + padding, y + padding);
 
   }
 
@@ -96,6 +121,9 @@ class W_ganglionImpedance extends Widget {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    if(startStopCheck.isMouseHere()){
+      startStopCheck.setIsActive(true);
+    }
 
   }
 
@@ -103,6 +131,19 @@ class W_ganglionImpedance extends Widget {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    if(startStopCheck.isActive && startStopCheck.isMouseHere()){
+      if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
+        println("Start/stop impedance check...");
+        if(ganglion.isCheckingImpedance()){
+          ganglion.impedanceStop();
+          startStopCheck.but_txt = "Start Impedance Check";
+        } else {
+          ganglion.impedanceStart();
+          startStopCheck.but_txt = "Stop Impedance Check";
+        }
+      }
+    }
+    startStopCheck.setIsActive(false);
 
   }
 
