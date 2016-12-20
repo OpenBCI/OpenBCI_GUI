@@ -111,10 +111,10 @@ class OpenBionics_Widget {
         for(int i = 0; i<5; i++){
           //================= OpenBionics Analog Movement =======================
           if(fingerChans[i] == -1) output_normalized = 0;
-          else output_normalized = int(map(emg_widget.motorWidgets[fingerChans[i]].output_normalized, 0, 1, 0, 1023));
-
-          if(i == 4) researchCommand.append(output_normalized + "\n");
-          else researchCommand.append(output_normalized + ",");
+          //else output_normalized = int(map(emg_widget.motorWidgets[fingerChans[i]].output_normalized, 0, 1, 0, 1023));
+          //
+          // if(i == 4) researchCommand.append(output_normalized + "\n");
+          // else researchCommand.append(output_normalized + ",");
 
         }
         OpenBionicsHand.write(researchCommand.toString());
@@ -124,8 +124,8 @@ class OpenBionics_Widget {
 
       if(OpenBionicsHand != null){
 
-        output_normalized = int(map(emg_widget.motorWidgets[fingerChans[5]].output_normalized, 0, 1, 0, 100));
-        OpenBionicsHand.write("G0P" + output_normalized + "\n");
+        //output_normalized = int(map(emg_widget.motorWidgets[fingerChans[5]].output_normalized, 0, 1, 0, 100));
+        //OpenBionicsHand.write("G0P" + output_normalized + "\n");
 
       }
 

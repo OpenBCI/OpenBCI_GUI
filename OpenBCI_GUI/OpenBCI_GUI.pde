@@ -38,7 +38,7 @@ import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
 
-import gifAnimation.*;
+//import gifAnimation.*;
 
 
 //------------------------------------------------------------------------
@@ -62,7 +62,7 @@ final int NCHAN_GANGLION = 4;
 
 boolean hasIntroAnimation = false;
 PImage cog;
-Gif loadingGIF;
+//Gif loadingGIF;
 
 //choose where to get the EEG data
 final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -215,7 +215,7 @@ PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
 
-EMG_Widget emg_widget;
+//EMG_Widget emg_widget;
 PulseSensor_Widget pulseWidget;
 
 boolean no_start_connection = false;
@@ -321,8 +321,8 @@ void setup() {
   logo_blue = loadImage("logo_blue.png");
   logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
-  loadingGIF = new Gif(this, "OBCI-6.gif");
-  loadingGIF.loop();
+  //loadingGIF = new Gif(this, "OBCI-6.gif");
+  //loadingGIF.loop();
 
   playground = new Playground(navBarHeight);
 
@@ -471,7 +471,7 @@ boolean killRunningprocessWin() {
 int getProcessIdFromLineMac(String line) {
   line = trim(line);
   String[] components = line.split(" ");
-  return Integer.parseInt(components[0]); //<>//
+  return Integer.parseInt(components[0]); //<>// //<>//
 }
 
 void endProcess(int pid) {
@@ -877,7 +877,7 @@ void systemDraw() { //for drawing to the screen
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);
-    image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
+    //image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
     popStyle();
     if (millis()%1000 < 500) {
       output("Attempting to establish a connection with your OpenBCI Board...");
@@ -895,7 +895,7 @@ void systemDraw() { //for drawing to the screen
 
   if (drawPresentation) {
     myPresentation.draw();
-    emg_widget.drawTriggerFeedback();
+    //emg_widget.drawTriggerFeedback();
     //dataProcessing_user.drawTriggerFeedback();
   }
 
