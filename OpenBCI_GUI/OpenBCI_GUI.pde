@@ -666,6 +666,11 @@ void haltSystem() {
   // eegDataSource = -1;
   //set all data source list items inactive
 
+  //reset connect loadStrings
+  openBCI_portName = "";
+  ganglion_portName = "";
+  controlPanel.resetListItems();
+
   // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
 
   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
