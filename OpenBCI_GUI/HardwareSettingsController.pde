@@ -446,6 +446,49 @@ class HardwareSettingsController{
     }
   }
 
+  void mousePressed(){
+    if (isVisible) {
+      for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
+        for (int j = 1; j < numSettingsPerChannel; j++) {
+          if (channelSettingButtons[i][j].isMouseHere()) {
+            //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+            channelSettingButtons[i][j].wasPressed = true;
+            channelSettingButtons[i][j].isActive = true;
+          }
+        }
+      }
+    }
+  }
+
+  void mouseReleased(){
+    if (isVisible) {
+      for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
+        for (int j = 1; j < numSettingsPerChannel; j++) {
+          if (channelSettingButtons[i][j].isMouseHere() && channelSettingButtons[i][j].wasPressed == true) {
+            if (channelSettingValues[i][j] < maxValuesPerSetting[j]) {
+              channelSettingValues[i][j]++;	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+            } else {
+              channelSettingValues[i][j] = '0';
+            }
+            // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
+            if (!openBCI.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
+              initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
+            } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
+              verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
+              rewriteChannelWhenDoneWriting = true;
+              channelToWriteWhenDoneWriting = i;
+            }
+          }
+
+          // if(!channelSettingButtons[i][j].isMouseHere()){
+          channelSettingButtons[i][j].isActive = false;
+          channelSettingButtons[i][j].wasPressed = false;
+          // }
+        }
+      }
+    }
+  }
+
   void screenResized(int _x, int _y, int _w, int _h, int _channelBarHeight){
     x = _x;
     y = _y;
@@ -506,17 +549,17 @@ class HardwareSettingsController{
   //
   //     //if dataSource is coming from OpenBCI, allow user to interact with channel controller
   //   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-  //     if (showFullController) {
-  //       for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
-  //         for (int j = 1; j < numSettingsPerChannel; j++) {
-  //           if (channelSettingButtons[i][j].isMouseHere()) {
-  //             //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-  //             channelSettingButtons[i][j].wasPressed = true;
-  //             channelSettingButtons[i][j].isActive = true;
-  //           }
-  //         }
-  //       }
-  //     }
+      // if (showFullController) {
+      //   for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
+      //     for (int j = 1; j < numSettingsPerChannel; j++) {
+      //       if (channelSettingButtons[i][j].isMouseHere()) {
+      //         //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+      //         channelSettingButtons[i][j].wasPressed = true;
+      //         channelSettingButtons[i][j].isActive = true;
+      //       }
+      //     }
+      //   }
+      // }
   //   }
   //   //on/off button and Imp buttons can always be clicked/released
   //   for (int i = 0; i < nchan; i++) {

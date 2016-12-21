@@ -81,9 +81,10 @@ class W_template extends Widget {
 
   }
 
-  //add custom classes functions here
+  //add custom functions here
   void customFunction(){
     //this is a fake function... replace it with something relevant to this widget
+
   }
 
 };

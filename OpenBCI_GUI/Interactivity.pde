@@ -81,14 +81,14 @@ void parseKey(char val) {
       // wmVisible = !wmVisible;
       break;
     case ':':
-      if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
-        println("Start/stop impedance check...");
-        if(ganglion.isCheckingImpedance()){
-          ganglion.impedanceStop();
-        } else {
-          ganglion.impedanceStart();
-        }
-      }
+      // if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
+      //   println("Start/stop impedance check...");
+      //   if(ganglion.isCheckingImpedance()){
+      //     ganglion.impedanceStop();
+      //   } else {
+      //     ganglion.impedanceStart();
+      //   }
+      // }
       break;
     case '{':
       if(colorScheme == COLOR_SCHEME_DEFAULT){

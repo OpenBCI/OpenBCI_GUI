@@ -214,9 +214,14 @@ class W_timeSeries extends Widget {
       }
     }
 
-    for(int i = 0; i < channelBars.length; i++){
-      channelBars[i].mousePressed();
+    if(hsc.isVisible){
+      hsc.mousePressed();
+    } else {
+      for(int i = 0; i < channelBars.length; i++){
+        channelBars[i].mousePressed();
+      }
     }
+
 
   }
 
@@ -240,11 +245,13 @@ class W_timeSeries extends Widget {
       hardwareSettingsButton.setIsActive(false);
     }
 
-    for(int i = 0; i < channelBars.length; i++){
-      channelBars[i].mouseReleased();
+    if(hsc.isVisible){
+      hsc.mouseReleased();
+    } else {
+      for(int i = 0; i < channelBars.length; i++){
+        channelBars[i].mouseReleased();
+      }
     }
-
-
   }
 
 };
