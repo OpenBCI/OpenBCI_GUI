@@ -77,18 +77,9 @@ void parseKey(char val) {
       // drawTimeSeries = !drawTimeSeries;
       break;
     case '>':
-      wm.setVisible(!wm.isVisible());
-      // wmVisible = !wmVisible;
-      break;
-    case ':':
-      // if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
-      //   println("Start/stop impedance check...");
-      //   if(ganglion.isCheckingImpedance()){
-      //     ganglion.impedanceStop();
-      //   } else {
-      //     ganglion.impedanceStart();
-      //   }
-      // }
+      if(eegDataSource == DATASOURCE_GANGLION){
+        ganglion.enterBootloaderMode();
+      }
       break;
     case '{':
       if(colorScheme == COLOR_SCHEME_DEFAULT){

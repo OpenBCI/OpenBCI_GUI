@@ -63,6 +63,8 @@ class OpenBCI_Ganglion {
   final static String TCP_ACTION_STATUS = "status";
   final static String TCP_ACTION_STOP = "stop";
 
+  final static String GANGLION_BOOTLOADER_MODE = ">";
+
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
 
@@ -660,5 +662,19 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
+  }
+
+  /**
+   * Puts the ganglion in bootloader mode.
+   */
+  public void enterBootloaderMode() {
+    println("OpenBCI_Ganglion: Entering Bootloader Mode");
+    safeTCPWrite(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
+    delay(500);
+    disconnectBLE();
+    haltSystem();
+    initSystemButton.setString("START SYSTEM");
+    controlPanel.open();
+    output("Ganglion now in bootloader mode! Enjoy!");
   }
 };
