@@ -196,17 +196,27 @@ void stopButtonWasPressed() {
   //toggle the data transfer state of the ADS1299...stop it or start it...
   if (isRunning) {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
-    stopRunning();
     wm.setUpdating(false);
+    stopRunning();
     topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+    if(eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()){
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
-    startRunning();
     wm.setUpdating(true);
+    startRunning();
     topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    if(eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()){
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+
   }
 }
 
