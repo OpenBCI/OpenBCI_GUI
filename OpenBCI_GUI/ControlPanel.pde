@@ -1101,6 +1101,8 @@ public void initButtonPressed(){
           verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
           if (ganglion.isPortOpen()) {
             ganglion.disconnectBLE();
+          } else {
+            //do nothing
           }
         }
 
@@ -1138,6 +1140,10 @@ public void initButtonPressed(){
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       haltSystem();
+      if(eegDataSource == DATASOURCE_GANGLION){
+        ganglion.searchDeviceStart();
+        bleList.items.clear();
+      }
     }
 }
 
