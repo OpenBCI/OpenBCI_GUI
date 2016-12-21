@@ -112,7 +112,8 @@ class OpenBCI_Ganglion {
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
-  private float scale_fac_accel_G_per_count = 0.032;
+  // private float scale_fac_accel_G_per_count = 0.032;
+  private float scale_fac_accel_G_per_count = 0.016;
   // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
@@ -235,19 +236,13 @@ class OpenBCI_Ganglion {
     String[] list = split(msg, ',');
     switch (list[0].charAt(0)) {
       case 'c': // Connect
-        if (isSuccessCode(Integer.parseInt(list[1]))) {
-          println("OpenBCI_Ganglion: parseMessage: connect: success!");
-          output("OpenBCI_Ganglion: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-          systemMode = 10;
-          connected = true;
-        } else {
-          println("OpenBCI_Ganglion: parseMessage: connect: failure :(");
-          output("Unable to connect to ganglion!");
-          connected = false;
-        }
+        processConnect(msg);
         break;
       case 'a': // Accel
         processAccel(msg);
+        break;
+      case 'd': // Disconnect
+        processDisconnect(msg);
         break;
       case 'i': // Impedance
         processImpedance(msg);
@@ -284,6 +279,25 @@ class OpenBCI_Ganglion {
       accelArray[i] = Integer.parseInt(list[i + 1]);
     }
     newAccelData = true;
+  }
+
+  private void processConnect(String msg) {
+    String[] list = split(msg, ',');
+    if (isSuccessCode(Integer.parseInt(list[1]))) {
+      println("OpenBCI_Ganglion: parseMessage: connect: success!");
+      output("OpenBCI_Ganglion: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+      systemMode = 10;
+      connected = true;
+      controlPanel.close();
+    } else {
+      println("OpenBCI_Ganglion: parseMessage: connect: failure!");
+      haltSystem();
+      initSystemButton.setString("START SYSTEM");
+      controlPanel.open();
+      abandonInit = true;
+      output("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
+      connected = false;
+    }
   }
 
   private void processData(String msg) {
@@ -341,6 +355,17 @@ class OpenBCI_Ganglion {
   private void handleError(int code, String msg) {
     output("Code " + code + "Error: " + msg);
     println("Code " + code + "Error: " + msg);
+  }
+
+  private void processDisconnect(String msg) {
+    if (!waitingForResponse) {
+      haltSystem();
+      initSystemButton.setString("START SYSTEM");
+      controlPanel.open();
+      output("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
+    } else {
+      waitingForResponse = false;
+    }
   }
 
   private void processImpedance(String msg) {
@@ -511,6 +536,7 @@ class OpenBCI_Ganglion {
   }
 
   public void disconnectBLE() {
+    waitingForResponse = true;
     safeTCPWrite(TCP_CMD_DISCONNECT + TCP_STOP);
   }
 

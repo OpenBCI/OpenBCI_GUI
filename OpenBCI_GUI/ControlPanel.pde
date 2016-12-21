@@ -329,6 +329,11 @@ class ControlPanel {
     dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
   }
 
+  public void resetListItems(){
+    serialList.activeItem = -1;
+    bleList.activeItem = -1;
+  }
+
   public void open(){
     isOpen = true;
     topNav.controlPanelCollapser.setIsActive(true);
@@ -1101,6 +1106,8 @@ public void initButtonPressed(){
           verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
           if (ganglion.isPortOpen()) {
             ganglion.disconnectBLE();
+          } else {
+            //do nothing
           }
         }
 
@@ -1137,7 +1144,17 @@ public void initButtonPressed(){
       initSystemButton.setString("START SYSTEM");
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
+      if(eegDataSource == DATASOURCE_GANGLION){
+        if(ganglion.isCheckingImpedance()){
+          ganglion.impedanceStop();
+          w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+        }
+      }
       haltSystem();
+      if(eegDataSource == DATASOURCE_GANGLION){
+        ganglion.searchDeviceStart();
+        bleList.items.clear();
+      }
     }
 }
 
@@ -1284,6 +1301,10 @@ class BLEBox {
   public void update() {
     // Quick check to see if there are just more or less devices in general
 
+  }
+
+  public void updateListPosition(){
+    bleList.setPosition(x + padding, y + padding * 3);
   }
 
   public void draw() {

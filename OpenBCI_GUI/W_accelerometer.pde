@@ -45,6 +45,8 @@ class W_accelerometer extends Widget {
   color Ycolor;
   color Zcolor;
 
+  float yMaxMin;
+
   float currentXvalue;
   float currentYvalue;
   float currentZvalue;
@@ -77,6 +79,8 @@ class W_accelerometer extends Widget {
 
     setGraphDimensions();
 
+    yMaxMin = adjustYMaxMinBasedOnSource();
+
     // XYZ buffer for bottom graph
     X = new int[AccelBuffSize];
     Y = new int[AccelBuffSize];
@@ -95,7 +99,8 @@ class W_accelerometer extends Widget {
     }
 
     if(eegDataSource == DATASOURCE_GANGLION){
-      accelModeButton = new Button((int)(x + w/2), (int)(y +80), 120, navHeight - 6, "Turn Accel. On", 12);
+      // accelModeButton = new Button((int)(x + w/2), (int)(y +80), 120, navHeight - 6, "Turn Accel. On", 12);
+      accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
       accelModeButton.setCornerRoundess((int)(navHeight-6));
       accelModeButton.setFont(p6,10);
       // accelModeButton.setStrokeColor((int)(color(150)));
@@ -121,6 +126,19 @@ class W_accelerometer extends Widget {
     OBCI_inited = true;
   }
 
+  float adjustYMaxMinBasedOnSource(){
+    float _yMaxMin;
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      _yMaxMin = 4.0;
+    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
+      _yMaxMin = 2.0;
+    }else{
+      _yMaxMin = 4.0;
+    }
+
+    return _yMaxMin;
+  }
+
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
@@ -128,22 +146,22 @@ class W_accelerometer extends Widget {
     if (isRunning) {
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
         synthesizeAccelerometerData();
-        currentXvalue = map(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
-        currentYvalue = map(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
-        currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, 4.0, -4.0);
+        currentXvalue = map(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
+        currentYvalue = map(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
+        currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
         shiftWave();
       } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         currentXvalue = openBCI.validAuxValues[0] * openBCI.get_scale_fac_accel_G_per_count();
         currentYvalue = openBCI.validAuxValues[1] * openBCI.get_scale_fac_accel_G_per_count();
         currentZvalue = openBCI.validAuxValues[2] * openBCI.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
-          int(map(currentXvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+          int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
         Y[Y.length-1] =
-          int(map(currentYvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+          int(map(currentYvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         Y[Y.length-1] = constrain(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
         Z[Z.length-1] =
-          int(map(currentZvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+          int(map(currentZvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         Z[Z.length-1] = constrain(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
 
         shiftWave();
@@ -152,13 +170,13 @@ class W_accelerometer extends Widget {
         currentYvalue = ganglion.accelArray[1] * ganglion.get_scale_fac_accel_G_per_count();
         currentZvalue = ganglion.accelArray[2] * ganglion.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
-          int(map(currentXvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+          int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
         Y[Y.length-1] =
-          int(map(currentYvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+          int(map(currentYvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         Y[Y.length-1] = constrain(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
         Z[Z.length-1] =
-          int(map(currentZvalue, -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+          int(map(currentZvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         Z[Z.length-1] = constrain(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
 
         shiftWave();
@@ -200,9 +218,9 @@ class W_accelerometer extends Widget {
       fill(50);
       textFont(p5, 12);
       textAlign(CENTER,CENTER);
-      text("+4g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
+      text("+"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
       text("0g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight/2);
-      text("-4g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
+      text("-"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
 
 
       fill(graphBG);  // pulse window background
@@ -308,7 +326,8 @@ class W_accelerometer extends Widget {
     }
 
     if(eegDataSource == DATASOURCE_GANGLION){
-      accelModeButton.setPos((int)(x + w/2 - accelModeButton.but_dx/2), (int)(y + 80));
+      // accelModeButton.setPos((int)(x + w/2 - accelModeButton.but_dx/2), (int)(y + 80));
+      accelModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
     }
   }
 
@@ -370,11 +389,11 @@ class W_accelerometer extends Widget {
     noFill();
     strokeWeight(3);
     stroke(Xcolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -4.0, 4.0, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
     stroke(Ycolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -4.0, 4.0, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentYvalue/2), -4.0, 4.0, PolarWindowWidth/2, -PolarWindowWidth/2));
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
     stroke(Zcolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -4.0, 4.0, PolarWindowWidth/2, -PolarWindowWidth/2));
+    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
   }
 
   void drawAccWave() {
@@ -386,7 +405,7 @@ class W_accelerometer extends Widget {
       // int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
       // vertex(AccelWindowX+xi, X[i]);                    //draw a line connecting the data points
       int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
-      // int yi = int(map(X[i], 4.0, -4.0, 0.0, AccelWindowHeight-1));
+      // int yi = int(map(X[i], yMaxMin, -yMaxMin, 0.0, AccelWindowHeight-1));
       // int yi = 2;
       vertex(AccelWindowX+xi, X[i]);                    //draw a line connecting the data points
     }
@@ -415,7 +434,7 @@ class W_accelerometer extends Widget {
     beginShape();                                  // using beginShape() renders fast
     stroke(Xcolor);
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
-      int x = int(map(accelerometerBuff[0][i], -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
+      int x = int(map(accelerometerBuff[0][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
       x = constrain(x, AccelWindowY, AccelWindowY+AccelWindowHeight);
       vertex(AccelWindowX+i, x);                    //draw a line connecting the data points
     }
@@ -424,7 +443,7 @@ class W_accelerometer extends Widget {
     beginShape();
     stroke(Ycolor);
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
-      int y = int(map(accelerometerBuff[1][i], -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
+      int y = int(map(accelerometerBuff[1][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
       y = constrain(y, AccelWindowY, AccelWindowY+AccelWindowHeight);
       vertex(AccelWindowX+i, y);
     }
@@ -433,7 +452,7 @@ class W_accelerometer extends Widget {
     beginShape();
     stroke(Zcolor);
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
-      int z = int(map(accelerometerBuff[2][i], -4.0, 4.0, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
+      int z = int(map(accelerometerBuff[2][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
       z = constrain(z, AccelWindowY, AccelWindowY+AccelWindowHeight);
       vertex(AccelWindowX+i, z);
     }
