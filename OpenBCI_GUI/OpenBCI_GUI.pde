@@ -321,7 +321,7 @@ void setup() {
   logo_blue = loadImage("logo_blue.png");
   logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
-  loadingGIF = new Gif(this, "OBCI-6.gif");
+  loadingGIF = new Gif(this, "OpenBCI-LoadingGIF-2.gif");
   loadingGIF.loop();
 
   playground = new Playground(navBarHeight);

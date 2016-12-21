@@ -24,9 +24,9 @@ class W_ganglionImpedance extends Widget {
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-    addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-    addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+    // addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
+    // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
+    // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
     startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
     startStopCheck.setFont(p4, 14);
