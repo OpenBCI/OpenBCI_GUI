@@ -451,7 +451,6 @@ class OpenBCI_ADS1299 {
     return 0;
   }
 
-
   public void syncWithHardware(int sdSetting){
     switch (hardwareSyncStep) {
       // case 1:
