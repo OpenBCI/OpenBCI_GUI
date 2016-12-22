@@ -47,6 +47,8 @@ class W_OpenBionics extends Widget {
   int drawConfig;
   int[] fingerChans;
 
+  boolean wasConnected;
+
 
   W_OpenBionics(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -56,6 +58,7 @@ class W_OpenBionics extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
     configP5 = new ControlP5(_parent);
+    wasConnected = false;
 
 
     parent = _parent;
@@ -92,6 +95,7 @@ class W_OpenBionics extends Widget {
 
     addDropdown("OpenBionicsSerialOut", "Serial Output", serialListOB, 0);
     addDropdown("BaudList", "Baud List", baudListOB, 0);
+    configP5.get(MenuList.class, "obChanList").setVisible(false);
     // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
   }
@@ -117,10 +121,10 @@ class W_OpenBionics extends Widget {
         for(int i = 0; i<5; i++){
           //================= OpenBionics Analog Movement =======================
           if(fingerChans[i] == -1) output_normalized = 0;
-          //else output_normalized = int(map(emg_widget.motorWidgets[fingerChans[i]].output_normalized, 0, 1, 0, 1023));
-          //
-          // if(i == 4) researchCommand.append(output_normalized + "\n");
-          // else researchCommand.append(output_normalized + ",");
+          else output_normalized = int(map(w_emg.motorWidgets[fingerChans[i]].output_normalized, 0, 1, 0, 1023));
+
+          if(i == 4) researchCommand.append(output_normalized + "\n");
+          else researchCommand.append(output_normalized + ",");
 
         }
         OpenBionicsHand.write(researchCommand.toString());
@@ -130,8 +134,8 @@ class W_OpenBionics extends Widget {
 
       if(OpenBionicsHand != null){
 
-        //output_normalized = int(map(emg_widget.motorWidgets[fingerChans[5]].output_normalized, 0, 1, 0, 100));
-        //OpenBionicsHand.write("G0P" + output_normalized + "\n");
+        output_normalized = int(map(w_emg.motorWidgets[fingerChans[5]].output_normalized, 0, 1, 0, 100));
+        OpenBionicsHand.write("G0P" + output_normalized + "\n");
 
       }
 
@@ -158,7 +162,7 @@ class W_OpenBionics extends Widget {
     fill(255);
     rect(x, y, w, h);
 
-
+    obChanList.setPosition(x+w/3 + w/12, y + h/3 + h/16);
 
     switch(drawConfig){
       case -1:
@@ -172,6 +176,14 @@ class W_OpenBionics extends Widget {
         else if(overPalm()) image(palm,x + w/4,y+2*navHeight + 2, w/2,h/2 + h/3 );
         configP5.get(MenuList.class, "obChanList").setVisible(false);
         configP5.get(MenuList.class, "obChanList").activeItem = 0;
+        if(wasConnected){
+          fill(0,250,0);
+          ellipse(x + 5 * (w/6) ,y + 7 * (h/10),20,20);
+        }
+        else{
+          fill(250,0,0);
+          ellipse(x + 5 * (w/6),y + 7 * (h/10),20,20);
+        }
         connect.draw();
         break;
       case 0:
@@ -181,9 +193,10 @@ class W_OpenBionics extends Widget {
         rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
         configClose.draw();
         configConfirm.draw();
+        fill(10,10,10);
         textFont(f);
         textSize(12);
-        text("Thumb Finger Channel Selection", x + w/2, y + 4*navHeight);
+        text("Thumb Channel Selection", x + w/3, y + 4*navHeight);
         break;
       case 1:
         configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1;
@@ -192,9 +205,10 @@ class W_OpenBionics extends Widget {
         rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
         configClose.draw();
         configConfirm.draw();
+        fill(10,10,10);
         textFont(f);
         textSize(12);
-        text("Index Finger Channel Selection", x + w/2, y + 4*navHeight);
+        text("Index Finger Channel Selection", x + w/3, y + 4*navHeight);
         break;
       case 2:
         configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1;
@@ -203,9 +217,10 @@ class W_OpenBionics extends Widget {
         rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
         configClose.draw();
         configConfirm.draw();
+        fill(10,10,10);
         textFont(f);
         textSize(12);
-        text("Middle Finger Channel Selection", x + w/2, y + 4*navHeight);
+        text("Middle Finger Channel Selection", x + w/3, y + 4*navHeight);
         break;
       case 3:
         configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1;
@@ -214,9 +229,10 @@ class W_OpenBionics extends Widget {
         rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
         configClose.draw();
         configConfirm.draw();
+        fill(10,10,10);
         textFont(f);
         textSize(12);
-        text("Ring Finger Channel Selection", x + w/2, y + 4*navHeight);
+        text("Ring Finger Channel Selection", x + w/3, y + 4*navHeight);
         break;
       case 4:
         configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1;
@@ -225,9 +241,10 @@ class W_OpenBionics extends Widget {
         rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
         configClose.draw();
         configConfirm.draw();
+        fill(10,10,10);
         textFont(f);
         textSize(12);
-        text("Little Finger Channel Selection", x + w/2, y + 4*navHeight);
+        text("Little Finger Channel Selection", x + w/3, y + 4*navHeight);
         break;
       case 5:
         configP5.get(MenuList.class, "obChanList").activeItem = fingerChans[drawConfig] + 1;
@@ -236,9 +253,10 @@ class W_OpenBionics extends Widget {
         rect(int(x) + w/4,int(y) + 3*navHeight, w/2, h/2 + 2*navHeight + navHeight/2);
         configClose.draw();
         configConfirm.draw();
+        fill(10,10,10);
         textFont(f);
         textSize(12);
-        text("Hand Channel Selection", x + w/2, y + 4*navHeight);
+        text("Hand Channel Selection", x + w/3, y + 4*navHeight);
         break;
     }
     configP5.draw();
@@ -311,8 +329,10 @@ class W_OpenBionics extends Widget {
 
           OpenBionicsHand = new Serial(parent,obName,Integer.parseInt(obBaud));
           verbosePrint("Connected to OpenBionics Hand");
+          wasConnected = true;
         }
         catch(Exception e){
+          wasConnected = false;
           println(e);
           verbosePrint("Could not connect to OpenBionics Hand");
         }

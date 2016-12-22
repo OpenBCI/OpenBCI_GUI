@@ -151,7 +151,7 @@ void processNewData() {
   // ...dataBuffY_filtY_uV[Ichan] is the full set of filtered data as shown in the time-domain plot in the GUI
   // ...fftBuff[Ichan] is the FFT data structure holding the frequency spectrum as shown in the freq-domain plot in the GUI
   w_emg.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff); //%%%
-  // ob_widget.process();  //%%%
+  w_openbionics.process(); 
 
   dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
 
