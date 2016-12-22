@@ -21,6 +21,7 @@ W_template w_template1;
 W_template w_template2;
 W_template w_template3;
 W_EMG w_emg;
+W_OpenBionics w_openbionics;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -58,6 +59,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_emg = new W_EMG(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
+
+  w_openbionics = new W_OpenBionics(_this);
+  w_openbionics.setTitle("OpenBionics");
+  addWidget(w_openbionics,w);
 
   // w_template3 = new W_template(_this);
   // w_template3.setTitle("LSL Stream");
