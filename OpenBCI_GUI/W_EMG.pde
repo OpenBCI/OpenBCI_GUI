@@ -1,14 +1,16 @@
-
-////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 //
-//    W_template.pde (ie "Widget Template")
+//  Emg_Widget is used to visiualze EMG data by channel, and to trip events
 //
-//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
-//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
+//  Created: Colin Fausnaught, December 2016 (with a lot of reworked code from Tao)
 //
-//    Created by: Conor Russomanno, November 2016
+//  Custom widget to visiualze EMG data. Features dragable thresholds, serial
+//  out communication, channel configuration, digital and analog events.
 //
-///////////////////////////////////////////////////,
+//  KNOWN ISSUES: Cannot resize with window dragging events
+//
+//  TODO: Add dynamic threshold functionality
+////////////////////////////////////////////////////////////////////////////////
 
 class W_EMG extends Widget {
 
@@ -54,6 +56,7 @@ class W_EMG extends Widget {
     currChannel = 0;
     theBaud = 230400;
 
+    baudList.add("NONE");
     baudList.add(Integer.toString(230400));
     baudList.add(Integer.toString(115200));
     baudList.add(Integer.toString(57600));
@@ -72,6 +75,7 @@ class W_EMG extends Widget {
     baudList.add(Integer.toString(300));
 
     String[] serialPorts = Serial.list();
+    serList.add("NONE");
     for(int i = 0; i < serialPorts.length; i++){
       String tempPort = serialPorts[(serialPorts.length - 1) - i];
       if(!tempPort.equals(openBCI_portName)) serList.add(tempPort);
@@ -371,15 +375,24 @@ class W_EMG extends Widget {
           }
         }
 
-        if (millis() - motorWidgets[0].timeOfLastTrip >= 2000) {
-
-          if(motorWidgets[0].switchCounter == 1){
-            println("worked");
-          }
-          motorWidgets[0].switchCounter = 0;
-        }
+        // if (millis() - motorWidgets[0].timeOfLastTrip >= 2000) {
+        //
+        //   if(motorWidgets[0].switchCounter == 1){
+        //     println("worked");
+        //   }
+        //   motorWidgets[0].switchCounter = 0;
+        // }
       //=================== OpenBionics switch example ==============================
 
+      if(millis() - motorWidgets[0].timeOfLastTrip >= 2000 && serialOutEMG != null){
+        //println("Counter: " + motorWidgets[0].switchCounter);
+        switch(motorWidgets[0].switchCounter){
+          case 1:
+            serialOutEMG.write("G0");
+            break;
+        }
+        motorWidgets[0].switchCounter = 0;
+      }
       //if (millis() - motorWidgets[1].timeOfLastTrip >= 2000 && serialOutEMG != null) {
       //  switch(motorWidgets[1].switchCounter){
       //    case 1:
@@ -1317,12 +1330,12 @@ class W_EMG extends Widget {
   }
 
   void BaudRate(int n){
-    w_emg.theBaud = Integer.parseInt(w_emg.baudList.get(n));
+    if(!w_emg.baudList.get(n).equals("NONE")) w_emg.theBaud = Integer.parseInt(w_emg.baudList.get(n));
     closeAllDropdowns();
   }
 
   void SerialSelection(int n){
-    w_emg.theSerial = w_emg.serList.get(n);
+    if(!w_emg.serList.get(n).equals("NONE")) w_emg.theSerial = w_emg.serList.get(n);
     closeAllDropdowns();
   }
 

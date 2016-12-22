@@ -119,16 +119,6 @@ RadioConfigBox rcBox;
 
 public void controlEvent(ControlEvent theEvent) {
 
-  if (theEvent.isFrom("serialListConfig")) {
-     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-     serialNameEMG = (String)bob.get("headline");
-     println(serialNameEMG);
-  }
-  if (theEvent.isFrom("baudList")) {
-     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-     baudEMG = (String)bob.get("headline");
-     println(baudEMG);
-  }
   if (theEvent.isFrom("sourceList")) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
