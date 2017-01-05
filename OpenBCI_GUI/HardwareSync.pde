@@ -149,7 +149,6 @@ void serialEvent(Serial port) {
   }
 }
 
-
 void writeRawData_dataPacket_bdf() {
   fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
 }

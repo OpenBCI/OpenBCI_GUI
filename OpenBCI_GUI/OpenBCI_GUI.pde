@@ -920,9 +920,10 @@ void systemDraw() { //for drawing to the screen
     }
   }
 
+  //draw presentation last, bc it is intended to be rendered on top of the GUI ...
   if (drawPresentation) {
     myPresentation.draw();
-    emg_widget.drawTriggerFeedback();
+    // emg_widget.drawTriggerFeedback();
     //dataProcessing_user.drawTriggerFeedback();
   }
 
