@@ -93,6 +93,9 @@ class OpenBCI_Ganglion {
   final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
   final static int RESP_GANGLION_FOUND = 201;
   final static int RESP_SUCCESS = 200;
+  final static int RESP_SUCCESS_DATA_ACCEL = 202;
+  final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
+  final static int RESP_SUCCESS_DATA_SAMPLE = 204;
   final static int RESP_STATUS_CONNECTED = 300;
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
@@ -278,7 +281,7 @@ class OpenBCI_Ganglion {
     // println(msg);
     String[] list = split(msg, ',');
     for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-      accelArray[i] = Integer.parseInt(list[i + 1]);
+      accelArray[i] = Integer.parseInt(list[i + 2]);
     }
     newAccelData = true;
   }
@@ -306,7 +309,7 @@ class OpenBCI_Ganglion {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
     if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
-      if (isSuccessCode(Integer.parseInt(list[1]))) { //<>//
+      if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
         // Sample number stuff
         dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
         if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
@@ -372,26 +375,17 @@ class OpenBCI_Ganglion {
 
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
-    println("Length = " + list.length);
-    for(int i = 0; i < list.length; i++){
-      println(i + " " + list[i]);
-    }
-    int channel = Integer.parseInt(list[1]);
+    int channel = Integer.parseInt(list[2]);
     if (channel < 5) { //<>//
-      println("channel - " + channel);
-      int value = Integer.parseInt(list[2]);
+      int value = Integer.parseInt(list[3]);
       impedanceArray[channel] = value;
-
       if (channel == 0) {
         impedanceUpdated = true;
         println("Impedance for channel reference is " + value + " ohms.");
       } else {
         println("? for channel " + channel + " is " + value + " ohms.");
       }
-    } else {
-      //println("Impedance " + list[2]);
     }
-
   }
 
   private void processScan(String msg) {
