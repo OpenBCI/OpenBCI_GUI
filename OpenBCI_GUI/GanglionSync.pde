@@ -63,6 +63,8 @@ class OpenBCI_Ganglion {
   final static String TCP_ACTION_STATUS = "status";
   final static String TCP_ACTION_STOP = "stop";
 
+  final static String GANGLION_BOOTLOADER_MODE = ">";
+
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
 
@@ -91,6 +93,9 @@ class OpenBCI_Ganglion {
   final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
   final static int RESP_GANGLION_FOUND = 201;
   final static int RESP_SUCCESS = 200;
+  final static int RESP_SUCCESS_DATA_ACCEL = 202;
+  final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
+  final static int RESP_SUCCESS_DATA_SAMPLE = 204;
   final static int RESP_STATUS_CONNECTED = 300;
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
@@ -112,7 +117,8 @@ class OpenBCI_Ganglion {
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
-  private float scale_fac_accel_G_per_count = 0.032;
+  // private float scale_fac_accel_G_per_count = 0.032;
+  private float scale_fac_accel_G_per_count = 0.016;
   // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
@@ -235,19 +241,13 @@ class OpenBCI_Ganglion {
     String[] list = split(msg, ',');
     switch (list[0].charAt(0)) {
       case 'c': // Connect
-        if (isSuccessCode(Integer.parseInt(list[1]))) {
-          println("OpenBCI_Ganglion: parseMessage: connect: success!");
-          output("OpenBCI_Ganglion: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-          systemMode = 10;
-          connected = true;
-        } else {
-          println("OpenBCI_Ganglion: parseMessage: connect: failure :(");
-          output("Unable to connect to ganglion!");
-          connected = false;
-        }
+        processConnect(msg);
         break;
       case 'a': // Accel
         processAccel(msg);
+        break;
+      case 'd': // Disconnect
+        processDisconnect(msg);
         break;
       case 'i': // Impedance
         processImpedance(msg);
@@ -278,19 +278,39 @@ class OpenBCI_Ganglion {
   }
 
   private void processAccel(String msg) {
-    // println(msg);
     String[] list = split(msg, ',');
-    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-      accelArray[i] = Integer.parseInt(list[i + 1]);
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        accelArray[i] = Integer.parseInt(list[i + 2]);
+      }
+      newAccelData = true;
     }
-    newAccelData = true;
+  }
+
+  private void processConnect(String msg) {
+    String[] list = split(msg, ',');
+    if (isSuccessCode(Integer.parseInt(list[1]))) {
+      println("OpenBCI_Ganglion: parseMessage: connect: success!");
+      output("OpenBCI_Ganglion: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+      systemMode = 10;
+      connected = true;
+      controlPanel.close();
+    } else {
+      println("OpenBCI_Ganglion: parseMessage: connect: failure!");
+      haltSystem();
+      initSystemButton.setString("START SYSTEM");
+      controlPanel.open();
+      abandonInit = true;
+      output("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
+      connected = false;
+    }
   }
 
   private void processData(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
     if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
-      if (isSuccessCode(Integer.parseInt(list[1]))) { //<>//
+      if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
         // Sample number stuff
         dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
         if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
@@ -318,7 +338,7 @@ class OpenBCI_Ganglion {
         ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
         switch (outputDataSource) {
           case OUTPUT_SOURCE_ODF:
-            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), 0);
+            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), get_scale_fac_accel_G_per_count());
             break;
           case OUTPUT_SOURCE_BDF:
             // curBDFDataPacketInd = curDataPacketInd;
@@ -343,28 +363,32 @@ class OpenBCI_Ganglion {
     println("Code " + code + "Error: " + msg);
   }
 
+  private void processDisconnect(String msg) {
+    if (!waitingForResponse) {
+      haltSystem();
+      initSystemButton.setString("START SYSTEM");
+      controlPanel.open();
+      output("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
+    } else {
+      waitingForResponse = false;
+    }
+  }
+
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
-    println("Length = " + list.length);
-    for(int i = 0; i < list.length; i++){
-      println(i + " " + list[i]);
-    }
-    int channel = Integer.parseInt(list[1]);
-    if (channel < 5) { //<>//
-      println("channel - " + channel);
-      int value = Integer.parseInt(list[2]);
-      impedanceArray[channel] = value;
-
-      if (channel == 0) {
-        impedanceUpdated = true;
-        println("Impedance for channel reference is " + value + " ohms.");
-      } else {
-        println("? for channel " + channel + " is " + value + " ohms.");
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
+      int channel = Integer.parseInt(list[2]);
+      if (channel < 5) { //<>//
+        int value = Integer.parseInt(list[3]);
+        impedanceArray[channel] = value;
+        if (channel == 0) {
+          impedanceUpdated = true;
+          println("Impedance for channel reference is " + value + " ohms.");
+        } else {
+          println("? for channel " + channel + " is " + value + " ohms.");
+        }
       }
-    } else {
-      //println("Impedance " + list[2]);
     }
-
   }
 
   private void processScan(String msg) {
@@ -488,7 +512,7 @@ class OpenBCI_Ganglion {
     } else {
       boolean willAddToDeviceList = true;
       for (int i = 0; i < numberOfDevices; i++) {
-        if (deviceList[i] == ganglionLocalName) {
+        if (ganglionLocalName.equals(deviceList[i])) {
           willAddToDeviceList = false;
           break;
         }
@@ -511,6 +535,7 @@ class OpenBCI_Ganglion {
   }
 
   public void disconnectBLE() {
+    waitingForResponse = true;
     safeTCPWrite(TCP_CMD_DISCONNECT + TCP_STOP);
   }
 
@@ -634,5 +659,19 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
+  }
+
+  /**
+   * Puts the ganglion in bootloader mode.
+   */
+  public void enterBootloaderMode() {
+    println("OpenBCI_Ganglion: Entering Bootloader Mode");
+    safeTCPWrite(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
+    delay(500);
+    disconnectBLE();
+    haltSystem();
+    initSystemButton.setString("START SYSTEM");
+    controlPanel.open();
+    output("Ganglion now in bootloader mode! Enjoy!");
   }
 };

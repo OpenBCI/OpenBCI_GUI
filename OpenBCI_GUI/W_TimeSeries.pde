@@ -214,9 +214,14 @@ class W_timeSeries extends Widget {
       }
     }
 
-    for(int i = 0; i < channelBars.length; i++){
-      channelBars[i].mousePressed();
+    if(hsc.isVisible){
+      hsc.mousePressed();
+    } else {
+      for(int i = 0; i < channelBars.length; i++){
+        channelBars[i].mousePressed();
+      }
     }
+
 
   }
 
@@ -240,11 +245,13 @@ class W_timeSeries extends Widget {
       hardwareSettingsButton.setIsActive(false);
     }
 
-    for(int i = 0; i < channelBars.length; i++){
-      channelBars[i].mouseReleased();
+    if(hsc.isVisible){
+      hsc.mouseReleased();
+    } else {
+      for(int i = 0; i < channelBars.length; i++){
+        channelBars[i].mouseReleased();
+      }
     }
-
-
   }
 
 };
@@ -410,8 +417,16 @@ class ChannelBar{
     }
     // plot.setBgColor(color(31,69,110));
 
+    nPoints = nPointsBasedOnDataSource();
 
-    nPoints = numSeconds * (int)openBCI.fs_Hz;
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      nPoints = numSeconds * (int)openBCI.fs_Hz;
+    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
+      nPoints = numSeconds * (int)ganglion.fs_Hz;
+    }else{
+      nPoints = numSeconds * (int)openBCI.fs_Hz;
+    }
+
     channelPoints = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
 
@@ -550,10 +565,25 @@ class ChannelBar{
     drawImpValue = _trueFalse;
   }
 
+  int nPointsBasedOnDataSource(){
+    int _nPoints;
+    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      _nPoints = numSeconds * (int)openBCI.fs_Hz;
+    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
+      _nPoints = numSeconds * (int)ganglion.fs_Hz;
+    }else{
+      _nPoints = numSeconds * (int)openBCI.fs_Hz;
+    }
+
+    return _nPoints;
+  }
+
   void adjustTimeAxis(int _newTimeSize){
     numSeconds = _newTimeSize;
     plot.setXLim(-_newTimeSize,0);
-    nPoints = numSeconds * (int)openBCI.fs_Hz;
+
+    nPoints = nPointsBasedOnDataSource();
+
     channelPoints = new GPointsArray(nPoints);
     if(_newTimeSize > 1){
       plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...

@@ -30,7 +30,10 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
     if (cp5.isMouseOver(cp5.get(Textfield.class, "fileName"))){
       println("CallbackListener: controlEvent: clearing");
       cp5.get(Textfield.class, "fileName").clear();
-    }else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_ip"))){
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
+      println("CallbackListener: controlEvent: clearing");
+      cp5.get(Textfield.class, "fileNameGanglion").clear();
+    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_ip"))){
       println("CallbackListener: controlEvent: clearing");
       cp5.get(Textfield.class, "udp_ip").clear();
     } else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_port"))){
@@ -84,6 +87,11 @@ Button initSystemButton;
 Button autoFileName;
 Button outputBDF;
 Button outputODF;
+
+Button autoFileNameGanglion;
+Button outputODFGanglion;
+Button outputBDFGanglion;
+
 Button chanButton8;
 Button chanButton16;
 Button selectPlaybackFile;
@@ -120,6 +128,9 @@ RadioConfigBox rcBox;
 public void controlEvent(ControlEvent theEvent) {
 
   if (theEvent.isFrom("sourceList")) {
+
+    controlPanel.hideAllBoxes();
+
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
     // str = str.substring(0, str.length()-5);
@@ -240,6 +251,7 @@ class ControlPanel {
   NetworkingBox networkingBoxPlayback;
 
   BLEBox bleBox;
+  DataLogBoxGanglion dataLogBoxGanglion;
 
   SDBox sdBox;
 
@@ -290,6 +302,7 @@ class ControlPanel {
     oscOptionsBox = new OSCOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
     lslOptionsBox = new LSLOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
 
+
     //boxes active when eegDataSource = Playback
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
@@ -303,6 +316,12 @@ class ControlPanel {
 
     // Ganglion
     bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
+  }
+
+  public void resetListItems(){
+    serialList.activeItem = -1;
+    bleList.activeItem = -1;
   }
 
   public void open(){
@@ -329,6 +348,12 @@ class ControlPanel {
       }
     }
 
+    //auto-update serial list
+    if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
+      println("Refreshing port list...");
+      refreshPortList();
+    }
+
     //update all boxes if they need to be
     dataSourceBox.update();
     serialBox.update();
@@ -345,7 +370,7 @@ class ControlPanel {
     channelPopup.update();
     serialList.updateMenu();
     bleList.updateMenu();
-
+    dataLogBoxGanglion.update();
 
     //SD File Conversion
     while (convertingSD == true) {
@@ -409,22 +434,25 @@ class ControlPanel {
       dataSourceBox.draw();
       drawStopInstructions = false;
       cp5.setVisible(true);//make sure controlP5 elements are visible
-
       cp5Popup.setVisible(true);
-      if (eegDataSource == 0) {	//when data source is from OpenBCI
+
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {	//when data source is from OpenBCI
+        // hideAllBoxes();
         serialBox.draw();
-        dataLogBox.y = serialBox.y + serialBox.h;
+        // dataLogBox.y = serialBox.y + serialBox.h;
         dataLogBox.draw();
         channelCountBox.draw();
         sdBox.draw();
         networkingBoxLive.draw();
+        cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+        cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
+
         if(rcBox.isShowing){
           rcBox.draw();
           if(channelPopup.wasClicked()){
             channelPopup.draw();
             cp5Popup.get(MenuList.class, "channelList").setVisible(true);
             cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-            cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
             cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
             cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
           }
@@ -433,12 +461,14 @@ class ControlPanel {
             cp5Popup.get(MenuList.class, "pollList").setVisible(true);
             cp5Popup.get(MenuList.class, "channelList").setVisible(false);
             cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+            // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
             cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
             cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
           }
 
         }
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+        // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "bleList").setVisible(false); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
@@ -491,13 +521,14 @@ class ControlPanel {
         }
 
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
-        hideAllBoxes(); //clear lists, so they don't appear
+        // hideAllBoxes(); //clear lists, so they don't appear
         playbackFileBox.draw();
         sdConverterBox.draw();
         //networkingBoxPlayback.draw();
 
         //set other CP5 controllers invisible
-        cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+        // cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+        // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "networkList").setVisible(false);
@@ -511,17 +542,18 @@ class ControlPanel {
 
         cp5Popup.get(MenuList.class, "channelList").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+
       } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
         //set other CP5 controllers invisible
-        hideAllBoxes();
+        // hideAllBoxes();
         synthChannelCountBox.draw();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
-        hideAllBoxes();
-
+        // hideAllBoxes();
         bleBox.draw();
-        dataLogBox.y = bleBox.y + bleBox.h;
-        dataLogBox.draw();
-        cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+        // dataLogBox.y = bleBox.y + bleBox.h;
+        dataLogBoxGanglion.draw();
+        cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+        cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
         cp5.get(MenuList.class, "bleList").setVisible(true); //make sure the bleList menulist is visible
 
       } else {
@@ -541,15 +573,16 @@ class ControlPanel {
       strokeWeight(1);
       stroke(boxStrokeColor);
       rect(x, y, w, dataSourceBox.h); //draw background of box
-      String stopInstructions = "Press the \"STOP SYSTEM\" button to edit system settings.";
+      String stopInstructions = "Press the \"STOP SYSTEM\" button to change your data source or edit system settings.";
       textAlign(CENTER, TOP);
-      textFont(f2);
+      textFont(p4, 14);
       fill(bgColor);
-      text(stopInstructions, x + globalPadding*2, y + globalPadding*4, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
+      text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
       popStyle();
     }
 
     //draw the ControlP5 stuff
+    textFont(p4, 14);
     cp5Popup.draw();
     cp5.draw();
 
@@ -557,9 +590,21 @@ class ControlPanel {
 
   }
 
+  public void refreshPortList(){
+    serialPorts = new String[Serial.list().length];
+    serialPorts = Serial.list();
+    serialList.items.clear();
+    for (int i = 0; i < serialPorts.length; i++) {
+      String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
+      serialList.addItem(makeItem(tempPort));
+    }
+    serialList.updateMenu();
+  }
+
   public void hideAllBoxes() {
     //set other CP5 controllers invisible
     cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+    cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
     cp5.get(MenuList.class, "serialList").setVisible(false);
     cp5.get(MenuList.class, "bleList").setVisible(false);
     cp5.get(MenuList.class, "sdTimes").setVisible(false);
@@ -698,23 +743,28 @@ class ControlPanel {
       if (eegDataSource == DATASOURCE_GANGLION) {
         // This is where we check for button presses if we are searching for BLE devices
 
+        if (autoFileNameGanglion.isMouseHere()) {
+          autoFileNameGanglion.setIsActive(true);
+          autoFileNameGanglion.wasPressed = true;
+        }
+
+        if (outputODFGanglion.isMouseHere()) {
+          outputODFGanglion.setIsActive(true);
+          outputODFGanglion.wasPressed = true;
+          outputODFGanglion.color_notPressed = isSelected_color;
+          outputBDFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (outputBDFGanglion.isMouseHere()) {
+          outputBDFGanglion.setIsActive(true);
+          outputBDFGanglion.wasPressed = true;
+          outputBDFGanglion.color_notPressed = isSelected_color;
+          outputODFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
         if (refreshBLE.isMouseHere()) {
           refreshBLE.setIsActive(true);
           refreshBLE.wasPressed = true;
-        }
-
-        if (outputODF.isMouseHere()) {
-          outputODF.setIsActive(true);
-          outputODF.wasPressed = true;
-          outputODF.color_notPressed = isSelected_color;
-          outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
-        }
-
-        if (outputBDF.isMouseHere()) {
-          outputBDF.setIsActive(true);
-          outputBDF.wasPressed = true;
-          outputBDF.color_notPressed = isSelected_color;
-          outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
       }
@@ -895,19 +945,13 @@ class ControlPanel {
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
       output("Serial/COM List Refreshed");
-      serialPorts = new String[Serial.list().length];
-      serialPorts = Serial.list();
-      serialList.items.clear();
-      for (int i = 0; i < serialPorts.length; i++) {
-        String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-        serialList.addItem(makeItem(tempPort));
-      }
-      serialList.updateMenu();
+      refreshPortList();
     }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
       output("BLE Devices Refreshing");
+      bleList.items.clear();
       ganglion.searchDeviceStart();
     }
 
@@ -923,6 +967,21 @@ class ControlPanel {
     }
 
     if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
+      output("Output has been set to BDF+ (biosemi data format based off EDF)");
+      outputDataSource = OUTPUT_SOURCE_BDF;
+    }
+
+    if (autoFileNameGanglion.isMouseHere() && autoFileNameGanglion.wasPressed) {
+      output("Autogenerated \"File Name\" based on current date/time");
+      cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString());
+    }
+
+    if (outputODFGanglion.isMouseHere() && outputODFGanglion.wasPressed) {
+      output("Output has been set to OpenBCI Data Format");
+      outputDataSource = OUTPUT_SOURCE_ODF;
+    }
+
+    if (outputBDFGanglion.isMouseHere() && outputBDFGanglion.wasPressed) {
       output("Output has been set to BDF+ (biosemi data format based off EDF)");
       outputDataSource = OUTPUT_SOURCE_BDF;
     }
@@ -971,6 +1030,12 @@ class ControlPanel {
     outputBDF.wasPressed = false;
     outputODF.setIsActive(false);
     outputODF.wasPressed = false;
+    autoFileNameGanglion.setIsActive(false);
+    autoFileNameGanglion.wasPressed = false;
+    outputBDFGanglion.setIsActive(false);
+    outputBDFGanglion.wasPressed = false;
+    outputODFGanglion.setIsActive(false);
+    outputODFGanglion.wasPressed = false;
     chanButton8.setIsActive(false);
     chanButton8.wasPressed = false;
     synthChanButton4.setIsActive(false);
@@ -1031,6 +1096,8 @@ public void initButtonPressed(){
           verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
           if (ganglion.isPortOpen()) {
             ganglion.disconnectBLE();
+          } else {
+            //do nothing
           }
         }
 
@@ -1051,7 +1118,11 @@ public void initButtonPressed(){
           lsl = new LSLSend(data_stream, aux_stream);
         }
 
-        fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+        if(eegDataSource == DATASOURCE_GANGLION){
+          fileName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+        } else if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+          fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+        }
         midInit = true;
         initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
@@ -1061,7 +1132,19 @@ public void initButtonPressed(){
     else {
       output("SYSTEM STOPPED");
       initSystemButton.setString("START SYSTEM");
+      cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
+      cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
+      if(eegDataSource == DATASOURCE_GANGLION){
+        if(ganglion.isCheckingImpedance()){
+          ganglion.impedanceStop();
+          w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+        }
+      }
       haltSystem();
+      if(eegDataSource == DATASOURCE_GANGLION){
+        ganglion.searchDeviceStart();
+        bleList.items.clear();
+      }
     }
 }
 
@@ -1144,9 +1227,9 @@ class SerialBox {
     h = 171 + _padding;
     padding = _padding;
 
-    autoconnect = new Button(x + padding, y + padding*3, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
+    autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
     refreshPort = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    popOut = new Button(x+padding + (w-padding*4), y +5, 20,20,">",fontInfo.buttonLabel_size);
+    popOut = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
     // println(w-padding*2);
@@ -1208,6 +1291,10 @@ class BLEBox {
   public void update() {
     // Quick check to see if there are just more or less devices in general
 
+  }
+
+  public void updateListPosition(){
+    bleList.setPosition(x + padding, y + padding * 3);
   }
 
   public void draw() {
@@ -1297,7 +1384,7 @@ class DataLogBox {
     textAlign(LEFT, TOP);
     text("DATA LOG FILE", x + padding, y + padding);
     textFont(p4, 14);;
-    text("File Name", x + padding, y + padding*2 + 18);
+    text("File Name", x + padding, y + padding*2 + 14);
     popStyle();
     cp5.get(Textfield.class, "fileName").setPosition(x + 90, y + 32);
     autoFileName.but_y = y + 66;
@@ -1306,6 +1393,80 @@ class DataLogBox {
     outputODF.draw();
     outputBDF.but_y = y + padding*2 + 18 + 58;
     outputBDF.draw();
+  }
+};
+
+class DataLogBoxGanglion {
+  int x, y, w, h, padding; //size and position
+  String fileName;
+  //text field for inputing text
+  //create/open/closefile button
+  String fileStatus;
+  boolean isFileOpen; //true if file has been activated and is ready to write to
+  //String port status;
+
+  DataLogBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 127; // Added 24 +
+    padding = _padding;
+    //instantiate button
+    //figure out default file name (from Chip's code)
+    isFileOpen = false; //set to true on button push
+    fileStatus = "NO FILE CREATED";
+
+    //button to autogenerate file name based on time/date
+    autoFileNameGanglion = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
+    outputODFGanglion = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
+    if (outputDataSource == OUTPUT_SOURCE_ODF) outputODFGanglion.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    outputBDFGanglion = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
+    if (outputDataSource == OUTPUT_SOURCE_BDF) outputODFGanglion.color_notPressed = isSelected_color; //make it appear like this one is already selected
+
+
+    cp5.addTextfield("fileNameGanglion")
+      .setPosition(x + 90, y + 32)
+      .setCaptionLabel("")
+      .setSize(157, 26)
+      .setFont(f2)
+      .setFocus(false)
+      .setColor(color(26, 26, 26))
+      .setColorBackground(color(255, 255, 255)) // text field bg color
+      .setColorValueLabel(color(0, 0, 0))  // text color
+      .setColorForeground(isSelected_color)  // border color when not selected
+      .setColorActive(isSelected_color)  // border color when selected
+      .setColorCursor(color(26, 26, 26))
+      .setText(getDateString())
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
+      .setAutoClear(true);
+
+    //clear text field on double click
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("DATA LOG FILE", x + padding, y + padding);
+    textFont(p4, 14);;
+    text("File Name", x + padding, y + padding*2 + 14);
+    popStyle();
+    cp5.get(Textfield.class, "fileNameGanglion").setPosition(x + 90, y + 32);
+    autoFileNameGanglion.but_y = y + 66;
+    autoFileNameGanglion.draw();
+    outputODFGanglion.but_y = y + padding*2 + 18 + 58;
+    outputODFGanglion.draw();
+    outputBDFGanglion.but_y = y + padding*2 + 18 + 58;
+    outputBDFGanglion.draw();
   }
 };
 
@@ -1340,11 +1501,11 @@ class ChannelCountBox {
     fill(bgColor);
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("CHANNEL COUNT", x + padding, y + padding);
+    text("CHANNEL COUNT ", x + padding, y + padding);
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("(" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     chanButton8.draw();
@@ -1389,7 +1550,7 @@ class SyntheticChannelCountBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("(" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     synthChanButton4.draw();
@@ -2081,6 +2242,8 @@ public class MenuList extends controlP5.Controller {
     menu = createGraphics(getWidth(),getHeight());
 
     menuFont = p4;
+    getValueLabel().setSize(14);
+    getCaptionLabel().setSize(14);
 
     setView(new ControllerView<MenuList>() {
 

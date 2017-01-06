@@ -16,6 +16,7 @@ W_timeSeries w_timeSeries;
 W_fft w_fft;
 W_headPlot w_headPlot;
 W_accelerometer w_accelerometer;
+W_networking w_networking;
 W_ganglionImpedance w_ganglionImpedance;
 W_template w_template1;
 W_template w_template2;
@@ -47,6 +48,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
+  // 
+  // w_networking = new W_networking(_this);
+  // w_networking.setTitle("Networking");
+  // addWidget(w_networking, w);
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
