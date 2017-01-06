@@ -5,7 +5,7 @@
 //
 //   Created: Chip Audette, Oct 2013 - May 2014
 //   Modified: Conor Russomanno & Joel Murphy, August 2014 - Dec 2014
-//   Modified (v2.0): Conor Russomanno & Joel Murphy, June 2016
+//   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -401,7 +401,7 @@ void hubStart() {
       nodeHubby = launch(dataPath("Ganglion Hub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = launch(dataPath("Ganglion Hub"));
+      nodeHubby = exec(dataPath("Ganglion Hub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("Ganglion Hub.app"));
