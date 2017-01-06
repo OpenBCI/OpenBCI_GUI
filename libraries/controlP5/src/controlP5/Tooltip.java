@@ -1,11 +1,35 @@
 package controlP5;
 
+/**
+ * controlP5 is a processing gui library.
+ * 
+ * 2006-2015 by Andreas Schlegel
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA
+ * 
+ * @author Andreas Schlegel (http://www.sojamo.de)
+ * @modified 04/14/2016
+ * @version 2.2.6
+ * 
+ */
+
 import java.util.HashMap;
 import java.util.Map;
 
 import processing.core.PApplet;
 import processing.core.PGraphics;
-import processing.core.PVector;
 
 /**
  * A tooltip can be registered for individual controllers
@@ -17,10 +41,10 @@ import processing.core.PVector;
 public class Tooltip {
 
 	private ControllerView< ? > _myView;
-	private PVector position = new PVector( );
-	private PVector currentPosition = new PVector( );
-	private PVector previousPosition = new PVector( );
-	private PVector offset = new PVector( );
+	private float[] position = new float[3];
+	private float[] currentPosition = new float[3];
+	private float[] previousPosition = new float[3];
+	private float[] offset = new float[3];
 	private Controller< ? > _myController;
 	private long startTime = 0;
 	private long _myDelayInMillis = 500;
@@ -39,10 +63,11 @@ public class Tooltip {
 
 	Tooltip( ControlP5 theControlP5 ) {
 		cp5 = theControlP5;
-		position = new PVector( -1000 , -1000 );
-		currentPosition = new PVector( );
-		previousPosition = new PVector( );
-		offset = new PVector( 0 , 24 , 0 );
+		position[0] = -1000;
+		position[1] = -1000;
+		currentPosition = new float[3];
+		previousPosition = new float[3];
+		offset = new float[] { 0 , 24 , 0 };
 		map = new HashMap< Controller< ? > , String >( );
 		_myLabel = new Label( cp5 , "tooltip" );
 		_myLabel.setColor( _myColor );
@@ -103,83 +128,11 @@ public class Tooltip {
 	 * @param theWindow
 	 */
 	void draw( ControlWindow theWindow ) {
-		/*
-		if ( enabled ) {
-
-			if ( _myMode >= ControlP5.WAIT ) {
-
-				previousPosition.set( currentPosition );
-				currentPosition.set( theWindow.mouseX , theWindow.mouseY , 0 );
-
-				if ( _myController != null ) {
-					if ( _myController.getControlWindow( ).equals( theWindow ) ) {
-						switch ( _myMode ) {
-						case ( ControlP5.WAIT ):
-							if ( moved( ) ) {
-								startTime = System.nanoTime( );
-							}
-
-							if ( System.nanoTime( ) > startTime + ( _myDelayInMillis * 1000000 ) ) {
-
-								position.set( currentPosition );
-								_myAlignH = ControlP5.RIGHT;
-								if ( position.x > ( _myController.getControlWindow( ).papplet( ).width - ( getWidth( ) + 20 ) ) ) {
-									position.sub( new PVector( getWidth( ) , 0 , 0 ) );
-									_myAlignH = ControlP5.LEFT;
-								}
-								_myMode = ControlP5.FADEIN;
-								startTime = System.nanoTime( );
-								_myAlpha = 0;
-							}
-							break;
-						case ( ControlP5.FADEIN ):
-							float t1 = System.nanoTime( ) - startTime;
-							_myAlpha = ( int ) PApplet.map( t1 , 0 , 200 * 1000000 , 0 , _myMaxAlpha );
-							if ( _myAlpha >= 250 ) {
-								_myMode = ControlP5.IDLE;
-								_myAlpha = 255;
-							}
-							break;
-						case ( ControlP5.IDLE ):
-							break;
-						case ( ControlP5.FADEOUT ):
-							float t2 = System.nanoTime( ) - startTime;
-							_myAlpha = ( int ) PApplet.map( t2 , 0 , 200 * 1000000 , _myMaxAlpha , 0 );
-							if ( _myAlpha <= 0 ) {
-								_myMode = ControlP5.DONE;
-							}
-							break;
-						case ( ControlP5.DONE ):
-							_myController = null;
-							_myMode = ControlP5.INACTIVE;
-							position.set( -1000 , -1000 , 0 );
-						}
-
-						_myAlpha = PApplet.max( 0 , PApplet.min( _myAlpha , _myMaxAlpha ) );
-
-						if ( _myMode >= ControlP5.WAIT ) {
-							_myAlpha = ( _myMode == ControlP5.WAIT ) ? 0 : _myAlpha;
-							theWindow.papplet( ).pushMatrix( );
-							theWindow.papplet( ).translate( position.x , position.y );
-							theWindow.papplet( ).translate( offset.x , offset.y );
-							// TODO should request the current PGraphics element, not only the PApplet context. What if we render into a PGraphics buffer?
-							_myView.display( theWindow.papplet( ).g , null );
-							theWindow.papplet( ).popMatrix( );
-						}
-						if ( _myMode < ControlP5.FADEOUT ) {
-							if ( moved( ) ) {
-								deactivate( 0 );
-							}
-						}
-					}
-				}
-			}
-		}
-		*/
+		// TODO re-implement Tooltip
 	}
 
 	private boolean moved( ) {
-		return PApplet.abs( PApplet.dist( previousPosition.x , previousPosition.y , currentPosition.x , currentPosition.y ) ) > 1;
+		return PApplet.abs( PApplet.dist( previousPosition[0] , previousPosition[1] , currentPosition[0] , currentPosition[1] ) ) > 1;
 	}
 
 	/**
@@ -206,7 +159,8 @@ public class Tooltip {
 		if ( map.containsKey( theController ) ) {
 			startTime = System.nanoTime( );
 			_myController = theController;
-			currentPosition.set( theController.getControlWindow( ).mouseX , theController.getControlWindow( ).mouseY , 0 );
+			currentPosition[0] = theController.getControlWindow( ).mouseX;
+			currentPosition[1] = theController.getControlWindow( ).mouseY;
 			updateText( map.get( _myController ) );
 			_myMode = ControlP5.WAIT;
 		}
@@ -329,8 +283,8 @@ public class Tooltip {
 	 * @return Tooltip
 	 */
 	public Tooltip setPositionOffset( float theX , float theY ) {
-		offset.x = theX;
-		offset.y = theY;
+		offset[0] = theX;
+		offset[1] = theY;
 		return this;
 	}
 

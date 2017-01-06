@@ -14,6 +14,7 @@ class W_template extends Widget {
 
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
+  Button widgetTemplateButton;
 
   W_template(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -24,6 +25,10 @@ class W_template extends Widget {
     addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
     addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+
+    widgetTemplateButton = new Button (x + w/2, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
+    widgetTemplateButton.setFont(p4, 14);
+    widgetTemplateButton.setURL("http://docs.openbci.com/OpenBCI%20Software/");
 
   }
 
@@ -39,10 +44,9 @@ class W_template extends Widget {
 
     //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     pushStyle();
-    textFont(h1,24);
-    fill(bgColor);
-    textAlign(CENTER,CENTER);
-    text(widgetTitle, x + w/2, y + h/2);
+
+    widgetTemplateButton.draw();
+
     popStyle();
 
   }
@@ -51,6 +55,8 @@ class W_template extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
+
 
   }
 
@@ -58,6 +64,9 @@ class W_template extends Widget {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    if(widgetTemplateButton.isMouseHere()){
+      widgetTemplateButton.setIsActive(true);
+    }
 
   }
 
@@ -65,12 +74,17 @@ class W_template extends Widget {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
+      widgetTemplateButton.goToURL();
+    }
+    widgetTemplateButton.setIsActive(false);
 
   }
 
-  //add custom classes functions here
+  //add custom functions here
   void customFunction(){
     //this is a fake function... replace it with something relevant to this widget
+
   }
 
 };

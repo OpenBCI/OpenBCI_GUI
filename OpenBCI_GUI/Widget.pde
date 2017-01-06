@@ -12,7 +12,8 @@ class Widget{
 
   PApplet pApplet;
 
-  int x, y, w, h;
+  int x0, y0, w0, h0; //true x,y,w,h of container
+  int x, y, w, h; //adjusted x,y,w,h of white space (blank rectangle) under the nav...
 
   int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
@@ -26,7 +27,7 @@ class Widget{
 
   //some variables for the dropdowns
   int navH = 22;
-  int widgetSelectorWidth = 120;
+  int widgetSelectorWidth = 160;
   int dropdownWidth = 64;
 
   CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
@@ -52,13 +53,13 @@ class Widget{
     pushStyle();
 
     fill(255);
-    rect(x,y,w,h); //draw white widget background
+    rect(x,y-1,w,h+1); //draw white widget background
 
     //draw nav bars and button bars
     fill(150, 150, 150);
-    rect(x, y, w, navH); //top bar
+    rect(x0, y0, w0, navH); //top bar
     fill(200, 200, 200);
-    rect(x, y+navH, w, navH); //button bar
+    rect(x0, y0+navH, w0, navH); //button bar
 
     // fill(255);
     // rect(x+2, y+2, navH-4, navH-4);
@@ -105,7 +106,7 @@ class Widget{
 
     cp5_widget.setColor(dropdownColors);
     cp5_widget.addScrollableList("WidgetSelector")
-      .setPosition(x+2, y+2) //upper left corner
+      .setPosition(x0+2, y0+2) //upper left corner
       // .setFont(h2)
       .setOpen(false)
       .setColor(dropdownColors)
@@ -119,8 +120,8 @@ class Widget{
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText(widgetTitle)
-      .setFont(h3)
-      .setSize(16)
+      .setFont(h4)
+      .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
       ;
@@ -128,8 +129,8 @@ class Widget{
       .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText(widgetTitle)
-      .setFont(h4)
-      .setSize(14) //set the font size of the item bars to 14pt
+      .setFont(h5)
+      .setSize(12) //set the font size of the item bars to 14pt
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(3) //4-pixel vertical offset to center text
       ;
@@ -158,7 +159,7 @@ class Widget{
       int dropdownPos = dropdowns.size() - i;
       // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
       cp5_widget.addScrollableList(dropdowns.get(i).id)
-        .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y + navH + 2) //float right
+        .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
         .setFont(h5)
         .setOpen(false)
         .setColor(dropdownColors)
@@ -250,11 +251,11 @@ class Widget{
     for(int i = 0; i < dropdowns.size(); i++){
       int dropdownPos = dropdowns.size() - i;
       // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
-      text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
+      text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));
     }
 
     //draw background/stroke of widgetSelector dropdown
-    fill(200);
+    fill(150);
     rect(cp5_widget.getController("WidgetSelector").getPosition()[0]-1, cp5_widget.getController("WidgetSelector").getPosition()[1]-1, widgetSelectorWidth+2, cp5_widget.get(ScrollableList.class, "WidgetSelector").getHeight()+2);
 
     //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
@@ -293,17 +294,22 @@ class Widget{
   }
 
   void mapToCurrentContainer(){
-    x = (int)container[currentContainer].x;
-    y = (int)container[currentContainer].y;
-    w = (int)container[currentContainer].w;
-    h = (int)container[currentContainer].h;
+    x0 = (int)container[currentContainer].x;
+    y0 = (int)container[currentContainer].y;
+    w0 = (int)container[currentContainer].w;
+    h0 = (int)container[currentContainer].h;
+
+    x = x0;
+    y = y0 + navH*2;
+    w = w0;
+    h = h0 - navH*2;
 
     cp5_widget.setGraphics(pApplet, 0, 0);
 
     // println("testing... 1. 2. 3....");
     try {
       cp5_widget.getController("WidgetSelector")
-        .setPosition(x+2, y+2) //upper left corner
+        .setPosition(x0+2, y0+2) //upper left corner
         ;
     }
     catch (Exception e) {
@@ -315,7 +321,7 @@ class Widget{
       int dropdownPos = dropdowns.size() - i;
       cp5_widget.getController(dropdowns.get(i).id)
         //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
-        .setPosition(x+w-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y+2)) //float right
+        .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y0+2)) //float right
         //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
         ;
     }
@@ -323,7 +329,7 @@ class Widget{
 
   boolean isMouseHere(){
     if(isActive){
-      if(mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h){
+      if(mouseX >= x0 && mouseX <= x0 + w0 && mouseY >= y0 && mouseY <= y0 + h0){
         println("Your cursor is in " + widgetTitle);
         return true;
       } else{

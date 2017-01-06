@@ -1,98 +1,112 @@
 /**
  * ControlP5 Controlframe
- * with controlP5 2.0 all java.awt dependencies have been removed
- * as a consequence the option to display controllers in a separate
- * window had to be removed as well. 
- * this example shows you how to create a java.awt.frame and use controlP5
  *
- * by Andreas Schlegel, 2012
+ * this example shows you how to create separate window to 
+ * display and use controllers with  processing 3
+ *
+ * by Andreas Schlegel, 2016
  * www.sojamo.de/libraries/controlp5
  *
  */
 
-import java.awt.Frame;
-import java.awt.BorderLayout;
 import controlP5.*;
-
-private ControlP5 cp5;
 
 ControlFrame cf;
 
-int def;
+float speed;
+float pos;
+float c0, c1, c2, c3;
+boolean auto;
+
+void settings() {
+  size(400, 400, P3D);
+}
 
 void setup() {
-  size(400, 400);
-  cp5 = new ControlP5(this);
-  
-  // by calling function addControlFrame() a
-  // new frame is created and an instance of class
-  // ControlFrame is instanziated.
-  cf = addControlFrame("extra", 200,200);
-
-  // add Controllers to the 'extra' Frame inside 
-  // the ControlFrame class setup() method below.
-  
-  
+  cf = new ControlFrame(this, 400, 800, "Controls");
+  surface.setLocation(420, 10);
+  noStroke();
 }
 
 void draw() {
-  background(def);
-}
-
-ControlFrame addControlFrame(String theName, int theWidth, int theHeight) {
-  Frame f = new Frame(theName);
-  ControlFrame p = new ControlFrame(this, theWidth, theHeight);
-  f.add(p);
-  p.init();
-  f.setTitle(theName);
-  f.setSize(p.w, p.h);
-  f.setLocation(100, 100);
-  f.setResizable(false);
-  f.setVisible(true);
-  return p;
+  if (auto) pos += speed;
+  background(0);
+  translate(width/2, height/2);
+  rotateY(pos);
+  lights();
+  fill(c0, c1, c2, c3);
+  box(100);
 }
 
 
-// the ControlFrame class extends PApplet, so we 
-// are creating a new processing applet inside a
-// new frame with a controlP5 object loaded
-public class ControlFrame extends PApplet {
+
+
+class ControlFrame extends PApplet {
 
   int w, h;
-
-  int abc = 100;
-  
-  public void setup() {
-    size(w, h);
-    frameRate(25);
-    cp5 = new ControlP5(this);
-    cp5.addSlider("abc").setRange(0, 255).setPosition(10,10);
-    cp5.addSlider("def").plugTo(parent,"def").setRange(0, 255).setPosition(10,30);
-  }
-
-  public void draw() {
-      background(abc);
-  }
-  
-  private ControlFrame() {
-  }
-
-  public ControlFrame(Object theParent, int theWidth, int theHeight) {
-    parent = theParent;
-    w = theWidth;
-    h = theHeight;
-  }
-
-
-  public ControlP5 control() {
-    return cp5;
-  }
-  
-  
+  PApplet parent;
   ControlP5 cp5;
 
-  Object parent;
+  public ControlFrame(PApplet _parent, int _w, int _h, String _name) {
+    super();   
+    parent = _parent;
+    w=_w;
+    h=_h;
+    PApplet.runSketch(new String[]{this.getClass().getName()}, this);
+  }
 
-  
+  public void settings() {
+    size(w, h);
+  }
+
+  public void setup() {
+    surface.setLocation(10, 10);
+    cp5 = new ControlP5(this);
+    
+    cp5.addToggle("auto")
+       .plugTo(parent, "auto")
+       .setPosition(10, 70)
+       .setSize(50, 50)
+       .setValue(true);
+       
+    cp5.addKnob("blend")
+       .plugTo(parent, "c3")
+       .setPosition(100, 300)
+       .setSize(200, 200)
+       .setRange(0, 255)
+       .setValue(200);
+       
+    cp5.addNumberbox("color-red")
+       .plugTo(parent, "c0")
+       .setRange(0, 255)
+       .setValue(255)
+       .setPosition(100, 10)
+       .setSize(100, 20);
+       
+    cp5.addNumberbox("color-green")
+       .plugTo(parent, "c1")
+       .setRange(0, 255)
+       .setValue(128)
+       .setPosition(100, 70)
+       .setSize(100, 20);
+       
+    cp5.addNumberbox("color-blue")
+       .plugTo(parent, "c2")
+       .setRange(0, 255)
+       .setValue(0)
+       .setPosition(100, 130)
+       .setSize(100, 20);
+       
+    cp5.addSlider("speed")
+       .plugTo(parent, "speed")
+       .setRange(0, 0.1)
+       .setValue(0.01)
+       .setPosition(100, 240)
+       .setSize(200, 30);
+       
+  }
+
+  void draw() {
+    background(190);
+  }
 }
-

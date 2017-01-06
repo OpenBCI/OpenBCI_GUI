@@ -15,7 +15,7 @@
 //------------------------------------------------------------------------
 
 //set true if you want more verbosity in console.. verbosePrint("print_this_thing") is used to output feedback when isVerbose = true
-boolean isVerbose = false;
+boolean isVerbose = true;
 
 //Help Widget initiation
 HelpWidget helpWidget;
@@ -68,27 +68,48 @@ class HelpWidget {
 
     pushStyle();
 
-    // draw background of widget
-    stroke(31,69,110);
-    fill(255);
-    rect(-1, height-h, width+2, h);
-    noStroke();
+    if(colorScheme == COLOR_SCHEME_DEFAULT){
+      // draw background of widget
+      stroke(bgColor);
+      fill(255);
+      rect(-1, height-h, width+2, h);
+      noStroke();
 
-    //draw bg of text field of widget
-    strokeWeight(1);
-    stroke(color(0, 5, 11));
-    fill(color(0, 5, 11));
-    rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
+      //draw bg of text field of widget
+      strokeWeight(1);
+      stroke(color(0, 5, 11));
+      fill(color(0, 5, 11));
+      rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
-    textFont(p4);
-    textSize(14);
-    fill(255);
-    textAlign(LEFT, TOP);
-    text(currentOutput, padding*2, height - h + padding);
+      textFont(p4);
+      textSize(14);
+      fill(255);
+      textAlign(LEFT, TOP);
+      text(currentOutput, padding*2, height - h + padding);
+    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+      // draw background of widget
+      stroke(bgColor);
+      fill(31,69,110);
+      rect(-1, height-h, width+2, h);
+      noStroke();
 
-    //draw OpenBCI LOGO
-    // image(logo, width - (128+padding*2), height - 26, 128, 22);
+      //draw bg of text field of widget
+      strokeWeight(1);
+      stroke(color(0, 5, 11));
+      fill(200);
+      fill(255);
+      // fill(57,128,204);
+      rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
+      textFont(p4);
+      textSize(14);
+      fill(bgColor);
+      // fill(57,128,204);
+      // fill(openbciBlue);
+      textAlign(LEFT, TOP);
+      text(currentOutput, padding*2, height - h + padding);
+    }
+    
     popStyle();
   }
 

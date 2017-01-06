@@ -4,8 +4,65 @@
 //    - this is the user interface for allowing you to control the hardware settings of the 32bit Board & 16chan Setup (32bit + Daisy)
 //
 //    Written by: Conor Russomanno (Oct. 2016) ... adapted from ChannelController.pde of GUI V1 ... it's a little bit simpler now :|
+//    Based on some original GUI code by: Chip Audette 2013/2014
 //
 //////////////////////////////////////////////////////////////////////////
+
+
+//these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
+int numSettingsPerChannel = 6; //each channel has 6 different settings
+char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+char[][] impedanceCheckValues = new char [nchan][2];
+
+public void updateChannelArrays(int _nchan) {
+  channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+  impedanceCheckValues = new char [_nchan][2];
+}
+
+//activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
+void activateChannel(int Ichan) {
+  println("OpenBCI_GUI: activating channel " + (Ichan+1));
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (openBCI.isSerialPortOpen()) {
+      verbosePrint("**");
+      openBCI.changeChannelState(Ichan, true); //activate
+    }
+  } else if (eegDataSource == DATASOURCE_GANGLION) {
+    // println("activating channel on ganglion");
+    ganglion.changeChannelState(Ichan, true);
+  }
+  if (Ichan < nchan) {
+    channelSettingValues[Ichan][0] = '0';
+    // gui.cc.update();
+  }
+}
+void deactivateChannel(int Ichan) {
+  println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
+  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (openBCI.isSerialPortOpen()) {
+      verbosePrint("**");
+      openBCI.changeChannelState(Ichan, false); //de-activate
+    }
+  } else if (eegDataSource == DATASOURCE_GANGLION) {
+    // println("deactivating channel on ganglion");
+    ganglion.changeChannelState(Ichan, false);
+  }
+  if (Ichan < nchan) {
+    channelSettingValues[Ichan][0] = '1';
+    // gui.cc.update();
+  }
+}
+
+//Ichan is zero referenced (not one referenced)
+boolean isChannelActive(int Ichan) {
+  boolean return_val = false;
+  if (channelSettingValues[Ichan][0] == '1') {
+    return_val = false;
+  } else {
+    return_val = true;
+  }
+  return return_val;
+}
 
 class HardwareSettingsController{
 
@@ -374,6 +431,7 @@ class HardwareSettingsController{
     //     channelSettingButtons[i][j] = tempButton;
     //   }
     // }
+
     for (int i = 0; i < nchan; i++) {
       for (int j = 1; j < 6; j++) {
         buttonW = int((w - (spaceBetweenButtons*6)) / 5);
@@ -384,6 +442,49 @@ class HardwareSettingsController{
         buttonString = "N/A";
         tempButton = new Button (buttonX, buttonY, buttonW, buttonH, buttonString, 14);
         channelSettingButtons[i][j] = tempButton;
+      }
+    }
+  }
+
+  void mousePressed(){
+    if (isVisible) {
+      for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
+        for (int j = 1; j < numSettingsPerChannel; j++) {
+          if (channelSettingButtons[i][j].isMouseHere()) {
+            //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+            channelSettingButtons[i][j].wasPressed = true;
+            channelSettingButtons[i][j].isActive = true;
+          }
+        }
+      }
+    }
+  }
+
+  void mouseReleased(){
+    if (isVisible) {
+      for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
+        for (int j = 1; j < numSettingsPerChannel; j++) {
+          if (channelSettingButtons[i][j].isMouseHere() && channelSettingButtons[i][j].wasPressed == true) {
+            if (channelSettingValues[i][j] < maxValuesPerSetting[j]) {
+              channelSettingValues[i][j]++;	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+            } else {
+              channelSettingValues[i][j] = '0';
+            }
+            // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
+            if (!openBCI.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
+              initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
+            } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
+              verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
+              rewriteChannelWhenDoneWriting = true;
+              channelToWriteWhenDoneWriting = i;
+            }
+          }
+
+          // if(!channelSettingButtons[i][j].isMouseHere()){
+          channelSettingButtons[i][j].isActive = false;
+          channelSettingButtons[i][j].wasPressed = false;
+          // }
+        }
       }
     }
   }
@@ -415,22 +516,50 @@ class HardwareSettingsController{
     }
   }
 
+  void toggleImpedanceCheck(int _channelNumber){
+
+    if(channelSettingValues[_channelNumber][4] == '1'){     //is N pin being used...
+      if (impedanceCheckValues[_channelNumber][1] < '1') { //if not checking/drawing impedance
+        initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
+        println("Imp[" + _channelNumber + "] is on.");
+      } else {
+        initImpWrite(_channelNumber, 'n', '0'); //turn off impedance check for desired channel
+        println("Imp[" + _channelNumber + "] is off.");
+      }
+    }
+
+    if(channelSettingValues[_channelNumber][4] == '0'){     //is P pin being used
+      if (impedanceCheckValues[_channelNumber][0] < '1') {    //is channel on
+        // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+        // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
+        // writeImpedanceSettings(i);
+        initImpWrite(_channelNumber, 'p', '1');
+        //initImpWrite
+      } else {
+        // impedanceCheckValues[i][0] = '0';
+        // channelSettingButtons[i][0].setColorNotPressed(color(255));
+        // writeImpedanceSettings(i);
+        initImpWrite(_channelNumber, 'p', '0');
+      }
+    }
+  }
+
   // public void mousePressed() {
   //   //if fullChannelController and one of the buttons (other than ON/OFF) is clicked
   //
   //     //if dataSource is coming from OpenBCI, allow user to interact with channel controller
   //   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-  //     if (showFullController) {
-  //       for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
-  //         for (int j = 1; j < numSettingsPerChannel; j++) {
-  //           if (channelSettingButtons[i][j].isMouseHere()) {
-  //             //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-  //             channelSettingButtons[i][j].wasPressed = true;
-  //             channelSettingButtons[i][j].isActive = true;
-  //           }
-  //         }
-  //       }
-  //     }
+      // if (showFullController) {
+      //   for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
+      //     for (int j = 1; j < numSettingsPerChannel; j++) {
+      //       if (channelSettingButtons[i][j].isMouseHere()) {
+      //         //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+      //         channelSettingButtons[i][j].wasPressed = true;
+      //         channelSettingButtons[i][j].isActive = true;
+      //       }
+      //     }
+      //   }
+      // }
   //   }
   //   //on/off button and Imp buttons can always be clicked/released
   //   for (int i = 0; i < nchan; i++) {
@@ -499,37 +628,7 @@ class HardwareSettingsController{
   //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
   //     }
   //
-  //     //was P imp check button clicked?
-  //     if (impedanceCheckButtons[i][0].isMouseHere() && impedanceCheckButtons[i][0].wasPressed == true) {
-  //       if (impedanceCheckValues[i][0] < '1') {
-  //         // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-  //         // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
-  //         // writeImpedanceSettings(i);
-  //         initImpWrite(i, 'p', '1');
-  //         //initImpWrite
-  //         verbosePrint("a");
-  //       } else {
-  //         // impedanceCheckValues[i][0] = '0';
-  //         // channelSettingButtons[i][0].setColorNotPressed(color(255));
-  //         // writeImpedanceSettings(i);
-  //         initImpWrite(i, 'p', '0');
-  //         verbosePrint("b");
-  //       }
-  //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-  //     }
-  //
-  //     //was N imp check button clicked?
-  //     if (impedanceCheckButtons[i][1].isMouseHere() && impedanceCheckButtons[i][1].wasPressed == true) {
-  //       if (impedanceCheckValues[i][1] < '1') {
-  //         initImpWrite(i, 'n', '1');
-  //         //initImpWrite
-  //         verbosePrint("c");
-  //       } else {
-  //         initImpWrite(i, 'n', '0');
-  //         verbosePrint("d");
-  //       }
-  //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-  //     }
+
   //
   //     channelSettingButtons[i][0].isActive = false;
   //     channelSettingButtons[i][0].wasPressed = false;

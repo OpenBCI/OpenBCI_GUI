@@ -69,7 +69,6 @@ void serialEvent(Serial port) {
     } else {
       echoBytes = false;
     }
-
     openBCI.read(echoBytes);
     openBCI_byteCount++;
     if (openBCI.get_isNewDataPacketAvailable()) {
@@ -150,7 +149,6 @@ void serialEvent(Serial port) {
   }
 }
 
-
 void writeRawData_dataPacket_bdf() {
   fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
 }
@@ -197,17 +195,27 @@ void stopButtonWasPressed() {
   //toggle the data transfer state of the ADS1299...stop it or start it...
   if (isRunning) {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
-    stopRunning();
     wm.setUpdating(false);
+    stopRunning();
     topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+    if(eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()){
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
-    startRunning();
     wm.setUpdating(true);
+    startRunning();
     topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    if(eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()){
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+
   }
 }
 
@@ -275,12 +283,14 @@ class OpenBCI_ADS1299 {
   private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   //final float scale_fac_accel_G_per_count = 1.0;
   private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
+  private final String failureMessage = "Failure: Communications timeout - Device failed to poll Host";
 
   boolean isBiasAuto = true; //not being used?
 
   //data related to Conor's setup for V3 boards
   final char[] EOT = {'$','$','$'};
   char[] prev3chars = {'#','#','#'};
+  private String potentialFailureMessage = "";
   private String defaultChannelSettings = "";
   private String daisyOrNot = "";
   private int hardwareSyncStep = 0; //start this at 0...
@@ -323,17 +333,34 @@ class OpenBCI_ADS1299 {
 
     dataMode = prefered_datamode;
 
+    println("nEEGValuesPerPacket = " + nEEGValuesPerPacket);
+    println("nEEGValuesPerOpenBCI = " + nEEGValuesPerOpenBCI);
+
     //allocate space for data packet
     rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
     missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerOpenBCI,nAuxValuesPerPacket);            //this could be 8 or 16 channels
     //prevDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);
     //set all values to 0 so not null
+
+    println("(2) nEEGValuesPerPacket = " + nEEGValuesPerPacket);
+    println("(2) nEEGValuesPerOpenBCI = " + nEEGValuesPerOpenBCI);
+    println("missedDataPacket.values.length = " + missedDataPacket.values.length);
+
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
       rawReceivedDataPacket.values[i] = 0;
       //prevDataPacket.values[i] = 0;
     }
-    for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
+
+    // %%%%% HAD TO KILL THIS ... not sure why nEEGValuesPerOpenBCI would ever loop to 16... this may be an incongruity due to the way we kludge the 16chan data in 2 packets...
+    // for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
+    //   println("i = " + i);
+    //   dataPacket.values[i] = 0;
+    //   missedDataPacket.values[i] = 0;
+    // }
+
+    for (int i=0; i < nEEGValuesPerPacket; i++) {
+      println("i = " + i);
       dataPacket.values[i] = 0;
       missedDataPacket.values[i] = 0;
     }
@@ -353,9 +380,9 @@ class OpenBCI_ADS1299 {
       closeSerialPort();
     }
 
-    println("OpenBCI_ADS1299: i");
+    println("OpenBCI_ADS1299: i = " + millis());
     openSerialPort(applet, comPort, baud);
-    println("OpenBCI_ADS1299: j");
+    println("OpenBCI_ADS1299: j = " + millis());
 
     //open file for raw bytes
     //output = createOutput("rawByteDumpFromProcessing.bin");  //for debugging  WEA 2014-01-26
@@ -364,8 +391,9 @@ class OpenBCI_ADS1299 {
   // //manage the serial port
   private int openSerialPort(PApplet applet, String comPort, int baud) {
 
+    output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {
-      println("OpenBCI_ADS1299: openSerialPort: attempting to open serial port " + openBCI_portName);
+      println("OpenBCI_ADS1299: openSerialPort: attempting to open serial port: " + openBCI_portName);
       serial_openBCI = new Serial(applet,comPort,baud); //open the com port
       serial_openBCI.clear(); // clear anything in the com port's buffer
       portIsOpen = true;
@@ -378,6 +406,10 @@ class OpenBCI_ADS1299 {
         serial_openBCI = null;
         System.out.println("OpenBCI_ADS1299: openSerialPort: port in use, trying again later...");
         portIsOpen = false;
+      } else{
+        println("RunttimeException: " + e);
+        output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
+        abandonInit = true; //global variable in OpenBCI_GUI.pde
       }
       return 0;
     }
@@ -418,26 +450,22 @@ class OpenBCI_ADS1299 {
 
   public int closeSDFile() {
     println("Closing any open SD file. Writing 'j' to OpenBCI.");
-    if (serial_openBCI != null) serial_openBCI.write("j"); // tell the SD file to close if one is open...
+    if (isSerialPortOpen()) serial_openBCI.write("j"); // tell the SD file to close if one is open...
     delay(100); //make sure 'j' gets sent to the board
     return 0;
   }
 
   public int closeSerialPort() {
     // if (serial_openBCI != null) {
-    println("OpenBCI_ADS1299: closeSerialPort: d");
     portIsOpen = false;
-    println("OpenBCI_ADS1299: closeSerialPort: e");
-    println("OpenBCI_ADS1299: closeSerialPort: e2");
-    serial_openBCI.stop();
-    println("OpenBCI_ADS1299: closeSerialPort: f");
+    if(serial_openBCI != null){
+      serial_openBCI.stop();
+    }
     serial_openBCI = null;
-    println("OpenBCI_ADS1299: closeSerialPort: g");
     state = STATE_NOCOM;
-    println("OpenBCI_ADS1299: closeSerialPort: h");
+    println("OpenBCI_ADS1299: closeSerialPort: closed");
     return 0;
   }
-
 
   public void syncWithHardware(int sdSetting){
     switch (hardwareSyncStep) {
@@ -509,6 +537,8 @@ class OpenBCI_ADS1299 {
         output("OpenBCI_ADS1299: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
         changeState(STATE_STOPPED);
         systemMode = 10;
+        controlPanel.close();
+        topNav.controlPanelCollapser.setIsActive(false);
         //renitialize GUI if nchan has been updated... needs to be built
         break;
     }
@@ -516,10 +546,13 @@ class OpenBCI_ADS1299 {
 
   public void updateSyncState(int sdSetting) {
     //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
+    // println("0");
+
     if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == openBCI.STATE_COMINIT) ) {
       state = STATE_SYNCWITHHARDWARE;
       timeOfLastCommand = millis();
       serial_openBCI.clear();
+      potentialFailureMessage = "";
       defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
       daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
       println("OpenBCI_ADS1299: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
@@ -537,13 +570,13 @@ class OpenBCI_ADS1299 {
   }
 
   public void sendChar(char val) {
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       serial_openBCI.write(key);//send the value as ascii (with a newline character?)
     }
   }
 
   void startDataTransfer(){
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       serial_openBCI.clear(); // clear anything in the com port's buffer
       // stopDataTransfer();
       changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
@@ -553,7 +586,7 @@ class OpenBCI_ADS1299 {
   }
 
   public void stopDataTransfer() {
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       serial_openBCI.clear(); // clear anything in the com port's buffer
       openBCI.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
       println("OpenBCI_ADS1299: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
@@ -577,7 +610,7 @@ class OpenBCI_ADS1299 {
   }
 
   public void printRegisters() {
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       println("OpenBCI_ADS1299: printRegisters(): Writing ? to OpenBCI...");
       openBCI.serial_openBCI.write('?');
     }
@@ -588,10 +621,19 @@ class OpenBCI_ADS1299 {
   public int read(boolean echoChar) {
     //println("OpenBCI_ADS1299: read(): State: " + state);
     //get the byte
-    byte inByte = byte(serial_openBCI.read());
+    byte inByte;
+    if (isSerialPortOpen()) {
+      inByte = byte(serial_openBCI.read());
+    } else {
+      println("Serial port not open aborting.");
+      return 0;
+    }
+
 
     //write the most recent char to the console
+    // If the GUI is in streaming mode then echoChar will be false
     if (echoChar){  //if not in interpret binary (NORMAL) mode
+      // print("hardwareSyncStep: "); println(hardwareSyncStep);
       // print(".");
       char inASCII = char(inByte);
       if(isRunning == false && (millis() - timeSinceStopRunning) > 500){
@@ -602,6 +644,10 @@ class OpenBCI_ADS1299 {
       prev3chars[0] = prev3chars[1];
       prev3chars[1] = prev3chars[2];
       prev3chars[2] = inASCII;
+
+      if(hardwareSyncStep == 0 && inASCII != '$'){
+        potentialFailureMessage+=inASCII;
+      }
 
       if(hardwareSyncStep == 1 && inASCII != '$'){
         daisyOrNot+=inASCII;
@@ -619,7 +665,15 @@ class OpenBCI_ADS1299 {
 
       //if the last three chars are $$$, it means we are moving on to the next stage of initialization
       if(prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]){
-        verbosePrint(" > EOT detected...");
+        // verbosePrint(" > EOT detected...");
+        // Added for V2 system down rejection line
+        if(hardwareSyncStep == 0) {
+          // Failure: Communications timeout - Device failed to poll Host$$$
+          if (potentialFailureMessage.equals(failureMessage)) {
+            closeLogFile();
+            return 0;
+          }
+        }
         // hardwareSyncStep++;
         prev3chars[2] = '#';
         if(hardwareSyncStep == 3){
@@ -786,7 +840,7 @@ class OpenBCI_ADS1299 {
 
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan,boolean activate) {
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       // if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
       if ((Ichan >= 0)) {
         if (activate) {
@@ -804,7 +858,7 @@ class OpenBCI_ADS1299 {
 
   //deactivate an EEG channel...channel counting is zero through nchan-1
   public void deactivateChannel(int Ichan) {
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       if ((Ichan >= 0) && (Ichan < command_deactivate_channel.length)) {
         serial_openBCI.write(command_deactivate_channel[Ichan]);
       }
@@ -813,7 +867,7 @@ class OpenBCI_ADS1299 {
 
   //activate an EEG channel...channel counting is zero through nchan-1
   public void activateChannel(int Ichan) {
-    if (serial_openBCI != null) {
+    if (isSerialPortOpen()) {
       if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
         serial_openBCI.write(command_activate_channel[Ichan]);
       }
@@ -828,44 +882,6 @@ class OpenBCI_ADS1299 {
       return false;
     }
   }
-
-  // ---- DEPRECATED ----
-  // public void changeImpedanceState(int Ichan,boolean activate,int code_P_N_Both) {
-  //   //println("OpenBCI_ADS1299: changeImpedanceState: Ichan " + Ichan + ", activate " + activate + ", code_P_N_Both " + code_P_N_Both);
-  //   if (serial_openBCI != null) {
-  //     if ((Ichan >= 0) && (Ichan < command_activate_leadoffP_channel.length)) {
-  //       if (activate) {
-  //         if ((code_P_N_Both == 0) || (code_P_N_Both == 2)) {
-  //           //activate the P channel
-  //           serial_openBCI.write(command_activate_leadoffP_channel[Ichan]);
-  //         } else if ((code_P_N_Both == 1) || (code_P_N_Both == 2)) {
-  //           //activate the N channel
-  //           serial_openBCI.write(command_activate_leadoffN_channel[Ichan]);
-  //         }
-  //       } else {
-  //         if ((code_P_N_Both == 0) || (code_P_N_Both == 2)) {
-  //           //deactivate the P channel
-  //           serial_openBCI.write(command_deactivate_leadoffP_channel[Ichan]);
-  //         } else if ((code_P_N_Both == 1) || (code_P_N_Both == 2)) {
-  //           //deactivate the N channel
-  //           serial_openBCI.write(command_deactivate_leadoffN_channel[Ichan]);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // public void setBiasAutoState(boolean isAuto) {
-  //   if (serial_openBCI != null) {
-  //     if (isAuto) {
-  //       println("OpenBCI_ADS1299: setBiasAutoState: setting bias to AUTO");
-  //       serial_openBCI.write(command_biasAuto);
-  //     } else {
-  //       println("OpenBCI_ADS1299: setBiasAutoState: setting bias to REF ONLY");
-  //       serial_openBCI.write(command_biasFixed);
-  //     }
-  //   }
-  // }
 
   private int interpret24bitAsInt32(byte[] byteArray) {
     //little endian

@@ -69,7 +69,7 @@ class W_fft extends Widget {
 
   void initializeFFTPlot(PApplet _parent) {
     //setup GPlot for FFT
-    fft_plot =  new GPlot(_parent, x, y+navHeight, w, h-navHeight); //based on container dimensions
+    fft_plot =  new GPlot(_parent, x, y-navHeight, w, h+navHeight); //based on container dimensions
     fft_plot.getXAxis().setAxisLabelText("Frequency (Hz)");
     fft_plot.getYAxis().setAxisLabelText("Amplitude (uV)");
     //fft_plot.setMar(50,50,50,50); //{ bot=60, left=70, top=40, right=30 } by default
@@ -104,6 +104,7 @@ class W_fft extends Widget {
   }
 
   void update(){
+
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
     //put your code here...
@@ -124,6 +125,7 @@ class W_fft extends Widget {
 
     //remap fft point arrays to fft plots
     fft_plot.setPoints(fft_points[0]);
+
   }
 
   void draw(){
@@ -148,13 +150,13 @@ class W_fft extends Widget {
       fft_plot.setLineColor(lineColor[i]);
       fft_plot.setPoints(fft_points[i]);
       fft_plot.drawLines();
-      //fft_plot.drawPoints(); //draw points
+      // fft_plot.drawPoints(); //draw points
     }
     fft_plot.endDraw();
 
     //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
     fill(200, 200, 200);
-    rect(x, y+navHeight, w, navHeight); //button bar
+    rect(x, y - navHeight, w, navHeight); //button bar
 
     popStyle();
 
@@ -165,8 +167,8 @@ class W_fft extends Widget {
 
     //put your code here...
     //update position/size of FFT plot
-    fft_plot.setPos(x, y+navHeight);//update position
-    fft_plot.setOuterDim(w, h-navHeight);//update dimensions
+    fft_plot.setPos(x, y-navHeight);//update position
+    fft_plot.setOuterDim(w, h+navHeight);//update dimensions
 
   }
 

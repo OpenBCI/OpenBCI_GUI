@@ -3,7 +3,7 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -47,29 +47,17 @@ import java.util.Set;
 public class ControlBroadcaster {
 
 	private int _myControlEventType = ControlP5Constants.INVALID;
-
 	private ControllerPlug _myControlEventPlug = null;
-
 	private ControllerPlug _myControllerCallbackEventPlug = null;
-
 	private ControlP5 cp5;
-
 	private String _myEventMethod = "controlEvent";
-
 	private String _myControllerCallbackEventMethod = "controlEvent";
-
 	private ArrayList< ControlListener > _myControlListeners;
-
 	private Set< Entry< CallbackListener , Controller< ? >>> _myControllerCallbackListeners;
-
 	private static boolean setPrintStackTrace = true;
-
 	private static boolean ignoreErrorMessage = false;
-
 	private static Map< Class< ? > , Field[] > fieldcache = new HashMap< Class< ? > , Field[] >( );
-
 	private static Map< Class< ? > , Method[] > methodcache = new HashMap< Class< ? > , Method[] >( );
-
 	boolean broadcast = true;
 
 	protected ControlBroadcaster( ControlP5 theControlP5 ) {
