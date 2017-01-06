@@ -278,12 +278,13 @@ class OpenBCI_Ganglion {
   }
 
   private void processAccel(String msg) {
-    // println(msg);
     String[] list = split(msg, ',');
-    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-      accelArray[i] = Integer.parseInt(list[i + 2]);
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        accelArray[i] = Integer.parseInt(list[i + 2]);
+      }
+      newAccelData = true;
     }
-    newAccelData = true;
   }
 
   private void processConnect(String msg) {
@@ -375,15 +376,17 @@ class OpenBCI_Ganglion {
 
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
-    int channel = Integer.parseInt(list[2]);
-    if (channel < 5) { //<>//
-      int value = Integer.parseInt(list[3]);
-      impedanceArray[channel] = value;
-      if (channel == 0) {
-        impedanceUpdated = true;
-        println("Impedance for channel reference is " + value + " ohms.");
-      } else {
-        println("? for channel " + channel + " is " + value + " ohms.");
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
+      int channel = Integer.parseInt(list[2]);
+      if (channel < 5) { //<>//
+        int value = Integer.parseInt(list[3]);
+        impedanceArray[channel] = value;
+        if (channel == 0) {
+          impedanceUpdated = true;
+          println("Impedance for channel reference is " + value + " ohms.");
+        } else {
+          println("? for channel " + channel + " is " + value + " ohms.");
+        }
       }
     }
   }
