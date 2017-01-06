@@ -399,6 +399,9 @@ void hubStart() {
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
       nodeHubby = launch(dataPath("Ganglion Hub.exe"));
+    } else if (isLinux()) {
+      println("OpenBCI_GUI: hubStart: OS Detected: Linux");
+      nodeHubby = launch(dataPath("Ganglion Hub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("Ganglion Hub.app"));
@@ -419,6 +422,14 @@ boolean hubStop() {
     killRunningProcessMac();
     return true;
   }
+}
+
+/**
+ * @description Helper function to determine if the system is linux or not.
+ * @return {boolean} true if os is linux, false otherwise.
+ */
+private boolean isLinux() {
+  return System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
 }
 
 /**
