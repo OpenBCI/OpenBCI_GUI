@@ -341,7 +341,7 @@ void parseKeycode(int val) {
       break;
     case 10:
       println("Enter was pressed.");
-      // drawPresentation = !drawPresentation;
+      drawPresentation = !drawPresentation;
       break;
     case 16:
       println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
@@ -372,7 +372,6 @@ void parseKeycode(int val) {
       println("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
       break;
     case 37:
-      println("Slide Back!");
       if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
         if(myPresentation.currentSlide >= 0){
           myPresentation.slideBack();
@@ -385,7 +384,6 @@ void parseKeycode(int val) {
       dataProcessing_user.switchesActive = true;
       break;
     case 39:
-      println("Forward!");
       if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
         if(myPresentation.currentSlide < myPresentation.presentationSlides.length - 1){
           myPresentation.slideForward();

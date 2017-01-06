@@ -117,8 +117,10 @@ long timeOfInit;
 long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
-//final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
-final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
+// final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
+// final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
+final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
+
 
 //define some data fields for handling data here in processing
 float dataBuffX[];  //define the size later
@@ -918,9 +920,10 @@ void systemDraw() { //for drawing to the screen
     }
   }
 
+  //draw presentation last, bc it is intended to be rendered on top of the GUI ...
   if (drawPresentation) {
     myPresentation.draw();
-    emg_widget.drawTriggerFeedback();
+    // emg_widget.drawTriggerFeedback();
     //dataProcessing_user.drawTriggerFeedback();
   }
 

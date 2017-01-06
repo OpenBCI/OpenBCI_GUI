@@ -149,7 +149,6 @@ void serialEvent(Serial port) {
   }
 }
 
-
 void writeRawData_dataPacket_bdf() {
   fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
 }
@@ -334,17 +333,34 @@ class OpenBCI_ADS1299 {
 
     dataMode = prefered_datamode;
 
+    println("nEEGValuesPerPacket = " + nEEGValuesPerPacket);
+    println("nEEGValuesPerOpenBCI = " + nEEGValuesPerOpenBCI);
+
     //allocate space for data packet
     rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
     missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);  //this should always be 8 channels
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerOpenBCI,nAuxValuesPerPacket);            //this could be 8 or 16 channels
     //prevDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);
     //set all values to 0 so not null
+
+    println("(2) nEEGValuesPerPacket = " + nEEGValuesPerPacket);
+    println("(2) nEEGValuesPerOpenBCI = " + nEEGValuesPerOpenBCI);
+    println("missedDataPacket.values.length = " + missedDataPacket.values.length);
+
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
       rawReceivedDataPacket.values[i] = 0;
       //prevDataPacket.values[i] = 0;
     }
-    for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
+
+    // %%%%% HAD TO KILL THIS ... not sure why nEEGValuesPerOpenBCI would ever loop to 16... this may be an incongruity due to the way we kludge the 16chan data in 2 packets...
+    // for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
+    //   println("i = " + i);
+    //   dataPacket.values[i] = 0;
+    //   missedDataPacket.values[i] = 0;
+    // }
+
+    for (int i=0; i < nEEGValuesPerPacket; i++) {
+      println("i = " + i);
       dataPacket.values[i] = 0;
       missedDataPacket.values[i] = 0;
     }
