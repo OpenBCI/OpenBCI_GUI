@@ -102,13 +102,13 @@ Button popOut;
 Button getChannel;
 Button setChannel;
 Button ovrChannel;
-Button getPoll;
-Button setPoll;
-Button defaultBAUD;
-Button highBAUD;
+// Button getPoll;
+// Button setPoll;
+// Button defaultBAUD;
+// Button highBAUD;
 Button autoscan;
-Button autoconnectNoStartDefault;
-Button autoconnectNoStartHigh;
+// Button autoconnectNoStartDefault;
+// Button autoconnectNoStartHigh;
 Button systemStatus;
 
 Button synthChanButton4;
@@ -221,14 +221,14 @@ public void controlEvent(ControlEvent theEvent) {
 
   }
 
-  if (theEvent.isFrom("pollList")){
-    int setChannelInt = int(theEvent.getValue());
-    //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-    channelPopup.setClicked(false);
-    set_poll(rcBox,setChannelInt);
-    setPoll.wasPressed = false;
-  }
+  // if (theEvent.isFrom("pollList")){
+  //   int setChannelInt = int(theEvent.getValue());
+  //   //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+  //   cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+  //   channelPopup.setClicked(false);
+  //   set_poll(rcBox,setChannelInt);
+  //   setPoll.wasPressed = false;
+  // }
 }
 
 //------------------------------------------------------------------------
@@ -707,40 +707,40 @@ class ControlPanel {
           ovrChannel.wasPressed = true;
         }
 
-        if (getPoll.isMouseHere()){
-          getPoll.setIsActive(true);
-          getPoll.wasPressed = true;
-        }
+        // if (getPoll.isMouseHere()){
+        //   getPoll.setIsActive(true);
+        //   getPoll.wasPressed = true;
+        // }
 
-        if (setPoll.isMouseHere()){
-          setPoll.setIsActive(true);
-          setPoll.wasPressed = true;
-        }
+        // if (setPoll.isMouseHere()){
+        //   setPoll.setIsActive(true);
+        //   setPoll.wasPressed = true;
+        // }
 
-        if (defaultBAUD.isMouseHere()){
-          defaultBAUD.setIsActive(true);
-          defaultBAUD.wasPressed = true;
-        }
+        // if (defaultBAUD.isMouseHere()){
+        //   defaultBAUD.setIsActive(true);
+        //   defaultBAUD.wasPressed = true;
+        // }
 
-        if (highBAUD.isMouseHere()){
-          highBAUD.setIsActive(true);
-          highBAUD.wasPressed = true;
-        }
+        // if (highBAUD.isMouseHere()){
+        //   highBAUD.setIsActive(true);
+        //   highBAUD.wasPressed = true;
+        // }
 
         if (autoscan.isMouseHere()){
           autoscan.setIsActive(true);
           autoscan.wasPressed = true;
         }
 
-        if (autoconnectNoStartDefault.isMouseHere()){
-          autoconnectNoStartDefault.setIsActive(true);
-          autoconnectNoStartDefault.wasPressed = true;
-        }
+        // if (autoconnectNoStartDefault.isMouseHere()){
+        //   autoconnectNoStartDefault.setIsActive(true);
+        //   autoconnectNoStartDefault.wasPressed = true;
+        // }
 
-        if (autoconnectNoStartHigh.isMouseHere()){
-          autoconnectNoStartHigh.setIsActive(true);
-          autoconnectNoStartHigh.wasPressed = true;
-        }
+        // if (autoconnectNoStartHigh.isMouseHere()){
+        //   autoconnectNoStartHigh.setIsActive(true);
+        //   autoconnectNoStartHigh.wasPressed = true;
+        // }
 
 
         if (systemStatus.isMouseHere()){
@@ -844,8 +844,8 @@ class ControlPanel {
     }
 
     if(getChannel.isMouseHere() && getChannel.wasPressed){
-      if(board != null) get_channel( rcBox);
-
+      // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
+      get_channel( rcBox);
       getChannel.wasPressed=false;
       getChannel.setIsActive(false);
     }
@@ -863,66 +863,66 @@ class ControlPanel {
     }
 
 
-    if (getPoll.isMouseHere() && getPoll.wasPressed){
-      get_poll(rcBox);
-      getPoll.setIsActive(false);
-      getPoll.wasPressed = false;
-    }
+    // if (getPoll.isMouseHere() && getPoll.wasPressed){
+    //   get_poll(rcBox);
+    //   getPoll.setIsActive(false);
+    //   getPoll.wasPressed = false;
+    // }
 
-    if (setPoll.isMouseHere() && setPoll.wasPressed){
-      pollPopup.setClicked(true);
-      channelPopup.setClicked(false);
-      setPoll.setIsActive(false);
-    }
+    // if (setPoll.isMouseHere() && setPoll.wasPressed){
+    //   pollPopup.setClicked(true);
+    //   channelPopup.setClicked(false);
+    //   setPoll.setIsActive(false);
+    // }
 
-    if (defaultBAUD.isMouseHere() && defaultBAUD.wasPressed){
-      set_baud_default(rcBox,openBCI_portName);
-      defaultBAUD.setIsActive(false);
-      defaultBAUD.wasPressed=false;
-    }
+    // if (defaultBAUD.isMouseHere() && defaultBAUD.wasPressed){
+    //   set_baud_default(rcBox,openBCI_portName);
+    //   defaultBAUD.setIsActive(false);
+    //   defaultBAUD.wasPressed=false;
+    // }
 
-    if (highBAUD.isMouseHere() && highBAUD.wasPressed){
-      set_baud_high(rcBox,openBCI_portName);
-      highBAUD.setIsActive(false);
-      highBAUD.wasPressed=false;
-    }
+    // if (highBAUD.isMouseHere() && highBAUD.wasPressed){
+    //   set_baud_high(rcBox,openBCI_portName);
+    //   highBAUD.setIsActive(false);
+    //   highBAUD.wasPressed=false;
+    // }
 
-    if(autoconnectNoStartDefault.isMouseHere() && autoconnectNoStartDefault.wasPressed){
+    // if(autoconnectNoStartDefault.isMouseHere() && autoconnectNoStartDefault.wasPressed){
+    //
+    //   if(board == null){
+    //     try{
+    //       board = autoconnect_return_default();
+    //       rcBox.print_onscreen("Successfully connected to board");
+    //     }
+    //     catch (Exception e){
+    //       rcBox.print_onscreen("Error connecting to board...");
+    //     }
+    //
+    //
+    //   }
+    //  else rcBox.print_onscreen("Board already connected!");
+    //   autoconnectNoStartDefault.setIsActive(false);
+    //   autoconnectNoStartDefault.wasPressed = false;
+    // }
 
-      if(board == null){
-        try{
-          board = autoconnect_return_default();
-          rcBox.print_onscreen("Successfully connected to board");
-        }
-        catch (Exception e){
-          rcBox.print_onscreen("Error connecting to board...");
-        }
-
-
-      }
-     else rcBox.print_onscreen("Board already connected!");
-      autoconnectNoStartDefault.setIsActive(false);
-      autoconnectNoStartDefault.wasPressed = false;
-    }
-
-    if(autoconnectNoStartHigh.isMouseHere() && autoconnectNoStartHigh.wasPressed){
-
-      if(board == null){
-
-        try{
-
-          board = autoconnect_return_high();
-          rcBox.print_onscreen("Successfully connected to board");
-        }
-        catch (Exception e2){
-          rcBox.print_onscreen("Error connecting to board...");
-        }
-
-      }
-     else rcBox.print_onscreen("Board already connected!");
-      autoconnectNoStartHigh.setIsActive(false);
-      autoconnectNoStartHigh.wasPressed = false;
-    }
+    // if(autoconnectNoStartHigh.isMouseHere() && autoconnectNoStartHigh.wasPressed){
+    //
+    //   if(board == null){
+    //
+    //     try{
+    //
+    //       board = autoconnect_return_high();
+    //       rcBox.print_onscreen("Successfully connected to board");
+    //     }
+    //     catch (Exception e2){
+    //       rcBox.print_onscreen("Error connecting to board...");
+    //     }
+    //
+    //   }
+    //  else rcBox.print_onscreen("Board already connected!");
+    //   autoconnectNoStartHigh.setIsActive(false);
+    //   autoconnectNoStartHigh.wasPressed = false;
+    // }
 
     if(autoscan.isMouseHere() && autoscan.wasPressed){
       autoscan.wasPressed = false;
@@ -1703,34 +1703,34 @@ class RadioConfigBox {
     x = _x + _w;
     y = _y;
     w = _w;
-    h = 355;
+    h = 255;
     padding = _padding;
     isShowing = false;
 
     getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-    setChannel = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "SET CHANNEL", fontInfo.buttonLabel_size);
-    ovrChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE CHAN", fontInfo.buttonLabel_size);
-    getPoll = new Button(x + padding + (w-padding*2)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET POLL", fontInfo.buttonLabel_size);
-    setPoll = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "SET POLL", fontInfo.buttonLabel_size);
-    defaultBAUD = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "DEFAULT BAUD", fontInfo.buttonLabel_size);
-    highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
-    autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "AUTOSCAN CHANS", fontInfo.buttonLabel_size);
-    autoconnectNoStartDefault = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2 , 24, "CONNECT 115200", fontInfo.buttonLabel_size);
-    systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "STATUS", fontInfo.buttonLabel_size);
-    autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
+    systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+    setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHANNEL", fontInfo.buttonLabel_size);
+    ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+    autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
+    // getPoll = new Button(x + padding + (w-padding*2)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET POLL", fontInfo.buttonLabel_size);
+    // highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
+    // setPoll = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "", fontInfo.buttonLabel_size);
+    // autoconnectNoStartDefault = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2 , 24, "CONNECT 115200", fontInfo.buttonLabel_size);
+    // deraultBaud = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "", fontInfo.buttonLabel_size);
+    // autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
 
     //Set help text
-    getChannel.setHelpText("Gets the current channel that your OpenBCI board and radio is on.");
-    setChannel.setHelpText("Sets the current channel that your OpenBCI board and radio are on.");
-    ovrChannel.setHelpText("Overrides the current channel of the OpenBCI radio, and sets it to that channel.");
-    getPoll.setHelpText("Gets the current POLL value.");
-    setPoll.setHelpText("Sets the current POLL value.");
-    defaultBAUD.setHelpText("Sets the BAUD rate to 115200.");
-    highBAUD.setHelpText("Sets the BAUD rate to 230400.");
-    autoscan.setHelpText("Scans through channels and finds a nearby OpenBCI board, then connects to that board.");
-    systemStatus.setHelpText("Gets the connection status of your OpenBCI board.");
-    autoconnectNoStartDefault.setHelpText("Automatically connects to a board with the DEFAULT (115200) BAUD");
-    autoconnectNoStartHigh.setHelpText("Automatically connects to a board with the HIGH (230400) BAUD");
+    getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
+    setChannel.setHelpText("Change the channel of your Cyton and USB Dongle");
+    ovrChannel.setHelpText("Change the channel of the USB Dongle only");
+    autoscan.setHelpText("Scan through channels and connect to a nearby Cyton");
+    systemStatus.setHelpText("Get the connection status of your Cyton system");
+    // getPoll.setHelpText("Gets the current POLL value.");
+    // setPoll.setHelpText("Sets the current POLL value.");
+    // defaultBAUD.setHelpText("Sets the BAUD rate to 115200.");
+    // highBAUD.setHelpText("Sets the BAUD rate to 230400.");
+    // autoconnectNoStartDefault.setHelpText("Automatically connects to a board with the DEFAULT (115200) BAUD");
+    // autoconnectNoStartHigh.setHelpText("Automatically connects to a board with the HIGH (230400) BAUD");
 
   }
   public void update() {
@@ -1745,19 +1745,20 @@ class RadioConfigBox {
     fill(bgColor);
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("RADIO CONFIGURATION (V2)", x + padding, y + padding);
+    text("RADIO CONFIGURATION (v2)", x + padding, y + padding);
     popStyle();
     getChannel.draw();
     setChannel.draw();
     ovrChannel.draw();
-    getPoll.draw();
-    setPoll.draw();
-    defaultBAUD.draw();
-    highBAUD.draw();
-    autoscan.draw();
-    autoconnectNoStartDefault.draw();
-    autoconnectNoStartHigh.draw();
     systemStatus.draw();
+    autoscan.draw();
+    // getPoll.draw();
+    // setPoll.draw();
+    // defaultBAUD.draw();
+    // highBAUD.draw();
+    // autoconnectNoStartDefault.draw();
+    // autoconnectNoStartHigh.draw();
+
     this.print_onscreen(last_message);
 
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
@@ -1767,9 +1768,9 @@ class RadioConfigBox {
   public void print_onscreen(String localstring){
     textAlign(LEFT);
     fill(0);
-    rect(x + padding, y + (padding*8) + 18 + (24*6), (w-padding*3 + 5), 135 - 24 - padding);
+    rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*6) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     this.last_message = localstring;
   }
 
