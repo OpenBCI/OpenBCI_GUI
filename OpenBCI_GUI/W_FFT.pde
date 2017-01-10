@@ -110,12 +110,24 @@ class W_fft extends Widget {
     //put your code here...
     //update the points of the FFT channel arrays
     //update fft point arrays
+    // println("LENGTH = " + fft_points.length);
+    // println("LENGTH = " + fftBuff.length);
+    // println("LENGTH = " + FFT_indexLim);
     for (int i = 0; i < fft_points.length; i++) {
       for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
         //GPoint powerAtBin = new GPoint(j, 15*random(0.1*j));
+        GPoint powerAtBin;
 
-        GPoint powerAtBin = new GPoint((1.0*get_fs_Hz_safe()/Nfft)*j, fftBuff[i].getBand(j));
+        // println("i = " + i);
+        // float a = get_fs_Hz_safe();
+        // float aa = fftBuff[i].getBand(j);
+        // float b = fftBuff[i].getBand(j);
+        // float c = Nfft;
+
+        powerAtBin = new GPoint((1.0*get_fs_Hz_safe()/Nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
+        // GPoint powerAtBin = new GPoint((1.0*get_fs_Hz_safe()/Nfft)*j, fftBuff[i].getBand(j));
+
         //println("=========================================");
         //println(j);
         //println(fftBuff[i].getBand(j) + " :: " + fft_points[i].getX(j) + " :: " + fft_points[i].getY(j));

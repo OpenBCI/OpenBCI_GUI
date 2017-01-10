@@ -74,9 +74,10 @@ class Presentation {
 
   public void draw() {
       // ----- Drawing Presentation -------
-    if (drawPresentation == true) {
-      image(presentationSlides[currentSlide], 0, 0, width, height);
-    }
+    pushStyle();
+
+    image(presentationSlides[currentSlide], 0, 0, width, height);
+
 
     if(lockSlides){
       //draw red rectangle to indicate that slides are locked
@@ -85,5 +86,12 @@ class Presentation {
       rect(width - 50, 25, 25, 25);
       popStyle();
     }
+
+    textFont(p3, 16);
+    fill(openbciBlue);
+    textAlign(CENTER);
+    text("Press [Enter] to exit presentation mode.", width/2, 31*(height/32));
+
+    popStyle();
   }
 }
