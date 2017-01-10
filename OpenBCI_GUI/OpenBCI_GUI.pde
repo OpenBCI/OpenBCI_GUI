@@ -690,7 +690,7 @@ void haltSystem() {
   //set all data source list items inactive
 
   //reset connect loadStrings
-  openBCI_portName = "";
+  openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
   ganglion_portName = "";
   controlPanel.resetListItems();
 

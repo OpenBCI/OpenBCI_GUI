@@ -138,14 +138,15 @@ void serialEvent(Serial port){
           board_message = new StringBuilder();
           dollaBillz=0;
         }
-
-        if (inByte != '$') board_message.append(char(inByte));
-        else dollaBillz++;
-      }
-      if (char(inByte) == 'S' || char(inByte) == 'F') {
+        if(inByte != '$'){
+          board_message.append(char(inByte));
+        } else { dollaBillz++; }
+      } else if(char(inByte) == 'S' || char(inByte) == 'F'){
         isOpenBCI = true;
-        if (board_message == null) board_message = new StringBuilder();
-        board_message.append(char(inByte));
+        if(board_message == null){
+          board_message = new StringBuilder();
+          board_message.append(char(inByte));
+        }
       }
     }
   }
