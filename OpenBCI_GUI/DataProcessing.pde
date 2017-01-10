@@ -150,8 +150,8 @@ void processNewData() {
   // ...yLittleBuff_uV[Ichan] is the most recent raw data since the last call to this processing routine
   // ...dataBuffY_filtY_uV[Ichan] is the full set of filtered data as shown in the time-domain plot in the GUI
   // ...fftBuff[Ichan] is the FFT data structure holding the frequency spectrum as shown in the freq-domain plot in the GUI
-  // emg_widget.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff); //%%%
-  // ob_widget.process();  //%%%
+  // w_emg.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff); //%%%
+  // w_openbionics.process();
 
   dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
 
@@ -353,7 +353,7 @@ class DataProcessing {
   FilterConstants[] filtCoeff_bp = new FilterConstants[N_FILT_CONFIGS];
   final int N_NOTCH_CONFIGS = 3;
   FilterConstants[] filtCoeff_notch = new FilterConstants[N_NOTCH_CONFIGS];
-  private int currentFilt_ind = 0;
+  private int currentFilt_ind = 3;
   private int currentNotch_ind = 0;  // set to 0 to default to 60Hz, set to 1 to default to 50Hz
   float data_std_uV[];
   float polarity[];
@@ -626,10 +626,13 @@ class DataProcessing {
     double foo;
 
     //update the FFT (frequency spectrum)
+    // println("nchan = " + nchan);
     for (int Ichan=0; Ichan < nchan; Ichan++) {
 
       //copy the previous FFT data...enables us to apply some smoothing to the FFT data
-      for (int I=0; I < fftBuff[Ichan].specSize(); I++) prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
+      for (int I=0; I < fftBuff[Ichan].specSize(); I++) {
+        prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
+      }
 
       //prepare the data for the new FFT
       float[] fooData;
