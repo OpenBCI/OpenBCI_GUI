@@ -16,6 +16,9 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
+boolean werePacketsDroppedGang = false;
+int numPacketsDroppedGang = 0;
+
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
 
@@ -316,7 +319,15 @@ class OpenBCI_Ganglion {
         if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
           if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
             bleErrorCounter++;
+
+            werePacketsDroppedGang = true; //set this true to activate packet duplication in serialEvent
+            if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
+              numPacketsDroppedGang = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+            } else {
+              numPacketsDroppedGang = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+            }
             println("OpenBCI_Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+            println("numPacketsDropped = " + numPacketsDropped);
           }
         }
         prevSampleIndex = dataPacket.sampleIndex;
@@ -335,7 +346,28 @@ class OpenBCI_Ganglion {
         getRawValues(dataPacket);
         // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
         curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+
         ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+
+        // KILL SPIKES!!!
+        if(werePacketsDroppedGang){
+          // println("Packets Dropped ... doing some stuff...");
+          for(int i = numPacketsDroppedGang; i > 0; i--){
+            int tempDataPacketInd = curDataPacketInd - i; //
+            if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+              // println("i = " + i);
+              ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+            } else {
+              ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+            }
+            //put the last stored packet in # of packets dropped after that packet
+          }
+
+          //reset werePacketsDropped & numPacketsDropped
+          werePacketsDroppedGang = false;
+          numPacketsDroppedGang = 0;
+        }
+
         switch (outputDataSource) {
           case OUTPUT_SOURCE_ODF:
             fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), get_scale_fac_accel_G_per_count());
