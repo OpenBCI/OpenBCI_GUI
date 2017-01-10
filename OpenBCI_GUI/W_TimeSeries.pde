@@ -626,7 +626,7 @@ class ChannelBar{
       onOffButton.but_dx = onOff_diameter;
       onOffButton.but_dy = onOff_diameter;
     } else{
-      println("h = " + h);
+      // println("h = " + h);
       onOff_diameter = h - 2;
       onOffButton.but_dx = onOff_diameter;
       onOffButton.but_dy = onOff_diameter;

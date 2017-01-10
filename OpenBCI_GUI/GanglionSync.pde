@@ -63,6 +63,8 @@ class OpenBCI_Ganglion {
   final static String TCP_ACTION_STATUS = "status";
   final static String TCP_ACTION_STOP = "stop";
 
+  final static String GANGLION_BOOTLOADER_MODE = ">";
+
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
 
@@ -91,6 +93,9 @@ class OpenBCI_Ganglion {
   final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
   final static int RESP_GANGLION_FOUND = 201;
   final static int RESP_SUCCESS = 200;
+  final static int RESP_SUCCESS_DATA_ACCEL = 202;
+  final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
+  final static int RESP_SUCCESS_DATA_SAMPLE = 204;
   final static int RESP_STATUS_CONNECTED = 300;
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
@@ -273,12 +278,13 @@ class OpenBCI_Ganglion {
   }
 
   private void processAccel(String msg) {
-    // println(msg);
     String[] list = split(msg, ',');
-    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-      accelArray[i] = Integer.parseInt(list[i + 1]);
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        accelArray[i] = Integer.parseInt(list[i + 2]);
+      }
+      newAccelData = true;
     }
-    newAccelData = true;
   }
 
   private void processConnect(String msg) {
@@ -304,7 +310,7 @@ class OpenBCI_Ganglion {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
     if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
-      if (isSuccessCode(Integer.parseInt(list[1]))) { //<>//
+      if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
         // Sample number stuff
         dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
         if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
@@ -370,26 +376,19 @@ class OpenBCI_Ganglion {
 
   private void processImpedance(String msg) {
     String[] list = split(msg, ',');
-    println("Length = " + list.length);
-    for(int i = 0; i < list.length; i++){
-      println(i + " " + list[i]);
-    }
-    int channel = Integer.parseInt(list[1]);
-    if (channel < 5) { //<>//
-      println("channel - " + channel);
-      int value = Integer.parseInt(list[2]);
-      impedanceArray[channel] = value;
-
-      if (channel == 0) {
-        impedanceUpdated = true;
-        println("Impedance for channel reference is " + value + " ohms.");
-      } else {
-        println("? for channel " + channel + " is " + value + " ohms.");
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
+      int channel = Integer.parseInt(list[2]);
+      if (channel < 5) { //<>//
+        int value = Integer.parseInt(list[3]);
+        impedanceArray[channel] = value;
+        if (channel == 0) {
+          impedanceUpdated = true;
+          println("Impedance for channel reference is " + value + " ohms.");
+        } else {
+          println("? for channel " + channel + " is " + value + " ohms.");
+        }
       }
-    } else {
-      //println("Impedance " + list[2]);
     }
-
   }
 
   private void processScan(String msg) {
@@ -618,7 +617,7 @@ class OpenBCI_Ganglion {
         } else {
           println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
           safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
-          w_timeSeries.hsc.powerUpChannel(Ichan);
+          w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
     }
@@ -660,5 +659,19 @@ class OpenBCI_Ganglion {
     println("OpenBCI_Ganglion: impedance: STOP");
     safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
+  }
+
+  /**
+   * Puts the ganglion in bootloader mode.
+   */
+  public void enterBootloaderMode() {
+    println("OpenBCI_Ganglion: Entering Bootloader Mode");
+    safeTCPWrite(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
+    delay(500);
+    disconnectBLE();
+    haltSystem();
+    initSystemButton.setString("START SYSTEM");
+    controlPanel.open();
+    output("Ganglion now in bootloader mode! Enjoy!");
   }
 };
