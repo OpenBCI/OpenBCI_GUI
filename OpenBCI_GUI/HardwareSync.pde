@@ -38,6 +38,10 @@ int channelDeactivateCounter = 0; //used for re-deactivating channels after swit
 
 boolean threadLock = false;
 
+//these variables are used for "Kill Spikes" ... duplicating the last received data packet if packets were droppeds
+boolean werePacketsDropped = false;
+int numPacketsDropped = 0;
+
 
 //everything below is now deprecated...
 // final String[] command_activate_leadoffP_channel = {"!", "@", "#", "$", "%", "^", "&", "*"};  //shift + 1-8
@@ -74,7 +78,25 @@ void serialEvent(Serial port){
     if (openBCI.get_isNewDataPacketAvailable()) {
       //copy packet into buffer of data packets
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
+
       openBCI.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
+
+      // KILL SPIKES!!!
+      if(werePacketsDropped){
+        for(int i = numPacketsDropped; i > 0; i--){
+          int tempDataPacketInd = curDataPacketInd - i; //
+          if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+            openBCI.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+          } else {
+            openBCI.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
+          }
+          //put the last stored packet in # of packets dropped after that packet
+        }
+
+        //reset werePacketsDropped & numPacketsDropped
+        werePacketsDropped = false;
+        numPacketsDropped = 0;
+      }
 
       //If networking enabled --> send data every sample if 8 channels or every other sample if 16 channels
       if (networkType !=0) {
@@ -792,6 +814,14 @@ class OpenBCI_ADS1299 {
       if ((rawReceivedDataPacket.sampleIndex-prevSampleIndex) != 1) {
         if (rawReceivedDataPacket.sampleIndex != 0) {  // if we rolled over, don't count as error
           serialErrorCounter++;
+          werePacketsDropped = true; //set this true to activate packet duplication in serialEvent
+
+          if(rawReceivedDataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
+            numPacketsDropped = (rawReceivedDataPacket.sampleIndex+255) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+          } else {
+            numPacketsDropped = rawReceivedDataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+          }
+
           println("OpenBCI_ADS1299: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
           if (outputDataSource == OUTPUT_SOURCE_BDF) {
             int fakePacketsToWrite = (rawReceivedDataPacket.sampleIndex - prevSampleIndex) - 1;
