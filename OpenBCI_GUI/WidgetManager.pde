@@ -46,7 +46,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
-  // 
+
   // w_networking = new W_networking(_this);
   // w_networking.setTitle("Networking");
   // addWidget(w_networking, w);

@@ -472,7 +472,7 @@ class ChannelBar{
       if (is_railed[channelNumber-1].is_railed == true) {
         voltageValue.string = "RAILED";
       } else if (is_railed[channelNumber-1].is_railed_warn == true) {
-        voltageValue.string = "NEAR RAILED";
+        voltageValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
       }
     }
 
