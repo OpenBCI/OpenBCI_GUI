@@ -617,7 +617,7 @@ class OpenBCI_Ganglion {
         } else {
           println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
           safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
-          w_timeSeries.hsc.powerUpChannel(Ichan);
+          w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
     }

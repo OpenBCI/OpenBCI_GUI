@@ -10,7 +10,7 @@
 //
 ///////////////////////////////////////////////////,
 
-class W_OpenBionics extends Widget {
+class W_openBionics extends Widget {
 
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
@@ -50,7 +50,7 @@ class W_OpenBionics extends Widget {
   boolean wasConnected;
 
 
-  W_OpenBionics(PApplet _parent){
+  W_openBionics(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //This is the protocol for setting up dropdowns.
@@ -146,6 +146,7 @@ class W_OpenBionics extends Widget {
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    process();
 
   }
 
