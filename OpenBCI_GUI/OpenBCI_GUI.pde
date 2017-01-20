@@ -230,7 +230,8 @@ int indices = 0;
 boolean synthesizeData = false;
 
 int timeOfSetup = 0;
-boolean isGanglion = false;
+boolean isHubInitialized = false;
+boolean isGanglionObjectInitialized = false;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
@@ -255,9 +256,12 @@ void setup() {
   //  server on shut down of this app, the main process.
   // prepareExitHandler();
   if (dev == false) {
-    if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
-    hubStart();
-    prepareExitHandler();
+    // On windows wait to start the hub until Ganglion is clicked on in the control panel.
+    //  See issue #111
+    hubStop(); //kill any existing hubs before starting a new one..
+    if (!isWindows()) {
+      hubInit();
+    }
   }
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
@@ -389,6 +393,15 @@ private void prepareExitHandler () {
     }
   }
   ));
+}
+
+/**
+ * Starts the hub and sets prepares the exit handler.
+ */
+void hubInit() {
+  isHubInitialized = true;
+  hubStart();
+  prepareExitHandler();
 }
 
 /**
@@ -709,10 +722,10 @@ void haltSystem() {
 
 void systemUpdate() { // for updating data values and variables
 
-  if (millis() - timeOfSetup >= 1000 && isGanglion == false) {
+  if (isHubInitialized && isGanglionObjectInitialized == false && millis() - timeOfSetup >= 1500) {
     ganglion = new OpenBCI_Ganglion(this);
     println("Instantiating Ganglion object...");
-    isGanglion = true;
+    isGanglionObjectInitialized = true;
   }
 
   //update the sync state with the OpenBCI hardware
