@@ -240,7 +240,7 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
 int hubPid = 0;
-String nodeHubName = "Ganglion Hub";
+String nodeHubName = "GanglionHub";
 Robot rob3115;
 
 //-----------------------------------------1-------------------------------
@@ -255,7 +255,7 @@ void setup() {
   //  server on shut down of this app, the main process.
   // prepareExitHandler();
   if (dev == false) {
-    hubStop(); //kill any existing hubs before starting a new one..
+    if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
     hubStart();
     prepareExitHandler();
   }
@@ -400,13 +400,13 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("Ganglion Hub.exe"));
+      nodeHubby = launch(dataPath("GanglionHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = exec(dataPath("Ganglion Hub"));
+      nodeHubby = exec(dataPath("GanglionHub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
-      nodeHubby = launch(dataPath("Ganglion Hub.app"));
+      nodeHubby = launch(dataPath("GanglionHub.app"));
     }
     // hubRunning = true;
   }
@@ -478,7 +478,7 @@ void killRunningProcessMac() {
  */
 boolean killRunningprocessWin() {
   try {
-    Runtime.getRuntime().exec("taskkill /F /IM Ganglion Hub.exe");
+    Runtime.getRuntime().exec("taskkill /F /IM GanglionHub.exe");
     return true;
   }
   catch (Exception err) {
@@ -966,7 +966,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v2.0.0\nJanuary 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v2.1.0\nJanuary 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
