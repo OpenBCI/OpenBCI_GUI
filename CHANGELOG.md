@@ -1,3 +1,8 @@
+# 2.1.1
+
+### Bug Fixes
+* Fix #111 - No compatible USB now shows error in output, not an annoying popup.
+
 # 2.1.0
 
 ### Breaking Changes
