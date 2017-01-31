@@ -93,7 +93,7 @@ class W_ganglionImpedance extends Widget {
       popStyle();
     }
 
-    if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
+    if(isHubInitialized && isGanglionObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
       if(ganglion.isCheckingImpedance()){
         image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
       }
@@ -138,7 +138,7 @@ class W_ganglionImpedance extends Widget {
 
     //put your code here...
     if(startStopCheck.isActive && startStopCheck.isMouseHere()){
-      if(isGanglion && eegDataSource == DATASOURCE_GANGLION){
+      if(isHubInitialized && isGanglionObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
         if(ganglion.isCheckingImpedance()){
           ganglion.impedanceStop();
           startStopCheck.but_txt = "Start Impedance Check";
