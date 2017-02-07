@@ -157,7 +157,7 @@ OSCSend osc;
 LSLSend lsl;
 
 // Serial output
-String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port
+String serial_output_portName;  //set in the very beginning of SETUP after testing OS
 Serial serial_output;
 int serial_output_baud = 115200; //baud rate from the Arduino
 
@@ -250,6 +250,15 @@ Robot rob3115;
 
 //========================SETUP============================//
 
+
+  // predicts port name based on OS
+  // must edit this based on the name of the serial/COM port
+  if (!isWindows() || !isLinux()) {    
+    serial_output_portName = "/dev/tty.Bluetooth-Incoming-Port";   
+  } else {   
+    serial_output_portName = "/dev/tty.usbmodem1411";    
+  }
+  
 
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
