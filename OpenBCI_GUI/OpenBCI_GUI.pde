@@ -157,7 +157,7 @@ OSCSend osc;
 LSLSend lsl;
 
 // Serial output
-String serial_output_portName;  //set in the very beginning of SETUP after testing OS
+String serial_output_portName;  //set later depending on OS
 Serial serial_output;
 int serial_output_baud = 115200; //baud rate from the Arduino
 
@@ -248,17 +248,7 @@ Robot rob3115;
 //                       Global Functions
 //------------------------------------------------------------------------
 
-//========================SETUP============================//
-
-
-  // predicts port name based on OS
-  // must edit this based on the name of the serial/COM port
-  if (!isWindows() || !isLinux()) {    
-    serial_output_portName = "/dev/tty.Bluetooth-Incoming-Port";   
-  } else {   
-    serial_output_portName = "/dev/tty.usbmodem1411";    
-  }
-  
+//========================SETUP============================//  
 
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
@@ -345,6 +335,24 @@ void setup() {
   playground = new Playground(navBarHeight);
 
   //attempt to open a serial port for "output"
+    
+  
+  // predicts port name based on OS
+  // must edit this based on the name of the serial/COM port
+  if (!isWindows() || !isLinux()) {    
+    try {
+      ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", "ls /dev/tty.*"); //runs terminal command to get USB port name
+      builder.redirectErrorStream(true);
+      Process p = builder.start();
+      BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      serial_output_portName = r.readLine(); // sets port name to output of terminal command
+    } catch(IOException e) {
+      System.out.println(e);
+    }   
+  } else {   
+    serial_output_portName = "/dev/tty.usbmodem1411";    
+  }
+  
   try {
     verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
     serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
