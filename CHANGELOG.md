@@ -1,3 +1,8 @@
+# 2.1.2
+
+### Bug Fixes
+* Fix #120 - Locale dependent formatting cause issue with output ODF file.
+
 # 2.1.1
 
 ### Bug Fixes
