@@ -340,7 +340,7 @@ void setup() {
   
   // attempt to open a serial port for "output"
   // not neccesary for Mac because Mac doesn't use dongle
-  if (!isWindows() || !isLinux()) {    
+  if (isWindows() || isLinux()) {    
     try {
       verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
       serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
