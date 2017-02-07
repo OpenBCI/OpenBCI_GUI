@@ -157,7 +157,11 @@ OSCSend osc;
 LSLSend lsl;
 
 // Serial output
-String serial_output_portName;  //set later depending on OS
+
+// must edit this based on the name of the serial/COM port
+// unused when running on Mac
+String serial_output_portName = "/dev/tty.usbmodem1411";  
+
 Serial serial_output;
 int serial_output_baud = 115200; //baud rate from the Arduino
 
@@ -332,36 +336,21 @@ void setup() {
   loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
   loadingGIF_blue.loop();
 
-  playground = new Playground(navBarHeight);
-
-  //attempt to open a serial port for "output"
-    
+  playground = new Playground(navBarHeight);  
   
-  // predicts port name based on OS
-  // must edit this based on the name of the serial/COM port
+  // attempt to open a serial port for "output"
+  // not neccesary for Mac because Mac doesn't use dongle
   if (!isWindows() || !isLinux()) {    
     try {
-      ProcessBuilder builder = new ProcessBuilder("/bin/bash", "-c", "ls /dev/tty.*"); //runs terminal command to get USB port name
-      builder.redirectErrorStream(true);
-      Process p = builder.start();
-      BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-      serial_output_portName = r.readLine(); // sets port name to output of terminal command
-    } catch(IOException e) {
-      System.out.println(e);
-    }   
-  } else {   
-    serial_output_portName = "/dev/tty.usbmodem1411";    
+      verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
+      serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
+      serial_output.clear(); // clear anything in the com port's buffer
+    }
+    catch (RuntimeException e) {
+      verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
+    }  
   }
   
-  try {
-    verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
-    serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
-    serial_output.clear(); // clear anything in the com port's buffer
-  }
-  catch (RuntimeException e) {
-    verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
-  }
-
   // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
 
