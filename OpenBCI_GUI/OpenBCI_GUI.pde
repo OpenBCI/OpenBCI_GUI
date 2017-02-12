@@ -85,6 +85,8 @@ OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access 
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
+String our_arduino_portName = "/dev/tty.usb";
+
 OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
 String ganglion_portName = "N/A";
 

@@ -28,7 +28,7 @@ void process_input_file() throws Exception {
 
       for (int Ichan=0; Ichan < nchan; Ichan++) {
         //scale the data into engineering units..."microvolts"
-        localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.get_scale_fac_uVolts_per_count();
+        localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]*openBCI.get_scale_fac_uVolts_per_count();
       }
       processed_file.put(curTimestamp, localLittleBuff);
       index_of_times.put(indices,curTimestamp);
@@ -357,7 +357,11 @@ class DataProcessing {
   private int currentNotch_ind = 0;  // set to 0 to default to 60Hz, set to 1 to default to 50Hz
   float data_std_uV[];
   float polarity[];
+  int numBins = 2;
+  private String[] binNames;
+  private int[][] bins = new int[2][2];
 
+  // int bins[numBins][2] =
 
   DataProcessing(int NCHAN, float sample_rate_Hz) {
     nchan = NCHAN;
@@ -375,6 +379,10 @@ class DataProcessing {
       println("EEG_Processing: *** ERROR *** Filters can currently only work at 250 Hz or 200 Hz");
       defineFilters(0);  //define the filters anyway just so that the code doesn't bomb
     }
+    bins[0][0] = 7;
+    bins[0][1] = 14;
+    bins[1][0] = 14;
+    bins[1][1] = 40;
   }
 
   public float getSampleRateHz() {
@@ -627,6 +635,7 @@ class DataProcessing {
 
     //update the FFT (frequency spectrum)
     // println("nchan = " + nchan);
+    float avgPowerInBins[][] = new float[nchan][numBins];
     for (int Ichan=0; Ichan < nchan; Ichan++) {
 
       //copy the previous FFT data...enables us to apply some smoothing to the FFT data
@@ -675,8 +684,16 @@ class DataProcessing {
         }
         fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
       } //end loop over FFT bins
+      for (int i = 0; i < numBins; i++) {
+        float sum = 0;
+        for (int j = bins[i][0]; j < bins[i][1]; j++) {
+          sum += fftBuff[Ichan].getBand(j);
+        }
+        avgPowerInBins[Ichan][i] = sum;
+      }
     } //end the loop over channels.
-
+    print("Alpha: "); println(avgPowerInBins[1][0]);
+    print("Beta: "); println(avgPowerInBins[1][1]);
 
     //find strongest channel
     int refChanInd = findMax(data_std_uV);
