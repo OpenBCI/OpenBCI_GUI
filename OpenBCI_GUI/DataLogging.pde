@@ -87,9 +87,9 @@ void openNewLogFileODF(String _fileName) {
  */
 void playbackSelected(File selection) {
   if (selection == null) {
-    println("ControlPanel: playbackSelected: Window was closed or the user hit cancel.");
+    println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
   } else {
-    println("ControlPanel: playbackSelected: User selected " + selection.getAbsolutePath());
+    println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
     output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = selection.getAbsolutePath();
   }
@@ -135,7 +135,7 @@ void fileSelected(File selection) {  //called by the Open File dialog box after 
     println("fileSelected: no selection so far...");
   } else {
     //inputFile = selection;
-    playbackData_fname = selection.getAbsolutePath();
+    playbackData_fname = selection.getAbsolutePath(); //<>//
   }
 }
 
@@ -260,7 +260,7 @@ public class OutputFile_rawtxt {
     int nVal = values.length;
     for (int Ival = 0; Ival < nVal; Ival++) {
       output.print(", ");
-      output.print(String.format("%.2f", scale_fac * float(values[Ival])));
+      output.print(String.format(Locale.US, "%.2f", scale_fac * float(values[Ival])));
     }
   }
 
@@ -268,7 +268,7 @@ public class OutputFile_rawtxt {
     int nVal = values.length;
     for (int Ival = 0; Ival < nVal; Ival++) {
       output.print(", ");
-      output.print(String.format("%.3f", scale_fac * float(values[Ival])));
+      output.print(String.format(Locale.US, "%.3f", scale_fac * float(values[Ival])));
     }
   }
 
