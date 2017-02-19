@@ -98,14 +98,6 @@ void serialEvent(Serial port){
         numPacketsDropped = 0;
       }
 
-      //If networking enabled --> send data every sample if 8 channels or every other sample if 16 channels
-      if (networkType !=0) {
-        if (nchan==8) {
-          sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
-        } else if ((nchan==16) && ((dataPacketBuff[curDataPacketInd].sampleIndex %2)!=1)) {
-          sendRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
-        }
-      }
       switch (outputDataSource) {
       case OUTPUT_SOURCE_ODF:
         fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], openBCI.get_scale_fac_uVolts_per_count(), openBCI.get_scale_fac_accel_G_per_count());
