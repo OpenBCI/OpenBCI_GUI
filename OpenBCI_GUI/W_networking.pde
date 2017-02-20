@@ -47,9 +47,6 @@ class W_networking extends Widget {
   /* Networking */
   Boolean networkActive;
 
-
-
-
   W_networking(PApplet _parent){
     super(_parent);
     networkActive = false;
@@ -65,11 +62,10 @@ class W_networking extends Widget {
 
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
     pushStyle();
     showCP5();
 
-    fill(0,0,0);                  // Background fill: white
+    fill(0,0,0);// Background fill: white
     textFont(h1,20);
     text("Stream 1",column1,row0);
     text("Stream 2",column2,row0);
@@ -86,23 +82,30 @@ class W_networking extends Widget {
       text("Port", column0,row3);
       text("Address",column0,row4);
       text("Filter",column0,row5);
+    }else if (protocolMode.equals("UDP")){
+      textFont(f4,40);
+      text("UDP", x+10,y+h/8);
+      textFont(h1,20);
+      text("IP", column0,row2);
+      text("Port", column0,row3);
+      text("Filter",column0,row4);
+    }else if (protocolMode.equals("LSL")){
+      textFont(f4,40);
+      text("LSL", x+10,y+h/8);
+      textFont(h1,20);
+      text("Name", column0,row2);
+      text("Type", column0,row3);
+      text("# Chan", column0, row4);
     }
-    // UDP
-
-
     popStyle();
 
   }
 
   void initialize_UI(){
-
-    /* Initialize CP5 and callback */
     cp5_networking = new ControlP5(pApplet);
     callback_init();
 
-
     /* Textfields */
-
     // OSC
     createTextFields("osc_ip1","localhost");
     createTextFields("osc_port1","12345");
@@ -113,80 +116,81 @@ class W_networking extends Widget {
     createTextFields("osc_ip3","localhost");
     createTextFields("osc_port3","12345");
     createTextFields("osc_address3","/openbci");
+    // UDP
+    createTextFields("udp_ip1","localhost");
+    createTextFields("udp_port1","12345");
+    createTextFields("udp_ip2","localhost");
+    createTextFields("udp_port2","12345");
+    createTextFields("udp_ip3","localhost");
+    createTextFields("udp_port3","12345");
+    // LSL
+    createTextFields("lsl_name1","obci_eeg");
+    createTextFields("lsl_type1","EEG");
+    createTextFields("lsl_numchan1","8");
+    createTextFields("lsl_name2","obci_eeg");
+    createTextFields("lsl_type2","EEG");
+    createTextFields("lsl_numchan2","8");
+    createTextFields("lsl_name3","obci_eeg");
+    createTextFields("lsl_type3","EEG");
+    createTextFields("lsl_numchan3","8");
 
-    // General
+    /* General Elements */
     createDropdown("dataType1");
     createDropdown("dataType2");
     createDropdown("dataType3");
-
     createRadioButtons("filter1");
     createRadioButtons("filter2");
     createRadioButtons("filter3");
-
     // Start Button
     startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
     startButton.setFont(p4,14);
     startButton.setColorNotPressed(color(184,220,105));
-
-
-
-
-
-
   }
 
   void showCP5(){
 
-  osc_visible=false;
-  udp_visible=false;
-  lsl_visible=false;
+    osc_visible=false;
+    udp_visible=false;
+    lsl_visible=false;
 
-  if(protocolMode.equals("OSC")){
-    osc_visible = true;
+    if(protocolMode.equals("OSC")){
+      osc_visible = true;
+    }else if (protocolMode.equals("UDP")){
+      udp_visible = true;
+    }else if (protocolMode.equals("LSL")){
+      lsl_visible = true;
+    }
+    cp5_networking.get(Textfield.class, "osc_ip1").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_port1").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_address1").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_ip2").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_port2").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_address2").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_ip3").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_port3").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_address3").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "udp_ip1").setVisible(udp_visible);
+    cp5_networking.get(Textfield.class, "udp_port1").setVisible(udp_visible);
+    cp5_networking.get(Textfield.class, "udp_ip2").setVisible(udp_visible);
+    cp5_networking.get(Textfield.class, "udp_port2").setVisible(udp_visible);
+    cp5_networking.get(Textfield.class, "udp_ip3").setVisible(udp_visible);
+    cp5_networking.get(Textfield.class, "udp_port3").setVisible(udp_visible);
+    cp5_networking.get(Textfield.class, "lsl_name1").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_type1").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_numchan1").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_name2").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_type2").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_numchan2").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_name3").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_type3").setVisible(lsl_visible);
+    cp5_networking.get(Textfield.class, "lsl_numchan3").setVisible(lsl_visible);
+    cp5_networking.get(ScrollableList.class, "dataType1").setVisible(true);
+    cp5_networking.get(ScrollableList.class, "dataType2").setVisible(true);
+    cp5_networking.get(ScrollableList.class, "dataType3").setVisible(true);
+    cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
+    cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
+    cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
   }
-  // int buttonRow=5;
-  // if (protocolMode==0){
-  //   buttonRow = row5;
-  // }else if (protocolMode==1){
-  //   buttonRow = row4;
-  // }else if (protocolMode==2){
-  //   buttonRow = row4;
-  // }
-
-  cp5_networking.get(Textfield.class, "osc_ip1").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_port1").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_address1").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_ip2").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_port2").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_address2").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_ip3").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_port3").setVisible(osc_visible);
-  cp5_networking.get(Textfield.class, "osc_address3").setVisible(osc_visible);
-  // cp5_networking.get(Textfield.class, "udp_ip1").setVisible(udp_visible);
-  // cp5_networking.get(Textfield.class, "udp_port1").setVisible(udp_visible);
-  // cp5_networking.get(Textfield.class, "udp_ip2").setVisible(udp_visible);
-  // cp5_networking.get(Textfield.class, "udp_port2").setVisible(udp_visible);
-  // cp5_networking.get(Textfield.class, "udp_ip3").setVisible(udp_visible);
-  // cp5_networking.get(Textfield.class, "udp_port3").setVisible(udp_visible);
-  // cp5_networking.get(Textfield.class, "lsl_name1").setVisible(lsl_visible);
-  // cp5_networking.get(Textfield.class, "lsl_name2").setVisible(lsl_visible);
-  // cp5_networking.get(Textfield.class, "lsl_name3").setVisible(lsl_visible);
-  //
-  // /* TEMPORARY DATA TYPE TEXTFIELD */
-  // cp5_networking.get(Textfield.class, "datatype_stream1").setVisible(true);
-  // cp5_networking.get(Textfield.class, "datatype_stream2").setVisible(true);
-  // cp5_networking.get(Textfield.class, "datatype_stream3").setVisible(true);
-
-  cp5_networking.get(ScrollableList.class, "dataType1").setVisible(true);
-  cp5_networking.get(ScrollableList.class, "dataType2").setVisible(true);
-  cp5_networking.get(ScrollableList.class, "dataType3").setVisible(true);
-
-
-  cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
-  cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
-  cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
-
-}
 
   /**
  * @description Initializes the callback function for the cp5_networking instance
@@ -311,9 +315,31 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "osc_ip3").setPosition(column3, row2 - offset);
     cp5_networking.get(Textfield.class, "osc_port3").setPosition(column3, row3 - offset);
     cp5_networking.get(Textfield.class, "osc_address3").setPosition(column3, row4 - offset);
-    cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
-    cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
-    cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
+    cp5_networking.get(Textfield.class, "udp_ip1").setPosition(column1, row2 - offset);
+    cp5_networking.get(Textfield.class, "udp_port1").setPosition(column1, row3 - offset);
+    cp5_networking.get(Textfield.class, "udp_ip2").setPosition(column2, row2 - offset);
+    cp5_networking.get(Textfield.class, "udp_port2").setPosition(column2, row3 - offset);
+    cp5_networking.get(Textfield.class, "udp_ip3").setPosition(column3, row2 - offset);
+    cp5_networking.get(Textfield.class, "udp_port3").setPosition(column3, row3 - offset);
+    cp5_networking.get(Textfield.class, "lsl_name1").setPosition(column1,row2 - offset);
+    cp5_networking.get(Textfield.class, "lsl_type1").setPosition(column1,row3 - offset);
+    cp5_networking.get(Textfield.class, "lsl_numchan1").setPosition(column1,row4 - offset);
+    cp5_networking.get(Textfield.class, "lsl_name2").setPosition(column2,row2 - offset);
+    cp5_networking.get(Textfield.class, "lsl_type2").setPosition(column2,row3 - offset);
+    cp5_networking.get(Textfield.class, "lsl_numchan2").setPosition(column2,row4 - offset);
+    cp5_networking.get(Textfield.class, "lsl_name3").setPosition(column3,row2 - offset);
+    cp5_networking.get(Textfield.class, "lsl_type3").setPosition(column3,row3 - offset);
+    cp5_networking.get(Textfield.class, "lsl_numchan3").setPosition(column3,row4 - offset);
+    if (protocolMode.equals("OSC") || protocolMode.equals("LSL")){
+      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
+      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
+      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
+    }else if (protocolMode.equals("UDP")){
+      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
+    }
+
     cp5_networking.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
     cp5_networking.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
     cp5_networking.get(ScrollableList.class, "dataType3").setPosition(column3, row1-offset);
@@ -332,16 +358,12 @@ class W_networking extends Widget {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
     if(startButton.isActive && startButton.isMouseHere()){
       if(!networkActive){
-        networkActive = true;
-        startButton.setColorNotPressed(color(224, 56, 45));
-        startButton.setString("Stop");
-        // initializeStreams();
+        turnOnButton();
+        initializeStreams();
         // startStreams();
         // setFilters();
       }else{
-        networkActive = false;
-        startButton.setColorNotPressed(color(184,220,105));
-        startButton.setString("Start");
+        turnOffButton();
         // stopStreams();
         // stream1=null;
         // stream2=null;
@@ -349,25 +371,146 @@ class W_networking extends Widget {
       }
     }
     startButton.setIsActive(false);
-    //put your code here...
-
   }
+  void hideElements(){
+    cp5_networking.get(Textfield.class, "osc_ip1").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_port1").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_address1").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_ip2").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_port2").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_address2").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_ip3").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_port3").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_address3").setVisible(false);
+    cp5_networking.get(Textfield.class, "udp_ip1").setVisible(false);
+    cp5_networking.get(Textfield.class, "udp_port1").setVisible(false);
+    cp5_networking.get(Textfield.class, "udp_ip2").setVisible(false);
+    cp5_networking.get(Textfield.class, "udp_port2").setVisible(false);
+    cp5_networking.get(Textfield.class, "udp_ip3").setVisible(false);
+    cp5_networking.get(Textfield.class, "udp_port3").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_name1").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_type1").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_numchan1").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_name2").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_type2").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_numchan2").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_name3").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_type3").setVisible(false);
+    cp5_networking.get(Textfield.class, "lsl_numchan3").setVisible(false);
+    cp5_networking.get(ScrollableList.class, "dataType1").setVisible(false);
+    cp5_networking.get(ScrollableList.class, "dataType2").setVisible(false);
+    cp5_networking.get(ScrollableList.class, "dataType3").setVisible(false);
+    cp5_networking.get(RadioButton.class, "filter1").setVisible(false);
+    cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
+    cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
+  }
+
+  void turnOffButton(){
+    networkActive = false;
+    startButton.setColorNotPressed(color(184,220,105));
+    startButton.setString("Start");
+  }
+  void turnOnButton(){
+    networkActive = true;
+    startButton.setColorNotPressed(color(224, 56, 45));
+    startButton.setString("Stop");
+  }
+
+
 
   /* -----NETWORKING MECHANISMS ---- */
 
   void update(){
     super.update();
+  }
+
+  void initializeStreams(){
+    String ip;
+    int port;
+    String address;
+    int filt_pos;
+    String dt1="None";
+    String dt2="None";
+    String dt3="None";
+    switch ((int)cp5_networking.get(ScrollableList.class, "dataType1").getValue()){
+      case 0 : dt1 = "None";
+        break;
+      case 1 : dt1 = "TimeSeries";
+        break;
+      case 2 : dt1 = "FFT";
+        break;
+      case 3 : dt1 = "Widget";
+        break;
+    }
+    switch ((int)cp5_networking.get(ScrollableList.class, "dataType2").getValue()){
+      case 0 : dt2 = "None";
+        break;
+      case 1 : dt2 = "TimeSeries";
+        break;
+      case 2 : dt2 = "FFT";
+        break;
+      case 3 : dt2 = "Widget";
+        break;
+    }
+    switch ((int)cp5_networking.get(ScrollableList.class, "dataType3").getValue()){
+      case 0 : dt3 = "None";
+        break;
+      case 1 : dt3 = "TimeSeries";
+        break;
+      case 2 : dt3 = "FFT";
+        break;
+      case 3 : dt3 = "Widget";
+        break;
+    }
+    if (protocolMode.equals("OSC")){
+      if(!dt1.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "osc_ip1").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port1").getText());
+        address = cp5_networking.get(Textfield.class, "osc_address1").getText();
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+        println(dt1,ip,port,address,filt_pos);
+      }else{
+        println("NULL STREAM1");
+      }
+      if(!dt2.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "osc_ip2").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port1").getText());
+        address = cp5_networking.get(Textfield.class, "osc_address2").getText();
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
+        println(dt2, ip,port,address,filt_pos);
+      }else{
+        println("NULL STREAM2");
+      }
+      if(!dt3.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "osc_ip3").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port3").getText());
+        address = cp5_networking.get(Textfield.class, "osc_address3").getText();
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
+        println(dt3, ip,port,address,filt_pos);
+      }else{
+        println("NULL STREAM3");
+      }
+    }
+
 
   }
+
+
+  void shutDown(){
+    hideElements();
+    turnOffButton();
+
+  }
+
 
 };
 
 
-  /* Dropdown Menu Callback Functions */
-  /**
-   * @description Sets the selected protocol mode from the widget's dropdown menu
-   * @param `n` {int} - Index of protocol item selected in menu
-   */
+/* Dropdown Menu Callback Functions */
+/**
+ * @description Sets the selected protocol mode from the widget's dropdown menu
+ * @param `n` {int} - Index of protocol item selected in menu
+ */
 void Protocol(int n){
   if (n == 0){
     w_networking.protocolMode = "OSC";
@@ -377,7 +520,7 @@ void Protocol(int n){
     w_networking.protocolMode = "LSL";
   }
   println(w_networking.protocolMode + " selected from Protocol Menu");
-
-  // w_networking.showCP5();
+  w_networking.screenResized();
+  w_networking.showCP5();
   closeAllDropdowns();
 }
