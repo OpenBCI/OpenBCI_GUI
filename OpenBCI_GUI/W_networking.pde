@@ -42,10 +42,17 @@ class W_networking extends Widget {
   Boolean udp_visible;
   Boolean lsl_visible;
   List<String> dataTypes;
+  Button startButton;
+
+  /* Networking */
+  Boolean networkActive;
+
+
 
 
   W_networking(PApplet _parent){
     super(_parent);
+    networkActive = false;
     dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "Widget");
     protocolMode = "OSC"; //default to OSC
     addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL","Widget"), protocolIndex);
@@ -59,7 +66,6 @@ class W_networking extends Widget {
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-
     pushStyle();
     showCP5();
 
@@ -69,6 +75,7 @@ class W_networking extends Widget {
     text("Stream 2",column2,row0);
     text("Stream 3",column3,row0);
     text("Data Type", column0,row1);
+    startButton.draw();
 
 
     if(protocolMode.equals("OSC")){
@@ -115,6 +122,12 @@ class W_networking extends Widget {
     createRadioButtons("filter1");
     createRadioButtons("filter2");
     createRadioButtons("filter3");
+
+    // Start Button
+    startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
+    startButton.setFont(p4,14);
+    startButton.setColorNotPressed(color(184,220,105));
+
 
 
 
@@ -248,6 +261,7 @@ class W_networking extends Widget {
         .setBarHeight(navH-4) //height of top/primary bar
         .setItemHeight(navH-4) //height of all item/dropdown bars
         .addItems(dataTypes) // used to be .addItems(maxFreqList)
+        .setVisible(false)
         ;
     cp5_networking.getController(name)
       .getCaptionLabel() //the caption label is the text object in the primary bar
@@ -286,6 +300,8 @@ class W_networking extends Widget {
     row4 = y+7*h/10;
     row5 = y+8*h/10;
     int offset = 17;
+
+    startButton.setPos(x + w/2 - 70, y + h - 40 );
     cp5_networking.get(Textfield.class, "osc_ip1").setPosition(column1, row2 - offset);
     cp5_networking.get(Textfield.class, "osc_port1").setPosition(column1, row3 - offset);
     cp5_networking.get(Textfield.class, "osc_address1").setPosition(column1, row4 - offset);
@@ -305,15 +321,34 @@ class W_networking extends Widget {
 
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-    //put your code here...
+    if(startButton.isMouseHere()){
+      startButton.setIsActive(true);
+    }
 
 
   }
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
+    if(startButton.isActive && startButton.isMouseHere()){
+      if(!networkActive){
+        networkActive = true;
+        startButton.setColorNotPressed(color(224, 56, 45));
+        startButton.setString("Stop");
+        // initializeStreams();
+        // startStreams();
+        // setFilters();
+      }else{
+        networkActive = false;
+        startButton.setColorNotPressed(color(184,220,105));
+        startButton.setString("Start");
+        // stopStreams();
+        // stream1=null;
+        // stream2=null;
+        // stream3=null;
+      }
+    }
+    startButton.setIsActive(false);
     //put your code here...
 
   }
