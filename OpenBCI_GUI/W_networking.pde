@@ -41,12 +41,14 @@ class W_networking extends Widget {
   Boolean osc_visible;
   Boolean udp_visible;
   Boolean lsl_visible;
+  List<String> dataTypes;
 
 
   W_networking(PApplet _parent){
     super(_parent);
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "Widget");
     protocolMode = "OSC"; //default to OSC
-    // addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL","Widget"), protocolIndex);
+    addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL","Widget"), protocolIndex);
     initialize_UI();
 
   }
@@ -56,6 +58,7 @@ class W_networking extends Widget {
 
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+
 
     pushStyle();
     showCP5();
@@ -103,6 +106,12 @@ class W_networking extends Widget {
     createTextFields("osc_ip3","localhost");
     createTextFields("osc_port3","12345");
     createTextFields("osc_address3","/openbci");
+
+    // General
+    createDropdown("dataType1");
+    createDropdown("dataType2");
+    createDropdown("dataType3");
+
     createRadioButtons("filter1");
     createRadioButtons("filter2");
     createRadioButtons("filter3");
@@ -131,9 +140,6 @@ class W_networking extends Widget {
   //   buttonRow = row4;
   // }
 
-  // cp5_networking.get(Textfield.class, "filter1").setVisible(true);
-  // cp5_networking.get(Textfield.class, "filter2").setVisible(true);
-  // cp5_networking.get(Textfield.class, "filter3").setVisible(true);
   cp5_networking.get(Textfield.class, "osc_ip1").setVisible(osc_visible);
   cp5_networking.get(Textfield.class, "osc_port1").setVisible(osc_visible);
   cp5_networking.get(Textfield.class, "osc_address1").setVisible(osc_visible);
@@ -157,6 +163,12 @@ class W_networking extends Widget {
   // cp5_networking.get(Textfield.class, "datatype_stream1").setVisible(true);
   // cp5_networking.get(Textfield.class, "datatype_stream2").setVisible(true);
   // cp5_networking.get(Textfield.class, "datatype_stream3").setVisible(true);
+
+  cp5_networking.get(ScrollableList.class, "dataType1").setVisible(true);
+  cp5_networking.get(ScrollableList.class, "dataType2").setVisible(true);
+  cp5_networking.get(ScrollableList.class, "dataType3").setVisible(true);
+
+
   cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
   cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
   cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
@@ -214,7 +226,6 @@ class W_networking extends Widget {
   }
   void createRadioButtons(String name){
     String id = name.substring(name.length()-1);
-
     cp5_networking.addRadioButton(name)
         .setSize(10,10)
         .setColorForeground(color(120))
@@ -227,7 +238,39 @@ class W_networking extends Widget {
         .activate(0)
         .setVisible(false)
         ;
-}
+  }
+
+  void createDropdown(String name){
+    cp5_networking.addScrollableList(name)
+        .setOpen(false)
+        .setColor(dropdownColors)
+        .setSize(80,200)// + maxFreqList.size())
+        .setBarHeight(navH-4) //height of top/primary bar
+        .setItemHeight(navH-4) //height of all item/dropdown bars
+        .addItems(dataTypes) // used to be .addItems(maxFreqList)
+        ;
+    cp5_networking.getController(name)
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("None")
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;
+    cp5_networking.getController(name)
+      .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("None")
+      .setFont(h5)
+      .setSize(12) //set the font size of the item bars to 14pt
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(3) //4-pixel vertical offset to center text
+      ;
+
+  }
+
+
 
   void screenResized(){
     super.screenResized();
@@ -255,9 +298,9 @@ class W_networking extends Widget {
     cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
     cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
     cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
-
-
-
+    cp5_networking.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
+    cp5_networking.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
+    cp5_networking.get(ScrollableList.class, "dataType3").setPosition(column3, row1-offset);
   }
 
   void mousePressed(){
