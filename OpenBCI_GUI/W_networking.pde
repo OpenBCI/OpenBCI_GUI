@@ -396,6 +396,18 @@ class W_networking extends Widget {
 
   void update(){
     super.update();
+    if(protocolMode.equals("LSL")){
+      if(stream1!=null){
+        stream1.run();
+      }
+      if(stream2!=null){
+        stream2.run();
+      }
+      if(stream2!=null){
+        stream2.run();
+      }
+    }
+
   }
 
   void initializeStreams(){
@@ -403,6 +415,9 @@ class W_networking extends Widget {
     int port;
     String address;
     int filt_pos;
+    String name;
+    int nChanLSL;
+    String type;
     String dt1="None";
     String dt2="None";
     String dt3="None";
@@ -464,6 +479,34 @@ class W_networking extends Widget {
       }else{
         stream3 = null;
       }
+    }else if (protocolMode.equals("LSL")){
+      if(!dt1.equals("None")){
+        name = cp5_networking.get(Textfield.class, "lsl_name1").getText();
+        type = cp5_networking.get(Textfield.class, "lsl_type1").getText();
+        nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "lsl_numchan1").getText());
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+        stream1 = new Stream(dt1,name,type,nChanLSL,filt_pos);
+      }else{
+        stream1 = null;
+      }
+      if(!dt2.equals("None")){
+        name = cp5_networking.get(Textfield.class, "lsl_name2").getText();
+        type = cp5_networking.get(Textfield.class, "lsl_type2").getText();
+        nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "lsl_numchan2").getText());
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
+        stream2 = new Stream(dt2,name,type,nChanLSL,filt_pos);
+      }else{
+        stream2 = null;
+      }
+      if(!dt3.equals("None")){
+        name = cp5_networking.get(Textfield.class, "lsl_name3").getText();
+        type = cp5_networking.get(Textfield.class, "lsl_type3").getText();
+        nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "lsl_numchan3").getText());
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
+        stream3 = new Stream(dt3,name,type,nChanLSL,filt_pos);
+      }else{
+        stream3 = null;
+      }
     }
   }
 
@@ -512,16 +555,23 @@ class Stream extends Thread{
   String address;
   int filter;
   String streamType;
+  String streamName;
+  int nChanLSL;
 
   Boolean isStreaming;
+  Boolean newData = false;
   int numChan = 8;
   // Data buffers
   int start = dataBuffY_filtY_uV[0].length-11;
   int end = dataBuffY_filtY_uV[0].length-1;
   int bufferLen = end-start;
-  float[][] dataToSend = new float[numChan][bufferLen];
+  float[] dataToSend = new float[numChan];
 
-
+  // LSL objects
+  LSL.StreamInfo info_data;
+  LSL.StreamOutlet outlet_data;
+  LSL.StreamInfo info_aux;
+  LSL.StreamOutlet outlet_aux;
 
   //OSC
   OscP5 osc;
@@ -541,76 +591,118 @@ class Stream extends Thread{
     }catch (Exception e){
     }
   }
+  /* LSL Stream */
+  Stream(String dataType, String streamName, String streamType, int nChanLSL, int filter){
+    this.protocol = "LSL";
+    this.dataType = dataType;
+    this.streamName = streamName;
+    this.streamType = streamType;
+    this.nChanLSL = nChanLSL;
+    this.filter = filter;
+    this.isStreaming = false;
+    try{
+      closeNetwork(); //make sure everything is closed!
+    }catch (Exception e){
+    }
+  }
+
+
   void start(){
     this.isStreaming = true;
-    super.start();
+    if(!this.protocol.equals("LSL")){
+      super.start();
+    }else{
+      openNetwork();
+    }
   }
 
   void run(){
-    openNetwork();
-    Boolean newData = false;
-    // float[][] oldData = null;
-    float[][] oldData = new float[8][bufferLen];
-    Boolean tempNew = false;
-    while(this.isStreaming){
-      if(!isRunning){
-        try{
-          Thread.sleep(1);
-          Boolean a = isRunning; //weird hack~
-        }catch (InterruptedException e){
-          println(e);
+    if (!this.protocol.equals("LSL")){
+      openNetwork();
+      while(this.isStreaming){
+        if(!isRunning){
+          try{
+            Thread.sleep(1);
+            Boolean a = isRunning; //weird hack~
+          }catch (InterruptedException e){
+            println(e);
+          }
+        }else{
+          try{
+            Thread.sleep(1);
+            newData = dataProcessing.newDataToSend; //weird hack~
+          }catch (InterruptedException e){
+            println(e);
+          }
         }
-      }else{
-        try{
-          Thread.sleep(1);
-          newData = dataProcessing.newDataToSend; //weird hack~
-        }catch (InterruptedException e){
-          println(e);
-        }
-      }
-      if (newData && isRunning){
-        if (this.dataType.equals("TimeSeries")){
-          if(filter==0){
-             for(int i=0;i<bufferLen;i++){
-               msg.clearArguments();
-               for(int j=0;j<numChan;j++){
-                 msg.add(yLittleBuff_uV[j][i]);
+        if (newData && isRunning){
+          if (this.dataType.equals("TimeSeries")){
+            if(filter==0){
+               for(int i=0;i<bufferLen;i++){
+                 msg.clearArguments();
+                 for(int j=0;j<numChan;j++){
+                   msg.add(yLittleBuff_uV[j][i]);
+                 }
+                try{
+                  this.osc.send(msg,this.netaddress);
+                }catch (Exception e){
+                  println(e);
+                }
+              }
+            }else if (filter==1){
+              for(int i=0;i<bufferLen;i++){
+                msg.clearArguments();
+                for(int j=0;j<numChan;j++){
+                  msg.add(dataBuffY_filtY_uV[j][start+i]);
+                }
+               try{
+                 this.osc.send(msg,this.netaddress);
+               }catch (Exception e){
+                 println(e);
                }
+             }
+           }
+          }else if (this.dataType.equals("FFT")){
+            for (int i=0;i<numChan;i++){
+              msg.clearArguments();
+              msg.add("Channel " + str(i));
+              for (int j=0;j<120;j++){
+                msg.add(fftBuff[i].getBand(j));
+              }
               try{
                 this.osc.send(msg,this.netaddress);
               }catch (Exception e){
                 println(e);
               }
             }
+          }
+          dataProcessing.newDataToSend = false;
+        }
+      }
+    }
+    else{
+      newData = dataProcessing.newDataToSend;
+      if (newData && isRunning){
+        if (this.dataType.equals("TimeSeries")){
+          if(filter==0){
+             for(int i=0;i<bufferLen;i++){
+               for(int j=0;j<numChan;j++){
+                 dataToSend[j] = yLittleBuff_uV[j][i];
+               }
+               outlet_data.push_sample(dataToSend);
+             }
           }else if (filter==1){
             for(int i=0;i<bufferLen;i++){
-              msg.clearArguments();
               for(int j=0;j<numChan;j++){
-                msg.add(dataBuffY_filtY_uV[j][start+i]);
+                dataToSend[j] = dataBuffY_filtY_uV[j][i];
               }
-             try{
-               this.osc.send(msg,this.netaddress);
-             }catch (Exception e){
-               println(e);
-             }
+              outlet_data.push_sample(dataToSend);
+            }
            }
          }
-        }else if (this.dataType.equals("FFT")){
-          for (int i=0;i<numChan;i++){
-            msg.clearArguments();
-            msg.add("Channel " + str(i));
-            for (int j=0;j<120;j++){
-              msg.add(fftBuff[i].getBand(j));
-            }
-            try{
-              this.osc.send(msg,this.netaddress);
-            }catch (Exception e){
-              println(e);
-            }
-          }
-        }
-        dataProcessing.newDataToSend = false;
-      }
+         dataProcessing.newDataToSend = false;
+       }
+
     }
   }
   void quit(){
@@ -629,7 +721,7 @@ class Stream extends Thread{
     }else if (this.protocol.equals("UDP")){
       // this.udp.close();
     }else if (this.protocol.equals("LSL")){
-      //halt lsl stream (check API)
+      outlet_data.close();
     }
   }
 
@@ -637,57 +729,43 @@ class Stream extends Thread{
     println(getAttributes());
     if(this.protocol.equals("OSC")){
       //Possibly enter a nice custom exception here
-        this.osc = new OscP5(this,this.port + 1000);
-        this.netaddress = new NetAddress(this.ip,this.port);
-        this.msg = new OscMessage(this.address);
+      this.osc = new OscP5(this,this.port + 1000);
+      this.netaddress = new NetAddress(this.ip,this.port);
+      this.msg = new OscMessage(this.address);
+    }else if (this.protocol.equals("LSL")){
+      String stream_id = "q4asdgdsg";
+      info_data = new LSL.StreamInfo(
+                            this.streamName,
+                            this.streamType,
+                            this.nChanLSL,
+                            openBCI.get_fs_Hz(),
+                            LSL.ChannelFormat.float32,
+                            stream_id
+                          );
+      outlet_data = new LSL.StreamOutlet(info_data);
     }
   }
-  // void sendData(float[][] dataToSend){
-  //   this.msg.clearArguments();
-  //   this.msg.add("Unfiltered timeseries data");
-  //   this.osc.send(this.msg,this.netaddress);
-  //     }else if (this.filter == 1){
-  //       this.msg.add("Filtered timeseries data");
-  //       this.osc.send(this.msg,this.netaddress);
-  //     }
-  //   }else if (this.dataType.equals("FFT")){
-  //     if(this.filter == 0){
-  //       this.msg.add("Unfiltered FFT data");
-  //       this.osc.send(this.msg,this.netaddress);
-  //     }else if (this.filter == 1){
-  //       this.msg.add("Filtered FFT data");
-  //       this.osc.send(this.msg,this.netaddress);
-  //     }
-  //   }else if (this.dataType.equals("Widget")){
-  //     this.msg.add("WIDGET");
-  //     this.osc.send(this.msg,this.netaddress);
-  //   }
-  // }
 
   List getAttributes(){
     List attributes = new ArrayList();
-    attributes.add(this.dataType);
-    attributes.add(this.ip);
-    attributes.add(this.port);
-    attributes.add(this.address);
-    attributes.add(this.filter);
+    if (this.protocol.equals("OSC")){
+      attributes.add(this.dataType);
+      attributes.add(this.ip);
+      attributes.add(this.port);
+      attributes.add(this.address);
+      attributes.add(this.filter);
+    }
+    else if (this.protocol.equals("LSL")){
+      attributes.add(this.dataType);
+      attributes.add(this.streamName);
+      attributes.add(this.streamType);
+      attributes.add(this.nChanLSL);
+      attributes.add(this.filter);
+    }
+
     return attributes;
   }
 }
-
-// class LSLStream{
-//   String name;
-//   String type;
-//   int nChanLSL;
-//   int filter;
-//
-//   LSLStream(String name, String type, int nChanLSL, int filter){
-//     this.name = name;
-//     this.type = type;
-//     this.nChanLSL = nChanLSL;
-//     this.filter = filter;
-//   }
-// }
 
 /* Dropdown Menu Callback Functions */
 /**
