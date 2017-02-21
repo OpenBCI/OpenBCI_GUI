@@ -14,6 +14,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+
 class W_networking extends Widget {
 
   /* Variables for protocol selection */
@@ -22,7 +23,7 @@ class W_networking extends Widget {
 
   /* Widget CP5 */
   ControlP5 cp5_networking;
-  CallbackListener net_cb;
+
 
   /* UI Organization */
   /* Widget grid */
@@ -47,9 +48,16 @@ class W_networking extends Widget {
   /* Networking */
   Boolean networkActive;
 
+  Stream stream1;
+  Stream stream2;
+  Stream stream3;
+
   W_networking(PApplet _parent){
     super(_parent);
     networkActive = false;
+    stream1 = null;
+    stream2 = null;
+    stream3 = null;
     dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "Widget");
     protocolMode = "OSC"; //default to OSC
     addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL","Widget"), protocolIndex);
@@ -103,7 +111,6 @@ class W_networking extends Widget {
 
   void initialize_UI(){
     cp5_networking = new ControlP5(pApplet);
-    callback_init();
 
     /* Textfields */
     // OSC
@@ -192,34 +199,6 @@ class W_networking extends Widget {
     cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
   }
 
-  /**
- * @description Initializes the callback function for the cp5_networking instance
- *
- */
-  void callback_init(){
-    net_cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
-      public void controlEvent(CallbackEvent theEvent) {
-        if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_ip1"))){
-            cp5_networking.get(Textfield.class, "osc_ip1").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_port1"))){
-            cp5_networking.get(Textfield.class, "osc_port1").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_address1"))){
-            cp5_networking.get(Textfield.class, "osc_address1").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_ip2"))){
-            cp5_networking.get(Textfield.class, "osc_ip2").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_port2"))){
-            cp5_networking.get(Textfield.class, "osc_port2").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_address2"))){
-            cp5_networking.get(Textfield.class, "osc_address2").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_ip3"))){
-            cp5_networking.get(Textfield.class, "osc_ip3").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_port3"))){
-            cp5_networking.get(Textfield.class, "osc_port3").clear();
-        }else if (cp5_networking.isMouseOver(cp5_networking.get(Textfield.class, "osc_address3"))){
-            cp5_networking.get(Textfield.class, "osc_address3").clear();}
-      }
-    };
-  }
 
 
   void createTextFields(String name, String default_text){
@@ -236,7 +215,6 @@ class W_networking extends Widget {
       .setColorCursor(color(26,26,26))
       .setText(default_text)                  // Default text in the field
       .setCaptionLabel("")                    // Remove caption label
-      .onDoublePress(net_cb)                  // Clear on double click
       .setVisible(false)                      // Initially hidden
       .setAutoClear(true)                     // Autoclear
       ;
@@ -360,14 +338,10 @@ class W_networking extends Widget {
       if(!networkActive){
         turnOnButton();
         initializeStreams();
-        // startStreams();
-        // setFilters();
+        startNetwork();
       }else{
         turnOffButton();
-        // stopStreams();
-        // stream1=null;
-        // stream2=null;
-        // stream3=null;
+        stopNetwork();
       }
     }
     startButton.setIsActive(false);
@@ -468,33 +442,58 @@ class W_networking extends Widget {
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port1").getText());
         address = cp5_networking.get(Textfield.class, "osc_address1").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
-        println(dt1,ip,port,address,filt_pos);
+        stream1 = new Stream(dt1,ip,port,address,filt_pos);
       }else{
-        println("NULL STREAM1");
+        stream1 = null;
       }
       if(!dt2.equals("None")){
         ip = cp5_networking.get(Textfield.class, "osc_ip2").getText();
-        port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port1").getText());
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port2").getText());
         address = cp5_networking.get(Textfield.class, "osc_address2").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
-        println(dt2, ip,port,address,filt_pos);
+        stream2 = new Stream(dt2, ip,port,address,filt_pos);
       }else{
-        println("NULL STREAM2");
+        stream2 = null;
       }
       if(!dt3.equals("None")){
         ip = cp5_networking.get(Textfield.class, "osc_ip3").getText();
         port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port3").getText());
         address = cp5_networking.get(Textfield.class, "osc_address3").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
-        println(dt3, ip,port,address,filt_pos);
+        stream3 = new Stream(dt3, ip,port,address,filt_pos);
       }else{
-        println("NULL STREAM3");
+        stream3 = null;
       }
     }
-
-
   }
 
+
+  void startNetwork(){
+    if(stream1!=null){
+      stream1.start();
+    }
+    if(stream2!=null){
+      stream2.start();
+    }
+    if(stream3!=null){
+      stream3.start();
+    }
+  }
+
+  void stopNetwork(){
+    if (stream1!=null){
+      stream1.quit();
+      stream1=null;
+    }
+    if (stream2!=null){
+      stream2.quit();
+      stream2=null;
+    }
+    if (stream3!=null){
+      stream3.quit();
+      stream3=null;
+    }
+  }
 
   void shutDown(){
     hideElements();
@@ -505,6 +504,190 @@ class W_networking extends Widget {
 
 };
 
+class Stream extends Thread{
+  String protocol;
+  String dataType;
+  String ip;
+  int port;
+  String address;
+  int filter;
+  String streamType;
+
+  Boolean isStreaming;
+  int numChan = 8;
+  // Data buffers
+  int start = dataBuffY_filtY_uV[0].length-11;
+  int end = dataBuffY_filtY_uV[0].length-1;
+  int bufferLen = end-start;
+  float[][] dataToSend = new float[numChan][bufferLen];
+
+
+
+  //OSC
+  OscP5 osc;
+  NetAddress netaddress;
+  OscMessage msg;
+
+  Stream(String dataType, String ip, int port, String address, int filter){
+    this.protocol = "OSC";
+    this.dataType = dataType;
+    this.ip = ip;
+    this.port = port;
+    this.address = address;
+    this.filter = filter;
+    this.isStreaming = false;
+    try{
+      closeNetwork(); //make sure everything is closed!
+    }catch (Exception e){
+    }
+  }
+  void start(){
+    this.isStreaming = true;
+    super.start();
+  }
+
+  void run(){
+    openNetwork();
+    Boolean newData = false;
+    // float[][] oldData = null;
+    float[][] oldData = new float[8][bufferLen];
+    Boolean tempNew = false;
+    while(this.isStreaming){
+      if(!isRunning){
+        try{
+          Thread.sleep(1);
+          Boolean a = isRunning; //weird hack~
+        }catch (InterruptedException e){
+          println(e);
+        }
+      }else{
+        try{
+          Thread.sleep(1);
+          newData = dataProcessing.newDataToSend; //weird hack~
+        }catch (InterruptedException e){
+          println(e);
+        }
+      }
+      if (newData && isRunning){
+        if (this.dataType.equals("TimeSeries")){
+          if(filter==0){
+             for(int i=0;i<bufferLen;i++){
+               msg.clearArguments();
+               for(int j=0;j<numChan;j++){
+                 msg.add(yLittleBuff_uV[j][i]);
+               }
+              try{
+                this.osc.send(msg,this.netaddress);
+              }catch (Exception e){
+                println(e);
+              }
+            }
+          }else if (filter==1){
+            for(int i=0;i<bufferLen;i++){
+              msg.clearArguments();
+              for(int j=0;j<numChan;j++){
+                msg.add(dataBuffY_filtY_uV[j][start+i]);
+              }
+             try{
+               this.osc.send(msg,this.netaddress);
+             }catch (Exception e){
+               println(e);
+             }
+           }
+         }
+        }else if (this.dataType.equals("FFT")){
+          for (int i=0;i<numChan;i++){
+            msg.clearArguments();
+            msg.add("Channel " + str(i));
+            for (int j=0;j<120;j++){
+              msg.add(fftBuff[i].getBand(j));
+            }
+            try{
+              this.osc.send(msg,this.netaddress);
+            }catch (Exception e){
+              println(e);
+            }
+          }
+        }
+        dataProcessing.newDataToSend = false;
+      }
+    }
+  }
+  void quit(){
+    this.isStreaming=false;
+    closeNetwork();
+    interrupt();
+  }
+
+  void closeNetwork(){
+    if (this.protocol.equals("OSC")){
+      try{
+        this.osc.stop();
+      }catch(Exception e){
+        println(e);
+      }
+    }else if (this.protocol.equals("UDP")){
+      // this.udp.close();
+    }else if (this.protocol.equals("LSL")){
+      //halt lsl stream (check API)
+    }
+  }
+
+  void openNetwork(){
+    println(getAttributes());
+    if(this.protocol.equals("OSC")){
+      //Possibly enter a nice custom exception here
+        this.osc = new OscP5(this,this.port + 1000);
+        this.netaddress = new NetAddress(this.ip,this.port);
+        this.msg = new OscMessage(this.address);
+    }
+  }
+  // void sendData(float[][] dataToSend){
+  //   this.msg.clearArguments();
+  //   this.msg.add("Unfiltered timeseries data");
+  //   this.osc.send(this.msg,this.netaddress);
+  //     }else if (this.filter == 1){
+  //       this.msg.add("Filtered timeseries data");
+  //       this.osc.send(this.msg,this.netaddress);
+  //     }
+  //   }else if (this.dataType.equals("FFT")){
+  //     if(this.filter == 0){
+  //       this.msg.add("Unfiltered FFT data");
+  //       this.osc.send(this.msg,this.netaddress);
+  //     }else if (this.filter == 1){
+  //       this.msg.add("Filtered FFT data");
+  //       this.osc.send(this.msg,this.netaddress);
+  //     }
+  //   }else if (this.dataType.equals("Widget")){
+  //     this.msg.add("WIDGET");
+  //     this.osc.send(this.msg,this.netaddress);
+  //   }
+  // }
+
+  List getAttributes(){
+    List attributes = new ArrayList();
+    attributes.add(this.dataType);
+    attributes.add(this.ip);
+    attributes.add(this.port);
+    attributes.add(this.address);
+    attributes.add(this.filter);
+    return attributes;
+  }
+}
+
+// class LSLStream{
+//   String name;
+//   String type;
+//   int nChanLSL;
+//   int filter;
+//
+//   LSLStream(String name, String type, int nChanLSL, int filter){
+//     this.name = name;
+//     this.type = type;
+//     this.nChanLSL = nChanLSL;
+//     this.filter = filter;
+//   }
+// }
 
 /* Dropdown Menu Callback Functions */
 /**
