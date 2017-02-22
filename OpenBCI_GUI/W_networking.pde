@@ -479,6 +479,31 @@ class W_networking extends Widget {
       }else{
         stream3 = null;
       }
+    }else if (protocolMode.equals("UDP")){
+      if(!dt1.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "udp_ip1").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "udp_port1").getText());
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+        stream1 = new Stream(dt1,ip,port,filt_pos);
+      }else{
+        stream1 = null;
+      }
+      if(!dt2.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "udp_ip2").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "udp_port2").getText());
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
+        stream2 = new Stream(dt2,ip,port,filt_pos);
+      }else{
+        stream2 = null;
+      }
+      if(!dt3.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "udp_ip3").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "udp_port3").getText());
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
+        stream3 = new Stream(dt3,ip,port,filt_pos);
+      }else{
+        stream3 = null;
+      }
     }else if (protocolMode.equals("LSL")){
       if(!dt1.equals("None")){
         name = cp5_networking.get(Textfield.class, "lsl_name1").getText();
@@ -567,17 +592,23 @@ class Stream extends Thread{
   int bufferLen = end-start;
   float[] dataToSend = new float[numChan];
 
+  //OSC Objects
+  OscP5 osc;
+  NetAddress netaddress;
+  OscMessage msg;
+  //UDP Objects
+  UDP udp;
+  String udpMessage;
+  StringBuilder sb = new StringBuilder();
   // LSL objects
   LSL.StreamInfo info_data;
   LSL.StreamOutlet outlet_data;
   LSL.StreamInfo info_aux;
   LSL.StreamOutlet outlet_aux;
 
-  //OSC
-  OscP5 osc;
-  NetAddress netaddress;
-  OscMessage msg;
 
+
+  /* OSC Stream */
   Stream(String dataType, String ip, int port, String address, int filter){
     this.protocol = "OSC";
     this.dataType = dataType;
@@ -591,7 +622,19 @@ class Stream extends Thread{
     }catch (Exception e){
     }
   }
-  /* LSL Stream */
+  /*UDP Stream */
+  Stream(String dataType, String ip, int port, int filter){
+    this.protocol = "UDP";
+    this.dataType = dataType;
+    this.ip = ip;
+    this.port = port;
+    this.filter = filter;
+    this.isStreaming = false;
+    try{
+      closeNetwork(); //make sure everything is closed!
+    }catch (Exception e){
+    }
+  }  /* LSL Stream */
   Stream(String dataType, String streamName, String streamType, int nChanLSL, int filter){
     this.protocol = "LSL";
     this.dataType = dataType;
@@ -605,8 +648,6 @@ class Stream extends Thread{
     }catch (Exception e){
     }
   }
-
-
   void start(){
     this.isStreaming = true;
     if(!this.protocol.equals("LSL")){
@@ -617,7 +658,7 @@ class Stream extends Thread{
   }
 
   void run(){
-    if (!this.protocol.equals("LSL")){
+    if (this.protocol.equals("OSC")){
       openNetwork();
       while(this.isStreaming){
         if(!isRunning){
@@ -630,7 +671,7 @@ class Stream extends Thread{
         }else{
           try{
             Thread.sleep(1);
-            newData = dataProcessing.newDataToSend; //weird hack~
+            newData = dataProcessing.newDataToSend;
           }catch (InterruptedException e){
             println(e);
           }
@@ -638,17 +679,16 @@ class Stream extends Thread{
         if (newData && isRunning){
           if (this.dataType.equals("TimeSeries")){
             if(filter==0){
-               for(int i=0;i<bufferLen;i++){
-                 msg.clearArguments();
-                 for(int j=0;j<numChan;j++){
-                   msg.add(yLittleBuff_uV[j][i]);
-                 }
-                try{
-                  this.osc.send(msg,this.netaddress);
-                }catch (Exception e){
-                  println(e);
+              for(int i=0;i<bufferLen;i++){
+                for(int j=0;j<numChan;j++){
+                  msg.add(yLittleBuff_uV[j][i]);
                 }
-              }
+               try{
+                 this.osc.send(msg,this.netaddress);
+               }catch (Exception e){
+                 println(e);
+               }
+             }
             }else if (filter==1){
               for(int i=0;i<bufferLen;i++){
                 msg.clearArguments();
@@ -675,12 +715,75 @@ class Stream extends Thread{
                 println(e);
               }
             }
+          }else if (this.dataType.equals("WIDGET")){
+            // insert widget send here
           }
           dataProcessing.newDataToSend = false;
         }
       }
     }
-    else{
+    else if (this.protocol.equals("UDP")){
+      openNetwork();
+      while(this.isStreaming){
+        if(!isRunning){
+          try{
+            Thread.sleep(1);
+            Boolean a = isRunning; //weird hack~
+          }catch (InterruptedException e){
+            println(e);
+          }
+        }else{
+          try{
+            Thread.sleep(1);
+            newData = dataProcessing.newDataToSend;
+          }catch (InterruptedException e){
+            println(e);
+          }
+        }
+        if (newData && isRunning){
+          if (this.dataType.equals("TimeSeries")){
+            if(filter==0){
+              for(int i=0;i<bufferLen;i++){
+                sb.setLength(0);
+                for(int j=0;j<numChan;j++){
+                  sb.append(Float.toString(yLittleBuff_uV[j][i]));
+                  sb.append(",");
+                }
+                udpMessage = sb.toString();
+                this.udp.send(udpMessage,this.ip,this.port);
+               }
+             }
+            }else if (filter==1){
+              for(int i=0;i<bufferLen;i++){
+                sb.setLength(0);
+                for(int j=0;j<numChan;j++){
+                  sb.append(Float.toString(yLittleBuff_uV[j][i]));
+                  sb.append(",");
+                }
+                udpMessage = sb.toString();
+                this.udp.send(udpMessage,this.ip,this.port);
+             }
+           }
+          }else if (this.dataType.equals("FFT")){
+            for (int i=0;i<numChan;i++){
+              msg.clearArguments();
+              msg.add("Channel " + str(i));
+              for (int j=0;j<120;j++){
+                msg.add(fftBuff[i].getBand(j));
+              }
+              try{
+                this.osc.send(msg,this.netaddress);
+              }catch (Exception e){
+                println(e);
+              }
+            }
+          }else if (this.dataType.equals("WIDGET")){
+            // insert widget send here
+          }
+          dataProcessing.newDataToSend = false;
+        }
+      }
+    else if (this.protocol.equals("LSL")){
       newData = dataProcessing.newDataToSend;
       if (newData && isRunning){
         if (this.dataType.equals("TimeSeries")){
@@ -719,7 +822,7 @@ class Stream extends Thread{
         println(e);
       }
     }else if (this.protocol.equals("UDP")){
-      // this.udp.close();
+        this.udp.close();
     }else if (this.protocol.equals("LSL")){
       outlet_data.close();
     }
@@ -732,6 +835,10 @@ class Stream extends Thread{
       this.osc = new OscP5(this,this.port + 1000);
       this.netaddress = new NetAddress(this.ip,this.port);
       this.msg = new OscMessage(this.address);
+    }else if (this.protocol.equals("UDP")){
+      this.udp = new UDP(this,this.port,this.ip );
+      this.udp.setBuffer(1024);
+      this.udp.log(true);
     }else if (this.protocol.equals("LSL")){
       String stream_id = "q4asdgdsg";
       info_data = new LSL.StreamInfo(
@@ -754,6 +861,11 @@ class Stream extends Thread{
       attributes.add(this.port);
       attributes.add(this.address);
       attributes.add(this.filter);
+    }else if(this.protocol.equals("UDP")){
+      attributes.add(this.dataType);
+      attributes.add(this.ip);
+      attributes.add(this.port);
+      attributes.add(this.filter);
     }
     else if (this.protocol.equals("LSL")){
       attributes.add(this.dataType);
@@ -762,7 +874,6 @@ class Stream extends Thread{
       attributes.add(this.nChanLSL);
       attributes.add(this.filter);
     }
-
     return attributes;
   }
 }

@@ -34,8 +34,9 @@ import java.lang.Process;
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
-import netP5.*;
-import oscP5.*;
+import netP5.*; // for OSC
+import oscP5.*; // for OSC
+import hypermedia.net.*; //for UDP
 
 import gifAnimation.*;
 
