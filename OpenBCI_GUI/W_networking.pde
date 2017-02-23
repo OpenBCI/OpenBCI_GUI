@@ -114,30 +114,30 @@ class W_networking extends Widget {
 
     /* Textfields */
     // OSC
-    createTextFields("osc_ip1","localhost");
+    createTextFields("osc_ip1","127.0.0.1");
     createTextFields("osc_port1","12345");
     createTextFields("osc_address1","/openbci");
-    createTextFields("osc_ip2","localhost");
-    createTextFields("osc_port2","12345");
+    createTextFields("osc_ip2","127.0.0.1");
+    createTextFields("osc_port2","12346");
     createTextFields("osc_address2","/openbci");
-    createTextFields("osc_ip3","localhost");
-    createTextFields("osc_port3","12345");
+    createTextFields("osc_ip3","127.0.0.1");
+    createTextFields("osc_port3","12347");
     createTextFields("osc_address3","/openbci");
     // UDP
-    createTextFields("udp_ip1","localhost");
+    createTextFields("udp_ip1","127.0.0.1");
     createTextFields("udp_port1","12345");
-    createTextFields("udp_ip2","localhost");
-    createTextFields("udp_port2","12345");
-    createTextFields("udp_ip3","localhost");
-    createTextFields("udp_port3","12345");
+    createTextFields("udp_ip2","127.0.0.1");
+    createTextFields("udp_port2","12346");
+    createTextFields("udp_ip3","127.0.0.1");
+    createTextFields("udp_port3","12347");
     // LSL
-    createTextFields("lsl_name1","obci_eeg");
+    createTextFields("lsl_name1","obci_eeg1");
     createTextFields("lsl_type1","EEG");
     createTextFields("lsl_numchan1","8");
-    createTextFields("lsl_name2","obci_eeg");
+    createTextFields("lsl_name2","obci_eeg2");
     createTextFields("lsl_type2","EEG");
     createTextFields("lsl_numchan2","8");
-    createTextFields("lsl_name3","obci_eeg");
+    createTextFields("lsl_name3","obci_eeg3");
     createTextFields("lsl_type3","EEG");
     createTextFields("lsl_numchan3","8");
 
@@ -632,7 +632,7 @@ class Stream extends Thread{
     if(this.dataType.equals("TimeSeries")){
       buffer = ByteBuffer.allocate(4*numChan);
     }else{
-      buffer = ByteBuffer.allocate(4*125 + 1);
+      buffer = ByteBuffer.allocate(4*126);
     }
     try{
       closeNetwork(); //make sure everything is closed!
