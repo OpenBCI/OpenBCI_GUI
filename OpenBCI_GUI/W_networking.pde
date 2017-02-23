@@ -680,6 +680,7 @@ class Stream extends Thread{
           if (this.dataType.equals("TimeSeries")){
             if(filter==0){
               for(int i=0;i<bufferLen;i++){
+                msg.clearArguments();
                 for(int j=0;j<numChan;j++){
                   msg.add(yLittleBuff_uV[j][i]);
                 }
@@ -744,13 +745,12 @@ class Stream extends Thread{
           if (this.dataType.equals("TimeSeries")){
             if(filter==0){
               for(int i=0;i<bufferLen;i++){
-                sb.setLength(0);
+                ByteBuffer buffer = ByteBuffer.allocate(4*numChan);
+                // sb.setLength(0);
                 for(int j=0;j<numChan;j++){
-                  sb.append(Float.toString(yLittleBuff_uV[j][i]));
-                  sb.append(",");
+                  buffer.putFloat(yLittleBuff_uV[j][i]);
                 }
-                udpMessage = sb.toString();
-                this.udp.send(udpMessage,this.ip,this.port);
+                this.udp.send(buffer.array(),this.ip,this.port);
                }
              }
             }else if (filter==1){
@@ -836,9 +836,13 @@ class Stream extends Thread{
       this.netaddress = new NetAddress(this.ip,this.port);
       this.msg = new OscMessage(this.address);
     }else if (this.protocol.equals("UDP")){
-      this.udp = new UDP(this,this.port,this.ip );
+      this.udp = new UDP(this);
+      // this.udp.broadcast(true);
       this.udp.setBuffer(1024);
-      this.udp.log(true);
+      this.udp.listen(false);
+      this.udp.log(false);
+      println("UDP successfully connected");
+      output("UDP successfully connected");
     }else if (this.protocol.equals("LSL")){
       String stream_id = "q4asdgdsg";
       info_data = new LSL.StreamInfo(
