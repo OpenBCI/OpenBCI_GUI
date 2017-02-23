@@ -60,7 +60,7 @@ class W_networking extends Widget {
     stream3 = null;
     dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "Widget");
     protocolMode = "OSC"; //default to OSC
-    addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL","Widget"), protocolIndex);
+    addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL"), protocolIndex);
     initialize_UI();
 
   }
@@ -598,8 +598,7 @@ class Stream extends Thread{
   OscMessage msg;
   //UDP Objects
   UDP udp;
-  String udpMessage;
-  StringBuilder sb = new StringBuilder();
+  ByteBuffer buffer;
   // LSL objects
   LSL.StreamInfo info_data;
   LSL.StreamOutlet outlet_data;
@@ -630,6 +629,11 @@ class Stream extends Thread{
     this.port = port;
     this.filter = filter;
     this.isStreaming = false;
+    if(this.dataType.equals("TimeSeries")){
+      buffer = ByteBuffer.allocate(4*numChan);
+    }else{
+      buffer = ByteBuffer.allocate(4*125 + 1);
+    }
     try{
       closeNetwork(); //make sure everything is closed!
     }catch (Exception e){
@@ -706,8 +710,8 @@ class Stream extends Thread{
           }else if (this.dataType.equals("FFT")){
             for (int i=0;i<numChan;i++){
               msg.clearArguments();
-              msg.add("Channel " + str(i));
-              for (int j=0;j<120;j++){
+              msg.add(i+1);
+              for (int j=0;j<125;j++){
                 msg.add(fftBuff[i].getBand(j));
               }
               try{
@@ -745,34 +749,30 @@ class Stream extends Thread{
           if (this.dataType.equals("TimeSeries")){
             if(filter==0){
               for(int i=0;i<bufferLen;i++){
-                ByteBuffer buffer = ByteBuffer.allocate(4*numChan);
-                // sb.setLength(0);
+                buffer.rewind();
                 for(int j=0;j<numChan;j++){
                   buffer.putFloat(yLittleBuff_uV[j][i]);
                 }
                 this.udp.send(buffer.array(),this.ip,this.port);
                }
-             }
-            }else if (filter==1){
+             }else if (filter==1){
               for(int i=0;i<bufferLen;i++){
-                sb.setLength(0);
+                buffer.rewind();
                 for(int j=0;j<numChan;j++){
-                  sb.append(Float.toString(yLittleBuff_uV[j][i]));
-                  sb.append(",");
+                  buffer.putFloat(dataBuffY_filtY_uV[j][start+i]);
                 }
-                udpMessage = sb.toString();
-                this.udp.send(udpMessage,this.ip,this.port);
+                this.udp.send(buffer.array(),this.ip,this.port);
              }
            }
           }else if (this.dataType.equals("FFT")){
             for (int i=0;i<numChan;i++){
-              msg.clearArguments();
-              msg.add("Channel " + str(i));
-              for (int j=0;j<120;j++){
-                msg.add(fftBuff[i].getBand(j));
+              buffer.rewind();
+              buffer.putFloat(i+1);
+              for (int j=0;j<125;j++){
+                buffer.putFloat(fftBuff[i].getBand(j));
               }
               try{
-                this.osc.send(msg,this.netaddress);
+                this.udp.send(buffer.array(),this.ip,this.port);
               }catch (Exception e){
                 println(e);
               }
@@ -783,7 +783,8 @@ class Stream extends Thread{
           dataProcessing.newDataToSend = false;
         }
       }
-    else if (this.protocol.equals("LSL")){
+
+    }else if (this.protocol.equals("LSL")){
       newData = dataProcessing.newDataToSend;
       if (newData && isRunning){
         if (this.dataType.equals("TimeSeries")){
