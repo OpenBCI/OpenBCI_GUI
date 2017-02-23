@@ -133,13 +133,13 @@ class W_networking extends Widget {
     // LSL
     createTextFields("lsl_name1","obci_eeg1");
     createTextFields("lsl_type1","EEG");
-    createTextFields("lsl_numchan1","8");
+    createTextFields("lsl_numchan1",Integer.toString(nchan));
     createTextFields("lsl_name2","obci_eeg2");
     createTextFields("lsl_type2","EEG");
-    createTextFields("lsl_numchan2","8");
+    createTextFields("lsl_numchan2",Integer.toString(nchan));
     createTextFields("lsl_name3","obci_eeg3");
     createTextFields("lsl_type3","EEG");
-    createTextFields("lsl_numchan3","8");
+    createTextFields("lsl_numchan3",Integer.toString(nchan));
 
     /* General Elements */
     createDropdown("dataType1");
@@ -585,7 +585,7 @@ class Stream extends Thread{
 
   Boolean isStreaming;
   Boolean newData = false;
-  int numChan = 8;
+  int numChan = nchan;
   // Data buffers
   int start = dataBuffY_filtY_uV[0].length-11;
   int end = dataBuffY_filtY_uV[0].length-1;
