@@ -780,7 +780,7 @@ class Stream extends Thread{
      }else if (this.protocol.equals("LSL")){
        for(int i=0;i<bufferLen;i++){
          for(int j=0;j<numChan;j++){
-           dataToSend[j] = dataBuffY_filtY_uV[j][i];
+           dataToSend[j] = yLittleBuff_uV[j][i];
          }
          outlet_data.push_sample(dataToSend);
        }
@@ -859,7 +859,7 @@ class Stream extends Thread{
        if(filter==0){
           for(int i=0;i<bufferLen;i++){
             for(int j=0;j<numChan;j++){
-              dataToSend[j] = yLittleBuff_uV[j][i];
+              dataToSend[j] = fftBuff[j][i];
             }
           outlet_data.push_sample(dataToSend);
           }
