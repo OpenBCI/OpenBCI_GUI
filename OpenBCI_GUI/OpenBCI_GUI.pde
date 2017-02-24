@@ -62,7 +62,7 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = true;
+boolean hasIntroAnimation = false;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
@@ -698,6 +698,8 @@ void haltSystem() {
   openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
   ganglion_portName = "";
   controlPanel.resetListItems();
+
+  // w_networking.clearCP5(); //closes all networking controllers
 
   // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
 

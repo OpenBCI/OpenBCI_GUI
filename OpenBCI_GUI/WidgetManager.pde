@@ -154,7 +154,8 @@ class WidgetManager{
   }
 
   void update(){
-    if(visible && updating){
+    // if(visible && updating){
+    if(visible){
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).update();

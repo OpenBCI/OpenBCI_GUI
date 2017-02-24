@@ -2,9 +2,9 @@ package controlP5;
 
 /**
  * controlP5 is a processing gui library.
- * 
+ *
  * 2006-2015 by Andreas Schlegel
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2.1
@@ -13,16 +13,16 @@ package controlP5;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307 USA
- * 
+ *
  * @author Andreas Schlegel (http://www.sojamo.de)
  * @modified 04/14/2016
  * @version 2.2.6
- * 
+ *
  */
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,13 +36,13 @@ import processing.core.PImage;
  * A radioButton is a list of toggles that can be turned on or off. radioButton is of type
  * ControllerGroup, therefore a controllerPlug can't be set. this means that an event from a
  * radioButton can't be forwarded to a method other than controlEvent in a sketch.
- * 
+ *
  * a radioButton has 2 sets of values. radioButton.getValue() returns the value of the active
  * radioButton item. radioButton.getArrayValue() returns a float array that represents the active
  * (1) and inactive (0) items of a radioButton.
- * 
+ *
  * ControlP5 CheckBox Toggle
- * 
+ *
  * @example controllers/ControlP5radioButton
  * 
  * @nosuperclasses Controller Controller
@@ -68,7 +68,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Convenience constructor to extend RadioButton.
-	 * 
+	 *
 	 * @example use/ControlP5extendController
 	 * @param theControlP5
 	 * @param theName
@@ -189,7 +189,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param theDefaultImage
 	 * @param theOverImage
 	 * @param theActiveImage
@@ -241,7 +241,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	 * set the height of a radioButton/checkBox item. by default the height is 11px. in order to
 	 * recognize a custom height, the itemHeight has to be set before adding items to a
 	 * radioButton/checkBox.
-	 * 
+	 *
 	 * @param theItemHeight
 	 */
 	public RadioButton setItemHeight( int theItemHeight ) {
@@ -257,7 +257,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	 * set the width of a radioButton/checkBox item. by default the width is 11px. in order to
 	 * recognize a custom width, the itemWidth has to be set before adding items to a
 	 * radioButton/checkBox.
-	 * 
+	 *
 	 * @param theItemWidth
 	 */
 	public RadioButton setItemWidth( int theItemWidth ) {
@@ -271,7 +271,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Gets a radio button item by index.
-	 * 
+	 *
 	 * @param theIndex
 	 * @return Toggle
 	 */
@@ -294,7 +294,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Gets the state of an item - this can be true (for on) or false (for off) - by index.
-	 * 
+	 *
 	 * @param theIndex
 	 * @return boolean
 	 */
@@ -307,7 +307,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Gets the state of an item - this can be true (for on) or false (for off) - by name.
-	 * 
+	 *
 	 * @param theName
 	 * @return
 	 */
@@ -350,7 +350,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	/**
 	 * Items of a radioButton or a checkBox are organized in columns and rows. SetItemsPerRow sets
 	 * the limit of items per row. items exceeding the limit will be pushed to the next row.
-	 * 
+	 *
 	 * @param theValue
 	 */
 	public RadioButton setItemsPerRow( final int theValue ) {
@@ -361,7 +361,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Sets the spacing in pixels between columns.
-	 * 
+	 *
 	 * @param theSpacing
 	 */
 	public RadioButton setSpacingColumn( final int theSpacing ) {
@@ -372,7 +372,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Sets the spacing in pixels between rows.
-	 * 
+	 *
 	 * @param theSpacing
 	 */
 	public RadioButton setSpacingRow( final int theSpacing ) {
@@ -398,7 +398,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	 * Deactivates all active RadioButton items and only activates the item corresponding to
 	 * theIndex.
 	 * TODO does not trigger function or value when called by code, fix!
-	 * 
+	 *
 	 * @param theIndex
 	 */
 	public RadioButton activate( int theIndex ) {
@@ -434,7 +434,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * Actives an item of the Radio button by name.
-	 * 
+	 *
 	 * @param theName
 	 */
 	public RadioButton activate( String theName ) {
@@ -452,7 +452,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	/**
 	 * Deactivates a RadioButton by name and sets the value of the RadioButton to the default value
 	 * -1.
-	 * 
+	 *
 	 * @param theName
 	 */
 	public RadioButton deactivate( String theName ) {
@@ -491,7 +491,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 
 	/**
 	 * {@inheritDoc}
-	 * 
+	 *
 	 * @exclude
 	 */
 	@ControlP5.Invisible @Override public void controlEvent( ControlEvent theEvent ) {
@@ -572,7 +572,7 @@ public class RadioButton extends ControlGroup< RadioButton > {
 	/**
 	 * In order to always have 1 item selected, use setNoneSelectedAllowed(false), by default this
 	 * is true. setNoneSelectedAllowed does not apply when in multipleChoice mode.
-	 * 
+	 *
 	 * @param theValue
 	 */
 	public RadioButton setNoneSelectedAllowed( boolean theValue ) {
