@@ -11,6 +11,8 @@ HashMap<String,float[][]> processed_file;
 HashMap<Integer,String> index_of_times;
 HashMap<String,Integer> index_of_times_rev;
 
+
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -109,6 +111,8 @@ int getDataIfAvailable(int pointCounter) {
       //if (eegDataSource==DATASOURCE_PLAYBACKFILE) println("OpenBCI_GUI: getDataIfAvailable: currentTableRowIndex = " + currentTableRowIndex);
       //println("OpenBCI_GUI: getDataIfAvailable: pointCounter = " + pointCounter);
     } // close "has enough time passed"
+    else{
+    }
   }
   return pointCounter;
 }
@@ -154,6 +158,7 @@ void processNewData() {
   // w_openbionics.process();
 
   dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+  dataProcessing.newDataToSend = true;
 
   //look to see if the latest data is railed so that we can notify the user on the GUI
   for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataPacketBuff[lastReadDataPacketInd].values[Ichan]);
@@ -357,6 +362,7 @@ class DataProcessing {
   private int currentNotch_ind = 0;  // set to 0 to default to 60Hz, set to 1 to default to 50Hz
   float data_std_uV[];
   float polarity[];
+  boolean newDataToSend;
 
 
   DataProcessing(int NCHAN, float sample_rate_Hz) {
@@ -364,6 +370,7 @@ class DataProcessing {
     fs_Hz = sample_rate_Hz;
     data_std_uV = new float[nchan];
     polarity = new float[nchan];
+    newDataToSend = false;
 
 
     //check to make sure the sample rate is acceptable and then define the filters

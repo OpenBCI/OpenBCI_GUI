@@ -1,4 +1,4 @@
- //<>//
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
@@ -24,9 +24,6 @@ import java.util.*; //for Array.copyOfRange()
 import java.util.Map.Entry;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
-import netP5.*; //for OSC networking
-import oscP5.*; //for OSC networking
-import hypermedia.net.*; //for UDP networking
 import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
@@ -37,6 +34,11 @@ import java.lang.Process;
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
+import netP5.*; // for OSC
+import oscP5.*; // for OSC
+import hypermedia.net.*; //for UDP
+import java.nio.ByteBuffer; //for UDP
+
 
 import gifAnimation.*;
 
@@ -145,16 +147,6 @@ final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
 final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
 public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
-
-//variables for Networking
-int port = 0;
-String ip = "";
-String address = "";
-String data_stream = "";
-String aux_stream = "";
-UDPSend udp;
-OSCSend osc;
-LSLSend lsl;
 
 // Serial output
 String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port
