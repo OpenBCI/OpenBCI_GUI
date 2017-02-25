@@ -236,6 +236,7 @@ void parseKey(char val) {
     case 's':
       println("case s...");
       stopRunning();
+
       // stopButtonWasPressed();
       break;
     case 'b':
