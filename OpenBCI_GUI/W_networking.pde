@@ -944,14 +944,14 @@ class Stream extends Thread{
        }
        // LSL
      }else if (this.protocol.equals("LSL")){
-       if(filter==0){
-          for(int i=0;i<bufferLen;i++){
-            for(int j=0;j<numChan;j++){
-              dataToSend[j] = fftBuff[j][i];
-            }
-          outlet_data.push_sample(dataToSend);
-          }
-        }
+      //  if(filter==0){
+      //     for(int i=0;i<bufferLen;i++){
+      //       for(int j=0;j<numChan;j++){
+      //         dataToSend[j] = fftBuff[j][i];
+      //       }
+      //       outlet_data.push_sample(dataToSend);
+      //     }
+      //   }
       }
     }
   }
