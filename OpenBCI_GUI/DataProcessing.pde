@@ -738,11 +738,11 @@ class DataProcessing {
       }
     }
 
-    println("Brain Wide DELTA = " + headWidePower[DELTA]);
-    println("Brain Wide THETA = " + headWidePower[THETA]);
-    println("Brain Wide ALPHA = " + headWidePower[ALPHA]);
-    println("Brain Wide BETA  = " + headWidePower[BETA]);
-    println("Brain Wide GAMMA = " + headWidePower[GAMMA]);
+    // println("Brain Wide DELTA = " + headWidePower[DELTA]);
+    // println("Brain Wide THETA = " + headWidePower[THETA]);
+    // println("Brain Wide ALPHA = " + headWidePower[ALPHA]);
+    // println("Brain Wide BETA  = " + headWidePower[BETA]);
+    // println("Brain Wide GAMMA = " + headWidePower[GAMMA]);
 
   }
 }
