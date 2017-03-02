@@ -819,8 +819,7 @@ class Stream extends Thread{
             println(e);
           }
         }else{
-            newData = checkForData();
-            if (newData){
+            if (checkForData()){
               if (this.dataType.equals("TimeSeries")){
                 sendTimeSeriesData();
               }else if (this.dataType.equals("FFT")){
@@ -830,7 +829,7 @@ class Stream extends Thread{
               }else if (this.dataType.equals("WIDGET")){
                 sendWidgetData();
               }
-              newData = false;
+              setDataFalse();
             }else{
               try{
                 Thread.sleep(1);
@@ -848,8 +847,7 @@ class Stream extends Thread{
           println(e);
         }
       }else{
-        newData = checkForData();
-        if (newData){
+        if (checkForData()){
           if (this.dataType.equals("TimeSeries")){
             sendTimeSeriesData();
           }else if (this.dataType.equals("FFT")){
@@ -859,7 +857,8 @@ class Stream extends Thread{
           }else if (this.dataType.equals("WIDGET")){
             sendWidgetData();
           }
-          newData = false;
+          setDataFalse();
+          // newData = false;
         }
       }
     }
@@ -878,6 +877,17 @@ class Stream extends Thread{
     return false;
   }
 
+  void setDataFalse(){
+    if(this.dataType.equals("TimeSeries")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("FFT")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("PowerBands")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("WIDGET")){
+      /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
+    }
+  }
   /* This method contains all of the policies for sending data types */
   void sendTimeSeriesData(){
     // TIME SERIES UNFILTERED

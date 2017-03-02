@@ -716,7 +716,7 @@ class DataProcessing {
       headWidePower[i] = sum/nchan;
     }
 
-    //delta in channel ... averPowerInBins[1][DELTA];
+    //delta in channel 2 ... avgPowerInBins[1][DELTA];
     //headwide beta ... headWidePower[BETA];
 
     //find strongest channel
