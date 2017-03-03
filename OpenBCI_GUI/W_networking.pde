@@ -63,7 +63,7 @@ class W_networking extends Widget {
     stream1 = null;
     stream2 = null;
     stream3 = null;
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "PowerBands", "Widget");
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "PowerBands", "Widget");
     protocolMode = "OSC"; //default to OSC
     addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL", "Serial"), protocolIndex);
     initialize_UI();
@@ -178,7 +178,6 @@ class W_networking extends Widget {
       textFont(h1,20);
       text("Name", column0,row2);
       text("Baud", column0,row3);
-      text("# Chan", column0, row4);
     }
     popStyle();
 
@@ -216,15 +215,18 @@ class W_networking extends Widget {
     createTextFields("lsl_type3","EEG");
     createTextFields("lsl_numchan3",Integer.toString(nchan));
     // Serial
-
+    createDropdown("port_name");
+    createDropdown("baud_rate");
 
     /* General Elements */
-    createDropdown("dataType1");
-    createDropdown("dataType2");
-    createDropdown("dataType3");
+
     createRadioButtons("filter1");
     createRadioButtons("filter2");
     createRadioButtons("filter3");
+
+    createDropdown("dataType1");
+    createDropdown("dataType2");
+    createDropdown("dataType3");
 
     // Start Button
     startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
@@ -273,6 +275,9 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "lsl_name3").setVisible(lsl_visible);
     cp5_networking.get(Textfield.class, "lsl_type3").setVisible(lsl_visible);
     cp5_networking.get(Textfield.class, "lsl_numchan3").setVisible(lsl_visible);
+
+    cp5_networking.get(ScrollableList.class, "port_name").setVisible(serial_visible);
+    cp5_networking.get(ScrollableList.class, "baud_rate").setVisible(serial_visible);
 
     cp5_networking.get(ScrollableList.class, "dataType1").setVisible(true);
     cp5_networking.get(ScrollableList.class, "dataType2").setVisible(true);
@@ -426,6 +431,7 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "lsl_type3").setPosition(column3,row3 - offset);
     cp5_networking.get(Textfield.class, "lsl_numchan3").setPosition(column3,row4 - offset);
 
+
     if (protocolMode.equals("OSC") || protocolMode.equals("LSL")){
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
@@ -435,8 +441,14 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
       cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
     } else if (protocolMode.equals("Serial")){
-      // %%%%%
+      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
     }
+
+    //Serial Specific
+    cp5_networking.get(ScrollableList.class, "port_name").setPosition(column1, row2-offset);
+    cp5_networking.get(ScrollableList.class, "baud_rate").setPosition(column1, row3-offset);
 
     cp5_networking.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
     cp5_networking.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
@@ -498,6 +510,8 @@ class W_networking extends Widget {
     cp5_networking.get(ScrollableList.class, "dataType1").setVisible(false);
     cp5_networking.get(ScrollableList.class, "dataType2").setVisible(false);
     cp5_networking.get(ScrollableList.class, "dataType3").setVisible(false);
+    cp5_networking.get(ScrollableList.class, "port_name").setVisible(false);
+    cp5_networking.get(ScrollableList.class, "baud_rate").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter1").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
@@ -541,9 +555,11 @@ class W_networking extends Widget {
         break;
       case 2 : dt1 = "FFT";
         break;
-      case 3 : dt1 = "PowerBands";
+      case 3 : dt1 = "EMG";
         break;
-      case 4 : dt1 = "Widget";
+      case 4 : dt1 = "PowerBands";
+        break;
+      case 5 : dt1 = "Widget";
         break;
     }
     switch ((int)cp5_networking.get(ScrollableList.class, "dataType2").getValue()){
@@ -553,9 +569,11 @@ class W_networking extends Widget {
         break;
       case 2 : dt2 = "FFT";
         break;
-      case 3 : dt2 = "PowerBands";
+      case 3 : dt2 = "EMG";
         break;
-      case 4 : dt2 = "Widget";
+      case 4 : dt2 = "PowerBands";
+        break;
+      case 5 : dt2 = "Widget";
         break;
     }
     switch ((int)cp5_networking.get(ScrollableList.class, "dataType3").getValue()){
@@ -565,9 +583,11 @@ class W_networking extends Widget {
         break;
       case 2 : dt3 = "FFT";
         break;
-      case 3 : dt3 = "PowerBands";
+      case 3 : dt3 = "EMG";
         break;
-      case 4 : dt3 = "Widget";
+      case 4 : dt3 = "PowerBands";
+        break;
+      case 5 : dt3 = "Widget";
         break;
     }
 
@@ -794,6 +814,7 @@ class Stream extends Thread{
     }catch (Exception e){
     }
   }
+
   // Serial Stream %%%%%
   Stream(String dataType, String streamName, int baud, int filter, char dummy){
     // %%%%%
@@ -824,6 +845,8 @@ class Stream extends Thread{
                 sendTimeSeriesData();
               }else if (this.dataType.equals("FFT")){
                 sendFFTData();
+              }else if (this.dataType.equals("EMG")){
+                sendEMGData();
               }else if (this.dataType.equals("PowerBands")){
                 sendPowerBandData();
               }else if (this.dataType.equals("WIDGET")){
@@ -852,6 +875,8 @@ class Stream extends Thread{
             sendTimeSeriesData();
           }else if (this.dataType.equals("FFT")){
             sendFFTData();
+          }else if (this.dataType.equals("EMG")){
+            sendEMGData();
           }else if (this.dataType.equals("PowerBands")){
             sendPowerBandData();
           }else if (this.dataType.equals("WIDGET")){
@@ -869,6 +894,8 @@ class Stream extends Thread{
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("FFT")){
       return dataProcessing.newDataToSend;
+    }else if (this.dataType.equals("EMG")){
+      return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("PowerBands")){
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("WIDGET")){
@@ -881,6 +908,8 @@ class Stream extends Thread{
     if(this.dataType.equals("TimeSeries")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("FFT")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("EMG")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("PowerBands")){
       dataProcessing.newDataToSend = false;
@@ -1054,6 +1083,56 @@ class Stream extends Thread{
        //   }
        }else if (this.protocol.equals("Serial")){
          // Send FFT Data over Serial ... %%%%%
+       }
+     }
+  }
+
+  void sendEMGData(){
+    // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+
+    println("0");
+
+    if(this.filter==0 || this.filter==1){
+      // OSC
+      if (this.protocol.equals("OSC")){
+        println("2");
+        for (int i=0;i<numChan;i++){
+          msg.clearArguments();
+          msg.add(i+1);
+          //ADD NORMALIZED EMG CHANNEL DATA
+          msg.add(w_emg.motorWidgets[i].output_normalized);
+          println(i + " | " + w_emg.motorWidgets[i].output_normalized);
+          try{
+            this.osc.send(msg,this.netaddress);
+          }catch (Exception e){
+            println(e);
+          }
+        }
+       // UDP
+      }else if (this.protocol.equals("UDP")){
+        for (int i=0;i<numChan;i++){
+          buffer.rewind();
+          buffer.putFloat(i+1);
+          //ADD NORMALIZED EMG CHANNEL DATA
+          buffer.putFloat(w_emg.motorWidgets[i].output_normalized);
+          try{
+            this.udp.send(buffer.array(),this.ip,this.port);
+          }catch (Exception e){
+            println(e);
+          }
+        }
+        // LSL
+      }else if (this.protocol.equals("LSL")){
+       //  if(filter==0){
+       //     for(int i=0;i<bufferLen;i++){
+       //       for(int j=0;j<numChan;j++){
+       //         dataToSend[j] = fftBuff[j][i];
+       //       }
+       //       outlet_data.push_sample(dataToSend);
+       //     }
+       //   }
+       }else if (this.protocol.equals("Serial")){
+         // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
        }
      }
   }
