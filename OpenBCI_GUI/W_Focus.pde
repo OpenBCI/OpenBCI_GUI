@@ -1,25 +1,29 @@
-// Focus Visualization Widget created by Wangshu Sun, Jul 2016
-// http://openbci.com/community/focus-visualization-widget/
-// it first calculates alpha and beta average from FFT data of channel 1 & 2 (of Fp1 and Fp2)
-// then it decides whether or not "isFocused" by alpha and beta average
-// last it draws out isFocused, alpha_average, beta_average in diagram
 
-//DM: added robot to simulate keystrokes
+////////////////////////////////////////////////////
+//
+//    W_template.pde (ie "Widget Template")
+//
+//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
+//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
+//
+//    Created by: Conor Russomanno, November 2016
+//
+///////////////////////////////////////////////////,
+
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 
-class FocusViz_Widget {
-  // interactivity
+
+class W_Focus extends Widget {
+  //to see all core variables/methods of the Widget class, refer to Widget.pde
+
   boolean enableKey = false;  // change this to true if you want the robot to simulate key stroke whenever they hit focused state
   Robot robot;
 
   // output values
   float alpha_avg = 0, beta_avg = 0;
   boolean isFocused;
-
-  // widget settings
-  int parentContainer = 3;
 
   // threshold parameters
   float alpha_thresh = 0.7, beta_thresh = 0.7, alpha_upper = 2;
@@ -32,7 +36,7 @@ class FocusViz_Widget {
   color cFocus = #ffffff;  //#f0fbfd;
   color cDark = #032e61;
   color cLine = #20669c;
-  float x, y, w, h;  //widget topleft xy, width and height
+  // float x, y, w, h;  //widget topleft xy, width and height
   float xc, yc, wc, hc; // crystal ball center xy, width and height
   float wg, hg;  //graph width, graph height
   float wl;  // line width
@@ -42,21 +46,42 @@ class FocusViz_Widget {
   float rb;  // button radius
   float xb, yb; // button center xy
 
-  FocusViz_Widget(PApplet parent) {
+
+  //Button widgetTemplateButton;
+
+  W_Focus(PApplet _parent){
+    super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+    addDropdown("StrokeKeyWhenFocus", "Stroke Key When Focus", Arrays.asList("Off", "On"), 0);
+    // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
+    // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+
+    // widgetTemplateButton = new Button (x + w/2, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
+    // widgetTemplateButton.setFont(p4, 14);
+    // widgetTemplateButton.setURL("http://docs.openbci.com/OpenBCI%20Software/");
+
+    // focus Viz
     try {
       robot = new Robot();
     } catch (AWTException e) {
       e.printStackTrace();
       exit();
     }
-    x = container[parentContainer].x;
-    y = container[parentContainer].y;
-    w = container[parentContainer].w;
-    h = container[parentContainer].h - navHeight;
+    // x = container[parentContainer].x;
+    // y = container[parentContainer].y;
+    // w = container[parentContainer].w;
+    // h = container[parentContainer].h - navHeight;
     update_graphic_parameters();
+
   }
 
-  void update() {
+  void update(){
+    super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+
+    //put your code here...
     // focus detection algorithm based on Jordan's clean mind: focus == high alpha average && low beta average
     float FFT_freq_Hz, FFT_value_uV;
     int alpha_count = 0, beta_count = 0;
@@ -93,10 +118,10 @@ class FocusViz_Widget {
     // robot keystroke
     if (enableKey) {
       if (isFocused) {
-        robot.keyPress(KeyEvent.VK_SPACE);    //if you want to change to other key
+        robot.keyPress(KeyEvent.VK_UP);    //if you want to change to other key, google "java keyEvent" to see the full list
       }
       else {
-        robot.keyRelease(KeyEvent.VK_SPACE);
+        robot.keyRelease(KeyEvent.VK_UP);
       }
     }
 
@@ -104,42 +129,13 @@ class FocusViz_Widget {
     alpha_count = beta_count = 0;
   }
 
-  void screenResized(PApplet _parent, int _winX, int _winY) {
-    //when screen is resized...
-    //update position/size of focus_viz
-    // update graphic parameters
-    float _x = container[parentContainer].x;
-    float _y = container[parentContainer].y;
-    float _w = container[parentContainer].w;
-    float _h = container[parentContainer].h - navHeight;
-    if (x!=_x || y!=_y || w !=_w || h!=_h) {  // if any of four changes
-      x = _x;
-      y = _y;
-      w = _w;
-      h = _h;
-      update_graphic_parameters();
-    }
-  }
+  void draw(){
+    super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-  void update_graphic_parameters () {
-    xc = w/4;
-    yc = h/2;
-    wc = w/4;
-    hc = w/4;
-    wg = 0.07*w;
-    hg = 0.75*h;
-    wl = 0.11*w;
-    xg1 = 0.6*w;
-    yg1 = 0.5*h;
-    xg2 = 0.83*w;
-    yg2 = 0.5*h;
-    rp = max(w*0.05, h*0.05);
-    rb = min(w*0.05, h*0.05);
-    xb = w-rp;
-    yb = rp;
-  }
+    //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+    pushStyle();
 
-  void draw() {
+    // widgetTemplateButton.draw();
     //draw nav bars and button bars
     noStroke();
     fill(150, 150, 150);
@@ -267,166 +263,97 @@ class FocusViz_Widget {
       text("?", xb, yb);
     }
 
-    // revert settings to default
+    // revert origin point of draw to default
     translate(-x, -y-navHeight);
     textAlign(LEFT, BASELINE);
+
+    popStyle();
+
   }
 
-  void mousePressed() {
+  void screenResized(){
+    super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
+    update_graphic_parameters();
+
+  }
+
+  void update_graphic_parameters () {
+    xc = w/4;
+    yc = h/2;
+    wc = w/4;
+    hc = w/4;
+    wg = 0.07*w;
+    hg = 0.75*h;
+    wl = 0.11*w;
+    xg1 = 0.6*w;
+    yg1 = 0.5*h;
+    xg2 = 0.83*w;
+    yg2 = 0.5*h;
+    rp = max(w*0.05, h*0.05);
+    rb = min(w*0.05, h*0.05);
+    xb = w-rp;
+    yb = rp;
+  }
+
+  void mousePressed(){
+    super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+
+
+    // if(widgetTemplateButton.isMouseHere()){
+    //   widgetTemplateButton.setIsActive(true);
+    // }
+
+    //put your code here...
     if (dist(mouseX,mouseY,xb+x,yb+y+navHeight) <= rb) {
       showAbout = !showAbout;
     }
+
   }
 
-  //void keyPressed() {
-  //  if (key == TAB) {
-  //    if (enableKey == false) {
-  //      enableKey = true;
-  //      println("key simulation activated.");
-  //    }
-  //    else {
-  //      enableKey = false;
-  //      println("key simulation deactivated.");
-  //    }
-  //  }
-  //}
+  void mouseReleased(){
+    super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    // if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
+    //   widgetTemplateButton.goToURL();
+    // }
+    // widgetTemplateButton.setIsActive(false);
+
+  }
+
+  //add custom functions here
+  void customFunction(){
+    //this is a fake function... replace it with something relevant to this widget
+
+  }
+
+};
+
+// //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+void StrokeKeyWhenFocus(int n){
+  // println("Item " + (n+1) + " selected from Dropdown 1");
+  if(n==0){
+    //do this
+    w_focus.enableKey = false;
+    println("The robot ignores focused state and will not press any key.");
+  } else if(n==1){
+    //do this instead
+    w_focus.enableKey = true;
+    println("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
+  }
+
+  closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
-
-
-
-//class FocusViz_Slider {
-//    //Fields
-//    int lx, ly;
-//    int boxx, boxy;
-//    int stretch;
-//    int wid;
-//    int len;
-//    boolean over;
-//    boolean press;
-//    boolean locked = false;
-//    boolean otherslocked = false;
-//    boolean trip;
-//    boolean drawHand;
-//    color current_color = color(255,255,255);
-//    FocusViz_Widget parent;
-
-//    //Constructor
-//    FocusViz_Slider(int ix, int iy, int il, int iwid, int ilen, boolean wastrip, FocusViz_Widget p) {
-//      lx = ix;
-//      ly = iy;
-//      stretch = il;
-//      wid = iwid;
-//      len = ilen;
-//      boxx = lx - wid/2;
-//      boxy = ly-stretch - len/2;
-//      trip = wastrip;  //Boolean to distinguish between trip and untrip thresholds
-//      parent = p;
-//    }
-
-//    //Called whenever thresholds are dragged
-//    void update() {
-//      boxx = lx - wid/2;
-//      boxy = ly - stretch;
-
-//      for (int i=0; i<others.length; i++) {
-//        if (others[i].locked == true) {
-//          otherslocked = true;
-//          break;
-//        } else {
-//          otherslocked = false;
-//        }
-//      }
-
-//      if (otherslocked == false) {
-//        overEvent();
-//        pressEvent();
-//      }
-
-//      if (press) {
-//        //Some of this may need to be refactored in order to support window resizing.
-//        if(trip) stretch = lock(ly -mouseY, int(parent.untripThreshold * (50 - len)), 50 - len);
-//        else stretch = lock(ly -mouseY, 0, int(parent.tripThreshold * (50- len)));
-
-//        if((ly - mouseY) > 50-len && trip) parent.tripThreshold = 1;
-//        else if((ly - mouseY) > 50 -len && !trip) parent.untripThreshold = 1;
-//        else if((ly - mouseY) < 0 && trip) parent.tripThreshold = 0;
-//        else if((ly - mouseY) < 0 && !trip) parent.untripThreshold = 0;
-//        else if(trip) parent.tripThreshold = float(ly - mouseY) / (50 - len);
-//        else if(!trip) parent.untripThreshold = float(ly - mouseY) / (50 - len);
-//      }
-//    }
-
-//    //Checks if mouse is here
-//    void overEvent() {
-//      if (overRect(boxx, boxy, wid, len)) {
-//        over = true;
-//      } else {
-//        over = false;
-//      }
-//    }
-
-//    //Checks if mouse is pressed
-//    void pressEvent() {
-//      if (over && mousePressed || locked) {
-//        press = true;
-//        locked = true;
-//      } else {
-//        press = false;
-//      }
-//    }
-
-//    //Mouse was released
-//    void releaseEvent() {
-//      locked = false;
-//    }
-
-//    //Color selector and cursor setter
-//    void setColor(){
-//      if(over) {
-//        current_color = color(127,134,143);
-//        if(!drawHand){
-//          cursor(HAND);
-//          drawHand = true;
-//        }
-//      }
-//      else {
-//        if(trip) current_color = color(0,255,0);
-//        else current_color = color(255,0,0);
-//        if(drawHand){
-//          cursor(ARROW);
-//          drawHand = false;
-//        }
-//      }
-//    }
-
-//    //Helper function to make setting default threshold values easier.
-//    //Expects a float as input (0.25 is 25%)
-//    void setStretchPercentage(float val){
-//      stretch = lock(int((50 - len) * val), 0, 50 - len);
-//    }
-
-//    //Displays the thresholds
-//    void display() {
-//      fill(255);
-//      strokeWeight(0);
-//      stroke(255);
-//      setColor();
-//      fill(current_color);
-//      rect(boxx, boxy, wid, len);
-//    }
-
-//    //Check if the mouse is here
-//    boolean overRect(int lx, int ly, int lwidth, int lheight) {
-//      if (mouseX >= lx && mouseX <= lx+lwidth &&
-//          mouseY >= ly && mouseY <= ly+lheight) {
-//        return true;
-//      } else {
-//        return false;
-//      }
-//    }
-
-//    //Locks the threshold in place
-//    int lock(int val, int minv, int maxv) {
-//      return  min(max(val, minv), maxv);
-//    }
-//  }
+//
+// void Dropdown2(int n){
+//   println("Item " + (n+1) + " selected from Dropdown 2");
+//   closeAllDropdowns();
+// }
+//
+// void Dropdown3(int n){
+//   println("Item " + (n+1) + " selected from Dropdown 3");
+//   closeAllDropdowns();
+// }
