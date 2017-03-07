@@ -3,7 +3,7 @@ package controlP5;
 /**
  * controlP5 is a processing gui library.
  * 
- * 2006-2012 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
  * This library is free software; you can redistribute it
  * and/or modify it under the terms of the GNU Lesser
@@ -22,8 +22,8 @@ package controlP5;
  * Suite 330, Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -41,6 +41,7 @@ import processing.core.PGraphics;
  */
 public class Label implements CDrawable {
 
+	public static boolean isToUpperCaseDefault = true;
 	protected int _myLetterSpacing = 0;
 	protected boolean isMultiline;
 	protected boolean isFixedSize;
@@ -48,7 +49,7 @@ public class Label implements CDrawable {
 	protected boolean isVisible = true;
 	protected int _myColor = 0xffffffff;
 	protected boolean isColorBackground;
-	protected boolean isToUpperCase = true;
+	protected boolean isToUpperCase = isToUpperCaseDefault;
 	protected boolean changed;
 	protected int _myColorBackground = 0xffffffff;
 	protected int _myHeight = -1;
@@ -407,13 +408,23 @@ public class Label implements CDrawable {
 		return new Label( this );
 	}
 
+	
+	public static void setUpperCaseDefault( boolean theValue ) {
+		isToUpperCaseDefault = theValue;
+	}
+
 	interface Labeltype {
 
 		public void draw( Label theLabel , PGraphics theGraphics , int theX , int theY , ControllerInterface< ? > theController );
+
 		public void draw( Label theLabel , PGraphics theGraphics , int theX , int theY , int theW , int theH );
+
 		public int getWidth( );
+
 		public int getHeight( );
+
 		public int getOverflow( );
+
 		public String getTextFormatted( );
 	}
 

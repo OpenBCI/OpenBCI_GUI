@@ -1,21 +1,27 @@
 package controlP5;
 
 /**
+ * controlP5 is a processing gui library.
  * 
- * 2006-2013 by Andreas Schlegel
+ * 2006-2015 by Andreas Schlegel
  * 
- * This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General
- * Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option)
- * any later version. This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
- * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
- * License for more details.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  * 
- * You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
- * the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
+ * @modified 04/14/2016
+ * @version 2.2.6
  * 
  */
 
@@ -26,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 
 import processing.core.PApplet;
+import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
-import processing.core.PVector;
 import processing.event.KeyEvent;
 
 /**
@@ -270,8 +276,7 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 	}
 
 	protected void updateFont( ControlFont theControlFont ) {
-		_myCaptionLabel.updateFont( theControlFont );
-		_myValueLabel.updateFont( theControlFont );
+		setFont( theControlFont );
 	}
 
 	/**
@@ -413,15 +418,7 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 		return me;
 	}
 
-	/**
-	 * @return {@link PVector}
-	 */
 	public float[] getAbsolutePosition( ) {
-		// should return a mutable object of absolutePostion
-		// in a new PVector object to prevent
-		// absolutePosition from being
-		// modified by changing its field values. PVector
-		// should have getter and setters for x,y,z
 		return absolutePosition;
 	}
 
@@ -695,6 +692,7 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 			cp5.getControlBroadcaster( ).invokeAction( new CallbackEvent( this , ACTION_LEAVE ) );
 			_myControlWindow.removeMouseOverFor( this );
 			cp5.getTooltip( ).deactivate( );
+			setIsInside( false ); /* added after issue 6 has been reported */
 		}
 		return me;
 	}
@@ -2209,6 +2207,18 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 
 	@Override public T setColorValue( int theColor ) {
 		getValueLabel( ).setColor( theColor );
+		return me;
+	}
+
+	@Override public T setFont( PFont thePFont ) {
+		getValueLabel( ).setFont( thePFont );
+		getCaptionLabel( ).setFont( thePFont );
+		return me;
+	}
+
+	@Override public T setFont( ControlFont theFont ) {
+		getValueLabel( ).setFont( theFont );
+		getCaptionLabel( ).setFont( theFont );
 		return me;
 	}
 

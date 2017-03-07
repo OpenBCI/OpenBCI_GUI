@@ -1,3 +1,7 @@
+2014-09-08  Andreas Schlegel
+      * add glyphicons reference to controlp5.Icon.java http://glyphicons.com
+      * add useiconic to controlp5.Icon.java https://useiconic.com/open
+
 2014-05-29  Andreas Schlegel
       * distinguish between left,center, right mouse click events http://forum.processing.org/two/discussion/5422/controlp5-mousepressed-only-if-mousebutton-left- 
 

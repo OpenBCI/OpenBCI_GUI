@@ -204,9 +204,14 @@ class RunningMean {
 };
 
 class DataPacket_ADS1299 {
+  private final int rawAdsSize = 3;
+  private final int rawAuxSize = 2;
+
   int sampleIndex;
   int[] values;
   int[] auxValues;
+  byte[][] rawValues;
+  byte[][] rawAuxValues;
 
   //constructor, give it "nValues", which should match the number of values in the
   //data payload in each data packet from the Arduino.  This is likely to be at least
@@ -215,6 +220,8 @@ class DataPacket_ADS1299 {
   DataPacket_ADS1299(int nValues, int nAuxValues) {
     values = new int[nValues];
     auxValues = new int[nAuxValues];
+    rawValues = new byte[nValues][rawAdsSize];
+    rawAuxValues = new byte[nAuxValues][rawAdsSize];
   }
   int printToConsole() {
     print("printToConsole: DataPacket = ");
@@ -238,10 +245,12 @@ class DataPacket_ADS1299 {
     int nvalues = values.length;
     for (int i=0; i < nvalues; i++) {
       target.values[target_startInd_values + i] = values[i];
+      target.rawValues[target_startInd_values + i] = rawValues[i];
     }
     nvalues = auxValues.length;
     for (int i=0; i < nvalues; i++) {
       target.auxValues[target_startInd_aux + i] = auxValues[i];
+      target.rawAuxValues[target_startInd_aux + i] = rawAuxValues[i];
     }
     return 0;
   }
@@ -325,7 +334,7 @@ class TextBox {
     backgroundColor = color(255,255,255);
     textColor = color(0,0,0);
     fontSize = 12;
-    font = createFont("Arial",fontSize);
+    font = p5;
     backgroundEdge_pixels = 1;
     drawBackground = false;
     alignH = LEFT;
@@ -333,7 +342,7 @@ class TextBox {
   }
   public void setFontSize(int size) {
     fontSize = size;
-    font = createFont("fonts/Raleway-SemiBold.otf",fontSize);
+    font = p5;
   }
   public void draw() {
     //define text

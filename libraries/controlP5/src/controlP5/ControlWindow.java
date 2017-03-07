@@ -2,9 +2,9 @@ package controlP5;
 
 /**
  * controlP5 is a processing gui library.
- * 
- * 2006-2014 by Andreas Schlegel
- * 
+ *
+ * 2006-2015 by Andreas Schlegel
+ *
  * This library is free software; you can redistribute it
  * and/or modify it under the terms of the GNU Lesser
  * General Public License as published by the Free Software
@@ -15,16 +15,16 @@ package controlP5;
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; if not, write to
  * the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
- * 
+ *
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 09/08/2014
- * @version 2.2.2
- * 
+ * @modified 04/14/2016
+ * @version 2.2.6
+ *
  */
 
 import java.util.ArrayList;
@@ -34,7 +34,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
-import processing.core.PVector;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 import controlP5.ControlP5Base.KeyCode;
@@ -62,10 +61,10 @@ public final class ControlWindow {
 	protected List< Canvas > _myCanvas;
 	protected boolean isDrawBackground = true;
 	protected boolean isUndecorated = false;
-	protected PVector autoPosition = new PVector( 10 , 30 , 0 );
+	protected float[] autoPosition = new float[]{ 10 , 30 , 0 };
 	protected float tempAutoPositionHeight = 0;
 	protected boolean rendererNotification = false;
-	protected PVector positionOfTabs = new PVector( 0 , 0 , 0 );
+	protected float[] positionOfTabs = new float[]{ 0 , 0 , 0 };
 	private int _myFrameCount = 0;
 	private boolean isMouse = true;
 	private Pointer _myPointer;
@@ -82,7 +81,8 @@ public final class ControlWindow {
 	protected boolean mouselock;
 	protected char key;
 	protected int keyCode;
-	private boolean[] keys = new boolean[ 525 ];
+	private final int numKeys = 1024;
+	private boolean[] keys = new boolean[ numKeys ];
 	private int numOfActiveKeys = 0;
 	private boolean focused = true;
 
@@ -195,29 +195,18 @@ public final class ControlWindow {
 	/**
 	 * Sets the position of the tab bar which is set to 0,0
 	 * by default. to move the tabs to y-position 100, use
-	 * cp5.window().setPositionOfTabs(new PVector(0,100,0));
-	 * 
-	 * @param thePVector
+	 * cp5.getWindow().setPositionOfTabs(0,100);
+	 *
 	 */
-	public ControlWindow setPositionOfTabs( PVector thePVector ) {
-		positionOfTabs.set( thePVector );
-		return this;
-	}
 
 	public ControlWindow setPositionOfTabs( int theX , int theY ) {
-		positionOfTabs.set( theX , theY , positionOfTabs.z );
+		positionOfTabs[0] = theX;
+		positionOfTabs[1] = theY;
 		return this;
 	}
 
-	/**
-	 * Returns the position of the tab bar as PVector. to
-	 * move the tabs to y-position 100, use
-	 * cp5.window().getPositionOfTabs().y = 100; or
-	 * cp5.window().setPositionOfTabs(new PVector(0,100,0));
-	 * 
-	 * @return PVector
-	 */
-	public PVector getPositionOfTabs( ) {
+
+	public float[] getPositionOfTabs( ) {
 		return positionOfTabs;
 	}
 
@@ -341,7 +330,7 @@ public final class ControlWindow {
 	/**
 	 * updates all controllers inside the control window if
 	 * update is enabled.
-	 * 
+	 *
 	 * @exclude
 	 */
 	public void update( ) {
@@ -413,8 +402,8 @@ public final class ControlWindow {
 	 */
 	public void mouseEvent( int theX , int theY , boolean pressed ) {
 
-		mouseX = theX - cp5.pgx;
-		mouseY = theY - cp5.pgy;
+		mouseX = theX - cp5.pgx - cp5.ox;
+		mouseY = theY - cp5.pgy - cp5.oy;
 
 		if ( pressed && !pmousePressed ) {
 			updateEvents( );
@@ -451,8 +440,8 @@ public final class ControlWindow {
 	 */
 	public void mouseEvent( MouseEvent theMouseEvent ) {
 		if ( isMouse ) {
-			mouseX = theMouseEvent.getX( ) - cp5.pgx;
-			mouseY = theMouseEvent.getY( ) - cp5.pgy;
+			mouseX = theMouseEvent.getX( ) - cp5.pgx - cp5.ox;
+			mouseY = theMouseEvent.getY( ) - cp5.pgy - cp5.oy;
 			if ( theMouseEvent.getAction( ) == MouseEvent.PRESS ) {
 				mousePressedEvent( );
 			}
@@ -508,7 +497,7 @@ public final class ControlWindow {
 	}
 
 	public void clearKeys( ) {
-		keys = new boolean[ 525 ];
+		keys = new boolean[ numKeys ];
 		numOfActiveKeys = 0;
 	}
 
@@ -526,7 +515,8 @@ public final class ControlWindow {
 	}
 
 	public void draw( PGraphics pg ) {
-
+		pg.pushMatrix( );
+		pg.translate( cp5.ox , cp5.oy );
 		if ( cp5.blockDraw == false ) {
 			if ( cp5.isAndroid ) {
 				mouseEvent( cp5.papplet.mouseX , cp5.papplet.mouseY , cp5.papplet.mousePressed );
@@ -565,8 +555,8 @@ public final class ControlWindow {
 
 				pg.noStroke( );
 				pg.noFill( );
-				int myOffsetX = ( int ) getPositionOfTabs( ).x;
-				int myOffsetY = ( int ) getPositionOfTabs( ).y;
+				int myOffsetX = ( int ) getPositionOfTabs( )[0];
+				int myOffsetY = ( int ) getPositionOfTabs( )[1];
 				int myHeight = 0;
 
 				if ( _myTabs.size( ) > 0 ) {
@@ -625,13 +615,13 @@ public final class ControlWindow {
 				}
 			}
 		}
-
+		pg.popMatrix( );
 	}
 
 	/**
 	 * Adds a custom context to a ControlWindow. Use a
 	 * custom class which implements the CDrawable interface
-	 * 
+	 *
 	 * @see controlP5.CDrawable
 	 * @param theDrawable CDrawable
 	 */
@@ -794,7 +784,7 @@ public final class ControlWindow {
 
 	/**
 	 * sets the frame rate of the control window.
-	 * 
+	 *
 	 * @param theFrameRate
 	 * @return ControlWindow
 	 */
@@ -813,7 +803,7 @@ public final class ControlWindow {
 	 * filled with a background color every frame. to enable
 	 * or disable the background from drawing, use
 	 * setDrawBackgorund(true/false).
-	 * 
+	 *
 	 * @param theFlag
 	 * @return ControlWindow
 	 */

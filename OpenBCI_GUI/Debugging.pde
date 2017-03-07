@@ -1,12 +1,12 @@
 
 //////////////////////////////////////
 //
-// This file contains classes that are helpful for debugging, as well as the HelpWidget, 
-// which is used to give feedback to the GUI user in the small text window at the bottom of the GUI 
+// This file contains classes that are helpful for debugging, as well as the HelpWidget,
+// which is used to give feedback to the GUI user in the small text window at the bottom of the GUI
 //
 // Created: Conor Russomanno, June 2016
 // Based on code: Chip Audette, Oct 2013 - Dec 2014
-// 
+//
 //
 /////////////////////////////////////
 
@@ -67,30 +67,53 @@ class HelpWidget {
   public void draw() {
 
     pushStyle();
-    noStroke();
 
-    // draw background of widget
-    fill(255);
-    rect(x, height-h, width, h);
+    if(colorScheme == COLOR_SCHEME_DEFAULT){
+      // draw background of widget
+      stroke(bgColor);
+      fill(255);
+      rect(-1, height-h, width+2, h);
+      noStroke();
 
-    //draw bg of text field of widget
-    strokeWeight(1);
-    stroke(color(0, 5, 11));
-    fill(color(0, 5, 11));
-    rect(x + padding, height-h + padding, width - padding*5 - 128, h - padding *2);
+      //draw bg of text field of widget
+      strokeWeight(1);
+      stroke(color(0, 5, 11));
+      fill(color(0, 5, 11));
+      rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
-    textSize(14);
-    fill(255);
-    textAlign(LEFT, TOP);
-    text(currentOutput, padding*2, height - h + padding + 4);
+      textFont(p4);
+      textSize(14);
+      fill(255);
+      textAlign(LEFT, TOP);
+      text(currentOutput, padding*2, height - h + padding);
+    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+      // draw background of widget
+      stroke(bgColor);
+      fill(31,69,110);
+      rect(-1, height-h, width+2, h);
+      noStroke();
 
-    //draw OpenBCI LOGO
-    image(logo, width - (128+padding*2), height - 26, 128, 22);
+      //draw bg of text field of widget
+      strokeWeight(1);
+      stroke(color(0, 5, 11));
+      fill(200);
+      fill(255);
+      // fill(57,128,204);
+      rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
+      textFont(p4);
+      textSize(14);
+      fill(bgColor);
+      // fill(57,128,204);
+      // fill(openbciBlue);
+      textAlign(LEFT, TOP);
+      text(currentOutput, padding*2, height - h + padding);
+    }
+    
     popStyle();
   }
 
-  public void output(String _output) {  
+  public void output(String _output) {
     currentOutput = _output;
     // prevOutputs.add(_output);
   }

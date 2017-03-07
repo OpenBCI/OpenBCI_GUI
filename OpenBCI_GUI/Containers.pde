@@ -10,13 +10,13 @@
 //   ------------------------------------------------
 //   |                      [0]                     |
 //   ------------------------------------------------
-//   |                       |                      |
-//   |         [1]          [2]         [3]         |
-//   |                       |                      |
+//   |                       |         [11]         |
+//   |         [1]          [2]---[15]--[3]---[16]--|
+//   |                       |         [12]         |
 //   |---------[4]----------[5]---------[6]---------|
-//   |                       |                      |
-//   |         [7]          [8]         [9]         |
-//   |                       |                      |
+//   |                       |         [13]         |
+//   |         [7]          [8]---[17]--[9]---[18]--|
+//   |                       |         [14]         |
 //   ------------------------------------------------
 //   |                      [10]                    |
 //   ------------------------------------------------
@@ -26,21 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 boolean drawContainers = false;
-
-Container[] container = new Container[11];
-// Container container0;
-// Container container1;
-// Container container2;
-// Container container3;
-// Container container4;
-// Container container5;
-// Container container6;
-// Container container7;
-// Container container8;
-// Container container9;
-// Container container10;
-//Container container11;
-//Container container12;
+Container[] container = new Container[19];
 
 //Viz extends container (example below)
 //Viz viz1;
@@ -49,22 +35,18 @@ Container[] container = new Container[11];
 int widthOfLastScreen_C = 0;
 int heightOfLastScreen_C = 0;
 
-void setupContainers() { 
-  //size(1024, 768, P2D);
-  //frameRate(30);
-  //smooth();
-  //surface.setResizable(true);
-  
+int topNav_h = 64; //tie this to a global variable or one attached to GUI_Manager
+int bottomNav_h = 28; //same
+int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
+int rightNav_w = 0; //not used currently
+
+void setupContainers() {
+
   widthOfLastScreen_C = width;
   heightOfLastScreen_C = height;
-  
-  int topNav_h = 32; //tie this to a global variable or one attached to GUI_Manager
-  int bottomNav_h = 30; //same
-  int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
-  int rightNav_w = 0; //not used currently
-  
+
   container[0] = new Container(0, 0, width, topNav_h, 0);
-  container[5] = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 4);
+  container[5] = new Container(0, topNav_h, width, height - (topNav_h + bottomNav_h), 1);
   container[1] = new Container(container[5], "TOP_LEFT");
   container[2] = new Container(container[5], "TOP");
   container[3] = new Container(container[5], "TOP_RIGHT");
@@ -74,9 +56,17 @@ void setupContainers() {
   container[8] = new Container(container[5], "BOTTOM");
   container[9] = new Container(container[5], "BOTTOM_RIGHT");
   container[10] = new Container(0, height - bottomNav_h, width, 50, 0);
+  container[11] = new Container(container[3], "TOP");
+  container[12] = new Container(container[3], "BOTTOM");
+  container[13] = new Container(container[9], "TOP");
+  container[14] = new Container(container[9], "BOTTOM");
+  container[15] = new Container(container[6], "TOP_LEFT");
+  container[16] = new Container(container[6], "TOP_RIGHT");
+  container[17] = new Container(container[6], "BOTTOM_LEFT");
+  container[18] = new Container(container[6], "BOTTOM_RIGHT");
   //container11 = new Container(container1, "LEFT");
   //container12 = new Container(container1, "RIGHT");
-  
+
   //setup viz objects... example of container extension (more below)
   //setupVizs();
 }
@@ -88,7 +78,7 @@ void drawContainers() {
   }
   //container11.draw();
   //container12.draw();
-  
+
   //Draw viz objects.. exampl extension of container class (more below)
   //viz1.draw();
   //viz2.draw();
@@ -114,9 +104,9 @@ public class Container {
 
   //constructor 1 -- comprehensive
   public Container(float _x0, float _y0, float _w0, float _h0, float _margin) {
-    
+
     margin = _margin;
-    
+
     x0 = _x0;
     y0 = _y0;
     w0 = _w0;
@@ -218,23 +208,22 @@ public class Container {
   }
 
   public void draw() {
-    
     if(drawContainers){
       pushStyle();
-  
-      //draw margin area 
+
+      //draw margin area
       fill(102, 255, 71, 100);
       noStroke();
       rect(x0, y0, w0, h0);
-  
+
       //noFill();
       //stroke(255, 0, 0);
       //rect(x0, y0, w0, h0);
-  
+
       fill(31, 69, 110, 100);
       noStroke();
       rect(x, y, w, h);
-  
+
       popStyle();
     }
   }
@@ -245,7 +234,7 @@ public class Container {
 //public class Viz extends Container {
 //  public float abc;
 
-//  public Viz(float _abc, Container master) {  
+//  public Viz(float _abc, Container master) {
 //    super(master, "WHOLE");
 //    abc = _abc;
 //  }

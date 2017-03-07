@@ -13,14 +13,14 @@ class FocusViz_Widget {
   // interactivity
   boolean enableKey = false;  // change this to true if you want the robot to simulate key stroke whenever they hit focused state
   Robot robot;
-  
+
   // output values
   float alpha_avg = 0, beta_avg = 0;
   boolean isFocused;
 
   // widget settings
   int parentContainer = 3;
-  
+
   // threshold parameters
   float alpha_thresh = 0.7, beta_thresh = 0.7, alpha_upper = 2;
 
@@ -33,7 +33,7 @@ class FocusViz_Widget {
   color cDark = #032e61;
   color cLine = #20669c;
   float x, y, w, h;  //widget topleft xy, width and height
-  float xc, yc, wc, hc; // crystal ball center xy, width and height 
+  float xc, yc, wc, hc; // crystal ball center xy, width and height
   float wg, hg;  //graph width, graph height
   float wl;  // line width
   float xg1, yg1;  //graph1 center xy
@@ -41,9 +41,9 @@ class FocusViz_Widget {
   float rp;  // padding radius
   float rb;  // button radius
   float xb, yb; // button center xy
-  
+
   FocusViz_Widget(PApplet parent) {
-    try { 
+    try {
       robot = new Robot();
     } catch (AWTException e) {
       e.printStackTrace();
@@ -89,7 +89,7 @@ class FocusViz_Widget {
     } else {
       isFocused = false;
     }
-    
+
     // robot keystroke
     if (enableKey) {
       if (isFocused) {
@@ -120,18 +120,18 @@ class FocusViz_Widget {
       update_graphic_parameters();
     }
   }
-  
+
   void update_graphic_parameters () {
-    xc = w/4; 
-    yc = h/2; 
-    wc = w/4; 
-    hc = w/4; 
-    wg = 0.07*w; 
-    hg = 0.75*h;  
-    wl = 0.11*w;  
-    xg1 = 0.6*w; 
-    yg1 = 0.5*h;  
-    xg2 = 0.83*w; 
+    xc = w/4;
+    yc = h/2;
+    wc = w/4;
+    hc = w/4;
+    wg = 0.07*w;
+    hg = 0.75*h;
+    wl = 0.11*w;
+    xg1 = 0.6*w;
+    yg1 = 0.5*h;
+    xg2 = 0.83*w;
     yg2 = 0.5*h;
     rp = max(w*0.05, h*0.05);
     rb = min(w*0.05, h*0.05);
@@ -158,7 +158,7 @@ class FocusViz_Widget {
     textFont(f);
     textSize(18);
     text("Focus Visualizer", x+navHeight+2, y+navHeight/2 - 2); //title of widget -- left
-    
+
     // presettings before drawing Focus Viz
     translate(x, y + navHeight);
     textAlign(CENTER, CENTER);
@@ -189,15 +189,15 @@ class FocusViz_Widget {
     noStroke();
     fill(cDark);
     rect(xg1 - wg/2, yg1 - hg/2, wg, hg);
-    
+
     stroke(cLine);
-    line(xg1 - wl/2, yg1 - hg/2, xg1 + wl/2, yg1 - hg/2); 
+    line(xg1 - wl/2, yg1 - hg/2, xg1 + wl/2, yg1 - hg/2);
     float hat = map(alpha_thresh, 0, alpha_upper, 0, hg);  // alpha threshold height
-    line(xg1 - wl/2, yg1 + hg/2 - hat, xg1 + wl/2, yg1 + hg/2 - hat); 
-    line(xg1 - wl/2, yg1 + hg/2, xg1 + wl/2, yg1 + hg/2); 
-    
+    line(xg1 - wl/2, yg1 + hg/2 - hat, xg1 + wl/2, yg1 + hg/2 - hat);
+    line(xg1 - wl/2, yg1 + hg/2, xg1 + wl/2, yg1 + hg/2);
+
     noStroke();
-    fill(cLine); 
+    fill(cLine);
     text(String.format("%.01f", alpha_upper), xg1 - wl/2 - 14, yg1 - hg/2);
     text(String.format("%.01f", alpha_thresh), xg1 - wl/2 - 14, yg1 + hg/2 - hat);
     text("0.0", xg1 - wl/2 - 14, yg1 + hg/2);
@@ -206,7 +206,7 @@ class FocusViz_Widget {
     fill(cFocus);
     float ha = map(alpha_avg, 0, alpha_upper, 0, hg);  //alpha height
     ha = constrain(ha, 0, hg);
-    rect(xg1 - wg/2, yg1 + hg/2 - ha, wg, ha); 
+    rect(xg1 - wg/2, yg1 + hg/2 - ha, wg, ha);
     // draw alpha label
     if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper) {
       fill(cFocus);
@@ -219,13 +219,13 @@ class FocusViz_Widget {
     noStroke();
     fill(cDark);
     rect(xg2 - wg/2, yg2 - hg/2, wg, hg);
-    
+
     stroke(cLine);
-    line(xg2 - wl/2, yg2 - hg/2, xg2 + wl/2, yg2 - hg/2); 
+    line(xg2 - wl/2, yg2 - hg/2, xg2 + wl/2, yg2 - hg/2);
     float hbt = map(beta_thresh, 0, alpha_upper, 0, hg);  // beta threshold height
-    line(xg2 - wl/2, yg2 + hg/2 - hbt, xg2 + wl/2, yg2 + hg/2 - hbt); 
-    line(xg2 - wl/2, yg2 + hg/2, xg2 + wl/2, yg2 + hg/2); 
-    
+    line(xg2 - wl/2, yg2 + hg/2 - hbt, xg2 + wl/2, yg2 + hg/2 - hbt);
+    line(xg2 - wl/2, yg2 + hg/2, xg2 + wl/2, yg2 + hg/2);
+
     noStroke();
     fill(cLine);
     text(String.format("%.01f", alpha_upper), xg2 - wl/2 - 14, yg2 - hg/2);
@@ -236,7 +236,7 @@ class FocusViz_Widget {
     fill(cFocus);
     float hb = map(beta_avg, 0, alpha_upper, 0, hg);  //beta height
     hb = constrain(hb, 0, hg);
-    rect(xg2 - wg/2, yg2 + hg/2 - hb, wg, hb); 
+    rect(xg2 - wg/2, yg2 + hg/2 - hb, wg, hb);
     // draw beta label
     if (beta_avg < alpha_thresh) {
       fill(cFocus);
@@ -277,7 +277,7 @@ class FocusViz_Widget {
       showAbout = !showAbout;
     }
   }
-  
+
   //void keyPressed() {
   //  if (key == TAB) {
   //    if (enableKey == false) {
@@ -291,3 +291,142 @@ class FocusViz_Widget {
   //  }
   //}
 }
+
+
+
+//class FocusViz_Slider {
+//    //Fields
+//    int lx, ly;
+//    int boxx, boxy;
+//    int stretch;
+//    int wid;
+//    int len;
+//    boolean over;
+//    boolean press;
+//    boolean locked = false;
+//    boolean otherslocked = false;
+//    boolean trip;
+//    boolean drawHand;
+//    color current_color = color(255,255,255);
+//    FocusViz_Widget parent;
+
+//    //Constructor
+//    FocusViz_Slider(int ix, int iy, int il, int iwid, int ilen, boolean wastrip, FocusViz_Widget p) {
+//      lx = ix;
+//      ly = iy;
+//      stretch = il;
+//      wid = iwid;
+//      len = ilen;
+//      boxx = lx - wid/2;
+//      boxy = ly-stretch - len/2;
+//      trip = wastrip;  //Boolean to distinguish between trip and untrip thresholds
+//      parent = p;
+//    }
+
+//    //Called whenever thresholds are dragged
+//    void update() {
+//      boxx = lx - wid/2;
+//      boxy = ly - stretch;
+
+//      for (int i=0; i<others.length; i++) {
+//        if (others[i].locked == true) {
+//          otherslocked = true;
+//          break;
+//        } else {
+//          otherslocked = false;
+//        }
+//      }
+
+//      if (otherslocked == false) {
+//        overEvent();
+//        pressEvent();
+//      }
+
+//      if (press) {
+//        //Some of this may need to be refactored in order to support window resizing.
+//        if(trip) stretch = lock(ly -mouseY, int(parent.untripThreshold * (50 - len)), 50 - len);
+//        else stretch = lock(ly -mouseY, 0, int(parent.tripThreshold * (50- len)));
+
+//        if((ly - mouseY) > 50-len && trip) parent.tripThreshold = 1;
+//        else if((ly - mouseY) > 50 -len && !trip) parent.untripThreshold = 1;
+//        else if((ly - mouseY) < 0 && trip) parent.tripThreshold = 0;
+//        else if((ly - mouseY) < 0 && !trip) parent.untripThreshold = 0;
+//        else if(trip) parent.tripThreshold = float(ly - mouseY) / (50 - len);
+//        else if(!trip) parent.untripThreshold = float(ly - mouseY) / (50 - len);
+//      }
+//    }
+
+//    //Checks if mouse is here
+//    void overEvent() {
+//      if (overRect(boxx, boxy, wid, len)) {
+//        over = true;
+//      } else {
+//        over = false;
+//      }
+//    }
+
+//    //Checks if mouse is pressed
+//    void pressEvent() {
+//      if (over && mousePressed || locked) {
+//        press = true;
+//        locked = true;
+//      } else {
+//        press = false;
+//      }
+//    }
+
+//    //Mouse was released
+//    void releaseEvent() {
+//      locked = false;
+//    }
+
+//    //Color selector and cursor setter
+//    void setColor(){
+//      if(over) {
+//        current_color = color(127,134,143);
+//        if(!drawHand){
+//          cursor(HAND);
+//          drawHand = true;
+//        }
+//      }
+//      else {
+//        if(trip) current_color = color(0,255,0);
+//        else current_color = color(255,0,0);
+//        if(drawHand){
+//          cursor(ARROW);
+//          drawHand = false;
+//        }
+//      }
+//    }
+
+//    //Helper function to make setting default threshold values easier.
+//    //Expects a float as input (0.25 is 25%)
+//    void setStretchPercentage(float val){
+//      stretch = lock(int((50 - len) * val), 0, 50 - len);
+//    }
+
+//    //Displays the thresholds
+//    void display() {
+//      fill(255);
+//      strokeWeight(0);
+//      stroke(255);
+//      setColor();
+//      fill(current_color);
+//      rect(boxx, boxy, wid, len);
+//    }
+
+//    //Check if the mouse is here
+//    boolean overRect(int lx, int ly, int lwidth, int lheight) {
+//      if (mouseX >= lx && mouseX <= lx+lwidth &&
+//          mouseY >= ly && mouseY <= ly+lheight) {
+//        return true;
+//      } else {
+//        return false;
+//      }
+//    }
+
+//    //Locks the threshold in place
+//    int lock(int val, int minv, int maxv) {
+//      return  min(max(val, minv), maxv);
+//    }
+//  }
