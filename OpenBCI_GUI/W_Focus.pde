@@ -1,10 +1,11 @@
 
 ////////////////////////////////////////////////////
 //
-//    W_template.pde (ie "Widget Template")
+//    W_focus.pde (ie "Focus Widget")
 //
-//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
-//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
+//    This widget helps you visualize the alpha and beta value and the calculated focused state
+//    You can ask a robot to press Up Arrow key stroke whenever you are focused.
+//    You can also send the focused state to Arduino
 //
 //    Created by: Conor Russomanno, November 2016
 //
@@ -17,9 +18,10 @@ import java.awt.event.KeyEvent;
 
 class W_Focus extends Widget {
   //to see all core variables/methods of the Widget class, refer to Widget.pde
-
-  boolean enableKey = false;  // change this to true if you want the robot to simulate key stroke whenever they hit focused state
-  Robot robot;
+  Robot robot;    // a key-stroking robot waiting for focused state
+  boolean enableKey = false;  // enable key stroke by the robot
+  int keyNum = 0; // 0 - up arrow, 1 - Spacebar
+  boolean enableSerial = false; // send the Focused state to Arduino
 
   // output values
   float alpha_avg = 0, beta_avg = 0;
@@ -46,22 +48,14 @@ class W_Focus extends Widget {
   float rb;  // button radius
   float xb, yb; // button center xy
 
-
-  //Button widgetTemplateButton;
-
   W_Focus(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("StrokeKeyWhenFocus", "Stroke Key When Focus", Arrays.asList("Off", "On"), 0);
-    // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-    // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
-
-    // widgetTemplateButton = new Button (x + w/2, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
-    // widgetTemplateButton.setFont(p4, 14);
-    // widgetTemplateButton.setURL("http://docs.openbci.com/OpenBCI%20Software/");
+    addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), 0);
+    addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0);
 
     // focus Viz
     try {
@@ -70,10 +64,6 @@ class W_Focus extends Widget {
       e.printStackTrace();
       exit();
     }
-    // x = container[parentContainer].x;
-    // y = container[parentContainer].y;
-    // w = container[parentContainer].w;
-    // h = container[parentContainer].h - navHeight;
     update_graphic_parameters();
 
   }
@@ -117,16 +107,38 @@ class W_Focus extends Widget {
 
     // robot keystroke
     if (enableKey) {
-      if (isFocused) {
-        robot.keyPress(KeyEvent.VK_UP);    //if you want to change to other key, google "java keyEvent" to see the full list
+      if (keyNum == 0) {
+        if (isFocused) {
+          robot.keyPress(KeyEvent.VK_UP);    //if you want to change to other key, google "java keyEvent" to see the full list
+        }
+        else {
+          robot.keyRelease(KeyEvent.VK_UP);
+        }
       }
-      else {
-        robot.keyRelease(KeyEvent.VK_UP);
+      else if (keyNum == 1) {
+        if (isFocused) {
+          robot.keyPress(KeyEvent.VK_SPACE);    //if you want to change to other key, google "java keyEvent" to see the full list
+        }
+        else {
+          robot.keyRelease(KeyEvent.VK_SPACE);
+        }
       }
     }
 
     //alpha_avg = beta_avg = 0;
     alpha_count = beta_count = 0;
+
+    // ----------- send the focused state to Arduino if turned on -----------
+    if (enableSerial) {
+      try {
+        serial_output.write(int(isFocused) + 48);
+        serial_output.write('\n');
+      }
+      catch(RuntimeException e) {
+        if (isVerbose) println("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
+      }
+    }
+
   }
 
   void draw(){
@@ -135,28 +147,8 @@ class W_Focus extends Widget {
     //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     pushStyle();
 
-    // widgetTemplateButton.draw();
-    //draw nav bars and button bars
-    noStroke();
-    fill(150, 150, 150);
-    rect(x, y, w, navHeight); //top bar
-    fill(200, 200, 200);
-    rect(x, y+navHeight, w, navHeight); //button bar
-    fill(255);
-    rect(x+2, y+2, navHeight-4, navHeight-4);
-    fill(bgColor, 100);
-    rect(x+4, y+4, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+4, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+((navHeight-10)/2)+5, y+4, (navHeight-10)/2, (navHeight-10)/2);
-    rect(x+((navHeight-10)/2)+5, y+((navHeight-10)/2)+5, (navHeight-10)/2, (navHeight-10 )/2);
-    fill(bgColor);
-    textAlign(LEFT, CENTER);
-    textFont(f);
-    textSize(18);
-    text("Focus Visualizer", x+navHeight+2, y+navHeight/2 - 2); //title of widget -- left
-
     // presettings before drawing Focus Viz
-    translate(x, y + navHeight);
+    translate(x, y);
     textAlign(CENTER, CENTER);
     textFont(myfont);
 
@@ -264,7 +256,7 @@ class W_Focus extends Widget {
     }
 
     // revert origin point of draw to default
-    translate(-x, -y-navHeight);
+    translate(-x, -y);
     textAlign(LEFT, BASELINE);
 
     popStyle();
@@ -275,7 +267,6 @@ class W_Focus extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
     update_graphic_parameters();
 
   }
@@ -301,13 +292,8 @@ class W_Focus extends Widget {
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-
-    // if(widgetTemplateButton.isMouseHere()){
-    //   widgetTemplateButton.setIsActive(true);
-    // }
-
     //put your code here...
-    if (dist(mouseX,mouseY,xb+x,yb+y+navHeight) <= rb) {
+    if (dist(mouseX,mouseY,xb+x,yb+y) <= rb) {
       showAbout = !showAbout;
     }
 
@@ -315,12 +301,6 @@ class W_Focus extends Widget {
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-    //put your code here...
-    // if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
-    //   widgetTemplateButton.goToURL();
-    // }
-    // widgetTemplateButton.setIsActive(false);
 
   }
 
@@ -333,7 +313,7 @@ class W_Focus extends Widget {
 };
 
 // //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void StrokeKeyWhenFocus(int n){
+void StrokeKeyWhenFocused(int n){
   // println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0){
     //do this
@@ -342,18 +322,29 @@ void StrokeKeyWhenFocus(int n){
   } else if(n==1){
     //do this instead
     w_focus.enableKey = true;
+    w_focus.keyNum = 0;
     println("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
+  } else if(n==2){
+    //do this instead
+    w_focus.enableKey = true;
+    w_focus.keyNum = 1;
+    println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
   }
 
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
-//
-// void Dropdown2(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 2");
-//   closeAllDropdowns();
-// }
-//
-// void Dropdown3(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 3");
-//   closeAllDropdowns();
-// }
+
+void SerialSendFocused(int n){
+  if(n==0){
+    //do this
+    w_focus.enableSerial = false;
+    println("Serial write off.");
+  } else if(n==1){
+    //do this instead
+    w_focus.enableSerial = true;
+    println("Serial write on, writing character 1 (int 49) when focused, and character 0 (int 48) when losing focus.");
+    println("Current output port name: " + serial_output_portName + ". Current baud rate: " + serial_output_baud + ".");
+    println("You can change serial settings in OpenBCI_GUI.pde by searching serial_output.");
+  }
+  closeAllDropdowns();
+}
