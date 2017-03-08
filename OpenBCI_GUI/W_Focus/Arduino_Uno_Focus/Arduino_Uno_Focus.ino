@@ -63,7 +63,6 @@ void serialEvent() {
     // so the main loop can do something about it:
     if (inChar == '\n') {
       stringComplete = true;
-      //Serial.println(inputString);
     }
   }
 }

@@ -241,7 +241,7 @@ class W_Focus extends Widget {
       rect(rp, rp, w-rp*2, h-rp*2);
       textAlign(LEFT, TOP);
       fill(cFocus);
-      text("About Focus Visualizer:\n\nThis algorithm interprets high alpha values and low beta values as a focused state. It is based on the brainwaves of subject Jordan Frand, but also worked for 30 other subjects including both hildren and adults.\n\nA focused state is where the average alpha wave amplitude is avobe 0.7 uV, and the average beta wave amplitude is below 0.7 uV, both must be below 2 uV to eliminate noise.\n\nHere, “average” means averaged amplitudes in either alpha or beta frequency ranges, divided by FFT resolution bandwidth.\n\nFor more information, contact wangshu.sun@hotmail.com.", rp*1.5, rp*1.5, w-rp*3, h-rp*3);
+      text("This widget recognizes a focused mental state by looking at alpha and beta wave levels on channel 1 & 2. For better result, try setting the smooth at 0.98 in FFT plot.\n\nThe algorithm thinks you are focused when the alpha level is between 0.7~2uV and the beta level is between 0~0.7 uV, otherwise it thinks you are not focused. It is designed based on Jordan Frand’s brainwave and tested on other subjects, and you can playback Jordan's file in W_Focus folder.\n\nYou can turn on KeyPress and use your focus play a game, so whenever you are focused, the specified UP arrow or SPACE key will be pressed down, otherwise it will be released. You can also try out the Arduino output feature, example and instructions are included in W_Focus folder. For more information, contact wangshu.sun@hotmail.com.", rp*1.5, rp*1.5, w-rp*3, h-rp*3);
     }
     // draw the button that toggles information
     noStroke();
@@ -284,7 +284,7 @@ class W_Focus extends Widget {
     xg2 = 0.83*w;
     yg2 = 0.5*h;
     rp = max(w*0.05, h*0.05);
-    rb = min(w*0.05, h*0.05);
+    rb = 20;
     xb = w-rp;
     yb = rp;
   }
