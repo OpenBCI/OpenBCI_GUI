@@ -23,6 +23,8 @@ class W_networking extends Widget {
 
   /* Widget CP5 */
   ControlP5 cp5_networking;
+  ControlP5 cp5_networking_dropdowns;
+
   boolean dataDropdownsShouldBeClosed = false;
   // CColor dropdownColors_networking = new CColor();
 
@@ -34,6 +36,7 @@ class W_networking extends Widget {
   int column1;
   int column2;
   int column3;
+  int fullColumnWidth;
   int row0;
   int row1;
   int row2;
@@ -57,6 +60,10 @@ class W_networking extends Widget {
   Stream stream2;
   Stream stream3;
 
+  List<String> baudRates;
+  List<String> comPorts;
+  String defaultBaud;
+
   W_networking(PApplet _parent){
     super(_parent);
     networkActive = false;
@@ -64,10 +71,19 @@ class W_networking extends Widget {
     stream2 = null;
     stream3 = null;
     dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "PowerBands", "Widget");
+    defaultBaud = "9600";
+    baudRates = Arrays.asList("1200", "9600", "57600", "115200");
     protocolMode = "OSC"; //default to OSC
     addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL", "Serial"), protocolIndex);
+    comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
+    println("comPorts = " + comPorts);
+
+
     initialize_UI();
     cp5_networking.setAutoDraw(false);
+    cp5_networking_dropdowns.setAutoDraw(false);
+
+
   }
 
   /* ----- USER INTERFACE ----- */
@@ -90,42 +106,68 @@ class W_networking extends Widget {
     if(dataDropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
       dataDropdownsShouldBeClosed = false;
     } else {
-      if(cp5_networking.get(ScrollableList.class, "dataType1").isOpen()){
-        if(!cp5_networking.getController("dataType1").isMouseOver()){
+      if(cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").isOpen()){
+        if(!cp5_networking_dropdowns.getController("dataType1").isMouseOver()){
           // println("2");
-          cp5_networking.get(ScrollableList.class, "dataType1").close();
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").close();
         }
       }
-      if(!cp5_networking.get(ScrollableList.class, "dataType1").isOpen()){
-        if(cp5_networking.getController("dataType1").isMouseOver()){
+      if(!cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").isOpen()){
+        if(cp5_networking_dropdowns.getController("dataType1").isMouseOver()){
           // println("2");
-          cp5_networking.get(ScrollableList.class, "dataType1").open();
-        }
-      }
-
-      if(cp5_networking.get(ScrollableList.class, "dataType2").isOpen()){
-        if(!cp5_networking.getController("dataType2").isMouseOver()){
-          // println("2");
-          cp5_networking.get(ScrollableList.class, "dataType2").close();
-        }
-      }
-      if(!cp5_networking.get(ScrollableList.class, "dataType2").isOpen()){
-        if(cp5_networking.getController("dataType2").isMouseOver()){
-          // println("2");
-          cp5_networking.get(ScrollableList.class, "dataType2").open();
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").open();
         }
       }
 
-      if(cp5_networking.get(ScrollableList.class, "dataType3").isOpen()){
-        if(!cp5_networking.getController("dataType3").isMouseOver()){
+      if(cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").isOpen()){
+        if(!cp5_networking_dropdowns.getController("dataType2").isMouseOver()){
           // println("2");
-          cp5_networking.get(ScrollableList.class, "dataType3").close();
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").close();
         }
       }
-      if(!cp5_networking.get(ScrollableList.class, "dataType3").isOpen()){
-        if(cp5_networking.getController("dataType3").isMouseOver()){
+      if(!cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").isOpen()){
+        if(cp5_networking_dropdowns.getController("dataType2").isMouseOver()){
           // println("2");
-          cp5_networking.get(ScrollableList.class, "dataType3").open();
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").open();
+        }
+      }
+
+      if(cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").isOpen()){
+        if(!cp5_networking_dropdowns.getController("dataType3").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").close();
+        }
+      }
+      if(!cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").isOpen()){
+        if(cp5_networking_dropdowns.getController("dataType3").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").open();
+        }
+      }
+
+      if(cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").isOpen()){
+        if(!cp5_networking_dropdowns.getController("baud_rate").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").close();
+        }
+      }
+      if(!cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").isOpen()){
+        if(cp5_networking_dropdowns.getController("baud_rate").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").open();
+        }
+      }
+
+      if(cp5_networking_dropdowns.get(ScrollableList.class, "port_name").isOpen()){
+        if(!cp5_networking_dropdowns.getController("port_name").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "port_name").close();
+        }
+      }
+      if(!cp5_networking_dropdowns.get(ScrollableList.class, "port_name").isOpen()){
+        if(cp5_networking_dropdowns.getController("port_name").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "port_name").open();
         }
       }
     }
@@ -140,12 +182,24 @@ class W_networking extends Widget {
 
     showCP5();
 
+    cp5_networking.draw();
+    cp5_networking_dropdowns.draw();
+
     fill(0,0,0);// Background fill: white
     textFont(h1,20);
-    text(" Stream 1",column1,row0);
-    text(" Stream 2",column2,row0);
-    text(" Stream 3",column3,row0);
+
+    if(!protocolMode.equals("Serial")){
+      // text("Data Type", column0,row1);
+      text(" Stream 1",column1,row0);
+      text(" Stream 2",column2,row0);
+      text(" Stream 3",column3,row0);
+    } else{
+      // text("Data Type", column0,row0+15);
+    }
+
     text("Data Type", column0,row1);
+
+
     startButton.draw();
 
     // textAlign(RIGHT,TOP);
@@ -176,8 +230,9 @@ class W_networking extends Widget {
       textFont(f4,40);
       text("Serial", x+20,y+h/8+15);
       textFont(h1,20);
-      text("Name", column0,row2);
-      text("Baud", column0,row3);
+      text("Baud Rate", column0,row2);
+      text("Port Name", column0,row3);
+      text("Filters",column0,row4);
     }
     popStyle();
 
@@ -185,6 +240,7 @@ class W_networking extends Widget {
 
   void initialize_UI(){
     cp5_networking = new ControlP5(pApplet);
+    cp5_networking_dropdowns = new ControlP5(pApplet);
 
     /* Textfields */
     // OSC
@@ -214,19 +270,23 @@ class W_networking extends Widget {
     createTextFields("lsl_name3","obci_eeg3");
     createTextFields("lsl_type3","EEG");
     createTextFields("lsl_numchan3",Integer.toString(nchan));
-    // Serial
-    createDropdown("port_name");
-    createDropdown("baud_rate");
 
+    // Serial
+    //grab list of existing serial port options and store into Arrays.list...
+
+
+
+    createDropdown("port_name", comPorts);
+    createDropdown("baud_rate", baudRates);
     /* General Elements */
 
     createRadioButtons("filter1");
     createRadioButtons("filter2");
     createRadioButtons("filter3");
 
-    createDropdown("dataType1");
-    createDropdown("dataType2");
-    createDropdown("dataType3");
+    createDropdown("dataType1", dataTypes);
+    createDropdown("dataType2", dataTypes);
+    createDropdown("dataType3", dataTypes);
 
     // Start Button
     startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
@@ -276,18 +336,28 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "lsl_type3").setVisible(lsl_visible);
     cp5_networking.get(Textfield.class, "lsl_numchan3").setVisible(lsl_visible);
 
-    cp5_networking.get(ScrollableList.class, "port_name").setVisible(serial_visible);
-    cp5_networking.get(ScrollableList.class, "baud_rate").setVisible(serial_visible);
+    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setVisible(serial_visible);
+    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setVisible(serial_visible);
 
-    cp5_networking.get(ScrollableList.class, "dataType1").setVisible(true);
-    cp5_networking.get(ScrollableList.class, "dataType2").setVisible(true);
-    cp5_networking.get(ScrollableList.class, "dataType3").setVisible(true);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setVisible(true);
+
+    if(!serial_visible){
+      cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(true);
+      cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(true);
+    } else{
+      cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(false);
+      cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(false);
+    }
 
     cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
-    cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
-    cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
 
-    cp5_networking.draw();
+    if(!serial_visible){
+      cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
+      cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
+    } else {
+      cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
+      cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
+    }
 
   }
 
@@ -332,7 +402,7 @@ class W_networking extends Widget {
   }
 
   /* Creating DataType Dropdowns */
-  void createDropdown(String name){
+  void createDropdown(String name, List<String> _items){
 
     // dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
     // dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
@@ -341,7 +411,7 @@ class W_networking extends Widget {
     // dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
     // cp5_networking.setColor(dropdownColors);
 
-    cp5_networking.addScrollableList(name)
+    cp5_networking_dropdowns.addScrollableList(name)
         .setOpen(false)
 
         // dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
@@ -358,13 +428,13 @@ class W_networking extends Widget {
         .setColorActive(color(150, 170, 200))       // border color when selected
         // .setColorCursor(color(26,26,26))
 
-        .setSize(100,200)// + maxFreqList.size())
+        .setSize(100,100)// + maxFreqList.size())
         .setBarHeight(navH-4) //height of top/primary bar
         .setItemHeight(navH-4) //height of all item/dropdown bars
-        .addItems(dataTypes) // used to be .addItems(maxFreqList)
+        .addItems(_items) // used to be .addItems(maxFreqList)
         .setVisible(false)
         ;
-    cp5_networking.getController(name)
+    cp5_networking_dropdowns.getController(name)
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText("None")
@@ -373,7 +443,7 @@ class W_networking extends Widget {
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
       ;
-    cp5_networking.getController(name)
+    cp5_networking_dropdowns.getController(name)
       .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
       .setText("None")
@@ -396,6 +466,8 @@ class W_networking extends Widget {
     column1 = x+12*w/40;
     column2 = x+21*w/40;
     column3 = x+30*w/40;
+
+    fullColumnWidth = (column3+100) - column1;
 
     row0 = y+h/4+10;
     row1 = y+4*h/10;
@@ -447,12 +519,14 @@ class W_networking extends Widget {
     }
 
     //Serial Specific
-    cp5_networking.get(ScrollableList.class, "port_name").setPosition(column1, row2-offset);
-    cp5_networking.get(ScrollableList.class, "baud_rate").setPosition(column1, row3-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setSize(100, 100);
+    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, 100);
 
-    cp5_networking.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
-    cp5_networking.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
-    cp5_networking.get(ScrollableList.class, "dataType3").setPosition(column3, row1-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setPosition(column3, row1-offset);
   }
 
   void mousePressed(){
@@ -507,11 +581,13 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "lsl_name3").setVisible(false);
     cp5_networking.get(Textfield.class, "lsl_type3").setVisible(false);
     cp5_networking.get(Textfield.class, "lsl_numchan3").setVisible(false);
-    cp5_networking.get(ScrollableList.class, "dataType1").setVisible(false);
-    cp5_networking.get(ScrollableList.class, "dataType2").setVisible(false);
-    cp5_networking.get(ScrollableList.class, "dataType3").setVisible(false);
-    cp5_networking.get(ScrollableList.class, "port_name").setVisible(false);
-    cp5_networking.get(ScrollableList.class, "baud_rate").setVisible(false);
+
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setVisible(false);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(false);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(false);
+    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setVisible(false);
+    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setVisible(false);
+
     cp5_networking.get(RadioButton.class, "filter1").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
@@ -548,7 +624,7 @@ class W_networking extends Widget {
     String dt2="None";
     String dt3="None";
     networkActive = true;
-    switch ((int)cp5_networking.get(ScrollableList.class, "dataType1").getValue()){
+    switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()){
       case 0 : dt1 = "None";
         break;
       case 1 : dt1 = "TimeSeries";
@@ -562,7 +638,7 @@ class W_networking extends Widget {
       case 5 : dt1 = "Widget";
         break;
     }
-    switch ((int)cp5_networking.get(ScrollableList.class, "dataType2").getValue()){
+    switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()){
       case 0 : dt2 = "None";
         break;
       case 1 : dt2 = "TimeSeries";
@@ -576,7 +652,7 @@ class W_networking extends Widget {
       case 5 : dt2 = "Widget";
         break;
     }
-    switch ((int)cp5_networking.get(ScrollableList.class, "dataType3").getValue()){
+    switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()){
       case 0 : dt3 = "None";
         break;
       case 1 : dt3 = "TimeSeries";
@@ -718,14 +794,17 @@ class W_networking extends Widget {
   void clearCP5(){
     //clears all controllers from ControlP5 instance...
     w_networking.cp5_networking.dispose();
+    w_networking.cp5_networking_dropdowns.dispose();
     println("clearing cp5_networking...");
   }
 
   void closeAllDropdowns(){
     dataDropdownsShouldBeClosed = true;
-    w_networking.cp5_networking.get(ScrollableList.class, "dataType1").close();
-    w_networking.cp5_networking.get(ScrollableList.class, "dataType2").close();
-    w_networking.cp5_networking.get(ScrollableList.class, "dataType3").close();
+    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").close();
+    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").close();
+    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").close();
+    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").close();
+    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "port_name").close();
   }
 
 };
@@ -1252,5 +1331,11 @@ void dataType2(int n){
   w_networking.closeAllDropdowns();
 }
 void dataType3(int n){
+  w_networking.closeAllDropdowns();
+}
+void port_name(int n){
+  w_networking.closeAllDropdowns();
+}
+void baud_rate(int n){
   w_networking.closeAllDropdowns();
 }
