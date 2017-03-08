@@ -236,6 +236,8 @@ int hubPid = 0;
 String nodeHubName = "GanglionHub";
 Robot rob3115;
 
+PApplet ourApplet;
+
 //-----------------------------------------1-------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -261,6 +263,7 @@ void setup() {
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
+  ourApplet = this;
   frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   smooth(); //turn this off if it's too slow
 
@@ -328,14 +331,14 @@ void setup() {
   playground = new Playground(navBarHeight);
 
   //attempt to open a serial port for "output"
-  try {
-    verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
-    serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
-    serial_output.clear(); // clear anything in the com port's buffer
-  }
-  catch (RuntimeException e) {
-    verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
-  }
+  // try {
+  //   verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
+  //   serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
+  //   serial_output.clear(); // clear anything in the com port's buffer
+  // }
+  // catch (RuntimeException e) {
+  //   verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
+  // }
 
   // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
@@ -803,6 +806,7 @@ void systemUpdate() { // for updating data values and variables
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized) {
       // GUIWidgets_screenResized(width, height);
+      ourApplet = this; //reset PApplet...
       topNav.screenHasBeenResized(width, height);
       wm.screenResized();
     }

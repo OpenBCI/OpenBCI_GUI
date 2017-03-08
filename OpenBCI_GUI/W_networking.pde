@@ -24,11 +24,13 @@ class W_networking extends Widget {
   /* Widget CP5 */
   ControlP5 cp5_networking;
   ControlP5 cp5_networking_dropdowns;
+  ControlP5 cp5_networking_baudRate;
+  ControlP5 cp5_networking_portName;
 
   boolean dataDropdownsShouldBeClosed = false;
   // CColor dropdownColors_networking = new CColor();
 
-
+  // PApplet ourApplet;
 
   /* UI Organization */
   /* Widget grid */
@@ -66,6 +68,8 @@ class W_networking extends Widget {
 
   W_networking(PApplet _parent){
     super(_parent);
+    // ourApplet = _parent;
+
     networkActive = false;
     stream1 = null;
     stream2 = null;
@@ -82,7 +86,8 @@ class W_networking extends Widget {
     initialize_UI();
     cp5_networking.setAutoDraw(false);
     cp5_networking_dropdowns.setAutoDraw(false);
-
+    cp5_networking_portName.setAutoDraw(false);
+    cp5_networking_baudRate.setAutoDraw(false);
 
   }
 
@@ -145,29 +150,29 @@ class W_networking extends Widget {
         }
       }
 
-      if(cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").isOpen()){
-        if(!cp5_networking_dropdowns.getController("baud_rate").isMouseOver()){
+      if(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()){
+        if(!cp5_networking_baudRate.getController("baud_rate").isMouseOver()){
           // println("2");
-          cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").close();
+          cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
         }
       }
-      if(!cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").isOpen()){
-        if(cp5_networking_dropdowns.getController("baud_rate").isMouseOver()){
+      if(!cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen() && !cp5_networking_dropdowns.getController("dataType1").isMouseOver()){
+        if(cp5_networking_baudRate.getController("baud_rate").isMouseOver()){
           // println("2");
-          cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").open();
+          cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").open();
         }
       }
 
-      if(cp5_networking_dropdowns.get(ScrollableList.class, "port_name").isOpen()){
-        if(!cp5_networking_dropdowns.getController("port_name").isMouseOver()){
+      if(cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()){
+        if(!cp5_networking_portName.getController("port_name").isMouseOver()){
           // println("2");
-          cp5_networking_dropdowns.get(ScrollableList.class, "port_name").close();
+          cp5_networking_portName.get(ScrollableList.class, "port_name").close();
         }
       }
-      if(!cp5_networking_dropdowns.get(ScrollableList.class, "port_name").isOpen()){
-        if(cp5_networking_dropdowns.getController("port_name").isMouseOver()){
+      if(!cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()  && !cp5_networking_dropdowns.getController("dataType1").isMouseOver() && !cp5_networking_baudRate.getController("baud_rate").isMouseOver()){
+        if(cp5_networking_portName.getController("port_name").isMouseOver()){
           // println("2");
-          cp5_networking_dropdowns.get(ScrollableList.class, "port_name").open();
+          cp5_networking_portName.get(ScrollableList.class, "port_name").open();
         }
       }
     }
@@ -177,13 +182,36 @@ class W_networking extends Widget {
     super.draw();
     pushStyle();
 
+
+
     // fill(255,0,0);
     // rect(cp5_networking.getController("dataType1").getPosition()[0] - 1, cp5_networking.getController("dataType1").getPosition()[1] - 1, 100 + 2, cp5_networking.get(ScrollableList.class, "dataType1").getHeight()+2);
 
     showCP5();
 
     cp5_networking.draw();
-    cp5_networking_dropdowns.draw();
+
+    //draw dropdown strokes
+    pushStyle();
+    fill(255);
+    if(!protocolMode.equals("Serial")){
+      rect(cp5_networking_dropdowns.getController("dataType1").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType1").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType1").getHeight()+2);
+      rect(cp5_networking_dropdowns.getController("dataType2").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType2").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType2").getHeight()+2);
+      rect(cp5_networking_dropdowns.getController("dataType3").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType3").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType3").getHeight()+2);
+      cp5_networking_dropdowns.draw();
+    }
+    if(protocolMode.equals("Serial")){
+      rect(cp5_networking_portName.getController("port_name").getPosition()[0] - 1, cp5_networking_portName.getController("port_name").getPosition()[1] - 1, cp5_networking_portName.getController("port_name").getWidth() + 2, cp5_networking_portName.getController("port_name").getHeight()+2);
+      cp5_networking_portName.draw();
+      rect(cp5_networking_baudRate.getController("baud_rate").getPosition()[0] - 1, cp5_networking_baudRate.getController("baud_rate").getPosition()[1] - 1, cp5_networking_baudRate.getController("baud_rate").getWidth() + 2, cp5_networking_baudRate.getController("baud_rate").getHeight()+2);
+      cp5_networking_baudRate.draw();
+      rect(cp5_networking_dropdowns.getController("dataType1").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType1").getPosition()[1] - 1, cp5_networking_dropdowns.getController("dataType1").getWidth() + 2, cp5_networking_dropdowns.getController("dataType1").getHeight()+2);
+      cp5_networking_dropdowns.draw();
+    }
+    popStyle();
+
+
+    // cp5_networking_dropdowns.draw();
 
     fill(0,0,0);// Background fill: white
     textFont(h1,20);
@@ -241,6 +269,8 @@ class W_networking extends Widget {
   void initialize_UI(){
     cp5_networking = new ControlP5(pApplet);
     cp5_networking_dropdowns = new ControlP5(pApplet);
+    cp5_networking_baudRate = new ControlP5(pApplet);
+    cp5_networking_portName = new ControlP5(pApplet);
 
     /* Textfields */
     // OSC
@@ -276,8 +306,8 @@ class W_networking extends Widget {
 
 
 
-    createDropdown("port_name", comPorts);
-    createDropdown("baud_rate", baudRates);
+    createPortDropdown("port_name", comPorts);
+    createBaudDropdown("baud_rate", baudRates);
     /* General Elements */
 
     createRadioButtons("filter1");
@@ -296,6 +326,8 @@ class W_networking extends Widget {
 
   /* Shows and Hides appropriate CP5 elements within widget */
   void showCP5(){
+
+
 
     osc_visible=false;
     udp_visible=false;
@@ -336,8 +368,8 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "lsl_type3").setVisible(lsl_visible);
     cp5_networking.get(Textfield.class, "lsl_numchan3").setVisible(lsl_visible);
 
-    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setVisible(serial_visible);
-    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setVisible(serial_visible);
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setVisible(serial_visible);
+    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setVisible(serial_visible);
 
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setVisible(true);
 
@@ -404,22 +436,8 @@ class W_networking extends Widget {
   /* Creating DataType Dropdowns */
   void createDropdown(String name, List<String> _items){
 
-    // dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-    // dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
-    // dropdownColors.setBackground((int)color(31,69,110)); //bg color of boxes (including primary)
-    // dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
-    // dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
-    // cp5_networking.setColor(dropdownColors);
-
     cp5_networking_dropdowns.addScrollableList(name)
         .setOpen(false)
-
-        // dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-        // dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
-        // dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
-        // dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
-        // // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
-        // dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
 
         .setColorBackground(color(31,69,110)) // text field bg color
         .setColorValueLabel(color(255))       // text color
@@ -428,7 +446,7 @@ class W_networking extends Widget {
         .setColorActive(color(150, 170, 200))       // border color when selected
         // .setColorCursor(color(26,26,26))
 
-        .setSize(100,100)// + maxFreqList.size())
+        .setSize(100,(_items.size()+1)*(navH-4))// + maxFreqList.size())
         .setBarHeight(navH-4) //height of top/primary bar
         .setItemHeight(navH-4) //height of all item/dropdown bars
         .addItems(_items) // used to be .addItems(maxFreqList)
@@ -452,12 +470,90 @@ class W_networking extends Widget {
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(3) //4-pixel vertical offset to center text
       ;
-
   }
 
+  void createBaudDropdown(String name, List<String> _items){
+    cp5_networking_baudRate.addScrollableList(name)
+        .setOpen(false)
+
+        .setColorBackground(color(31,69,110)) // text field bg color
+        .setColorValueLabel(color(255))       // text color
+        .setColorCaptionLabel(color(255))
+        .setColorForeground(color(125))    // border color when not selected
+        .setColorActive(color(150, 170, 200))       // border color when selected
+        // .setColorCursor(color(26,26,26))
+
+        .setSize(100,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+        .setBarHeight(navH-4) //height of top/primary bar
+        .setItemHeight(navH-4) //height of all item/dropdown bars
+        .addItems(_items) // used to be .addItems(maxFreqList)
+        .setVisible(false)
+        ;
+    cp5_networking_baudRate.getController(name)
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText(defaultBaud)
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;
+    cp5_networking_baudRate.getController(name)
+      .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("None")
+      .setFont(h5)
+      .setSize(12) //set the font size of the item bars to 14pt
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(3) //4-pixel vertical offset to center text
+      ;
+  }
+
+  void createPortDropdown(String name, List<String> _items){
+    cp5_networking_portName.addScrollableList(name)
+        .setOpen(false)
+
+        .setColorBackground(color(31,69,110)) // text field bg color
+        .setColorValueLabel(color(255))       // text color
+        .setColorCaptionLabel(color(255))
+        .setColorForeground(color(125))    // border color when not selected
+        .setColorActive(color(150, 170, 200))       // border color when selected
+        // .setColorCursor(color(26,26,26))
+
+        .setSize(100,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+        .setBarHeight(navH-4) //height of top/primary bar
+        .setItemHeight(navH-4) //height of all item/dropdown bars
+        .addItems(_items) // used to be .addItems(maxFreqList)
+        .setVisible(false)
+        ;
+    cp5_networking_portName.getController(name)
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("None")
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;
+    cp5_networking_portName.getController(name)
+      .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("None")
+      .setFont(h5)
+      .setSize(12) //set the font size of the item bars to 14pt
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(3) //4-pixel vertical offset to center text
+      ;
+  }
 
   void screenResized(){
     super.screenResized();
+
+    cp5_networking.setGraphics(pApplet, 0,0);
+    cp5_networking_dropdowns.setGraphics(pApplet, 0,0);
+    cp5_networking_baudRate.setGraphics(pApplet, 0,0);
+    cp5_networking_portName.setGraphics(pApplet, 0,0);
+
     column0 = x+w/20;
     // column1 = x+3*w/10;
     // column2 = x+5*w/10;
@@ -519,10 +615,11 @@ class W_networking extends Widget {
     }
 
     //Serial Specific
-    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
-    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
-    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setSize(100, 100);
-    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, 100);
+    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
+    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setSize(100, (baudRates.size()+1)*(navH-4));
+    // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4));
 
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
@@ -585,8 +682,8 @@ class W_networking extends Widget {
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setVisible(false);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(false);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(false);
-    cp5_networking_dropdowns.get(ScrollableList.class, "port_name").setVisible(false);
-    cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").setVisible(false);
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setVisible(false);
+    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setVisible(false);
 
     cp5_networking.get(RadioButton.class, "filter1").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
@@ -619,6 +716,7 @@ class W_networking extends Widget {
     int filt_pos;
     String name;
     int nChanLSL;
+    int baudRate;
     String type;
     String dt1="None";
     String dt2="None";
@@ -755,6 +853,18 @@ class W_networking extends Widget {
       }
     } else if (protocolMode.equals("Serial")){
       // %%%%%
+      if(!dt1.equals("None")){
+        println(comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue())));
+        name = comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
+        // name = cp5_networking_portName.get(ScrollableList.class, "port_name").getItem((int)cp5_networking_portName.get(ScrollableList.class, "port_name").getValue());
+        println(Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
+        baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
+
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+        stream1 = new Stream(dt1,name,baudRate,filt_pos,pApplet);  //String dataType, String portName, int baudRate, int filter, PApplet _this
+      }else{
+        stream1 = null;
+      }
     }
   }
 
@@ -789,8 +899,6 @@ class W_networking extends Widget {
     }
   }
 
-
-
   void clearCP5(){
     //clears all controllers from ControlP5 instance...
     w_networking.cp5_networking.dispose();
@@ -803,10 +911,9 @@ class W_networking extends Widget {
     w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").close();
     w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").close();
     w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").close();
-    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "baud_rate").close();
-    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "port_name").close();
+    w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
+    w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").close();
   }
-
 };
 
 class Stream extends Thread{
@@ -843,7 +950,10 @@ class Stream extends Thread{
   LSL.StreamOutlet outlet_aux;
 
   // Serial objects %%%%%
-
+  Serial serial_networking;
+  String portName;
+  int baudRate;
+  PApplet pApplet;
 
 
 
@@ -895,8 +1005,26 @@ class Stream extends Thread{
   }
 
   // Serial Stream %%%%%
-  Stream(String dataType, String streamName, int baud, int filter, char dummy){
+  Stream(String dataType, String portName, int baudRate, int filter, PApplet _this){
     // %%%%%
+    this.protocol = "Serial";
+    this.dataType = dataType;
+    this.portName = portName;
+    this.baudRate = baudRate;
+    this.filter = filter;
+    this.isStreaming = false;
+    this.pApplet = _this;
+    if(this.dataType.equals("TimeSeries")){
+      buffer = ByteBuffer.allocate(4*numChan);
+    }else{
+      buffer = ByteBuffer.allocate(4*126);
+    }
+
+    try{
+      closeNetwork();
+    }catch(Exception e){
+      //nothing
+    }
   }
 
   void start(){
@@ -1031,9 +1159,19 @@ class Stream extends Thread{
          outlet_data.push_sample(dataToSend);
        }
        // SERIAL
-     }else if (this.protocol.equals("SERIAL")){
+     }else if (this.protocol.equals("Serial")){
        // Serial Output unfiltered ... %%%%%
+      //  println("Sending unfiltered TS data over Serial...");
+       for(int i=0;i<bufferLen;i++){
+         buffer.rewind();
+         for(int j=0;j<numChan;j++){
+           buffer.putFloat(yLittleBuff_uV[j][i]);
+         }
+         this.serial_networking.write(buffer.array());
+       }
      }
+
+
      // TIME SERIES FILTERED
     }else if (filter==1){
       if (this.protocol.equals("OSC")){
@@ -1063,8 +1201,16 @@ class Stream extends Thread{
          }
          outlet_data.push_sample(dataToSend);
        }
-     }else if (this.protocol.equals("SERIAL")){
-       // Serial Output Filtered %%%%%
+     }else if (this.protocol.equals("Serial")){
+        // Serial Output Filtered %%%%%
+        // println("Sending filtered TS data over Serial...");
+        for(int i=0;i<bufferLen;i++){
+          buffer.rewind();
+          for(int j=0;j<numChan;j++){
+            buffer.putFloat(dataBuffY_filtY_uV[j][start+i]);
+          }
+          this.serial_networking.write(buffer.array());
+        }
      }
    }
  }
@@ -1112,6 +1258,19 @@ class Stream extends Thread{
       //   }
       }else if (this.protocol.equals("Serial")){
         // Send FFT Data over Serial ... %%%%%
+        // println("Sending FFT data over Serial...");
+        for (int i=0;i<numChan;i++){
+          buffer.rewind();
+          buffer.putFloat(i+1);
+          for (int j=0;j<125;j++){
+            buffer.putFloat(fftBuff[i].getBand(j));
+          }
+          try{
+            this.serial_networking.write(buffer.array());
+          }catch (Exception e){
+            println(e);
+          }
+        }
       }
     }
   }
@@ -1162,6 +1321,19 @@ class Stream extends Thread{
        //   }
        }else if (this.protocol.equals("Serial")){
          // Send FFT Data over Serial ... %%%%%
+        //  println("Sending POWER BAND data over Serial...");
+         for (int i=0;i<numChan;i++){
+           buffer.rewind();
+           buffer.putFloat(i+1);
+           for (int j=0;j<numPowerBands;j++){
+             buffer.putFloat(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
+           }
+           try{
+             this.serial_networking.write(buffer.array());
+           }catch (Exception e){
+             println(e);
+           }
+         }
        }
      }
   }
@@ -1169,12 +1341,9 @@ class Stream extends Thread{
   void sendEMGData(){
     // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
 
-    println("0");
-
     if(this.filter==0 || this.filter==1){
       // OSC
       if (this.protocol.equals("OSC")){
-        println("2");
         for (int i=0;i<numChan;i++){
           msg.clearArguments();
           msg.add(i+1);
@@ -1212,6 +1381,18 @@ class Stream extends Thread{
        //   }
        }else if (this.protocol.equals("Serial")){
          // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+        //  println("Sending EMG data over Serial...");
+         for (int i=0;i<numChan;i++){
+           buffer.rewind();
+           buffer.putFloat(i+1);
+           //ADD NORMALIZED EMG CHANNEL DATA
+           buffer.putFloat(w_emg.motorWidgets[i].output_normalized);
+           try{
+             this.serial_networking.write(buffer.array());
+           }catch (Exception e){
+             println(e);
+           }
+         }
        }
      }
   }
@@ -1239,7 +1420,13 @@ class Stream extends Thread{
       outlet_data.close();
     }else if (this.protocol.equals("Serial")){
       //Close Serial Port %%%%%
-
+      try{
+        serial_networking.clear();
+        serial_networking.stop();
+        println("Successfully closed SERIAL/COM port " + this.portName);
+      } catch(Exception e){
+        println("Failed to close SERIAL/COM port " + this.portName);
+      }
     }
   }
 
@@ -1270,6 +1457,15 @@ class Stream extends Thread{
       outlet_data = new LSL.StreamOutlet(info_data);
     }else if (this.protocol.equals("Serial")){
       //Open Serial Port! %%%%%
+      try{
+        serial_networking = new Serial(this.pApplet, this.portName, this.baudRate);
+        serial_networking.clear();
+        verbosePrint("Successfully opened SERIAL/COM: " + this.portName);
+        output("Successfully opened SERIAL/COM (" + this.baudRate + "): " + this.portName );
+      }catch(Exception e){
+        verbosePrint("W_networking.pde: could not open SERIAL PORT: " + this.portName);
+        println("Error: " + e);
+      }
     }
   }
 
@@ -1320,7 +1516,6 @@ void Protocol(int protocolIndex){
   w_networking.screenResized();
   w_networking.showCP5();
   closeAllDropdowns();
-
 
 }
 
