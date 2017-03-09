@@ -39,6 +39,7 @@ class W_networking extends Widget {
   int column2;
   int column3;
   int fullColumnWidth;
+  int twoThirdsWidth;
   int row0;
   int row1;
   int row2;
@@ -258,9 +259,9 @@ class W_networking extends Widget {
       textFont(f4,40);
       text("Serial", x+20,y+h/8+15);
       textFont(h1,20);
-      text("Baud Rate", column0,row2);
-      text("Port Name", column0,row3);
-      text("Filters",column0,row4);
+      text("Baud/Port", column0,row2);
+      // text("Port Name", column0,row3);
+      text("Filters",column0,row3);
     }
     popStyle();
 
@@ -563,6 +564,7 @@ class W_networking extends Widget {
     column2 = x+21*w/40;
     column3 = x+30*w/40;
 
+    twoThirdsWidth = (column2+100) - column1;
     fullColumnWidth = (column3+100) - column1;
 
     row0 = y+h/4+10;
@@ -609,17 +611,19 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
       cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
     } else if (protocolMode.equals("Serial")){
-      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
-      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
-      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row3 - 10);
+      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row3 - 10);
+      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row3 - 10);
     }
 
     //Serial Specific
     cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
-    cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
+    // cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column2, row2-offset);
     cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setSize(100, (baudRates.size()+1)*(navH-4));
     // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
-    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4));
+    // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(twoThirdsWidth, (5)*(navH-4)); //twoThirdsWidth
 
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
@@ -1167,6 +1171,7 @@ class Stream extends Thread{
          for(int j=0;j<numChan;j++){
            buffer.putFloat(yLittleBuff_uV[j][i]);
          }
+         println(buffer.array());
          this.serial_networking.write(buffer.array());
        }
      }
@@ -1209,6 +1214,7 @@ class Stream extends Thread{
           for(int j=0;j<numChan;j++){
             buffer.putFloat(dataBuffY_filtY_uV[j][start+i]);
           }
+          println(buffer.array());
           this.serial_networking.write(buffer.array());
         }
      }
