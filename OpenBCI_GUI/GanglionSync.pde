@@ -83,6 +83,7 @@ class OpenBCI_Ganglion {
 
   final static int RESP_ERROR_UNKNOWN = 499;
   final static int RESP_ERROR_BAD_PACKET = 500;
+  final static int RESP_ERROR_BAD_NOBLE_START = 501;
   final static int RESP_ERROR_ALREADY_CONNECTED = 408;
   final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 406;
   final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
@@ -268,11 +269,7 @@ class OpenBCI_Ganglion {
         println("OpenBCI_Ganglion: Log: " + list[1]);
         break;
       case 'q':
-        if (waitingForResponse) {
-          waitingForResponse = false;
-          println("Node process up!");
-        }
-        println("OpenBCI_Ganglion: Status: 200");
+        processStatus(msg);
         break;
       default:
         println("OpenBCI_Ganglion: parseMessage: default: " + msg);
@@ -420,6 +417,21 @@ class OpenBCI_Ganglion {
           println("? for channel " + channel + " is " + value + " ohms.");
         }
       }
+    }
+  }
+  
+  private void processStatus(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    if (waitingForResponse) {
+      waitingForResponse = false;
+      println("Node process up!");
+    }
+    if (code == RESP_ERROR_BAD_NOBLE_START) {
+      println("OpenBCI_Ganglion: processStatus: Problem in the Hub");
+      output("Problem starting Ganglion Hub. Please make sure compatible USB is configured, then restart this GUI.");
+    } else {    
+      println("OpenBCI_Ganglion: processStatus: Started Successfully");
     }
   }
 

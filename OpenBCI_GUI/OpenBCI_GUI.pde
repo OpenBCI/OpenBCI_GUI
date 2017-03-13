@@ -230,7 +230,8 @@ int indices = 0;
 boolean synthesizeData = false;
 
 int timeOfSetup = 0;
-boolean isGanglion = false;
+boolean isHubInitialized = false;
+boolean isGanglionObjectInitialized = false;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
@@ -240,7 +241,7 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
 int hubPid = 0;
-String nodeHubName = "Ganglion Hub";
+String nodeHubName = "GanglionHub";
 Robot rob3115;
 
 //-----------------------------------------1-------------------------------
@@ -255,9 +256,12 @@ void setup() {
   //  server on shut down of this app, the main process.
   // prepareExitHandler();
   if (dev == false) {
+    // On windows wait to start the hub until Ganglion is clicked on in the control panel.
+    //  See issue #111
     hubStop(); //kill any existing hubs before starting a new one..
-    hubStart();
-    prepareExitHandler();
+    if (!isWindows()) {
+      hubInit();
+    }
   }
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
@@ -392,6 +396,15 @@ private void prepareExitHandler () {
 }
 
 /**
+ * Starts the hub and sets prepares the exit handler.
+ */
+void hubInit() {
+  isHubInitialized = true;
+  hubStart();
+  prepareExitHandler();
+}
+
+/**
  * Starts the node hub working, tested on mac and windows.
  */
 void hubStart() {
@@ -400,13 +413,13 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("Ganglion Hub.exe"));
+      nodeHubby = launch(dataPath("GanglionHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = exec(dataPath("Ganglion Hub"));
+      nodeHubby = exec(dataPath("GanglionHub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
-      nodeHubby = launch(dataPath("Ganglion Hub.app"));
+      nodeHubby = launch(dataPath("GanglionHub.app"));
     }
     // hubRunning = true;
   }
@@ -478,7 +491,7 @@ void killRunningProcessMac() {
  */
 boolean killRunningprocessWin() {
   try {
-    Runtime.getRuntime().exec("taskkill /F /IM Ganglion Hub.exe");
+    Runtime.getRuntime().exec("taskkill /F /IM GanglionHub.exe");
     return true;
   }
   catch (Exception err) {
@@ -709,10 +722,10 @@ void haltSystem() {
 
 void systemUpdate() { // for updating data values and variables
 
-  if (millis() - timeOfSetup >= 1000 && isGanglion == false) {
+  if (isHubInitialized && isGanglionObjectInitialized == false && millis() - timeOfSetup >= 1500) {
     ganglion = new OpenBCI_Ganglion(this);
     println("Instantiating Ganglion object...");
-    isGanglion = true;
+    isGanglionObjectInitialized = true;
   }
 
   //update the sync state with the OpenBCI hardware
@@ -966,7 +979,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v2.0.0\nJanuary 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v2.1.2\nJanuary 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

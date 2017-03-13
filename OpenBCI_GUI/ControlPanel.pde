@@ -144,6 +144,10 @@ public void controlEvent(ControlEvent theEvent) {
       chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
     } else if(newDataSource == DATASOURCE_GANGLION){
       updateToNChan(4);
+      if (isWindows() && isHubInitialized == false) {
+        hubInit();
+        timeOfSetup = millis();
+      }
     } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
       updateToNChan(8);
     } else if(newDataSource == DATASOURCE_SYNTHETIC){
@@ -377,7 +381,7 @@ class ControlPanel {
       convertSDFile();
     }
 
-    if (isGanglion) {
+    if (isHubInitialized && isGanglionObjectInitialized) {
       if (!calledForBLEList) {
         calledForBLEList = true;
         if (ganglion.isHubRunning()) {
@@ -950,9 +954,13 @@ class ControlPanel {
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-      output("BLE Devices Refreshing");
-      bleList.items.clear();
-      ganglion.searchDeviceStart();
+      if (isGanglionObjectInitialized) {
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        ganglion.searchDeviceStart();
+      } else {
+        output("Please wait till BLE is fully initalized");
+      }
     }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)

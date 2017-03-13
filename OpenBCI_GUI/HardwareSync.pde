@@ -889,8 +889,8 @@ class OpenBCI_ADS1299 {
     case 4:
       //look for end byte
       // println("case 4");
-      if (actbyte == byte(0xC0)) {    // if correct end delimiter found:
-        // println("... 0xC0 found");
+      if (actbyte == byte(0xC0) || actbyte == byte(0xC1)) {    // if correct end delimiter found:
+        // println("... 0xCx found");
         // println("OpenBCI_ADS1299: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
         isNewDataPacketAvailable = true; //original place for this.  but why not put it in the previous case block
         flag_copyRawDataToFullData = true;  //time to copy the raw data packet into the full data packet (mainly relevant for 16-chan OpenBCI)
