@@ -957,6 +957,8 @@ class Stream extends Thread{
   Serial serial_networking;
   String portName;
   int baudRate;
+  String serialMessage = "";
+
   PApplet pApplet;
 
 
@@ -1163,16 +1165,24 @@ class Stream extends Thread{
          outlet_data.push_sample(dataToSend);
        }
        // SERIAL
-     }else if (this.protocol.equals("Serial")){
-       // Serial Output unfiltered ... %%%%%
-      //  println("Sending unfiltered TS data over Serial...");
+     }else if (this.protocol.equals("Serial")){         // Serial Output unfiltered
        for(int i=0;i<bufferLen;i++){
-         buffer.rewind();
+         serialMessage = "["; //clear message
          for(int j=0;j<numChan;j++){
-           buffer.putFloat(yLittleBuff_uV[j][i]);
+           float chan_uV = yLittleBuff_uV[j][i];//get chan uV float value and truncate to 3 decimal places
+           String chan_uV_3dec = String.format("%.3f", chan_uV);
+           serialMessage += chan_uV_3dec;//  serialMesage += //add 3 decimal float chan uV value as string to serialMessage
+           if(j < numChan-1){
+             serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
+           }
          }
-         println(buffer.array());
-         this.serial_networking.write(buffer.array());
+         serialMessage += "]";  //close the message w/ "]"
+         try{
+           //  println(serialMessage);
+           this.serial_networking.write(serialMessage);          //write message to serial
+         }catch (Exception e){
+           println(e);
+         }
        }
      }
 
@@ -1207,16 +1217,24 @@ class Stream extends Thread{
          outlet_data.push_sample(dataToSend);
        }
      }else if (this.protocol.equals("Serial")){
-        // Serial Output Filtered %%%%%
-        // println("Sending filtered TS data over Serial...");
-        for(int i=0;i<bufferLen;i++){
-          buffer.rewind();
-          for(int j=0;j<numChan;j++){
-            buffer.putFloat(dataBuffY_filtY_uV[j][start+i]);
-          }
-          println(buffer.array());
-          this.serial_networking.write(buffer.array());
-        }
+       for(int i=0;i<bufferLen;i++){
+         serialMessage = "["; //clear message
+         for(int j=0;j<numChan;j++){
+           float chan_uV_filt = dataBuffY_filtY_uV[j][start+i];//get chan uV float value and truncate to 3 decimal places
+           String chan_uV_filt_3dec = String.format("%.3f", chan_uV_filt);
+           serialMessage += chan_uV_filt_3dec;//  serialMesage += //add 3 decimal float chan uV value as string to serialMessage
+           if(j < numChan-1){
+             serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
+           }
+         }
+         serialMessage += "]";  //close the message w/ "]"
+         try{
+           //  println(serialMessage);
+           this.serial_networking.write(serialMessage);          //write message to serial
+         }catch (Exception e){
+           println(e);
+         }
+       }
      }
    }
  }
@@ -1266,13 +1284,19 @@ class Stream extends Thread{
         // Send FFT Data over Serial ... %%%%%
         // println("Sending FFT data over Serial...");
         for (int i=0;i<numChan;i++){
-          buffer.rewind();
-          buffer.putFloat(i+1);
+          serialMessage = "[" + (i+1) + ","; //clear message
           for (int j=0;j<125;j++){
-            buffer.putFloat(fftBuff[i].getBand(j));
+            float fft_band = fftBuff[i].getBand(j);
+            String fft_band_3dec = String.format("%.3f", fft_band);
+            serialMessage += fft_band_3dec;
+            if(j < 125-1){
+              serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
+            }
           }
+          serialMessage += "]";
           try{
-            this.serial_networking.write(buffer.array());
+            // println(serialMessage);
+            this.serial_networking.write(serialMessage);
           }catch (Exception e){
             println(e);
           }
@@ -1326,20 +1350,24 @@ class Stream extends Thread{
        //     }
        //   }
        }else if (this.protocol.equals("Serial")){
-         // Send FFT Data over Serial ... %%%%%
-        //  println("Sending POWER BAND data over Serial...");
-         for (int i=0;i<numChan;i++){
-           buffer.rewind();
-           buffer.putFloat(i+1);
-           for (int j=0;j<numPowerBands;j++){
-             buffer.putFloat(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
-           }
-           try{
-             this.serial_networking.write(buffer.array());
-           }catch (Exception e){
-             println(e);
-           }
-         }
+          for (int i=0;i<numChan;i++){
+            serialMessage = "[" + (i+1) + ","; //clear message
+            for (int j=0;j<numPowerBands;j++){
+              float power_band = dataProcessing.avgPowerInBins[i][j];
+              String power_band_3dec = String.format("%.3f", power_band);
+              serialMessage += power_band_3dec;
+              if(j < numPowerBands-1){
+                serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
+              }
+            }
+            serialMessage += "]";
+            try{
+              // println(serialMessage);
+              this.serial_networking.write(serialMessage);
+            }catch (Exception e){
+              println(e);
+            }
+          }
        }
      }
   }
@@ -1385,16 +1413,15 @@ class Stream extends Thread{
        //       outlet_data.push_sample(dataToSend);
        //     }
        //   }
-       }else if (this.protocol.equals("Serial")){
-         // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
-        //  println("Sending EMG data over Serial...");
+       }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
          for (int i=0;i<numChan;i++){
-           buffer.rewind();
-           buffer.putFloat(i+1);
-           //ADD NORMALIZED EMG CHANNEL DATA
-           buffer.putFloat(w_emg.motorWidgets[i].output_normalized);
+            serialMessage = "[" + (i+1) + ","; //clear message
+            float emg_normalized = w_emg.motorWidgets[i].output_normalized;
+            String emg_normalized_3dec = String.format("%.3f", emg_normalized);
+            serialMessage += emg_normalized_3dec + "]";
            try{
-             this.serial_networking.write(buffer.array());
+             println(serialMessage);
+             this.serial_networking.write(serialMessage);
            }catch (Exception e){
              println(e);
            }
