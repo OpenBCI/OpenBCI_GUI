@@ -1420,7 +1420,7 @@ class Stream extends Thread{
             String emg_normalized_3dec = String.format("%.3f", emg_normalized);
             serialMessage += emg_normalized_3dec + "]";
            try{
-             println(serialMessage);
+            //  println(serialMessage);
              this.serial_networking.write(serialMessage);
            }catch (Exception e){
              println(e);
