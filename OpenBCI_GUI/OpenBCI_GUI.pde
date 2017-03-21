@@ -38,6 +38,7 @@ import netP5.*; // for OSC
 import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
+import edu.ucsd.sccn.LSL; //for LSL
 
 
 import gifAnimation.*;

@@ -938,7 +938,7 @@ class Stream extends Thread{
   int start = dataBuffY_filtY_uV[0].length-11;
   int end = dataBuffY_filtY_uV[0].length-1;
   int bufferLen = end-start;
-  float[] dataToSend = new float[numChan];
+  float[] dataToSend = new float[numChan*bufferLen];
 
   //OSC Objects
   OscP5 osc;
@@ -1158,12 +1158,12 @@ class Stream extends Thread{
        }
         // LSL
      }else if (this.protocol.equals("LSL")){
-       for(int i=0;i<bufferLen;i++){
+       for (int i=0; i<bufferLen;i++){
          for(int j=0;j<numChan;j++){
-           dataToSend[j] = yLittleBuff_uV[j][i];
+           dataToSend[j+numChan*i] = yLittleBuff_uV[j][i];
          }
-         outlet_data.push_sample(dataToSend);
        }
+       outlet_data.push_chunk(dataToSend);
        // SERIAL
      }else if (this.protocol.equals("Serial")){         // Serial Output unfiltered
        for(int i=0;i<bufferLen;i++){
@@ -1210,12 +1210,12 @@ class Stream extends Thread{
          this.udp.send(buffer.array(),this.ip,this.port);
       }
      }else if (this.protocol.equals("LSL")){
-       for(int i=0;i<bufferLen;i++){
+       for (int i=0; i<bufferLen;i++){
          for(int j=0;j<numChan;j++){
-           dataToSend[j] = dataBuffY_filtY_uV[j][i];
+           dataToSend[j+numChan*i] = dataBuffY_filtY_uV[j][i];
          }
-         outlet_data.push_sample(dataToSend);
        }
+       outlet_data.push_chunk(dataToSend);
      }else if (this.protocol.equals("Serial")){
        for(int i=0;i<bufferLen;i++){
          serialMessage = "["; //clear message
@@ -1272,14 +1272,7 @@ class Stream extends Thread{
        }
        // LSL
      }else if (this.protocol.equals("LSL")){
-      //  if(filter==0){
-      //     for(int i=0;i<bufferLen;i++){
-      //       for(int j=0;j<numChan;j++){
-      //         dataToSend[j] = fftBuff[j][i];
-      //       }
-      //       outlet_data.push_sample(dataToSend);
-      //     }
-      //   }
+       /* */
       }else if (this.protocol.equals("Serial")){
         // Send FFT Data over Serial ... %%%%%
         // println("Sending FFT data over Serial...");
@@ -1316,7 +1309,6 @@ class Stream extends Thread{
           msg.clearArguments();
           msg.add(i+1);
           for (int j=0;j<numPowerBands;j++){
-            // msg.add(fftBuff[i].getBand(j));
             msg.add(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
           }
           try{
@@ -1341,14 +1333,14 @@ class Stream extends Thread{
         }
         // LSL
       }else if (this.protocol.equals("LSL")){
-       //  if(filter==0){
-       //     for(int i=0;i<bufferLen;i++){
-       //       for(int j=0;j<numChan;j++){
-       //         dataToSend[j] = fftBuff[j][i];
-       //       }
-       //       outlet_data.push_sample(dataToSend);
-       //     }
-       //   }
+
+        float[] avgPowerLSL = new float[numChan*numPowerBands];
+        for (int i=0; i<numChan;i++){
+           for(int j=0;j<numPowerBands;j++){
+             dataToSend[j+numChan*i] = dataProcessing.avgPowerInBins[i][j];
+           }
+         }
+         outlet_data.push_chunk(dataToSend);
        }else if (this.protocol.equals("Serial")){
           for (int i=0;i<numChan;i++){
             serialMessage = "[" + (i+1) + ","; //clear message
@@ -1405,14 +1397,12 @@ class Stream extends Thread{
         }
         // LSL
       }else if (this.protocol.equals("LSL")){
-       //  if(filter==0){
-       //     for(int i=0;i<bufferLen;i++){
-       //       for(int j=0;j<numChan;j++){
-       //         dataToSend[j] = fftBuff[j][i];
-       //       }
-       //       outlet_data.push_sample(dataToSend);
-       //     }
-       //   }
+        if(filter==0){
+           for(int j=0;j<numChan;j++){
+             dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
+           }
+           outlet_data.push_sample(dataToSend);
+         }
        }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
          for (int i=0;i<numChan;i++){
             serialMessage = "[" + (i+1) + ","; //clear message
@@ -1478,7 +1468,7 @@ class Stream extends Thread{
       println("UDP successfully connected");
       output("UDP successfully connected");
     }else if (this.protocol.equals("LSL")){
-      String stream_id = "q4asdgdsg";
+      String stream_id = "openbcieeg12345";
       info_data = new LSL.StreamInfo(
                             this.streamName,
                             this.streamType,
