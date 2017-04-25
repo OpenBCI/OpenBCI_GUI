@@ -48,9 +48,9 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
 
-  // w_networking = new W_networking(_this);
-  // w_networking.setTitle("Networking");
-  // addWidget(w_networking, w);
+  w_networking = new W_networking(_this);
+  w_networking.setTitle("Networking");
+  addWidget(w_networking, w);
 
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
@@ -159,7 +159,8 @@ class WidgetManager{
   }
 
   void update(){
-    if(visible && updating){
+    // if(visible && updating){
+    if(visible){
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).update();
@@ -182,6 +183,14 @@ class WidgetManager{
           widgets.get(i).draw();
           widgets.get(i).drawDropdowns();
           popStyle();
+        }else{
+          if(widgets.get(i).widgetTitle.equals("Networking")){
+            try{
+              w_networking.shutDown();
+            }catch (NullPointerException e){
+              println(e);
+            }
+          }
         }
       }
     }
