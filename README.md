@@ -8,7 +8,7 @@ Based on OpenBCI_Processing, OpenBCI_GUI_v2.0 extends the GUI to include additio
 
 Please follow these instructions for getting the **critical** piece of software called the Ganglion HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-mac) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-windows). Thanks and happy hacking!
 
-# Wdigets
+# Widgets
 
 There are strict simple rules to ad hear to for your wonderful widget to "magically" be populated in the drop down list on the GUI. Remember always be a hear! Fork the repo (if you know git) add your widget and open a pull request. Always browse the issues page for possible widgets to make!
 
