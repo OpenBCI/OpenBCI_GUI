@@ -3,3 +3,7 @@ Project Management Plan:
 
 # OpenBCI_GUI_v2.0
 Based on OpenBCI_Processing, OpenBCI_GUI_v2.0 extends the GUI to include additional features, and interfaces with the OpenBCI [Cyton](http://shop.openbci.com/collections/frontpage/products/openbci-32-bit-board-kit?variant=784651699) and [Ganglion](http://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board?variant=13461804483) hardware systems. Tutorials, and getting started guides can be found on the [OpenBCI Learning Pages](http://docs.openbci.com/Getting%20Started/00-Welcome). For a guide on how to run this code in the Processing IDE, go [here](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI)
+
+# IMPORTANT: GANGLION USERS
+
+Please follow these instructions for getting the **critical** piece of software called the Ganglion HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-mac) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-windows). Thanks and happy hacking!
