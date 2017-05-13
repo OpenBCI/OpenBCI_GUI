@@ -20,4 +20,4 @@ _When I run the OpenBCI UI from Processing on my Mac I don’t see the Ganglion_
 _But from the OpenBCI App (real one, not from the code), it works._
 _I feel like I need to authorize Processing to use Bluetooth… it that makes any sense at all_
 
-Please follow these instructions for getting the **critical** piece of software called the Ganglion HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-mac) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-windows). Thanks and happy hacking!d 
+Please follow these instructions for getting the **critical** piece of software called the Ganglion HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-mac) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-ganglion-hub-on-windows). Thanks and happy hacking!
