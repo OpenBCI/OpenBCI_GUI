@@ -1,4 +1,4 @@
- //<>//
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
@@ -24,9 +24,6 @@ import java.util.*; //for Array.copyOfRange()
 import java.util.Map.Entry;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
-import netP5.*; //for OSC networking
-import oscP5.*; //for OSC networking
-import hypermedia.net.*; //for UDP networking
 import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
@@ -37,6 +34,12 @@ import java.lang.Process;
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
 import java.awt.AWTException;
+import netP5.*; // for OSC
+import oscP5.*; // for OSC
+import hypermedia.net.*; //for UDP
+import java.nio.ByteBuffer; //for UDP
+import edu.ucsd.sccn.LSL; //for LSL
+
 
 import gifAnimation.*;
 
@@ -60,7 +63,7 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = true;
+boolean hasIntroAnimation = false;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
@@ -146,20 +149,10 @@ final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/f
 public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
 
-//variables for Networking
-int port = 0;
-String ip = "";
-String address = "";
-String data_stream = "";
-String aux_stream = "";
-UDPSend udp;
-OSCSend osc;
-LSLSend lsl;
-
 // Serial output
-String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port
+String serial_output_portName = "/dev/tty.usbmodem1421";  //must edit this based on the name of the serial/COM port
 Serial serial_output;
-int serial_output_baud = 115200; //baud rate from the Arduino
+int serial_output_baud = 9600; //baud rate from the Arduino
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
@@ -244,6 +237,8 @@ int hubPid = 0;
 String nodeHubName = "GanglionHub";
 Robot rob3115;
 
+PApplet ourApplet;
+
 //-----------------------------------------1-------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -269,6 +264,7 @@ void setup() {
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
+  ourApplet = this;
   frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   smooth(); //turn this off if it's too slow
 
@@ -336,14 +332,14 @@ void setup() {
   playground = new Playground(navBarHeight);
 
   //attempt to open a serial port for "output"
-  try {
-    verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
-    serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
-    serial_output.clear(); // clear anything in the com port's buffer
-  }
-  catch (RuntimeException e) {
-    verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
-  }
+  // try {
+  //   verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
+  //   serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
+  //   serial_output.clear(); // clear anything in the com port's buffer
+  // }
+  // catch (RuntimeException e) {
+  //   verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
+  // }
 
   // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
@@ -707,6 +703,8 @@ void haltSystem() {
   ganglion_portName = "";
   controlPanel.resetListItems();
 
+  // w_networking.clearCP5(); //closes all networking controllers
+
   // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
 
   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
@@ -809,6 +807,7 @@ void systemUpdate() { // for updating data values and variables
     //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
     if (screenHasBeenResized) {
       // GUIWidgets_screenResized(width, height);
+      ourApplet = this; //reset PApplet...
       topNav.screenHasBeenResized(width, height);
       wm.screenResized();
     }

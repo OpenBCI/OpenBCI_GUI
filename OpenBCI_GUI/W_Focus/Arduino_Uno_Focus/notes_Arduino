@@ -1,0 +1,11 @@
+notes_Arduino
+
+Modified from Tom Igoe's code.
+It should be able to turn on an LED by focus on pin 2.
+To replicate this example, you will need an Arduino Uno (101 is ok as well) and set up an LED output there, then upload this code to your Arduino.
+Also you need to set the serial_output_portName in OpenBCI.pde as your Arduino's serial port name, and also set serial_output_baud to be 9600 (you can use other baud rate but need to ensure serial_output_baud is the same as the number in Serial.begin() in the Arduino file).
+Once you're prepared, you can run the openBCI GUI and turn on Serial in Focus Widget.
+
+Enjoy then :)
+
+Wangshu
