@@ -4,6 +4,7 @@
 //
 //  Created: Colin Fausnaught, September 2016
 //           Source Code by Joel Murphy
+//  Modified: Joel Murphy, May 2017
 //
 //  Use '/' to toggle between accelerometer and pulse sensor.
 ////////////////////////////////////////////////////////////////////////////////
