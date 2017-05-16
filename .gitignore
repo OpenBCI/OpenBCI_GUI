@@ -6,3 +6,4 @@ OpenBCI_GUI/temp.txt
 OpenBCI_GUI/t-temp.txt
 OpenBCI_GUI/build/source/*.java
 *.app
+OpenBCI_GUI/SavedData
