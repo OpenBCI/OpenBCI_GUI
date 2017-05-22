@@ -443,7 +443,16 @@ void parseKeycode(int val) {
   }
 }
 
+void mouseDragged() {
 
+  if (systemMode >= SYSTEMMODE_POSTINIT) {
+
+    //calling mouse dragged inly outside of Control Panel
+    if (controlPanel.isOpen == false) {
+      wm.mouseDragged();
+    }
+  }
+}
 //swtich yard if a click is detected
 void mousePressed() {
 
