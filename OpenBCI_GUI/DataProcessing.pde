@@ -335,12 +335,14 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
 
     if(!isRunning){
       try{
-        if(!isOldData) row.getString(nchan+4);
-        else row.getString(nchan+3);
+        row.getString(nchan+3);
 
-        nchan = 16;
+        // nchan = 16; AJK 5/31/17 see issue #151
       }
-      catch (ArrayIndexOutOfBoundsException e){ println("8 Channel");}
+      catch (ArrayIndexOutOfBoundsException e){
+        println(e);
+        println("8 Channel");
+      }
     }
 
   }

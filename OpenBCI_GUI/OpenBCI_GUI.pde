@@ -503,7 +503,7 @@ boolean killRunningprocessWin() {
 int getProcessIdFromLineMac(String line) {
   line = trim(line);
   String[] components = line.split(" ");
-  return Integer.parseInt(components[0]); //<>//
+  return Integer.parseInt(components[0]);
 }
 
 void endProcess(int pid) {
