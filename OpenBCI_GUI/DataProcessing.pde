@@ -11,6 +11,12 @@ HashMap<String,float[][]> processed_file;
 HashMap<Integer,String> index_of_times;
 HashMap<String,Integer> index_of_times_rev;
 
+// indexs
+final int DELTA = 0; // 1-4 Hz
+final int THETA = 1; // 4-8 Hz
+final int ALPHA = 2; // 8-13 Hz
+final int BETA = 3; // 13-30 Hz
+final int GAMMA = 4; // 30-55 Hz
 
 
 //------------------------------------------------------------------------
@@ -375,13 +381,6 @@ class DataProcessing {
   float avgPowerInBins[][];
   float headWidePower[];
   int numBins;
-
-  // indexs
-  final int DELTA = 0; // 1-4 Hz
-  final int THETA = 1; // 4-8 Hz
-  final int ALPHA = 2; // 8-13 Hz
-  final int BETA = 3; // 13-30 Hz
-  final int GAMMA = 4; // 30-55 Hz
 
   DataProcessing(int NCHAN, float sample_rate_Hz) {
     nchan = NCHAN;

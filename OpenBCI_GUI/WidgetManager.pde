@@ -21,6 +21,7 @@ W_ganglionImpedance w_ganglionImpedance;
 W_template w_template1;
 W_emg w_emg;
 W_openBionics w_openbionics;
+W_PowerBands w_powerBands;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -54,6 +55,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
+
+  w_powerBands = new W_PowerBands(_this);
+  w_powerBands.setTitle("Power Bands");
+  addWidget(w_powerBands, w);
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
