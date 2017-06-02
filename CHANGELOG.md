@@ -6,6 +6,7 @@
 
 ### New Features
 * Band power widget #153 (thanks @sunwangshu)
+* Closes #138 - Able to drag and drop the electrodes on the head map  (thanks @liqwid)
 
 # 2.1.2
 
