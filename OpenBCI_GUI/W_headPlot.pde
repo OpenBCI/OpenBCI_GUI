@@ -71,14 +71,21 @@ class W_headPlot extends Widget {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
     //put your code here...
-
+    headPlot.mousePressed();
   }
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    headPlot.mouseReleased();
+  }
 
+  void mouseDragged(){
+    super.mouseDragged(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    headPlot.mouseDragged();
   }
 
   //add custom class functions here
@@ -208,6 +215,9 @@ class HeadPlot {
   private boolean plot_color_as_log = true;
   public float smooth_fac = 0.0f;
   private boolean use_polarity = true;
+  private int mouse_over_elec_index = -1;
+  private boolean isDragging = false;
+  private float drag_x, drag_y;
 
   HeadPlot(float x, float y, float w, float h, int win_x, int win_y, int n) {
     final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
@@ -1223,6 +1233,38 @@ class HeadPlot {
     }
   }
 
+  private boolean isMouseOverElectrode(int n){
+    float elec_mouse_x_dist = electrode_xy[n][0] - mouseX;
+    float elec_mouse_y_dist = electrode_xy[n][1] - mouseY;
+    return elec_mouse_x_dist * elec_mouse_x_dist + elec_mouse_y_dist * elec_mouse_y_dist < elec_diam * elec_diam / 4;
+  }
+
+  private boolean isDraggedElecInsideHead() {
+    int dx = mouseX - circ_x;
+    int dy = mouseY - circ_y;
+    return dx * dx + dy * dy < (circ_diam - elec_diam) * (circ_diam - elec_diam) / 4;
+  }
+
+  void mousePressed() {
+    if (mouse_over_elec_index > -1) {
+      isDragging = true;
+      drag_x = mouseX - electrode_xy[mouse_over_elec_index][0];
+      drag_y = mouseY - electrode_xy[mouse_over_elec_index][1];
+    } else {
+      isDragging = false;
+    }
+  }
+
+  void mouseDragged() {
+    if (isDragging && mouse_over_elec_index > -1 && isDraggedElecInsideHead()) {
+      electrode_xy[mouse_over_elec_index][0] = mouseX - drag_x;
+      electrode_xy[mouse_over_elec_index][1] = mouseY - drag_y;
+    }
+  }
+
+  void mouseReleased() {
+    isDragging = false;
+  }
 
   public boolean isPixelInsideHead(int pixel_x, int pixel_y) {
     int dx = pixel_x - circ_x;
@@ -1275,14 +1317,25 @@ class HeadPlot {
     }
 
     //draw electrodes on the head
-    strokeWeight(1);
+    if (!isDragging) {
+      mouse_over_elec_index = -1;
+    }
     for (int Ielec=0; Ielec < electrode_xy.length; Ielec++) {
       if (drawHeadAsContours) {
         noFill(); //make transparent to allow color to come through from below
       } else {
         fill(electrode_rgb[0][Ielec], electrode_rgb[1][Ielec], electrode_rgb[2][Ielec]);
       }
-      ellipse(electrode_xy[Ielec][0], electrode_xy[Ielec][1], elec_diam, elec_diam); //big circle for the head
+      if (!isDragging && isMouseOverElectrode(Ielec)) {
+        //electrode with a bigger index gets priority in dragging
+        mouse_over_elec_index = Ielec;
+        strokeWeight(2);
+      } else if (mouse_over_elec_index == Ielec) {
+        strokeWeight(2);
+      } else{
+        strokeWeight(1);
+      }
+      ellipse(electrode_xy[Ielec][0], electrode_xy[Ielec][1], elec_diam, elec_diam); //electrode circle
     }
 
     //add labels to electrodes
