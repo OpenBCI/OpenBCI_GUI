@@ -1242,7 +1242,7 @@ class HeadPlot {
   private boolean isDraggedElecInsideHead() {
     int dx = mouseX - circ_x;
     int dy = mouseY - circ_y;
-    return dx * dx + dy * dy < (circ_diam - elec_diam) / 4;
+    return dx * dx + dy * dy < (circ_diam - elec_diam) * (circ_diam - elec_diam) / 4;
   }
 
   void mousePressed() {
