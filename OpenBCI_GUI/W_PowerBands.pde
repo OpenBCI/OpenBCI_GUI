@@ -32,7 +32,7 @@ class W_PowerBands extends Widget {
     plot3.setPos(x, y);
     plot3.setDim(w, h);
     plot3.setLogScale("y");
-    plot3.setYLim(0.1, 100);
+    plot3.setYLim(0.1, 1000);
     plot3.setXLim(0, 5);
     plot3.getYAxis().setNTicks(9);
     // plot3.getTitle().setText("Gaussian distribution (" + str(0) + " points)"); // AJK

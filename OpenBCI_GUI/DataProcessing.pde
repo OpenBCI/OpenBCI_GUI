@@ -675,11 +675,14 @@ class DataProcessing {
 
       //convert to uV_per_bin...still need to confirm the accuracy of this code.
       //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
-      for (int I=0; I < fftBuff[Ichan].specSize(); I++) {  //loop over each FFT bin
-        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].timeSize()));
+
+      // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
+      // first calculate double-sided FFT amplitude spectrum
+      for (int I=0; I <= Nfft/2; I++) {
+        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / Nfft));
       }
-      //DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two.
-      for (int I=1; I < fftBuff[Ichan].specSize()-1; I++) {  //loop over each FFT bin
+      // then convert into single-sided FFT spectrum: DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two.
+      for (int I=1; I < Nfft/2; I++) {
         fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
       }
 
@@ -706,20 +709,25 @@ class DataProcessing {
       } //end loop over FFT bins
 
       // calculate single-sided psd by mag single-sided FFT magnitude
+      // PSD ref: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
       // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
       // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
-      //    Matlab FFT: https://www.mathworks.com/help/matlab/ref/fft.html
-      //    Matlab PSD: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
-
-      // need to fix j, since j is frequency but you have to convert it into fft index
-
-      // FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);
-      // if processing_band_low_Hz[i] <= FFT_freq_Hz <= processing_band_high_Hz[i]
 
       for (int i = 0; i < processing_band_low_Hz.length; i++) {
         float sum = 0;
-        for (int j = processing_band_low_Hz[i]; j < processing_band_high_Hz[i]; j++) {
-          sum += fftBuff[Ichan].getBand(j);
+        for (int Ibin = 0; Ibin <= Nfft/2; Ibin ++) { // loop over FFT bins
+          float FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);   // center frequency of this bin
+          float psdx = 0;
+          // if the frequency matches a band
+          if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
+            if (Ibin != 0 && Ibin != Nfft/2) {
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
+            }
+            else {
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe() / 4;
+            }
+            sum += psdx;
+          }
         }
         avgPowerInBins[Ichan][i] = sum;
       }
