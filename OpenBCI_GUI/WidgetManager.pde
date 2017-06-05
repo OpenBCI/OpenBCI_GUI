@@ -219,6 +219,14 @@ class WidgetManager{
     }
   }
 
+  void mouseDragged(){
+    for(int i = 0; i < widgets.size(); i++){
+      if(widgets.get(i).isActive){
+        widgets.get(i).mouseDragged();
+      }
+    }
+  }
+
   void setupLayouts(){
     //refer to [PUT_LINK_HERE] for layouts/numbers image
     //note that the order you create/add these layouts matters... if you reorganize these, the LayoutSelector will be out of order

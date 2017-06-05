@@ -282,6 +282,10 @@ class Widget{
 
   }
 
+  void mouseDragged(){
+
+  }
+
   void setTitle(String _widgetTitle){
     widgetTitle = _widgetTitle;
   }

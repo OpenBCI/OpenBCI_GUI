@@ -503,7 +503,7 @@ boolean killRunningprocessWin() {
 int getProcessIdFromLineMac(String line) {
   line = trim(line);
   String[] components = line.split(" ");
-  return Integer.parseInt(components[0]); //<>//
+  return Integer.parseInt(components[0]);
 }
 
 void endProcess(int pid) {
@@ -978,7 +978,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v2.1.2\nJanuary 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v2.2.0\nJune 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
