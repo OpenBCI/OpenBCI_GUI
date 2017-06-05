@@ -706,6 +706,7 @@ class DataProcessing {
           foo = java.lang.Math.sqrt(foo);
         }
         fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
+        // fftBuff[Ichan].setBand(I, 1.0f);  // test
       } //end loop over FFT bins
 
       // calculate single-sided psd by single-sided FFT amplitude spectrum
@@ -715,6 +716,7 @@ class DataProcessing {
 
       for (int i = 0; i < processing_band_low_Hz.length; i++) {
         float sum = 0;
+        // int binNum = 0;
         for (int Ibin = 0; Ibin <= Nfft/2; Ibin ++) { // loop over FFT bins
           float FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);   // center frequency of this bin
           float psdx = 0;
@@ -727,9 +729,11 @@ class DataProcessing {
               psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
             }
             sum += psdx;
+            // binNum ++;
           }
         }
-        avgPowerInBins[Ichan][i] = sum;
+        avgPowerInBins[Ichan][i] = sum;   // total power in a band
+        // println(i, binNum, sum);
       }
     } //end the loop over channels.
     for (int i = 0; i < processing_band_low_Hz.length; i++) {
@@ -738,7 +742,7 @@ class DataProcessing {
       for (int j = 0; j < nchan; j++) {
         sum += avgPowerInBins[j][i];
       }
-      headWidePower[i] = sum/nchan;
+      headWidePower[i] = sum/nchan;   // averaging power over all channels
     }
 
     //delta in channel 2 ... avgPowerInBins[1][DELTA];

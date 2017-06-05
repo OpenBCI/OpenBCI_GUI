@@ -1,23 +1,23 @@
 
 ////////////////////////////////////////////////////
 //
-//    W_PowerBands.pde
+//    W_BandPowers.pde
 //
-//    This is a power band visualization widget!
+//    This is a band power visualization widget!
 //    (Couldn't think up more)
-//    This is for visualizing the average power of each brainwave band: delta, theta, alpha, beta, gamma
-//    Of all active channels
+//    This is for visualizing the power of each brainwave band: delta, theta, alpha, beta, gamma
+//    Averaged over all channels
 //
 //    Created by: Wangshu Sun, May 2017
 //
 ///////////////////////////////////////////////////,
 
-class W_PowerBands extends Widget {
+class W_BandPower extends Widget {
 
   GPlot plot3;
   String bands[] = {"DELTA", "THETA", "ALPHA", "BETA", "GAMMA"};
 
-  W_PowerBands(PApplet _parent){
+  W_BandPower(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //This is the protocol for setting up dropdowns.
