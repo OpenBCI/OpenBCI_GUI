@@ -708,10 +708,10 @@ class DataProcessing {
         fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
       } //end loop over FFT bins
 
-      // calculate single-sided psd by mag single-sided FFT magnitude
+      // calculate single-sided psd by single-sided FFT amplitude spectrum
       // PSD ref: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
-      // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
       // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
+      // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
 
       for (int i = 0; i < processing_band_low_Hz.length; i++) {
         float sum = 0;
@@ -721,10 +721,10 @@ class DataProcessing {
           // if the frequency matches a band
           if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
             if (Ibin != 0 && Ibin != Nfft/2) {
-              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe() / 4;
             }
             else {
-              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe() / 4;
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
             }
             sum += psdx;
           }

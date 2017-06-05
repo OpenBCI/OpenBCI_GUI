@@ -35,11 +35,9 @@ class W_PowerBands extends Widget {
     plot3.setYLim(0.1, 1000);
     plot3.setXLim(0, 5);
     plot3.getYAxis().setNTicks(9);
-    // plot3.getTitle().setText("Gaussian distribution (" + str(0) + " points)"); // AJK
-    plot3.getTitle().setText("Gaussian distribution (" + str(0) + " points)");
     plot3.getTitle().setTextAlignment(LEFT);
     plot3.getTitle().setRelativePos(0);
-    plot3.getYAxis().getAxisLabel().setText("Relative probability");
+    plot3.getYAxis().getAxisLabel().setText("dB");
     plot3.getYAxis().getAxisLabel().setTextAlignment(RIGHT);
     plot3.getYAxis().getAxisLabel().setRelativePos(1);
     // plot3.setPoints(points3);
