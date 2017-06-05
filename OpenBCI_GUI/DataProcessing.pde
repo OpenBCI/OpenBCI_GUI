@@ -704,6 +704,18 @@ class DataProcessing {
         }
         fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
       } //end loop over FFT bins
+
+      // calculate single-sided psd by mag single-sided FFT magnitude
+      // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
+      // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
+      //    Matlab FFT: https://www.mathworks.com/help/matlab/ref/fft.html
+      //    Matlab PSD: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
+
+      // need to fix j, since j is frequency but you have to convert it into fft index
+
+      // FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);
+      // if processing_band_low_Hz[i] <= FFT_freq_Hz <= processing_band_high_Hz[i]
+
       for (int i = 0; i < processing_band_low_Hz.length; i++) {
         float sum = 0;
         for (int j = processing_band_low_Hz[i]; j < processing_band_high_Hz[i]; j++) {
