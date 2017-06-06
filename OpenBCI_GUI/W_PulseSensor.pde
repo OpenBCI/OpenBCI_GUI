@@ -17,7 +17,7 @@ class W_PulseSensor extends Widget {
   color graphBG = #f5f5f5;
   color textColor = #000000;
 
-// Pulse Sensor Stuff
+// Pulse Sensor Visualizer Stuff
   int count = 0;
   int heart = 0;
   int PulseBuffSize = 400;
@@ -42,6 +42,35 @@ class W_PulseSensor extends Widget {
   int[] BPMwaveY;        // HOLDS BPM WAVEFORM DATA
   boolean rising;
 
+// Synthetic Wave Generator Stuff
+float theta;  // Start angle at 0
+float amplitude;  // Height of wave
+int syntheticMultiplier;
+long thisTime;
+long thatTime;
+int refreshRate;
+
+// Pulse Sensor Beat Finder Stuff
+// ASSUMES 250Hz SAMPLE RATE
+int[] rate;                    // array to hold last ten IBI values
+int sampleCounter;          // used to determine pulse timing
+int lastBeatTime;           // used to find IBI
+int P =512;                      // used to find peak in pulse wave, seeded
+int T = 512;                     // used to find trough in pulse wave, seeded
+int thresh = 530;                // used to find instant moment of heart beat, seeded
+int amp = 0;                   // used to hold amplitude of pulse waveform, seeded
+boolean firstBeat = true;        // used to seed rate array so we startup with reasonable BPM
+boolean secondBeat = false;      // used to seed rate array so we startup with reasonable BPM
+int BPM;                   // int that holds raw Analog in 0. updated every 2mS
+int Signal;                // holds the incoming raw data
+int IBI = 600;             // int that holds the time interval between beats! Must be seeded!
+boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
+boolean QS = false;        // becomes true when Arduoino finds a beat.
+
+// testing stuff
+
+
+
   W_PulseSensor(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -53,20 +82,54 @@ class W_PulseSensor extends Widget {
 
     PulseWaveY = new int[PulseBuffSize];
     BPMwaveY = new int[BPMbuffSize];
-
+    rate = new int[10];
     setPulseWidgetVariables();
+    initializePulseFinderVariables();
 
   }
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-    //put your code here...
+
+
+    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE FROM CYTON
+
+    } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
+
+    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
+      theta += 0.15;
+      Signal = int(sin(theta)*amplitude)+512;
+      thisTime = millis();
+      refreshRate = int(thisTime - thatTime);
+      thatTime = thisTime;
+      syntheticMultiplier = refreshRate/4;
+      // println(refreshRate);
+    }
+    else {  // PLAYBACK
+
+    }
+
+    processSignal();
+    for(int i=0; i<PulseWaveY.length-1; i++){
+      PulseWaveY[i] = PulseWaveY[i+1];
+    }
+    PulseWaveY[PulseWaveY.length-1] = Signal;
+
+
+    if(QS){
+      QS = false;
+      for(int i=0; i<BPMwaveY.length-1; i++){
+        BPMwaveY[i] = BPMwaveY[i+1];
+      }
+      BPMwaveY[BPMwaveY.length-1] = BPM;
+    }
 
   }
 
   void draw(){
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+
 
     //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     pushStyle();
@@ -81,23 +144,14 @@ class W_PulseSensor extends Widget {
     fill(50);
     textFont(p4, 16);
     textAlign(LEFT,CENTER);
-    text("BPM", BPMposX, BPMposY);
-    text("IBI", IBIposX, IBIposY);
+    text("BPM "+BPM, BPMposX, BPMposY);
+    text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-
-
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE
-
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-
-    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-
-
-    }
-    else {  // PLAYBACK
-
-    }
     drawWaves();
+
+
+
+
 
     popStyle();
 
@@ -139,32 +193,77 @@ class W_PulseSensor extends Widget {
     PulseWindowY = y + h - PulseWindowHeight - padding;
 
     BPMwindowWidth = w/4 - (padding + padding/2);
-    BPMwindowHeight = PulseWindowHeight - padding*2;
+    BPMwindowHeight = PulseWindowHeight; // - padding;
     BPMwindowX = PulseWindowX + PulseWindowWidth + padding/2;
-    BPMwindowY = PulseWindowY + padding;
+    BPMwindowY = PulseWindowY; // + padding;
 
     BPMposX = BPMwindowX + padding/2;
-    BPMposY = y + padding;
-    IBIposX = BPMwindowX + padding/2;
-    IBIposY = y + BPMwindowHeight + int(float(padding)*2.5);
+    BPMposY = y - padding; // BPMwindowHeight + int(float(padding)*2.5);
+    IBIposX = PulseWindowX + PulseWindowWidth/2; // + padding/2
+    IBIposY = y - padding;
 
+    // float py;
+    // float by;
+    // for(int i=0; i<PulseWaveY.length; i++){
+    //   py = map(float(PulseWaveY[i]),
+    //     0.0,1023.0,
+    //     float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)
+    //   );
+    //   PulseWaveY[i] = int(py);
+    // }
+    // for(int i=0; i<BPMwaveY.length; i++){
+    //   BPMwaveY[i] = BPMwindowY + BPMwindowHeight-1;
+    // }
+  }
+
+  void initializePulseFinderVariables(){
+    sampleCounter = 0;
+    lastBeatTime = 0;
+    P = 512;
+    T = 512;
+    thresh = 530;
+    amp = 0;
+    firstBeat = true;
+    secondBeat = false;
+    BPM = 0;
+    Signal = 512;
+    IBI = 600;
+    Pulse = false;
+    QS = false;
+
+    theta = 0.0;
+    amplitude = 300;
+    syntheticMultiplier = 1;
+
+    thatTime = millis();
+
+    // float py = map(float(Signal),
+    //   0.0,1023.0,
+    //   float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)
+    // );
     for(int i=0; i<PulseWaveY.length; i++){
-      PulseWaveY[i] = PulseWindowY + PulseWindowHeight/2;
+      PulseWaveY[i] = Signal;
+
+      // PulseWaveY[i] = PulseWindowY + PulseWindowHeight/2;
     }
     for(int i=0; i<BPMwaveY.length; i++){
-      BPMwaveY[i] = BPMwindowY + BPMwindowHeight-1;
+      BPMwaveY[i] = BPM;
     }
 
   }
 
   void drawWaves(){
+    int xi, yi;
     noFill();
     strokeWeight(1);
     stroke(pulseWave);
     beginShape();                                  // using beginShape() renders fast
     for(int i=0; i<PulseWaveY.length; i++){
-      int xi = int(map(i,0, PulseWaveY.length-1,0, PulseWindowWidth-1));
-      vertex(PulseWindowX+xi, PulseWaveY[i]);
+      xi = int(map(i,0, PulseWaveY.length-1,0, PulseWindowWidth-1));
+      xi += PulseWindowX;
+      yi = int(map(PulseWaveY[i],0.0,1023.0,
+        float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)));
+      vertex(xi, yi);
     }
     endShape();
 
@@ -172,11 +271,97 @@ class W_PulseSensor extends Widget {
     stroke(pulseWave);
     beginShape();                                  // using beginShape() renders fast
     for(int i=0; i<BPMwaveY.length; i++){
-      int xi = int(map(i,0, BPMwaveY.length-1,0, BPMwindowWidth-1));
-      vertex(BPMwindowX+xi, BPMwaveY[i]);
+      xi = int(map(i,0, BPMwaveY.length-1,0, BPMwindowWidth-1));
+      xi += BPMwindowX;
+      yi = int(map(BPMwaveY[i], 0.0,200.0,
+        float(BPMwindowY + BPMwindowHeight), float(BPMwindowY)));
+      vertex(xi, yi);
     }
     endShape();
 
   }
+
+  // THIS IS THE BEAT FINDING FUNCTION
+  // BASED ON CODE FROM World Famous Electronics, MAKERS OF PULSE SENSOR
+  // https://github.com/WorldFamousElectronics/PulseSensor_Amped_Arduino
+  void processSignal(){                         // triggered when Timer2 counts to 124
+    // cli();                                      // disable interrupts while we do this
+    // Signal = analogRead(pulsePin);              // read the Pulse Sensor
+    sampleCounter += (4 * syntheticMultiplier);                         // keep track of the time in mS with this variable
+    int N = sampleCounter - lastBeatTime;       // monitor the time since the last beat to avoid noise
+
+      //  find the peak and trough of the pulse wave
+    if(Signal < thresh && N > (IBI/5)*3){       // avoid dichrotic noise by waiting 3/5 of last IBI
+      if (Signal < T){                        // T is the trough
+        T = Signal;                         // keep track of lowest point in pulse wave
+      }
+    }
+
+    if(Signal > thresh && Signal > P){          // thresh condition helps avoid noise
+      P = Signal;                             // P is the peak
+    }                                        // keep track of highest point in pulse wave
+
+    //  NOW IT'S TIME TO LOOK FOR THE HEART BEAT
+    // signal surges up in value every time there is a pulse
+    if (N > 250){                                   // avoid high frequency noise
+      if ( (Signal > thresh) && (Pulse == false) && (N > (IBI/5)*3) ){
+        Pulse = true;                               // set the Pulse flag when we think there is a pulse
+        IBI = sampleCounter - lastBeatTime;         // measure time between beats in mS
+        lastBeatTime = sampleCounter;               // keep track of time for next pulse
+
+        if(secondBeat){                        // if this is the second beat, if secondBeat == TRUE
+          secondBeat = false;                  // clear secondBeat flag
+          for(int i=0; i<=9; i++){             // seed the running total to get a realisitic BPM at startup
+            rate[i] = IBI;
+          }
+        }
+
+        if(firstBeat){                         // if it's the first time we found a beat, if firstBeat == TRUE
+          firstBeat = false;                   // clear firstBeat flag
+          secondBeat = true;                   // set the second beat flag
+          // sei();                               // enable interrupts again
+          return;                              // IBI value is unreliable so discard it
+        }
+
+
+        // keep a running total of the last 10 IBI values
+        int runningTotal = 0;                  // clear the runningTotal variable
+
+        for(int i=0; i<=8; i++){                // shift data in the rate array
+          rate[i] = rate[i+1];                  // and drop the oldest IBI value
+          runningTotal += rate[i];              // add up the 9 oldest IBI values
+        }
+
+        rate[9] = IBI;                          // add the latest IBI to the rate array
+        runningTotal += rate[9];                // add the latest IBI to runningTotal
+        runningTotal /= 10;                     // average the last 10 IBI values
+        BPM = 60000/runningTotal;               // how many beats can fit into a minute? that's BPM!
+        BPM = constrain(BPM,0,200);
+        QS = true;                              // set Quantified Self flag
+        // QS FLAG IS NOT CLEARED INSIDE THIS FUNCTION
+      }
+    }
+
+    if (Signal < thresh && Pulse == true){   // when the values are going down, the beat is over
+      // digitalWrite(blinkPin,LOW);            // turn off pin 13 LED
+      Pulse = false;                         // reset the Pulse flag so we can do it again
+      amp = P - T;                           // get amplitude of the pulse wave
+      thresh = amp/2 + T;                    // set thresh at 50% of the amplitude
+      P = thresh;                            // reset these for next time
+      T = thresh;
+    }
+
+    if (N > 2500){                           // if 2.5 seconds go by without a beat
+      thresh = 530;                          // set thresh default
+      P = 512;                               // set P default
+      T = 512;                               // set T default
+      lastBeatTime = sampleCounter;          // bring the lastBeatTime up to date
+      firstBeat = true;                      // set these to avoid noise
+      secondBeat = false;                    // when we get the heartbeat back
+    }
+
+    // sei();                                   // enable interrupts when youre done!
+  }// end processSignal
+
 
 };
