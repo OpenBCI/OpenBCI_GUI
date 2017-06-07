@@ -75,7 +75,7 @@ class W_networking extends Widget {
     stream1 = null;
     stream2 = null;
     stream3 = null;
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "PowerBands", "Widget");
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Widget");
     defaultBaud = "9600";
     baudRates = Arrays.asList("1200", "9600", "57600", "115200");
     protocolMode = "OSC"; //default to OSC
@@ -735,7 +735,7 @@ class W_networking extends Widget {
         break;
       case 3 : dt1 = "EMG";
         break;
-      case 4 : dt1 = "PowerBands";
+      case 4 : dt1 = "BandPower";
         break;
       case 5 : dt1 = "Widget";
         break;
@@ -749,7 +749,7 @@ class W_networking extends Widget {
         break;
       case 3 : dt2 = "EMG";
         break;
-      case 4 : dt2 = "PowerBands";
+      case 4 : dt2 = "BandPower";
         break;
       case 5 : dt2 = "Widget";
         break;
@@ -763,7 +763,7 @@ class W_networking extends Widget {
         break;
       case 3 : dt3 = "EMG";
         break;
-      case 4 : dt3 = "PowerBands";
+      case 4 : dt3 = "BandPower";
         break;
       case 5 : dt3 = "Widget";
         break;
@@ -1060,7 +1060,7 @@ class Stream extends Thread{
                 sendFFTData();
               }else if (this.dataType.equals("EMG")){
                 sendEMGData();
-              }else if (this.dataType.equals("PowerBands")){
+              }else if (this.dataType.equals("BandPower")){
                 sendPowerBandData();
               }else if (this.dataType.equals("WIDGET")){
                 sendWidgetData();
@@ -1090,7 +1090,7 @@ class Stream extends Thread{
             sendFFTData();
           }else if (this.dataType.equals("EMG")){
             sendEMGData();
-          }else if (this.dataType.equals("PowerBands")){
+          }else if (this.dataType.equals("BandPower")){
             sendPowerBandData();
           }else if (this.dataType.equals("WIDGET")){
             sendWidgetData();
@@ -1109,7 +1109,7 @@ class Stream extends Thread{
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("EMG")){
       return dataProcessing.newDataToSend;
-    }else if (this.dataType.equals("PowerBands")){
+    }else if (this.dataType.equals("BandPower")){
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
@@ -1124,7 +1124,7 @@ class Stream extends Thread{
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("EMG")){
       dataProcessing.newDataToSend = false;
-    }else if (this.dataType.equals("PowerBands")){
+    }else if (this.dataType.equals("BandPower")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
@@ -1300,7 +1300,7 @@ class Stream extends Thread{
 
   void sendPowerBandData(){
     // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
-    int numPowerBands = 5; //DELTA, THETA, ALPHA, BETA, GAMMA
+    int numBandPower = 5; //DELTA, THETA, ALPHA, BETA, GAMMA
 
     if(this.filter==0 || this.filter==1){
       // OSC
@@ -1308,7 +1308,7 @@ class Stream extends Thread{
         for (int i=0;i<numChan;i++){
           msg.clearArguments();
           msg.add(i+1);
-          for (int j=0;j<numPowerBands;j++){
+          for (int j=0;j<numBandPower;j++){
             msg.add(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
           }
           try{
@@ -1322,7 +1322,7 @@ class Stream extends Thread{
         for (int i=0;i<numChan;i++){
           buffer.rewind();
           buffer.putFloat(i+1);
-          for (int j=0;j<numPowerBands;j++){
+          for (int j=0;j<numBandPower;j++){
             buffer.putFloat(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
           }
           try{
@@ -1334,9 +1334,9 @@ class Stream extends Thread{
         // LSL
       }else if (this.protocol.equals("LSL")){
 
-        float[] avgPowerLSL = new float[numChan*numPowerBands];
+        float[] avgPowerLSL = new float[numChan*numBandPower];
         for (int i=0; i<numChan;i++){
-           for(int j=0;j<numPowerBands;j++){
+           for(int j=0;j<numBandPower;j++){
              dataToSend[j+numChan*i] = dataProcessing.avgPowerInBins[i][j];
            }
          }
@@ -1344,11 +1344,11 @@ class Stream extends Thread{
        }else if (this.protocol.equals("Serial")){
           for (int i=0;i<numChan;i++){
             serialMessage = "[" + (i+1) + ","; //clear message
-            for (int j=0;j<numPowerBands;j++){
+            for (int j=0;j<numBandPower;j++){
               float power_band = dataProcessing.avgPowerInBins[i][j];
               String power_band_3dec = String.format("%.3f", power_band);
               serialMessage += power_band_3dec;
-              if(j < numPowerBands-1){
+              if(j < numBandPower-1){
                 serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
               }
             }
