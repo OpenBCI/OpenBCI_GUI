@@ -320,12 +320,14 @@ void parseKey(char val) {
      break;
 
     default:
-     println("OpenBCI_GUI: '" + key + "' Pressed...sending to OpenBCI...");
-     // if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key);//send the value as ascii with a newline character
-     //if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key);//send the value as ascii with a newline character
-     openBCI.sendChar(key);
-
-     break;
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
+        openBCI.sendChar(key);
+      } else if (eegDataSource == DATASOURCE_GANGLION) {
+        println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
+        ganglion.passthroughCommand(key);
+      }
+      break;
   }
 }
 
