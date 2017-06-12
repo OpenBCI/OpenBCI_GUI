@@ -419,7 +419,7 @@ class OpenBCI_Ganglion {
       }
     }
   }
-  
+
   private void processStatus(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
@@ -430,7 +430,7 @@ class OpenBCI_Ganglion {
     if (code == RESP_ERROR_BAD_NOBLE_START) {
       println("OpenBCI_Ganglion: processStatus: Problem in the Hub");
       output("Problem starting Ganglion Hub. Please make sure compatible USB is configured, then restart this GUI.");
-    } else {    
+    } else {
       println("OpenBCI_Ganglion: processStatus: Started Successfully");
     }
   }
@@ -609,6 +609,15 @@ class OpenBCI_Ganglion {
     changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
     println("OpenBCI_Ganglion: stopDataTransfer(): sending \'" + command_stop);
     safeTCPWrite(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
+  }
+
+
+  /**
+   * @description Sends a command to ganglion board
+   */
+  public void passthroughCommand(char c) {
+    println("OpenBCI_Ganglion: passthroughCommand(): sending \'" + c);
+    safeTCPWrite(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
   /**

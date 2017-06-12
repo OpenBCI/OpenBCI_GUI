@@ -11,6 +11,14 @@ HashMap<String,float[][]> processed_file;
 HashMap<Integer,String> index_of_times;
 HashMap<String,Integer> index_of_times_rev;
 
+// indexs
+final int DELTA = 0; // 1-4 Hz
+final int THETA = 1; // 4-8 Hz
+final int ALPHA = 2; // 8-13 Hz
+final int BETA = 3; // 13-30 Hz
+final int GAMMA = 4; // 30-55 Hz
+
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -109,6 +117,8 @@ int getDataIfAvailable(int pointCounter) {
       //if (eegDataSource==DATASOURCE_PLAYBACKFILE) println("OpenBCI_GUI: getDataIfAvailable: currentTableRowIndex = " + currentTableRowIndex);
       //println("OpenBCI_GUI: getDataIfAvailable: pointCounter = " + pointCounter);
     } // close "has enough time passed"
+    else{
+    }
   }
   return pointCounter;
 }
@@ -154,6 +164,7 @@ void processNewData() {
   // w_openbionics.process();
 
   dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+  dataProcessing.newDataToSend = true;
 
   //look to see if the latest data is railed so that we can notify the user on the GUI
   for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataPacketBuff[lastReadDataPacketInd].values[Ichan]);
@@ -330,12 +341,14 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
 
     if(!isRunning){
       try{
-        if(!isOldData) row.getString(nchan+4);
-        else row.getString(nchan+3);
+        row.getString(nchan+3);
 
-        nchan = 16;
+        // nchan = 16; AJK 5/31/17 see issue #151
       }
-      catch (ArrayIndexOutOfBoundsException e){ println("8 Channel");}
+      catch (ArrayIndexOutOfBoundsException e){
+        println(e);
+        println("8 Channel");
+      }
     }
 
   }
@@ -357,14 +370,26 @@ class DataProcessing {
   private int currentNotch_ind = 0;  // set to 0 to default to 60Hz, set to 1 to default to 50Hz
   float data_std_uV[];
   float polarity[];
-
+  boolean newDataToSend;
+  private String[] binNames;
+  final int[] processing_band_low_Hz = {
+    1, 4, 8, 13, 30
+  }; //lower bound for each frequency band of interest (2D classifier only)
+  final int[] processing_band_high_Hz = {
+    4, 8, 13, 30, 55
+  };  //upper bound for each frequency band of interest
+  float avgPowerInBins[][];
+  float headWidePower[];
+  int numBins;
 
   DataProcessing(int NCHAN, float sample_rate_Hz) {
     nchan = NCHAN;
     fs_Hz = sample_rate_Hz;
     data_std_uV = new float[nchan];
     polarity = new float[nchan];
-
+    newDataToSend = false;
+    avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
+    headWidePower = new float[processing_band_low_Hz.length];
 
     //check to make sure the sample rate is acceptable and then define the filters
     if (abs(fs_Hz-250.0f) < 1.0) {
@@ -650,8 +675,15 @@ class DataProcessing {
 
       //convert to uV_per_bin...still need to confirm the accuracy of this code.
       //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
-      for (int I=0; I < fftBuff[Ichan].specSize(); I++) {  //loop over each FFT bin
-        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].specSize()));
+
+      // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
+      // first calculate double-sided FFT amplitude spectrum
+      for (int I=0; I <= Nfft/2; I++) {
+        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / Nfft));
+      }
+      // then convert into single-sided FFT spectrum: DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two.
+      for (int I=1; I < Nfft/2; I++) {
+        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
       }
 
       //average the FFT with previous FFT data so that it makes it smoother in time
@@ -674,9 +706,47 @@ class DataProcessing {
           foo = java.lang.Math.sqrt(foo);
         }
         fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
+        // fftBuff[Ichan].setBand(I, 1.0f);  // test
       } //end loop over FFT bins
-    } //end the loop over channels.
 
+      // calculate single-sided psd by single-sided FFT amplitude spectrum
+      // PSD ref: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
+      // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
+      // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
+
+      for (int i = 0; i < processing_band_low_Hz.length; i++) {
+        float sum = 0;
+        // int binNum = 0;
+        for (int Ibin = 0; Ibin <= Nfft/2; Ibin ++) { // loop over FFT bins
+          float FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);   // center frequency of this bin
+          float psdx = 0;
+          // if the frequency matches a band
+          if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
+            if (Ibin != 0 && Ibin != Nfft/2) {
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe() / 4;
+            }
+            else {
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
+            }
+            sum += psdx;
+            // binNum ++;
+          }
+        }
+        avgPowerInBins[Ichan][i] = sum;   // total power in a band
+        // println(i, binNum, sum);
+      }
+    } //end the loop over channels.
+    for (int i = 0; i < processing_band_low_Hz.length; i++) {
+      float sum = 0;
+
+      for (int j = 0; j < nchan; j++) {
+        sum += avgPowerInBins[j][i];
+      }
+      headWidePower[i] = sum/nchan;   // averaging power over all channels
+    }
+
+    //delta in channel 2 ... avgPowerInBins[1][DELTA];
+    //headwide beta ... headWidePower[BETA];
 
     //find strongest channel
     int refChanInd = findMax(data_std_uV);
@@ -696,5 +766,12 @@ class DataProcessing {
         polarity[Ichan]=-1.0;
       }
     }
+
+    // println("Brain Wide DELTA = " + headWidePower[DELTA]);
+    // println("Brain Wide THETA = " + headWidePower[THETA]);
+    // println("Brain Wide ALPHA = " + headWidePower[ALPHA]);
+    // println("Brain Wide BETA  = " + headWidePower[BETA]);
+    // println("Brain Wide GAMMA = " + headWidePower[GAMMA]);
+
   }
 }

@@ -33,24 +33,6 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
     } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
       println("CallbackListener: controlEvent: clearing");
       cp5.get(Textfield.class, "fileNameGanglion").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_ip"))){
-      println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "udp_ip").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "udp_port"))){
-      println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "udp_port").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "osc_ip"))){
-      println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "osc_ip").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "osc_address"))){
-      println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "osc_address").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "lsl_data"))){
-      println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "lsl_data").clear();
-    } else if (cp5.isMouseOver(cp5.get(Textfield.class, "lsl_aux"))){
-      println("CallbackListener: controlEvent: clearing");
-      cp5.get(Textfield.class, "lsl_aux").clear();
     }
   }
 };
@@ -75,8 +57,6 @@ color isSelected_color = color(184, 220, 105);
 
 // Button openClosePort;
 // boolean portButtonPressed;
-
-int networkType = 0;
 
 boolean calledForBLEList = false;
 
@@ -115,6 +95,10 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
+Button playbackChanButton4;
+Button playbackChanButton8;
+Button playbackChanButton16;
+
 Serial board;
 
 ChannelPopup channelPopup;
@@ -150,6 +134,9 @@ public void controlEvent(ControlEvent theEvent) {
       }
     } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
       updateToNChan(8);
+      playbackChanButton4.color_notPressed = autoFileName.color_notPressed;
+      playbackChanButton8.color_notPressed = isSelected_color;
+      playbackChanButton16.color_notPressed = autoFileName.color_notPressed;
     } else if(newDataSource == DATASOURCE_SYNTHETIC){
       updateToNChan(8);
       synthChanButton4.color_notPressed = autoFileName.color_notPressed;
@@ -182,20 +169,6 @@ public void controlEvent(ControlEvent theEvent) {
       output("OpenBCI microSD Setting = " + sdSettingString);
     }
     verbosePrint("SD setting = " + sdSetting);
-  }
-  if (theEvent.isFrom("networkList")){
-    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    String str = (String)bob.get("headline");
-    int index = int(theEvent.getValue());
-    if (index == 0) {
-      networkType = 0;
-    } else if (index ==1){
-      networkType = 1;
-    } else if (index == 2){
-      networkType = 2;
-    } else if (index == 3){
-      networkType = 3;
-    }
   }
 
   if (theEvent.isFrom("channelList")){
@@ -244,15 +217,10 @@ class ControlPanel {
   ChannelCountBox channelCountBox;
   InitBox initBox;
   SyntheticChannelCountBox synthChannelCountBox;
-
-  NetworkingBox networkingBoxLive;
-  UDPOptionsBox udpOptionsBox;
-  OSCOptionsBox oscOptionsBox;
-  LSLOptionsBox lslOptionsBox;
+  PlaybackChannelCountBox playbackChannelCountBox;
 
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
-  NetworkingBox networkingBoxPlayback;
 
   BLEBox bleBox;
   DataLogBoxGanglion dataLogBoxGanglion;
@@ -301,16 +269,11 @@ class ControlPanel {
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
-    networkingBoxLive = new NetworkingBox(x + w, (sdBox.y + sdBox.h), w, 135, globalPadding);
-    udpOptionsBox = new UDPOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
-    oscOptionsBox = new OSCOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
-    lslOptionsBox = new LSLOptionsBox(networkingBoxLive.x + networkingBoxLive.w, (sdBox.y + sdBox.h), w-30, networkingBoxLive.h, globalPadding);
-
 
     //boxes active when eegDataSource = Playback
-    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    playbackFileBox = new PlaybackFileBox(x + w, (playbackChannelCountBox.y + playbackChannelCountBox.h), w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
-    //networkingBoxPlayback = new NetworkingBox(x + w, (sdConverterBox.y + sdConverterBox.h), w, h, globalPadding);
 
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
@@ -365,11 +328,10 @@ class ControlPanel {
     dataLogBox.update();
     channelCountBox.update();
     synthChannelCountBox.update();
+    playbackChannelCountBox.update();
     sdBox.update();
     rcBox.update();
     initBox.update();
-    networkingBoxLive.update();
-    //networkingBoxPlayback.update();
 
     channelPopup.update();
     serialList.updateMenu();
@@ -447,7 +409,6 @@ class ControlPanel {
         dataLogBox.draw();
         channelCountBox.draw();
         sdBox.draw();
-        networkingBoxLive.draw();
         cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
 
@@ -476,74 +437,18 @@ class ControlPanel {
         cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "bleList").setVisible(false); //make sure the serialList menulist is visible
         cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
-        cp5.get(MenuList.class, "networkList").setVisible(true); //make sure the SD time record options menulist is visible
-        if (networkType == -1){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-        } else if (networkType == 0){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-
-        } else if (networkType == 1){
-          cp5.get(Textfield.class, "udp_ip").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-          udpOptionsBox.draw();
-        } else if (networkType == 2){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-
-          oscOptionsBox.draw();
-        } else if (networkType == 3){
-          cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_data").setVisible(true); //make sure the SD time record options menulist is visible
-          cp5.get(Textfield.class, "lsl_aux").setVisible(true); //make sure the SD time record options menulist is visible
-          lslOptionsBox.draw();
-        }
 
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
         // hideAllBoxes(); //clear lists, so they don't appear
+        playbackChannelCountBox.draw();
         playbackFileBox.draw();
         sdConverterBox.draw();
-        //networkingBoxPlayback.draw();
 
         //set other CP5 controllers invisible
         // cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
         // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
-        cp5.get(MenuList.class, "networkList").setVisible(false);
-        cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-        cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
-
         cp5Popup.get(MenuList.class, "channelList").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
@@ -612,14 +517,6 @@ class ControlPanel {
     cp5.get(MenuList.class, "serialList").setVisible(false);
     cp5.get(MenuList.class, "bleList").setVisible(false);
     cp5.get(MenuList.class, "sdTimes").setVisible(false);
-    cp5.get(MenuList.class, "networkList").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "udp_ip").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "udp_port").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "osc_ip").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "osc_port").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "osc_address").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "lsl_data").setVisible(false); //make sure the SD time record options menulist is visible
-    cp5.get(Textfield.class, "lsl_aux").setVisible(false); //make sure the SD time record options menulist is visible
     cp5Popup.get(MenuList.class, "channelList").setVisible(false);
     cp5Popup.get(MenuList.class, "pollList").setVisible(false);
   }
@@ -783,6 +680,30 @@ class ControlPanel {
         if (selectSDFile.isMouseHere()) {
           selectSDFile.setIsActive(true);
           selectSDFile.wasPressed = true;
+        }
+
+        if (playbackChanButton4.isMouseHere()) {
+          playbackChanButton4.setIsActive(true);
+          playbackChanButton4.wasPressed = true;
+          playbackChanButton4.color_notPressed = isSelected_color;
+          playbackChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
+          playbackChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (playbackChanButton8.isMouseHere()) {
+          playbackChanButton8.setIsActive(true);
+          playbackChanButton8.wasPressed = true;
+          playbackChanButton8.color_notPressed = isSelected_color;
+          playbackChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
+          playbackChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (playbackChanButton16.isMouseHere()) {
+          playbackChanButton16.setIsActive(true);
+          playbackChanButton16.wasPressed = true;
+          playbackChanButton16.color_notPressed = isSelected_color;
+          playbackChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
+          playbackChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
       }
 
@@ -1002,6 +923,18 @@ class ControlPanel {
       updateToNChan(16);
     }
 
+    if (playbackChanButton4.isMouseHere() && playbackChanButton4.wasPressed) {
+      updateToNChan(4);
+    }
+
+    if (playbackChanButton8.isMouseHere() && playbackChanButton8.wasPressed) {
+      updateToNChan(8);
+    }
+
+    if (playbackChanButton16.isMouseHere() && playbackChanButton16.wasPressed) {
+      updateToNChan(16);
+    }
+
     if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
       updateToNChan(4);
     }
@@ -1052,6 +985,12 @@ class ControlPanel {
     synthChanButton8.wasPressed = false;
     synthChanButton16.setIsActive(false);
     synthChanButton16.wasPressed = false;
+    playbackChanButton4.setIsActive(false);
+    playbackChanButton4.wasPressed = false;
+    playbackChanButton8.setIsActive(false);
+    playbackChanButton8.wasPressed = false;
+    playbackChanButton16.setIsActive(false);
+    playbackChanButton16.wasPressed = false;
     chanButton16.setIsActive(false);
     chanButton16.wasPressed  = false;
     selectPlaybackFile.setIsActive(false);
@@ -1108,24 +1047,6 @@ public void initButtonPressed(){
             //do nothing
           }
         }
-
-        //Network Protocol Initiation -- based on Gabe's Code
-        if (networkType == 1){
-          ip = cp5.get(Textfield.class, "udp_ip").getText();
-          port = int(cp5.get(Textfield.class, "udp_port").getText());
-          println(port);
-          udp = new UDPSend(port, ip);
-        } else if (networkType == 2){
-          ip = cp5.get(Textfield.class, "osc_ip").getText();
-          port = int(cp5.get(Textfield.class, "osc_port").getText());
-          address = cp5.get(Textfield.class, "osc_address").getText();
-          osc = new OSCSend(port, ip, address);
-        } else if (networkType == 3){
-          data_stream = cp5.get(Textfield.class, "lsl_data").getText();
-          aux_stream = cp5.get(Textfield.class, "lsl_aux").getText();
-          lsl = new LSLSend(data_stream, aux_stream);
-        }
-
         if(eegDataSource == DATASOURCE_GANGLION){
           fileName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
         } else if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
@@ -1567,6 +1488,52 @@ class SyntheticChannelCountBox {
   }
 };
 
+class PlaybackChannelCountBox {
+  int x, y, w, h, padding; //size and position
+
+  boolean isSystemInitialized;
+  // button for init/halt system
+
+  PlaybackChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    playbackChanButton4 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
+    if (nchan == 4) playbackChanButton4.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    playbackChanButton8 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
+    if (nchan == 8) playbackChanButton8.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    playbackChanButton16 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
+    if (nchan == 16) playbackChanButton16.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("CHANNEL COUNT", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    popStyle();
+
+    playbackChanButton4.draw();
+    playbackChanButton8.draw();
+    playbackChanButton16.draw();
+  }
+};
+
 class PlaybackFileBox {
   int x, y, w, h, padding; //size and position
 
@@ -1645,48 +1612,6 @@ class SDBox {
 
     //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
 
-  }
-};
-
-class NetworkingBox{
-  int x, y, w, h, padding; //size and position
-   MenuList networkList;
-
-  //boolean initButtonPressed; //default false
-
-  //boolean isSystemInitialized;
-  NetworkingBox(int _x, int _y, int _w, int _h, int _padding){
-    x = _x;
-    y = _y;
-    w = _w;
-    h = _h;
-    padding = _padding;
-    networkList = new MenuList(cp5, "networkList", w - padding*2, 96, p4);
-    networkList.setPosition(x + padding, y+padding+20);
-    networkList.addItem(makeItem("None"));
-    networkList.addItem(makeItem("UDP"));
-    networkList.addItem(makeItem("OSC"));
-    networkList.addItem(makeItem("LabStreamingLayer (LSL)"));
-    networkList.scrollerLength = 0;
-    networkList.activeItem = 0;
-  }
-  public void update() {
-  }
-
-  public void draw() {
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("NETWORK PROTOCOLS", x + padding, y + padding);
-    fill(bgColor); //set color to green
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    popStyle();
   }
 };
 
@@ -1778,254 +1703,6 @@ class RadioConfigBox {
     rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
     fill(255);
     text(this.last_message, 180, 340, 240, 60);
-  }
-};
-
-
-
-class UDPOptionsBox {
-  int x, y, w, h, padding; //size and position
-
-  UDPOptionsBox(int _x, int _y, int _w, int _h, int _padding){
-    x = _x;
-    y = _y;
-    w = _w;
-    h = _h;
-    padding = _padding;
-
-    cp5.addTextfield("udp_ip")
-      .setPosition(x + 60,y + 50)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("localhost")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-
-   cp5.addTextfield("udp_port")
-      .setPosition(x + 60,y + 82)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("12345")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-  }
-  public void update(){
-  }
-  public void draw(){
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("Options", x + padding, y + padding);
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    text("UDP OPTIONS", x + padding, y + padding);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("IP", x + padding, y + 50 + padding);
-    textFont(p4, 14);;
-    text("Port", x + padding, y + 82 + padding);
-    popStyle();
-  }
-};
-
-class OSCOptionsBox{
-  int x, y, w, h, padding; //size and position
-
-  OSCOptionsBox(int _x, int _y, int _w, int _h, int _padding){
-    x = _x;
-    y = _y;
-    w = _w;
-    h = _h;
-    padding = _padding;
-
-    cp5.addTextfield("osc_ip")
-      .setPosition(x + 80,y + 35)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("localhost")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-   cp5.addTextfield("osc_port")
-      .setPosition(x + 80,y + 67)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("12345")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-    cp5.addTextfield("osc_address")
-      .setPosition(x + 80,y + 99)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("/openbci")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-  }
-  public void update(){
-  }
-  public void draw(){
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("Options", x + padding, y + padding);
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    text("OSC OPTIONS", x + padding, y + padding);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("IP", x + padding, y + 35 + padding);
-    textFont(p4, 14);;
-    text("Port", x + padding, y + 67 + padding);
-    text("Address", x + padding, y + 99 + padding);
-    popStyle();
-  }
-};
-
-class LSLOptionsBox {
-  int x, y, w, h, padding; //size and position
-
-  LSLOptionsBox(int _x, int _y, int _w, int _h, int _padding){
-    x = _x;
-    y = _y;
-    w = _w;
-    h = _h;
-    padding = _padding;
-
-    cp5.addTextfield("lsl_data")
-      .setPosition(x + 115,y + 50)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("openbci_data")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-
-   cp5.addTextfield("lsl_aux")
-      .setPosition(x + 115,y + 82)
-      .setCaptionLabel("")
-      .setSize(100,26)
-      .setFont(f2)
-      .setFocus(false)
-      .setColor(color(26,26,26))
-      .setColorBackground(color(255,255,255)) // text field bg color
-      .setColorValueLabel(color(0,0,0))  // text color
-      .setColorForeground(isSelected_color)  // border color when not selected
-      .setColorActive(isSelected_color)  // border color when selected
-      .setColorCursor(color(26,26,26))
-      .setText("openbci_aux")
-      .align(5, 10, 20, 40)
-      .onDoublePress(cb)
-      .setVisible(false)
-      .setAutoClear(true)
-      ;
-  }
-  public void update(){
-  }
-  public void draw(){
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("Options", x + padding, y + padding);
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    text("LSL OPTIONS", x + padding, y + padding);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("Data Stream", x + padding, y + 50 + padding);
-    textFont(p4, 14);;
-    text("Aux Stream", x + padding, y + 82 + padding);
-    popStyle();
   }
 };
 

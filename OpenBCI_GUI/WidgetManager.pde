@@ -22,6 +22,7 @@ W_template w_template1;
 W_emg w_emg;
 W_openBionics w_openbionics;
 W_PulseSensor w_pulsesensor;
+W_BandPower w_bandPower;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -48,13 +49,17 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
 
-  // w_networking = new W_networking(_this);
-  // w_networking.setTitle("Networking");
-  // addWidget(w_networking, w);
+  w_networking = new W_networking(_this);
+  w_networking.setTitle("Networking");
+  addWidget(w_networking, w);
 
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
+
+  w_bandPower = new W_BandPower(_this);
+  w_bandPower.setTitle("Band Power");
+  addWidget(w_bandPower, w);
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
@@ -162,7 +167,8 @@ class WidgetManager{
   }
 
   void update(){
-    if(visible && updating){
+    // if(visible && updating){
+    if(visible){
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
           widgets.get(i).update();
@@ -185,6 +191,14 @@ class WidgetManager{
           widgets.get(i).draw();
           widgets.get(i).drawDropdowns();
           popStyle();
+        }else{
+          if(widgets.get(i).widgetTitle.equals("Networking")){
+            try{
+              w_networking.shutDown();
+            }catch (NullPointerException e){
+              println(e);
+            }
+          }
         }
       }
     }
@@ -209,6 +223,14 @@ class WidgetManager{
     for(int i = 0; i < widgets.size(); i++){
       if(widgets.get(i).isActive){
         widgets.get(i).mouseReleased();
+      }
+    }
+  }
+
+  void mouseDragged(){
+    for(int i = 0; i < widgets.size(); i++){
+      if(widgets.get(i).isActive){
+        widgets.get(i).mouseDragged();
       }
     }
   }
