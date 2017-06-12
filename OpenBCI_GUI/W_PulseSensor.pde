@@ -20,7 +20,7 @@ class W_PulseSensor extends Widget {
 // Pulse Sensor Visualizer Stuff
   int count = 0;
   int heart = 0;
-  int PulseBuffSize = 400;
+  int PulseBuffSize = dataPacketBuff.length; // Originally 400
   int BPMbuffSize = 100;
 
   int PulseWindowWidth;
@@ -42,32 +42,35 @@ class W_PulseSensor extends Widget {
   int[] BPMwaveY;        // HOLDS BPM WAVEFORM DATA
   boolean rising;
 
-// Synthetic Wave Generator Stuff
-float theta;  // Start angle at 0
-float amplitude;  // Height of wave
-int syntheticMultiplier;
-long thisTime;
-long thatTime;
-int refreshRate;
+  // Synthetic Wave Generator Stuff
+  float theta;  // Start angle at 0
+  float amplitude;  // Height of wave
+  int syntheticMultiplier;
+  long thisTime;
+  long thatTime;
+  int refreshRate;
 
-// Pulse Sensor Beat Finder Stuff
-// ASSUMES 250Hz SAMPLE RATE
-int[] rate;                    // array to hold last ten IBI values
-int sampleCounter;          // used to determine pulse timing
-int lastBeatTime;           // used to find IBI
-int P =512;                      // used to find peak in pulse wave, seeded
-int T = 512;                     // used to find trough in pulse wave, seeded
-int thresh = 530;                // used to find instant moment of heart beat, seeded
-int amp = 0;                   // used to hold amplitude of pulse waveform, seeded
-boolean firstBeat = true;        // used to seed rate array so we startup with reasonable BPM
-boolean secondBeat = false;      // used to seed rate array so we startup with reasonable BPM
-int BPM;                   // int that holds raw Analog in 0. updated every 2mS
-int Signal;                // holds the incoming raw data
-int IBI = 600;             // int that holds the time interval between beats! Must be seeded!
-boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
-boolean QS = false;        // becomes true when Arduoino finds a beat.
+  // Pulse Sensor Beat Finder Stuff
+  // ASSUMES 250Hz SAMPLE RATE
+  int[] rate;                    // array to hold last ten IBI values
+  int sampleCounter;          // used to determine pulse timing
+  int lastBeatTime;           // used to find IBI
+  int P =512;                      // used to find peak in pulse wave, seeded
+  int T = 512;                     // used to find trough in pulse wave, seeded
+  int thresh = 530;                // used to find instant moment of heart beat, seeded
+  int amp = 0;                   // used to hold amplitude of pulse waveform, seeded
+  boolean firstBeat = true;        // used to seed rate array so we startup with reasonable BPM
+  boolean secondBeat = false;      // used to seed rate array so we startup with reasonable BPM
+  int BPM;                   // int that holds raw Analog in 0. updated every 2mS
+  int Signal;                // holds the incoming raw data
+  int IBI = 600;             // int that holds the time interval between beats! Must be seeded!
+  boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
+  boolean QS = false;        // becomes true when Arduoino finds a beat.
+  int lastProcessedDataPacketInd = 0;
 
-// testing stuff
+  // testing stuff
+
+  Button analogModeButton;
 
 
 
@@ -85,6 +88,14 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
     rate = new int[10];
     setPulseWidgetVariables();
     initializePulseFinderVariables();
+
+    analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
+    analogModeButton.setCornerRoundess((int)(navHeight-6));
+    analogModeButton.setFont(p6,10);
+    analogModeButton.setColorNotPressed(color(57,128,204));
+    analogModeButton.textColorNotActive = color(255);
+    analogModeButton.hasStroke(false);
+    analogModeButton.setHelpText("Click this button to activate analog reading on the Cyton");
 
   }
 
@@ -110,12 +121,33 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
 
     }
 
-    processSignal();
-    for(int i=0; i<PulseWaveY.length-1; i++){
-      PulseWaveY[i] = PulseWaveY[i+1];
+    int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
+    if (numSamplesToProcess < 0) {
+      numSamplesToProcess += dataPacketBuff.length; //<>//
     }
-    PulseWaveY[PulseWaveY.length-1] = Signal;
 
+    // Shift internal ring buffer numSamplesToProcess
+    for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
+      PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>//
+    }
+
+    // for each new sample
+    int samplesProcessed = 0;
+    while (samplesProcessed < numSamplesToProcess) {
+      lastProcessedDataPacketInd++;
+
+      // Watch for wrap around
+      if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
+        lastProcessedDataPacketInd = 0;
+      }
+
+      int signal = dataPacketBuff[lastProcessedDataPacketInd].auxValues[0];
+
+      processSignal(signal);
+      PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>//
+
+      samplesProcessed++;
+    }
 
     if(QS){
       QS = false;
@@ -150,7 +182,7 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
     drawWaves();
 
 
-
+    analogModeButton.draw();
 
 
     popStyle();
@@ -163,7 +195,7 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
     println("Pulse Sensor Widget -- Screen Resized.");
 
     setPulseWidgetVariables();
-
+    analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
   void mousePressed(){
@@ -171,14 +203,23 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
 
     //put your code here...
 
-
+    if (analogModeButton.isMouseHere()) {
+      analogModeButton.setIsActive(true);
+    }
   }
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
-
+    if(analogModeButton.isActive && analogModeButton.isMouseHere()){
+      println("analogModeButton...");
+      if(openBCI.isSerialPortOpen()){
+        openBCI.serial_openBCI.write("/2");
+        output("Starting to read analog inputs");
+      }
+    }
+    analogModeButton.setIsActive(false);
 
   }
 
@@ -284,27 +325,27 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
   // THIS IS THE BEAT FINDING FUNCTION
   // BASED ON CODE FROM World Famous Electronics, MAKERS OF PULSE SENSOR
   // https://github.com/WorldFamousElectronics/PulseSensor_Amped_Arduino
-  void processSignal(){                         // triggered when Timer2 counts to 124
+  void processSignal(int sample){                         // triggered when Timer2 counts to 124
     // cli();                                      // disable interrupts while we do this
     // Signal = analogRead(pulsePin);              // read the Pulse Sensor
     sampleCounter += (4 * syntheticMultiplier);                         // keep track of the time in mS with this variable
     int N = sampleCounter - lastBeatTime;       // monitor the time since the last beat to avoid noise
 
       //  find the peak and trough of the pulse wave
-    if(Signal < thresh && N > (IBI/5)*3){       // avoid dichrotic noise by waiting 3/5 of last IBI
-      if (Signal < T){                        // T is the trough
-        T = Signal;                         // keep track of lowest point in pulse wave
+    if(sample < thresh && N > (IBI/5)*3){       // avoid dichrotic noise by waiting 3/5 of last IBI
+      if (sample < T){                        // T is the trough
+        T = sample;                         // keep track of lowest point in pulse wave
       }
     }
 
-    if(Signal > thresh && Signal > P){          // thresh condition helps avoid noise
-      P = Signal;                             // P is the peak
+    if(sample > thresh && sample > P){          // thresh condition helps avoid noise
+      P = sample;                             // P is the peak
     }                                        // keep track of highest point in pulse wave
 
     //  NOW IT'S TIME TO LOOK FOR THE HEART BEAT
     // signal surges up in value every time there is a pulse
     if (N > 250){                                   // avoid high frequency noise
-      if ( (Signal > thresh) && (Pulse == false) && (N > (IBI/5)*3) ){
+      if ( (sample > thresh) && (Pulse == false) && (N > (IBI/5)*3) ){
         Pulse = true;                               // set the Pulse flag when we think there is a pulse
         IBI = sampleCounter - lastBeatTime;         // measure time between beats in mS
         lastBeatTime = sampleCounter;               // keep track of time for next pulse
@@ -342,7 +383,7 @@ boolean QS = false;        // becomes true when Arduoino finds a beat.
       }
     }
 
-    if (Signal < thresh && Pulse == true){   // when the values are going down, the beat is over
+    if (sample < thresh && Pulse == true){   // when the values are going down, the beat is over
       // digitalWrite(blinkPin,LOW);            // turn off pin 13 LED
       Pulse = false;                         // reset the Pulse flag so we can do it again
       amp = P - T;                           // get amplitude of the pulse wave
