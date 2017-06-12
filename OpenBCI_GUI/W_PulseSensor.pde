@@ -102,20 +102,14 @@ class W_PulseSensor extends Widget {
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-
+    if (curDataPacketInd < 0) return;
 
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE FROM CYTON
 
     } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
 
     } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-      theta += 0.15;
-      Signal = int(sin(theta)*amplitude)+512;
-      thisTime = millis();
-      refreshRate = int(thisTime - thatTime);
-      thatTime = thisTime;
-      syntheticMultiplier = refreshRate/4;
-      // println(refreshRate);
+
     }
     else {  // PLAYBACK
 
@@ -125,10 +119,11 @@ class W_PulseSensor extends Widget {
     if (numSamplesToProcess < 0) {
       numSamplesToProcess += dataPacketBuff.length; //<>//
     }
-
     // Shift internal ring buffer numSamplesToProcess
-    for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
-      PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>//
+    if (numSamplesToProcess > 0) {
+      for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
+        PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>//
+      }
     }
 
     // for each new sample
