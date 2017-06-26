@@ -212,7 +212,7 @@ PFont p6; //small Open Sans
 ButtonHelpText buttonHelpText;
 
 //EMG_Widget emg_widget;
-PulseSensor_Widget pulseWidget;
+// PulseSensor_Widget pulseWidget;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
