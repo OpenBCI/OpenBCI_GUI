@@ -1,3 +1,8 @@
+# 2.2.1
+
+### Bug Fixes
+* Addresses #121 - `.edf` incompatible changed ending to `.bdf` 
+
 # 2.2.0
 
 ### Bug Fixes

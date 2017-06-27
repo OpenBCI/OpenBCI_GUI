@@ -940,9 +940,9 @@ public class OutputFile_BDF {
    * @returns {String} - A fully qualified name of an output file with `str`.
    */
   private String getFileName(String s) {
-    String output = "SavedData"+System.getProperty("file.separator")+"OpenBCI-EDF-";
+    String output = "SavedData"+System.getProperty("file.separator")+"OpenBCI-BDF-";
     output += s;
-    output += ".edf";
+    output += ".bdf";
     return output;
   }
 
