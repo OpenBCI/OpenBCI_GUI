@@ -1453,36 +1453,35 @@ class Stream extends Thread{
         }
       // UDP
       }else if (this.protocol.equals("UDP")){
-        // buffer.rewind();
-        // //ADD Focus Data
-        // buffer.putFloat(w_focus.isFocused);
-        // try{
-        //   this.udp.send(buffer.array(),this.ip,this.port);
-        // }catch (Exception e){
-        //   println(e);
-        // }
-        // LSL
+        // convert boolean to float
+        float temp = w_focus.isFocused ? 1.0 : 0.0;
+        buffer.putFloat(temp); //[CHAN][BAND]
+        try{
+          this.udp.send(buffer.array(),this.ip,this.port);
+        }catch (Exception e){
+          println(e);
+        }
+      // LSL
       }else if (this.protocol.equals("LSL")){
-        // if(filter==0){
-        //    for(int j=0;j<numChan;j++){
-        //      dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
-        //    }
-        //    outlet_data.push_sample(dataToSend);
-        //  }
-       }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
-         for (int i=0;i<numChan;i++){
-            serialMessage = ""; //clear message
-            String isFocused = Boolean.toString(w_focus.isFocused);
-            serialMessage += isFocused;
-           try{
-             println(serialMessage);
-             this.serial_networking.write(serialMessage);
-           }catch (Exception e){
-             println(e);
-           }
-         }
-       }
-     }
+        // convert boolean to float and only sends the first data
+        float temp = w_focus.isFocused ? 1.0 : 0.0;
+        dataToSend[0] = temp;
+        outlet_data.push_chunk(dataToSend);
+      // Serial
+      }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+        for (int i=0;i<numChan;i++){
+          serialMessage = ""; //clear message
+          String isFocused = Boolean.toString(w_focus.isFocused);
+          serialMessage += isFocused;
+          try{
+            println(serialMessage);
+            this.serial_networking.write(serialMessage);
+          }catch (Exception e){
+            println(e);
+          }
+        }
+      }
+    }
   }
 
   void sendWidgetData(){
