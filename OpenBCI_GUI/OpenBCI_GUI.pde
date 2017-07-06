@@ -89,6 +89,7 @@ String openBCI_portName = "N/A";  //starts as N/A but is selected from control p
 int openBCI_baud = 115200; //baud rate from the Arduino
 
 OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
+OpenBCI_Hub hub; //dummy creation to get access to constants, create real one later
 String ganglion_portName = "N/A";
 
 ////// ---- Define variables related to OpenBCI board operations
@@ -224,7 +225,7 @@ boolean synthesizeData = false;
 
 int timeOfSetup = 0;
 boolean isHubInitialized = false;
-boolean isGanglionObjectInitialized = false;
+boolean isHubObjectInitialized = false;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
@@ -346,6 +347,8 @@ void setup() {
 
   myPresentation = new Presentation();
 
+  ganglion = new OpenBCI_Ganglion(this);
+
   // try{
   //   rob3115 = new Robot();
   // } catch (AWTException e){
@@ -409,13 +412,13 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("GanglionHub.exe"));
+      nodeHubby = launch(dataPath("OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = exec(dataPath("GanglionHub"));
+      nodeHubby = exec(dataPath("OpenBCIHub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
-      nodeHubby = launch(dataPath("GanglionHub.app"));
+      nodeHubby = launch(dataPath("OpenBCIHub.app"));
     }
     // hubRunning = true;
   }
@@ -609,7 +612,7 @@ void initSystem() {
     playbackData_table.removeColumn(0);
     break;
   case DATASOURCE_GANGLION:
-    ganglion.connectBLE(ganglion_portName);
+    hub.connectBLE(ganglion_portName);
     break;
   default:
     break;
@@ -713,17 +716,17 @@ void haltSystem() {
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
     closeLogFile();  //close log file
-    ganglion.disconnectBLE();
+    hub.disconnectBLE();
   }
   systemMode = SYSTEMMODE_PREINIT;
 }
 
 void systemUpdate() { // for updating data values and variables
 
-  if (isHubInitialized && isGanglionObjectInitialized == false && millis() - timeOfSetup >= 1500) {
-    ganglion = new OpenBCI_Ganglion(this);
-    println("Instantiating Ganglion object...");
-    isGanglionObjectInitialized = true;
+  if (isHubInitialized && isHubObjectInitialized == false && millis() - timeOfSetup >= 1500) {
+    hub = new OpenBCI_Hub(this);
+    println("Instantiating hub object...");
+    isHubObjectInitialized = true;
   }
 
   //update the sync state with the OpenBCI hardware
