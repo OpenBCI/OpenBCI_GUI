@@ -150,9 +150,9 @@ public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 // Serial output
-String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port
+String serial_output_portName = "/dev/tty.usbmodem1421";  //must edit this based on the name of the serial/COM port
 Serial serial_output;
-int serial_output_baud = 115200; //baud rate from the Arduino
+int serial_output_baud = 9600; //baud rate from the Arduino
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;

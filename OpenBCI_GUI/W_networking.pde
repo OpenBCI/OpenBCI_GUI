@@ -75,7 +75,8 @@ class W_networking extends Widget {
     stream1 = null;
     stream2 = null;
     stream3 = null;
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Widget");
+
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Widget");
     defaultBaud = "9600";
     baudRates = Arrays.asList("1200", "9600", "57600", "115200");
     protocolMode = "OSC"; //default to OSC
@@ -737,7 +738,9 @@ class W_networking extends Widget {
         break;
       case 4 : dt1 = "BandPower";
         break;
-      case 5 : dt1 = "Widget";
+      case 5 : dt1 = "Focus";
+        break;
+      case 6 : dt1 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()){
@@ -751,7 +754,9 @@ class W_networking extends Widget {
         break;
       case 4 : dt2 = "BandPower";
         break;
-      case 5 : dt2 = "Widget";
+      case 5 : dt2 = "Focus";
+        break;
+      case 6 : dt2 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()){
@@ -765,7 +770,9 @@ class W_networking extends Widget {
         break;
       case 4 : dt3 = "BandPower";
         break;
-      case 5 : dt3 = "Widget";
+      case 5 : dt3 = "Focus";
+        break;
+      case 6 : dt3 = "Widget";
         break;
     }
 
@@ -1062,6 +1069,8 @@ class Stream extends Thread{
                 sendEMGData();
               }else if (this.dataType.equals("BandPower")){
                 sendPowerBandData();
+              }else if (this.dataType.equals("Focus")){
+                sendFocusData();
               }else if (this.dataType.equals("WIDGET")){
                 sendWidgetData();
               }
@@ -1092,6 +1101,8 @@ class Stream extends Thread{
             sendEMGData();
           }else if (this.dataType.equals("BandPower")){
             sendPowerBandData();
+          }else if (this.dataType.equals("Focus")){
+            sendFocusData();
           }else if (this.dataType.equals("WIDGET")){
             sendWidgetData();
           }
@@ -1111,6 +1122,8 @@ class Stream extends Thread{
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("BandPower")){
       return dataProcessing.newDataToSend;
+    }else if (this.dataType.equals("Focus")){
+      return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
     }
@@ -1125,6 +1138,8 @@ class Stream extends Thread{
     }else if (this.dataType.equals("EMG")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("BandPower")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("Focus")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
@@ -1418,6 +1433,55 @@ class Stream extends Thread{
          }
        }
      }
+  }
+
+
+  void sendFocusData(){
+    // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+
+    if(this.filter==0 || this.filter==1){
+      // OSC
+      if (this.protocol.equals("OSC")){
+        msg.clearArguments();
+        //ADD Focus Data
+        msg.add(w_focus.isFocused);
+        println(w_focus.isFocused);
+        try{
+          this.osc.send(msg,this.netaddress);
+        }catch (Exception e){
+          println(e);
+        }
+      // UDP
+      }else if (this.protocol.equals("UDP")){
+        // convert boolean to float
+        float temp = w_focus.isFocused ? 1.0 : 0.0;
+        buffer.putFloat(temp); //[CHAN][BAND]
+        try{
+          this.udp.send(buffer.array(),this.ip,this.port);
+        }catch (Exception e){
+          println(e);
+        }
+      // LSL
+      }else if (this.protocol.equals("LSL")){
+        // convert boolean to float and only sends the first data
+        float temp = w_focus.isFocused ? 1.0 : 0.0;
+        dataToSend[0] = temp;
+        outlet_data.push_chunk(dataToSend);
+      // Serial
+      }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+        for (int i=0;i<numChan;i++){
+          serialMessage = ""; //clear message
+          String isFocused = Boolean.toString(w_focus.isFocused);
+          serialMessage += isFocused;
+          try{
+            println(serialMessage);
+            this.serial_networking.write(serialMessage);
+          }catch (Exception e){
+            println(e);
+          }
+        }
+      }
+    }
   }
 
   void sendWidgetData(){
