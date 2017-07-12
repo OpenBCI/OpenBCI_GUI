@@ -11,6 +11,12 @@ HashMap<String,float[][]> processed_file;
 HashMap<Integer,String> index_of_times;
 HashMap<String,Integer> index_of_times_rev;
 
+// indexs
+final int DELTA = 0; // 1-4 Hz
+final int THETA = 1; // 4-8 Hz
+final int ALPHA = 2; // 8-13 Hz
+final int BETA = 3; // 13-30 Hz
+final int GAMMA = 4; // 30-55 Hz
 
 
 //------------------------------------------------------------------------
@@ -335,12 +341,14 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
 
     if(!isRunning){
       try{
-        if(!isOldData) row.getString(nchan+4);
-        else row.getString(nchan+3);
+        row.getString(nchan+3);
 
-        nchan = 16;
+        // nchan = 16; AJK 5/31/17 see issue #151
       }
-      catch (ArrayIndexOutOfBoundsException e){ println("8 Channel");}
+      catch (ArrayIndexOutOfBoundsException e){
+        println(e);
+        println("8 Channel");
+      }
     }
 
   }
@@ -373,13 +381,6 @@ class DataProcessing {
   float avgPowerInBins[][];
   float headWidePower[];
   int numBins;
-
-  // indexs
-  final int DELTA = 0; // 1-4 Hz
-  final int THETA = 1; // 4-8 Hz
-  final int ALPHA = 2; // 8-13 Hz
-  final int BETA = 3; // 13-30 Hz
-  final int GAMMA = 4; // 30-55 Hz
 
   DataProcessing(int NCHAN, float sample_rate_Hz) {
     nchan = NCHAN;
@@ -674,8 +675,15 @@ class DataProcessing {
 
       //convert to uV_per_bin...still need to confirm the accuracy of this code.
       //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
-      for (int I=0; I < fftBuff[Ichan].specSize(); I++) {  //loop over each FFT bin
-        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / fftBuff[Ichan].specSize()));
+
+      // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
+      // first calculate double-sided FFT amplitude spectrum
+      for (int I=0; I <= Nfft/2; I++) {
+        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / Nfft));
+      }
+      // then convert into single-sided FFT spectrum: DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two.
+      for (int I=1; I < Nfft/2; I++) {
+        fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
       }
 
       //average the FFT with previous FFT data so that it makes it smoother in time
@@ -698,13 +706,34 @@ class DataProcessing {
           foo = java.lang.Math.sqrt(foo);
         }
         fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
+        // fftBuff[Ichan].setBand(I, 1.0f);  // test
       } //end loop over FFT bins
+
+      // calculate single-sided psd by single-sided FFT amplitude spectrum
+      // PSD ref: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
+      // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
+      // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
+
       for (int i = 0; i < processing_band_low_Hz.length; i++) {
         float sum = 0;
-        for (int j = processing_band_low_Hz[i]; j < processing_band_high_Hz[i]; j++) {
-          sum += fftBuff[Ichan].getBand(j);
+        // int binNum = 0;
+        for (int Ibin = 0; Ibin <= Nfft/2; Ibin ++) { // loop over FFT bins
+          float FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);   // center frequency of this bin
+          float psdx = 0;
+          // if the frequency matches a band
+          if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
+            if (Ibin != 0 && Ibin != Nfft/2) {
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe() / 4;
+            }
+            else {
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
+            }
+            sum += psdx;
+            // binNum ++;
+          }
         }
-        avgPowerInBins[Ichan][i] = sum;
+        avgPowerInBins[Ichan][i] = sum;   // total power in a band
+        // println(i, binNum, sum);
       }
     } //end the loop over channels.
     for (int i = 0; i < processing_band_low_Hz.length; i++) {
@@ -713,7 +742,7 @@ class DataProcessing {
       for (int j = 0; j < nchan; j++) {
         sum += avgPowerInBins[j][i];
       }
-      headWidePower[i] = sum/nchan;
+      headWidePower[i] = sum/nchan;   // averaging power over all channels
     }
 
     //delta in channel 2 ... avgPowerInBins[1][DELTA];

@@ -210,7 +210,7 @@ class W_accelerometer extends Widget {
       text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
       text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
 
-      fill(graphBG);  // pulse window background
+      fill(graphBG);
       stroke(graphStroke);
       rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
       line(AccelWindowX, AccelWindowY + AccelWindowHeight/2, AccelWindowX+AccelWindowWidth, AccelWindowY + AccelWindowHeight/2); //midline
@@ -278,6 +278,10 @@ class W_accelerometer extends Widget {
   }
 
   void setGraphDimensions(){
+    println("accel w "+w);
+    println("accel h "+h);
+    println("accel x "+x);
+    println("accel y "+y);
     AccelWindowWidth = w - padding*2;
     AccelWindowHeight = int((float(h) - float(padding*3))/2.0);
     AccelWindowX = x + padding;

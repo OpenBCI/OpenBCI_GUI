@@ -38,6 +38,7 @@ import netP5.*; // for OSC
 import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
+import edu.ucsd.sccn.LSL; //for LSL
 
 
 import gifAnimation.*;
@@ -149,9 +150,9 @@ public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 // Serial output
-String serial_output_portName = "/dev/tty.usbmodem1411";  //must edit this based on the name of the serial/COM port
+String serial_output_portName = "/dev/tty.usbmodem1421";  //must edit this based on the name of the serial/COM port
 Serial serial_output;
-int serial_output_baud = 115200; //baud rate from the Arduino
+int serial_output_baud = 9600; //baud rate from the Arduino
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
@@ -211,7 +212,7 @@ PFont p6; //small Open Sans
 ButtonHelpText buttonHelpText;
 
 //EMG_Widget emg_widget;
-PulseSensor_Widget pulseWidget;
+// PulseSensor_Widget pulseWidget;
 
 boolean no_start_connection = false;
 boolean has_processed = false;
@@ -502,7 +503,7 @@ boolean killRunningprocessWin() {
 int getProcessIdFromLineMac(String line) {
   line = trim(line);
   String[] components = line.split(" ");
-  return Integer.parseInt(components[0]); //<>//
+  return Integer.parseInt(components[0]);
 }
 
 void endProcess(int pid) {
@@ -977,7 +978,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v2.1.2\nJanuary 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v2.2.0\nJune 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
