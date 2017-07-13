@@ -19,36 +19,6 @@
 boolean werePacketsDroppedGang = false;
 int numPacketsDroppedGang = 0;
 
-void clientEvent(Client someClient) {
-  // print("Server Says:  ");
-
-  int p = ganglion.tcpBufferPositon;
-  ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
-  ganglion.tcpBufferPositon++;
-
-  if(p > 2) {
-    String posMatch  = new String(ganglion.tcpBuffer, p - 2, 3);
-    if (posMatch.equals(ganglion.TCP_STOP)) {
-      if (!ganglion.nodeProcessHandshakeComplete) {
-        ganglion.nodeProcessHandshakeComplete = true;
-        ganglion.setHubIsRunning(true);
-        println("GanglionSync: clientEvent: handshake complete");
-      }
-      // Get a string from the tcp buffer
-      String msg = new String(ganglion.tcpBuffer, 0, p);
-      // Send the new string message to be processed
-      ganglion.parseMessage(msg);
-      // Check to see if the ganglion ble list needs to be updated
-      if (ganglion.deviceListUpdated) {
-        ganglion.deviceListUpdated = false;
-        controlPanel.bleBox.refreshBLEList();
-      }
-      // Reset the buffer position
-      ganglion.tcpBufferPositon = 0;
-    }
-  } //<>//
-}
-
 class OpenBCI_Ganglion {
   final static String TCP_CMD_ACCEL = "a";
   final static String TCP_CMD_CONNECT = "c";

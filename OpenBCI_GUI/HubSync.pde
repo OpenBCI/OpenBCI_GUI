@@ -21,35 +21,37 @@ int numPacketsDroppedGang = 0;
 
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
+  int p = ganglion.tcpBufferPositon;
+  ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
+  ganglion.tcpBufferPositon++;
 
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    int p = ganglion.tcpBufferPositon;
-    ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
-    ganglion.tcpBufferPositon++;
+  if(p > 2) {
+    String posMatch  = new String(ganglion.tcpBuffer, p - 2, 3);
+    if (posMatch.equals(hub.TCP_STOP)) {
+      if (!hub.nodeProcessHandshakeComplete) {
+        hub.nodeProcessHandshakeComplete = true;
+        hub.setHubIsRunning(true);
+        println("GanglionSync: clientEvent: handshake complete");
+      }
+      // Get a string from the tcp buffer
+      String msg = new String(hub.tcpBuffer, 0, p);
+      // Send the new string message to be processed
 
-    if(p > 2) {
-      String posMatch  = new String(ganglion.tcpBuffer, p - 2, 3);
-      if (posMatch.equals(ganglion.TCP_STOP)) {
-        if (!ganglion.nodeProcessHandshakeComplete) {
-          ganglion.nodeProcessHandshakeComplete = true;
-          ganglion.setHubIsRunning(true);
-          println("GanglionSync: clientEvent: handshake complete");
-        }
-        // Get a string from the tcp buffer
-        String msg = new String(ganglion.tcpBuffer, 0, p);
-        // Send the new string message to be processed
+      if (eegDataSource == DATASOURCE_GANGLION) {
         ganglion.parseMessage(msg);
         // Check to see if the ganglion ble list needs to be updated
         if (ganglion.deviceListUpdated) {
           ganglion.deviceListUpdated = false;
           controlPanel.bleBox.refreshBLEList();
         }
-        // Reset the buffer position
-        ganglion.tcpBufferPositon = 0;
+      } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        // Do stuff for cyton
       }
+
+      // Reset the buffer position
+      hub.tcpBufferPositon = 0;
     }
   }
-
 }
 
 class OpenBCI_Hub {
@@ -57,7 +59,7 @@ class OpenBCI_Hub {
   final static String TCP_CMD_CONNECT = "c";
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
-  final static String TCP_CMD_DATA= "t";
+  final static String TCP_CMD_DATA = "t";
   final static String TCP_CMD_ERROR = "e"; //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
@@ -68,8 +70,6 @@ class OpenBCI_Hub {
   final static String TCP_ACTION_START = "start";
   final static String TCP_ACTION_STATUS = "status";
   final static String TCP_ACTION_STOP = "stop";
-
-  final static String GANGLION_BOOTLOADER_MODE = ">";
 
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
