@@ -77,8 +77,9 @@ class W_networking extends Widget {
     stream3 = null;
 
     dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Widget");
-    defaultBaud = "9600";
-    baudRates = Arrays.asList("1200", "9600", "57600", "115200");
+    defaultBaud = "115200";
+    // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
+    baudRates = Arrays.asList("57600", "115200", "250000", "500000");
     protocolMode = "OSC"; //default to OSC
     addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL", "Serial"), protocolIndex);
     comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
@@ -1390,7 +1391,7 @@ class Stream extends Thread{
           msg.add(i+1);
           //ADD NORMALIZED EMG CHANNEL DATA
           msg.add(w_emg.motorWidgets[i].output_normalized);
-          println(i + " | " + w_emg.motorWidgets[i].output_normalized);
+          // println(i + " | " + w_emg.motorWidgets[i].output_normalized);
           try{
             this.osc.send(msg,this.netaddress);
           }catch (Exception e){
@@ -1425,7 +1426,7 @@ class Stream extends Thread{
             String emg_normalized_3dec = String.format("%.3f", emg_normalized);
             serialMessage += emg_normalized_3dec + "]";
            try{
-             println(serialMessage);
+            //  println(serialMessage);
              this.serial_networking.write(serialMessage);
            }catch (Exception e){
              println(e);

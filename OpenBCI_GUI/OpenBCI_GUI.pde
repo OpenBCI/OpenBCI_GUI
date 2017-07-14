@@ -239,12 +239,13 @@ Robot rob3115;
 
 PApplet ourApplet;
 
-//-----------------------------------------1-------------------------------
+//------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
 
 //========================SETUP============================//
 
+int frameRateCounter = 2; //0 = 30, 1 = 45, 2 = 60
 
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
@@ -265,7 +266,16 @@ void setup() {
   //open window
   size(1024, 768, P2D);
   ourApplet = this;
-  frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+
+  if(frameRateCounter==0){
+    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  }
+  if(frameRateCounter==1){
+    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  }
+  if(frameRateCounter==2){
+    frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  }
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -827,6 +837,19 @@ void systemUpdate() { // for updating data values and variables
 
 void systemDraw() { //for drawing to the screen
 
+
+  // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
+  // int currentWidth;
+  // int currentHeight;
+  // if(!highDPI){
+  //   currentWidth = width;
+  //   currentHeight = height;
+  // }
+  // if(highDPI){
+  //   pushMatrix();
+  //   scale(2);
+  // }
+
   //redraw the screen...not every time, get paced by when data is being plotted
   background(bgColor);  //clear the screen
   noStroke();
@@ -958,6 +981,14 @@ void systemDraw() { //for drawing to the screen
 
   buttonHelpText.draw();
   mouseOutOfBounds(); // to fix
+
+
+  // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
+  // if(highDPI){
+  //   popMatrix();
+  //   size(currentWidth*2, currentHeight*2);
+  // }
+
 }
 
 void introAnimation() {
