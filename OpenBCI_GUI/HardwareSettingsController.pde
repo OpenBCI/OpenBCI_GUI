@@ -247,13 +247,13 @@ class HardwareSettingsController{
 
           //draw column headers for channel settings behind EEG graph
            fill(bgColor);
-           textFont(p5, 12);
-           textAlign(CENTER, CENTER);
-           text("PGA Gain", x + (w/10)*1, y - 12);
-           text("Input Type", x + (w/10)*3, y - 12);
-           text("  Bias ", x + (w/10)*5, y - 12);
-           text("SRB2", x + (w/10)*7, y - 12);
-           text("SRB1", x + (w/10)*9, y - 12);
+           textFont(p6, 10);
+           textAlign(CENTER, TOP);
+           text("PGA Gain", x + (w/10)*1, y-1);
+           text("Input Type", x + (w/10)*3, y-1);
+           text("  Bias ", x + (w/10)*5, y-1);
+           text("SRB2", x + (w/10)*7, y-1);
+           text("SRB1", x + (w/10)*9, y-1);
 
           //if mode is not from OpenBCI, draw a dark overlay to indicate that you cannot edit these settings
           if (eegDataSource != DATASOURCE_NORMAL_W_AUX) {
