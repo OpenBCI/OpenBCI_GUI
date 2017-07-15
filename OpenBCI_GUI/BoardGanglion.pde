@@ -147,87 +147,6 @@ class Ganglion {
     }
   }
 
-  public void processData(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
-    if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
-      if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
-        // Sample number stuff
-        dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
-        if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-          if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
-            bleErrorCounter++;
-
-            werePacketsDroppedGang = true; //set this true to activate packet duplication in serialEvent
-            if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-              numPacketsDroppedGang = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
-            } else {
-              numPacketsDroppedGang = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
-            }
-            println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-            println("numPacketsDropped = " + numPacketsDropped);
-          }
-        }
-        prevSampleIndex = dataPacket.sampleIndex;
-
-        // Channel data storage
-        for (int i = 0; i < NCHAN_GANGLION; i++) {
-          dataPacket.values[i] = Integer.parseInt(list[3 + i]);
-        }
-        if (newAccelData) {
-          newAccelData = false;
-          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-            dataPacket.auxValues[i] = accelArray[i];
-            dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
-          }
-        }
-        getRawValues(dataPacket);
-        // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
-        curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-
-        ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
-
-        // KILL SPIKES!!!
-        if(werePacketsDroppedGang){
-          // println("Packets Dropped ... doing some stuff...");
-          for(int i = numPacketsDroppedGang; i > 0; i--){
-            int tempDataPacketInd = curDataPacketInd - i; //
-            if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-              // println("i = " + i);
-              ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-            } else {
-              ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-            }
-            //put the last stored packet in # of packets dropped after that packet
-          }
-
-          //reset werePacketsDropped & numPacketsDropped
-          werePacketsDroppedGang = false;
-          numPacketsDroppedGang = 0;
-        }
-
-        switch (outputDataSource) {
-          case OUTPUT_SOURCE_ODF:
-            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), get_scale_fac_accel_G_per_count());
-            break;
-          case OUTPUT_SOURCE_BDF:
-            // curBDFDataPacketInd = curDataPacketInd;
-            // thread("writeRawData_dataPacket_bdf");
-            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-            break;
-          case OUTPUT_SOURCE_NONE:
-          default:
-            // Do nothing...
-            break;
-        }
-        newPacketCounter++;
-      } else {
-        bleErrorCounter++;
-        println("Ganglion: parseMessage: data: bad");
-      }
-    }
-  }
-
   private void handleError(int code, String msg) {
     output("Code " + code + "Error: " + msg);
     println("Code " + code + "Error: " + msg);
@@ -276,47 +195,7 @@ class Ganglion {
     }
   }
 
-  public boolean isSuccessCode(int c) {
-    return c == RESP_SUCCESS;
-  }
-
   // SCANNING/SEARHING FOR DEVICES
-
-  public void searchDeviceStart() {
-    deviceList = null;
-    numberOfDevices = 0;
-    hub.safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
-  }
-
-  public void searchDeviceStop() {
-    hub.safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
-  }
-
-  public boolean searchDeviceAdd(String ganglionLocalName) {
-    if (numberOfDevices == 0) {
-      numberOfDevices++;
-      deviceList = new String[numberOfDevices];
-      deviceList[0] = ganglionLocalName;
-      return true;
-    } else {
-      boolean willAddToDeviceList = true;
-      for (int i = 0; i < numberOfDevices; i++) {
-        if (ganglionLocalName.equals(deviceList[i])) {
-          willAddToDeviceList = false;
-          break;
-        }
-      }
-      if (willAddToDeviceList) {
-        numberOfDevices++;
-        String[] tempList = new String[numberOfDevices];
-        arrayCopy(deviceList, tempList);
-        tempList[numberOfDevices - 1] = ganglionLocalName;
-        deviceList = tempList;
-        return true;
-      }
-    }
-    return false;
-  }
 
   public int closePort() {
     if (interface == INTERFACE_HUB_BLE) {

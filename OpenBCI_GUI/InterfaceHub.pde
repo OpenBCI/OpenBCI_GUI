@@ -393,8 +393,8 @@ class Hub {
     switch(code) {
       case RESP_GANGLION_FOUND:
         // Sent every time a new ganglion device is found
-        if (ganglion.searchDeviceAdd(list[2])) {
-          ganglion.deviceListUpdated = true;
+        if (searchDeviceAdd(list[2])) {
+          deviceListUpdated = true;
         }
         break;
       case RESP_ERROR_SCAN_ALREADY_SCANNING:
@@ -475,7 +475,6 @@ class Hub {
     }
   }
 
-
   // CONNECTION
   public void connectBLE(String id) {
     hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
@@ -517,6 +516,42 @@ class Hub {
     state = newState;
     prevState_millis = millis();
     return 0;
+  }
+
+  public void searchDeviceStart() {
+    deviceList = null;
+    numberOfDevices = 0;
+    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
+  }
+
+  public void searchDeviceStop() {
+    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
+  }
+
+  public boolean searchDeviceAdd(String localName) {
+    if (numberOfDevices == 0) {
+      numberOfDevices++;
+      deviceList = new String[numberOfDevices];
+      deviceList[0] = localName;
+      return true;
+    } else {
+      boolean willAddToDeviceList = true;
+      for (int i = 0; i < numberOfDevices; i++) {
+        if (localName.equals(deviceList[i])) {
+          willAddToDeviceList = false;
+          break;
+        }
+      }
+      if (willAddToDeviceList) {
+        numberOfDevices++;
+        String[] tempList = new String[numberOfDevices];
+        arrayCopy(deviceList, tempList);
+        tempList[numberOfDevices - 1] = localName;
+        deviceList = tempList;
+        return true;
+      }
+    }
+    return false;
   }
 
 };

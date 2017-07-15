@@ -107,7 +107,7 @@ class Cyton {
   public float get_fs_Hz() {
     return fs_Hz;
   }
-  public int get_interface() {
+  public int getInterface() {
     return interface;
   }
   public float get_Vref() {
@@ -134,6 +134,13 @@ class Cyton {
   }
   public String get_defaultChannelSettings() {
     return defaultChannelSettings;
+  }
+
+  public boolean setInterface(int _interface) {
+    interface = _interface;
+    if (interface == INTERFACE_HUB_WIFI) {
+      hub.setProtocol(PROTOCOL_WIFI);
+    }
   }
 
   //constructors
@@ -466,7 +473,6 @@ class Cyton {
   }
 
   public int copyDataPacketTo(DataPacket_ADS1299 target) {
-    isNewDataPacketAvailable = false;
     return dataPacket.copyTo(target);
   }
 

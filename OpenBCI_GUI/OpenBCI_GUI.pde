@@ -100,7 +100,7 @@ int openBCI_baud = 115200; //baud rate from the Arduino
 
 String ganglion_portName = "N/A";
 
-String hub_portName = "N/A";
+String wifi_portName = "N/A";
 
 final static String PROTOCOL_BLE = "ble";
 final static String PROTOCOL_WIFI = "wifi";
@@ -134,10 +134,10 @@ long timeOfInit;
 long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
+// TODO: Make nPointsPerUpdate dynamic and based on sample rate
 // final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
 // final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
 final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
-
 
 //define some data fields for handling data here in processing
 float dataBuffX[];  //define the size later
@@ -248,7 +248,7 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
 int hubPid = 0;
-String nodeHubName = "GanglionHub";
+String nodeHubName = "OpenBCIHub";
 Robot rob3115;
 
 PApplet ourApplet;
@@ -345,31 +345,9 @@ void setup() {
 
   playground = new Playground(navBarHeight);
 
-  //attempt to open a serial port for "output"
-  // try {
-  //   verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
-  //   serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
-  //   serial_output.clear(); // clear anything in the com port's buffer
-  // }
-  // catch (RuntimeException e) {
-  //   verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
-  // }
-
-  // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
-
-  ganglion = new Ganglion(this);
-
-  // try{
-  //   rob3115 = new Robot();
-  // } catch (AWTException e){
-  //   println("couldn't create robot...");
-  // }
-
-  // ganglion = new Ganglion(this);
-  // wm = new WidgetManager(this);
 
   timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
@@ -503,7 +481,7 @@ void killRunningProcessMac() {
  */
 boolean killRunningprocessWin() {
   try {
-    Runtime.getRuntime().exec("taskkill /F /IM GanglionHub.exe");
+    Runtime.getRuntime().exec("taskkill /F /IM OpenBCIHub.exe");
     return true;
   }
   catch (Exception err) {
