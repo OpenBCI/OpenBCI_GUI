@@ -52,11 +52,11 @@ void openNewLogFileBDF(String _fileName) {
   if (eegDataSource == DATASOURCE_GANGLION) {
     fileoutput_bdf = new OutputFile_BDF(ganglion.get_fs_Hz(), nchan, _fileName);
   } else {
-    fileoutput_bdf = new OutputFile_BDF(openBCI.get_fs_Hz(), nchan, _fileName);
+    fileoutput_bdf = new OutputFile_BDF(cyton.get_fs_Hz(), nchan, _fileName);
   }
   output_fname = fileoutput_bdf.fname;
-  println("openBCI: openNewLogFile: opened BDF output file: " + output_fname);
-  output("openBCI: openNewLogFile: opened BDF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened BDF output file: " + output_fname);
+  output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
 /**
@@ -73,11 +73,11 @@ void openNewLogFileODF(String _fileName) {
   if (eegDataSource == DATASOURCE_GANGLION) {
     fileoutput_odf = new OutputFile_rawtxt(ganglion.get_fs_Hz(), _fileName);
   } else {
-    fileoutput_odf = new OutputFile_rawtxt(openBCI.get_fs_Hz(), _fileName);
+    fileoutput_odf = new OutputFile_rawtxt(cyton.get_fs_Hz(), _fileName);
   }
   output_fname = fileoutput_odf.fname;
-  println("openBCI: openNewLogFile: opened ODF output file: " + output_fname);
-  output("openBCI: openNewLogFile: opened ODF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened ODF output file: " + output_fname);
+  output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
 }
 
 /**
@@ -1461,7 +1461,7 @@ public void convertSDFile() {
 
         //if not first column(sample #) or columns 9-11 (accelerometer), convert to uV
         if (i>=1 && i<=8) {
-          intData[i] *= openBCI.get_scale_fac_uVolts_per_count();
+          intData[i] *= cyton.get_scale_fac_uVolts_per_count();
         }
 
         //print the current channel value

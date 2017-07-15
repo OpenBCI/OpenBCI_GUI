@@ -8,7 +8,7 @@
 //
 //  Handles interactions between the radio system and OpenBCI systems.
 //  It is important to note that this is using Serial communication directly
-//  rather than the OpenBCI_ADS1299 class. I just found this easier to work
+//  rather than the Cyton class. I just found this easier to work
 //  with.
 //
 //  Modified by Joel Murphy, January 2017

@@ -1035,9 +1035,9 @@ public void initButtonPressed(){
         //global steps to START SYSTEM
         // prepare the serial port
         if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-          verbosePrint("ControlPanel — port is open: " + openBCI.isSerialPortOpen());
-          if (openBCI.isSerialPortOpen() == true) {
-            openBCI.closeSerialPort();
+          verbosePrint("ControlPanel — port is open: " + cyton.isSerialPortOpen());
+          if (cyton.isSerialPortOpen() == true) {
+            cyton.closeSerialPort();
           }
         } else if(eegDataSource == DATASOURCE_GANGLION){
           verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());

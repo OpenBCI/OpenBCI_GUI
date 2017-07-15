@@ -75,6 +75,11 @@ final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
+final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interface
+final int INTERFACE_SERIAL = 0; // Used only by cyton
+final int INTERFACE_HUB_BLE = 1; // used only by ganglion
+final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
+
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
@@ -83,17 +88,25 @@ int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
-//Global Serial/COM communications constants
-OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
+// Initialize boards for constants
+Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
+Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
+// Intialize interface protocols
+InterfaceSerial iSerial = new interfaceSerial();
+Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
+
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
-OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
-OpenBCI_Hub hub; //dummy creation to get access to constants, create real one later
 String ganglion_portName = "N/A";
 
+String hub_portName = "N/A";
+
+final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_WIFI = "wifi";
+
 ////// ---- Define variables related to OpenBCI board operations
-//Define number of channels from openBCI...first EEG channels, then aux channels
+//Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
 int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
@@ -103,7 +116,7 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //OpenBCI SD Card setting (if eegDataSource == 0)
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
-//openBCI data packet
+//cyton data packet
 final int nDataBackBuff = 3*(int)get_fs_Hz_safe();
 DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
 int curDataPacketInd = -1;
@@ -347,7 +360,7 @@ void setup() {
 
   myPresentation = new Presentation();
 
-  ganglion = new OpenBCI_Ganglion(this);
+  ganglion = new Ganglion(this);
 
   // try{
   //   rob3115 = new Robot();
@@ -355,7 +368,7 @@ void setup() {
   //   println("couldn't create robot...");
   // }
 
-  // ganglion = new OpenBCI_Ganglion(this);
+  // ganglion = new Ganglion(this);
   // wm = new WidgetManager(this);
 
   timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
@@ -591,7 +604,7 @@ void initSystem() {
     int nEEDataValuesPerPacket = nchan;
     boolean useAux = false;
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
-    openBCI = new OpenBCI_ADS1299(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
+    cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
     break;
   case DATASOURCE_SYNTHETIC:
     //do nothing
@@ -677,7 +690,7 @@ float get_fs_Hz_safe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
     return ganglion.get_fs_Hz();
   } else {
-    return openBCI.get_fs_Hz();
+    return cyton.get_fs_Hz();
   }
 }
 
@@ -712,11 +725,11 @@ void haltSystem() {
 
   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
     closeLogFile();  //close log file
-    openBCI.closeSDandSerialPort();
+    cyton.closeSDandPort();
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
     closeLogFile();  //close log file
-    hub.disconnectBLE();
+    ganglion.closePort();
   }
   systemMode = SYSTEMMODE_PREINIT;
 }
@@ -724,14 +737,14 @@ void haltSystem() {
 void systemUpdate() { // for updating data values and variables
 
   if (isHubInitialized && isHubObjectInitialized == false && millis() - timeOfSetup >= 1500) {
-    hub = new OpenBCI_Hub(this);
+    hub = new Hub(this);
     println("Instantiating hub object...");
     isHubObjectInitialized = true;
   }
 
   //update the sync state with the OpenBCI hardware
-  if (openBCI.state == openBCI.STATE_NOCOM || openBCI.state == openBCI.STATE_COMINIT || openBCI.state == openBCI.STATE_SYNCWITHHARDWARE) {
-    openBCI.updateSyncState(sdSetting);
+  if (cyton.state == cyton.STATE_NOCOM || cyton.state == cyton.STATE_COMINIT || cyton.state == cyton.STATE_SYNCWITHHARDWARE) {
+    cyton.updateSyncState(sdSetting);
   }
 
   //prepare for updating the GUI
@@ -928,7 +941,7 @@ void systemDraw() { //for drawing to the screen
   }
 
 
-  if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+  if ((cyton.get_state() == cyton.STATE_COMINIT || cyton.get_state() == cyton.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);

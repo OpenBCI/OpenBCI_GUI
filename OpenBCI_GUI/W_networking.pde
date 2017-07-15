@@ -1473,7 +1473,7 @@ class Stream extends Thread{
                             this.streamName,
                             this.streamType,
                             this.nChanLSL,
-                            openBCI.get_fs_Hz(),
+                            cyton.get_fs_Hz(),
                             LSL.ChannelFormat.float32,
                             stream_id
                           );

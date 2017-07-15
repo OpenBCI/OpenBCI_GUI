@@ -19,41 +19,7 @@
 boolean werePacketsDroppedGang = false;
 int numPacketsDroppedGang = 0;
 
-void clientEvent(Client someClient) {
-  // print("Server Says:  ");
-
-  int p = wifi.tcpBufferPositon;
-  wifi.tcpBuffer[p] = wifi.tcpClient.readChar();
-  wifi.tcpBufferPositon++;
-
-  if(p > 2) {
-    String posMatch  = new String(wifi.tcpBuffer, p - 2, 3);
-    if (posMatch.equals(wifi.TCP_STOP)) {
-      if (!wifi.nodeProcessHandshakeComplete) {
-        ganglion.nodeProcessHandshakeComplete = true;
-        ganglion.setHubIsRunning(true);
-        println("GanglionSync: clientEvent: handshake complete");
-      }
-      // Get a string from the tcp buffer
-      String msg = new String(ganglion.tcpBuffer, 0, p);
-      // Send the new string message to be processed
-      ganglion.parseMessage(msg);
-      // Check to see if the ganglion ble list needs to be updated
-      if (ganglion.deviceListUpdated) {
-        ganglion.deviceListUpdated = false;
-        controlPanel.bleBox.refreshBLEList();
-      }
-      // Reset the buffer position
-      ganglion.tcpBufferPositon = 0;
-    }
-  } //<>//
-}
-
-//import org.json.*;
-
-
-
-class OpenBCI_Wifi {
+class Ganglion {
   final static String TCP_CMD_ACCEL = "a";
   final static String TCP_CMD_CONNECT = "c";
   final static String TCP_CMD_COMMAND = "k";
@@ -64,7 +30,7 @@ class OpenBCI_Wifi {
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";
   final static String TCP_CMD_STATUS = "q";
-  final static String TCP_STOP = "}\r\n";
+  final static String TCP_STOP = ",;\n";
 
   final static String TCP_ACTION_START = "start";
   final static String TCP_ACTION_STATUS = "status";
@@ -112,28 +78,23 @@ class OpenBCI_Wifi {
   private int state = STATE_NOCOM;
   int prevState_millis = 0; // Used for calculating connect time out
 
-  private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by openBCI boards
+  private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by cyton boards
   private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
 
-  private int _tcpPort = 10996;
-  public int tcpPort(){
-    return _tcpPort;
-  }
-  private String _tcpIP = "127.0.0.1";
-  public String tcpIP(){
-    return _tcpIP;
-  }
-  private String tcpGanglionFull() {
-    return tcpIP() + ":" + tcpPort();
-  }
-  private boolean tcpClientActive = false;
-  private int tcpTimeout = 1000;
+  private final float fs_Hz = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
+  private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
+  private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
+  private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
+  // private float scale_fac_accel_G_per_count = 0.032;
+  private float scale_fac_accel_G_per_count = 0.016;
+  // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
+  // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
+  private int bleErrorCounter = 0;
+  private int prevSampleIndex = 0;
 
   private DataPacket_ADS1299 dataPacket;
 
-  public Client tcpClient;
-  private boolean portIsOpen = false;
   private boolean connected = false;
 
   public int numberOfDevices = 0;
@@ -144,9 +105,6 @@ class OpenBCI_Wifi {
   public char[] tcpBuffer = new char[1024];
   public int tcpBufferPositon = 0;
 
-  private boolean waitingForResponse = false;
-  private boolean nodeProcessHandshakeComplete = false;
-  public boolean shouldStartNodeApp = false;
   private boolean checkingImpedance = false;
   private boolean accelModeActive = false;
   private boolean newAccelData = false;
@@ -157,43 +115,17 @@ class OpenBCI_Wifi {
 
   // Getters
   public float get_fs_Hz() { return fs_Hz; }
-  public boolean isPortOpen() { return portIsOpen; }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
-  public boolean isHubRunning() { return hubRunning; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
 
   private PApplet mainApplet;
 
   //constructors
-  OpenBCI_Ganglion() {};  //only use this if you simply want access to some of the constants
-  OpenBCI_Ganglion(PApplet applet) {
+  Ganglion() {};  //only use this if you simply want access to some of the constants
+  Ganglion(PApplet applet) {
     mainApplet = applet;
-
-    // Able to start tcpClient connection?
-    startTCPClient(mainApplet);
-    // if (getStatus()) {
-    //   println("Able to start tcpClient connection -- YES");
-    //   hubRunning = true;
-    // } else {
-    //   println("Able to start tcpClient connection -- NO");
-    // }
-
-    // if (getStatus()) {
-    //   println("Able to send status message, now waiting for response.");
-    // } else {
-    //   // We should try to start the node process because we were not able to
-    //   //  establish a connection with the node process.
-    //   println("Failure: Not able to send status message. Trying to start tcpConnection.");
-    //   startTCPClient(applet);
-    //   if (getStatus()) {
-    //     println("Connection established with node server.");
-    //   } else {
-    //     println("Connection failed to establish with node server. Recommend trying to launch application from data dir.");
-    //     shouldStartNodeApp = true;
-    //   }
-    // }
 
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
@@ -205,80 +137,7 @@ class OpenBCI_Wifi {
     }
   }
 
-  /**
-   * @descirpiton Used to `try` and start the tcpClient
-   * @param applet {PApplet} - The main applet.
-   * @return {boolean} - True if able to start.
-   */
-  public boolean startTCPClient(PApplet applet) {
-    try {
-      tcpClient = new Client(applet, tcpGanglionIP, tcpGanglionPort);
-      return true;
-    } catch (Exception e) {
-      println("startTCPClient: ConnectException: " + e);
-      return false;
-    }
-  }
-
-
-  /**
-   * Sends a status message to the node process.
-   */
-  public boolean getStatus() {
-    try {
-      safeTCPWrite(TCP_CMD_STATUS + TCP_STOP);
-      waitingForResponse = true;
-      return true;
-    } catch (NullPointerException E) {
-      // The tcp client is not initalized, try now
-
-      return false;
-    }
-  }
-
-  public void setHubIsRunning(boolean isRunning) {
-    hubRunning = isRunning;
-  }
-
-  // Return true if the display needs to be updated for the BLE list
-  public void parseMessage(String msg) {
-    // println(msg);
-    String[] list = split(msg, ',');
-    switch (list[0].charAt(0)) {
-      case 'c': // Connect
-        processConnect(msg);
-        break;
-      case 'a': // Accel
-        processAccel(msg);
-        break;
-      case 'd': // Disconnect
-        processDisconnect(msg);
-        break;
-      case 'i': // Impedance
-        processImpedance(msg);
-        break;
-      case 't': // Data
-        processData(msg);
-        break;
-      case 'e': // Error
-        println("OpenBCI_Ganglion: parseMessage: error: " + list[2]);
-        break;
-      case 's': // Scan
-        processScan(msg);
-        break;
-      case 'l':
-        println("OpenBCI_Ganglion: Log: " + list[1]);
-        break;
-      case 'q':
-        processStatus(msg);
-        break;
-      default:
-        println("OpenBCI_Ganglion: parseMessage: default: " + msg);
-        break;
-    }
-  }
-
-  private void processAccel(String msg) {
+  public void processAccel(String msg) {
     String[] list = split(msg, ',');
     if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
       for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
@@ -288,26 +147,7 @@ class OpenBCI_Wifi {
     }
   }
 
-  private void processConnect(String msg) {
-    String[] list = split(msg, ',');
-    if (isSuccessCode(Integer.parseInt(list[1]))) {
-      println("OpenBCI_Ganglion: parseMessage: connect: success!");
-      output("OpenBCI_Ganglion: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-      systemMode = 10;
-      connected = true;
-      controlPanel.close();
-    } else {
-      println("OpenBCI_Ganglion: parseMessage: connect: failure!");
-      haltSystem();
-      initSystemButton.setString("START SYSTEM");
-      controlPanel.open();
-      abandonInit = true;
-      output("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
-      connected = false;
-    }
-  }
-
-  private void processData(String msg) {
+  public void processData(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
     if (eegDataSource == DATASOURCE_GANGLION && systemMode == 10 && isRunning) { //<>//
@@ -324,7 +164,7 @@ class OpenBCI_Wifi {
             } else {
               numPacketsDroppedGang = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
             }
-            println("OpenBCI_Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+            println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
             println("numPacketsDropped = " + numPacketsDropped);
           }
         }
@@ -383,7 +223,7 @@ class OpenBCI_Wifi {
         newPacketCounter++;
       } else {
         bleErrorCounter++;
-        println("OpenBCI_Ganglion: parseMessage: data: bad");
+        println("Ganglion: parseMessage: data: bad");
       }
     }
   }
@@ -393,18 +233,7 @@ class OpenBCI_Wifi {
     println("Code " + code + "Error: " + msg);
   }
 
-  private void processDisconnect(String msg) {
-    if (!waitingForResponse) {
-      haltSystem();
-      initSystemButton.setString("START SYSTEM");
-      controlPanel.open();
-      output("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
-    } else {
-      waitingForResponse = false;
-    }
-  }
-
-  private void processImpedance(String msg) {
+  public void processImpedance(String msg) {
     String[] list = split(msg, ',');
     if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
       int channel = Integer.parseInt(list[2]);
@@ -418,71 +247,6 @@ class OpenBCI_Wifi {
           println("? for channel " + channel + " is " + value + " ohms.");
         }
       }
-    }
-  }
-
-  private void processStatus(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
-    if (waitingForResponse) {
-      waitingForResponse = false;
-      println("Node process up!");
-    }
-    if (code == RESP_ERROR_BAD_NOBLE_START) {
-      println("OpenBCI_Ganglion: processStatus: Problem in the Hub");
-      output("Problem starting Ganglion Hub. Please make sure compatible USB is configured, then restart this GUI.");
-    } else {
-      println("OpenBCI_Ganglion: processStatus: Started Successfully");
-    }
-  }
-
-  private void processScan(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
-    switch(code) {
-      case RESP_GANGLION_FOUND:
-        // Sent every time a new ganglion device is found
-        if (searchDeviceAdd(list[2])) {
-          deviceListUpdated = true;
-        }
-        break;
-      case RESP_ERROR_SCAN_ALREADY_SCANNING:
-        // Sent when a start send command is sent and the module is already
-        //  scanning.
-        handleError(code, list[2]);
-        break;
-      case RESP_SUCCESS:
-        // Sent when either a scan was stopped or started Successfully
-        String action = list[2];
-        switch (action) {
-          case TCP_ACTION_START:
-            break;
-          case TCP_ACTION_STOP:
-            break;
-        }
-        break;
-      case RESP_ERROR_SCAN_COULD_NOT_START:
-        // Sent when err on search start
-        handleError(code, list[2]);
-        break;
-      case RESP_ERROR_SCAN_COULD_NOT_STOP:
-        // Send when err on search stop
-        handleError(code, list[2]);
-        break;
-      case RESP_STATUS_SCANNING:
-        // Sent when after status action sent to node and module is searching
-        break;
-      case RESP_STATUS_NOT_SCANNING:
-        // Sent when after status action sent to node and module is NOT searching
-        break;
-      case RESP_ERROR_SCAN_NO_SCAN_TO_STOP:
-        // Sent when a 'stop' action is sent to node and there is no scan to stop.
-        handleError(code, list[2]);
-        break;
-      case RESP_ERROR_UNKNOWN:
-      default:
-        handleError(code, list[2]);
-        break;
     }
   }
 
@@ -512,26 +276,6 @@ class OpenBCI_Wifi {
     }
   }
 
-  // TODO: Figure out how to ping the server at localhost listening on port 10996
-  // /**
-  //  * Used to ping the local hub tcp server and check it's status.
-  //  */
-  // public boolean pingHub() {
-  //   boolean pingStat;
-  //
-  //   try {
-  //     println("GanglionSync: pingHub: trying... ");
-  //     pingStat = InetAddress.getByName("127.0.0.1:10996").isReachable(tcpTimeout);
-  //     print("GanglionSync: pingHub: ");
-  //     println(pingStat);
-  //     return pingStat;
-  //   }
-  //   catch(Exception E){
-  //     E.printStackTrace();
-  //     return false;
-  //   }
-  // }
-
   public boolean isSuccessCode(int c) {
     return c == RESP_SUCCESS;
   }
@@ -541,11 +285,11 @@ class OpenBCI_Wifi {
   public void searchDeviceStart() {
     deviceList = null;
     numberOfDevices = 0;
-    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
+    hub.safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 
   public void searchDeviceStop() {
-    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
+    hub.safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
   }
 
   public boolean searchDeviceAdd(String ganglionLocalName) {
@@ -574,23 +318,11 @@ class OpenBCI_Wifi {
     return false;
   }
 
-  // CONNECTION
-  public void connectBLE(String id) {
-    safeTCPWrite(TCP_CMD_CONNECT + "," + id + TCP_STOP);
-  }
-
-  public void disconnectBLE() {
-    waitingForResponse = true;
-    safeTCPWrite(TCP_CMD_DISCONNECT + TCP_STOP);
-  }
-
-  public void updateSyncState() {
-    //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-    if ((millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == openBCI.STATE_COMINIT) ) {
-      // We are synced and ready to go!
-      state = STATE_SYNCWITHHARDWARE;
-      println("OpenBCI_Ganglion: Sending reset command");
-      // serial_openBCI.write('v');
+  public int closePort() {
+    if (interface == INTERFACE_HUB_BLE) {
+      hub.disconnectBLE();
+    } else {
+      hub.disconnectWifi();
     }
   }
 
@@ -598,18 +330,18 @@ class OpenBCI_Wifi {
    * @description Sends a start streaming command to the Ganglion Node module.
    */
   void startDataTransfer(){
-    changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
-    println("OpenBCI_Ganglion: startDataTransfer(): sending \'" + command_startBinary);
-    safeTCPWrite(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
+    hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
+    println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
+    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
   }
 
   /**
    * @description Sends a stop streaming command to the Ganglion Node module.
    */
   public void stopDataTransfer() {
-    changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
-    println("OpenBCI_Ganglion: stopDataTransfer(): sending \'" + command_stop);
-    safeTCPWrite(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
+    hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
+    println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
+    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
   }
 
 
@@ -617,8 +349,8 @@ class OpenBCI_Wifi {
    * @description Sends a command to ganglion board
    */
   public void passthroughCommand(char c) {
-    println("OpenBCI_Ganglion: passthroughCommand(): sending \'" + c);
-    safeTCPWrite(TCP_CMD_COMMAND + "," + c + TCP_STOP);
+    println("Ganglion: passthroughCommand(): sending \'" + c);
+    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
   /**
@@ -626,7 +358,7 @@ class OpenBCI_Wifi {
    * @params out {String} - The string message to write to the server.
    * @returns {boolean} - True if able to write, false otherwise.
    */
-  public boolean safeTCPWrite(String out) {
+  public boolean hub.safeTCPWrite(String out) {
     try {
       tcpClient.write(out);
       return true;
@@ -650,13 +382,7 @@ class OpenBCI_Wifi {
   }
 
   private void printGanglion(String msg) {
-    print("OpenBCI_Ganglion: "); println(msg);
-  }
-
-  public int changeState(int newState) {
-    state = newState;
-    prevState_millis = millis();
-    return 0;
+    print("Ganglion: "); println(msg);
   }
 
   // Channel setting
@@ -665,12 +391,12 @@ class OpenBCI_Wifi {
     if (connected) {
       if ((Ichan >= 0)) {
         if (activate) {
-          println("OpenBCI_Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
-          safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan] + TCP_STOP);
+          println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
+          hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan] + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
-          println("OpenBCI_Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
-          safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
+          println("Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
+          hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
           w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
@@ -681,8 +407,8 @@ class OpenBCI_Wifi {
    * Used to start accel data mode. Accel arrays will arrive asynchronously!
    */
   public void accelStart() {
-    println("OpenBCI_Ganglion: accell: START");
-    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
+    println("Ganglion: accell: START");
+    hub.safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
     accelModeActive = true;
   }
 
@@ -691,8 +417,8 @@ class OpenBCI_Wifi {
    *  was sent by this function.
    */
   public void accelStop() {
-    println("OpenBCI_Ganglion: accel: STOP");
-    safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
+    println("Ganglion: accel: STOP");
+    hub.safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
     accelModeActive = false;
   }
 
@@ -700,8 +426,8 @@ class OpenBCI_Wifi {
    * Used to start impedance testing. Impedances will arrive asynchronously!
    */
   public void impedanceStart() {
-    println("OpenBCI_Ganglion: impedance: START");
-    safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
+    println("Ganglion: impedance: START");
+    hub.safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
     checkingImpedance = true;
   }
 
@@ -710,8 +436,8 @@ class OpenBCI_Wifi {
    *  was sent by this function.
    */
   public void impedanceStop() {
-    println("OpenBCI_Ganglion: impedance: STOP");
-    safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
+    println("Ganglion: impedance: STOP");
+    hub.safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
   }
 
@@ -719,8 +445,8 @@ class OpenBCI_Wifi {
    * Puts the ganglion in bootloader mode.
    */
   public void enterBootloaderMode() {
-    println("OpenBCI_Ganglion: Entering Bootloader Mode");
-    safeTCPWrite(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
+    println("Ganglion: Entering Bootloader Mode");
+    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
     delay(500);
     disconnectBLE();
     haltSystem();

@@ -420,11 +420,11 @@ class ChannelBar{
     nPoints = nPointsBasedOnDataSource();
 
     if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      nPoints = numSeconds * (int)openBCI.fs_Hz;
+      nPoints = numSeconds * (int)cyton.fs_Hz;
     }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
       nPoints = numSeconds * (int)ganglion.fs_Hz;
     }else{
-      nPoints = numSeconds * (int)openBCI.fs_Hz;
+      nPoints = numSeconds * (int)cyton.fs_Hz;
     }
 
     channelPoints = new GPointsArray(nPoints);
@@ -568,11 +568,11 @@ class ChannelBar{
   int nPointsBasedOnDataSource(){
     int _nPoints;
     if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      _nPoints = numSeconds * (int)openBCI.fs_Hz;
+      _nPoints = numSeconds * (int)cyton.fs_Hz;
     }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
       _nPoints = numSeconds * (int)ganglion.fs_Hz;
     }else{
-      _nPoints = numSeconds * (int)openBCI.fs_Hz;
+      _nPoints = numSeconds * (int)cyton.fs_Hz;
     }
 
     return _nPoints;
@@ -864,7 +864,7 @@ if(has_processed){
         val_uV = processed_file.get(elm)[Ichan][startIndex];
 
 
-        data[Ichan][i] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+        data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
       }
       i++;
     }

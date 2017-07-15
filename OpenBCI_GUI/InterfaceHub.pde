@@ -21,9 +21,9 @@ int numPacketsDroppedGang = 0;
 
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
-  int p = ganglion.tcpBufferPositon;
-  ganglion.tcpBuffer[p] = ganglion.tcpClient.readChar();
-  ganglion.tcpBufferPositon++;
+  int p = hub.tcpBufferPositon;
+  hub.tcpBuffer[p] = hub.tcpClient.readChar();
+  hub.tcpBufferPositon++;
 
   if(p > 2) {
     String posMatch  = new String(ganglion.tcpBuffer, p - 2, 3);
@@ -31,7 +31,7 @@ void clientEvent(Client someClient) {
       if (!hub.nodeProcessHandshakeComplete) {
         hub.nodeProcessHandshakeComplete = true;
         hub.setHubIsRunning(true);
-        println("GanglionSync: clientEvent: handshake complete");
+        println("Hub: clientEvent: handshake complete");
       }
       // Get a string from the tcp buffer
       String msg = new String(hub.tcpBuffer, 0, p);
@@ -43,9 +43,16 @@ void clientEvent(Client someClient) {
         if (ganglion.deviceListUpdated) {
           ganglion.deviceListUpdated = false;
           controlPanel.bleBox.refreshBLEList();
+          controlPanel.wifiBox.refreshWifiList();
         }
       } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         // Do stuff for cyton
+        cyton.parseMessage(msg);
+        // Check to see if the ganglion ble list needs to be updated
+        if (cyton.deviceListUpdated) {
+          cyton.deviceListUpdated = false;
+          controlPanel.wifiBox.refreshWifiList();
+        }
       }
 
       // Reset the buffer position
@@ -54,7 +61,7 @@ void clientEvent(Client someClient) {
   }
 }
 
-class OpenBCI_Hub {
+class Hub {
   final static String TCP_CMD_ACCEL = "a";
   final static String TCP_CMD_CONNECT = "c";
   final static String TCP_CMD_COMMAND = "k";
@@ -63,6 +70,7 @@ class OpenBCI_Hub {
   final static String TCP_CMD_ERROR = "e"; //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
+  final static String TCP_CMD_PROTOCOL = "p";
   final static String TCP_CMD_SCAN = "s";
   final static String TCP_CMD_STATUS = "q";
   final static String TCP_STOP = ",;\n";
@@ -111,7 +119,7 @@ class OpenBCI_Hub {
   private int state = STATE_NOCOM;
   int prevState_millis = 0; // Used for calculating connect time out
 
-  private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by openBCI boards
+  private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by cyton boards
   private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
 
   private int tcpHubPort = 10996;
@@ -150,8 +158,8 @@ class OpenBCI_Hub {
   private PApplet mainApplet;
 
   //constructors
-  OpenBCI_Hub() {};  //only use this if you simply want access to some of the constants
-  OpenBCI_Hub(PApplet applet) {
+  Hub() {};  //only use this if you simply want access to some of the constants
+  Hub(PApplet applet) {
     mainApplet = applet;
 
     // Able to start tcpClient connection?
@@ -180,7 +188,7 @@ class OpenBCI_Hub {
    */
   public boolean getStatus() {
     try {
-      safeTCPWrite(TCP_CMD_STATUS + TCP_STOP);
+      write(TCP_CMD_STATUS + TCP_STOP);
       waitingForResponse = true;
       return true;
     } catch (NullPointerException E) {
@@ -216,24 +224,22 @@ class OpenBCI_Hub {
         }
         break;
       case 't': // Data
-        if (eegDataSource == DATASOURCE_GANGLION) {
-          ganglion.processData(msg);
-        }
+        processData(msg);
         break;
       case 'e': // Error
-        println("OpenBCI_Hub: parseMessage: error: " + list[2]);
+        println("Hub: parseMessage: error: " + list[2]);
         break;
       case 's': // Scan
         processScan(msg);
         break;
       case 'l':
-        println("OpenBCI_Hub: Log: " + list[1]);
+        println("Hub: Log: " + list[1]);
         break;
       case 'q':
         processStatus(msg);
         break;
       default:
-        println("OpenBCI_Hub: parseMessage: default: " + msg);
+        println("Hub: parseMessage: default: " + msg);
         break;
     }
   }
@@ -248,17 +254,110 @@ class OpenBCI_Hub {
     if (isSuccessCode(Integer.parseInt(list[1]))) {
       systemMode = 10;
       controlPanel.close();
-      println("OpenBCI_Hub: parseMessage: connect: success!");
-      output("OpenBCI_Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+      println("Hub: parseMessage: connect: success!");
+      output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
       connected = true;
     } else {
-      println("OpenBCI_Hub: parseMessage: connect: failure!");
+      println("Hub: parseMessage: connect: failure!");
       haltSystem();
       initSystemButton.setString("START SYSTEM");
       controlPanel.open();
       abandonInit = true;
       output("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
       connected = false;
+    }
+  }
+
+  public void processData(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_NORMAL_W_AUX) && systemMode == 10 && isRunning) { //<>//
+      if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
+        // Sample number stuff
+        dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
+        if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
+          if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
+            bleErrorCounter++;
+
+            werePacketsDroppedGang = true; //set this true to activate packet duplication in serialEvent
+            if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
+              numPacketsDroppedGang = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+            } else {
+              numPacketsDroppedGang = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+            }
+            println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+            println("numPacketsDropped = " + numPacketsDropped);
+          }
+        }
+        prevSampleIndex = dataPacket.sampleIndex;
+
+        // Channel data storage
+        for (int i = 0; i < NCHAN_GANGLION; i++) {
+          dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+        }
+        if (newAccelData) {
+          newAccelData = false;
+          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+            dataPacket.auxValues[i] = accelArray[i];
+            dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+          }
+        }
+        getRawValues(dataPacket);
+        // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+        curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+
+        if (eegDataSource == DATASOURCE_GANGLION) {
+          ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+        } else {
+          cyton.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+        }
+
+        // KILL SPIKES!!!
+        if(werePacketsDroppedGang){
+          // println("Packets Dropped ... doing some stuff...");
+          for(int i = numPacketsDroppedGang; i > 0; i--){
+            int tempDataPacketInd = curDataPacketInd - i; //
+            if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+              // println("i = " + i);
+              if (eegDataSource == DATASOURCE_GANGLION) {
+                ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+              } else {
+                cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+              }
+            } else {
+              if (eegDataSource == DATASOURCE_GANGLION) {
+                ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+              } else {
+                cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+              }
+            }
+            //put the last stored packet in # of packets dropped after that packet
+          }
+
+          //reset werePacketsDropped & numPacketsDropped
+          werePacketsDroppedGang = false;
+          numPacketsDroppedGang = 0;
+        }
+
+        switch (outputDataSource) {
+          case OUTPUT_SOURCE_ODF:
+            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), get_scale_fac_accel_G_per_count());
+            break;
+          case OUTPUT_SOURCE_BDF:
+            // curBDFDataPacketInd = curDataPacketInd;
+            // thread("writeRawData_dataPacket_bdf");
+            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+            break;
+          case OUTPUT_SOURCE_NONE:
+          default:
+            // Do nothing...
+            break;
+        }
+        newPacketCounter++;
+      } else {
+        bleErrorCounter++;
+        println("Ganglion: parseMessage: data: bad");
+      }
     }
   }
 
@@ -281,10 +380,10 @@ class OpenBCI_Hub {
       println("Node process up!");
     }
     if (code == RESP_ERROR_BAD_NOBLE_START) {
-      println("OpenBCI_Hub: processStatus: Problem in the Hub");
+      println("Hub: processStatus: Problem in the Hub");
       output("Problem starting Ganglion Hub. Please make sure compatible USB is configured, then restart this GUI.");
     } else {
-      println("OpenBCI_Hub: processStatus: Started Successfully");
+      println("Hub: processStatus: Started Successfully");
     }
   }
 
@@ -370,7 +469,7 @@ class OpenBCI_Hub {
 
   public void updateSyncState() {
     //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-    if ((millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == openBCI.STATE_COMINIT) ) {
+    if ((millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
       // We are synced and ready to go!
       state = STATE_SYNCWITHHARDWARE;
     }
@@ -379,12 +478,24 @@ class OpenBCI_Hub {
 
   // CONNECTION
   public void connectBLE(String id) {
-    hub.safeTCPWrite(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
-
   public void disconnectBLE() {
     waitingForResponse = true;
-    hub.safeTCPWrite(TCP_CMD_DISCONNECT + TCP_STOP);
+    hub.write(TCP_CMD_DISCONNECT + TCP_STOP);
+  }
+
+  public void connectWifi(String id) {
+    hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+  }
+  public void disconnectWifi() {
+    waitingForResponse = true;
+    hub.write(TCP_CMD_DISCONNECT + TCP_STOP);
+  }
+
+  public void setProtocol(String _protocol) {
+    curProtocol = _protocol;
+    hub.write(TCP_CMD_PROTOCOL + "," + curProtocol + "," + TCP_STOP);
   }
 
   /**
@@ -392,7 +503,7 @@ class OpenBCI_Hub {
    * @params out {String} - The string message to write to the server.
    * @returns {boolean} - True if able to write, false otherwise.
    */
-  public boolean safeTCPWrite(String out) {
+  public boolean write(String out) {
     try {
       tcpClient.write(out);
       return true;

@@ -83,7 +83,7 @@ final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Acc
 public int eegDataSource = -1; //default to none of the options
 
 //Serial communications constants
-OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
+Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 
 int openBCI_baud = 115200; //baud rate from the Arduino
@@ -181,8 +181,8 @@ float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
 int reinitializeGUIdelay = 125;
 
-//openBCI data packet
-final int nDataBackBuff = 3*(int)openBCI.fs_Hz;
+//cyton data packet
+final int nDataBackBuff = 3*(int)cyton.fs_Hz;
 DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
 int curDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
@@ -303,7 +303,7 @@ public void initSystem(){
 
   //prepare data variables
   verbosePrint("Preparing data variables...");
-  dataBuffX = new float[(int)(dataBuff_len_sec * openBCI.fs_Hz)];
+  dataBuffX = new float[(int)(dataBuff_len_sec * cyton.fs_Hz)];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
   //data_std_uV = new float[nchan];
@@ -315,21 +315,21 @@ public void initSystem(){
     // dataPacketBuff[i] = new DataPacket_ADS1299(OpenBCI_Nchannels+n_aux_ifEnabled);
     dataPacketBuff[i] = new DataPacket_ADS1299(nchan,n_aux_ifEnabled);
   }
-  eegProcessing = new EEG_Processing(nchan,openBCI.fs_Hz);
-  eegProcessing_user = new EEG_Processing_User(nchan,openBCI.fs_Hz);
+  eegProcessing = new EEG_Processing(nchan,cyton.fs_Hz);
+  eegProcessing_user = new EEG_Processing_User(nchan,cyton.fs_Hz);
 
   //initialize the data
-  prepareData(dataBuffX, dataBuffY_uV,openBCI.fs_Hz);
+  prepareData(dataBuffX, dataBuffY_uV,cyton.fs_Hz);
 
   verbosePrint("-- Init 1 --");
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) { 
     println("a--"+Ichan);
-    fftBuff[Ichan] = new FFT(Nfft, openBCI.fs_Hz);
+    fftBuff[Ichan] = new FFT(Nfft, cyton.fs_Hz);
   };  //make the FFT objects
   println("b");
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, openBCI.fs_Hz);
+  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, cyton.fs_Hz);
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -344,7 +344,7 @@ public void initSystem(){
       int nEEDataValuesPerPacket = nchan;
       boolean useAux = false;
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
-      openBCI = new OpenBCI_ADS1299(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
+      cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
       break;
     case DATASOURCE_SYNTHETIC:
       //do nothing
@@ -359,7 +359,7 @@ public void initSystem(){
         println("   : quitting...");
         exit();
       }
-      println("OpenBCI_GUI: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(PApplet.parseFloat(playbackData_table.getRowCount())/openBCI.fs_Hz) + " seconds of EEG data");
+      println("OpenBCI_GUI: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(PApplet.parseFloat(playbackData_table.getRowCount())/cyton.fs_Hz) + " seconds of EEG data");
       
       //removing first column of data from data file...the first column is a time index and not eeg data
       playbackData_table.removeColumn(0);
@@ -373,7 +373,7 @@ public void initSystem(){
   initializeGUI();
   
   //final config
-  // setBiasState(openBCI.isBiasAuto);
+  // setBiasState(cyton.isBiasAuto);
   verbosePrint("-- Init 4 --");
 
   //open data file
@@ -385,7 +385,7 @@ public void initSystem(){
     systemMode = 10; //tell system it's ok to leave control panel and start interfacing GUI
   }
   //sync GUI default settings with OpenBCI's default settings...
-  // syncWithHardware(); //this starts the sequence off ... read in OpenBCI_ADS1299 iterates through the rest based on the ASCII trigger "$$$"
+  // syncWithHardware(); //this starts the sequence off ... read in Cyton iterates through the rest based on the ASCII trigger "$$$"
   // verbosePrint("-- Init 5 [COMPLETE] --");
 }
 
@@ -461,7 +461,7 @@ public void syncWithHardware(){
       break;
     case 6:
       output("The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-      openBCI.changeState(openBCI.STATE_STOPPED);
+      cyton.changeState(cyton.STATE_STOPPED);
       systemMode = 10;
       break; 
   }
@@ -491,8 +491,8 @@ public void haltSystem(){
       serial_openBCI.write("j"); // tell the SD file to close if one is open...
       delay(100); //make sure 'j' gets sent to the board
       readyToSend = false;
-      openBCI.closeSerialPort();   //disconnect from serial port
-      openBCI.prevState_millis = 0;  //reset OpenBCI_ADS1299 state clock to use as a conditional for timing at the beginnign of systemUpdate()
+      cyton.closeSerialPort();   //disconnect from serial port
+      cyton.prevState_millis = 0;  //reset Cyton state clock to use as a conditional for timing at the beginnign of systemUpdate()
       hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
     }
   }
@@ -531,17 +531,17 @@ public void draw() {
 public void systemUpdate(){ // for updating data values and variables
 
   //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-  if(millis() - openBCI.prevState_millis > openBCI.COM_INIT_MSEC && openBCI.prevState_millis != 0 && openBCI.state == openBCI.STATE_COMINIT){
-    openBCI.state = openBCI.STATE_SYNCWITHHARDWARE;
+  if(millis() - cyton.prevState_millis > cyton.COM_INIT_MSEC && cyton.prevState_millis != 0 && cyton.state == cyton.STATE_COMINIT){
+    cyton.state = cyton.STATE_SYNCWITHHARDWARE;
     timeOfLastCommand = millis();
     serial_openBCI.clear();
-    openBCI.defaultChannelSettings = "";
+    cyton.defaultChannelSettings = "";
     println("[0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
     serial_openBCI.write('v');
   }
 
   //if we are in SYNC WITH HARDWARE state ... trigger a command
-  if(openBCI.state == openBCI.STATE_SYNCWITHHARDWARE && currentlySyncing == false){
+  if(cyton.state == cyton.STATE_SYNCWITHHARDWARE && currentlySyncing == false){
     if(millis() - timeOfLastCommand > 200 && readyToSend == true){
       timeOfLastCommand = millis();
       hardwareSyncStep++;
@@ -646,13 +646,13 @@ public void systemDraw(){ //for drawing to the screen
       //update the title of the figure;
       switch (eegDataSource) {
         case DATASOURCE_NORMAL: case DATASOURCE_NORMAL_W_AUX:
-          frame.setTitle(PApplet.parseInt(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + PApplet.parseInt(PApplet.parseFloat(fileoutput.getRowsWritten())/openBCI.fs_Hz) + " secs Saved, Writing to " + output_fname);
+          frame.setTitle(PApplet.parseInt(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + PApplet.parseInt(PApplet.parseFloat(fileoutput.getRowsWritten())/cyton.fs_Hz) + " secs Saved, Writing to " + output_fname);
           break;
         case DATASOURCE_SYNTHETIC:
           frame.setTitle(PApplet.parseInt(frameRate) + " fps, Using Synthetic EEG Data");
           break;
         case DATASOURCE_PLAYBACKFILE:
-          frame.setTitle(PApplet.parseInt(frameRate) + " fps, Playing " + PApplet.parseInt(PApplet.parseFloat(currentTableRowIndex)/openBCI.fs_Hz) + " of " + PApplet.parseInt(PApplet.parseFloat(playbackData_table.getRowCount())/openBCI.fs_Hz) + " secs, Reading from: " + playbackData_fname);
+          frame.setTitle(PApplet.parseInt(frameRate) + " fps, Playing " + PApplet.parseInt(PApplet.parseFloat(currentTableRowIndex)/cyton.fs_Hz) + " of " + PApplet.parseInt(PApplet.parseFloat(playbackData_table.getRowCount())/cyton.fs_Hz) + " secs, Reading from: " + playbackData_fname);
           break;
       } 
     }
@@ -691,7 +691,7 @@ public void systemDraw(){ //for drawing to the screen
   controlPanelCollapser.draw();
   helpWidget.draw();
 
-  if((openBCI.state == openBCI.STATE_COMINIT || openBCI.state == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == 0){
+  if((cyton.state == cyton.STATE_COMINIT || cyton.state == cyton.STATE_SYNCWITHHARDWARE) && systemMode == 0){
     //make out blink the text "Initalizing GUI..."
     if(millis()%1000 < 500){
       output("Iniitializing communication w/ your OpenBCI board...");
@@ -718,14 +718,14 @@ public int getDataIfAvailable(int pointCounter) {
     //get data from serial port as it streams in
 
       //first, get the new data (if any is available)
-      // openBCI.finalizeCOMINIT(); //this is trying to listen to the openBCI hardware.  New data is put into dataPacketBuff and increments curDataPacketInd.
+      // cyton.finalizeCOMINIT(); //this is trying to listen to the cyton hardware.  New data is put into dataPacketBuff and increments curDataPacketInd.
       
       //next, gather any new data into the "little buffer"
       while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
         lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
         for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
           //scale the data into engineering units ("microvolts") and save to the "little buffer"
-          yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * openBCI.scale_fac_uVolts_per_count;
+          yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * cyton.scale_fac_uVolts_per_count;
         } 
         pointCounter++; //increment counter for "little buffer"
       }
@@ -736,7 +736,7 @@ public int getDataIfAvailable(int pointCounter) {
     int current_millis = millis();
     if (current_millis >= nextPlayback_millis) {
       //prepare for next time
-      int increment_millis = PApplet.parseInt(round(PApplet.parseFloat(nPointsPerUpdate)*1000.f/openBCI.fs_Hz)/playback_speed_fac);
+      int increment_millis = PApplet.parseInt(round(PApplet.parseFloat(nPointsPerUpdate)*1000.f/cyton.fs_Hz)/playback_speed_fac);
       if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
       nextPlayback_millis += increment_millis;
 
@@ -747,10 +747,10 @@ public int getDataIfAvailable(int pointCounter) {
         dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
         switch (eegDataSource) {
           case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)   
-            synthesizeData(nchan, openBCI.fs_Hz, openBCI.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
+            synthesizeData(nchan, cyton.fs_Hz, cyton.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
             break;
           case DATASOURCE_PLAYBACKFILE: 
-            currentTableRowIndex=getPlaybackDataFromTable(playbackData_table,currentTableRowIndex,openBCI.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
+            currentTableRowIndex=getPlaybackDataFromTable(playbackData_table,currentTableRowIndex,cyton.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
             break;
           default:
             //no action
@@ -758,7 +758,7 @@ public int getDataIfAvailable(int pointCounter) {
         //gather the data into the "little buffer"
         for (int Ichan=0; Ichan < nchan; Ichan++) {
           //scale the data into engineering units..."microvolts"
-          yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* openBCI.scale_fac_uVolts_per_count;
+          yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* cyton.scale_fac_uVolts_per_count;
         }
         pointCounter++;
       } //close the loop over data points
@@ -863,7 +863,7 @@ public void processNewData() {
   for (int Ichan=0;Ichan < nchan; Ichan++) is_railed[Ichan].update(dataPacketBuff[lastReadDataPacketInd].values[Ichan]);
 
   //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
-  for (int Ichan=0;Ichan < nchan; Ichan++) data_elec_imp_ohm[Ichan] = (sqrt(2.0f)*eegProcessing.data_std_uV[Ichan]*1.0e-6f) / openBCI.leadOffDrive_amps;     
+  for (int Ichan=0;Ichan < nchan; Ichan++) data_elec_imp_ohm[Ichan] = (sqrt(2.0f)*eegProcessing.data_std_uV[Ichan]*1.0e-6f) / cyton.leadOffDrive_amps;     
 }
 
 //here is the routine that listens to the serial port.
@@ -871,35 +871,35 @@ public void processNewData() {
 //pre-allocated dataPacketBuff
 public void serialEvent(Serial port) {
   //check to see which serial port it is
-  // if (port == openBCI.serial_openBCI) {
+  // if (port == cyton.serial_openBCI) {
   // println("SE " + millis());
   if (port == serial_openBCI) {
-    // boolean echoBytes = !openBCI.isStateNormal(); 
+    // boolean echoBytes = !cyton.isStateNormal(); 
     boolean echoBytes;
 
-    if(openBCI.isStateNormal() != true){  // || printingRegisters == true){
+    if(cyton.isStateNormal() != true){  // || printingRegisters == true){
       echoBytes = true;
     } else{
       echoBytes = false;
     }
 
-    // openBCI.read(true);
-    openBCI.read(echoBytes);
+    // cyton.read(true);
+    cyton.read(echoBytes);
     openBCI_byteCount++;
-    if (openBCI.isNewDataPacketAvailable) {
+    if (cyton.isNewDataPacketAvailable) {
       //copy packet into buffer of data packets
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
-      openBCI.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
+      cyton.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  //resets isNewDataPacketAvailable to false
       
       // //write this chunk of data to file
       // println("-------------------------------------------------------------------------");
       // println("New Packet Available [" + tempCounter + "]");
       // println("dataPacketBuff[curDataPacketInd] = " + dataPacketBuff[curDataPacketInd]);
-      // println("openBCI.scale_fac_uVolts_per_count = " + openBCI.scale_fac_uVolts_per_count);
+      // println("cyton.scale_fac_uVolts_per_count = " + cyton.scale_fac_uVolts_per_count);
       // println("nchan = " + nchan);
       newPacketCounter++;
 
-      fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd],openBCI.scale_fac_uVolts_per_count,openBCI.scale_fac_accel_G_per_count);
+      fileoutput.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd],cyton.scale_fac_uVolts_per_count,cyton.scale_fac_accel_G_per_count);
     }
   } 
   else {
@@ -979,7 +979,7 @@ public void mousePressed() {
           // }
           // if (gui.biasButton.isMouseHere()) { 
           //   gui.biasButton.setIsActive(true);
-          //   setBiasState(!openBCI.isBiasAuto);
+          //   setBiasState(!cyton.isBiasAuto);
           // }      
           // break;
         case Gui_Manager.GUI_PAGE_HEADPLOT_SETUP:
@@ -1133,15 +1133,15 @@ public void printRegisters(){
 }
 
 public void stopRunning() {
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+    // cyton.changeState(0); //make sure it's no longer interpretting as binary
     verbosePrint("stopRunning...");
     output("Data stream stopped.");
-    if (openBCI != null) {
-      openBCI.stopDataTransfer();
+    if (cyton != null) {
+      cyton.stopDataTransfer();
     }
     timeSinceStopRunning = millis(); //used as a timer to prevent misc. bytes from flooding serial...
     isRunning = false;
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+    // cyton.changeState(0); //make sure it's no longer interpretting as binary
     // systemMode = 0;
     // closeLogFile();
 }
@@ -1150,7 +1150,7 @@ public void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
     if ((eegDataSource == DATASOURCE_NORMAL) || (eegDataSource == DATASOURCE_NORMAL_W_AUX)) {
-      if (openBCI != null) openBCI.startDataTransfer();
+      if (cyton != null) cyton.startDataTransfer();
     }
     isRunning = true;
 }
@@ -1277,7 +1277,7 @@ public void activateChannel(int Ichan) {
   if(eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX){
     if (serial_openBCI != null){
       verbosePrint("**");
-      openBCI.changeChannelState(Ichan, true); //activate
+      cyton.changeChannelState(Ichan, true); //activate
     }
   }
   if (Ichan < gui.chanButtons.length){
@@ -1291,7 +1291,7 @@ public void deactivateChannel(int Ichan) {
   if(eegDataSource == DATASOURCE_NORMAL || eegDataSource == DATASOURCE_NORMAL_W_AUX){
     if (serial_openBCI != null) {
       verbosePrint("***");
-      openBCI.changeChannelState(Ichan, false); //de-activate
+      cyton.changeChannelState(Ichan, false); //de-activate
     }
   }
   if (Ichan < gui.chanButtons.length) {
@@ -1332,7 +1332,7 @@ public void deactivateChannel(int Ichan) {
 // void setChannelImpedanceState(int Ichan,boolean newstate,int code_P_N_Both) {
 //   if ((Ichan >= 0) && (Ichan < gui.impedanceButtonsP.length)) {
 //     //change the state of the OpenBCI channel itself
-//     if (openBCI != null) openBCI.changeImpedanceState(Ichan,newstate,code_P_N_Both);
+//     if (cyton != null) cyton.changeImpedanceState(Ichan,newstate,code_P_N_Both);
     
 //     //now update the button state
 //     if ((code_P_N_Both == 0) || (code_P_N_Both == 2)) {
@@ -1348,13 +1348,13 @@ public void deactivateChannel(int Ichan) {
 
 //=========== DEPRECATED w/ CHANNEL CONTROLLER ===========//
 // void setBiasState(boolean state) {
-//   openBCI.isBiasAuto = state;
+//   cyton.isBiasAuto = state;
   
-//   //send message to openBCI
-//   if (openBCI != null) openBCI.setBiasAutoState(state);
+//   //send message to cyton
+//   if (cyton != null) cyton.setBiasAutoState(state);
   
 //   //change button text
-//   if (openBCI.isBiasAuto) {
+//   if (cyton.isBiasAuto) {
 //     gui.biasButton.but_txt = "Bias\nAuto";
 //   } else {
 //     gui.biasButton.but_txt = "Bias\nFixed";
@@ -1369,10 +1369,10 @@ public void openNewLogFile(String _fileName) {
   }
   
   //open the new file
-  fileoutput = new OutputFile_rawtxt(openBCI.fs_Hz, _fileName);
+  fileoutput = new OutputFile_rawtxt(cyton.fs_Hz, _fileName);
   output_fname = fileoutput.fname;
-  println("openBCI: openNewLogFile: opened output file: " + output_fname);
-  output("openBCI: openNewLogFile: opened output file: " + output_fname);
+  println("cyton: openNewLogFile: opened output file: " + output_fname);
+  output("cyton: openNewLogFile: opened output file: " + output_fname);
 }
 
 public void closeLogFile() {
@@ -1442,8 +1442,8 @@ public void delay(int delay)
 //          println("OpenBCI_GUI: executing shutdown code...");
 //          try {
 //            stopRunning();
-//            if (openBCI != null) {
-//              openBCI.closeSerialPort();
+//            if (cyton != null) {
+//              cyton.closeSerialPort();
 //            }
 //            stop();
 //          } catch (Exception ex) {
@@ -1756,11 +1756,11 @@ class ChannelController {
 		verbosePrint("loading default channel settings to GUI's channel controller...");
 		for(int i = 0; i < nchan; i++){
 			for(int j = 0; j < numSettingsPerChannel; j++){ //channel setting values
-				channelSettingValues[i][j] = PApplet.parseChar(openBCI.defaultChannelSettings.toCharArray()[j]); //parse defaultChannelSettings string created in the OpenBCI_ADS1299 class
+				channelSettingValues[i][j] = PApplet.parseChar(cyton.defaultChannelSettings.toCharArray()[j]); //parse defaultChannelSettings string created in the Cyton class
 				if(j == numSettingsPerChannel - 1){
-					println(PApplet.parseChar(openBCI.defaultChannelSettings.toCharArray()[j]));
+					println(PApplet.parseChar(cyton.defaultChannelSettings.toCharArray()[j]));
 				} else{
-					print(PApplet.parseChar(openBCI.defaultChannelSettings.toCharArray()[j]) + ",");
+					print(PApplet.parseChar(cyton.defaultChannelSettings.toCharArray()[j]) + ",");
 				}
 			}
 			for(int k = 0; k < 2; k++){ //impedance setting values
@@ -2614,7 +2614,7 @@ class ControlPanel {
 					// prepare the serial port
 				    println("port is open? ... " + portIsOpen);
 				    if(portIsOpen == true){
-				      openBCI.closeSerialPort();
+				      cyton.closeSerialPort();
 				    }
 				    fileName = cp5.get(Textfield.class,"fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles 
 					initSystem();
@@ -3525,7 +3525,7 @@ class Gui_Manager {
 //    setupSpectrogram(gSpectrogram, win_x, win_y, axisMontage_relPos,displayTime_sec,fontInfo);
 //    int Nspec = 256;
 //    int Nstep = 32;
-//    spectrogram = new Spectrogram(Nspec,openBCI.fs_Hz,Nstep,displayTime_sec);
+//    spectrogram = new Spectrogram(Nspec,cyton.fs_Hz,Nstep,displayTime_sec);
 //    spectrogram.clim[0] = java.lang.Math.log(gFFT.getYAxis().getMinValue());   //set the minium value for the color scale on the spectrogram
 //    spectrogram.clim[1] = java.lang.Math.log(gFFT.getYAxis().getMaxValue()/10.0); //set the maximum value for the color scale on the spectrogram
 //    updateMaxDisplayFreq();
@@ -5570,7 +5570,7 @@ final String[] command_activate_channel_daisy = {"Q", "W", "E", "R", "T", "Y", "
 
 // ArrayList defaultChannelSettings;
 
-class OpenBCI_ADS1299 {
+class Cyton {
   
   //final static int DATAMODE_TXT = 0;
   final static int DATAMODE_BIN = 2;
@@ -5621,18 +5621,18 @@ class OpenBCI_ADS1299 {
   String defaultChannelSettings = "";
   
   //constructors
-  OpenBCI_ADS1299() {};  //only use this if you simply want access to some of the constants
-  OpenBCI_ADS1299(PApplet applet, String comPort, int baud, int nEEGValuesPerPacket, boolean useAux, int nAuxValuesPerPacket) {
+  Cyton() {};  //only use this if you simply want access to some of the constants
+  Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerPacket, boolean useAux, int nAuxValuesPerPacket) {
     nAuxValues=nAuxValuesPerPacket;
     
     //choose data mode
-    println("OpenBCI_ADS1299: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket = " + nEEGValuesPerPacket);
+    println("Cyton: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket = " + nEEGValuesPerPacket);
     if (prefered_datamode == DATAMODE_BIN_WAUX) {
       if (!useAux) {
         //must be requesting the aux data, so change the referred data mode
         prefered_datamode = DATAMODE_BIN;
         nAuxValues = 0;
-        //println("OpenBCI_ADS1299: nAuxValuesPerPacket = " + nAuxValuesPerPacket + " so setting prefered_datamode to " + prefered_datamode);
+        //println("Cyton: nAuxValuesPerPacket = " + nAuxValuesPerPacket + " so setting prefered_datamode to " + prefered_datamode);
       }
     }
 
@@ -5663,7 +5663,7 @@ class OpenBCI_ADS1299 {
   private int openSerialPort(PApplet applet, String comPort, int baud) {
     
     try {
-      println("OpenBCI_ADS1299: attempting to open serial port " + openBCI_portName);
+      println("Cyton: attempting to open serial port " + openBCI_portName);
       serial_openBCI = new Serial(applet,comPort,baud); //open the com port
       serial_openBCI.clear(); // clear anything in the com port's buffer    
       portIsOpen = true;
@@ -5691,8 +5691,8 @@ class OpenBCI_ADS1299 {
     // if (state == STATE_COMINIT) {
     //   // println("Initializing Serial: millis() = " + millis());
     //   if ((millis() - prevState_millis) > COM_INIT_MSEC) {
-    //     //serial_openBCI.write(command_activates + "\n"); println("Processing: OpenBCI_ADS1299: activating filters");
-    //     println("OpenBCI_ADS1299: State = NORMAL");
+    //     //serial_openBCI.write(command_activates + "\n"); println("Processing: Cyton: activating filters");
+    //     println("Cyton: State = NORMAL");
         changeState(STATE_NORMAL);
     //     // startRunning();
     //   }
@@ -5719,7 +5719,7 @@ class OpenBCI_ADS1299 {
   
   //start the data transfer using the current mode
   // int startDataTransfer() {
-  //   println("OpenBCI_ADS1299: startDataTransfer: using current dataMode..." + dataMode);
+  //   println("Cyton: startDataTransfer: using current dataMode..." + dataMode);
   //   return startDataTransfer(dataMode);
   // }
   
@@ -5727,20 +5727,20 @@ class OpenBCI_ADS1299 {
   // int startDataTransfer(int mode) {
   //   dataMode = mode;
   //   if (state == STATE_COMINIT) {
-  //     println("OpenBCI_ADS1299: startDataTransfer: cannot start transfer...waiting for comms...");
+  //     println("Cyton: startDataTransfer: cannot start transfer...waiting for comms...");
   //     return -1;
   //   }
   //   // stopDataTransfer();
-  //   // println("OpenBCI_ADS1299: startDataTransfer: received command for mode = " + mode);
+  //   // println("Cyton: startDataTransfer: received command for mode = " + mode);
   //   // switch (mode) {
   //   //   case DATAMODE_BIN:
   //   //     serial_openBCI.write(command_startBinary);// + "\n");
   //   //     // serial_openBCI.write(command_startBinary);
-  //   //     println("OpenBCI_ADS1299: startDataTransfer: starting binary transfer");
+  //   //     println("Cyton: startDataTransfer: starting binary transfer");
   //   //     break;
   //   //   case DATAMODE_BIN_WAUX:
   //   //     serial_openBCI.write(command_startBinary_wAux);// + "\n");
-  //   //     println("OpenBCI_ADS1299: startDataTransfer: starting binary transfer (with Aux)");
+  //   //     println("Cyton: startDataTransfer: starting binary transfer (with Aux)");
   //   //     break;
   //   // }
 
@@ -5751,7 +5751,7 @@ class OpenBCI_ADS1299 {
     if (serial_openBCI != null) {
       serial_openBCI.clear(); // clear anything in the com port's buffer
       // stopDataTransfer();
-      openBCI.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
+      cyton.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
       println("writing \'" + command_startBinary + "\' to the serial port...");
       serial_openBCI.write(command_startBinary);
     }
@@ -5760,7 +5760,7 @@ class OpenBCI_ADS1299 {
   public void stopDataTransfer() {
     if (serial_openBCI != null) {
       serial_openBCI.clear(); // clear anything in the com port's buffer
-      openBCI.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
+      cyton.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
       println("writing \'" + command_stop + "\' to the serial port...");
       serial_openBCI.write(command_stop);// + "\n");
     }
@@ -5810,7 +5810,7 @@ class OpenBCI_ADS1299 {
       try {
        output.write(inByte);   //for debugging  WEA 2014-01-26
       } catch (IOException e) {
-        System.err.println("OpenBCI_ADS1299: Caught IOException: " + e.getMessage());
+        System.err.println("Cyton: Caught IOException: " + e.getMessage());
         //do nothing
       }
     }
@@ -5844,12 +5844,12 @@ class OpenBCI_ADS1299 {
 
   public void interpretBinaryStream(byte actbyte)
   { 
-    //println("OpenBCI_ADS1299: interpretBinaryStream: PACKET_readstate " + PACKET_readstate);
+    //println("Cyton: interpretBinaryStream: PACKET_readstate " + PACKET_readstate);
     switch (PACKET_readstate) {
       case 0:  
          //look for header byte  
          if (actbyte == PApplet.parseByte(0xA0)) {          // look for start indicator
-          // println("OpenBCI_ADS1299: interpretBinaryStream: found 0xA0");
+          // println("Cyton: interpretBinaryStream: found 0xA0");
           PACKET_readstate++;
          } 
          break;
@@ -5861,7 +5861,7 @@ class OpenBCI_ADS1299 {
         if ((dataPacket.sampleIndex-prevSampleIndex) != 1) {
           if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
             serialErrorCounter++;
-            println("OpenBCI_ADS1299: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
+            println("Cyton: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
           }
         }
         prevSampleIndex = dataPacket.sampleIndex;
@@ -5879,7 +5879,7 @@ class OpenBCI_ADS1299 {
           localChannelCounter++;
           if (localChannelCounter==8) { //nDataValuesInPacket) {  
             // all ADS channels arrived !
-            //println("OpenBCI_ADS1299: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
+            //println("Cyton: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
             PACKET_readstate++;
             if (prefered_datamode != DATAMODE_BIN_WAUX) PACKET_readstate++;  //if not using AUX, skip over the next readstate
             localByteCounter = 0;
@@ -5901,7 +5901,7 @@ class OpenBCI_ADS1299 {
           localChannelCounter++;
           if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {  
             // all Accelerometer channels arrived !
-            //println("OpenBCI_ADS1299: interpretBinaryStream: Accel Data: " + dataPacket.auxValues[0] + ", " + dataPacket.auxValues[1] + ", " + dataPacket.auxValues[2]);
+            //println("Cyton: interpretBinaryStream: Accel Data: " + dataPacket.auxValues[0] + ", " + dataPacket.auxValues[1] + ", " + dataPacket.auxValues[2]);
             PACKET_readstate++;
             localByteCounter = 0;
             //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
@@ -5916,18 +5916,18 @@ class OpenBCI_ADS1299 {
         // println("case 4");
         if (actbyte == PApplet.parseByte(0xC0)) {    // if correct end delimiter found:
           // println("... 0xC0 found");
-          //println("OpenBCI_ADS1299: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
+          //println("Cyton: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
           isNewDataPacketAvailable = true; //original place for this.  but why not put it in the previous case block
         } else {
           serialErrorCounter++;
           println("Actbyte = " + actbyte);
-          println("OpenBCI_ADS1299: interpretBinaryStream: expecteding end-of-packet byte is missing.  Discarding packet. (" + serialErrorCounter + ")");
+          println("Cyton: interpretBinaryStream: expecteding end-of-packet byte is missing.  Discarding packet. (" + serialErrorCounter + ")");
         }
         PACKET_readstate=0;  // either way, look for next packet
         break;
       default: 
-          //println("OpenBCI_ADS1299: Unknown byte: " + actbyte + " .  Continuing...");
-          println("OpenBCI_ADS1299: interpretBinaryStream: Unknown byte.  Continuing...");
+          //println("Cyton: Unknown byte: " + actbyte + " .  Continuing...");
+          println("Cyton: interpretBinaryStream: Unknown byte.  Continuing...");
           PACKET_readstate=0;  // look for next packet
     }
   } // end of interpretBinaryStream
@@ -5968,7 +5968,7 @@ class OpenBCI_ADS1299 {
   
   // ---- DEPRECATED ---- 
   // public void changeImpedanceState(int Ichan,boolean activate,int code_P_N_Both) {
-  //   //println("OpenBCI_ADS1299: changeImpedanceState: Ichan " + Ichan + ", activate " + activate + ", code_P_N_Both " + code_P_N_Both);
+  //   //println("Cyton: changeImpedanceState: Ichan " + Ichan + ", activate " + activate + ", code_P_N_Both " + code_P_N_Both);
   //   if (serial_openBCI != null) {
   //     if ((Ichan >= 0) && (Ichan < command_activate_leadoffP_channel.length)) {
   //       if (activate) {
@@ -5995,10 +5995,10 @@ class OpenBCI_ADS1299 {
   // public void setBiasAutoState(boolean isAuto) {
   //   if (serial_openBCI != null) {
   //     if (isAuto) {
-  //       println("OpenBCI_ADS1299: setBiasAutoState: setting bias to AUTO");
+  //       println("Cyton: setBiasAutoState: setting bias to AUTO");
   //       serial_openBCI.write(command_biasAuto);
   //     } else {
-  //       println("OpenBCI_ADS1299: setBiasAutoState: setting bias to REF ONLY");
+  //       println("Cyton: setBiasAutoState: setting bias to REF ONLY");
   //       serial_openBCI.write(command_biasFixed);
   //     }
   //   }
@@ -6057,7 +6057,7 @@ class OpenBCI_ADS1299 {
 //      return 0;
 //    } else {
 //      //int n_bytes = int(serialBuff[startInd + 1]); //this is the number of bytes in the payload
-//      //println("OpenBCI_ADS1299: measurePacketLength = " + (endInd-startInd+1));
+//      //println("Cyton: measurePacketLength = " + (endInd-startInd+1));
 //      return endInd-startInd+1;
 //    }
 
@@ -6237,7 +6237,7 @@ public void parseKey(char val) {
       // stopButtonWasPressed();
       break;
     case 'n':
-      println("openBCI: " + openBCI);
+      println("cyton: " + cyton);
       break;
 
     case '?':
@@ -6311,7 +6311,7 @@ public void parseKey(char val) {
 
     default:
      println("OpenBCI_GUI: '" + key + "' Pressed...sending to OpenBCI...");
-     // if (openBCI.serial_openBCI != null) openBCI.serial_openBCI.write(key);//send the value as ascii with a newline character
+     // if (cyton.serial_openBCI != null) cyton.serial_openBCI.write(key);//send the value as ascii with a newline character
      if (serial_openBCI != null) serial_openBCI.write(key);//send the value as ascii with a newline character
     
      break;
@@ -6619,7 +6619,7 @@ public void convertSDFile(){
 			  
 				//if not first column(sample #) or columns 9-11 (accelerometer), convert to uV
 				if(i>=1 && i<=8){
-					intData[i] *= openBCI.scale_fac_uVolts_per_count;
+					intData[i] *= cyton.scale_fac_uVolts_per_count;
 				}
 			  
 				//print the current channel value

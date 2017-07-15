@@ -122,7 +122,7 @@ class W_accelerometer extends Widget {
 
   }
 
-  public void initPlayground(OpenBCI_ADS1299 _OBCI) {
+  public void initPlayground(Cyton _OBCI) {
     OBCI_inited = true;
   }
 
@@ -151,9 +151,9 @@ class W_accelerometer extends Widget {
         currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
         shiftWave();
       } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-        currentXvalue = openBCI.validAuxValues[0] * openBCI.get_scale_fac_accel_G_per_count();
-        currentYvalue = openBCI.validAuxValues[1] * openBCI.get_scale_fac_accel_G_per_count();
-        currentZvalue = openBCI.validAuxValues[2] * openBCI.get_scale_fac_accel_G_per_count();
+        currentXvalue = cyton.validAuxValues[0] * cyton.get_scale_fac_accel_G_per_count();
+        currentYvalue = cyton.validAuxValues[1] * cyton.get_scale_fac_accel_G_per_count();
+        currentZvalue = cyton.validAuxValues[2] * cyton.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
           int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);

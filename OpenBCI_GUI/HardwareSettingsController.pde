@@ -23,9 +23,9 @@ public void updateChannelArrays(int _nchan) {
 void activateChannel(int Ichan) {
   println("OpenBCI_GUI: activating channel " + (Ichan+1));
   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-    if (openBCI.isSerialPortOpen()) {
+    if (cyton.isSerialPortOpen()) {
       verbosePrint("**");
-      openBCI.changeChannelState(Ichan, true); //activate
+      cyton.changeChannelState(Ichan, true); //activate
     }
   } else if (eegDataSource == DATASOURCE_GANGLION) {
     // println("activating channel on ganglion");
@@ -39,9 +39,9 @@ void activateChannel(int Ichan) {
 void deactivateChannel(int Ichan) {
   println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-    if (openBCI.isSerialPortOpen()) {
+    if (cyton.isSerialPortOpen()) {
       verbosePrint("**");
-      openBCI.changeChannelState(Ichan, false); //de-activate
+      cyton.changeChannelState(Ichan, false); //de-activate
     }
   } else if (eegDataSource == DATASOURCE_GANGLION) {
     // println("deactivating channel on ganglion");
@@ -208,20 +208,20 @@ class HardwareSettingsController{
     //then reset to 1
 
     //
-    if (openBCI.get_isWritingChannel()) {
-      openBCI.writeChannelSettings(channelToWrite,channelSettingValues);
+    if (cyton.get_isWritingChannel()) {
+      cyton.writeChannelSettings(channelToWrite,channelSettingValues);
     }
 
-    if (rewriteChannelWhenDoneWriting == true && openBCI.get_isWritingChannel() == false) {
+    if (rewriteChannelWhenDoneWriting == true && cyton.get_isWritingChannel() == false) {
       initChannelWrite(channelToWriteWhenDoneWriting);
       rewriteChannelWhenDoneWriting = false;
     }
 
-    if (openBCI.get_isWritingImp()) {
-      openBCI.writeImpedanceSettings(impChannelToWrite,impedanceCheckValues);
+    if (cyton.get_isWritingImp()) {
+      cyton.writeImpedanceSettings(impChannelToWrite,impedanceCheckValues);
     }
 
-    if (rewriteImpedanceWhenDoneWriting == true && openBCI.get_isWritingImp() == false) {
+    if (rewriteImpedanceWhenDoneWriting == true && cyton.get_isWritingImp() == false) {
       initImpWrite(impChannelToWriteWhenDoneWriting, final_pORn, final_onORoff);
       rewriteImpedanceWhenDoneWriting = false;
     }
@@ -279,11 +279,11 @@ class HardwareSettingsController{
     for (int i = 0; i < nchan; i++) {
       verbosePrint("chan: " + i + " ");
       for (int j = 0; j < numSettingsPerChannel; j++) { //channel setting values
-        channelSettingValues[i][j] = char(openBCI.get_defaultChannelSettings().toCharArray()[j]); //parse defaultChannelSettings string created in the OpenBCI_ADS1299 class
+        channelSettingValues[i][j] = char(cyton.get_defaultChannelSettings().toCharArray()[j]); //parse defaultChannelSettings string created in the Cyton class
         if (j == numSettingsPerChannel - 1) {
-          println(char(openBCI.get_defaultChannelSettings().toCharArray()[j]));
+          println(char(cyton.get_defaultChannelSettings().toCharArray()[j]));
         } else {
-          print(char(openBCI.get_defaultChannelSettings().toCharArray()[j]) + ",");
+          print(char(cyton.get_defaultChannelSettings().toCharArray()[j]) + ",");
         }
       }
       for (int k = 0; k < 2; k++) { //impedance setting values
@@ -303,9 +303,9 @@ class HardwareSettingsController{
   void activateChannel(int Ichan) {
     println("OpenBCI_GUI: activating channel " + (Ichan+1));
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-      if (openBCI.isSerialPortOpen()) {
+      if (cyton.isSerialPortOpen()) {
         verbosePrint("**");
-        openBCI.changeChannelState(Ichan, true); //activate
+        cyton.changeChannelState(Ichan, true); //activate
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       // println("activating channel on ganglion");
@@ -320,9 +320,9 @@ class HardwareSettingsController{
   void deactivateChannel(int Ichan) {
     println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-      if (openBCI.isSerialPortOpen()) {
+      if (cyton.isSerialPortOpen()) {
         verbosePrint("**");
-        openBCI.changeChannelState(Ichan, false); //de-activate
+        cyton.changeChannelState(Ichan, false); //de-activate
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       // println("deactivating channel on ganglion");
@@ -355,7 +355,7 @@ class HardwareSettingsController{
 
     channelSettingValues[_numChannel][0] = '1'; //update powerUp/powerDown value of 2D array
     verbosePrint("Command: " + command_deactivate_channel[_numChannel]);
-    openBCI.deactivateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels
+    cyton.deactivateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels
   }
 
   public void powerUpChannel(int _numChannel) {
@@ -366,23 +366,23 @@ class HardwareSettingsController{
 
     channelSettingValues[_numChannel][0] = '0'; //update powerUp/powerDown value of 2D array
     verbosePrint("Command: " + command_activate_channel[_numChannel]);
-    openBCI.activateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels//assumes numChannel counts from zero (not one)...handles regular and daisy channels
+    cyton.activateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels//assumes numChannel counts from zero (not one)...handles regular and daisy channels
   }
 
   public void initChannelWrite(int _numChannel) {
     //after clicking any button, write the new settings for that channel to OpenBCI
-    if (!openBCI.get_isWritingImp()) { //make sure you aren't currently writing imp settings for a channel
+    if (!cyton.get_isWritingImp()) { //make sure you aren't currently writing imp settings for a channel
       verbosePrint("Writing channel settings for channel " + str(_numChannel+1) + " to OpenBCI!");
-      openBCI.initChannelWrite(_numChannel);
+      cyton.initChannelWrite(_numChannel);
       channelToWrite = _numChannel;
     }
   }
 
   public void initImpWrite(int _numChannel, char pORn, char onORoff) {
     //after clicking any button, write the new settings for that channel to OpenBCI
-    if (!openBCI.get_isWritingChannel()) { //make sure you aren't currently writing imp settings for a channel
+    if (!cyton.get_isWritingChannel()) { //make sure you aren't currently writing imp settings for a channel
       // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-      if (!openBCI.get_isWritingImp() && rewriteImpedanceWhenDoneWriting == false) {
+      if (!cyton.get_isWritingImp() && rewriteImpedanceWhenDoneWriting == false) {
         verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
         if (pORn == 'p') {
           impedanceCheckValues[_numChannel][0] = onORoff;
@@ -390,7 +390,7 @@ class HardwareSettingsController{
         if (pORn == 'n') {
           impedanceCheckValues[_numChannel][1] = onORoff;
         }
-        openBCI.initImpWrite(_numChannel);
+        cyton.initImpWrite(_numChannel);
         impChannelToWrite = _numChannel;
       } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
         verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
@@ -471,7 +471,7 @@ class HardwareSettingsController{
               channelSettingValues[i][j] = '0';
             }
             // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-            if (!openBCI.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
+            if (!cyton.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
               initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
             } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
               verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
@@ -594,7 +594,7 @@ class HardwareSettingsController{
   //             channelSettingValues[i][j] = '0';
   //           }
   //           // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-  //           if (!openBCI.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
+  //           if (!cyton.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
   //             initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
   //           } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
   //             verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");

@@ -245,7 +245,7 @@ void parseKey(char val) {
       // stopButtonWasPressed();
       break;
     case 'n':
-      println("openBCI: " + openBCI);
+      println("cyton: " + cyton);
       break;
 
     case '?':
@@ -256,8 +256,8 @@ void parseKey(char val) {
       verbosePrint("Updating GUI's channel settings to default...");
       // gui.cc.loadDefaultChannelSettings();
       w_timeSeries.hsc.loadDefaultChannelSettings();
-      //openBCI.serial_openBCI.write('d');
-      openBCI.configureAllChannelsToDefault();
+      //cyton.serial_openBCI.write('d');
+      cyton.configureAllChannelsToDefault();
       break;
 
     // //change the state of the impedance measurements...activate the N-channels
@@ -322,7 +322,7 @@ void parseKey(char val) {
     default:
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-        openBCI.sendChar(key);
+        cyton.sendChar(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
         ganglion.passthroughCommand(key);
