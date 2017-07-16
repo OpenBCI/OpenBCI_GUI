@@ -305,20 +305,13 @@ class InterfaceSerial {
     //prepare the serial port  ... close if open
     //println("InterfaceSerial: port is open? ... " + portIsOpen);
     //if(portIsOpen == true) {
-    if (isSerialPortOpen()) {
-      closeSerialPort();
-    }
-
-    println("InterfaceSerial: i = " + millis());
-    openSerialPort(applet, comPort, baud);
-    println("InterfaceSerial: j = " + millis());
 
     //open file for raw bytes
     //output = createOutput("rawByteDumpFromProcessing.bin");  //for debugging  WEA 2014-01-26
   }
 
   // //manage the serial port
-  private int openSerialPort(PApplet applet, String comPort, int baud) {
+  public int openSerialPort(PApplet applet, String comPort, int baud) {
 
     output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {

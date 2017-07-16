@@ -284,7 +284,10 @@ class ControlPanel {
 
     //boxes active when eegDataSource = Normal (OpenBCI)
     dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
-    serialBox = new SerialBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
+    interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
+
+    serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
@@ -302,12 +305,10 @@ class ControlPanel {
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
     // Ganglion
-    bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
     dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
 
-    wifiBox = new WifiBox(x + w, dataSourceBox.y, w, h, globalPadding);
-    interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
-    interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
+    wifiBox = new WifiBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
 
   }
 
@@ -446,6 +447,7 @@ class ControlPanel {
         if (cyton.getInterface() == INTERFACE_NONE) {
           interfaceBoxCyton.draw();
         } else {
+          interfaceBoxCyton.draw();
           if (cyton.getInterface() == INTERFACE_SERIAL) {
             serialBox.draw();
             cp5.get(MenuList.class, "serialList").setVisible(true);
@@ -506,6 +508,7 @@ class ControlPanel {
         if (ganglion.getInterface() == INTERFACE_NONE) {
           interfaceBoxGanglion.draw();
         } else {
+          interfaceBoxGanglion.draw();
           if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
             bleBox.draw();
             cp5.get(MenuList.class, "bleList").setVisible(true);
@@ -650,6 +653,21 @@ class ControlPanel {
         if (ovrChannel.isMouseHere()){
           ovrChannel.setIsActive(true);
           ovrChannel.wasPressed = true;
+        }
+
+        if (refreshWifi.isMouseHere()) {
+          refreshWifi.setIsActive(true);
+          refreshWifi.wasPressed = true;
+        }
+
+        if (protocolWifiCyton.isMouseHere()) {
+          protocolWifiCyton.setIsActive(true);
+          protocolWifiCyton.wasPressed = true;
+        }
+
+        if (protocolSerialCyton.isMouseHere()) {
+          protocolSerialCyton.setIsActive(true);
+          protocolSerialCyton.wasPressed = true;
         }
 
         // if (getPoll.isMouseHere()){
@@ -916,7 +934,8 @@ class ControlPanel {
     }
 
     if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
-      autoconnect();
+
+      // autoconnect();
       initButtonPressed();
       autoconnect.wasPressed = false;
       autoconnect.setIsActive(false);
@@ -963,6 +982,8 @@ class ControlPanel {
     }
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
+      println("protocolBLEGanglion");
+
       if (isHubObjectInitialized) {
         output("Protocol BLE Selected for Ganglion");
         ganglion.setInterface(INTERFACE_HUB_BLE);
@@ -972,7 +993,10 @@ class ControlPanel {
     }
 
     if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
+      println("protocolWifiGanglion");
+      println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
       if (isHubObjectInitialized) {
+        println("sup iim here ");
         output("Protocol Wifi Selected for Ganglion");
         ganglion.setInterface(INTERFACE_HUB_WIFI);
       } else {
@@ -981,14 +1005,17 @@ class ControlPanel {
     }
 
     if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
+      println("protocolSerialCyton");
+
       output("Protocol Wifi Selected for Cyton");
       cyton.setInterface(INTERFACE_SERIAL);
     }
 
     if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
+      println("protocolWifiCyton");
       if (isHubObjectInitialized) {
         output("Protocol Wifi Selected for Cyton");
-        cyton.setInterface(INTERFACE_SERIAL);
+        cyton.setInterface(INTERFACE_HUB_WIFI);
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1132,8 +1159,13 @@ class ControlPanel {
 
 public void initButtonPressed(){
   if (initSystemButton.but_txt == "START SYSTEM") {
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX && cyton.getInterface() == INTERFACE_SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
         output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+        output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
@@ -1142,11 +1174,18 @@ public void initButtonPressed(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion_portName == "N/A") {
-        output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
-        initSystemButton.wasPressed = false;
-        initSystemButton.setIsActive(false);
-        return;
+      } else if (eegDataSource == DATASOURCE_GANGLION) {
+        if (ganglion.getInterface() == INTERFACE_HUB_BLE && ganglion_portName == "N/A") {
+          output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+          initSystemButton.wasPressed = false;
+          initSystemButton.setIsActive(false);
+          return;
+        } else if (ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+          output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+          initSystemButton.wasPressed = false;
+          initSystemButton.setIsActive(false);
+          return;
+        }
       // } else if (eegDataSource == DATASOURCE_SYNTHETIC){
       //   nchan = 16;
       //   output("Starting system with 16 channels of synthetically generated data...");
@@ -1180,6 +1219,7 @@ public void initButtonPressed(){
           fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
         }
         midInit = true;
+        println("initSystem yoo");
         initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
     }
@@ -1440,11 +1480,11 @@ class InterfaceBoxCyton {
     x = _x;
     y = _y;
     w = _w;
-    h = 171 - 24 + _padding;
+    h = (24 + _padding) * 3;
     padding = _padding;
 
     protocolSerialCyton = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
-    protocolWifiCyton = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+    protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
   }
 
   public void update() {}
@@ -1473,11 +1513,11 @@ class InterfaceBoxGanglion {
     x = _x;
     y = _y;
     w = _w;
-    h = 171 - 24 + _padding;
+    h = (24 + _padding) * 3;
     padding = _padding;
 
     protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "BLE (on Win from Dongle)", fontInfo.buttonLabel_size);
-    protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+    protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
   }
 
   public void update() {}

@@ -33,7 +33,7 @@ void autoconnect(){
       try{
           serialPort = serialPorts[i];
           board = new Serial(this,serialPort,115200);
-          print("try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
+          print("blasss try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
           output("Attempting to connect at 115200 baud to " + serialPort);  // not working
           delay(5000);
 

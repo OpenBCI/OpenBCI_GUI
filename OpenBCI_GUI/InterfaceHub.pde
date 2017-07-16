@@ -111,6 +111,7 @@ class Hub {
   final static int RESP_SUCCESS_DATA_ACCEL = 202;
   final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
   final static int RESP_SUCCESS_DATA_SAMPLE = 204;
+  final static int RESP_WIFI_FOUND = 205;
   final static int RESP_STATUS_CONNECTED = 300;
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
@@ -415,6 +416,7 @@ class Hub {
     int code = Integer.parseInt(list[1]);
     switch(code) {
       case RESP_GANGLION_FOUND:
+      case RESP_WIFI_FOUND:
         // Sent every time a new ganglion device is found
         if (searchDeviceAdd(list[2])) {
           deviceListUpdated = true;
@@ -490,11 +492,25 @@ class Hub {
     return c == RESP_SUCCESS;
   }
 
-  public void updateSyncState() {
+  public void updateSyncState(int sdSetting) {
     //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-    if ((millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
-      // We are synced and ready to go!
+    if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
       state = STATE_SYNCWITHHARDWARE;
+      timeOfLastCommand = millis();
+      // potentialFailureMessage = "";
+      // defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
+      // daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
+      println("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
+      hub.write('v');
+    }
+
+    //if we are in SYNC WITH HARDWARE state ... trigger a command
+    if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
+      if (millis() - timeOfLastCommand > 200) {
+        timeOfLastCommand = millis();
+        // hardwareSyncStep++;
+        cyton.syncWithHardware(sdSetting);
+      }
     }
   }
 
@@ -508,6 +524,7 @@ class Hub {
   }
 
   public void connectWifi(String id) {
+
     hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
   public int disconnectWifi() {
@@ -518,7 +535,7 @@ class Hub {
 
   public void setProtocol(String _protocol) {
     curProtocol = _protocol;
-    hub.write(TCP_CMD_PROTOCOL + "," + curProtocol + "," + TCP_STOP);
+    hub.write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
   /**
@@ -528,6 +545,7 @@ class Hub {
    */
   public boolean write(String out) {
     try {
+      println("out" + out);
       tcpClient.write(out);
       return true;
     } catch (Exception e) {

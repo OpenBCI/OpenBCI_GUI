@@ -96,6 +96,8 @@ class Cyton {
 
   private int curInterface = INTERFACE_SERIAL;
 
+  PApplet mainApplet;
+
   //some get methods
   public float get_fs_Hz() {
     return fs_Hz;
@@ -131,6 +133,8 @@ class Cyton {
 
   public boolean setInterface(int _interface) {
     curInterface = _interface;
+    println("current interface: " + curInterface);
+    println("getInterface: " + getInterface());
     if (isWifi()) {
       hub.setProtocol(PROTOCOL_WIFI);
     }
@@ -140,7 +144,8 @@ class Cyton {
   //constructors
   Cyton() {
   };  //only use this if you simply want access to some of the constants
-  Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerPacket) {
+  Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerPacket, int _interface) {
+    curInterface = _interface;
     nAuxValues=nAuxValuesPerPacket;
 
     println("nEEGValuesPerPacket = " + nEEGValuesPerPacket);
@@ -182,14 +187,19 @@ class Cyton {
     }
 
     if (isSerial()) {
+      println("isSerial");
       //prepare the serial port  ... close if open
       if (isPortOpen()) {
         iSerial.closeSerialPort();
       }
-      iSerial.openSerialPort(applet, comPort, baud);
+      iSerial.openSerialPort(mainApplet, comPort, baud);
     } else if (isWifi()) {
       hub.connectWifi(comPort);
     }
+  }
+
+  public void initBoard() {
+
   }
 
   public int changeState(int newState) {
@@ -333,6 +343,7 @@ class Cyton {
   }
 
   private boolean isSerial () {
+    println("My interface is " + curInterface);
     return curInterface == INTERFACE_SERIAL;
   }
 

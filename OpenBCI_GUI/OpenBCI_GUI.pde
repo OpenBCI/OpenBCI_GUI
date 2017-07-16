@@ -579,10 +579,16 @@ void initSystem() {
   //prepare the source of the input data
   switch (eegDataSource) {
   case DATASOURCE_NORMAL_W_AUX:
+    println("heyro");
     int nEEDataValuesPerPacket = nchan;
     boolean useAux = false;
     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
-    cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
+    if (cyton.getInterface() == INTERFACE_SERIAL) {
+      cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+    } else {
+      cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+    }
+    cyton.initBoard();
     break;
   case DATASOURCE_SYNTHETIC:
     //do nothing
@@ -603,7 +609,11 @@ void initSystem() {
     playbackData_table.removeColumn(0);
     break;
   case DATASOURCE_GANGLION:
-    hub.connectBLE(ganglion_portName);
+    if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
+      hub.connectBLE(ganglion_portName);
+    } else {
+      hub.connectWifi(wifi_portName);
+    }
     break;
   default:
     break;
@@ -742,7 +752,7 @@ void haltSystem() {
   if (initSystemButton.but_txt == "STOP SYSTEM") {
     initSystemButton.but_txt = "START SYSTEM";
   }
-  
+
   stopRunning();  //stop data transfer
 
   //reset variables for data processing
@@ -759,7 +769,9 @@ void haltSystem() {
 
   //reset connect loadStrings
   openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-  ganglion_portName = "";
+  ganglion_portName = "N/A";
+  wifi_portName = "N/A";
+
   controlPanel.resetListItems();
 
   // w_networking.clearCP5(); //closes all networking controllers
@@ -788,6 +800,10 @@ void systemUpdate() { // for updating data values and variables
   //update the sync state with the OpenBCI hardware
   if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
     iSerial.updateSyncState(sdSetting);
+  }
+
+  if (hub.get_state() == hub.STATE_NOCOM || hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) {
+    hub.updateSyncState(sdSetting);
   }
 
   //prepare for updating the GUI
@@ -984,7 +1000,7 @@ void systemDraw() { //for drawing to the screen
   }
 
 
-  if ((iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+  if (((iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) || ((hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT)) {
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);

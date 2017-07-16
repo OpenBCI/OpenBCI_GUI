@@ -459,7 +459,9 @@ void mouseDragged() {
 //swtich yard if a click is detected
 void mousePressed() {
 
-  verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // println("systemMode" + systemMode);
+  // controlPanel.CPmousePressed();
 
   //if not before "Start System" ... i.e. after initial setup
   if (systemMode >= SYSTEMMODE_POSTINIT) {
