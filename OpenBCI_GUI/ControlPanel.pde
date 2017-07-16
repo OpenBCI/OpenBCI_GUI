@@ -288,6 +288,8 @@ class ControlPanel {
     interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
 
     serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
+    wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
+
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
@@ -308,13 +310,13 @@ class ControlPanel {
     bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
     dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
 
-    wifiBox = new WifiBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
 
   }
 
   public void resetListItems(){
     serialList.activeItem = -1;
     bleList.activeItem = -1;
+    wifiList.activeItem = -1;
   }
 
   public void open(){
@@ -362,6 +364,7 @@ class ControlPanel {
     channelPopup.update();
     serialList.updateMenu();
     bleList.updateMenu();
+    wifiList.updateMenu();
     dataLogBoxGanglion.update();
 
     wifiBox.update();
@@ -983,9 +986,11 @@ class ControlPanel {
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
       println("protocolBLEGanglion");
-
+      controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
         output("Protocol BLE Selected for Ganglion");
+        wifiList.items.clear();
+        bleList.items.clear();
         ganglion.setInterface(INTERFACE_HUB_BLE);
       } else {
         output("Please wait till hub is fully initalized");
@@ -994,6 +999,9 @@ class ControlPanel {
 
     if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
       println("protocolWifiGanglion");
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
       println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
       if (isHubObjectInitialized) {
         println("sup iim here ");
@@ -1006,6 +1014,7 @@ class ControlPanel {
 
     if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
       println("protocolSerialCyton");
+      controlPanel.hideAllBoxes();
 
       output("Protocol Wifi Selected for Cyton");
       cyton.setInterface(INTERFACE_SERIAL);
@@ -1013,6 +1022,7 @@ class ControlPanel {
 
     if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
       println("protocolWifiCyton");
+      controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
         output("Protocol Wifi Selected for Cyton");
         cyton.setInterface(INTERFACE_HUB_WIFI);
@@ -1021,15 +1031,15 @@ class ControlPanel {
       }
     }
 
-    if (protocolBLEGanglion.isMouseHere()) {
-      protocolBLEGanglion.setIsActive(true);
-      protocolBLEGanglion.wasPressed = true;
-    }
-
-    if (protocolWifiGanglion.isMouseHere()) {
-      protocolWifiGanglion.setIsActive(true);
-      protocolWifiGanglion.wasPressed = true;
-    }
+    // if (protocolBLEGanglion.isMouseHere()) {
+    //   protocolBLEGanglion.setIsActive(true);
+    //   protocolBLEGanglion.wasPressed = true;
+    // }
+    //
+    // if (protocolWifiGanglion.isMouseHere()) {
+    //   protocolWifiGanglion.setIsActive(true);
+    //   protocolWifiGanglion.wasPressed = true;
+    // }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (autoFileName.isMouseHere() && autoFileName.wasPressed) {
@@ -1174,24 +1184,16 @@ public void initButtonPressed(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      } else if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion.getInterface() == INTERFACE_HUB_BLE && ganglion_portName == "N/A") {
-          output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
-          initSystemButton.wasPressed = false;
-          initSystemButton.setIsActive(false);
-          return;
-        } else if (ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
-          output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-          initSystemButton.wasPressed = false;
-          initSystemButton.setIsActive(false);
-          return;
-        }
-      // } else if (eegDataSource == DATASOURCE_SYNTHETIC){
-      //   nchan = 16;
-      //   output("Starting system with 16 channels of synthetically generated data...");
-      //   initSystemButton.wasPressed = false;
-      //   initSystemButton.setIsActive(false);
-      //   return;
+      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_BLE && ganglion_portName == "N/A") {
+        output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+        output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
       } else if (eegDataSource == -1) {//if no data source selected
         output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
         initSystemButton.wasPressed = false;
@@ -1377,11 +1379,11 @@ class BLEBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 171 - 24 + _padding;
+    h = 171 + _padding;
     padding = _padding;
 
-    refreshBLE = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    bleList = new MenuList(cp5, "bleList", w - padding * 2, 84, p4);
+    refreshBLE = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    bleList = new MenuList(cp5, "bleList", w - padding*2, padding*2 + 72 + 24, p4);
     // println(w-padding*2);
     bleList.setPosition(x + padding, y + padding * 3);
     // Call to update the list
@@ -1432,11 +1434,11 @@ class WifiBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 171 - 24 + _padding;
+    h = 171 + _padding;
     padding = _padding;
 
-    refreshWifi = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    wifiList = new MenuList(cp5, "wifiList", w - padding * 2, 84, p4);
+    refreshWifi = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    wifiList = new MenuList(cp5, "wifiList", w - padding*2,padding*2 + 72 + 24, p4);
     // println(w-padding*2);
     wifiList.setPosition(x + padding, y + padding * 3);
     // Call to update the list
@@ -1468,6 +1470,7 @@ class WifiBox {
   }
 
   public void refreshWifiList() {
+    println("refreshWifiList");
     wifiList.items.clear();
     for (int i = 0; i < hub.deviceList.length; i++) {
       String tempPort = hub.deviceList[i];

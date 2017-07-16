@@ -81,17 +81,16 @@ class Cyton {
   private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   //final float scale_fac_accel_G_per_count = 1.0;
   private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
-  private final String failureMessage = "Failure: Communications timeout - Device failed to poll Host";
 
   boolean isBiasAuto = true; //not being used?
 
   //data related to Conor's setup for V3 boards
   final char[] EOT = {'$', '$', '$'};
   char[] prev3chars = {'#', '#', '#'};
-  private String potentialFailureMessage = "";
-  private String defaultChannelSettings = "";
-  private String daisyOrNot = "";
-  private int hardwareSyncStep = 0; //start this at 0...
+  public String potentialFailureMessage = "";
+  public String defaultChannelSettings = "";
+  public String daisyOrNot = "";
+  public int hardwareSyncStep = 0; //start this at 0...
   private long timeOfLastCommand = 0; //used when sync'ing to hardware
 
   private int curInterface = INTERFACE_SERIAL;
@@ -155,7 +154,7 @@ class Cyton {
       if (isPortOpen()) {
         iSerial.closeSerialPort();
       }
-      iSerial.openSerialPort(mainApplet, comPort, baud);
+      iSerial.openSerialPort(applet, comPort, baud);
     } else if (isWifi()) {
       hub.connectWifi(comPort);
     }
@@ -223,7 +222,7 @@ class Cyton {
       case 1: //send # of channels (8 or 16) ... (regular or daisy setup)
         println("Cyton: syncWithHardware: [1] Sending channel count (" + nchan + ") to OpenBCI...");
         if (nchan == 8) {
-          write('c', false); // TODO: Why does this not get a $$$ readyToSend = false?
+          write('c');
         }
         if (nchan == 16) {
           write('C', false);
@@ -298,7 +297,7 @@ class Cyton {
       }
     } else {
       if (iSerial.isSerialPortOpen()) {
-        iSerial.write(String.valueOf(val));
+        iSerial.write(val);
       }
     }
   }
@@ -311,7 +310,7 @@ class Cyton {
       }
     } else {
       if (iSerial.isSerialPortOpen()) {
-        iSerial.write(String.valueOf(val));
+        iSerial.sendChar(val);
         return true;
       }
     }

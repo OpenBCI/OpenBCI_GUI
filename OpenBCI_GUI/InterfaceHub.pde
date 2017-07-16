@@ -325,7 +325,7 @@ class Hub {
             }
           }
           prevSampleIndex = dataPacket.sampleIndex;
- 
+
           // Channel data storage
           for (int i = 0; i < nEEGValuesPerPacket; i++) {
             dataPacket.values[i] = Integer.parseInt(list[3 + i]);

@@ -172,6 +172,7 @@ class Ganglion {
       hub.setProtocol(PROTOCOL_BLE);
     } else if (isWifi()) {
       hub.setProtocol(PROTOCOL_WIFI);
+      hub.searchDeviceStart();
     }
   }
 

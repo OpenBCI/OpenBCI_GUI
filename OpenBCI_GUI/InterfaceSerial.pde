@@ -59,6 +59,7 @@ void serialEvent(Serial port){
     iSerial.read(echoBytes);
     openBCI_byteCount++;
     if (iSerial.get_isNewDataPacketAvailable()) {
+      println("woo got a new packet");
       //copy packet into buffer of data packets
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
 
@@ -111,6 +112,7 @@ void serialEvent(Serial port){
       }
 
       inByte = byte(port.read());
+      print(inByte);
       if (char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
 
       // print(char(inByte));
@@ -217,10 +219,6 @@ class InterfaceSerial {
   //data related to Conor's setup for V3 boards
   final char[] EOT = {'$', '$', '$'};
   char[] prev3chars = {'#', '#', '#'};
-  private String potentialFailureMessage = "";
-  private String defaultChannelSettings = "";
-  private String daisyOrNot = "";
-  private int hardwareSyncStep = 0; //start this at 0...
   private boolean readyToSend = false; //system waits for $$$ after requesting information from OpenBCI board
   private long timeOfLastCommand = 0; //used when sync'ing to hardware
 
@@ -342,7 +340,7 @@ class InterfaceSerial {
     readyToSend = false;
     returnVal = closeSerialPort();
     prevState_millis = 0;  //reset Serial state clock to use as a conditional for timing at the beginnign of systemUpdate()
-    hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
+    cyton.hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
 
     return returnVal;
   }
@@ -367,9 +365,9 @@ class InterfaceSerial {
       state = STATE_SYNCWITHHARDWARE;
       timeOfLastCommand = millis();
       serial_openBCI.clear();
-      potentialFailureMessage = "";
-      defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
-      daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
+      cyton.potentialFailureMessage = "";
+      cyton.defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
+      cyton.daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
       println("InterfaceSerial: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
       serial_openBCI.write('v');
     }
@@ -377,8 +375,9 @@ class InterfaceSerial {
     //if we are in SYNC WITH HARDWARE state ... trigger a command
     if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
       if (millis() - timeOfLastCommand > 200 && readyToSend == true) {
+        println("sdSetting: " + sdSetting);
         timeOfLastCommand = millis();
-        hardwareSyncStep++;
+        cyton.hardwareSyncStep++;
         cyton.syncWithHardware(sdSetting);
       }
     }
@@ -386,7 +385,11 @@ class InterfaceSerial {
 
   public void sendChar(char val) {
     if (isSerialPortOpen()) {
-      serial_openBCI.write(key);//send the value as ascii (with a newline character?)
+      println("sending out: " + val);
+      serial_openBCI.write(val);//send the value as ascii (with a newline character?)
+    } else {
+      println("nope no out: " + val);
+
     }
   }
 
@@ -431,8 +434,7 @@ class InterfaceSerial {
       println("InterfaceSerial port not open aborting.");
       return 0;
     }
-
-
+    print(inByte);
     //write the most recent char to the console
     // If the GUI is in streaming mode then echoChar will be false
     if (echoChar) {  //if not in interpret binary (NORMAL) mode
@@ -448,15 +450,15 @@ class InterfaceSerial {
       prev3chars[1] = prev3chars[2];
       prev3chars[2] = inASCII;
 
-      if (hardwareSyncStep == 0 && inASCII != '$') {
-        potentialFailureMessage+=inASCII;
+      if (cyton.hardwareSyncStep == 0 && inASCII != '$') {
+        cyton.potentialFailureMessage+=inASCII;
       }
 
-      if (hardwareSyncStep == 1 && inASCII != '$') {
-        daisyOrNot+=inASCII;
+      if (cyton.hardwareSyncStep == 1 && inASCII != '$') {
+        cyton.daisyOrNot+=inASCII;
         //if hardware returns 8 because daisy is not attached, switch the GUI mode back to 8 channels
         // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
-        if (nchan == 16 && daisyOrNot.charAt(daisyOrNot.length() - 1) == '8') {
+        if (nchan == 16 && cyton.daisyOrNot.charAt(cyton.daisyOrNot.length() - 1) == '8') {
           // verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
           verbosePrint(" received from OpenBCI... Abandoning hardware initiation.");
           abandonInit = true;
@@ -475,26 +477,26 @@ class InterfaceSerial {
         }
       }
 
-      if (hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
-        defaultChannelSettings+=inASCII;
+      if (cyton.hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
+        cyton.defaultChannelSettings+=inASCII;
       }
 
       //if the last three chars are $$$, it means we are moving on to the next stage of initialization
       if (prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]) {
-        // verbosePrint(" > EOT detected...");
+        verbosePrint(" > EOT detected...");
         // Added for V2 system down rejection line
-        if (hardwareSyncStep == 0) {
+        if (cyton.hardwareSyncStep == 0) {
           // Failure: Communications timeout - Device failed to poll Host$$$
-          if (potentialFailureMessage.equals(failureMessage)) {
+          if (cyton.potentialFailureMessage.equals(failureMessage)) {
             closeLogFile();
             return 0;
           }
         }
         // hardwareSyncStep++;
         prev3chars[2] = '#';
-        if (hardwareSyncStep == 3) {
+        if (cyton.hardwareSyncStep == 3) {
           println("InterfaceSerial: read(): x");
-          println(defaultChannelSettings);
+          println(cyton.defaultChannelSettings);
           println("InterfaceSerial: read(): y");
           // gui.cc.loadDefaultChannelSettings();
           w_timeSeries.hsc.loadDefaultChannelSettings();
