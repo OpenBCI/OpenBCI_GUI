@@ -294,10 +294,10 @@ class HardwareSettingsController{
     update(); //update 1 time to refresh button values based on new loaded settings
   }
 
-  void updateChannelArrays(int _nchan) {
-    channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-    impedanceCheckValues = new char [_nchan][2];
-  }
+  // void updateChannelArrays(int _nchan) {
+  //   channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+  //   impedanceCheckValues = new char [_nchan][2];
+  // }
 
   //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
   void activateChannel(int Ichan) {

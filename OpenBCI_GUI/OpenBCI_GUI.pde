@@ -588,7 +588,6 @@ void initSystem() {
     } else {
       cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
     }
-    cyton.initBoard();
     break;
   case DATASOURCE_SYNTHETIC:
     //do nothing
@@ -691,6 +690,7 @@ void startRunning() {
     }
   } else {
     if (cyton != null) {
+      println("DEBUG: start data transfer");
       cyton.startDataTransfer();
     }
   }

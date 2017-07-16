@@ -118,6 +118,12 @@ class Ganglion {
   Ganglion(PApplet applet) {
     mainApplet = applet;
 
+    initDataPackets(nEEGValuesPerPacket, nAuxValuesPerPacket);
+  }
+
+  public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
+    nEEGValuesPerPacket = _nEEGValuesPerPacket;
+    nAuxValuesPerPacket = _nAuxValuesPerPacket;
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
@@ -189,7 +195,7 @@ class Ganglion {
   void startDataTransfer(){
     hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
     println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
-    hub.write(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
+    hub.sendCommand('b');
   }
 
   /**
@@ -198,16 +204,7 @@ class Ganglion {
   public void stopDataTransfer() {
     hub.changeState(hub.STATE_STOPPED);  // make sure it's now interpretting as binary
     println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
-    hub.write(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
-  }
-
-
-  /**
-   * @description Sends a command to ganglion board
-   */
-  public void passthroughCommand(char c) {
-    println("Ganglion: passthroughCommand(): sending \'" + c);
-    hub.write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
+    hub.sendCommand('s');
   }
 
   private void printGanglion(String msg) {
@@ -221,11 +218,11 @@ class Ganglion {
       if ((Ichan >= 0)) {
         if (activate) {
           println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
-          hub.write(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan] + TCP_STOP);
+          hub.sendCommand(command_activate_channel[Ichan]);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
           println("Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
-          hub.write(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
+          hub.sendCommand(command_deactivate_channel[Ichan]);
           w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
@@ -275,7 +272,7 @@ class Ganglion {
    */
   public void enterBootloaderMode() {
     println("Ganglion: Entering Bootloader Mode");
-    hub.write(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
+    hub.sendCommand(GANGLION_BOOTLOADER_MODE.charAt(0));
     delay(500);
     closePort();
     haltSystem();

@@ -126,8 +126,8 @@ class Hub {
   private int state = STATE_NOCOM;
   int prevState_millis = 0; // Used for calculating connect time out
 
-  private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by cyton boards
-  private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
+  private int nEEGValuesPerPacket = 8;
+  private int nAuxValuesPerPacket = 3;
 
   private int tcpHubPort = 10996;
   private String tcpHubIP = "127.0.0.1";
@@ -173,6 +173,14 @@ class Hub {
   Hub(PApplet applet) {
     mainApplet = applet;
 
+    // Able to start tcpClient connection?
+    startTCPClient(mainApplet);
+
+  }
+
+  public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
+    nEEGValuesPerPacket = _nEEGValuesPerPacket;
+    nAuxValuesPerPacket = _nAuxValuesPerPacket;
     // For storing data into
     dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
     for(int i = 0; i < nEEGValuesPerPacket; i++) {
@@ -181,10 +189,6 @@ class Hub {
     for(int i = 0; i < nAuxValuesPerPacket; i++){
       dataPacket.auxValues[i] = 0;
     }
-
-    // Able to start tcpClient connection?
-    startTCPClient(mainApplet);
-
   }
 
   /**
@@ -270,13 +274,14 @@ class Hub {
   }
 
   private void processConnect(String msg) {
+    println("Hub: processConnect: made it: " + msg);
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
       systemMode = 10;
       controlPanel.close();
       println("Hub: parseMessage: connect: success!");
       output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-      connected = true;
+      portIsOpen = true;
     } else {
       println("Hub: parseMessage: connect: failure!");
       haltSystem();
@@ -284,110 +289,125 @@ class Hub {
       controlPanel.open();
       abandonInit = true;
       output("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
-      connected = false;
+      portIsOpen = false;
     }
   }
 
+  /**
+   * @description Sends a command to ganglion board
+   */
+  public void sendCommand(char c) {
+    println("Hub: passthroughCommand(): sending \'" + c);
+    write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
+  }
+
   public void processData(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
-    if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_NORMAL_W_AUX) && systemMode == 10 && isRunning) { //<>//
-      if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
-        // Sample number stuff
-        dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
-        if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-          if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
-            bleErrorCounter++;
+    try {
+      String[] list = split(msg, ',');
+      int code = Integer.parseInt(list[1]);
+      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_NORMAL_W_AUX) && systemMode == 10 && isRunning) { //<>//
+        if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
+          // Sample number stuff
+          dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
+          if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
+            if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
+              bleErrorCounter++;
 
-            werePacketsDroppedHub = true; //set this true to activate packet duplication in serialEvent
-            if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-              numPacketsDroppedHub = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
-            } else {
-              numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+              werePacketsDroppedHub = true; //set this true to activate packet duplication in serialEvent
+              if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
+                numPacketsDroppedHub = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+              } else {
+                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+              }
+              println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+              println("numPacketsDropped = " + numPacketsDroppedHub);
             }
-            println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-            println("numPacketsDropped = " + numPacketsDroppedHub);
           }
-        }
-        prevSampleIndex = dataPacket.sampleIndex;
+          prevSampleIndex = dataPacket.sampleIndex;
 
-        // Channel data storage
-        for (int i = 0; i < NCHAN_GANGLION; i++) {
-          dataPacket.values[i] = Integer.parseInt(list[3 + i]);
-        }
-        if (newAccelData) {
-          newAccelData = false;
-          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-            dataPacket.auxValues[i] = accelArray[i];
-            dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+          // Channel data storage
+          for (int i = 0; i < nEEGValuesPerPacket; i++) {
+            dataPacket.values[i] = Integer.parseInt(list[3 + i]);
           }
-        }
-        getRawValues(dataPacket);
-        // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
-        curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+          if (newAccelData) {
+            newAccelData = false;
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+              dataPacket.auxValues[i] = accelArray[i];
+              dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+            }
+          }
 
-        if (eegDataSource == DATASOURCE_GANGLION) {
-          ganglion.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+          getRawValues(dataPacket);
+          // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+          // println(dataPacket.values[7]);
+          curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+          if (eegDataSource == DATASOURCE_GANGLION) {
+            copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+          } else {
+            copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+          }
+
+          // KILL SPIKES!!!
+          if(werePacketsDroppedHub){
+            // println("Packets Dropped ... doing some stuff...");
+            for(int i = numPacketsDroppedHub; i > 0; i--){
+              int tempDataPacketInd = curDataPacketInd - i; //
+              if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+                // println("i = " + i);
+                if (eegDataSource == DATASOURCE_GANGLION) {
+                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+                } else {
+                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+                }
+              } else {
+                if (eegDataSource == DATASOURCE_GANGLION) {
+                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+                } else {
+                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+                }
+              }
+              //put the last stored packet in # of packets dropped after that packet
+            }
+
+            //reset werePacketsDropped & numPacketsDropped
+            werePacketsDroppedHub = false;
+            numPacketsDroppedHub = 0;
+          }
+
+          switch (outputDataSource) {
+            case OUTPUT_SOURCE_ODF:
+              if (eegDataSource == DATASOURCE_GANGLION) {
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count());
+              } else {
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count());
+              }
+              break;
+            case OUTPUT_SOURCE_BDF:
+              // curBDFDataPacketInd = curDataPacketInd;
+              // thread("writeRawData_dataPacket_bdf");
+              fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+              break;
+            case OUTPUT_SOURCE_NONE:
+            default:
+              // Do nothing...
+              break;
+          }
+          newPacketCounter++;
         } else {
-          cyton.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
+          bleErrorCounter++;
+          println("Hub: parseMessage: data: bad");
         }
-
-        // KILL SPIKES!!!
-        if(werePacketsDroppedHub){
-          // println("Packets Dropped ... doing some stuff...");
-          for(int i = numPacketsDroppedHub; i > 0; i--){
-            int tempDataPacketInd = curDataPacketInd - i; //
-            if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-              // println("i = " + i);
-              if (eegDataSource == DATASOURCE_GANGLION) {
-                ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-              } else {
-                cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-              }
-            } else {
-              if (eegDataSource == DATASOURCE_GANGLION) {
-                ganglion.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-              } else {
-                cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-              }
-            }
-            //put the last stored packet in # of packets dropped after that packet
-          }
-
-          //reset werePacketsDropped & numPacketsDropped
-          werePacketsDroppedHub = false;
-          numPacketsDroppedHub = 0;
-        }
-
-        switch (outputDataSource) {
-          case OUTPUT_SOURCE_ODF:
-            if (eegDataSource == DATASOURCE_GANGLION) {
-              fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count());
-            } else {
-              fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count());
-            }
-            break;
-          case OUTPUT_SOURCE_BDF:
-            // curBDFDataPacketInd = curDataPacketInd;
-            // thread("writeRawData_dataPacket_bdf");
-            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-            break;
-          case OUTPUT_SOURCE_NONE:
-          default:
-            // Do nothing...
-            break;
-        }
-        newPacketCounter++;
-      } else {
-        bleErrorCounter++;
-        println("Ganglion: parseMessage: data: bad");
       }
+    } catch (Exception e) {
+      println("Hub: parseMessage: error: " + e);
     }
+
   }
 
   private void processDisconnect(String msg) {
     if (!waitingForResponse) {
       haltSystem();
+      portIsOpen = false;
       initSystemButton.setString("START SYSTEM");
       controlPanel.open();
       output("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
@@ -501,7 +521,7 @@ class Hub {
       // defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
       // daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
       println("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
-      hub.write('v');
+      // write('v');
     }
 
     //if we are in SYNC WITH HARDWARE state ... trigger a command
@@ -516,26 +536,26 @@ class Hub {
 
   // CONNECTION
   public void connectBLE(String id) {
-    hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
   public void disconnectBLE() {
     waitingForResponse = true;
-    hub.write(TCP_CMD_DISCONNECT + TCP_STOP);
+    write(TCP_CMD_DISCONNECT + TCP_STOP);
   }
 
   public void connectWifi(String id) {
 
-    hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
   public int disconnectWifi() {
     waitingForResponse = true;
-    hub.write(TCP_CMD_DISCONNECT + TCP_STOP);
+    write(TCP_CMD_DISCONNECT + TCP_STOP);
     return 0;
   }
 
   public void setProtocol(String _protocol) {
     curProtocol = _protocol;
-    hub.write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
+    write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
   /**

@@ -186,7 +186,7 @@ class InterfaceSerial {
   int prevState_millis = 0;
 
   private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
-  //int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
+  private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
   private DataPacket_ADS1299 rawReceivedDataPacket;
   private DataPacket_ADS1299 missedDataPacket;
   private DataPacket_ADS1299 dataPacket;
@@ -244,9 +244,7 @@ class InterfaceSerial {
   //constructors
   InterfaceSerial() {
   };  //only use this if you simply want access to some of the constants
-  InterfaceSerial(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerPacket) {
-    nAuxValues=nAuxValuesPerPacket;
-
+  InterfaceSerial(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI) {
     //choose data mode
     println("InterfaceSerial: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket = " + nEEGValuesPerPacket);
     if (prefered_datamode == DATAMODE_BIN_WAUX) {
@@ -258,36 +256,24 @@ class InterfaceSerial {
       }
     }
 
-    println("InterfaceSerial: a");
-
     dataMode = prefered_datamode;
 
-    println("nEEGValuesPerPacket = " + nEEGValuesPerPacket);
-    println("nEEGValuesPerOpenBCI = " + nEEGValuesPerOpenBCI);
+    initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
 
+  }
+
+  public void initDataPackets(int numEEG, int numAux) {
+    nEEGValuesPerPacket = numEEG;
+    nAuxValuesPerPacket = numAux;
     //allocate space for data packet
     rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
     missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-    dataPacket = new DataPacket_ADS1299(nEEGValuesPerOpenBCI, nAuxValuesPerPacket);            //this could be 8 or 16 channels
-    //prevDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket,nAuxValuesPerPacket);
-    //set all values to 0 so not null
-
-    println("(2) nEEGValuesPerPacket = " + nEEGValuesPerPacket);
-    println("(2) nEEGValuesPerOpenBCI = " + nEEGValuesPerOpenBCI);
-    println("missedDataPacket.values.length = " + missedDataPacket.values.length);
+    dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
 
     for (int i = 0; i < nEEGValuesPerPacket; i++) {
       rawReceivedDataPacket.values[i] = 0;
       //prevDataPacket.values[i] = 0;
     }
-
-    // %%%%% HAD TO KILL THIS ... not sure why nEEGValuesPerOpenBCI would ever loop to 16... this may be an incongruity due to the way we kludge the 16chan data in 2 packets...
-    // for (int i=0; i < nEEGValuesPerOpenBCI; i++) {
-    //   println("i = " + i);
-    //   dataPacket.values[i] = 0;
-    //   missedDataPacket.values[i] = 0;
-    // }
-
     for (int i=0; i < nEEGValuesPerPacket; i++) {
       // println("i = " + i);
       dataPacket.values[i] = 0;
@@ -299,15 +285,6 @@ class InterfaceSerial {
       missedDataPacket.auxValues[i] = 0;
       //prevDataPacket.auxValues[i] = 0;
     }
-
-    println("InterfaceSerial: b");
-
-    //prepare the serial port  ... close if open
-    //println("InterfaceSerial: port is open? ... " + portIsOpen);
-    //if(portIsOpen == true) {
-
-    //open file for raw bytes
-    //output = createOutput("rawByteDumpFromProcessing.bin");  //for debugging  WEA 2014-01-26
   }
 
   // //manage the serial port

@@ -325,7 +325,7 @@ void parseKey(char val) {
         cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
-        ganglion.passthroughCommand(key);
+        hub.sendCommand(key);
       }
       break;
   }
