@@ -309,22 +309,23 @@ class Hub {
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
           dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
+
           if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
             if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
               bleErrorCounter++;
 
               werePacketsDroppedHub = true; //set this true to activate packet duplication in serialEvent
               if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-                numPacketsDroppedHub = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+                numPacketsDroppedHub = (dataPacket.sampleIndex+(curProtocol == PROTOCOL_BLE ? 200 : 255)) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
               } else {
                 numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
               }
-              println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-              println("numPacketsDropped = " + numPacketsDroppedHub);
+              // println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+              // println("numPacketsDropped = " + numPacketsDroppedHub);
             }
           }
           prevSampleIndex = dataPacket.sampleIndex;
-
+ 
           // Channel data storage
           for (int i = 0; i < nEEGValuesPerPacket; i++) {
             dataPacket.values[i] = Integer.parseInt(list[3 + i]);
