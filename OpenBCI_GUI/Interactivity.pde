@@ -249,7 +249,7 @@ void parseKey(char val) {
       break;
 
     case '?':
-      printRegisters();
+      cyton.printRegisters();
       break;
 
     case 'd':
@@ -322,7 +322,7 @@ void parseKey(char val) {
     default:
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-        cyton.sendChar(key);
+        cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
         ganglion.passthroughCommand(key);

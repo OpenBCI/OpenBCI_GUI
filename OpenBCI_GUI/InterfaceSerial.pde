@@ -21,11 +21,9 @@ import java.io.OutputStream; //for logging raw bytes to an output file
 //------------------------------------------------------------------------
 
 
-boolean threadLock = false;
-
 //these variables are used for "Kill Spikes" ... duplicating the last received data packet if packets were droppeds
-boolean werePacketsDropped = false;
-int numPacketsDropped = 0;
+boolean werePacketsDroppedSerial = false;
+int numPacketsDroppedSerial = 0;
 
 
 //everything below is now deprecated...
@@ -66,10 +64,10 @@ void serialEvent(Serial port){
 
       cyton.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
       iSerial.set_isNewDataPacketAvailable(false); //resets isNewDataPacketAvailable to false
-      
+
       // KILL SPIKES!!!
-      if(werePacketsDropped){
-        for(int i = numPacketsDropped; i > 0; i--){
+      if(werePacketsDroppedSerial){
+        for(int i = numPacketsDroppedSerial; i > 0; i--){
           int tempDataPacketInd = curDataPacketInd - i; //
           if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
             cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
@@ -79,9 +77,9 @@ void serialEvent(Serial port){
           //put the last stored packet in # of packets dropped after that packet
         }
 
-        //reset werePacketsDropped & numPacketsDropped
-        werePacketsDropped = false;
-        numPacketsDropped = 0;
+        //reset werePacketsDroppedSerial & numPacketsDroppedSerial
+        werePacketsDroppedSerial = false;
+        numPacketsDroppedSerial = 0;
       }
 
       switch (outputDataSource) {
@@ -369,7 +367,7 @@ class InterfaceSerial {
   public int closeSDandSerialPort() {
     int returnVal=0;
 
-    closeSDFile();
+    cyton.closeSDFile();
 
     readyToSend = false;
     returnVal = closeSerialPort();
@@ -411,7 +409,7 @@ class InterfaceSerial {
       if (millis() - timeOfLastCommand > 200 && readyToSend == true) {
         timeOfLastCommand = millis();
         hardwareSyncStep++;
-        syncWithHardware(sdSetting);
+        cyton.syncWithHardware(sdSetting);
       }
     }
   }
@@ -419,6 +417,12 @@ class InterfaceSerial {
   public void sendChar(char val) {
     if (isSerialPortOpen()) {
       serial_openBCI.write(key);//send the value as ascii (with a newline character?)
+    }
+  }
+
+  public void write(String msg) {
+    if (isSerialPortOpen()) {
+      serial_openBCI.write(msg);
     }
   }
 
@@ -590,12 +594,12 @@ class InterfaceSerial {
       if ((rawReceivedDataPacket.sampleIndex-prevSampleIndex) != 1) {
         if (rawReceivedDataPacket.sampleIndex != 0) {  // if we rolled over, don't count as error
           serialErrorCounter++;
-          werePacketsDropped = true; //set this true to activate packet duplication in serialEvent
+          werePacketsDroppedSerial = true; //set this true to activate packet duplication in serialEvent
 
           if(rawReceivedDataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-            numPacketsDropped = (rawReceivedDataPacket.sampleIndex+255) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+            numPacketsDroppedSerial = (rawReceivedDataPacket.sampleIndex+255) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
           } else {
-            numPacketsDropped = rawReceivedDataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+            numPacketsDroppedSerial = rawReceivedDataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
           }
 
           println("InterfaceSerial: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");

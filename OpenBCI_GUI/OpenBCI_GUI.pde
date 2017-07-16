@@ -92,7 +92,7 @@ int nextPlayback_millis = -100; //any negative number
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
 // Intialize interface protocols
-InterfaceSerial iSerial = new interfaceSerial();
+InterfaceSerial iSerial = new InterfaceSerial();
 Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
 
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
@@ -672,12 +672,77 @@ float get_fs_Hz_safe() {
   }
 }
 
+void startRunning() {
+  verbosePrint("startRunning...");
+  output("Data stream started.");
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    if (ganglion != null) {
+      ganglion.startDataTransfer();
+    }
+  } else {
+    if (cyton != null) {
+      cyton.startDataTransfer();
+    }
+  }
+  isRunning = true;
+}
+
+void stopRunning() {
+  // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+  verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
+  output("Data stream stopped.");
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    if (ganglion != null) {
+      ganglion.stopDataTransfer();
+    }
+  } else {
+    if (cyton != null) {
+      cyton.stopDataTransfer();
+    }
+  }
+
+  timeSinceStopRunning = millis(); //used as a timer to prevent misc. bytes from flooding serial...
+  isRunning = false;
+  // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+  // systemMode = 0;
+  // closeLogFile();
+}
+
+//execute this function whenver the stop button is pressed
+void stopButtonWasPressed() {
+  //toggle the data transfer state of the ADS1299...stop it or start it...
+  if (isRunning) {
+    verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
+    wm.setUpdating(false);
+    stopRunning();
+    topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
+    topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+    if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+  } else { //not running
+    verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
+    wm.setUpdating(true);
+    startRunning();
+    topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
+    topNav.stopButton.setColorNotPressed(color(224, 56, 45));
+    nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+  }
+}
+
+
 //halt the data collection
 void haltSystem() {
   println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
   if (initSystemButton.but_txt == "STOP SYSTEM") {
     initSystemButton.but_txt = "START SYSTEM";
   }
+  
   stopRunning();  //stop data transfer
 
   //reset variables for data processing
@@ -721,8 +786,8 @@ void systemUpdate() { // for updating data values and variables
   }
 
   //update the sync state with the OpenBCI hardware
-  if (cyton.state == cyton.STATE_NOCOM || cyton.state == cyton.STATE_COMINIT || cyton.state == cyton.STATE_SYNCWITHHARDWARE) {
-    cyton.updateSyncState(sdSetting);
+  if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
+    iSerial.updateSyncState(sdSetting);
   }
 
   //prepare for updating the GUI
@@ -919,7 +984,7 @@ void systemDraw() { //for drawing to the screen
   }
 
 
-  if ((cyton.get_state() == cyton.STATE_COMINIT || cyton.get_state() == cyton.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+  if ((iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);

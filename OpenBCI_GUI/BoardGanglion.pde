@@ -16,9 +16,6 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
-boolean werePacketsDroppedGang = false;
-int numPacketsDroppedGang = 0;
-
 class Ganglion {
   final static String TCP_CMD_ACCEL = "a";
   final static String TCP_CMD_CONNECT = "c";
@@ -37,17 +34,6 @@ class Ganglion {
   final static String TCP_ACTION_STOP = "stop";
 
   final static String GANGLION_BOOTLOADER_MODE = ">";
-
-  final static byte BYTE_START = (byte)0xA0;
-  final static byte BYTE_END = (byte)0xC0;
-
-  // States For Syncing with the hardware
-  final static int STATE_NOCOM = 0;
-  final static int STATE_COMINIT = 1;
-  final static int STATE_SYNCWITHHARDWARE = 2;
-  final static int STATE_NORMAL = 3;
-  final static int STATE_STOPPED = 4;
-  final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
 
   final static int NUM_ACCEL_DIMS = 3;
 
@@ -75,9 +61,6 @@ class Ganglion {
   final static int RESP_STATUS_SCANNING = 302;
   final static int RESP_STATUS_NOT_SCANNING = 303;
 
-  private int state = STATE_NOCOM;
-  int prevState_millis = 0; // Used for calculating connect time out
-
   private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by cyton boards
   private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
 
@@ -90,8 +73,7 @@ class Ganglion {
   // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
-  private int bleErrorCounter = 0;
-  private int prevSampleIndex = 0;
+  private int curInterface = INTERFACE_NONE;
 
   private DataPacket_ADS1299 dataPacket;
 
@@ -99,11 +81,6 @@ class Ganglion {
 
   public int numberOfDevices = 0;
   public int maxNumberOfDevices = 10;
-  public String[] deviceList = new String[0];
-  public boolean deviceListUpdated = false;
-  private boolean hubRunning = false;
-  public char[] tcpBuffer = new char[1024];
-  public int tcpBufferPositon = 0;
 
   private boolean checkingImpedance = false;
   private boolean accelModeActive = false;
@@ -119,6 +96,20 @@ class Ganglion {
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
+  public int getInterface() {
+    return curInterface;
+  }
+  public boolean isBLE () {
+    return curInterface == INTERFACE_HUB_BLE;
+  }
+
+  public boolean isWifi () {
+    return curInterface == INTERFACE_HUB_WIFI;
+  }
+
+  public boolean isPortOpen() {
+    return hub.isPortOpen();
+  }
 
   private PApplet mainApplet;
 
@@ -169,58 +160,45 @@ class Ganglion {
     }
   }
 
-  void writeRawData_dataPacket_bdf() {
-    fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
+  public void setInterface(int _interface) {
+    curInterface = _interface;
+    if (isBLE()) {
+      hub.setProtocol(PROTOCOL_BLE);
+    } else if (isWifi()) {
+      hub.setProtocol(PROTOCOL_WIFI);
+    }
   }
 
   public int copyDataPacketTo(DataPacket_ADS1299 target) {
     return dataPacket.copyTo(target);
   }
 
-  private void getRawValues(DataPacket_ADS1299 packet) {
-    for (int i=0; i < nchan; i++) {
-      int val = packet.values[i];
-      //println(binary(val, 24));
-      byte rawValue[] = new byte[3];
-      // Breakdown values into
-      rawValue[2] = byte(val & 0xFF);
-      //println("rawValue[2] " + binary(rawValue[2], 8));
-      rawValue[1] = byte((val & (0xFF << 8)) >> 8);
-      //println("rawValue[1] " + binary(rawValue[1], 8));
-      rawValue[0] = byte((val & (0xFF << 16)) >> 16);
-      //println("rawValue[0] " + binary(rawValue[0], 8));
-      // Store to the target raw values
-      packet.rawValues[i] = rawValue;
-      //println();
-    }
-  }
-
   // SCANNING/SEARHING FOR DEVICES
-
   public int closePort() {
-    if (interface == INTERFACE_HUB_BLE) {
+    if (isBLE()) {
       hub.disconnectBLE();
-    } else {
+    } else if (isWifi()) {
       hub.disconnectWifi();
     }
+    return 0;
   }
 
   /**
    * @description Sends a start streaming command to the Ganglion Node module.
    */
   void startDataTransfer(){
-    hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
+    hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
     println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
-    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
+    hub.write(TCP_CMD_COMMAND + "," + command_startBinary + TCP_STOP);
   }
 
   /**
    * @description Sends a stop streaming command to the Ganglion Node module.
    */
   public void stopDataTransfer() {
-    hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
+    hub.changeState(hub.STATE_STOPPED);  // make sure it's now interpretting as binary
     println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
-    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
+    hub.write(TCP_CMD_COMMAND + "," + command_stop + TCP_STOP);
   }
 
 
@@ -229,35 +207,7 @@ class Ganglion {
    */
   public void passthroughCommand(char c) {
     println("Ganglion: passthroughCommand(): sending \'" + c);
-    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + c + TCP_STOP);
-  }
-
-  /**
-   * @description Write to TCP server
-   * @params out {String} - The string message to write to the server.
-   * @returns {boolean} - True if able to write, false otherwise.
-   */
-  public boolean hub.safeTCPWrite(String out) {
-    try {
-      tcpClient.write(out);
-      return true;
-    } catch (Exception e) {
-      println("Error: Attempted to TCP write with no server connection initialized");
-      return false;
-    }
-    // return false;
-    // if (nodeProcessHandshakeComplete) { //<>//
-    //   try {
-    //     tcpClient.write(out);
-    //     return true;
-    //   } catch (NullPointerException e) {
-    //     println("Error: Attempted to TCP write with no server connection initialized");
-    //     return false;
-    //   }
-    // } else {
-    //   println("Waiting on node handshake!");
-    //   return false;
-    // }
+    hub.write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
   private void printGanglion(String msg) {
@@ -271,11 +221,11 @@ class Ganglion {
       if ((Ichan >= 0)) {
         if (activate) {
           println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
-          hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan] + TCP_STOP);
+          hub.write(TCP_CMD_COMMAND + "," + command_activate_channel[Ichan] + TCP_STOP);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
           println("Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
-          hub.safeTCPWrite(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
+          hub.write(TCP_CMD_COMMAND + "," + command_deactivate_channel[Ichan] + TCP_STOP);
           w_timeSeries.hsc.powerDownChannel(Ichan);
         }
       }
@@ -287,7 +237,7 @@ class Ganglion {
    */
   public void accelStart() {
     println("Ganglion: accell: START");
-    hub.safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
+    hub.write(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
     accelModeActive = true;
   }
 
@@ -297,7 +247,7 @@ class Ganglion {
    */
   public void accelStop() {
     println("Ganglion: accel: STOP");
-    hub.safeTCPWrite(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
+    hub.write(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
     accelModeActive = false;
   }
 
@@ -306,7 +256,7 @@ class Ganglion {
    */
   public void impedanceStart() {
     println("Ganglion: impedance: START");
-    hub.safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
+    hub.write(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
     checkingImpedance = true;
   }
 
@@ -316,7 +266,7 @@ class Ganglion {
    */
   public void impedanceStop() {
     println("Ganglion: impedance: STOP");
-    hub.safeTCPWrite(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
+    hub.write(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
     checkingImpedance = false;
   }
 
@@ -325,9 +275,9 @@ class Ganglion {
    */
   public void enterBootloaderMode() {
     println("Ganglion: Entering Bootloader Mode");
-    hub.safeTCPWrite(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
+    hub.write(TCP_CMD_COMMAND + "," + GANGLION_BOOTLOADER_MODE + TCP_STOP);
     delay(500);
-    disconnectBLE();
+    closePort();
     haltSystem();
     initSystemButton.setString("START SYSTEM");
     controlPanel.open();

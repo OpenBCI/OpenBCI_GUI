@@ -16,8 +16,8 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
-boolean werePacketsDroppedGang = false;
-int numPacketsDroppedGang = 0;
+boolean werePacketsDroppedHub = false;
+int numPacketsDroppedHub = 0;
 
 void clientEvent(Client someClient) {
   // print("Server Says:  ");
@@ -26,7 +26,7 @@ void clientEvent(Client someClient) {
   hub.tcpBufferPositon++;
 
   if(p > 2) {
-    String posMatch  = new String(ganglion.tcpBuffer, p - 2, 3);
+    String posMatch  = new String(hub.tcpBuffer, p - 2, 3);
     if (posMatch.equals(hub.TCP_STOP)) {
       if (!hub.nodeProcessHandshakeComplete) {
         hub.nodeProcessHandshakeComplete = true;
@@ -38,19 +38,19 @@ void clientEvent(Client someClient) {
       // Send the new string message to be processed
 
       if (eegDataSource == DATASOURCE_GANGLION) {
-        ganglion.parseMessage(msg);
+        hub.parseMessage(msg);
         // Check to see if the ganglion ble list needs to be updated
-        if (ganglion.deviceListUpdated) {
-          ganglion.deviceListUpdated = false;
+        if (hub.deviceListUpdated) {
+          hub.deviceListUpdated = false;
           controlPanel.bleBox.refreshBLEList();
           controlPanel.wifiBox.refreshWifiList();
         }
       } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         // Do stuff for cyton
-        cyton.parseMessage(msg);
+        hub.parseMessage(msg);
         // Check to see if the ganglion ble list needs to be updated
-        if (cyton.deviceListUpdated) {
-          cyton.deviceListUpdated = false;
+        if (hub.deviceListUpdated) {
+          hub.deviceListUpdated = false;
           controlPanel.wifiBox.refreshWifiList();
         }
       }
@@ -116,6 +116,12 @@ class Hub {
   final static int RESP_STATUS_SCANNING = 302;
   final static int RESP_STATUS_NOT_SCANNING = 303;
 
+  public String[] deviceList = new String[0];
+  public boolean deviceListUpdated = false;
+
+  private int bleErrorCounter = 0;
+  private int prevSampleIndex = 0;
+
   private int state = STATE_NOCOM;
   int prevState_millis = 0; // Used for calculating connect time out
 
@@ -128,6 +134,8 @@ class Hub {
   private boolean tcpClientActive = false;
   private int tcpTimeout = 1000;
 
+  private DataPacket_ADS1299 dataPacket;
+
   public Client tcpClient;
   private boolean portIsOpen = false;
   private boolean connected = false;
@@ -137,6 +145,7 @@ class Hub {
   private boolean hubRunning = false;
   public char[] tcpBuffer = new char[1024];
   public int tcpBufferPositon = 0;
+  private String curProtocol = PROTOCOL_WIFI;
 
   private boolean waitingForResponse = false;
   private boolean nodeProcessHandshakeComplete = false;
@@ -150,6 +159,7 @@ class Hub {
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
   // Getters
+  public int get_state() { return state; }
   public boolean isPortOpen() { return portIsOpen; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
@@ -161,6 +171,15 @@ class Hub {
   Hub() {};  //only use this if you simply want access to some of the constants
   Hub(PApplet applet) {
     mainApplet = applet;
+
+    // For storing data into
+    dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
+    for(int i = 0; i < nEEGValuesPerPacket; i++) {
+      dataPacket.values[i] = 0;
+    }
+    for(int i = 0; i < nAuxValuesPerPacket; i++){
+      dataPacket.auxValues[i] = 0;
+    }
 
     // Able to start tcpClient connection?
     startTCPClient(mainApplet);
@@ -279,14 +298,14 @@ class Hub {
           if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
             bleErrorCounter++;
 
-            werePacketsDroppedGang = true; //set this true to activate packet duplication in serialEvent
+            werePacketsDroppedHub = true; //set this true to activate packet duplication in serialEvent
             if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-              numPacketsDroppedGang = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+              numPacketsDroppedHub = (dataPacket.sampleIndex+200) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
             } else {
-              numPacketsDroppedGang = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+              numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
             }
             println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-            println("numPacketsDropped = " + numPacketsDropped);
+            println("numPacketsDropped = " + numPacketsDroppedHub);
           }
         }
         prevSampleIndex = dataPacket.sampleIndex;
@@ -313,9 +332,9 @@ class Hub {
         }
 
         // KILL SPIKES!!!
-        if(werePacketsDroppedGang){
+        if(werePacketsDroppedHub){
           // println("Packets Dropped ... doing some stuff...");
-          for(int i = numPacketsDroppedGang; i > 0; i--){
+          for(int i = numPacketsDroppedHub; i > 0; i--){
             int tempDataPacketInd = curDataPacketInd - i; //
             if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
               // println("i = " + i);
@@ -335,13 +354,17 @@ class Hub {
           }
 
           //reset werePacketsDropped & numPacketsDropped
-          werePacketsDroppedGang = false;
-          numPacketsDroppedGang = 0;
+          werePacketsDroppedHub = false;
+          numPacketsDroppedHub = 0;
         }
 
         switch (outputDataSource) {
           case OUTPUT_SOURCE_ODF:
-            fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), get_scale_fac_accel_G_per_count());
+            if (eegDataSource == DATASOURCE_GANGLION) {
+              fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count());
+            } else {
+              fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count());
+            }
             break;
           case OUTPUT_SOURCE_BDF:
             // curBDFDataPacketInd = curDataPacketInd;
@@ -487,9 +510,10 @@ class Hub {
   public void connectWifi(String id) {
     hub.write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
-  public void disconnectWifi() {
+  public int disconnectWifi() {
     waitingForResponse = true;
     hub.write(TCP_CMD_DISCONNECT + TCP_STOP);
+    return 0;
   }
 
   public void setProtocol(String _protocol) {
@@ -511,6 +535,9 @@ class Hub {
       return false;
     }
   }
+  public boolean write(char val) {
+    return write(String.valueOf(val));
+  }
 
   public int changeState(int newState) {
     state = newState;
@@ -521,11 +548,11 @@ class Hub {
   public void searchDeviceStart() {
     deviceList = null;
     numberOfDevices = 0;
-    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
+    write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 
   public void searchDeviceStop() {
-    safeTCPWrite(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
+    write(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
   }
 
   public boolean searchDeviceAdd(String localName) {

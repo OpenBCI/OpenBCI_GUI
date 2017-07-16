@@ -36,13 +36,6 @@ final String[] command_activate_channel = {"!", "@", "#", "$", "%", "^", "&", "*
 
 int channelDeactivateCounter = 0; //used for re-deactivating channels after switching settings...
 
-boolean threadLock = false;
-
-//these variables are used for "Kill Spikes" ... duplicating the last received data packet if packets were droppeds
-boolean werePacketsDropped = false;
-int numPacketsDropped = 0;
-
-
 //everything below is now deprecated...
 // final String[] command_activate_leadoffP_channel = {"!", "@", "#", "$", "%", "^", "&", "*"};  //shift + 1-8
 // final String[] command_deactivate_leadoffP_channel = {"Q", "W", "E", "R", "T", "Y", "U", "I"};   //letters (plus shift) right below 1-8
@@ -101,14 +94,14 @@ class Cyton {
   private int hardwareSyncStep = 0; //start this at 0...
   private long timeOfLastCommand = 0; //used when sync'ing to hardware
 
-  private int interface = INTERFACE_SERIAL;
+  private int curInterface = INTERFACE_SERIAL;
 
   //some get methods
   public float get_fs_Hz() {
     return fs_Hz;
   }
   public int getInterface() {
-    return interface;
+    return curInterface;
   }
   public float get_Vref() {
     return ADS1299_Vref;
@@ -137,17 +130,17 @@ class Cyton {
   }
 
   public boolean setInterface(int _interface) {
-    interface = _interface;
-    if (interface == INTERFACE_HUB_WIFI) {
+    curInterface = _interface;
+    if (isWifi()) {
       hub.setProtocol(PROTOCOL_WIFI);
     }
+    return true;
   }
 
   //constructors
   Cyton() {
   };  //only use this if you simply want access to some of the constants
-  Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerPacket, int interfaceType) {
-    interface = interfaceType;
+  Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerPacket) {
     nAuxValues=nAuxValuesPerPacket;
 
     println("nEEGValuesPerPacket = " + nEEGValuesPerPacket);
@@ -191,25 +184,30 @@ class Cyton {
     if (isSerial()) {
       //prepare the serial port  ... close if open
       if (isPortOpen()) {
-        closeSerialPort();
+        iSerial.closeSerialPort();
       }
       iSerial.openSerialPort(applet, comPort, baud);
-    } else {
+    } else if (isWifi()) {
       hub.connectWifi(comPort);
     }
   }
 
   public int changeState(int newState) {
-    if (isHub()) {
+    if (isWifi()) {
       hub.changeState(newState);
+      return hub.get_state();
     } else {
       iSerial.changeState(newState);
+      return iSerial.get_state();
     }
   }
 
   public int closeSDandPort() {
     closeSDFile();
+    return closePort();
+  }
 
+  public int closePort() {
     if (isSerial()) {
       return iSerial.closeSerialPort();
     } else {
@@ -229,10 +227,10 @@ class Cyton {
       case 1: //send # of channels (8 or 16) ... (regular or daisy setup)
         println("Cyton: syncWithHardware: [1] Sending channel count (" + nchan + ") to OpenBCI...");
         if (nchan == 8) {
-          write('c'); // TODO: Why does this not get a $$$ readyToSend = false?
+          write("c"); // TODO: Why does this not get a $$$ readyToSend = false?
         }
         if (nchan == 16) {
-          write('C', false);
+          write("C", false);
         }
         break;
       case 2: //reset hardware to default registers
@@ -288,7 +286,7 @@ class Cyton {
         break;
       case 6:
         output("Cyton: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-        changeState(STATE_STOPPED);
+        changeState(hub.STATE_STOPPED);
         systemMode = 10;
         controlPanel.close();
         topNav.controlPanelCollapser.setIsActive(false);
@@ -297,15 +295,15 @@ class Cyton {
     }
   }
 
-  public boolean sendChar(char val) {
-    if (interface == INTERFACE_HUB_WIFI) {
+  public boolean write(char val) {
+    if (isWifi()) {
       if (hub.isHubRunning()) {
-        hub.write(key);
+        hub.write(String.valueOf(val));
         return true;
       }
     } else {
       if (iSerial.isSerialPortOpen()) {
-        iSerial.write(key);
+        iSerial.write(String.valueOf(val));
         return true;
       }
     }
@@ -320,7 +318,7 @@ class Cyton {
   }
 
   public boolean write(String out) {
-    if (interface == INTERFACE_HUB_WIFI) {
+    if (isWifi()) {
       if (hub.isHubRunning()) {
         hub.write(out);
         return true;
@@ -335,17 +333,17 @@ class Cyton {
   }
 
   private boolean isSerial () {
-    return interface == INTERFACE_SERIAL;
+    return curInterface == INTERFACE_SERIAL;
   }
 
-  private boolean isHub () {
-    return interface == INTERFACE_HUB_WIFI || interface == INTERFACE_HUB_BLE;
+  private boolean isWifi () {
+    return curInterface == INTERFACE_HUB_WIFI;
   }
 
-  void startDataTransfer() {
+  public void startDataTransfer() {
     if (isPortOpen()) {
       // stopDataTransfer();
-      changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
+      changeState(iSerial.STATE_NORMAL);  // make sure it's now interpretting as binary
       println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
       if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
       write(command_startBinary);
@@ -356,7 +354,7 @@ class Cyton {
   public void stopDataTransfer() {
     if (isPortOpen()) {
       if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
-      changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
+      changeState(iSerial.STATE_STOPPED);  // make sure it's now interpretting as binary
       println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
       write(command_stop);// + "\n");
     }
@@ -366,7 +364,7 @@ class Cyton {
   public void printRegisters() {
     if (isPortOpen()) {
       println("Cyton: printRegisters(): Writing ? to OpenBCI...");
-      write('?');
+      write("?");
     }
   }
 
@@ -394,10 +392,10 @@ class Cyton {
   private byte[] localAccelByteBuffer = {0, 0};
 
   private boolean isPortOpen() {
-    if (interface == INTERFACE_SERIAL) {
+    if (isSerial()) {
       return iSerial.isSerialPortOpen();
-    } else if (interface == INTERFACE_HUB_WIFI) {
-      return hub.isHubRunning();
+    } else if (isWifi()) {
+      return hub.isPortOpen();
     } else {
       return false;
     }
@@ -442,7 +440,7 @@ class Cyton {
 
   //return the state
   public boolean isStateNormal() {
-    if (state == STATE_NORMAL) {
+    if (iSerial.get_state() == iSerial.STATE_NORMAL) {
       return true;
     } else {
       return false;
@@ -484,7 +482,7 @@ class Cyton {
     return isWritingChannel;
   }
   public void configureAllChannelsToDefault() {
-    write('d');
+    write("d");
   };
   public void initChannelWrite(int _numChannel) {  //numChannel counts from zero
     timeOfLastChannelWrite = millis();
