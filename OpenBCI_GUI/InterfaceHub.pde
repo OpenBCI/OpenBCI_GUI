@@ -234,7 +234,7 @@ class Hub {
 
   // Return true if the display needs to be updated for the BLE list
   public void parseMessage(String msg) {
-    println(msg);
+    // println(msg);
     String[] list = split(msg, ',');
     switch (list[0].charAt(0)) {
       case 'b': // board type setting
@@ -305,7 +305,7 @@ class Hub {
     if (isSuccessCode(Integer.parseInt(list[1]))) {
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         if (nchan == 8) {
-          setBoardType("default");
+          setBoardType("cyton");
         } else {
           setBoardType("daisy");
         }
