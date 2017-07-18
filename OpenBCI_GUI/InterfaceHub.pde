@@ -342,11 +342,7 @@ class Hub {
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
           // println(dataPacket.values[7]);
           curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-          if (eegDataSource == DATASOURCE_GANGLION) {
-            copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
-          } else {
-            copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
-          }
+          copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
           // KILL SPIKES!!!
           if(werePacketsDroppedHub){
@@ -355,17 +351,9 @@ class Hub {
               int tempDataPacketInd = curDataPacketInd - i; //
               if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
                 // println("i = " + i);
-                if (eegDataSource == DATASOURCE_GANGLION) {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                } else {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                }
+                copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
               } else {
-                if (eegDataSource == DATASOURCE_GANGLION) {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                } else {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                }
+                copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
               }
               //put the last stored packet in # of packets dropped after that packet
             }
@@ -526,13 +514,13 @@ class Hub {
     }
 
     //if we are in SYNC WITH HARDWARE state ... trigger a command
-    if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
-      if (millis() - timeOfLastCommand > 200) {
-        timeOfLastCommand = millis();
-        // hardwareSyncStep++;
-        cyton.syncWithHardware(sdSetting);
-      }
-    }
+    // if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
+    //   if (millis() - timeOfLastCommand > 200) {
+    //     timeOfLastCommand = millis();
+    //     // hardwareSyncStep++;
+    //     cyton.syncWithHardware(sdSetting);
+    //   }
+    // }
   }
 
   // CONNECTION
@@ -541,7 +529,7 @@ class Hub {
   }
   public void disconnectBLE() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT + TCP_STOP);
+    write(TCP_CMD_DISCONNECT + "," + PROTOCOL_BLE + "," + TCP_STOP);
   }
 
   public void connectWifi(String id) {
@@ -550,7 +538,17 @@ class Hub {
   }
   public int disconnectWifi() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT + TCP_STOP);
+    write(TCP_CMD_DISCONNECT +  + "," + PROTOCOL_WIFI + "," +  TCP_STOP);
+    return 0;
+  }
+
+  public void connectSerial(String id) {
+
+    write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+  }
+  public int disconnectSerial() {
+    waitingForResponse = true;
+    write(TCP_CMD_DISCONNECT +  + "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
     return 0;
   }
 

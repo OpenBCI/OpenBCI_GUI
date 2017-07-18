@@ -103,6 +103,7 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 
 final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_SERIAL = "serial";
 final static String PROTOCOL_WIFI = "wifi";
 
 ////// ---- Define variables related to OpenBCI board operations

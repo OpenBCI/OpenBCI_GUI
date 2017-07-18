@@ -149,12 +149,7 @@ class Cyton {
     initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
 
     if (isSerial()) {
-      println("isSerial");
-      //prepare the serial port  ... close if open
-      if (isPortOpen()) {
-        iSerial.closeSerialPort();
-      }
-      iSerial.openSerialPort(applet, comPort, baud);
+      hub.connectSerial(comPort);
     } else if (isWifi()) {
       hub.connectWifi(comPort);
     }
