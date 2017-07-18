@@ -538,7 +538,7 @@ class Hub {
   }
   public int disconnectWifi() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT +  + "," + PROTOCOL_WIFI + "," +  TCP_STOP);
+    write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_WIFI + "," +  TCP_STOP);
     return 0;
   }
 
@@ -548,7 +548,7 @@ class Hub {
   }
   public int disconnectSerial() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT +  + "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
+    write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
     return 0;
   }
 

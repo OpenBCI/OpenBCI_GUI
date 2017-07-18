@@ -136,6 +136,8 @@ class Cyton {
     println("getInterface: " + getInterface());
     if (isWifi()) {
       hub.setProtocol(PROTOCOL_WIFI);
+    } else if (isSerial()) {
+      hub.setProtocol(PROTOCOL_SERIAL);
     }
     return true;
   }
@@ -178,17 +180,6 @@ class Cyton {
       dataPacket.auxValues[i] = 0;
       missedDataPacket.auxValues[i] = 0;
       //prevDataPacket.auxValues[i] = 0;
-    }
-  }
-
-
-  public int changeState(int newState) {
-    if (isWifi()) {
-      hub.changeState(newState);
-      return hub.get_state();
-    } else {
-      iSerial.changeState(newState);
-      return iSerial.get_state();
     }
   }
 
@@ -276,7 +267,7 @@ class Cyton {
         break;
       case 6:
         output("Cyton: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-        changeState(hub.STATE_STOPPED);
+        hub.changeState(hub.STATE_STOPPED);
         systemMode = 10;
         controlPanel.close();
         topNav.controlPanelCollapser.setIsActive(false);
@@ -298,45 +289,31 @@ class Cyton {
   }
 
   public boolean write(char val) {
-    if (isWifi()) {
-      if (hub.isHubRunning()) {
-        hub.sendCommand(val);
-        return true;
-      }
-    } else {
-      if (iSerial.isSerialPortOpen()) {
-        iSerial.sendChar(val);
-        return true;
-      }
+    if (hub.isHubRunning()) {
+      hub.sendCommand(val);
+      return true;
     }
     return false;
   }
 
   public boolean write(char val, boolean _readyToSend) {
-    if (isSerial()) {
-      iSerial.setReadyToSend(_readyToSend);
-    }
+    // if (isSerial()) {
+    //   iSerial.setReadyToSend(_readyToSend);
+    // }
     return write(val);
   }
 
   public boolean write(String out, boolean _readyToSend) {
-    if (isSerial()) {
-      iSerial.setReadyToSend(_readyToSend);
-    }
+    // if (isSerial()) {
+    //   iSerial.setReadyToSend(_readyToSend);
+    // }
     return write(out);
   }
 
   public boolean write(String out) {
-    if (isWifi()) {
-      if (hub.isHubRunning()) {
-        hub.write(out);
-        return true;
-      }
-    } else {
-      if (iSerial.isSerialPortOpen()) {
-        iSerial.write(out);
-        return true;
-      }
+    if (hub.isHubRunning()) {
+      hub.write(out);
+      return true;
     }
     return false;
   }
@@ -354,9 +331,9 @@ class Cyton {
     if (isPortOpen()) {
       // stopDataTransfer();
       if (isSerial()) {
-        changeState(iSerial.STATE_NORMAL);  // make sure it's now interpretting as binary
+        hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
-        if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
+        // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
       } else if (isWifi()) {
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
 
@@ -370,13 +347,11 @@ class Cyton {
 
   public void stopDataTransfer() {
     if (isPortOpen()) {
-      if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
-      changeState(iSerial.STATE_STOPPED);  // make sure it's now interpretting as binary
+      hub.changeState(hub.STATE_STOPPED);  // make sure it's now interpretting as binary
       println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
       write(command_stop);// + "\n");
     }
   }
-
 
   public void printRegisters() {
     if (isPortOpen()) {
@@ -409,9 +384,7 @@ class Cyton {
   private byte[] localAccelByteBuffer = {0, 0};
 
   private boolean isPortOpen() {
-    if (isSerial()) {
-      return iSerial.isSerialPortOpen();
-    } else if (isWifi()) {
+    if (isWifi() || isSerial()) {
       return hub.isPortOpen();
     } else {
       return false;
