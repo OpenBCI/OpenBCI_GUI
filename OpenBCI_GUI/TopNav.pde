@@ -17,6 +17,9 @@ class TopNav {
 
   Button controlPanelCollapser;
 
+  Button fpsButton;
+  Button highRezButton;
+
   Button stopButton;
   public final static String stopButton_pressToStop_txt = "Stop Data Stream";
   public final static String stopButton_pressToStart_txt = "Start Data Stream";
@@ -43,6 +46,22 @@ class TopNav {
     controlPanelCollapser.setFont(h3, 16);
     controlPanelCollapser.setIsActive(true);
     controlPanelCollapser.isDropdownButton = true;
+
+    fpsButton = new Button(3+3+256, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
+    if(frameRateCounter==0){
+      fpsButton.setString("30 fps");
+    }
+    if(frameRateCounter==1){
+      fpsButton.setString("45 fps");
+    }
+    if(frameRateCounter==2){
+      fpsButton.setString("60 fps");
+    }
+    fpsButton.setFont(h3, 16);
+    fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate to see if it helps!");
+
+    highRezButton = new Button(3+3+256+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
+    controlPanelCollapser.setFont(h3, 16);
 
     //top right buttons from right to left
     int butNum = 1;
@@ -93,11 +112,15 @@ class TopNav {
   void updateNavButtonsBasedOnColorScheme(){
     if(colorScheme == COLOR_SCHEME_DEFAULT){
       controlPanelCollapser.setColorNotPressed(color(255));
+      fpsButton.setColorNotPressed(color(255));
+      highRezButton.setColorNotPressed(color(255));
       issuesButton.setColorNotPressed(color(255));
       shopButton.setColorNotPressed(color(255));
       tutorialsButton.setColorNotPressed(color(255));
 
       controlPanelCollapser.textColorNotActive = color(bgColor);
+      fpsButton.textColorNotActive = color(bgColor);
+      highRezButton.textColorNotActive = color(bgColor);
       issuesButton.textColorNotActive = color(bgColor);
       shopButton.textColorNotActive = color(bgColor);
       tutorialsButton.textColorNotActive = color(bgColor);
@@ -115,11 +138,15 @@ class TopNav {
       // tutorialsButton.setColorNotPressed(bgColor);
 
       controlPanelCollapser.setColorNotPressed(openbciBlue);
+      fpsButton.setColorNotPressed(openbciBlue);
+      highRezButton.setColorNotPressed(openbciBlue);
       issuesButton.setColorNotPressed(openbciBlue);
       shopButton.setColorNotPressed(openbciBlue);
       tutorialsButton.setColorNotPressed(openbciBlue);
 
       controlPanelCollapser.textColorNotActive = color(255);
+      fpsButton.textColorNotActive = color(255);
+      highRezButton.textColorNotActive = color(255);
       issuesButton.textColorNotActive = color(255);
       shopButton.textColorNotActive = color(255);
       tutorialsButton.textColorNotActive = color(255);
@@ -207,6 +234,8 @@ class TopNav {
     }
 
     controlPanelCollapser.draw();
+    fpsButton.draw();
+    // highRezButton.draw();
     tutorialsButton.draw();
     issuesButton.draw();
     shopButton.draw();
@@ -273,6 +302,15 @@ class TopNav {
       controlPanelCollapser.setIsActive(true);
     }
 
+    if(fpsButton.isMouseHere()){
+      fpsButton.setIsActive(true);
+    }
+
+    // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
+    // if(highRezButton.isMouseHere()){
+    //   highRezButton.setIsActive(true);
+    // }
+
     if (tutorialsButton.isMouseHere()) {
       tutorialsButton.setIsActive(true);
       //toggle help/tutorial dropdown menu
@@ -291,6 +329,15 @@ class TopNav {
   }
 
   void mouseReleased(){
+
+    if (fpsButton.isMouseHere() && fpsButton.isActive()) {
+      toggleFrameRate();
+    }
+
+    // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
+    // if (highRezButton.isMouseHere() && highRezButton.isActive()) {
+    //   toggleHighDPI();
+    // }
 
     if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
       tutorialSelector.toggleVisibility();
@@ -325,6 +372,8 @@ class TopNav {
       layoutButton.setIsActive(false);
     }
 
+    fpsButton.setIsActive(false);
+    highRezButton.setIsActive(false);
     tutorialsButton.setIsActive(false);
     issuesButton.setIsActive(false);
     shopButton.setIsActive(false);
