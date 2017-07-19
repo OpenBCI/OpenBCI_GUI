@@ -561,6 +561,22 @@ class Hub {
     // }
   }
 
+  public void closePort() {
+    switch (curProtocol) {
+      case PROTOCOL_BLE:
+        disconnectBLE();
+        break;
+      case PROTOCOL_WIFI:
+        disconnectWifi();
+        break;
+      case PROTOCOL_SERIAL:
+        disconnectSerial();
+        break;
+      default:
+        break;
+    }
+  }
+
   // CONNECTION
   public void connectBLE(String id) {
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
