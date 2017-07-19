@@ -2,6 +2,7 @@
 
 ### Bug Fixes
 * Addresses #121 - `.edf` incompatible changed ending to `.bdf` 
+* Closes #148 - LSL does not stream correctly
 
 # 2.2.0
 
