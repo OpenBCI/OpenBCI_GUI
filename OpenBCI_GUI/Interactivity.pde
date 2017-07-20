@@ -21,7 +21,7 @@ void keyPressed() {
   //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
   //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
-  if(!controlPanel.isOpen){ //don't parse the key if the control panel is open
+  if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
     if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
       parseKey(key);
     } else {
@@ -162,6 +162,10 @@ void parseKey(char val) {
       if(nchan == 16){
         deactivateChannel(16-1);
       }
+      break;
+    case ':':
+      println("test..."); //@@@@@
+      boolean test = isNetworkingTextActive();
       break;
 
     //activate channels 1-8
@@ -988,4 +992,45 @@ void openURLInBrowser(String _url){
   catch (java.io.IOException e) {
       System.out.println(e.getMessage());
   }
+}
+
+void toggleFrameRate(){
+  if(frameRateCounter<2){
+    frameRateCounter++;
+  } else {
+    frameRateCounter = 0;
+  }
+  if(frameRateCounter==0){
+    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    topNav.fpsButton.setString("30 fps");
+  }
+  if(frameRateCounter==1){
+    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    topNav.fpsButton.setString("45 fps");
+  }
+  if(frameRateCounter==2){
+    frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    topNav.fpsButton.setString("60 fps");
+  }
+}
+
+boolean isNetworkingTextActive(){
+  boolean isAFieldActive = false;
+  int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
+  for(int i = 0; i < numTextFields; i++){
+    if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
+      isAFieldActive = true;
+    }
+  }
+  // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
+
+  //isFocus(); returns true if active for textField...
+  println(isAFieldActive);
+  return isAFieldActive; //if not, return false
+}
+
+boolean highDPI = false;
+void toggleHighDPI(){
+  highDPI = !highDPI;
+  println("High DPI? " + highDPI);
 }

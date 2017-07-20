@@ -14,15 +14,17 @@ int navHeight = 22;
 // MAKE YOUR WIDGET GLOBALLY
 W_timeSeries w_timeSeries;
 W_fft w_fft;
-W_headPlot w_headPlot;
-W_accelerometer w_accelerometer;
 W_networking w_networking;
+W_BandPower w_bandPower;
+W_accelerometer w_accelerometer;
 W_ganglionImpedance w_ganglionImpedance;
+W_headPlot w_headPlot;
 W_template w_template1;
 W_emg w_emg;
 W_openBionics w_openbionics;
+W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
-W_BandPower w_bandPower;
+
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -41,25 +43,29 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_ganglionImpedance, w);
   }
 
-  w_headPlot = new W_headPlot(_this);
-  w_headPlot.setTitle("Head Plot");
-  addWidget(w_headPlot, w);
+  w_networking = new W_networking(_this);
+  w_networking.setTitle("Networking");
+  addWidget(w_networking, w);
+
+  w_bandPower = new W_BandPower(_this);
+  w_bandPower.setTitle("Band Power");
+  addWidget(w_bandPower, w);
 
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
 
-  w_networking = new W_networking(_this);
-  w_networking.setTitle("Networking");
-  addWidget(w_networking, w);
+  w_headPlot = new W_headPlot(_this);
+  w_headPlot.setTitle("Head Plot");
+  addWidget(w_headPlot, w);
 
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
 
-  w_bandPower = new W_BandPower(_this);
-  w_bandPower.setTitle("Band Power");
-  addWidget(w_bandPower, w);
+  w_focus = new W_Focus(_this);
+  w_focus.setTitle("Focus Widget");
+  addWidget(w_focus, w);
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
