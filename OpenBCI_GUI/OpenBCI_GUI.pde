@@ -103,6 +103,7 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 
 final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_SERIAL = "serial";
 final static String PROTOCOL_WIFI = "wifi";
 
 ////// ---- Define variables related to OpenBCI board operations
@@ -1000,7 +1001,7 @@ void systemDraw() { //for drawing to the screen
   }
 
 
-  if (((iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) || ((hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT)) {
+  if ((hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);
@@ -1053,7 +1054,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v2.2.0\nJune 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.0.0\nAugust 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

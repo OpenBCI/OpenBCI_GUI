@@ -63,6 +63,7 @@ void clientEvent(Client someClient) {
 
 class Hub {
   final static String TCP_CMD_ACCEL = "a";
+  final static String TCP_CMD_BOARD_TYPE = "b";
   final static String TCP_CMD_CONNECT = "c";
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
@@ -101,6 +102,10 @@ class Hub {
   final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
   final static int RESP_ERROR_UNABLE_TO_CONNECT = 402;
   final static int RESP_ERROR_UNABLE_TO_DISCONNECT = 401;
+  final static int RESP_ERROR_PROTOCOL_UNKNOWN = 418;
+  final static int RESP_ERROR_PROTOCOL_BLE_START = 419;
+  final static int RESP_ERROR_PROTOCOL_NOT_STARTED = 420;
+  final static int RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE = 421;
   final static int RESP_ERROR_SCAN_ALREADY_SCANNING = 409;
   final static int RESP_ERROR_SCAN_NONE_FOUND = 407;
   final static int RESP_ERROR_SCAN_NO_SCAN_TO_STOP = 410;
@@ -116,6 +121,7 @@ class Hub {
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
   final static int RESP_STATUS_NOT_SCANNING = 303;
+
 
   public String[] deviceList = new String[0];
   public boolean deviceListUpdated = false;
@@ -231,6 +237,9 @@ class Hub {
     // println(msg);
     String[] list = split(msg, ',');
     switch (list[0].charAt(0)) {
+      case 'b': // board type setting
+        processBoardType(msg);
+        break;
       case 'c': // Connect
         processConnect(msg);
         break;
@@ -273,24 +282,57 @@ class Hub {
     println("Code " + code + "Error: " + msg);
   }
 
+  public void setBoardType(String boardType) {
+    println("Hub: setBoardType(): sending \'" + boardType);
+    write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
+  }
+
+  private void processBoardType(String msg) {
+    String[] list = split(msg, ',');
+    if (isSuccessCode(Integer.parseInt(list[1]))) {
+      println("Hub: processBoardType: set board to " + list[2]);
+      println("Hub: parseMessage: connect: success!");
+      initAndShowGUI();
+    } else {
+      println("Hub: processBoardType: set board to failure!");
+      killAndShowMsg(list[2]);
+    }
+  }
+
   private void processConnect(String msg) {
     println("Hub: processConnect: made it: " + msg);
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
-      systemMode = 10;
-      controlPanel.close();
-      println("Hub: parseMessage: connect: success!");
-      output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-      portIsOpen = true;
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        if (nchan == 8) {
+          setBoardType("cyton");
+        } else {
+          setBoardType("daisy");
+        }
+      } else {
+        println("Hub: parseMessage: connect: success!");
+        initAndShowGUI();
+      }
     } else {
       println("Hub: parseMessage: connect: failure!");
-      haltSystem();
-      initSystemButton.setString("START SYSTEM");
-      controlPanel.open();
-      abandonInit = true;
-      output("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
-      portIsOpen = false;
+      killAndShowMsg("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
     }
+  }
+
+  private void initAndShowGUI() {
+    systemMode = 10;
+    controlPanel.close();
+    output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+    portIsOpen = true;
+  }
+
+  private void killAndShowMsg(String msg) {
+    haltSystem();
+    initSystemButton.setString("START SYSTEM");
+    controlPanel.open();
+    abandonInit = true;
+    output(msg);
+    portIsOpen = false;
   }
 
   /**
@@ -342,11 +384,7 @@ class Hub {
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
           // println(dataPacket.values[7]);
           curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-          if (eegDataSource == DATASOURCE_GANGLION) {
-            copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
-          } else {
-            copyDataPacketTo(dataPacketBuff[curDataPacketInd]);  // Resets isNewDataPacketAvailable to false
-          }
+          copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
           // KILL SPIKES!!!
           if(werePacketsDroppedHub){
@@ -355,17 +393,9 @@ class Hub {
               int tempDataPacketInd = curDataPacketInd - i; //
               if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
                 // println("i = " + i);
-                if (eegDataSource == DATASOURCE_GANGLION) {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                } else {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                }
+                copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
               } else {
-                if (eegDataSource == DATASOURCE_GANGLION) {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                } else {
-                  copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                }
+                copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
               }
               //put the last stored packet in # of packets dropped after that packet
             }
@@ -407,11 +437,7 @@ class Hub {
 
   private void processDisconnect(String msg) {
     if (!waitingForResponse) {
-      haltSystem();
-      portIsOpen = false;
-      initSystemButton.setString("START SYSTEM");
-      controlPanel.open();
-      output("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
+      killAndShowMsg("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
     } else {
       waitingForResponse = false;
     }
@@ -526,12 +552,28 @@ class Hub {
     }
 
     //if we are in SYNC WITH HARDWARE state ... trigger a command
-    if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
-      if (millis() - timeOfLastCommand > 200) {
-        timeOfLastCommand = millis();
-        // hardwareSyncStep++;
-        cyton.syncWithHardware(sdSetting);
-      }
+    // if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
+    //   if (millis() - timeOfLastCommand > 200) {
+    //     timeOfLastCommand = millis();
+    //     // hardwareSyncStep++;
+    //     cyton.syncWithHardware(sdSetting);
+    //   }
+    // }
+  }
+
+  public void closePort() {
+    switch (curProtocol) {
+      case PROTOCOL_BLE:
+        disconnectBLE();
+        break;
+      case PROTOCOL_WIFI:
+        disconnectWifi();
+        break;
+      case PROTOCOL_SERIAL:
+        disconnectSerial();
+        break;
+      default:
+        break;
     }
   }
 
@@ -541,7 +583,7 @@ class Hub {
   }
   public void disconnectBLE() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT + TCP_STOP);
+    write(TCP_CMD_DISCONNECT + "," + PROTOCOL_BLE + "," + TCP_STOP);
   }
 
   public void connectWifi(String id) {
@@ -550,7 +592,18 @@ class Hub {
   }
   public int disconnectWifi() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT + TCP_STOP);
+    write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_WIFI + "," +  TCP_STOP);
+    return 0;
+  }
+
+  public void connectSerial(String id) {
+    waitingForResponse = true;
+    write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+  }
+  public int disconnectSerial() {
+    println("disconnecting serial");
+    waitingForResponse = true;
+    write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
     return 0;
   }
 

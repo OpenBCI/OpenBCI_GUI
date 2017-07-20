@@ -1,3 +1,9 @@
+# 3.0.0
+
+### Breaking Changes
+
+* Dependent on electron hub for all data streaming activity. 
+
 # 2.2.0
 
 ### Bug Fixes
