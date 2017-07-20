@@ -756,11 +756,6 @@ void haltSystem() {
 
   stopRunning();  //stop data transfer
 
-  if (hub.isPortOpen()) {
-    println("openBCI_GUI: haltSystem: need to disconnect");
-    hub.closePort();
-  }
-
   //reset variables for data processing
   curDataPacketInd = -1;
   lastReadDataPacketInd = -1;

@@ -601,6 +601,7 @@ class Hub {
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
   public int disconnectSerial() {
+    println("disconnecting serial");
     waitingForResponse = true;
     write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
     return 0;

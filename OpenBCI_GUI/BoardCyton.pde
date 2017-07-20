@@ -190,7 +190,7 @@ class Cyton {
 
   public int closePort() {
     if (isSerial()) {
-      return iSerial.closeSerialPort();
+      return hub.disconnectSerial();
     } else {
       return hub.disconnectWifi();
     }
@@ -277,14 +277,8 @@ class Cyton {
   }
 
   public void writeCommand(String val) {
-    if (isWifi()) {
-      if (hub.isHubRunning()) {
-        hub.write(String.valueOf(val));
-      }
-    } else {
-      if (iSerial.isSerialPortOpen()) {
-        iSerial.write(val);
-      }
+    if (hub.isHubRunning()) {
+      hub.write(String.valueOf(val));
     }
   }
 
@@ -430,7 +424,7 @@ class Cyton {
 
   //return the state
   public boolean isStateNormal() {
-    if (iSerial.get_state() == iSerial.STATE_NORMAL) {
+    if (hub.get_state() == hub.STATE_NORMAL) {
       return true;
     } else {
       return false;
