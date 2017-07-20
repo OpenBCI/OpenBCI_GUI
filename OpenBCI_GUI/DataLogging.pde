@@ -1501,9 +1501,9 @@ void convert16channelLine() {
     }
 
     if (i>=1 && i<=16) {
-      floatData[i] *= openBCI.get_scale_fac_uVolts_per_count();
+      floatData[i] *= cyton.get_scale_fac_uVolts_per_count();
     }else if(i != 0){
-      floatData[i] *= openBCI.get_scale_fac_accel_G_per_count();
+      floatData[i] *= cyton.get_scale_fac_accel_G_per_count();
     }
 
     if(i == 0){
@@ -1562,9 +1562,9 @@ void convert8channelLine() {
     }
 
     if (i>=1 && i<=8) {
-      floatData[i] *= openBCI.get_scale_fac_uVolts_per_count();
+      floatData[i] *= cyton.get_scale_fac_uVolts_per_count();
     }else if(i != 0){
-      floatData[i] *= openBCI.get_scale_fac_accel_G_per_count();
+      floatData[i] *= cyton.get_scale_fac_accel_G_per_count();
     }
 
     if(i == 0){
