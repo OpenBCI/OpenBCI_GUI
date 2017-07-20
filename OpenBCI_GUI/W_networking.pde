@@ -1538,7 +1538,7 @@ class Stream extends Thread{
                             this.streamName,
                             this.streamType,
                             this.nChanLSL,
-                            cyton.get_fs_Hz(),
+                            getSampleRateSafe(),
                             LSL.ChannelFormat.float32,
                             stream_id
                           );

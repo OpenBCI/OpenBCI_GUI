@@ -118,7 +118,7 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
 //cyton data packet
-final int nDataBackBuff = 3*(int)get_fs_Hz_safe();
+final int nDataBackBuff = 3*(int)getSampleRateSafe();
 DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
@@ -548,7 +548,7 @@ void initSystem() {
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
-  dataBuffX = new float[(int)(dataBuff_len_sec * get_fs_Hz_safe())];
+  dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
   accelerometerBuff = new float[3][500]; // 500 points
@@ -564,23 +564,23 @@ void initSystem() {
   for (int i=0; i<nDataBackBuff; i++) {
     dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
   }
-  dataProcessing = new DataProcessing(nchan, get_fs_Hz_safe());
-  dataProcessing_user = new DataProcessing_User(nchan, get_fs_Hz_safe());
+  dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
+  dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
 
 
 
   //initialize the data
-  prepareData(dataBuffX, dataBuffY_uV, get_fs_Hz_safe());
+  prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
     verbosePrint("Init FFT Buff – "+Ichan);
-    fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
+    fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
   }  //make the FFT objects
 
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
+  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -614,7 +614,7 @@ void initSystem() {
       println("   : quitting...");
       exit();
     }
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/get_fs_Hz_safe()) + " seconds of EEG data");
+    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
     //removing first column of data from data file...the first column is a time index and not eeg data
     playbackData_table.removeColumn(0);
     break;
@@ -684,11 +684,11 @@ void initSystem() {
  * @description Useful function to get the correct sample rate based on data source
  * @returns `float` - The frequency / sample rate of the data source
  */
-float get_fs_Hz_safe() {
+float getSampleRateSafe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
-    return ganglion.get_fs_Hz();
+    return ganglion.getSampleRate();
   } else {
-    return cyton.get_fs_Hz();
+    return cyton.getSampleRate();
   }
 }
 
@@ -943,7 +943,7 @@ void systemDraw() { //for drawing to the screen
       case DATASOURCE_NORMAL_W_AUX:
         switch (outputDataSource) {
         case OUTPUT_SOURCE_ODF:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput_odf.getRowsWritten())/get_fs_Hz_safe()) + " secs Saved, Writing to " + output_fname);
+          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
           break;
         case OUTPUT_SOURCE_BDF:
           surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
@@ -958,7 +958,7 @@ void systemDraw() { //for drawing to the screen
         surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
         break;
       case DATASOURCE_PLAYBACKFILE:
-        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/get_fs_Hz_safe()) + " of " + int(float(playbackData_table.getRowCount())/get_fs_Hz_safe()) + " secs, Reading from: " + playbackData_fname);
+        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/getSampleRateSafe()) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
         break;
       case DATASOURCE_GANGLION:
         surface.setTitle(int(frameRate) + " fps, Ganglion!");

@@ -64,7 +64,8 @@ class Ganglion {
   private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by cyton boards
   private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
 
-  private final float fs_Hz = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
+  private final float fsHzBLE = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
+  private final float fsHzWifi = 1600.0f;  //sample rate used by OpenBCI Ganglion board on wifi, set by hub
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
@@ -91,7 +92,13 @@ class Ganglion {
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
   // Getters
-  public float get_fs_Hz() { return fs_Hz; }
+  public float getSampleRate() {
+    if (isWifi()) {
+      return fsHzWifi;
+    } else {
+      return fsHzBLE;
+    }
+  }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isCheckingImpedance() { return checkingImpedance; }

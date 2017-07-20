@@ -419,14 +419,6 @@ class ChannelBar{
 
     nPoints = nPointsBasedOnDataSource();
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      nPoints = numSeconds * (int)cyton.fs_Hz;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
-      nPoints = numSeconds * (int)ganglion.fs_Hz;
-    }else{
-      nPoints = numSeconds * (int)cyton.fs_Hz;
-    }
-
     channelPoints = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
 
@@ -566,16 +558,7 @@ class ChannelBar{
   }
 
   int nPointsBasedOnDataSource(){
-    int _nPoints;
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      _nPoints = numSeconds * (int)cyton.fs_Hz;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
-      _nPoints = numSeconds * (int)ganglion.fs_Hz;
-    }else{
-      _nPoints = numSeconds * (int)cyton.fs_Hz;
-    }
-
-    return _nPoints;
+    return numSeconds * (int)getSampleRateSafe();
   }
 
   void adjustTimeAxis(int _newTimeSize){

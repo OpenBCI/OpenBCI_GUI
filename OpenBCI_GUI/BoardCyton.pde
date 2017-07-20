@@ -72,7 +72,9 @@ class Cyton {
   private int prevSampleIndex = 0;
   private int serialErrorCounter = 0;
 
-  private final float fs_Hz = 250.0f;  //sample rate used by OpenBCI board...set by its Arduino code
+  private final float fsHzSerialCyton = 250.0f;  //sample rate used by OpenBCI board...set by its Arduino code
+  private final float fsHzSerialCytonDaisy = 125.0f;  //sample rate used by OpenBCI board...set by its Arduino code
+  private final float fsHzWifi = 1000.0f;  //sample rate used by OpenBCI board...set by its Arduino code
   private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
   private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
   private float openBCI_series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
@@ -98,8 +100,16 @@ class Cyton {
   PApplet mainApplet;
 
   //some get methods
-  public float get_fs_Hz() {
-    return fs_Hz;
+  public float getSampleRate() {
+    if (isWifi()) {
+      return fsHzWifi;
+    } else {
+      if (nchan == NCHAN_CYTON_DAISY) {
+        return fsHzSerialCytonDaisy;
+      } else {
+        return fsHzSerialCyton;
+      }
+    }
   }
   public int getInterface() {
     return curInterface;

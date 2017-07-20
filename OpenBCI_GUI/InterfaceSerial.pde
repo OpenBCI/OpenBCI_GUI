@@ -469,10 +469,10 @@ class InterfaceSerial {
           // //initialize the FFT objects
           // for (int Ichan=0; Ichan < nchan; Ichan++) {
           //   verbosePrint("Init FFT Buff – "+Ichan);
-          //   fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
+          //   fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
           // }  //make the FFT objects
           //
-          // initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
+          // initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
           // setupWidgetManager();
         }
       }

@@ -87,7 +87,7 @@ int getDataIfAvailable(int pointCounter) {
     int current_millis = millis();
     if (current_millis >= nextPlayback_millis) {
       //prepare for next time
-      int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/get_fs_Hz_safe())/playback_speed_fac);
+      int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/getSampleRateSafe())/playback_speed_fac);
       if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
       nextPlayback_millis += increment_millis;
 
@@ -98,7 +98,7 @@ int getDataIfAvailable(int pointCounter) {
         dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
         switch (eegDataSource) {
         case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-          synthesizeData(nchan, get_fs_Hz_safe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+          synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
           break;
         case DATASOURCE_PLAYBACKFILE:
           currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
@@ -723,10 +723,10 @@ class DataProcessing {
           // if the frequency matches a band
           if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
             if (Ibin != 0 && Ibin != Nfft/2) {
-              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe() / 4;
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe() / 4;
             }
             else {
-              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/get_fs_Hz_safe();
+              psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe();
             }
             sum += psdx;
             // binNum ++;

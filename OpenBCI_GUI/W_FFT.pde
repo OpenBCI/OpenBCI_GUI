@@ -46,7 +46,7 @@ class W_fft extends Widget {
 
   int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
   int xMax = xLimOptions[3];
-  int FFT_indexLim = int(1.0*xMax*(Nfft/get_fs_Hz_safe()));   // maxim value of FFT index
+  int FFT_indexLim = int(1.0*xMax*(Nfft/getSampleRateSafe()));   // maxim value of FFT index
   int yLim = 100;  //maximum value of y axis ... 100 uV
 
   W_fft(PApplet _parent){
@@ -119,14 +119,14 @@ class W_fft extends Widget {
         GPoint powerAtBin;
 
         // println("i = " + i);
-        // float a = get_fs_Hz_safe();
+        // float a = getSampleRateSafe();
         // float aa = fftBuff[i].getBand(j);
         // float b = fftBuff[i].getBand(j);
         // float c = Nfft;
 
-        powerAtBin = new GPoint((1.0*get_fs_Hz_safe()/Nfft)*j, fftBuff[i].getBand(j));
+        powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
-        // GPoint powerAtBin = new GPoint((1.0*get_fs_Hz_safe()/Nfft)*j, fftBuff[i].getBand(j));
+        // GPoint powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
 
         //println("=========================================");
         //println(j);

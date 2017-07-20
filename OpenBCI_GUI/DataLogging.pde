@@ -49,11 +49,8 @@ void openNewLogFileBDF(String _fileName) {
     closeLogFile();
   }
   //open the new file
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    fileoutput_bdf = new OutputFile_BDF(ganglion.get_fs_Hz(), nchan, _fileName);
-  } else {
-    fileoutput_bdf = new OutputFile_BDF(cyton.get_fs_Hz(), nchan, _fileName);
-  }
+  fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
+
   output_fname = fileoutput_bdf.fname;
   println("cyton: openNewLogFile: opened BDF output file: " + output_fname);
   output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
@@ -70,11 +67,8 @@ void openNewLogFileODF(String _fileName) {
     closeLogFile();
   }
   //open the new file
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    fileoutput_odf = new OutputFile_rawtxt(ganglion.get_fs_Hz(), _fileName);
-  } else {
-    fileoutput_odf = new OutputFile_rawtxt(cyton.get_fs_Hz(), _fileName);
-  }
+  fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
+
   output_fname = fileoutput_odf.fname;
   println("cyton: openNewLogFile: opened ODF output file: " + output_fname);
   output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
