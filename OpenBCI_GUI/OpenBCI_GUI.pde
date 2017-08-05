@@ -135,19 +135,24 @@ long timeOfInit;
 long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
-// TODO: Make nPointsPerUpdate dynamic and based on sample rate
+// Calculate nPointsPerUpdate based on sampling rate and buffer update rate
+// @update_millis: update the buffer every 40 milliseconds
+// @nPointsPerUpdate: update the GUI after this many data points have been received.
+// The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
+final int update_millis = 40;
+int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 // final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
 // final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
-final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
+// final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
 
 //define some data fields for handling data here in processing
 float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float yLittleBuff[] = new float[nPointsPerUpdate];
-float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+float yLittleBuff[];
+float yLittleBuff_uV[][]; //small buffer used to send data to the filters
 float accelerometerBuff[][]; // accelerometer buff 500 points
-float auxBuff[][] = new float[3][nPointsPerUpdate];
+float auxBuff[][];
 float data_elec_imp_ohm[];
 
 float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -548,9 +553,13 @@ void initSystem() {
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
+  nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
   dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  yLittleBuff = new float[nPointsPerUpdate];
+  yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+  auxBuff = new float[3][nPointsPerUpdate];
   accelerometerBuff = new float[3][500]; // 500 points
   for (int i=0; i<n_aux_ifEnabled; i++) {
     for (int j=0; j<accelerometerBuff[0].length; j++) {
