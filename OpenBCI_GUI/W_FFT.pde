@@ -10,8 +10,9 @@
 //
 ///////////////////////////////////////////////////
 
-//fft constants
-int Nfft = 256; //set resolution of the FFT.  Use N=256 for normal, N=512 for MU waves
+//fft global variables
+int Nfft; //125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.  //prev: Use N=256 for normal, N=512 for MU waves
+float fs_Hz;
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 

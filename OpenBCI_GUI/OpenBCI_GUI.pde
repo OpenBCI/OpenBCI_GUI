@@ -553,6 +553,8 @@ void initSystem() {
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
+  fs_Hz = getSampleRateSafe();
+  Nfft = getNfftSafe();
   nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
   dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
@@ -698,6 +700,19 @@ float getSampleRateSafe() {
     return ganglion.getSampleRate();
   } else {
     return cyton.getSampleRate();
+  }
+}
+
+/**
+* @description Get the correct points of FFT based on sampling rate
+* @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
+*/
+
+int getNfftSafe() {
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    return ganglion.getNfft();
+  } else {
+    return cyton.getNfft();
   }
 }
 
