@@ -66,6 +66,8 @@ class Ganglion {
 
   private final float fsHzBLE = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
   private final float fsHzWifi = 1600.0f;  //sample rate used by OpenBCI Ganglion board on wifi, set by hub
+  private final int NfftBLE = 256;
+  private final int NfftWifi = 2048;
   private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
@@ -97,6 +99,13 @@ class Ganglion {
       return fsHzWifi;
     } else {
       return fsHzBLE;
+    }
+  }
+  public int getNfft() {
+    if (isWifi()) {
+      return NfftWifi;
+    } else {
+      return NfftBLE;
     }
   }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
