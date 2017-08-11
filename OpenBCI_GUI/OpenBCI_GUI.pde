@@ -118,8 +118,8 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
 //cyton data packet
-final int nDataBackBuff = 3*(int)getSampleRateSafe();
-DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
+int nDataBackBuff;
+DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
@@ -555,6 +555,8 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
   fs_Hz = getSampleRateSafe();
   Nfft = getNfftSafe();
+  nDataBackBuff = 3*(int)fs_Hz;
+  dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
   nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
   dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
