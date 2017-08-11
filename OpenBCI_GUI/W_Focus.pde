@@ -123,10 +123,10 @@ class W_Focus extends Widget {
     }
 
     alpha_avg = alpha_avg / alpha_count;  // average uV per bin
-    //alpha_avg = alpha_avg / (openBCI.get_fs_Hz()/Nfft);  // average uV per delta freq
+    //alpha_avg = alpha_avg / (cyton.getSampleRate()/Nfft);  // average uV per delta freq
     beta_avg = beta_avg / beta_count;  // average uV per bin
-    //beta_avg = beta_avg / (openBCI.get_fs_Hz()/Nfft);  // average uV per delta freq
-    //current time = int(float(currentTableRowIndex)/openBCI.get_fs_Hz());
+    //beta_avg = beta_avg / (cyton.getSampleRate()/Nfft);  // average uV per delta freq
+    //current time = int(float(currentTableRowIndex)/cyton.getSampleRate());
 
     // version 1
     if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper && beta_avg < beta_thresh) {

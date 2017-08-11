@@ -8,7 +8,7 @@
 //
 //  Handles interactions between the radio system and OpenBCI systems.
 //  It is important to note that this is using Serial communication directly
-//  rather than the OpenBCI_ADS1299 class. I just found this easier to work
+//  rather than the Cyton class. I just found this easier to work
 //  with.
 //
 //  Modified by Joel Murphy, January 2017
@@ -33,7 +33,7 @@ void autoconnect(){
       try{
           serialPort = serialPorts[i];
           board = new Serial(this,serialPort,115200);
-          print("try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
+          print("blasss try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
           output("Attempting to connect at 115200 baud to " + serialPort);  // not working
           delay(5000);
 

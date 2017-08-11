@@ -249,19 +249,19 @@ void parseKey(char val) {
       // stopButtonWasPressed();
       break;
     case 'n':
-      println("openBCI: " + openBCI);
+      println("cyton: " + cyton);
       break;
 
     case '?':
-      printRegisters();
+      cyton.printRegisters();
       break;
 
     case 'd':
       verbosePrint("Updating GUI's channel settings to default...");
       // gui.cc.loadDefaultChannelSettings();
       w_timeSeries.hsc.loadDefaultChannelSettings();
-      //openBCI.serial_openBCI.write('d');
-      openBCI.configureAllChannelsToDefault();
+      //cyton.serial_openBCI.write('d');
+      cyton.configureAllChannelsToDefault();
       break;
 
     // //change the state of the impedance measurements...activate the N-channels
@@ -326,10 +326,10 @@ void parseKey(char val) {
     default:
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-        openBCI.sendChar(key);
+        cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
-        ganglion.passthroughCommand(key);
+        hub.sendCommand(key);
       }
       break;
   }
@@ -463,7 +463,9 @@ void mouseDragged() {
 //swtich yard if a click is detected
 void mousePressed() {
 
-  verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // println("systemMode" + systemMode);
+  // controlPanel.CPmousePressed();
 
   //if not before "Start System" ... i.e. after initial setup
   if (systemMode >= SYSTEMMODE_POSTINIT) {

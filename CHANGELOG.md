@@ -1,7 +1,13 @@
+# 3.0.0
+
+### Breaking Changes
+
+* Dependent on electron hub for all data streaming activity.
+
 # 2.2.1
 
 ### Bug Fixes
-* Addresses #121 - `.edf` incompatible changed ending to `.bdf` 
+* Addresses #121 - `.edf` incompatible changed ending to `.bdf`
 * Closes #148 - LSL does not stream correctly
 
 # 2.2.0
