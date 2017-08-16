@@ -1254,7 +1254,6 @@ void updateToNChan(int _nchan) {
   hub.initDataPackets(_nchan, 3);
   ganglion.initDataPackets(_nchan, 3);
   cyton.initDataPackets(_nchan, 3);
-  iSerial.initDataPackets(_nchan, 3);
   updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 

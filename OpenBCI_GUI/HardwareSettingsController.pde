@@ -10,13 +10,13 @@
 
 
 //these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-char[][] impedanceCheckValues = new char [nchan][2];
+// int numSettingsPerChannel = 6; //each channel has 6 different settings
+// char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+// char[][] impedanceCheckValues = new char [nchan][2];
 
 public void updateChannelArrays(int _nchan) {
-  channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-  impedanceCheckValues = new char [_nchan][2];
+  w_timeSeries.hsc.channelSettingValues = new char [_nchan][w_timeSeries.hsc.numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+  w_timeSeries.hsc.impedanceCheckValues = new char [_nchan][2];
 }
 
 //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
@@ -32,7 +32,7 @@ void activateChannel(int Ichan) {
     ganglion.changeChannelState(Ichan, true);
   }
   if (Ichan < nchan) {
-    channelSettingValues[Ichan][0] = '0';
+    w_timeSeries.hsc.channelSettingValues[Ichan][0] = '0';
     // gui.cc.update();
   }
 }
@@ -44,19 +44,17 @@ void deactivateChannel(int Ichan) {
       cyton.changeChannelState(Ichan, false); //de-activate
     }
   } else if (eegDataSource == DATASOURCE_GANGLION) {
-    // println("deactivating channel on ganglion");
     ganglion.changeChannelState(Ichan, false);
   }
   if (Ichan < nchan) {
-    channelSettingValues[Ichan][0] = '1';
-    // gui.cc.update();
+    w_timeSeries.hsc.channelSettingValues[Ichan][0] = '1';
   }
 }
 
 //Ichan is zero referenced (not one referenced)
 boolean isChannelActive(int Ichan) {
   boolean return_val = false;
-  if (channelSettingValues[Ichan][0] == '1') {
+  if (w_timeSeries.hsc.channelSettingValues[Ichan][0] == '1') {
     return_val = false;
   } else {
     return_val = true;

@@ -156,7 +156,7 @@ class Hub {
   public int numberOfDevices = 0;
   public int maxNumberOfDevices = 10;
   private boolean hubRunning = false;
-  public char[] tcpBuffer = new char[1024];
+  public char[] tcpBuffer = new char[4096];
   public int tcpBufferPositon = 0;
   private String curProtocol = PROTOCOL_WIFI;
 
@@ -302,6 +302,7 @@ class Hub {
       println("Hub: processBoardType: set board to " + list[2]);
       println("Hub: parseMessage: connect: success!");
       initAndShowGUI();
+      cyton.syncChannelSettings();
     } else {
       println("Hub: processBoardType: set board to failure!");
       killAndShowMsg(list[2]);
@@ -324,7 +325,7 @@ class Hub {
       }
     } else {
       println("Hub: parseMessage: connect: failure!");
-      killAndShowMsg("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
+      killAndShowMsg("Unable to connect to board! Please ensure board is powered on and in range!");
     }
   }
 
@@ -499,9 +500,9 @@ class Hub {
         w_timeSeries.hsc.channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
         // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
         //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
-        w_timeSeries.hsc.channelSettingValues[channelNumber][1] = getCommandForGain(Integer.parseInt(list[4]));
+        w_timeSeries.hsc.channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
         // input type comes in as a string version and must get converted to char
-        w_timeSeries.hsc.channelSettingValues[channelNumber][2] = getCommandForInputType(list[5]);
+        w_timeSeries.hsc.channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
         // bias is like power down
         w_timeSeries.hsc.channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
         // srb2 is like power down

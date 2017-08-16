@@ -501,7 +501,7 @@ class Cyton {
    * Used to convert a local channel code into a hub gain which is human
    *  readable and in scientific values.
    */
-  private int getGainForCommand(char cmd) {
+  public int getGainForCommand(char cmd) {
     switch (cmd) {
       case '0':
         return 1;
@@ -524,7 +524,7 @@ class Cyton {
   /**
    * Used to convert a gain from the hub back into local codes.
    */
-  private char getCommandForGain(int gain) {
+  public char getCommandForGain(int gain) {
     switch (gain) {
       case 1:
         return '0';
@@ -544,11 +544,15 @@ class Cyton {
     }
   }
 
+  public void syncChannelSettings() {
+    write("r,start" + hub.TCP_STOP);
+  }
+
   /**
    * Used to convert raw code to hub code
    * @param inputType {String} - The input from a hub sync channel with register settings
    */
-  private char getCommandForInputType(String inputType) {
+  public char getCommandForInputType(String inputType) {
     if (inputType.equals("normal")) return '0';
     if (inputType.equals("shorted")) return '1';
     if (inputType.equals("biasMethod")) return '2';
@@ -564,7 +568,7 @@ class Cyton {
    * Used right before a channel setting command is sent to the hub to convert
    *  local values into the expected form for the hub.
    */
-  private String getInputTypeForCommand(char cmd) {
+  public String getInputTypeForCommand(char cmd) {
     if (cmd == '0') return "normal";
     if (cmd == '1') return "shorted";
     if (cmd == '2') return "biasMethod";
@@ -585,7 +589,7 @@ class Cyton {
     output += getInputTypeForCommand(w_timeSeries.hsc.channelSettingValues[_numChannel][2]) + ",";
     output += w_timeSeries.hsc.channelSettingValues[_numChannel][3] + ",";
     output += w_timeSeries.hsc.channelSettingValues[_numChannel][4] + ",";
-    output += w_timeSeries.hsc.channelSettingValues[_numChannel][5] + TCP_STOP;
+    output += w_timeSeries.hsc.channelSettingValues[_numChannel][5] + hub.TCP_STOP;
     write(output);
 
     // if (millis() - timeOfLastChannelWrite >= 50) { //wait 50 milliseconds before sending next character
