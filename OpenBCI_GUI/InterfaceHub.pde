@@ -93,10 +93,15 @@ class Hub {
 
   final static int NUM_ACCEL_DIMS = 3;
 
+
   final static int RESP_ERROR_UNKNOWN = 499;
+  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
   final static int RESP_ERROR_BAD_PACKET = 500;
   final static int RESP_ERROR_BAD_NOBLE_START = 501;
-  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
+  final static int RESP_ERROR_CHANNEL_SETTINGS = 423;
+  final static int RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS = 422;
+  final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL = 424;
+  final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE = 425;
   final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 406;
   final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
   final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
@@ -117,6 +122,7 @@ class Hub {
   final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
   final static int RESP_SUCCESS_DATA_SAMPLE = 204;
   final static int RESP_WIFI_FOUND = 205;
+  final static int RESP_SUCCESS_CHANNEL_SETTING = 207;
   final static int RESP_STATUS_CONNECTED = 300;
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
@@ -270,6 +276,9 @@ class Hub {
         break;
       case 'q':
         processStatus(msg);
+        break;
+      case 'r':
+        processRegisterQuery(msg);
         break;
       default:
         println("Hub: parseMessage: default: " + msg);
@@ -455,6 +464,51 @@ class Hub {
       output("Problem starting Ganglion Hub. Please make sure compatible USB is configured, then restart this GUI.");
     } else {
       println("Hub: processStatus: Started Successfully");
+    }
+  }
+
+  private void processRegisterQuery(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+
+    switch (code) {
+      case RESP_ERROR_CHANNEL_SETTINGS:
+        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + list[2]);
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
+        println("tried to sync channel settings but there was already one in progress");
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
+        println("an error was thrown trying to set the channels | error: " + list[2]);
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
+        println("an error was thrown trying to call the function to set the channels | error: " + list[2]);
+        break;
+      case RESP_SUCCESS:
+        // Sent when either a scan was stopped or started Successfully
+        String action = list[2];
+        switch (action) {
+          case TCP_ACTION_START:
+            println("Query registers for cyton channel settings");
+            break;
+        }
+        break;
+      case RESP_SUCCESS_CHANNEL_SETTING:
+        int channelNumber = Integer.parseInt(list[2]);
+        // power down comes in as either 'true' or 'false', 'true' is a '1' and false is a '0'
+        w_timeSeries.hsc.channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
+        // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
+        //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
+        w_timeSeries.hsc.channelSettingValues[channelNumber][1] = getCommandForGain(Integer.parseInt(list[4]));
+        // input type comes in as a string version and must get converted to char
+        w_timeSeries.hsc.channelSettingValues[channelNumber][2] = getCommandForInputType(list[5]);
+        // bias is like power down
+        w_timeSeries.hsc.channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
+        // srb2 is like power down
+        w_timeSeries.hsc.channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
+        // srb1 is like power down
+        w_timeSeries.hsc.channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
+        break;
     }
   }
 

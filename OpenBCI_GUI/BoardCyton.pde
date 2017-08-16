@@ -497,8 +497,77 @@ class Cyton {
     isWritingChannel = true;
   }
 
+  /**
+   * Used to convert a local channel code into a hub gain which is human
+   *  readable and in scientific values.
+   */
+  private int getGainForCommand(char cmd) {
+    if (cmd == '0') return 1;
+    if (cmd == '1') return 2;
+    if (cmd == '2') return 4;
+    if (cmd == '3') return 6;
+    if (cmd == '4') return 8;
+    if (cmd == '5') return 12;
+    if (cmd == '6') return 24;
+    return 0;
+  }
+
+  /**
+   * Used to convert a gain from the hub back into local codes.
+   */
+  private char getCommandForGain(int gain) {
+    if (cmd == 1) return '0';
+    if (cmd == 2) return '1';
+    if (cmd == 4) return '2';
+    if (cmd == 6) return '3';
+    if (cmd == 8) return '4';
+    if (cmd == 12) return '5';
+    if (cmd == 24) return '6';
+    return '6';
+  }
+
+  /**
+   * Used to convert raw code to hub code
+   * @param inputType {String} - The input from a hub sync channel with register settings
+   */
+  private char getCommandForInputType(String inputType) {
+    if (inputType.equals("normal")) return '0';
+    if (inputType.equals("shorted")) return '1';
+    if (inputType.equals("biasMethod")) return '2';
+    if (inputType.equals("mvdd")) return '3';
+    if (inputType.equals("temp")) return '4';
+    if (inputType.equals("testsig")) return '5';
+    if (inputType.equals("biasDrp")) return '6';
+    if (inputType.equals("biasDrn")) return '7';
+  }
+
+  /**
+   * Used right before a channel setting command is sent to the hub to convert
+   *  local values into the expected form for the hub.
+   */
+  private String getInputTypeForCommand(char cmd) {
+    if (cmd == '0') return "normal";
+    if (cmd == '1') return "shorted";
+    if (cmd == '2') return "biasMethod";
+    if (cmd == '3') return "mvdd";
+    if (cmd == '4') return "temp";
+    if (cmd == '5') return "testsig";
+    if (cmd == '6') return "biasDrp";
+    if (cmd == '7') return "biasDrn";
+    return "";
+  }
+
   // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
   public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
+    String output = "r,";
+    output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
+    output += channelSettingValues[_numChannel][0] + ","; // power down
+    output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
+    output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
+    output += channelSettingValues[_numChannel][3] + ",";
+    output += channelSettingValues[_numChannel][4] + ",";
+    output += channelSettingValues[_numChannel][5];
+
     if (millis() - timeOfLastChannelWrite >= 50) { //wait 50 milliseconds before sending next character
       verbosePrint("---");
       switch (channelWriteCounter) {
