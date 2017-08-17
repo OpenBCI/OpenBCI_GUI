@@ -673,7 +673,11 @@ void initSystem() {
         systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
       }
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-        cyton.syncChannelSettings();
+        if (sdSetting > 0) {
+          cyton.sdCardStart(sdSetting);
+        } else {
+          cyton.syncChannelSettings();          
+        }
       }
       if (!abandonInit) {
         println("WOOHOO!!!");
@@ -838,14 +842,14 @@ void systemUpdate() { // for updating data values and variables
     isHubObjectInitialized = true;
   }
 
-  //update the sync state with the OpenBCI hardware
-  if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
-    iSerial.updateSyncState(sdSetting);
-  }
+  // //update the sync state with the OpenBCI hardware
+  // if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
+  //   iSerial.updateSyncState(sdSetting);
+  // }
 
-  if (hub.get_state() == hub.STATE_NOCOM || hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) {
-    hub.updateSyncState(sdSetting);
-  }
+  // if (hub.get_state() == hub.STATE_NOCOM || hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) {
+  //   hub.updateSyncState(sdSetting);
+  // }
 
   //prepare for updating the GUI
   win_x = width;

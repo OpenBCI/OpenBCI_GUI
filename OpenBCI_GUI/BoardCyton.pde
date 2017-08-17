@@ -486,15 +486,57 @@ class Cyton {
   private long timeOfLastChannelWrite = 0;
   private int channelWriteCounter = 0;
   private boolean isWritingChannel = false;
-  public boolean get_isWritingChannel() {
-    return isWritingChannel;
-  }
+
   public void configureAllChannelsToDefault() {
     write('d');
   };
+  
   public void initChannelWrite(int _numChannel) {  //numChannel counts from zero
     timeOfLastChannelWrite = millis();
     isWritingChannel = true;
+  }
+
+  public void syncChannelSettings() {
+    write("r,start" + hub.TCP_STOP);
+  }
+
+  /**
+   * Used to convert a gain from the hub back into local codes.
+   */
+  public char getCommandForGain(int gain) {
+    switch (gain) {
+      case 1:
+        return '0';
+      case 2:
+        return '1';
+      case 4:
+        return '2';
+      case 6:
+        return '3';
+      case 8:
+        return '4';
+      case 12:
+        return '5';
+      case 24:
+      default:
+        return '6';
+    }
+  }
+
+  /**
+   * Used to convert raw code to hub code
+   * @param inputType {String} - The input from a hub sync channel with register settings
+   */
+  public char getCommandForInputType(String inputType) {
+    if (inputType.equals("normal")) return '0';
+    if (inputType.equals("shorted")) return '1';
+    if (inputType.equals("biasMethod")) return '2';
+    if (inputType.equals("mvdd")) return '3';
+    if (inputType.equals("temp")) return '4';
+    if (inputType.equals("testsig")) return '5';
+    if (inputType.equals("biasDrp")) return '6';
+    if (inputType.equals("biasDrn")) return '7';
+    return '0';
   }
 
   /**
@@ -522,62 +564,56 @@ class Cyton {
   }
 
   /**
-   * Used to convert a gain from the hub back into local codes.
-   */
-  public char getCommandForGain(int gain) {
-    switch (gain) {
-      case 1:
-        return '0';
-      case 2:
-        return '1';
-      case 4:
-        return '2';
-      case 6:
-        return '3';
-      case 8:
-        return '4';
-      case 12:
-        return '5';
-      case 24:
-      default:
-        return '6';
-    }
-  }
-
-  public void syncChannelSettings() {
-    write("r,start" + hub.TCP_STOP);
-  }
-
-  /**
-   * Used to convert raw code to hub code
-   * @param inputType {String} - The input from a hub sync channel with register settings
-   */
-  public char getCommandForInputType(String inputType) {
-    if (inputType.equals("normal")) return '0';
-    if (inputType.equals("shorted")) return '1';
-    if (inputType.equals("biasMethod")) return '2';
-    if (inputType.equals("mvdd")) return '3';
-    if (inputType.equals("temp")) return '4';
-    if (inputType.equals("testsig")) return '5';
-    if (inputType.equals("biasDrp")) return '6';
-    if (inputType.equals("biasDrn")) return '7';
-    return '0';
-  }
-
-  /**
    * Used right before a channel setting command is sent to the hub to convert
    *  local values into the expected form for the hub.
    */
   public String getInputTypeForCommand(char cmd) {
-    if (cmd == '0') return "normal";
-    if (cmd == '1') return "shorted";
-    if (cmd == '2') return "biasMethod";
-    if (cmd == '3') return "mvdd";
-    if (cmd == '4') return "temp";
-    if (cmd == '5') return "testsig";
-    if (cmd == '6') return "biasDrp";
-    if (cmd == '7') return "biasDrn";
-    return "";
+    switch (cmd) {
+      case '1':
+        return "shorted";
+      case '2':
+        return "biasMethod";
+      case '3':
+        return "mvdd";
+      case '4':
+        return "temp";
+      case '5':
+        return "testsig";
+      case '6':
+        return "biasDrp";
+      case '7':
+        return "biasDrn";
+      case '0':
+      default:
+        return "normal";
+    }
+  }
+
+  /**
+   * Used to convert a local index number to a hub human readable sd setting
+   *  command.
+   */
+  public String getSDSettingForSetting(int setting) {
+    switch (setting) {
+      case 1:
+        return "5min";
+      case 2:
+        return "15min";
+      case 3:
+        return "30min";
+      case 4:
+        return "1hour";
+      case 5:
+        return "2hour";
+      case 6:
+        return "4hour";
+      case 7:
+        return "12hour";
+      case 8:
+        return "24hour";
+      default:
+        break;
+    }
   }
 
   // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue

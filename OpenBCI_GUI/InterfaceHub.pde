@@ -73,6 +73,7 @@ class Hub {
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_PROTOCOL = "p";
   final static String TCP_CMD_SCAN = "s";
+  final static String TCP_CMD_SD = "m";
   final static String TCP_CMD_STATUS = "q";
   final static String TCP_STOP = ",;\n";
 
@@ -280,6 +281,9 @@ class Hub {
       case 'r':
         processRegisterQuery(msg);
         break;
+      case 'm':
+        processSDCard(msg);
+        break;
       default:
         println("Hub: parseMessage: default: " + msg);
         break;
@@ -329,8 +333,10 @@ class Hub {
   }
 
   private void initAndShowGUI() {
+    hub.changeState(hub.STATE_STOPPED);
     systemMode = 10;
     controlPanel.close();
+    topNav.controlPanelCollapser.setIsActive(false);
     output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
     portIsOpen = true;
   }
@@ -515,7 +521,7 @@ class Hub {
   private void processScan(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
-    switch(code) {
+    switch (code) {
       case RESP_GANGLION_FOUND:
       case RESP_WIFI_FOUND:
         // Sent every time a new ganglion device is found
@@ -557,6 +563,47 @@ class Hub {
         handleError(code, list[2]);
         break;
       case RESP_ERROR_UNKNOWN:
+      default:
+        handleError(code, list[2]);
+        break;
+    }
+  }
+
+  public void sdCardStart(int sdSetting) {
+    String sdSettingStr = getSDSettingForSetting(sdSetting);
+    println("Hub: sdCardStart(): sending \'" + sdSettingStr);
+    write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
+  }
+
+  private void processSDCard(msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+
+    switch(code) {
+      case RESP_SUCCESS:
+        // Sent when either a scan was stopped or started Successfully
+        String action = list[2];
+        switch (action) {
+          case TCP_ACTION_START:
+            println("sd card setting set so now attempting to sync channel settings");
+            cyton.syncChannelSettings();
+            break;
+          case TCP_ACTION_STOP:
+            println(list[3]);
+            break;
+        }
+        break;
+      case RESP_ERROR_UNKNOWN:
+        String action = list[2];
+        switch (action) {
+          case TCP_ACTION_START:
+            killAndShowMsg(list[3]);
+            break;
+          case TCP_ACTION_STOP:
+            println(list[3]);
+            break;
+        }
+        break;
       default:
         handleError(code, list[2]);
         break;
