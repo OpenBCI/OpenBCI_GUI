@@ -240,7 +240,7 @@ class Hub {
 
   // Return true if the display needs to be updated for the BLE list
   public void parseMessage(String msg) {
-    // println(msg);
+    println(msg);
     String[] list = split(msg, ',');
     switch (list[0].charAt(0)) {
       case 'b': // board type setting
@@ -302,7 +302,6 @@ class Hub {
       println("Hub: processBoardType: set board to " + list[2]);
       println("Hub: parseMessage: connect: success!");
       initAndShowGUI();
-      cyton.syncChannelSettings();
     } else {
       println("Hub: processBoardType: set board to failure!");
       killAndShowMsg(list[2]);
@@ -497,18 +496,18 @@ class Hub {
       case RESP_SUCCESS_CHANNEL_SETTING:
         int channelNumber = Integer.parseInt(list[2]);
         // power down comes in as either 'true' or 'false', 'true' is a '1' and false is a '0'
-        w_timeSeries.hsc.channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
         // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
         //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
-        w_timeSeries.hsc.channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
+        channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
         // input type comes in as a string version and must get converted to char
-        w_timeSeries.hsc.channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
+        channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
         // bias is like power down
-        w_timeSeries.hsc.channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
         // srb2 is like power down
-        w_timeSeries.hsc.channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
         // srb1 is like power down
-        w_timeSeries.hsc.channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
         break;
     }
   }

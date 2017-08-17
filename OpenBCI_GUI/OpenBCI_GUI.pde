@@ -667,9 +667,13 @@ void initSystem() {
       if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
 
       nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+      w_timeSeries.hsc.loadDefaultChannelSettings();
 
       if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
         systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+      }
+      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+        cyton.syncChannelSettings();
       }
       if (!abandonInit) {
         println("WOOHOO!!!");

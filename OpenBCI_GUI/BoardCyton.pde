@@ -584,12 +584,12 @@ class Cyton {
   public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
     String output = "r,";
     output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
-    output += w_timeSeries.hsc.channelSettingValues[_numChannel][0] + ","; // power down
-    output += getGainForCommand(w_timeSeries.hsc.channelSettingValues[_numChannel][1]) + ","; // gain
-    output += getInputTypeForCommand(w_timeSeries.hsc.channelSettingValues[_numChannel][2]) + ",";
-    output += w_timeSeries.hsc.channelSettingValues[_numChannel][3] + ",";
-    output += w_timeSeries.hsc.channelSettingValues[_numChannel][4] + ",";
-    output += w_timeSeries.hsc.channelSettingValues[_numChannel][5] + hub.TCP_STOP;
+    output += channelSettingValues[_numChannel][0] + ","; // power down
+    output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
+    output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
+    output += channelSettingValues[_numChannel][3] + ",";
+    output += channelSettingValues[_numChannel][4] + ",";
+    output += channelSettingValues[_numChannel][5] + hub.TCP_STOP;
     write(output);
 
     // if (millis() - timeOfLastChannelWrite >= 50) { //wait 50 milliseconds before sending next character
