@@ -205,7 +205,7 @@ class HardwareSettingsController{
     }
     //then reset to 1
 
-    //
+    // AJ KELLER
     if (cyton.get_isWritingChannel()) {
       cyton.writeChannelSettings(channelToWrite,channelSettingValues);
     }

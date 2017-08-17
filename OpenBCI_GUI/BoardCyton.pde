@@ -582,7 +582,7 @@ class Cyton {
 
   // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
   public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
-    String output = "r,";
+    String output = "r,set,";
     output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
     output += channelSettingValues[_numChannel][0] + ","; // power down
     output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
@@ -591,6 +591,8 @@ class Cyton {
     output += channelSettingValues[_numChannel][4] + ",";
     output += channelSettingValues[_numChannel][5] + hub.TCP_STOP;
     write(output);
+    verbosePrint("done writing channel.");
+    isWritingChannel = false;
 
     // if (millis() - timeOfLastChannelWrite >= 50) { //wait 50 milliseconds before sending next character
     //   verbosePrint("---");
