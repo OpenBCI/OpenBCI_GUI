@@ -63,10 +63,12 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = false;
+boolean hasIntroAnimation = true;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
+
+boolean initSystemThreadLock = false;
 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -536,10 +538,40 @@ int drawLoop_counter = 0;
 
 void setupWidgetManager() {
   wm = new WidgetManager(this);
+  if (!abandonInit) {
+    println("  3c -- " + millis());
+    // setupGUIWidgets(); //####
+
+    nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    w_timeSeries.hsc.loadDefaultChannelSettings();
+
+    if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
+      systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+    }
+    if (eegDataSource == DATASOURCE_CYTON) {
+      if (sdSetting > 0) {
+        hub.sdCardStart(sdSetting);
+      } else {
+        cyton.syncChannelSettings();
+      }
+    }
+    if (!abandonInit) {
+      controlPanel.close();
+      initSystemThreadLock = false;
+
+    } else {
+      haltSystem();
+      println("Failed to connect to data source...");
+      output("Failed to connect to data source...");
+    }
+  } else {
+    haltSystem();
+    println("Failed to connect to data source...");
+    output("Failed to connect to data source...");
+  }
 }
 
 void initSystem() {
-
   println();
   println();
   println("=================================================");
@@ -589,7 +621,7 @@ void initSystem() {
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
-    verbosePrint("Init FFT Buff – "+Ichan);
+    verbosePrint("Init FFT Buff – " + Ichan);
     fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
   }  //make the FFT objects
 
@@ -658,43 +690,48 @@ void initSystem() {
     topNav.initSecondaryNav();
     println("  3b -- " + millis());
 
+    //open data file
+    if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
+    if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
+
     // wm = new WidgetManager(this);
     setupWidgetManager();
 
-    if (!abandonInit) {
-      println("  3c -- " + millis());
-      // setupGUIWidgets(); //####
 
-      //open data file
-      if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
-      if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
-
-      nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-      w_timeSeries.hsc.loadDefaultChannelSettings();
-
-      if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
-        systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-      }
-      if (eegDataSource == DATASOURCE_CYTON) {
-        if (sdSetting > 0) {
-          hub.sdCardStart(sdSetting);
-        } else {
-          cyton.syncChannelSettings();
-        }
-      }
-      if (!abandonInit) {
-        println("WOOHOO!!!");
-        controlPanel.close();
-      } else {
-        haltSystem();
-        println("Failed to connect to data source...");
-        output("Failed to connect to data source...");
-      }
-    } else {
-      haltSystem();
-      println("Failed to connect to data source...");
-      output("Failed to connect to data source...");
-    }
+    // if (!abandonInit) {
+    //   println("  3c -- " + millis());
+    //   // setupGUIWidgets(); //####
+    //
+    //   //open data file
+    //   if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
+    //   if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
+    //
+    //   nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    //   w_timeSeries.hsc.loadDefaultChannelSettings();
+    //
+    //   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
+    //     systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+    //   }
+    //   if (eegDataSource == DATASOURCE_CYTON) {
+    //     if (sdSetting > 0) {
+    //       hub.sdCardStart(sdSetting);
+    //     } else {
+    //       cyton.syncChannelSettings();
+    //     }
+    //   }
+    //   if (!abandonInit) {
+    //     println("WOOHOO!!!");
+    //     controlPanel.close();
+    //   } else {
+    //     haltSystem();
+    //     println("Failed to connect to data source...");
+    //     output("Failed to connect to data source...");
+    //   }
+    // } else {
+    //   haltSystem();
+    //   println("Failed to connect to data source...");
+    //   output("Failed to connect to data source...");
+    // }
   }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
@@ -837,12 +874,18 @@ void haltSystem() {
   systemMode = SYSTEMMODE_PREINIT;
 }
 
+void delayedInit() {
+  // Initialize a plot
+  GPlot plot = new GPlot(this);
+}
+
 void systemUpdate() { // for updating data values and variables
 
   if (isHubInitialized && isHubObjectInitialized == false && millis() - timeOfSetup >= 1500) {
     hub = new Hub(this);
     println("Instantiating hub object...");
     isHubObjectInitialized = true;
+    delayedInit();
   }
 
   // //update the sync state with the OpenBCI hardware
@@ -943,8 +986,12 @@ void systemUpdate() { // for updating data values and variables
       playground.x = width; //reset the x for the playground...
     }
 
-    wm.update();
-    playground.update();
+    if (!initSystemThreadLock) {
+      if (wm.isWMInitialized) {
+        wm.update();
+        playground.update();
+      }
+    }
   }
 }
 
@@ -968,7 +1015,7 @@ void systemDraw() { //for drawing to the screen
   noStroke();
   //background(255);  //clear the screen
 
-  if (systemMode >= SYSTEMMODE_POSTINIT) {
+  if (systemMode >= SYSTEMMODE_POSTINIT && !initSystemThreadLock) {
     int drawLoopCounter_thresh = 100;
     if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
       //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
@@ -980,14 +1027,14 @@ void systemDraw() { //for drawing to the screen
       case DATASOURCE_CYTON:
         switch (outputDataSource) {
         case OUTPUT_SOURCE_ODF:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
+          surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
           break;
         case OUTPUT_SOURCE_BDF:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+          surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
           break;
         case OUTPUT_SOURCE_NONE:
         default:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps");
+          surface.setTitle(int(frameRate) + " fps");
           break;
         }
         break;
@@ -1059,7 +1106,6 @@ void systemDraw() { //for drawing to the screen
       systemMode = SYSTEMMODE_PREINIT;
     }
   }
-
 
   if ((hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."

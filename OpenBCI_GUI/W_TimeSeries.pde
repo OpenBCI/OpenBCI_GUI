@@ -57,7 +57,6 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-
     addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
     addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
@@ -110,7 +109,6 @@ class W_timeSeries extends Widget {
     int y_hsc = int(ts_y);
     int w_hsc = int(ts_w); //width of montage controls (on left of montage)
     int h_hsc = int(ts_h); //height of montage controls (on left of montage)
-
     hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
   }
 
@@ -400,7 +398,6 @@ class ChannelBar{
     } else {
       impButton_diameter = 0;
     }
-
     numSeconds = 5;
     plot = new GPlot(_parent);
     plot.setPos(x + 36 + 4 + impButton_diameter, y);
@@ -411,7 +408,6 @@ class ChannelBar{
     plot.setYLim(-200,200);
     plot.setPointSize(2);
     plot.setPointColor(0);
-
     if(channelNumber == nchan){
       plot.getXAxis().setAxisLabelText("Time (s)");
     }

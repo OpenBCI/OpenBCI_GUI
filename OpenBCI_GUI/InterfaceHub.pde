@@ -296,15 +296,14 @@ class Hub {
   }
 
   public void setBoardType(String boardType) {
-    println("Hub: setBoardType(): sending \'" + boardType);
+    println("Hub: setBoardType(): sending \'" + boardType + " -- " + millis());
     write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
   }
 
   private void processBoardType(String msg) {
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
-      println("Hub: processBoardType: set board to " + list[2]);
-      println("Hub: parseMessage: connect: success!");
+      println("Hub: processBoardType: set board to " + list[2] + " -- " + millis());
       initAndShowGUI();
     } else {
       println("Hub: processBoardType: set board to failure!");
@@ -313,7 +312,7 @@ class Hub {
   }
 
   private void processConnect(String msg) {
-    println("Hub: processConnect: made it: " + msg);
+    println("Hub: processConnect: made it -- " + millis());
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
       changeState(STATE_SYNCWITHHARDWARE);
@@ -324,7 +323,7 @@ class Hub {
           setBoardType("daisy");
         }
       } else {
-        println("Hub: parseMessage: connect: success!");
+        println("Hub: parseMessage: connect: success! -- " + millis());
         initAndShowGUI();
       }
     } else {
@@ -737,7 +736,7 @@ class Hub {
    */
   public boolean write(String out) {
     try {
-      println("out" + out);
+      // println("out" + out);
       tcpClient.write(out);
       return true;
     } catch (Exception e) {

@@ -220,6 +220,7 @@ class HeadPlot {
   private float drag_x, drag_y;
 
   HeadPlot(float x, float y, float w, float h, int win_x, int win_y, int n) {
+
     final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
@@ -649,17 +650,22 @@ class HeadPlot {
     int toPixels[][][][] = new int[n_wide][n_tall][4][2];
     int toElectrodes[][][] = new int[n_wide][n_tall][4];
     //int numConnections[][] = new int[n_wide][n_tall];
+    println("  HeadPlot B 2 0 -- " + millis());
 
     //find which pixesl are within the head and which pixels are within an electrode
     whereAreThePixels(pixelAddress, withinHead, withinElectrode);
+    println("  HeadPlot B 2 1 -- " + millis());
 
     //loop over the pixels and make all the connections
     makeAllTheConnections(withinHead, withinElectrode, toPixels, toElectrodes);
+    println("  HeadPlot B 2 3 -- " + millis());
 
     //compute the pixel values when lighting up each electrode invididually
     for (int Ielec=0; Ielec<n_elec; Ielec++) {
       computeWeightFactorsGivenOneElectrode_iterative(toPixels, toElectrodes, Ielec, weightFac);
     }
+    println("  HeadPlot B 2 4 -- " + millis());
+
   }
 
   private void cleanUpTheBoundaries(int pixelAddress[][][], float weightFac[][][]) {
