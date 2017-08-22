@@ -167,7 +167,9 @@ class Hub {
   private boolean checkingImpedance = false;
   private boolean accelModeActive = false;
   private boolean newAccelData = false;
-  private int[] accelArray = new int[NUM_ACCEL_DIMS];
+  public int[] accelArray = new int[NUM_ACCEL_DIMS];
+  public int[] validAccelValues = {0, 0, 0};
+  public boolean validNewAccelData = false;
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
@@ -251,9 +253,7 @@ class Hub {
         processConnect(msg);
         break;
       case 'a': // Accel
-        if (eegDataSource == DATASOURCE_GANGLION) {
-          ganglion.processAccel(msg);
-        }
+        processAccel(msg);
         break;
       case 'd': // Disconnect
         processDisconnect(msg);
@@ -358,6 +358,21 @@ class Hub {
     write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
+  public void processAccel(String msg) {
+    String[] list = split(msg, ',');
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        accelArray[i] = Integer.parseInt(list[i + 2]);
+      }
+      newAccelData = true;
+      if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+          validAccelValues[i] = accelArray[i];
+        }
+      }
+    }
+  }
+
   public void processData(String msg) {
     try {
       String[] list = split(msg, ',');
@@ -446,6 +461,7 @@ class Hub {
       }
     } catch (Exception e) {
       println("Hub: parseMessage: error: " + e);
+      e.printStackTrace();
     }
 
   }

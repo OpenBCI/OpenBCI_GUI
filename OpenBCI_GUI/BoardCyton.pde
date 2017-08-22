@@ -61,9 +61,9 @@ class Cyton {
   private DataPacket_ADS1299 rawReceivedDataPacket;
   private DataPacket_ADS1299 missedDataPacket;
   private DataPacket_ADS1299 dataPacket;
-  public int [] validAuxValues = {0, 0, 0};
-  public boolean[] freshAuxValuesAvailable = {false, false, false};
-  public boolean freshAuxValues = false;
+  // public int [] validAuxValues = {0, 0, 0};
+  // public boolean[] freshAuxValuesAvailable = {false, false, false};
+  // public boolean freshAuxValues = false;
   //DataPacket_ADS1299 prevDataPacket;
 
   private int nAuxValues;

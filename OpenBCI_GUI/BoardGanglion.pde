@@ -87,8 +87,6 @@ class Ganglion {
 
   private boolean checkingImpedance = false;
   private boolean accelModeActive = false;
-  private boolean newAccelData = false;
-  private int[] accelArray = new int[NUM_ACCEL_DIMS];
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
@@ -147,16 +145,6 @@ class Ganglion {
     }
     for(int i = 0; i < nAuxValuesPerPacket; i++){
       dataPacket.auxValues[i] = 0;
-    }
-  }
-
-  public void processAccel(String msg) {
-    String[] list = split(msg, ',');
-    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
-      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-        accelArray[i] = Integer.parseInt(list[i + 2]);
-      }
-      newAccelData = true;
     }
   }
 
