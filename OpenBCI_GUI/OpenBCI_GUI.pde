@@ -69,7 +69,7 @@ Gif loadingGIF;
 Gif loadingGIF_blue;
 
 //choose where to get the EEG data
-final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
+final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
@@ -600,47 +600,50 @@ void initSystem() {
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
 
+  controlPanel.close();
+  topNav.controlPanelCollapser.setIsActive(false);
+  hub.changeState(hub.STATE_COMINIT);
+
   //prepare the source of the input data
   switch (eegDataSource) {
-  case DATASOURCE_NORMAL_W_AUX:
-    println("heyro");
-    int nEEDataValuesPerPacket = nchan;
-    boolean useAux = false;
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
-    if (cyton.getInterface() == INTERFACE_SERIAL) {
-      cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-    } else {
-      cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+    case DATASOURCE_CYTON:
+      int nEEDataValuesPerPacket = nchan;
+      boolean useAux = false;
+      if (eegDataSource == DATASOURCE_CYTON) useAux = true;  //switch this back to true CHIP 2014-11-04
+      if (cyton.getInterface() == INTERFACE_SERIAL) {
+        cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+      } else {
+        cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+      }
+      break;
+    case DATASOURCE_SYNTHETIC:
+      //do nothing
+      break;
+    case DATASOURCE_PLAYBACKFILE:
+      //open and load the data file
+      println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
+      try {
+        playbackData_table = new Table_CSV(playbackData_fname);
+      }
+      catch (Exception e) {
+        println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
+        println("   : quitting...");
+        exit();
+      }
+      println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
+      //removing first column of data from data file...the first column is a time index and not eeg data
+      playbackData_table.removeColumn(0);
+      break;
+    case DATASOURCE_GANGLION:
+      if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
+        hub.connectBLE(ganglion_portName);
+      } else {
+        hub.connectWifi(wifi_portName);
+      }
+      break;
+    default:
+      break;
     }
-    break;
-  case DATASOURCE_SYNTHETIC:
-    //do nothing
-    break;
-  case DATASOURCE_PLAYBACKFILE:
-    //open and load the data file
-    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
-    try {
-      playbackData_table = new Table_CSV(playbackData_fname);
-    }
-    catch (Exception e) {
-      println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-      println("   : quitting...");
-      exit();
-    }
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
-    //removing first column of data from data file...the first column is a time index and not eeg data
-    playbackData_table.removeColumn(0);
-    break;
-  case DATASOURCE_GANGLION:
-    if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
-      hub.connectBLE(ganglion_portName);
-    } else {
-      hub.connectWifi(wifi_portName);
-    }
-    break;
-  default:
-    break;
-  }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -663,16 +666,16 @@ void initSystem() {
       // setupGUIWidgets(); //####
 
       //open data file
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) openNewLogFile(fileName);  //open a new log file
+      if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
       if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
 
       nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
       w_timeSeries.hsc.loadDefaultChannelSettings();
 
-      if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
         systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
       }
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource == DATASOURCE_CYTON) {
         if (sdSetting > 0) {
           hub.sdCardStart(sdSetting);
         } else {
@@ -823,7 +826,7 @@ void haltSystem() {
 
   // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
 
-  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_CYTON) {
     closeLogFile();  //close log file
     cyton.closeSDandPort();
   }
@@ -974,7 +977,7 @@ void systemDraw() { //for drawing to the screen
 
       //update the title of the figure;
       switch (eegDataSource) {
-      case DATASOURCE_NORMAL_W_AUX:
+      case DATASOURCE_CYTON:
         switch (outputDataSource) {
         case OUTPUT_SOURCE_ODF:
           surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);

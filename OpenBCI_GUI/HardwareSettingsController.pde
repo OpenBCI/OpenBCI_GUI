@@ -22,7 +22,7 @@ public void updateChannelArrays(int _nchan) {
 //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
 void activateChannel(int Ichan) {
   println("OpenBCI_GUI: activating channel " + (Ichan+1));
-  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_CYTON) {
     if (cyton.isPortOpen()) {
       verbosePrint("**");
       cyton.changeChannelState(Ichan, true); //activate
@@ -38,7 +38,7 @@ void activateChannel(int Ichan) {
 }
 void deactivateChannel(int Ichan) {
   println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_CYTON) {
     if (cyton.isPortOpen()) {
       verbosePrint("**");
       cyton.changeChannelState(Ichan, false); //de-activate
@@ -254,7 +254,7 @@ class HardwareSettingsController{
            text("SRB1", x + (w/10)*9, y-1);
 
           //if mode is not from OpenBCI, draw a dark overlay to indicate that you cannot edit these settings
-          if (eegDataSource != DATASOURCE_NORMAL_W_AUX) {
+          if (eegDataSource != DATASOURCE_CYTON) {
             fill(0, 0, 0, 200);
             noStroke();
             rect(x-2, y, w+1, h);
@@ -309,7 +309,7 @@ class HardwareSettingsController{
   //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
   void activateChannel(int Ichan) {
     println("OpenBCI_GUI: activating channel " + (Ichan+1));
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (eegDataSource == DATASOURCE_CYTON) {
       if (cyton.isPortOpen()) {
         verbosePrint("**");
         cyton.changeChannelState(Ichan, true); //activate
@@ -326,7 +326,7 @@ class HardwareSettingsController{
 
   void deactivateChannel(int Ichan) {
     println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (eegDataSource == DATASOURCE_CYTON) {
       if (cyton.isPortOpen()) {
         verbosePrint("**");
         cyton.changeChannelState(Ichan, false); //de-activate
@@ -557,7 +557,7 @@ class HardwareSettingsController{
   //   //if fullChannelController and one of the buttons (other than ON/OFF) is clicked
   //
   //     //if dataSource is coming from OpenBCI, allow user to interact with channel controller
-  //   if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  //   if (eegDataSource == DATASOURCE_CYTON) {
       // if (showFullController) {
       //   for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
       //     for (int j = 1; j < numSettingsPerChannel; j++) {
@@ -578,7 +578,7 @@ class HardwareSettingsController{
   //     }
   //
   //     //only allow editing of impedance if dataSource == from OpenBCI
-  //     if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  //     if (eegDataSource == DATASOURCE_CYTON) {
   //       if (impedanceCheckButtons[i][0].isMouseHere()) {
   //         impedanceCheckButtons[i][0].wasPressed = true;
   //         impedanceCheckButtons[i][0].isActive = true;

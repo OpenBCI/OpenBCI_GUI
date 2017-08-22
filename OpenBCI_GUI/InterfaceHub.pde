@@ -45,7 +45,7 @@ void clientEvent(Client someClient) {
           controlPanel.bleBox.refreshBLEList();
           controlPanel.wifiBox.refreshWifiList();
         }
-      } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      } else if (eegDataSource == DATASOURCE_CYTON) {
         // Do stuff for cyton
         hub.parseMessage(msg);
         // Check to see if the ganglion ble list needs to be updated
@@ -316,7 +316,8 @@ class Hub {
     println("Hub: processConnect: made it: " + msg);
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      changeState(STATE_SYNCWITHHARDWARE);
+      if (eegDataSource == DATASOURCE_CYTON) {
         if (nchan == 8) {
           setBoardType("cyton");
         } else {
@@ -333,8 +334,8 @@ class Hub {
   }
 
   private void initAndShowGUI() {
-    hub.changeState(hub.STATE_STOPPED);
-    systemMode = 10;
+    changeState(STATE_NORMAL);
+    systemMode = SYSTEMMODE_POSTINIT;
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
     output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
@@ -377,7 +378,7 @@ class Hub {
     try {
       String[] list = split(msg, ',');
       int code = Integer.parseInt(list[1]);
-      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_NORMAL_W_AUX) && systemMode == 10 && isRunning) { //<>//
+      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
           dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
@@ -692,6 +693,7 @@ class Hub {
       default:
         break;
     }
+    changeState(STATE_NOCOM);
   }
 
   // CONNECTION
@@ -704,7 +706,6 @@ class Hub {
   }
 
   public void connectWifi(String id) {
-
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
   public int disconnectWifi() {

@@ -104,7 +104,7 @@ class W_PulseSensor extends Widget {
 
     if (curDataPacketInd < 0) return;
 
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE FROM CYTON
+    if (eegDataSource == DATASOURCE_CYTON) {  // LIVE FROM CYTON
 
     } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
 

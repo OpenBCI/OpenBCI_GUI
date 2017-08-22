@@ -56,7 +56,7 @@ void process_input_file() throws Exception {
 /*************************/
 int getDataIfAvailable(int pointCounter) {
 
-  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_CYTON) {
     //get data from serial port as it streams in
     //next, gather any new data into the "little buffer"
     while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {

@@ -67,12 +67,12 @@ class TopNav {
     int butNum = 1;
     tutorialsButton = new Button(width - 3*(butNum) - 80, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
     tutorialsButton.setFont(h3, 16);
-    tutorialsButton.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+    tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
 
     butNum = 2;
     issuesButton = new Button(width - 3*(butNum) - 80 - tutorialsButton.but_dx, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
     issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
-    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI_v2.0/issues");
+    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/issues");
     issuesButton.setFont(h3, 16);
 
     butNum = 3;
@@ -742,14 +742,14 @@ class TutorialSelector{
     int buttonNumber = 0;
     Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/");
+    tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide");
     tutorialOptions.add(tempTutorialButton);
 
     buttonNumber = 1;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
     tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/hardware/01-OpenBCI_Hardware");
+    tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
     tutorialOptions.add(tempTutorialButton);
 
     buttonNumber = 2;
@@ -763,7 +763,7 @@ class TutorialSelector{
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
     tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Widgets");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/software/01-OpenBCI_SDK");
+    tempTutorialButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/blob/master/README.md#widgets");
     tutorialOptions.add(tempTutorialButton);
 
   }

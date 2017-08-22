@@ -324,7 +324,7 @@ void parseKey(char val) {
      break;
 
     default:
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource == DATASOURCE_CYTON) {
         println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
         cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
