@@ -490,7 +490,7 @@ class Cyton {
   public void configureAllChannelsToDefault() {
     write('d');
   };
-  
+
   public void initChannelWrite(int _numChannel) {  //numChannel counts from zero
     timeOfLastChannelWrite = millis();
     isWritingChannel = true;
@@ -568,24 +568,32 @@ class Cyton {
    *  local values into the expected form for the hub.
    */
   public String getInputTypeForCommand(char cmd) {
+    final String inputTypeShorted = "shorted";
+    final String inputTypeBiasMethod = "biasMethod";
+    final String inputTypeMvdd = "mvdd";
+    final String inputTypeTemp = "temp";
+    final String inputTypeTestsig = "testsig";
+    final String inputTypeBiasDrp = "biasDrp";
+    final String inputTypeBiasDrn = "biasDrn";
+    final String inputTypeNormal = "normal";
     switch (cmd) {
       case '1':
-        return "shorted";
+        return inputTypeShorted;
       case '2':
-        return "biasMethod";
+        return inputTypeBiasMethod;
       case '3':
-        return "mvdd";
+        return inputTypeMvdd;
       case '4':
-        return "temp";
+        return inputTypeTemp;
       case '5':
-        return "testsig";
+        return inputTypeTestsig;
       case '6':
-        return "biasDrp";
+        return inputTypeBiasDrp;
       case '7':
-        return "biasDrn";
+        return inputTypeBiasDrn;
       case '0':
       default:
-        return "normal";
+        return inputTypeNormal;
     }
   }
 
@@ -612,7 +620,7 @@ class Cyton {
       case 8:
         return "24hour";
       default:
-        break;
+        return "";
     }
   }
 
@@ -627,7 +635,7 @@ class Cyton {
     output += channelSettingValues[_numChannel][4] + ",";
     output += channelSettingValues[_numChannel][5] + hub.TCP_STOP;
     write(output);
-    verbosePrint("done writing channel.");
+    // verbosePrint("done writing channel.");
     isWritingChannel = false;
 
     // if (millis() - timeOfLastChannelWrite >= 50) { //wait 50 milliseconds before sending next character

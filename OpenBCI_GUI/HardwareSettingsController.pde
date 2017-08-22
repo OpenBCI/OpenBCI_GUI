@@ -206,14 +206,14 @@ class HardwareSettingsController{
     //then reset to 1
 
     // AJ KELLER
-    if (cyton.get_isWritingChannel()) {
-      cyton.writeChannelSettings(channelToWrite,channelSettingValues);
-    }
+    // if (cyton.get_isWritingChannel()) {
+    //   cyton.writeChannelSettings(channelToWrite,channelSettingValues);
+    // }
 
-    if (rewriteChannelWhenDoneWriting == true && cyton.get_isWritingChannel() == false) {
-      initChannelWrite(channelToWriteWhenDoneWriting);
-      rewriteChannelWhenDoneWriting = false;
-    }
+    // if (rewriteChannelWhenDoneWriting == true) {
+    //   initChannelWrite(channelToWriteWhenDoneWriting);
+    //   rewriteChannelWhenDoneWriting = false;
+    // }
 
     if (cyton.get_isWritingImp()) {
       cyton.writeImpedanceSettings(impChannelToWrite,impedanceCheckValues);
@@ -387,7 +387,7 @@ class HardwareSettingsController{
 
   public void initImpWrite(int _numChannel, char pORn, char onORoff) {
     //after clicking any button, write the new settings for that channel to OpenBCI
-    if (!cyton.get_isWritingChannel()) { //make sure you aren't currently writing imp settings for a channel
+    // if (!cyton.get_isWritingChannel()) { //make sure you aren't currently writing imp settings for a channel
       // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
       if (!cyton.get_isWritingImp() && rewriteImpedanceWhenDoneWriting == false) {
         verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
@@ -412,7 +412,7 @@ class HardwareSettingsController{
         }
         final_onORoff = onORoff;
       }
-    }
+    // }
   }
 
   public void createChannelSettingButtons(int _channelBarHeight) {
@@ -477,14 +477,16 @@ class HardwareSettingsController{
             } else {
               channelSettingValues[i][j] = '0';
             }
+            cyton.writeChannelSettings(i, channelSettingValues);
             // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-            if (!cyton.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
-              initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
-            } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
-              verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
-              rewriteChannelWhenDoneWriting = true;
-              channelToWriteWhenDoneWriting = i;
-            }
+            // if (!cyton.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) { AJ KEller
+            // if (rewriteChannelWhenDoneWriting == false) {
+            //   initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
+            // } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
+            //   verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
+            //   rewriteChannelWhenDoneWriting = true;
+            //   channelToWriteWhenDoneWriting = i;
+            // }
           }
 
           // if(!channelSettingButtons[i][j].isMouseHere()){

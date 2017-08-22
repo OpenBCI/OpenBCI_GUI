@@ -479,6 +479,7 @@ class Hub {
 
     switch (code) {
       case RESP_ERROR_CHANNEL_SETTINGS:
+        killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
         println("RESP_ERROR_CHANNEL_SETTINGS general error: " + list[2]);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
@@ -570,19 +571,19 @@ class Hub {
   }
 
   public void sdCardStart(int sdSetting) {
-    String sdSettingStr = getSDSettingForSetting(sdSetting);
+    String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
     println("Hub: sdCardStart(): sending \'" + sdSettingStr);
     write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
   }
 
-  private void processSDCard(msg) {
+  private void processSDCard(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
+    String action = list[2];
 
     switch(code) {
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
-        String action = list[2];
         switch (action) {
           case TCP_ACTION_START:
             println("sd card setting set so now attempting to sync channel settings");
@@ -594,7 +595,6 @@ class Hub {
         }
         break;
       case RESP_ERROR_UNKNOWN:
-        String action = list[2];
         switch (action) {
           case TCP_ACTION_START:
             killAndShowMsg(list[3]);

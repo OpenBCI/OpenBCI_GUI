@@ -674,9 +674,9 @@ void initSystem() {
       }
       if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
         if (sdSetting > 0) {
-          cyton.sdCardStart(sdSetting);
+          hub.sdCardStart(sdSetting);
         } else {
-          cyton.syncChannelSettings();          
+          cyton.syncChannelSettings();
         }
       }
       if (!abandonInit) {
