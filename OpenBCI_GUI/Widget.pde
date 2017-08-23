@@ -317,8 +317,8 @@ class Widget{
         ;
     }
     catch (Exception e) {
-      println(e.getMessage());
-      println("widgetOptions List not built yet...");
+      // println(e.getMessage());
+      // println("widgetOptions List not built yet..."); AJK 8/22/17 because this is annoyance
     }
 
     for(int i = 0; i < dropdowns.size(); i++){

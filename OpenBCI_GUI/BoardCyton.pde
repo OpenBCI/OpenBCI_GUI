@@ -156,8 +156,8 @@ class Cyton {
 
   public boolean setInterface(int _interface) {
     curInterface = _interface;
-    println("current interface: " + curInterface);
-    println("getInterface: " + getInterface());
+    // println("current interface: " + curInterface);
+    // println("getInterface: " + getInterface());
     if (isWifi()) {
       hub.setProtocol(PROTOCOL_WIFI);
     } else if (isSerial()) {
@@ -337,7 +337,7 @@ class Cyton {
   }
 
   private boolean isSerial () {
-    println("My interface is " + curInterface);
+    // println("My interface is " + curInterface);
     return curInterface == INTERFACE_SERIAL;
   }
 

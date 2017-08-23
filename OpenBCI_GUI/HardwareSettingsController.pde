@@ -275,10 +275,10 @@ class HardwareSettingsController{
   }
 
   public void loadDefaultChannelSettings() {
-    println("loadDefaultChannelSettings");
-    verbosePrint("ChannelController: loading default channel settings to GUI's channel controller...");
+    // println("loadDefaultChannelSettings");
+    // verbosePrint("ChannelController: loading default channel settings to GUI's channel controller...");
     for (int i = 0; i < nchan; i++) {
-      verbosePrint("chan: " + i + " ");
+      // verbosePrint("chan: " + i + " ");
       channelSettingValues[i][0] = '0';
       channelSettingValues[i][1] = '6';
       channelSettingValues[i][2] = '0';
@@ -297,7 +297,7 @@ class HardwareSettingsController{
         impedanceCheckValues[i][k] = '0';
       }
     }
-    verbosePrint("made it!");
+    // verbosePrint("made it!");
     update(); //update 1 time to refresh button values based on new loaded settings
   }
 

@@ -114,7 +114,7 @@ void Ten20(int n) { //triggered when there is an event in the Ten20 Dropdown
    */
 
   //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
-  println("BOOOOM!" + n);
+  // println("BOOOOM!" + n);
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 
 }
@@ -682,21 +682,21 @@ class HeadPlot {
     int toPixels[][][][] = new int[n_wide][n_tall][4][2];
     int toElectrodes[][][] = new int[n_wide][n_tall][4];
     //int numConnections[][] = new int[n_wide][n_tall];
-    println("  HeadPlot B 2 0 -- " + millis());
+    // println("  HeadPlot B 2 0 -- " + millis());
 
     //find which pixesl are within the head and which pixels are within an electrode
     whereAreThePixels(pixelAddress, withinHead, withinElectrode);
-    println("  HeadPlot B 2 1 -- " + millis());
+    // println("  HeadPlot B 2 1 -- " + millis());
 
     //loop over the pixels and make all the connections
     makeAllTheConnections(withinHead, withinElectrode, toPixels, toElectrodes);
-    println("  HeadPlot B 2 3 -- " + millis());
+    // println("  HeadPlot B 2 3 -- " + millis());
 
     //compute the pixel values when lighting up each electrode invididually
     for (int Ielec=0; Ielec<n_elec; Ielec++) {
       computeWeightFactorsGivenOneElectrode_iterative(toPixels, toElectrodes, Ielec, weightFac);
     }
-    println("  HeadPlot B 2 4 -- " + millis());
+    // println("  HeadPlot B 2 4 -- " + millis());
 
   }
 

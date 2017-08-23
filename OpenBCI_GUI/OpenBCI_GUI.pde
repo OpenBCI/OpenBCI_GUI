@@ -267,7 +267,7 @@ PApplet ourApplet;
 
 //========================SETUP============================//
 
-int frameRateCounter = 2; //0 = 30, 1 = 45, 2 = 60
+int frameRateCounter = 0; //0 = 30, 1 = 45, 2 = 60
 
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
@@ -604,6 +604,7 @@ void initSystem() {
   controlPanel.close();
   topNav.controlPanelCollapser.setIsActive(false);
   hub.changeState(hub.STATE_COMINIT);
+  hub.searchDeviceStop();
 
   //prepare the source of the input data
   switch (eegDataSource) {
@@ -675,13 +676,6 @@ void initSystem() {
 
       if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
         systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-      }
-      if (eegDataSource == DATASOURCE_CYTON) {
-        if (sdSetting > 0) {
-          hub.sdCardStart(sdSetting);
-        } else {
-          cyton.syncChannelSettings();
-        }
       }
       if (!abandonInit) {
         controlPanel.close();
@@ -835,7 +829,8 @@ void haltSystem() {
     ganglion.closePort();
   }
   systemMode = SYSTEMMODE_PREINIT;
-  hub.changeState(hub.STATE_STOPPED);
+  hub.changeState(hub.STATE_NOCOM);
+  abandonInit = false;
 }
 
 void delayedInit() {

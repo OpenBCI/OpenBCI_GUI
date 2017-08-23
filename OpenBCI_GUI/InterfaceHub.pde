@@ -304,7 +304,12 @@ class Hub {
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
       println("Hub: processBoardType: set board to " + list[2] + " -- " + millis());
-      initAndShowGUI();
+      if (sdSetting > 0) {
+        hub.sdCardStart(sdSetting);
+      } else {
+        cyton.syncChannelSettings();
+        initAndShowGUI();
+      }
     } else {
       println("Hub: processBoardType: set board to failure!");
       killAndShowMsg(list[2]);
@@ -604,6 +609,7 @@ class Hub {
           case TCP_ACTION_START:
             println("sd card setting set so now attempting to sync channel settings");
             cyton.syncChannelSettings();
+            initAndShowGUI();
             break;
           case TCP_ACTION_STOP:
             println(list[3]);
