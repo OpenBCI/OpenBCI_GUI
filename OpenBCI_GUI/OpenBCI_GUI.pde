@@ -538,37 +538,6 @@ int drawLoop_counter = 0;
 
 void setupWidgetManager() {
   wm = new WidgetManager(this);
-  if (!abandonInit) {
-    println("  3c -- " + millis());
-    // setupGUIWidgets(); //####
-
-    nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-    w_timeSeries.hsc.loadDefaultChannelSettings();
-
-    if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
-      systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-    }
-    if (eegDataSource == DATASOURCE_CYTON) {
-      if (sdSetting > 0) {
-        hub.sdCardStart(sdSetting);
-      } else {
-        cyton.syncChannelSettings();
-      }
-    }
-    if (!abandonInit) {
-      controlPanel.close();
-      initSystemThreadLock = false;
-
-    } else {
-      haltSystem();
-      println("Failed to connect to data source...");
-      output("Failed to connect to data source...");
-    }
-  } else {
-    haltSystem();
-    println("Failed to connect to data source...");
-    output("Failed to connect to data source...");
-  }
 }
 
 void initSystem() {
@@ -697,41 +666,35 @@ void initSystem() {
     // wm = new WidgetManager(this);
     setupWidgetManager();
 
+    if (!abandonInit) {
+      println("  3c -- " + millis());
+      // setupGUIWidgets(); //####
 
-    // if (!abandonInit) {
-    //   println("  3c -- " + millis());
-    //   // setupGUIWidgets(); //####
-    //
-    //   //open data file
-    //   if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
-    //   if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
-    //
-    //   nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-    //   w_timeSeries.hsc.loadDefaultChannelSettings();
-    //
-    //   if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
-    //     systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-    //   }
-    //   if (eegDataSource == DATASOURCE_CYTON) {
-    //     if (sdSetting > 0) {
-    //       hub.sdCardStart(sdSetting);
-    //     } else {
-    //       cyton.syncChannelSettings();
-    //     }
-    //   }
-    //   if (!abandonInit) {
-    //     println("WOOHOO!!!");
-    //     controlPanel.close();
-    //   } else {
-    //     haltSystem();
-    //     println("Failed to connect to data source...");
-    //     output("Failed to connect to data source...");
-    //   }
-    // } else {
-    //   haltSystem();
-    //   println("Failed to connect to data source...");
-    //   output("Failed to connect to data source...");
-    // }
+      nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+      w_timeSeries.hsc.loadDefaultChannelSettings();
+
+      if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
+        systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+      }
+      if (eegDataSource == DATASOURCE_CYTON) {
+        if (sdSetting > 0) {
+          hub.sdCardStart(sdSetting);
+        } else {
+          cyton.syncChannelSettings();
+        }
+      }
+      if (!abandonInit) {
+        controlPanel.close();
+      } else {
+        haltSystem();
+        println("Failed to connect to data source...");
+        output("Failed to connect to data source...");
+      }
+    } else {
+      haltSystem();
+      println("Failed to connect to data source...");
+      output("Failed to connect to data source...");
+    }
   }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
@@ -872,6 +835,7 @@ void haltSystem() {
     ganglion.closePort();
   }
   systemMode = SYSTEMMODE_PREINIT;
+  hub.changeState(hub.STATE_STOPPED);
 }
 
 void delayedInit() {
@@ -885,7 +849,7 @@ void systemUpdate() { // for updating data values and variables
     hub = new Hub(this);
     println("Instantiating hub object...");
     isHubObjectInitialized = true;
-    delayedInit();
+    thread("delayedInit");
   }
 
   // //update the sync state with the OpenBCI hardware
