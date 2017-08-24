@@ -128,7 +128,7 @@ class W_accelerometer extends Widget {
 
   float adjustYMaxMinBasedOnSource(){
     float _yMaxMin;
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       _yMaxMin = 4.0;
     }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
       _yMaxMin = 2.0;
@@ -150,10 +150,10 @@ class W_accelerometer extends Widget {
         currentYvalue = map(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
         currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
         shiftWave();
-      } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-        currentXvalue = cyton.validAuxValues[0] * cyton.get_scale_fac_accel_G_per_count();
-        currentYvalue = cyton.validAuxValues[1] * cyton.get_scale_fac_accel_G_per_count();
-        currentZvalue = cyton.validAuxValues[2] * cyton.get_scale_fac_accel_G_per_count();
+      } else if (eegDataSource == DATASOURCE_CYTON) {
+        currentXvalue = hub.validAccelValues[0] * cyton.get_scale_fac_accel_G_per_count();
+        currentYvalue = hub.validAccelValues[1] * cyton.get_scale_fac_accel_G_per_count();
+        currentZvalue = hub.validAccelValues[2] * cyton.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
           int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
@@ -166,9 +166,9 @@ class W_accelerometer extends Widget {
 
         shiftWave();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
-        currentXvalue = ganglion.accelArray[0] * ganglion.get_scale_fac_accel_G_per_count();
-        currentYvalue = ganglion.accelArray[1] * ganglion.get_scale_fac_accel_G_per_count();
-        currentZvalue = ganglion.accelArray[2] * ganglion.get_scale_fac_accel_G_per_count();
+        currentXvalue = hub.validAccelValues[0] * ganglion.get_scale_fac_accel_G_per_count();
+        currentYvalue = hub.validAccelValues[1] * ganglion.get_scale_fac_accel_G_per_count();
+        currentZvalue = hub.validAccelValues[2] * ganglion.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
           int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
@@ -235,7 +235,7 @@ class W_accelerometer extends Widget {
       fill(50);
       textFont(p3, 16);
 
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE
+      if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
         // fill(Xcolor);
         // text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
         // fill(Ycolor);

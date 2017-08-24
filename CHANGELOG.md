@@ -1,8 +1,26 @@
 # 3.0.0
 
+v3.0.0 set out to move **all** of the data collection to the electron hub. This means moving serial port parsing as well.
+
+### New Features
+
+* Able to use wifi shield with GUI. Streams in at 1000Hz for Cyton and 1600Hz for Ganglion.
+
 ### Breaking Changes
 
 * Dependent on electron hub for all data streaming activity.
+
+## Beta 2
+
+Required a lot of work on the hub. But none the less, this seems to be working decently.
+
+### Bug Fixes
+
+* Closes #196 #195 #194 #193 #190 #188 #187 #186 #189
+
+## Beta 1
+
+The first beta to be released. There are some [minor issues](https://github.com/OpenBCI/OpenBCI_GUI/issues), but if any are encountered, please [open an issue](https://github.com/OpenBCI/OpenBCI_GUI/issues/new) on the [github page](https://github.com/OpenBCI/OpenBCI_GUI/issues).
 
 # 2.2.1
 

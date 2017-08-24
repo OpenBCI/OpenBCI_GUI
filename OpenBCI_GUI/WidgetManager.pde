@@ -28,13 +28,19 @@ W_PulseSensor w_pulsesensor;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
+  // println("  setupWidgets start -- " + millis());
+
   w_timeSeries = new W_timeSeries(_this);
   w_timeSeries.setTitle("Time Series");
   addWidget(w_timeSeries, w);
+  // println("  setupWidgets time series -- " + millis());
+
 
   w_fft = new W_fft(_this);
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
+  // println("  setupWidgets fft -- " + millis());
+
 
   //only instantiate this widget if you are using a Ganglion board for live streaming
   if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
@@ -46,36 +52,52 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_networking = new W_networking(_this);
   w_networking.setTitle("Networking");
   addWidget(w_networking, w);
+  // println("  setupWidgets networking -- " + millis());
+
 
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
+  // println("  setupWidgets band power -- " + millis());
+
 
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
+  // println("  setupWidgets Accelerometer -- " + millis());
+
 
   w_headPlot = new W_headPlot(_this);
   w_headPlot.setTitle("Head Plot");
   addWidget(w_headPlot, w);
+  // println("  setupWidgets head plot -- " + millis());
+
 
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
+  // println("  setupWidgets emg -- " + millis());
+
 
   w_focus = new W_Focus(_this);
   w_focus.setTitle("Focus Widget");
   addWidget(w_focus, w);
+  // println("  setupWidgets focus widget -- " + millis());
+
 
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
   addWidget(w_template1, w);
+  // println("  setupWidgets Template -- " + millis());
+
 
   //only instantiate this widget if you are using a Cyton board for live streaming
   if(eegDataSource != DATASOURCE_GANGLION){
     w_pulsesensor = new W_PulseSensor(_this);
     w_pulsesensor.setTitle("Pulse Sensor");
     addWidget(w_pulsesensor, w);
+    // println("  setupWidgets pulse sensor -- " + millis());
+
   }
 
   // w_template2 = new W_template(_this);
@@ -123,12 +145,14 @@ class WidgetManager{
   int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
   ArrayList<Layout> layouts = new ArrayList<Layout>();  //this holds all of the different layouts ...
 
+  public boolean isWMInitialized = false;
   private boolean visible = true;
   private boolean updating = true;
 
   WidgetManager(PApplet _this){
     widgets = new ArrayList<Widget>();
     widgetOptions = new ArrayList<String>();
+    isWMInitialized = false;
 
     //DO NOT re-order the functions below
     setupLayouts();
@@ -142,6 +166,10 @@ class WidgetManager{
       currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
     }
+
+    delay(1000);
+
+    isWMInitialized = true;
   }
   public boolean isVisible() {
     return visible;

@@ -45,7 +45,7 @@ void clientEvent(Client someClient) {
           controlPanel.bleBox.refreshBLEList();
           controlPanel.wifiBox.refreshWifiList();
         }
-      } else if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      } else if (eegDataSource == DATASOURCE_CYTON) {
         // Do stuff for cyton
         hub.parseMessage(msg);
         // Check to see if the ganglion ble list needs to be updated
@@ -73,6 +73,7 @@ class Hub {
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_PROTOCOL = "p";
   final static String TCP_CMD_SCAN = "s";
+  final static String TCP_CMD_SD = "m";
   final static String TCP_CMD_STATUS = "q";
   final static String TCP_STOP = ",;\n";
 
@@ -93,10 +94,15 @@ class Hub {
 
   final static int NUM_ACCEL_DIMS = 3;
 
+
   final static int RESP_ERROR_UNKNOWN = 499;
+  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
   final static int RESP_ERROR_BAD_PACKET = 500;
   final static int RESP_ERROR_BAD_NOBLE_START = 501;
-  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
+  final static int RESP_ERROR_CHANNEL_SETTINGS = 423;
+  final static int RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS = 422;
+  final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL = 424;
+  final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE = 425;
   final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 406;
   final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
   final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
@@ -117,6 +123,7 @@ class Hub {
   final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
   final static int RESP_SUCCESS_DATA_SAMPLE = 204;
   final static int RESP_WIFI_FOUND = 205;
+  final static int RESP_SUCCESS_CHANNEL_SETTING = 207;
   final static int RESP_STATUS_CONNECTED = 300;
   final static int RESP_STATUS_DISCONNECTED = 301;
   final static int RESP_STATUS_SCANNING = 302;
@@ -150,7 +157,7 @@ class Hub {
   public int numberOfDevices = 0;
   public int maxNumberOfDevices = 10;
   private boolean hubRunning = false;
-  public char[] tcpBuffer = new char[1024];
+  public char[] tcpBuffer = new char[4096];
   public int tcpBufferPositon = 0;
   private String curProtocol = PROTOCOL_WIFI;
 
@@ -160,7 +167,9 @@ class Hub {
   private boolean checkingImpedance = false;
   private boolean accelModeActive = false;
   private boolean newAccelData = false;
-  private int[] accelArray = new int[NUM_ACCEL_DIMS];
+  public int[] accelArray = new int[NUM_ACCEL_DIMS];
+  public int[] validAccelValues = {0, 0, 0};
+  public boolean validNewAccelData = false;
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
@@ -244,9 +253,7 @@ class Hub {
         processConnect(msg);
         break;
       case 'a': // Accel
-        if (eegDataSource == DATASOURCE_GANGLION) {
-          ganglion.processAccel(msg);
-        }
+        processAccel(msg);
         break;
       case 'd': // Disconnect
         processDisconnect(msg);
@@ -271,6 +278,12 @@ class Hub {
       case 'q':
         processStatus(msg);
         break;
+      case 'r':
+        processRegisterQuery(msg);
+        break;
+      case 'm':
+        processSDCard(msg);
+        break;
       default:
         println("Hub: parseMessage: default: " + msg);
         break;
@@ -283,16 +296,20 @@ class Hub {
   }
 
   public void setBoardType(String boardType) {
-    println("Hub: setBoardType(): sending \'" + boardType);
+    println("Hub: setBoardType(): sending \'" + boardType + " -- " + millis());
     write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
   }
 
   private void processBoardType(String msg) {
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
-      println("Hub: processBoardType: set board to " + list[2]);
-      println("Hub: parseMessage: connect: success!");
-      initAndShowGUI();
+      println("Hub: processBoardType: set board to " + list[2] + " -- " + millis());
+      if (sdSetting > 0) {
+        hub.sdCardStart(sdSetting);
+      } else {
+        cyton.syncChannelSettings();
+        initAndShowGUI();
+      }
     } else {
       println("Hub: processBoardType: set board to failure!");
       killAndShowMsg(list[2]);
@@ -300,28 +317,31 @@ class Hub {
   }
 
   private void processConnect(String msg) {
-    println("Hub: processConnect: made it: " + msg);
+    println("Hub: processConnect: made it -- " + millis());
     String[] list = split(msg, ',');
     if (isSuccessCode(Integer.parseInt(list[1]))) {
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      changeState(STATE_SYNCWITHHARDWARE);
+      if (eegDataSource == DATASOURCE_CYTON) {
         if (nchan == 8) {
           setBoardType("cyton");
         } else {
           setBoardType("daisy");
         }
       } else {
-        println("Hub: parseMessage: connect: success!");
+        println("Hub: parseMessage: connect: success! -- " + millis());
         initAndShowGUI();
       }
     } else {
       println("Hub: parseMessage: connect: failure!");
-      killAndShowMsg("Unable to connect to Ganglion! Please ensure board is powered on and in range!");
+      killAndShowMsg("Unable to connect to board! Please ensure board is powered on and in range!");
     }
   }
 
   private void initAndShowGUI() {
-    systemMode = 10;
+    changeState(STATE_NORMAL);
+    systemMode = SYSTEMMODE_POSTINIT;
     controlPanel.close();
+    topNav.controlPanelCollapser.setIsActive(false);
     output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
     portIsOpen = true;
   }
@@ -343,11 +363,26 @@ class Hub {
     write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
+  public void processAccel(String msg) {
+    String[] list = split(msg, ',');
+    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        accelArray[i] = Integer.parseInt(list[i + 2]);
+      }
+      newAccelData = true;
+      if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+          validAccelValues[i] = accelArray[i];
+        }
+      }
+    }
+  }
+
   public void processData(String msg) {
     try {
       String[] list = split(msg, ',');
       int code = Integer.parseInt(list[1]);
-      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_NORMAL_W_AUX) && systemMode == 10 && isRunning) { //<>//
+      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
           dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
@@ -431,6 +466,7 @@ class Hub {
       }
     } catch (Exception e) {
       println("Hub: parseMessage: error: " + e);
+      e.printStackTrace();
     }
 
   }
@@ -458,10 +494,56 @@ class Hub {
     }
   }
 
+  private void processRegisterQuery(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+
+    switch (code) {
+      case RESP_ERROR_CHANNEL_SETTINGS:
+        killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
+        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + list[2]);
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
+        println("tried to sync channel settings but there was already one in progress");
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
+        println("an error was thrown trying to set the channels | error: " + list[2]);
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
+        println("an error was thrown trying to call the function to set the channels | error: " + list[2]);
+        break;
+      case RESP_SUCCESS:
+        // Sent when either a scan was stopped or started Successfully
+        String action = list[2];
+        switch (action) {
+          case TCP_ACTION_START:
+            println("Query registers for cyton channel settings");
+            break;
+        }
+        break;
+      case RESP_SUCCESS_CHANNEL_SETTING:
+        int channelNumber = Integer.parseInt(list[2]);
+        // power down comes in as either 'true' or 'false', 'true' is a '1' and false is a '0'
+        channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
+        // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
+        //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
+        channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
+        // input type comes in as a string version and must get converted to char
+        channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
+        // bias is like power down
+        channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
+        // srb2 is like power down
+        channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
+        // srb1 is like power down
+        channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
+        break;
+    }
+  }
+
   private void processScan(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
-    switch(code) {
+    switch (code) {
       case RESP_GANGLION_FOUND:
       case RESP_WIFI_FOUND:
         // Sent every time a new ganglion device is found
@@ -503,6 +585,47 @@ class Hub {
         handleError(code, list[2]);
         break;
       case RESP_ERROR_UNKNOWN:
+      default:
+        handleError(code, list[2]);
+        break;
+    }
+  }
+
+  public void sdCardStart(int sdSetting) {
+    String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
+    println("Hub: sdCardStart(): sending \'" + sdSettingStr);
+    write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
+  }
+
+  private void processSDCard(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    String action = list[2];
+
+    switch(code) {
+      case RESP_SUCCESS:
+        // Sent when either a scan was stopped or started Successfully
+        switch (action) {
+          case TCP_ACTION_START:
+            println("sd card setting set so now attempting to sync channel settings");
+            cyton.syncChannelSettings();
+            initAndShowGUI();
+            break;
+          case TCP_ACTION_STOP:
+            println(list[3]);
+            break;
+        }
+        break;
+      case RESP_ERROR_UNKNOWN:
+        switch (action) {
+          case TCP_ACTION_START:
+            killAndShowMsg(list[3]);
+            break;
+          case TCP_ACTION_STOP:
+            println(list[3]);
+            break;
+        }
+        break;
       default:
         handleError(code, list[2]);
         break;
@@ -575,6 +698,7 @@ class Hub {
       default:
         break;
     }
+    changeState(STATE_NOCOM);
   }
 
   // CONNECTION
@@ -587,7 +711,6 @@ class Hub {
   }
 
   public void connectWifi(String id) {
-
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
   }
   public int disconnectWifi() {
@@ -619,7 +742,7 @@ class Hub {
    */
   public boolean write(String out) {
     try {
-      println("out" + out);
+      // println("out" + out);
       tcpClient.write(out);
       return true;
     } catch (Exception e) {
