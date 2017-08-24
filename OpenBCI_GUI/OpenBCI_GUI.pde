@@ -604,7 +604,7 @@ void initSystem() {
   controlPanel.close();
   topNav.controlPanelCollapser.setIsActive(false);
   hub.changeState(hub.STATE_COMINIT);
-  hub.searchDeviceStop();
+  // hub.searchDeviceStop();
 
   //prepare the source of the input data
   switch (eegDataSource) {
