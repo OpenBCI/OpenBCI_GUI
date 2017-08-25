@@ -10,7 +10,11 @@ v3.0.0 set out to move **all** of the data collection to the electron hub. This 
 
 * Dependent on electron hub for all data streaming activity.
 
-## Beta 2
+## Beta 4
+
+* Closes #203
+
+## Beta 2-3
 
 Required a lot of work on the hub. But none the less, this seems to be working decently.
 
