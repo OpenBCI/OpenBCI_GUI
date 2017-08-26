@@ -42,8 +42,11 @@ void clientEvent(Client someClient) {
         // Check to see if the ganglion ble list needs to be updated
         if (hub.deviceListUpdated) {
           hub.deviceListUpdated = false;
-          controlPanel.bleBox.refreshBLEList();
-          controlPanel.wifiBox.refreshWifiList();
+          if (ganglion.isBLE()) {
+            controlPanel.bleBox.refreshBLEList();
+          } else {
+            controlPanel.wifiBox.refreshWifiList();
+          }
         }
       } else if (eegDataSource == DATASOURCE_CYTON) {
         // Do stuff for cyton

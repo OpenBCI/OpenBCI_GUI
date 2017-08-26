@@ -560,6 +560,16 @@ class ControlPanel {
 
   }
 
+  public void hideRadioPopoutBox() {
+    rcBox.isShowing = false;
+    cp5Popup.hide(); // make sure to hide the controlP5 object
+    cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+    cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+    // cp5Popup.hide(); // make sure to hide the controlP5 object
+    popOut.setString(">");
+    rcBox.print_onscreen("");
+  }
+
   public void refreshPortList(){
     serialPorts = new String[Serial.list().length];
     serialPorts = Serial.list();
@@ -838,12 +848,7 @@ class ControlPanel {
       popOut.wasPressed = false;
       popOut.setIsActive(false);
       if(rcBox.isShowing){
-        rcBox.isShowing = false;
-        cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-        // cp5Popup.hide(); // make sure to hide the controlP5 object
-        popOut.setString(">");
+        hideRadioPopoutBox();
       }
       else{
         rcBox.isShowing = true;
@@ -936,7 +941,6 @@ class ControlPanel {
       autoscan.wasPressed = false;
       autoscan.setIsActive(false);
       scan_channels(rcBox);
-
     }
 
     // if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
@@ -955,7 +959,13 @@ class ControlPanel {
 
 
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-      if(board != null) board.stop();
+      if(board != null) {
+        board.stop();
+        board = null;
+      }
+      if (rcBox.isShowing) {
+        hideRadioPopoutBox();
+      }
       //if system is not active ... initate system and flip button state
       initButtonPressed();
       //cursor(ARROW); //this this back to ARROW
