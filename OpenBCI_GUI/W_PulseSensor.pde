@@ -209,7 +209,7 @@ class W_PulseSensor extends Widget {
     //put your code here...
     if(analogModeButton.isActive && analogModeButton.isMouseHere()){
       println("analogModeButton...");
-      if(cyton.isPortOpen()){
+      if(cyton.isPortOpen()) {
         cyton.write("/2");
         output("Starting to read analog inputs");
       }

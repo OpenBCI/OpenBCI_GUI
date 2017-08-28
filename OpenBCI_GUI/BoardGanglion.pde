@@ -219,7 +219,7 @@ class Ganglion {
   // Channel setting
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {
-    if (connected) {
+    if (isPortOpen()) {
       if ((Ichan >= 0)) {
         if (activate) {
           println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
