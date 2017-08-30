@@ -85,7 +85,8 @@ Button chanButton8;
 Button chanButton16;
 Button selectPlaybackFile;
 Button selectSDFile;
-Button popOut;
+Button popOutRadioConfigButton;
+Button popOutWifiConfigButton;
 
 //Radio Button Definitions
 Button getChannel;
@@ -100,6 +101,13 @@ Button autoscan;
 // Button autoconnectNoStartHigh;
 Button systemStatus;
 
+Button getLatency;
+Button getIpAddress;
+Button setLatency;
+Button getMacAddress;
+Button getFirmwareVersion;
+Button eraseCredentials;
+
 Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
@@ -113,6 +121,9 @@ Serial board;
 ChannelPopup channelPopup;
 PollPopup pollPopup;
 RadioConfigBox rcBox;
+
+LatencyPopup latencyPopup;
+WifiConfigBox wifiBox;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -203,17 +214,18 @@ public void controlEvent(ControlEvent theEvent) {
       ovrChannel.wasPressed = false;
     }
     println("still goin off");
-
   }
 
-  // if (theEvent.isFrom("pollList")){
-  //   int setChannelInt = int(theEvent.getValue());
-  //   //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-  //   cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-  //   channelPopup.setClicked(false);
-  //   set_poll(rcBox,setChannelInt);
-  //   setPoll.wasPressed = false;
-  // }
+  if (theEvent.isFrom("latencyList")){
+    String setLatencyString = theEvent.getValue();
+    //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    cp5Popup.get(MenuList.class, "latencyList").setVisible(false);
+    latencyPopup.setClicked(false);
+    if(setLatency.wasPressed){
+      setWifiLatency(wcBox, setLatencyString);
+      setLatency.wasPressed = false;
+    }
+  }
 }
 
 //------------------------------------------------------------------------
@@ -306,6 +318,9 @@ class ControlPanel {
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
     pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
+    wcBox = new WifiConfigBox(x+w, y, w, h, globalPadding);
+    latencyPopup = new LatencyPopup(x+w, y, w, h, globalPadding);
+
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
     // Ganglion
@@ -361,9 +376,11 @@ class ControlPanel {
     playbackChannelCountBox.update();
     sdBox.update();
     rcBox.update();
+    wcBox.update();
     initBox.update();
 
     channelPopup.update();
+    latencyPopup.update();
     serialList.updateMenu();
     bleList.updateMenu();
     wifiList.updateMenu();
@@ -456,10 +473,34 @@ class ControlPanel {
           if (cyton.getInterface() == INTERFACE_SERIAL) {
             serialBox.draw();
             cp5.get(MenuList.class, "serialList").setVisible(true);
+            if (rcBox.isShowing) {
+              rcBox.draw();
+              if (channelPopup.wasClicked()) {
+                channelPopup.draw();
+                cp5Popup.get(MenuList.class, "channelList").setVisible(true);
+                cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+                cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+              } else if (pollPopup.wasClicked()) {
+                pollPopup.draw();
+                cp5Popup.get(MenuList.class, "pollList").setVisible(true);
+                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+                // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
+                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+                cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+              }
+            }
           } else if (cyton.getInterface() == INTERFACE_HUB_WIFI) {
             wifiBox.draw();
             cp5.get(MenuList.class, "wifiList").setVisible(true);
-          } else {
+            if(wcBox.isShowing){
+              wcBox.draw();
+              if(latencyPopup.wasClicked()){
+                latencyPopup.draw();
+                cp5Popup.get(MenuList.class, "latencyList").setVisible(true);
+              }
+            }
           }
           // dataLogBox.y = serialBox.y + serialBox.h;
           dataLogBox.draw();
@@ -467,28 +508,6 @@ class ControlPanel {
           sdBox.draw();
           cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
           cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
-
-          if(rcBox.isShowing){
-            rcBox.draw();
-            if(channelPopup.wasClicked()){
-              channelPopup.draw();
-              cp5Popup.get(MenuList.class, "channelList").setVisible(true);
-              cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-              cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-              cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
-            }
-            else if(pollPopup.wasClicked()){
-              pollPopup.draw();
-              cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-              cp5Popup.get(MenuList.class, "channelList").setVisible(false);
-              cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
-              // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
-              cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-              cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
-            }
-
-          }
-          cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
           // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
           cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         }
@@ -520,6 +539,13 @@ class ControlPanel {
           } else if (ganglion.getInterface() == INTERFACE_HUB_WIFI) {
             wifiBox.draw();
             cp5.get(MenuList.class, "wifiList").setVisible(true);
+            if(wcBox.isShowing){
+              wcBox.draw();
+              if(latencyPopup.wasClicked()){
+                latencyPopup.draw();
+                cp5Popup.get(MenuList.class, "latencyList").setVisible(true);
+              }
+            }
           }
           // dataLogBox.y = bleBox.y + bleBox.h;
           dataLogBoxGanglion.draw();
@@ -566,8 +592,16 @@ class ControlPanel {
     cp5Popup.get(MenuList.class, "channelList").setVisible(false);
     cp5Popup.get(MenuList.class, "pollList").setVisible(false);
     // cp5Popup.hide(); // make sure to hide the controlP5 object
-    popOut.setString(">");
+    popOutRadioConfigButton.setString(">");
     rcBox.print_onscreen("");
+  }
+
+  public void hideWifiPopoutBox() {
+    wcBox.isShowing = false;
+    cp5Popup.hide(); // make sure to hide the controlP5 object
+    cp5Popup.get(MenuList.class, "latencyList").setVisible(false);
+    popOutWifiConfigButton.setString(">");
+    wcBox.print_onscreen("");
   }
 
   public void refreshPortList(){
@@ -613,9 +647,9 @@ class ControlPanel {
         //   autoconnect.wasPressed = true;
         // }
 
-        if (popOut.isMouseHere()){
-          popOut.setIsActive(true);
-          popOut.wasPressed = true;
+        if (popOutRadioConfigButton.isMouseHere()){
+          popOutRadioConfigButton.setIsActive(true);
+          popOutRadioConfigButton.wasPressed = true;
         }
 
         if (refreshPort.isMouseHere()) {
@@ -844,21 +878,21 @@ class ControlPanel {
   //mouse released in control panel
   public void CPmouseReleased() {
     //verbosePrint("CPMouseReleased: CPmouseReleased start...");
-    if(popOut.isMouseHere() && popOut.wasPressed){
-      popOut.wasPressed = false;
-      popOut.setIsActive(false);
+    if(popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed){
+      popOutRadioConfigButton.wasPressed = false;
+      popOutRadioConfigButton.setIsActive(false);
       if(rcBox.isShowing){
         hideRadioPopoutBox();
       }
       else{
         rcBox.isShowing = true;
-        popOut.setString("<");
+        popOutRadioConfigButton.setString("<");
       }
     }
 
     if(getChannel.isMouseHere() && getChannel.wasPressed){
       // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
-      get_channel( rcBox);
+      get_channel(rcBox);
       getChannel.wasPressed=false;
       getChannel.setIsActive(false);
     }
@@ -875,86 +909,64 @@ class ControlPanel {
       ovrChannel.setIsActive(false);
     }
 
-
-    // if (getPoll.isMouseHere() && getPoll.wasPressed){
-    //   get_poll(rcBox);
-    //   getPoll.setIsActive(false);
-    //   getPoll.wasPressed = false;
-    // }
-
-    // if (setPoll.isMouseHere() && setPoll.wasPressed){
-    //   pollPopup.setClicked(true);
-    //   channelPopup.setClicked(false);
-    //   setPoll.setIsActive(false);
-    // }
-
-    // if (defaultBAUD.isMouseHere() && defaultBAUD.wasPressed){
-    //   set_baud_default(rcBox,openBCI_portName);
-    //   defaultBAUD.setIsActive(false);
-    //   defaultBAUD.wasPressed=false;
-    // }
-
-    // if (highBAUD.isMouseHere() && highBAUD.wasPressed){
-    //   set_baud_high(rcBox,openBCI_portName);
-    //   highBAUD.setIsActive(false);
-    //   highBAUD.wasPressed=false;
-    // }
-
-    // if(autoconnectNoStartDefault.isMouseHere() && autoconnectNoStartDefault.wasPressed){
-    //
-    //   if(board == null){
-    //     try{
-    //       board = autoconnect_return_default();
-    //       rcBox.print_onscreen("Successfully connected to board");
-    //     }
-    //     catch (Exception e){
-    //       rcBox.print_onscreen("Error connecting to board...");
-    //     }
-    //
-    //
-    //   }
-    //  else rcBox.print_onscreen("Board already connected!");
-    //   autoconnectNoStartDefault.setIsActive(false);
-    //   autoconnectNoStartDefault.wasPressed = false;
-    // }
-
-    // if(autoconnectNoStartHigh.isMouseHere() && autoconnectNoStartHigh.wasPressed){
-    //
-    //   if(board == null){
-    //
-    //     try{
-    //
-    //       board = autoconnect_return_high();
-    //       rcBox.print_onscreen("Successfully connected to board");
-    //     }
-    //     catch (Exception e2){
-    //       rcBox.print_onscreen("Error connecting to board...");
-    //     }
-    //
-    //   }
-    //  else rcBox.print_onscreen("Board already connected!");
-    //   autoconnectNoStartHigh.setIsActive(false);
-    //   autoconnectNoStartHigh.wasPressed = false;
-    // }
-
     if(autoscan.isMouseHere() && autoscan.wasPressed){
       autoscan.wasPressed = false;
       autoscan.setIsActive(false);
       scan_channels(rcBox);
     }
 
-    // if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
-    //
-    //   // autoconnect();
-    //   initButtonPressed();
-    //   autoconnect.wasPressed = false;
-    //   autoconnect.setIsActive(false);
-    // }
-
     if(systemStatus.isMouseHere() && systemStatus.wasPressed){
       system_status(rcBox);
       systemStatus.setIsActive(false);
       systemStatus.wasPressed = false;
+    }
+
+    if(popOutWifiConfigButton.isMouseHere() && popOutWifiConfigButton.wasPressed){
+      popOutWifiConfigButton.wasPressed = false;
+      popOutWifiConfigButton.setIsActive(false);
+      if(wcBox.isShowing){
+        hideWifiPopoutBox();
+      }
+      else{
+        wcBox.isShowing = true;
+        popOutWifiConfigButton.setString("<");
+      }
+    }
+
+    if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
+      getWifiIpAddress(wcBox);
+      getIpAddress.wasPressed=false;
+      getIpAddress.setIsActive(false);
+    }
+
+    if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
+      getWifiFirmwareVersion(wcBox);
+      getFirmwareVersion.wasPressed=false;
+      getFirmwareVersion.setIsActive(false);
+    }
+
+    if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
+      getWifiMacAddress(wcBox);
+      getMacAddress.wasPressed=false;
+      getMacAddress.setIsActive(false);
+    }
+
+    if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
+      eraseWifiCredentials(wcBox);
+      eraseCredentials.wasPressed=false;
+      eraseCredentials.setIsActive(false);
+    }
+
+    if(getLatency.isMouseHere() && getLatency.wasPressed){
+      // Wifi_Config will handle creating the connection
+      getWifiLatency(wcBox);
+      getLatency.wasPressed=false;
+      getLatency.setIsActive(false);
+    }
+
+    if (setLatency.isMouseHere() && setLatency.wasPressed){
+      latencyPopup.setClicked(true);
+      setLatency.setIsActive(false);
     }
 
 
@@ -965,6 +977,9 @@ class ControlPanel {
       }
       if (rcBox.isShowing) {
         hideRadioPopoutBox();
+      }
+      if (wcBox.isShowing) {
+        hideWifiPopoutBox();
       }
       //if system is not active ... initate system and flip button state
       initButtonPressed();
@@ -1343,7 +1358,7 @@ class SerialBox {
 
     // autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
     refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    popOut = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+    popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
     // println(w-padding*2);
@@ -1374,7 +1389,7 @@ class SerialBox {
     // openClosePort.draw();
     refreshPort.draw();
     // autoconnect.draw();
-    popOut.draw();
+    popOutRadioConfigButton.draw();
   }
 
   public void refreshSerialList() {
@@ -1451,6 +1466,8 @@ class WifiBox {
 
     refreshWifi = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
     wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72, p4);
+    popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+
     // println(w-padding*2);
     wifiList.setPosition(x + padding, y + padding*3 + 8);
     // Call to update the list
@@ -1922,7 +1939,6 @@ class SDBox {
   }
 };
 
-
 class RadioConfigBox {
   int x, y, w, h, padding; //size and position
   String last_message = "";
@@ -1942,12 +1958,6 @@ class RadioConfigBox {
     setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHANNEL", fontInfo.buttonLabel_size);
     ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
     autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
-    // getPoll = new Button(x + padding + (w-padding*2)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET POLL", fontInfo.buttonLabel_size);
-    // highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
-    // setPoll = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "", fontInfo.buttonLabel_size);
-    // autoconnectNoStartDefault = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2 , 24, "CONNECT 115200", fontInfo.buttonLabel_size);
-    // deraultBaud = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "", fontInfo.buttonLabel_size);
-    // autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
 
     //Set help text
     getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
@@ -1955,16 +1965,8 @@ class RadioConfigBox {
     ovrChannel.setHelpText("Change the channel of the USB Dongle only");
     autoscan.setHelpText("Scan through channels and connect to a nearby Cyton");
     systemStatus.setHelpText("Get the connection status of your Cyton system");
-    // getPoll.setHelpText("Gets the current POLL value.");
-    // setPoll.setHelpText("Sets the current POLL value.");
-    // defaultBAUD.setHelpText("Sets the BAUD rate to 115200.");
-    // highBAUD.setHelpText("Sets the BAUD rate to 230400.");
-    // autoconnectNoStartDefault.setHelpText("Automatically connects to a board with the DEFAULT (115200) BAUD");
-    // autoconnectNoStartHigh.setHelpText("Automatically connects to a board with the HIGH (230400) BAUD");
-
   }
-  public void update() {
-  }
+  public void update() {}
 
   public void draw() {
     pushStyle();
@@ -1975,24 +1977,15 @@ class RadioConfigBox {
     fill(bgColor);
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("RADIO CONFIGURATION (v2)", x + padding, y + padding);
+    text("RADIO CONFIGURATION", x + padding, y + padding);
     popStyle();
     getChannel.draw();
     setChannel.draw();
     ovrChannel.draw();
     systemStatus.draw();
     autoscan.draw();
-    // getPoll.draw();
-    // setPoll.draw();
-    // defaultBAUD.draw();
-    // highBAUD.draw();
-    // autoconnectNoStartDefault.draw();
-    // autoconnectNoStartHigh.draw();
 
     this.print_onscreen(last_message);
-
-    //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
-
   }
 
   public void print_onscreen(String localstring){
@@ -2011,6 +2004,126 @@ class RadioConfigBox {
     fill(255);
     text(this.last_message, 180, 340, 240, 60);
   }
+};
+
+class RadioConfigBox {
+  int x, y, w, h, padding; //size and position
+  String last_message = "";
+  Serial board;
+  boolean isShowing;
+
+  RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x + _w;
+    y = _y;
+    w = _w;
+    h = 255;
+    padding = _padding;
+    isShowing = false;
+
+    getLatency = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET LATENCY", fontInfo.buttonLabel_size);
+    getIpAddress = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
+    setLatency = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHANNEL", fontInfo.buttonLabel_size);
+    getMacAddress = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
+    getFirmwareVersion = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "FIRMWARE VERSION", fontInfo.buttonLabel_size);
+    eraseCredentials = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*3, (w-padding*3)/2, 24, "ERASE CREDENTIALS", fontInfo.buttonLabel_size);
+
+    //Set help text
+    getLatency.setHelpText("Get the latency between packet sends from WiFi shield.");
+    getIpAddress.setHelpText("Change the IP Address of the WiFi shield");
+    setLatency.setHelpText("Set the latency of the WiFi shield. Longer latency on poor wifi networks.");
+    getMacAddress.setHelpText("Get the MAC Address of the WiFi shield");
+    getFirmwareVersion.setHelpText("Get the firmware version of the WiFi Shield");
+    eraseCredentials.setHelpText("Erase the store credentials on the WiFi Shield. Will kick WiFi off your network and wait for you to join it to another network as a hotspot.");
+  }
+  public void update() {}
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("WIFI CONFIGURATION", x + padding, y + padding);
+    popStyle();
+    getLatency.draw();
+    setLatency.draw();
+    getIpAddress.draw();
+    getMacAddress.draw();
+    getFirmwareVersion.draw();
+    eraseCredentials.draw();
+
+    this.print_onscreen(last_message);
+  }
+
+  public void print_onscreen(String localstring){
+    textAlign(LEFT);
+    fill(0);
+    rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
+    fill(255);
+    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    this.last_message = localstring;
+  }
+
+  public void print_lastmessage(){
+
+    fill(0);
+    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(255);
+    text(this.last_message, 180, 340, 240, 60);
+  }
+};
+
+class LatencyPopup {
+  int x, y, w, h, padding; //size and position
+  //connect/disconnect button
+  //Refresh list button
+  //String port status;
+  boolean clicked;
+
+  LatencyPopup(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x + _w * 2;
+    y = _y;
+    w = _w;
+    h = 171 + _padding;
+    padding = _padding;
+    clicked = false;
+
+    latencyList = new MenuList(cp5Popup, "latencyList", w - padding*2, 140, p4);
+    latencyList.setPosition(x+padding, y+padding*3);
+
+    latencyList.addItem(makeItem("1ms"));
+    latencyList.addItem(makeItem("5ms"));
+    latencyList.addItem(makeItem("10ms"));
+    latencyList.addItem(makeItem("15ms"));
+    latencyList.addItem(makeItem("20ms"));
+
+  }
+
+  public void update() {
+    // serialList.updateMenu();
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("LATENCY (ms)", x + padding, y + padding);
+    popStyle();
+
+  }
+
+  public void setClicked(boolean click){this.clicked = click; }
+
+  public boolean wasClicked(){return this.clicked;}
+
 };
 
 class SDConverterBox {
@@ -2044,7 +2157,6 @@ class SDConverterBox {
     selectSDFile.draw();
   }
 };
-
 
 class ChannelPopup {
   int x, y, w, h, padding; //size and position

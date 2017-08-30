@@ -200,7 +200,13 @@ class Ganglion {
   void startDataTransfer(){
     hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
     println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
-    hub.sendCommand('b');
+    if (checkingImpedance) {
+      impedanceStop();
+      delay(100);
+      hub.sendCommand('b');
+    } else {
+      hub.sendCommand('b');
+    }
   }
 
   /**

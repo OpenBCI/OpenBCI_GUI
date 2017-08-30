@@ -363,8 +363,16 @@ class Hub {
    * @description Sends a command to ganglion board
    */
   public void sendCommand(char c) {
-    println("Hub: passthroughCommand(): sending \'" + c);
+    println("Hub: sendCommand(char): sending \'" + c + "\'");
     write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
+  }
+
+  /**
+   * @description Sends a command to ganglion board
+   */
+  public void sendCommand(String s) {
+    println("Hub: sendCommand(String): sending \'" + s + "\'");
+    write(TCP_CMD_COMMAND + "," + s + TCP_STOP);
   }
 
   public void processAccel(String msg) {

@@ -1016,10 +1016,12 @@ void toggleFrameRate(){
 
 boolean isNetworkingTextActive(){
   boolean isAFieldActive = false;
-  int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
-  for(int i = 0; i < numTextFields; i++){
-    if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
-      isAFieldActive = true;
+  if (w_networking != null) {
+    int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
+    for(int i = 0; i < numTextFields; i++){
+      if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
+        isAFieldActive = true;
+      }
     }
   }
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
