@@ -91,17 +91,23 @@ class Ganglion {
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
+  private int sampleRate = fsHzWifi;
+
   // Getters
   public float getSampleRate() {
-    if (isWifi()) {
-      return fsHzWifi;
-    } else {
+    if (isBLE()) {
       return fsHzBLE;
+    } else {
+      return sampleRate;
     }
   }
   public int getNfft() {
     if (isWifi()) {
-      return NfftWifi;
+      if (sampleRate == fsHzBLE) {
+        return NfftBLE;
+      } else {
+        return NfftWifi;
+      }
     } else {
       return NfftBLE;
     }
@@ -110,6 +116,7 @@ class Ganglion {
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
+  public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; } 
   public int getInterface() {
     return curInterface;
   }
@@ -167,6 +174,14 @@ class Ganglion {
           println("? for channel " + channel + " is " + value + " ohms.");
         }
       }
+    }
+  }
+
+  public void setSampleRate(int _sampleRate) {
+    if (sampleRate != _sampleRate) {
+      sampleRate = _sampleRate;
+      hub.setSampleRate(sampleRate);
+      output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
     }
   }
 
