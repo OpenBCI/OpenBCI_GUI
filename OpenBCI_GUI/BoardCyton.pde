@@ -669,7 +669,7 @@ class Cyton {
     String output = "i,set,";
     if (_numChannel < 8) {
       output += (char)('0'+(_numChannel+1)) + ",";
-    } else (_numChannel >= 8) {
+    } else { //(_numChannel >= 8) {
       //command_activate_channel holds non-daisy and daisy values
       output += command_activate_channel[_numChannel] + ",";
     }

@@ -91,7 +91,7 @@ class Ganglion {
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
-  private int sampleRate = fsHzWifi;
+  private int sampleRate = (int)fsHzWifi;
 
   // Getters
   public float getSampleRate() {
@@ -116,7 +116,7 @@ class Ganglion {
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
-  public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; } 
+  public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; }
   public int getInterface() {
     return curInterface;
   }

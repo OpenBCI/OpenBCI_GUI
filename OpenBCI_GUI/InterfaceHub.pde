@@ -211,6 +211,7 @@ class Hub {
   public boolean isSearching() { return searching; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
+  public void setLatency(int latency) { curLatency = latency; }
 
   private PApplet mainApplet;
 
@@ -352,6 +353,7 @@ class Hub {
   }
 
   private void processConnect(String msg) {
+    String[] list = split(msg, ',');
     println("Hub: processConnect: made it -- " + millis());
     if (isSuccessCode(Integer.parseInt(list[1]))) {
       changeState(STATE_SYNCWITHHARDWARE);
@@ -372,15 +374,17 @@ class Hub {
   }
 
   private void processExamine(String msg) {
+    // println(msg);
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
     switch (code) {
       case RESP_SUCCESS:
+        output("Connected to WiFi Shield named " + wifi_portName);
         if (wcBox.isShowing) wcBox.print_onscreen("Connected to WiFi Shield named " + wifi_portName);
         break;
       default:
-        if (wcBox.isShowing) hideWifiPopoutBox();
-        handleError(code, list[2])
+        if (wcBox.isShowing) controlPanel.hideWifiPopoutBox();
+        handleError(code, list[2]);
         break;
     }
   }
@@ -834,19 +838,17 @@ class Hub {
     // write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
-  private getWifiInfo(String info) {
+  public void getWifiInfo(String info) {
     write(TCP_CMD_WIFI + "," + info + TCP_STOP);
   }
 
-  private setWifiInfo(String info, int value) {
+  public void setWifiInfo(String info, int value) {
     write(TCP_CMD_WIFI + "," + info + "," + value + TCP_STOP);
   }
 
   private void processWifi(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);
-    final static int RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED = 427;
-    final static int RESP_ERROR_WIFI_NOT_CONNECTED = 426;
     switch (code) {
       case RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED:
         println("Sent an action to hub for wifi info but the command was unrecognized");
@@ -865,7 +867,7 @@ class Hub {
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
         if (wcBox.isShowing) {
-          wc.print_onscreen(list[3]);
+          wcBox.print_onscreen(list[3]);
         }
         println("Success for wifi " + list[2] + ": " + list[3]);
         break;
@@ -879,7 +881,7 @@ class Hub {
    */
   public boolean write(String out) {
     try {
-      // println("out" + out);
+      println("out " + out);
       tcpClient.write(out);
       return true;
     } catch (Exception e) {

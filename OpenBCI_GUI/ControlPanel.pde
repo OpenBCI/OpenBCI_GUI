@@ -131,8 +131,7 @@ ChannelPopup channelPopup;
 PollPopup pollPopup;
 RadioConfigBox rcBox;
 
-LatencyPopup latencyPopup;
-WifiConfigBox wifiBox;
+WifiConfigBox wcBox;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -331,7 +330,6 @@ class ControlPanel {
     pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
     wcBox = new WifiConfigBox(x+w, y, w, h, globalPadding);
-    latencyPopup = new LatencyPopup(x+w, y, w, h, globalPadding);
 
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
@@ -392,7 +390,6 @@ class ControlPanel {
     initBox.update();
 
     channelPopup.update();
-    latencyPopup.update();
     serialList.updateMenu();
     bleList.updateMenu();
     wifiList.updateMenu();
@@ -639,7 +636,7 @@ class ControlPanel {
 
   //mouse pressed in control panel
   public void CPmousePressed() {
-    verbosePrint("CPmousePressed");
+    // verbosePrint("CPmousePressed");
 
     if (initSystemButton.isMouseHere()) {
       initSystemButton.setIsActive(true);
@@ -654,6 +651,11 @@ class ControlPanel {
         if (popOutRadioConfigButton.isMouseHere()){
           popOutRadioConfigButton.setIsActive(true);
           popOutRadioConfigButton.wasPressed = true;
+        }
+
+        if (popOutWifiConfigButton.isMouseHere()){
+          popOutWifiConfigButton.setIsActive(true);
+          popOutWifiConfigButton.wasPressed = true;
         }
 
         if (refreshPort.isMouseHere()) {
@@ -783,6 +785,11 @@ class ControlPanel {
         if (autoFileNameGanglion.isMouseHere()) {
           autoFileNameGanglion.setIsActive(true);
           autoFileNameGanglion.wasPressed = true;
+        }
+
+        if (popOutWifiConfigButton.isMouseHere()){
+          popOutWifiConfigButton.setIsActive(true);
+          popOutWifiConfigButton.wasPressed = true;
         }
 
         if (outputODFGanglion.isMouseHere()) {
@@ -979,6 +986,7 @@ class ControlPanel {
     if(popOutWifiConfigButton.isMouseHere() && popOutWifiConfigButton.wasPressed){
       popOutWifiConfigButton.wasPressed = false;
       popOutWifiConfigButton.setIsActive(false);
+      println("clicked");
       if(wcBox.isShowing){
         hideWifiPopoutBox();
       } else {
@@ -1557,7 +1565,7 @@ class BLEBox {
 
     if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE()){
       if(hub.isSearching()){
-        image(loadingGIF_blue, x + padding + 100, y + padding, 20, 20);
+        image(loadingGIF_blue, x + padding + 100 + 50, y + padding - 4, 20, 20);
       }
     }
   }
@@ -1585,7 +1593,7 @@ class WifiBox {
     h = 140 + _padding;
     padding = _padding;
 
-    refreshWifi = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    refreshWifi = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
     wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72, p4);
     popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
@@ -1617,11 +1625,10 @@ class WifiBox {
     popStyle();
 
     refreshWifi.draw();
+    popOutWifiConfigButton.draw();
 
-    if(isHubInitialized && isHubObjectInitialized && (ganglion.isWifi() || cyton.isWifi())){
-      if(hub.isSearching()){
-        image(loadingGIF_blue, x + padding + 100, y + padding, 20, 20);
-      }
+    if(isHubInitialized && isHubObjectInitialized && (ganglion.isWifi() || cyton.isWifi()) && hub.isSearching()){
+      image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
     }
   }
 
@@ -1949,8 +1956,8 @@ class SampleRateCytonBox {
     padding = _padding;
 
     sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "250Hz", fontInfo.buttonLabel_size);
-    sampleRate1600 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1000Hz", fontInfo.buttonLabel_size);
-    sampleRate1600.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    sampleRate1000 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1000Hz", fontInfo.buttonLabel_size);
+    sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2303,13 +2310,13 @@ class RadioConfigBox {
   }
 };
 
-class RadioConfigBox {
+class WifiConfigBox {
   int x, y, w, h, padding; //size and position
   String last_message = "";
   Serial board;
   boolean isShowing;
 
-  RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
+  WifiConfigBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x + _w;
     y = _y;
     w = _w;
