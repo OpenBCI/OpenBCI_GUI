@@ -215,9 +215,9 @@ class HardwareSettingsController{
     //   rewriteChannelWhenDoneWriting = false;
     // }
 
-    if (cyton.get_isWritingImp()) {
-      cyton.writeImpedanceSettings(impChannelToWrite,impedanceCheckValues);
-    }
+    // if (cyton.get_isWritingImp()) {
+    //   cyton.writeImpedanceSettings(impChannelToWrite,impedanceCheckValues);
+    // }
 
     if (rewriteImpedanceWhenDoneWriting == true && cyton.get_isWritingImp() == false) {
       initImpWrite(impChannelToWriteWhenDoneWriting, final_pORn, final_onORoff);
@@ -386,32 +386,41 @@ class HardwareSettingsController{
   }
 
   public void initImpWrite(int _numChannel, char pORn, char onORoff) {
+    verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
+    if (pORn == 'p') {
+      impedanceCheckValues[_numChannel][0] = onORoff;
+    }
+    if (pORn == 'n') {
+      impedanceCheckValues[_numChannel][1] = onORoff;
+    }
+    cyton.writeImpedanceSettings(_numChannel, impedanceCheckValues);
+    // impChannelToWrite = _numChannel;
     //after clicking any button, write the new settings for that channel to OpenBCI
     // if (!cyton.get_isWritingChannel()) { //make sure you aren't currently writing imp settings for a channel
       // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-      if (!cyton.get_isWritingImp() && rewriteImpedanceWhenDoneWriting == false) {
-        verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
-        if (pORn == 'p') {
-          impedanceCheckValues[_numChannel][0] = onORoff;
-        }
-        if (pORn == 'n') {
-          impedanceCheckValues[_numChannel][1] = onORoff;
-        }
-        cyton.initImpWrite(_numChannel);
-        impChannelToWrite = _numChannel;
-      } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
-        verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
-        rewriteImpedanceWhenDoneWriting = true;
-        impChannelToWriteWhenDoneWriting = _numChannel;
-
-        if (pORn == 'p') {
-          final_pORn = 'p';
-        }
-        if (pORn == 'n') {
-          final_pORn = 'n';
-        }
-        final_onORoff = onORoff;
-      }
+      // if (!cyton.get_isWritingImp() && rewriteImpedanceWhenDoneWriting == false) {
+      //   verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
+      //   if (pORn == 'p') {
+      //     impedanceCheckValues[_numChannel][0] = onORoff;
+      //   }
+      //   if (pORn == 'n') {
+      //     impedanceCheckValues[_numChannel][1] = onORoff;
+      //   }
+      //   cyton.initImpWrite(_numChannel);
+      //   impChannelToWrite = _numChannel;
+      // } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
+      //   verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
+      //   rewriteImpedanceWhenDoneWriting = true;
+      //   impChannelToWriteWhenDoneWriting = _numChannel;
+      //
+      //   if (pORn == 'p') {
+      //     final_pORn = 'p';
+      //   }
+      //   if (pORn == 'n') {
+      //     final_pORn = 'n';
+      //   }
+      //   final_onORoff = onORoff;
+      // }
     // }
   }
 

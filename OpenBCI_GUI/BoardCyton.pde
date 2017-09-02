@@ -161,11 +161,9 @@ class Cyton {
   }
 
   public void setSampleRate(int _sampleRate) {
-    if (sampleRate != _sampleRate) {
-      sampleRate = _sampleRate;
-      hub.setSampleRate(sampleRate);
-      output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
-    }
+    sampleRate = _sampleRate;
+    hub.setSampleRate(sampleRate);
+    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
   }
 
   public boolean setInterface(int _interface) {
@@ -173,8 +171,10 @@ class Cyton {
     // println("current interface: " + curInterface);
     // println("getInterface: " + getInterface());
     if (isWifi()) {
+      setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);
     } else if (isSerial()) {
+      setSampleRate((int)fsHzSerialCyton);
       hub.setProtocol(PROTOCOL_SERIAL);
     }
     return true;
@@ -660,10 +660,10 @@ class Cyton {
     return isWritingImp;
   }
 
-  public void initImpWrite(int _numChannel) {  //numChannel counts from zero
-    timeOfLastImpWrite = millis();
-    isWritingImp = true;
-  }
+  // public void initImpWrite(int _numChannel) {  //numChannel counts from zero
+  //   timeOfLastImpWrite = millis();
+  //   isWritingImp = true;
+  // }
 
   public void writeImpedanceSettings(int _numChannel, char[][] impedanceCheckValues) {  //numChannel counts from zero
     String output = "i,set,";

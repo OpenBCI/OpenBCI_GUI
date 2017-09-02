@@ -90,8 +90,7 @@ class Hub {
   final static String TCP_WIFI_GET_FIRMWARE_VERSION = "getFirmwareVersion";
   final static String TCP_WIFI_GET_IP_ADDRESS = "getIpAddress";
   final static String TCP_WIFI_GET_MAC_ADDRESS = "getMacAddress";
-  final static String TCP_WIFI_GET_LATENCY = "getLatency";
-  final static String TCP_WIFI_SET_LATENCY = "setLatency";
+  final static String TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD = "getTypeOfAttachedBoard";
 
   final static byte BYTE_START = (byte)0xA0;
   final static byte BYTE_END = (byte)0xC0;
@@ -132,6 +131,7 @@ class Hub {
   final static int RESP_ERROR_SCAN_NO_SCAN_TO_STOP = 410;
   final static int RESP_ERROR_SCAN_COULD_NOT_START = 412;
   final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
+  final static int RESP_ERROR_TIMEOUT_SCAN_STOPPED = 432;
   final static int RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED = 427;
   final static int RESP_ERROR_WIFI_COULD_NOT_ERASE_CREDENTIALS = 428;
   final static int RESP_ERROR_WIFI_COULD_NOT_SET_LATENCY = 429;
@@ -355,21 +355,28 @@ class Hub {
   private void processConnect(String msg) {
     String[] list = split(msg, ',');
     println("Hub: processConnect: made it -- " + millis());
-    if (isSuccessCode(Integer.parseInt(list[1]))) {
-      changeState(STATE_SYNCWITHHARDWARE);
-      if (eegDataSource == DATASOURCE_CYTON) {
-        if (nchan == 8) {
-          setBoardType("cyton");
+    int code = Integer.parseInt(list[1]);
+    switch (code) {
+      case RESP_SUCCESS:
+      case RESP_ERROR_ALREADY_CONNECTED:
+        changeState(STATE_SYNCWITHHARDWARE);
+        if (eegDataSource == DATASOURCE_CYTON) {
+          if (nchan == 8) {
+            setBoardType("cyton");
+          } else {
+            setBoardType("daisy");
+          }
         } else {
-          setBoardType("daisy");
+          println("Hub: parseMessage: connect: success! -- " + millis());
+          initAndShowGUI();
         }
-      } else {
-        println("Hub: parseMessage: connect: success! -- " + millis());
-        initAndShowGUI();
-      }
-    } else {
-      println("Hub: parseMessage: connect: failure!");
-      killAndShowMsg("Unable to connect to board! Please ensure board is powered on and in range!");
+        break;
+      case RESP_ERROR_UNABLE_TO_CONNECT:
+        killAndShowMsg(list[2]);
+        break;
+      default:
+        handleError(code, list[2]);
+        break;
     }
   }
 
@@ -380,10 +387,15 @@ class Hub {
     switch (code) {
       case RESP_SUCCESS:
         output("Connected to WiFi Shield named " + wifi_portName);
-        if (wcBox.isShowing) wcBox.print_onscreen("Connected to WiFi Shield named " + wifi_portName);
+        if (wcBox.isShowing) {
+          wcBox.updateMessage("Connected to WiFi Shield named " + wifi_portName);
+        }
+        break;
+      case RESP_ERROR_ALREADY_CONNECTED:
+        output("WiFi Shield is still connected to " + wifi_portName);
         break;
       default:
-        if (wcBox.isShowing) controlPanel.hideWifiPopoutBox();
+        if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
         handleError(code, list[2]);
         break;
     }
@@ -653,6 +665,9 @@ class Hub {
             break;
         }
         break;
+      case RESP_ERROR_TIMEOUT_SCAN_STOPPED:
+        searching = false;
+        break;
       case RESP_ERROR_SCAN_COULD_NOT_START:
         // Sent when err on search start
         handleError(code, list[2]);
@@ -835,6 +850,7 @@ class Hub {
   public void setSampleRate(int _sampleRate) {
     requestedSampleRate = _sampleRate;
     setSampleRate = true;
+    println("sample rate set to: " + _sampleRate);
     // write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
@@ -867,7 +883,35 @@ class Hub {
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
         if (wcBox.isShowing) {
-          wcBox.print_onscreen(list[3]);
+          String msgForWcBox = list[3];
+
+          switch (list[2]) {
+            case TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD:
+              switch(list[3]) {
+                case "none":
+                  msgForWcBox = "No OpenBCI Board attached to WiFi Shield";
+                  break;
+                case "ganglion":
+                  msgForWcBox = "4-channel Ganglion attached to WiFi Shield";
+                  break;
+                case "cyton":
+                  msgForWcBox = "8-channel Cyton attached to WiFi Shield";
+                  break;
+                case "daisy":
+                  msgForWcBox = "16-channel Cyton with Daisy attached to WiFi Shield";
+                  break;
+              }
+              break;
+            case TCP_WIFI_ERASE_CREDENTIALS:
+              output("WiFi credentials have been erased and WiFi Shield is in hotspot mode. If erase fails, remove WiFi Shield from OpenBCI Board.");
+              msgForWcBox = "";
+              controlPanel.hideWifiPopoutBox();
+              wifi_portName = "N/A";
+              clearDeviceList();
+              controlPanel.wifiBox.refreshWifiList();
+              break;
+          }
+          wcBox.updateMessage(msgForWcBox);
         }
         println("Success for wifi " + list[2] + ": " + list[3]);
         break;
@@ -899,9 +943,13 @@ class Hub {
     return 0;
   }
 
-  public void searchDeviceStart() {
+  public void clearDeviceList() {
     deviceList = null;
     numberOfDevices = 0;
+  }
+
+  public void searchDeviceStart() {
+    clearDeviceList();
     write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 

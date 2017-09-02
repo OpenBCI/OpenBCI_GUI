@@ -814,9 +814,9 @@ void haltSystem() {
   ganglion_portName = "N/A";
   wifi_portName = "N/A";
 
-  ganglion.setSampleRate(1600);
-  cyton.setSampleRate(1000);
-  
+  // ganglion.setSampleRate(1600);
+  // cyton.setSampleRate(1000);
+
   hub.setLatency(hub.LATENCY_10_MS);
 
   controlPanel.resetListItems();

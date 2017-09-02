@@ -103,7 +103,7 @@ class Ganglion {
   }
   public int getNfft() {
     if (isWifi()) {
-      if (sampleRate == fsHzBLE) {
+      if (sampleRate == (int)fsHzBLE) {
         return NfftBLE;
       } else {
         return NfftWifi;
@@ -171,25 +171,25 @@ class Ganglion {
           impedanceUpdated = true;
           println("Impedance for channel reference is " + value + " ohms.");
         } else {
-          println("? for channel " + channel + " is " + value + " ohms.");
+          println("Impedance for channel " + channel + " is " + value + " ohms.");
         }
       }
     }
   }
 
   public void setSampleRate(int _sampleRate) {
-    if (sampleRate != _sampleRate) {
-      sampleRate = _sampleRate;
-      hub.setSampleRate(sampleRate);
-      output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
-    }
+    sampleRate = _sampleRate;
+    hub.setSampleRate(sampleRate);
+    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
   }
 
   public void setInterface(int _interface) {
     curInterface = _interface;
     if (isBLE()) {
+      setSampleRate((int)fsHzBLE);
       hub.setProtocol(PROTOCOL_BLE);
     } else if (isWifi()) {
+      setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);
       hub.searchDeviceStart();
     }

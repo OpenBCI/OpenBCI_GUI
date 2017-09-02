@@ -105,7 +105,7 @@ Button eraseCredentials;
 Button getIpAddress;
 Button getFirmwareVersion;
 Button getMacAddress;
-Button getLatency;
+Button getTypeOfAttachedBoard;
 Button sampleRate200;
 Button sampleRate250;
 Button sampleRate1000;
@@ -318,7 +318,7 @@ class ControlPanel {
     synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
     sampleRateCytonBox = new SampleRateCytonBox(x + w, (sdBox.y + sdBox.h), w, h, globalPadding);
-    latencyCytonBox = new LatencyCytonBox(x + w, (sampleRateCytonBox.y + sampleRateCytonBox.h), w, h, globalPadding);
+    latencyCytonBox = new LatencyCytonBox(x + w + x + w - 3, (sdBox.y + sdBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
     playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
@@ -411,7 +411,8 @@ class ControlPanel {
         if (!calledForBLEList) {
           calledForBLEList = true;
           if (hub.isHubRunning()) {
-            hub.searchDeviceStart();
+            // Commented out because noble will auto scan
+            // hub.searchDeviceStart();
           }
         }
       }
@@ -590,7 +591,6 @@ class ControlPanel {
     cp5.draw();
 
     popStyle();
-
   }
 
   public void hideRadioPopoutBox() {
@@ -606,7 +606,7 @@ class ControlPanel {
   public void hideWifiPopoutBox() {
     wcBox.isShowing = false;
     popOutWifiConfigButton.setString(">");
-    wcBox.print_onscreen("");
+    wcBox.updateMessage("");
     if (hub.isPortOpen()) hub.closePort();
   }
 
@@ -646,16 +646,43 @@ class ControlPanel {
     //only able to click buttons of control panel when system is not running
     if (systemMode != 10) {
 
-      //active buttons during DATASOURCE_CYTON
-      if (eegDataSource == DATASOURCE_CYTON) {
-        if (popOutRadioConfigButton.isMouseHere()){
-          popOutRadioConfigButton.setIsActive(true);
-          popOutRadioConfigButton.wasPressed = true;
+      if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+        if(getIpAddress.isMouseHere()) {
+          getIpAddress.setIsActive(true);
+          getIpAddress.wasPressed = true;
+        }
+
+        if(getFirmwareVersion.isMouseHere()) {
+          getFirmwareVersion.setIsActive(true);
+          getFirmwareVersion.wasPressed = true;
+        }
+
+        if(getMacAddress.isMouseHere()) {
+          getMacAddress.setIsActive(true);
+          getMacAddress.wasPressed = true;
+        }
+
+        if(eraseCredentials.isMouseHere()) {
+          eraseCredentials.setIsActive(true);
+          eraseCredentials.wasPressed = true;
+        }
+
+        if(getTypeOfAttachedBoard.isMouseHere()) {
+          getTypeOfAttachedBoard.setIsActive(true);
+          getTypeOfAttachedBoard.wasPressed = true;
         }
 
         if (popOutWifiConfigButton.isMouseHere()){
           popOutWifiConfigButton.setIsActive(true);
           popOutWifiConfigButton.wasPressed = true;
+        }
+      }
+
+      //active buttons during DATASOURCE_CYTON
+      if (eegDataSource == DATASOURCE_CYTON) {
+        if (popOutRadioConfigButton.isMouseHere()){
+          popOutRadioConfigButton.setIsActive(true);
+          popOutRadioConfigButton.wasPressed = true;
         }
 
         if (refreshPort.isMouseHere()) {
@@ -785,11 +812,6 @@ class ControlPanel {
         if (autoFileNameGanglion.isMouseHere()) {
           autoFileNameGanglion.setIsActive(true);
           autoFileNameGanglion.wasPressed = true;
-        }
-
-        if (popOutWifiConfigButton.isMouseHere()){
-          popOutWifiConfigButton.setIsActive(true);
-          popOutWifiConfigButton.wasPressed = true;
         }
 
         if (outputODFGanglion.isMouseHere()) {
@@ -1003,19 +1025,19 @@ class ControlPanel {
 
     if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
       hub.getWifiInfo(hub.TCP_WIFI_GET_IP_ADDRESS);
-      getIpAddress.wasPressed=false;
+      getIpAddress.wasPressed = false;
       getIpAddress.setIsActive(false);
     }
 
     if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
       hub.getWifiInfo(hub.TCP_WIFI_GET_FIRMWARE_VERSION);
-      getFirmwareVersion.wasPressed=false;
+      getFirmwareVersion.wasPressed = false;
       getFirmwareVersion.setIsActive(false);
     }
 
     if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
       hub.getWifiInfo(hub.TCP_WIFI_GET_MAC_ADDRESS);
-      getMacAddress.wasPressed=false;
+      getMacAddress.wasPressed = false;
       getMacAddress.setIsActive(false);
     }
 
@@ -1025,11 +1047,11 @@ class ControlPanel {
       eraseCredentials.setIsActive(false);
     }
 
-    if(getLatency.isMouseHere() && getLatency.wasPressed){
+    if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
       // Wifi_Config will handle creating the connection
-      hub.getWifiInfo(hub.TCP_WIFI_GET_LATENCY);
-      getLatency.wasPressed=false;
-      getLatency.setIsActive(false);
+      hub.getWifiInfo(hub.TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
+      getTypeOfAttachedBoard.wasPressed=false;
+      getTypeOfAttachedBoard.setIsActive(false);
     }
 
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
@@ -1094,7 +1116,6 @@ class ControlPanel {
       controlPanel.hideAllBoxes();
       println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
       if (isHubObjectInitialized) {
-        println("sup iim here ");
         output("Protocol Wifi Selected for Ganglion");
         ganglion.setInterface(INTERFACE_HUB_WIFI);
       } else {
@@ -1532,7 +1553,7 @@ class BLEBox {
     h = 140 + _padding;
     padding = _padding;
 
-    refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
     bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
     // println(w-padding*2);
     bleList.setPosition(x + padding, y + padding*3 + 8);
@@ -1563,10 +1584,11 @@ class BLEBox {
 
     refreshBLE.draw();
 
-    if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE()){
-      if(hub.isSearching()){
-        image(loadingGIF_blue, x + padding + 100 + 50, y + padding - 4, 20, 20);
-      }
+    if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE() && hub.isSearching()){
+      image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
+      refreshBLE.setString("SEARCHING...");
+    } else {
+      refreshBLE.setString("START SEARCH");
     }
   }
 
@@ -1593,7 +1615,7 @@ class WifiBox {
     h = 140 + _padding;
     padding = _padding;
 
-    refreshWifi = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    refreshWifi = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
     wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72, p4);
     popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
@@ -1629,15 +1651,20 @@ class WifiBox {
 
     if(isHubInitialized && isHubObjectInitialized && (ganglion.isWifi() || cyton.isWifi()) && hub.isSearching()){
       image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
+      refreshWifi.setString("SEARCHING...");
+    } else {
+      refreshWifi.setString("START SEARCH");
     }
   }
 
   public void refreshWifiList() {
     println("refreshWifiList");
     wifiList.items.clear();
-    for (int i = 0; i < hub.deviceList.length; i++) {
-      String tempPort = hub.deviceList[i];
-      wifiList.addItem(makeItem(tempPort));
+    if (hub.deviceList != null) {
+      for (int i = 0; i < hub.deviceList.length; i++) {
+        String tempPort = hub.deviceList[i];
+        wifiList.addItem(makeItem(tempPort));
+      }
     }
     wifiList.updateMenu();
   }
@@ -1934,7 +1961,7 @@ class SampleRateGanglionBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("  (" + str(ganglion.getSampleRate()) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    text("  " + str((int)ganglion.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     sampleRate200.draw();
@@ -1976,7 +2003,7 @@ class SampleRateCytonBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("  (" + str(cyton.getSampleRate()) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    text("  " + str((int)cyton.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     sampleRate250.draw();
@@ -2018,7 +2045,7 @@ class LatencyGanglionBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("  (" + str(hub.getLatency()) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     latencyGanglion5ms.draw();
@@ -2061,7 +2088,7 @@ class LatencyCytonBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("  (" + str(hub.getLatency()) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     latencyCyton5ms.draw();
@@ -2324,18 +2351,18 @@ class WifiConfigBox {
     padding = _padding;
     isShowing = false;
 
-    getLatency = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET LATENCY", fontInfo.buttonLabel_size);
+    getTypeOfAttachedBoard = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "OPENBCI BOARD", fontInfo.buttonLabel_size);
     getIpAddress = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
     eraseCredentials = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "ERASE CREDENTIALS", fontInfo.buttonLabel_size);
     getMacAddress = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
     getFirmwareVersion = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "FIRMWARE VERSION", fontInfo.buttonLabel_size);
 
     //Set help text
-    getLatency.setHelpText("Get the latency between packet sends from WiFi shield.");
-    getIpAddress.setHelpText("Change the IP Address of the WiFi shield");
+    getTypeOfAttachedBoard.setHelpText("Get the type of OpenBCI board attached to the WiFi Shield");
+    getIpAddress.setHelpText("Get the IP Address of the WiFi shield");
     getMacAddress.setHelpText("Get the MAC Address of the WiFi shield");
     getFirmwareVersion.setHelpText("Get the firmware version of the WiFi Shield");
-    eraseCredentials.setHelpText("Erase the store credentials on the WiFi Shield. Will kick WiFi off your network and wait for you to join it to another network as a hotspot.");
+    eraseCredentials.setHelpText("Erase the store credentials on the WiFi Shield to join another wireless network. Always remove WiFi Shield from OpenBCI board prior to erase and WiFi Shield will become a hotspot again.");
   }
   public void update() {}
 
@@ -2350,7 +2377,7 @@ class WifiConfigBox {
     textAlign(LEFT, TOP);
     text("WIFI CONFIGURATION", x + padding, y + padding);
     popStyle();
-    getLatency.draw();
+    getTypeOfAttachedBoard.draw();
     getIpAddress.draw();
     getMacAddress.draw();
     getFirmwareVersion.draw();
@@ -2359,13 +2386,16 @@ class WifiConfigBox {
     this.print_onscreen(last_message);
   }
 
+  public void updateMessage(String str) {
+    last_message = str;
+  }
+
   public void print_onscreen(String localstring){
     textAlign(LEFT);
     fill(0);
     rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
     fill(255);
     text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
-    this.last_message = localstring;
   }
 
   public void print_lastmessage(){
