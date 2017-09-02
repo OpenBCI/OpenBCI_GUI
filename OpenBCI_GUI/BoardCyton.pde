@@ -72,9 +72,9 @@ class Cyton {
   private int prevSampleIndex = 0;
   private int serialErrorCounter = 0;
 
-  private final float fsHzSerialCyton = 250.0f;  //sample rate used by OpenBCI board...set by its Arduino code
-  private final float fsHzSerialCytonDaisy = 125.0f;  //sample rate used by OpenBCI board...set by its Arduino code
-  private final float fsHzWifi = 1000.0f;  //sample rate used by OpenBCI board...set by its Arduino code
+  private final int fsHzSerialCyton = 250;  //sample rate used by OpenBCI board...set by its Arduino code
+  private final int fsHzSerialCytonDaisy = 125;  //sample rate used by OpenBCI board...set by its Arduino code
+  private final int fsHzWifi = 1000;  //sample rate used by OpenBCI board...set by its Arduino code
   private final int NfftSerialCyton = 256;
   private final int NfftSerialCytonDaisy = 256;
   private final int NfftWifi = 1024;
@@ -99,24 +99,30 @@ class Cyton {
   private long timeOfLastCommand = 0; //used when sync'ing to hardware
 
   private int curInterface = INTERFACE_SERIAL;
-
+  private int sampleRate = fsHzWifi;
   PApplet mainApplet;
 
   //some get methods
   public float getSampleRate() {
-    if (isWifi()) {
-      return fsHzWifi;
-    } else {
+    if (isSerial()) {
       if (nchan == NCHAN_CYTON_DAISY) {
         return fsHzSerialCytonDaisy;
       } else {
         return fsHzSerialCyton;
       }
+    } else {
+      return sampleRate;
     }
   }
+
+  // TODO: ADJUST getNfft for new sample variable sample rates
   public int getNfft() {
     if (isWifi()) {
-      return NfftWifi;
+      if (sampleRate == fsHzSerialCyton) {
+        return NfftSerialCyton;
+      } else {
+        return NfftWifi;
+      }
     } else {
       if (nchan == NCHAN_CYTON_DAISY) {
         return NfftSerialCytonDaisy;
@@ -154,13 +160,21 @@ class Cyton {
     return defaultChannelSettings;
   }
 
+  public void setSampleRate(int _sampleRate) {
+    sampleRate = _sampleRate;
+    hub.setSampleRate(sampleRate);
+    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
+  }
+
   public boolean setInterface(int _interface) {
     curInterface = _interface;
     // println("current interface: " + curInterface);
     // println("getInterface: " + getInterface());
     if (isWifi()) {
+      setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);
     } else if (isSerial()) {
+      setSampleRate((int)fsHzSerialCyton);
       hub.setProtocol(PROTOCOL_SERIAL);
     }
     return true;
@@ -637,214 +651,6 @@ class Cyton {
     write(output);
     // verbosePrint("done writing channel.");
     isWritingChannel = false;
-
-    // if (millis() - timeOfLastChannelWrite >= 50) { //wait 50 milliseconds before sending next character
-    //   verbosePrint("---");
-    //   switch (channelWriteCounter) {
-    //   case 0: //start sequence by send 'x'
-    //     verbosePrint("x" + " :: " + millis());
-    //     write('x');
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 1: //send channel number
-    //     verbosePrint(str(_numChannel+1) + " :: " + millis());
-    //     if (_numChannel < 8) {
-    //       write((char)('0'+(_numChannel+1)));
-    //     }
-    //     if (_numChannel >= 8) {
-    //       //write((command_activate_channel_daisy[_numChannel-8]));
-    //       write((command_activate_channel[_numChannel])); //command_activate_channel holds non-daisy and daisy
-    //     }
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 2:
-    //     verbosePrint(channelSettingValues[_numChannel][channelWriteCounter-2] + " :: " + millis());
-    //     write(channelSettingValues[_numChannel][channelWriteCounter-2]);
-    //     //value for ON/OF
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 3:
-    //     verbosePrint(channelSettingValues[_numChannel][channelWriteCounter-2] + " :: " + millis());
-    //     write(channelSettingValues[_numChannel][channelWriteCounter-2]);
-    //     //value for ON/OF
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 4:
-    //     verbosePrint(channelSettingValues[_numChannel][channelWriteCounter-2] + " :: " + millis());
-    //     write(channelSettingValues[_numChannel][channelWriteCounter-2]);
-    //     //value for ON/OF
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 5:
-    //     verbosePrint(channelSettingValues[_numChannel][channelWriteCounter-2] + " :: " + millis());
-    //     write(channelSettingValues[_numChannel][channelWriteCounter-2]);
-    //     //value for ON/OF
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 6:
-    //     verbosePrint(channelSettingValues[_numChannel][channelWriteCounter-2] + " :: " + millis());
-    //     write(channelSettingValues[_numChannel][channelWriteCounter-2]);
-    //     //value for ON/OF
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 7:
-    //     verbosePrint(channelSettingValues[_numChannel][channelWriteCounter-2] + " :: " + millis());
-    //     write(channelSettingValues[_numChannel][channelWriteCounter-2]);
-    //     //value for ON/OF
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 8:
-    //     verbosePrint("X" + " :: " + millis());
-    //     write('X'); // send 'X' to end message sequence
-    //     timeOfLastChannelWrite = millis();
-    //     channelWriteCounter++;
-    //     break;
-    //   case 9:
-    //     //turn back off channels that were not active before changing channel settings
-    //     switch(channelDeactivateCounter) {
-    //     case 0:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 1:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 2:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 3:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 4:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 5:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 6:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 7:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       //check to see if it's 8chan or 16chan ... stop the switch case here if it's 8 chan, otherwise keep going
-    //       if (nchan == 8) {
-    //         verbosePrint("done writing channel.");
-    //         isWritingChannel = false;
-    //         channelWriteCounter = 0;
-    //         channelDeactivateCounter = 0;
-    //       } else {
-    //         //keep going
-    //       }
-    //       break;
-    //     case 8:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 9:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 10:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 11:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 12:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 13:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 14:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       channelDeactivateCounter++;
-    //       break;
-    //     case 15:
-    //       if (channelSettingValues[channelDeactivateCounter][0] == '1') {
-    //         verbosePrint("deactivating channel: " + str(channelDeactivateCounter + 1));
-    //         write(command_deactivate_channel[channelDeactivateCounter]);
-    //       }
-    //       verbosePrint("done writing channel.");
-    //       isWritingChannel = false;
-    //       channelWriteCounter = 0;
-    //       channelDeactivateCounter = 0;
-    //       break;
-    //     }
-    //
-    //     // verbosePrint("done writing channel.");
-    //     // isWritingChannel = false;
-    //     // channelWriteCounter = -1;
-    //     timeOfLastChannelWrite = millis();
-    //     break;
-    //   }
-    //   // timeOfLastChannelWrite = millis();
-    //   // channelWriteCounter++;
-    // }
   }
 
   private long timeOfLastImpWrite = 0;
@@ -853,50 +659,23 @@ class Cyton {
   public boolean get_isWritingImp() {
     return isWritingImp;
   }
-  public void initImpWrite(int _numChannel) {  //numChannel counts from zero
-    timeOfLastImpWrite = millis();
-    isWritingImp = true;
-  }
+
+  // public void initImpWrite(int _numChannel) {  //numChannel counts from zero
+  //   timeOfLastImpWrite = millis();
+  //   isWritingImp = true;
+  // }
+
   public void writeImpedanceSettings(int _numChannel, char[][] impedanceCheckValues) {  //numChannel counts from zero
-    //after clicking an impedance button, write the new impedance settings for that channel to OpenBCI
-    //after clicking any button, write the new settings for that channel to OpenBCI
-    // verbosePrint("Writing impedance settings for channel " + _numChannel + " to OpenBCI!");
-    //write setting 1, delay 5ms.. write setting 2, delay 5ms, etc.
-    if (millis() - timeOfLastImpWrite >= 50) { //wait 50 milliseconds before sending next character
-      verbosePrint("---");
-      switch (impWriteCounter) {
-      case 0: //start sequence by sending 'z'
-        verbosePrint("z" + " :: " + millis());
-        write('z');
-        break;
-      case 1: //send channel number
-        verbosePrint(str(_numChannel+1) + " :: " + millis());
-        if (_numChannel < 8) {
-          write((char)('0'+(_numChannel+1)));
-        }
-        if (_numChannel >= 8) {
-          //cyton.write((command_activate_channel_daisy[_numChannel-8]));
-          write((command_activate_channel[_numChannel])); //command_activate_channel holds non-daisy and daisy values
-        }
-        break;
-      case 2:
-      case 3:
-        verbosePrint(impedanceCheckValues[_numChannel][impWriteCounter-2] + " :: " + millis());
-        write(impedanceCheckValues[_numChannel][impWriteCounter-2]);
-        //value for ON/OF
-        break;
-      case 4:
-        verbosePrint("Z" + " :: " + millis());
-        write('Z'); // send 'X' to end message sequence
-        break;
-      case 5:
-        verbosePrint("done writing imp settings.");
-        isWritingImp = false;
-        impWriteCounter = -1;
-        break;
-      }
-      timeOfLastImpWrite = millis();
-      impWriteCounter++;
+    String output = "i,set,";
+    if (_numChannel < 8) {
+      output += (char)('0'+(_numChannel+1)) + ",";
+    } else { //(_numChannel >= 8) {
+      //command_activate_channel holds non-daisy and daisy values
+      output += command_activate_channel[_numChannel] + ",";
     }
+    output += impedanceCheckValues[_numChannel][0] + ",";
+    output += impedanceCheckValues[_numChannel][1] + hub.TCP_STOP;
+    write(output);
+    isWritingImp = false;
   }
 };

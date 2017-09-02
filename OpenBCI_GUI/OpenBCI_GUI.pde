@@ -814,6 +814,11 @@ void haltSystem() {
   ganglion_portName = "N/A";
   wifi_portName = "N/A";
 
+  // ganglion.setSampleRate(1600);
+  // cyton.setSampleRate(1000);
+
+  hub.setLatency(hub.LATENCY_10_MS);
+
   controlPanel.resetListItems();
 
   // w_networking.clearCP5(); //closes all networking controllers
@@ -1127,7 +1132,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.0.0-beta4\nAugust 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.0.0-beta6\nAugust 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

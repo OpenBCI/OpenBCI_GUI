@@ -91,17 +91,23 @@ class Ganglion {
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
+  private int sampleRate = (int)fsHzWifi;
+
   // Getters
   public float getSampleRate() {
-    if (isWifi()) {
-      return fsHzWifi;
-    } else {
+    if (isBLE()) {
       return fsHzBLE;
+    } else {
+      return sampleRate;
     }
   }
   public int getNfft() {
     if (isWifi()) {
-      return NfftWifi;
+      if (sampleRate == (int)fsHzBLE) {
+        return NfftBLE;
+      } else {
+        return NfftWifi;
+      }
     } else {
       return NfftBLE;
     }
@@ -110,6 +116,7 @@ class Ganglion {
   public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
+  public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; }
   public int getInterface() {
     return curInterface;
   }
@@ -164,17 +171,25 @@ class Ganglion {
           impedanceUpdated = true;
           println("Impedance for channel reference is " + value + " ohms.");
         } else {
-          println("? for channel " + channel + " is " + value + " ohms.");
+          println("Impedance for channel " + channel + " is " + value + " ohms.");
         }
       }
     }
   }
 
+  public void setSampleRate(int _sampleRate) {
+    sampleRate = _sampleRate;
+    hub.setSampleRate(sampleRate);
+    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
+  }
+
   public void setInterface(int _interface) {
     curInterface = _interface;
     if (isBLE()) {
+      setSampleRate((int)fsHzBLE);
       hub.setProtocol(PROTOCOL_BLE);
     } else if (isWifi()) {
+      setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);
       hub.searchDeviceStart();
     }
@@ -200,7 +215,13 @@ class Ganglion {
   void startDataTransfer(){
     hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
     println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
-    hub.sendCommand('b');
+    if (checkingImpedance) {
+      impedanceStop();
+      delay(100);
+      hub.sendCommand('b');
+    } else {
+      hub.sendCommand('b');
+    }
   }
 
   /**
@@ -219,7 +240,7 @@ class Ganglion {
   // Channel setting
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {
-    if (connected) {
+    if (isPortOpen()) {
       if ((Ichan >= 0)) {
         if (activate) {
           println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
