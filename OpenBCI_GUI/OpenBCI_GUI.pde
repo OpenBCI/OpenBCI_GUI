@@ -277,9 +277,7 @@ void setup() {
     // On windows wait to start the hub until Ganglion is clicked on in the control panel.
     //  See issue #111
     hubStop(); //kill any existing hubs before starting a new one..
-    if (!isWindows()) {
-      hubInit();
-    }
+    hubInit();
   }
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
