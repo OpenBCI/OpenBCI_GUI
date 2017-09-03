@@ -84,13 +84,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   addWidget(w_focus, w);
   // println("  setupWidgets focus widget -- " + millis());
 
-
-  w_template1 = new W_template(_this);
-  w_template1.setTitle("Widget Template 1");
-  addWidget(w_template1, w);
-  // println("  setupWidgets Template -- " + millis());
-
-
   //only instantiate this widget if you are using a Cyton board for live streaming
   if(eegDataSource != DATASOURCE_GANGLION){
     w_pulsesensor = new W_PulseSensor(_this);
@@ -99,6 +92,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets pulse sensor -- " + millis());
 
   }
+
+  w_template1 = new W_template(_this);
+  w_template1.setTitle("Widget Template 1");
+  addWidget(w_template1, w);
 
   // w_template2 = new W_template(_this);
   // w_template2.setTitle("Widget Template 2");

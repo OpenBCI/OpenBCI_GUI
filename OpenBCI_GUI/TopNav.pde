@@ -58,7 +58,7 @@ class TopNav {
       fpsButton.setString("60 fps");
     }
     fpsButton.setFont(h3, 16);
-    fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate to see if it helps!");
+    fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate and see if it helps!");
 
     highRezButton = new Button(3+3+256+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
     controlPanelCollapser.setFont(h3, 16);
@@ -98,8 +98,11 @@ class TopNav {
 
     filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
     filtNotchButton.setFont(p5, 12);
+    filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
+
     filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
     filtBPButton.setFont(p5, 12);
+    filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
 
     //right to left in top right (secondary nav)
     layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
