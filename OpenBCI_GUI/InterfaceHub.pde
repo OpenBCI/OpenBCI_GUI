@@ -343,7 +343,7 @@ class Hub {
       if (sdSetting > 0) {
         hub.sdCardStart(sdSetting);
       } else {
-        cyton.syncChannelSettings();
+        // cyton.syncChannelSettings();
         initAndShowGUI();
       }
     } else {
@@ -715,7 +715,7 @@ class Hub {
         switch (action) {
           case TCP_ACTION_START:
             println("sd card setting set so now attempting to sync channel settings");
-            cyton.syncChannelSettings();
+            // cyton.syncChannelSettings();
             initAndShowGUI();
             break;
           case TCP_ACTION_STOP:
@@ -925,7 +925,7 @@ class Hub {
    */
   public boolean write(String out) {
     try {
-      println("out " + out);
+      // println("out " + out);
       tcpClient.write(out);
       return true;
     } catch (Exception e) {
