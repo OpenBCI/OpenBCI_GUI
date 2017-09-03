@@ -67,6 +67,7 @@ class W_PulseSensor extends Widget {
   boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
   boolean QS = false;        // becomes true when Arduoino finds a beat.
   int lastProcessedDataPacketInd = 0;
+  boolean analogReadOn = false;
 
   // testing stuff
 
@@ -104,7 +105,7 @@ class W_PulseSensor extends Widget {
 
     if (curDataPacketInd < 0) return;
 
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {  // LIVE FROM CYTON
+    if (eegDataSource == DATASOURCE_CYTON) {  // LIVE FROM CYTON
 
     } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
 
@@ -167,21 +168,19 @@ class W_PulseSensor extends Widget {
     rect(PulseWindowX,PulseWindowY,PulseWindowWidth,PulseWindowHeight);
     rect(BPMwindowX,BPMwindowY,BPMwindowWidth,BPMwindowHeight);
 
-
     fill(50);
     textFont(p4, 16);
     textAlign(LEFT,CENTER);
     text("BPM "+BPM, BPMposX, BPMposY);
     text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-    drawWaves();
-
+    if (analogReadOn) {
+      drawWaves();
+    }
 
     analogModeButton.draw();
 
-
     popStyle();
-
   }
 
   void screenResized(){
@@ -196,8 +195,6 @@ class W_PulseSensor extends Widget {
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    //put your code here...
-
     if (analogModeButton.isMouseHere()) {
       analogModeButton.setIsActive(true);
     }
@@ -208,21 +205,25 @@ class W_PulseSensor extends Widget {
 
     //put your code here...
     if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-      println("analogModeButton...");
-      if(cyton.isPortOpen()){
-        cyton.write("/2");
-        output("Starting to read analog inputs");
+      // println("analogModeButton...");
+      if(cyton.isPortOpen()) {
+        if (analogReadOn) {
+          hub.sendCommand("/0");
+          output("Starting to read accelerometer");
+          analogModeButton.setString("Turn Analog Read On");
+        } else {
+          hub.sendCommand("/2");
+          output("Starting to read analog inputs on pin marked D11");
+          analogModeButton.setString("Turn Analog Read Off");
+        }
+        analogReadOn = !analogReadOn;
       }
     }
     analogModeButton.setIsActive(false);
-
   }
 
   //add custom functions here
   void setPulseWidgetVariables(){
-
-
-
     PulseWindowWidth = ((w/4)*3) - padding;
     PulseWindowHeight = h - padding *2;
     PulseWindowX = x + padding;

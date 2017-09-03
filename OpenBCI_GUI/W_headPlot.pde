@@ -63,7 +63,15 @@ class W_headPlot extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    headPlot.setPositionSize(x, y, w, h, width, height);     //update position of headplot
+    headPlot.hp_x = x;
+    headPlot.hp_y = y;
+    headPlot.hp_w = w;
+    headPlot.hp_h = h;
+    headPlot.hp_win_x = x;
+    headPlot.hp_win_y = y;
+
+    thread("doHardCalcs");
+    // headPlot.setPositionSize(x, y, w, h, width, height);     //update position of headplot
 
   }
 
@@ -106,7 +114,7 @@ void Ten20(int n) { //triggered when there is an event in the Ten20 Dropdown
    */
 
   //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
-  println("BOOOOM!" + n);
+  // println("BOOOOM!" + n);
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 
 }
@@ -173,6 +181,16 @@ void updateVertScale() {
   vertScale_uV = default_vertScale_uV * vertScaleFactor[vertScaleFactor_ind];
   w_headPlot.headPlot.setMaxIntensity_uV(vertScale_uV);
 }
+
+void doHardCalcs() {
+  if (!w_headPlot.headPlot.threadLock) {
+    w_headPlot.headPlot.threadLock = true;
+    w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+    w_headPlot.headPlot.hardCalcsDone = true;
+    w_headPlot.headPlot.threadLock = false;
+  }
+}
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////
@@ -218,8 +236,17 @@ class HeadPlot {
   private int mouse_over_elec_index = -1;
   private boolean isDragging = false;
   private float drag_x, drag_y;
+  public int hp_win_x = 0;
+  public int hp_win_y = 0;
+  public int hp_x = 0;
+  public int hp_y = 0;
+  public int hp_w = 0;
+  public int hp_h = 0;
+  public boolean hardCalcsDone = false;
+  public boolean threadLock = false;
 
   HeadPlot(float x, float y, float w, float h, int win_x, int win_y, int n) {
+
     final int n_elec = n;  //8 electrodes assumed....or 16 for 16-channel?  Change this!!!
     nose_x = new int[3];
     nose_y = new int[3];
@@ -235,7 +262,6 @@ class HeadPlot {
     rel_width = w;
     rel_height = h;
     setWindowDimensions(win_x, win_y);
-
     setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
   }
 
@@ -262,7 +288,14 @@ class HeadPlot {
     //rel_height = float(_h)/_win_y;
     //setWindowDimensions(_win_x, _win_y);
 
-    setPositionSize(_x, _y, _w, _h, _win_x, _win_y);
+    hp_x = _x;
+    hp_y = _y;
+    hp_w = _w;
+    hp_h = _h;
+    hp_win_x = _win_x;
+    hp_win_y = _win_y;
+    thread("doHardCalcs");
+    // setPositionSize(_x, _y, _w, _h, _win_x, _win_y);
     setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
   }
 
@@ -649,17 +682,22 @@ class HeadPlot {
     int toPixels[][][][] = new int[n_wide][n_tall][4][2];
     int toElectrodes[][][] = new int[n_wide][n_tall][4];
     //int numConnections[][] = new int[n_wide][n_tall];
+    // println("  HeadPlot B 2 0 -- " + millis());
 
     //find which pixesl are within the head and which pixels are within an electrode
     whereAreThePixels(pixelAddress, withinHead, withinElectrode);
+    // println("  HeadPlot B 2 1 -- " + millis());
 
     //loop over the pixels and make all the connections
     makeAllTheConnections(withinHead, withinElectrode, toPixels, toElectrodes);
+    // println("  HeadPlot B 2 3 -- " + millis());
 
     //compute the pixel values when lighting up each electrode invididually
     for (int Ielec=0; Ielec<n_elec; Ielec++) {
       computeWeightFactorsGivenOneElectrode_iterative(toPixels, toElectrodes, Ielec, weightFac);
     }
+    // println("  HeadPlot B 2 4 -- " + millis());
+
   }
 
   private void cleanUpTheBoundaries(int pixelAddress[][][], float weightFac[][][]) {
@@ -1288,8 +1326,10 @@ class HeadPlot {
       if (drawHeadAsContours) updateHeadImage();
     } else {
       //update head voltages
-      updateHeadVoltages();
-      convertVoltagesToHeadImage();
+      if (!threadLock && hardCalcsDone) {
+        updateHeadVoltages();
+        convertVoltagesToHeadImage();
+      }
     }
   }
 

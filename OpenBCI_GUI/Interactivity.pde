@@ -324,7 +324,7 @@ void parseKey(char val) {
      break;
 
     default:
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource == DATASOURCE_CYTON) {
         println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
         cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -1016,10 +1016,12 @@ void toggleFrameRate(){
 
 boolean isNetworkingTextActive(){
   boolean isAFieldActive = false;
-  int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
-  for(int i = 0; i < numTextFields; i++){
-    if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
-      isAFieldActive = true;
+  if (w_networking != null) {
+    int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
+    for(int i = 0; i < numTextFields; i++){
+      if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
+        isAFieldActive = true;
+      }
     }
   }
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active

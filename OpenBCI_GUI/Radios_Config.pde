@@ -212,7 +212,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
     output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {
       println("Radios_Config: connect_to_portName: attempting to open serial port: " + openBCI_portName);
-      serial_output = new Serial(this,openBCI_portName,openBCI_baud); //open the com port
+      serial_output = new Serial(this, openBCI_portName, openBCI_baud); //open the com port
       serial_output.clear(); // clear anything in the com port's buffer
       // portIsOpen = true;
       println("Radios_Config: connect_to_portName: port is open!");
