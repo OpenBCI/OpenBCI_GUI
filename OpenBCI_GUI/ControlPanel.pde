@@ -143,6 +143,11 @@ public void controlEvent(ControlEvent theEvent) {
     // THIS IS TRIGGERED WHEN A USER SELECTS 'LIVE (from Cyton) or LIVE (from Ganglion), etc...'
     controlPanel.hideAllBoxes();
 
+    protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+    protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+    protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
+    protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
+
     ganglion.setInterface(INTERFACE_NONE);
     cyton.setInterface(INTERFACE_NONE);
 
@@ -1111,12 +1116,12 @@ class ControlPanel {
     }
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
-      println("protocolBLEGanglion");
+      wifiList.items.clear();
+      bleList.items.clear();
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
         output("Protocol BLE Selected for Ganglion");
-        wifiList.items.clear();
-        bleList.items.clear();
+        if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLE);
       } else {
         output("Please wait till hub is fully initalized");
@@ -1131,6 +1136,7 @@ class ControlPanel {
       println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
       if (isHubObjectInitialized) {
         output("Protocol Wifi Selected for Ganglion");
+        if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_WIFI);
       } else {
         output("Please wait till hub is fully initalized");
@@ -1138,18 +1144,25 @@ class ControlPanel {
     }
 
     if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
-      println("protocolSerialCyton");
+      wifiList.items.clear();
+      bleList.items.clear();
       controlPanel.hideAllBoxes();
-
-      output("Protocol Wifi Selected for Cyton");
-      cyton.setInterface(INTERFACE_SERIAL);
+      if (isHubObjectInitialized) {
+        output("Protocol Serial Selected for Cyton");
+        if (hub.isPortOpen()) hub.closePort();
+        cyton.setInterface(INTERFACE_SERIAL);
+      } else {
+        output("Please wait till hub is fully initalized");
+      }
     }
 
     if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
-      println("protocolWifiCyton");
+      wifiList.items.clear();
+      bleList.items.clear();
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
         output("Protocol Wifi Selected for Cyton");
+        if (hub.isPortOpen()) hub.closePort();
         cyton.setInterface(INTERFACE_HUB_WIFI);
       } else {
         output("Please wait till hub is fully initalized");
