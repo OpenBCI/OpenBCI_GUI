@@ -10,7 +10,7 @@ Please follow these instructions for getting the **critical** piece of software 
 
 # Widgets
 
-For a more comprehensive guide on creating custom widgets, head to (this tutorial)[http://docs.openbci.com/Tutorials/15-Custom_Widgets].
+For a more comprehensive guide on creating custom widgets, head to [this tutorial](http://docs.openbci.com/Tutorials/15-Custom_Widgets).
 
 There are strict yet simple rules to adhere to for your wonderful widget to "magically" be populated in the drop down list of the GUI. Fork the repo (if you know git) add your widget and open a pull request. Always browse the issues page for possible widgets to make!
 
