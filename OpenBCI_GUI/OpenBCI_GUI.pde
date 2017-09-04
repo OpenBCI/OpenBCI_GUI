@@ -270,15 +270,7 @@ PApplet ourApplet;
 int frameRateCounter = 0; //0 = 30, 1 = 45, 2 = 60
 
 void setup() {
-  // Step 1: Prepare the exit handler that will attempt to close a running node
-  //  server on shut down of this app, the main process.
-  // prepareExitHandler();
-  if (dev == false) {
-    // On windows wait to start the hub until Ganglion is clicked on in the control panel.
-    //  See issue #111
-    hubStop(); //kill any existing hubs before starting a new one..
-    hubInit();
-  }
+  hubStop(); //kill any existing hubs before starting a new one..
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 12/20/2016"); //Welcome line.
@@ -364,6 +356,8 @@ void setup() {
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
+
+  hubInit(); // putting down here gives windows time to close any open apps
 
   timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
