@@ -309,6 +309,9 @@ class Hub {
       case 'l':
         println("Hub: Log: " + list[1]);
         break;
+      case 'p':
+        processProtocol(msg);
+        break;
       case 'q':
         processStatus(msg);
         break;
@@ -320,6 +323,8 @@ class Hub {
         break;
       case 'w':
         processWifi(msg);
+        break;
+      case 'k':
         break;
       default:
         println("Hub: parseMessage: default: " + msg);
@@ -419,7 +424,7 @@ class Hub {
     systemMode = SYSTEMMODE_POSTINIT;
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
-    output("Hub: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+    output("The GUI is done intializing. Press \"Start Data Stream\" to start streaming!");
     portIsOpen = true;
     controlPanel.hideAllBoxes();
   }
@@ -558,10 +563,22 @@ class Hub {
   }
 
   private void processDisconnect(String msg) {
-    if (!waitingForResponse) {
-      killAndShowMsg("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
-    } else {
-      waitingForResponse = false;
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    switch (code) {
+      case RESP_SUCCESS:
+        if (!waitingForResponse) {
+          if (eegDataSource == DATASOURCE_CYTON) {
+            killAndShowMsg("Dang! Lost connection to Cyton. Please move closer or get a new battery!");
+          } else {
+            killAndShowMsg("Dang! Lost connection to Ganglion. Please move closer or get a new battery!");
+          }
+        } else {
+          waitingForResponse = false;
+        }
+        break;
+      case RESP_ERROR_UNABLE_TO_DISCONNECT:
+        break;
     }
     portIsOpen = false;
   }
@@ -582,6 +599,24 @@ class Hub {
         break;
       case RESP_SUCCESS:
         output("Success: Impedance " + list[2] + ".");
+        break;
+      default:
+        handleError(code, list[2]);
+        break;
+    }
+  }
+
+  private void processProtocol(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    switch (code) {
+      case RESP_SUCCESS:
+        output("Transfer Protocol set to " + list[2]);
+        println("Transfer Protocol set to " + list[2]);
+        break;
+      case RESP_ERROR_PROTOCOL_BLE_START:
+        output("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+        println("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
         break;
       default:
         handleError(code, list[2]);
@@ -861,11 +896,14 @@ class Hub {
     write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
+  public int getSampleRate() {
+    return requestedSampleRate;
+  }
+
   public void setSampleRate(int _sampleRate) {
     requestedSampleRate = _sampleRate;
     setSampleRate = true;
-    println("sample rate set to: " + _sampleRate);
-    // write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
+    println("\n\nsample rate set to: " + _sampleRate);
   }
 
   public void getWifiInfo(String info) {

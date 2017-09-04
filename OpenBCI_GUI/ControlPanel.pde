@@ -606,6 +606,10 @@ class ControlPanel {
     // cp5Popup.hide(); // make sure to hide the controlP5 object
     popOutRadioConfigButton.setString(">");
     rcBox.print_onscreen("");
+    if (board != null) {
+      board.stop();
+    }
+    board = null;
   }
 
   public void hideWifiPopoutBox() {
@@ -1074,10 +1078,6 @@ class ControlPanel {
     }
 
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-      if(board != null) {
-        board.stop();
-        board = null;
-      }
       if (rcBox.isShowing) {
         hideRadioPopoutBox();
       }
@@ -1427,21 +1427,11 @@ public void initButtonPressed(){
 
     //if system is already active ... stop system and flip button state back
     else {
-      output("SYSTEM STOPPED");
+      output("Learn how to use this application and more at docs.openbci.com");
       initSystemButton.setString("START SYSTEM");
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
-      if(eegDataSource == DATASOURCE_GANGLION){
-        if(ganglion.isCheckingImpedance()){
-          ganglion.impedanceStop();
-          w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
-        }
-      }
       haltSystem();
-      if(eegDataSource == DATASOURCE_GANGLION){
-        hub.searchDeviceStart();
-        bleList.items.clear();
-      }
     }
 }
 

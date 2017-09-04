@@ -111,7 +111,7 @@ class Cyton {
         return fsHzSerialCyton;
       }
     } else {
-      return sampleRate;
+      return hub.getSampleRate();
     }
   }
 
@@ -162,14 +162,15 @@ class Cyton {
 
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
+    output("Setting sample rate for Cyton to " + sampleRate + "Hz");
+    println("Setting sample rate for Cyton to " + sampleRate + "Hz");
     hub.setSampleRate(sampleRate);
-    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
   }
 
   public boolean setInterface(int _interface) {
     curInterface = _interface;
     // println("current interface: " + curInterface);
-    // println("getInterface: " + getInterface());
+    println("setInterface: curInterface: " + getInterface());
     if (isWifi()) {
       setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);
