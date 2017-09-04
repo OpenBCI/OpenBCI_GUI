@@ -98,12 +98,12 @@ class Ganglion {
     if (isBLE()) {
       return fsHzBLE;
     } else {
-      return sampleRate;
+      return hub.getSampleRate();
     }
   }
   public int getNfft() {
     if (isWifi()) {
-      if (sampleRate == (int)fsHzBLE) {
+      if (hub.getSampleRate() == (int)fsHzBLE) {
         return NfftBLE;
       } else {
         return NfftWifi;

@@ -704,6 +704,7 @@ float getSampleRateSafe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
     return ganglion.getSampleRate();
   } else {
+    // println("cyton sr: " + cyton.getSampleRate());
     return cyton.getSampleRate();
   }
 }
@@ -740,7 +741,7 @@ void startRunning() {
 void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
-  // output("Data stream stopped.");
+  output("Data stream stopped.");
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
       ganglion.stopDataTransfer();
@@ -812,10 +813,23 @@ void haltSystem() {
   ganglion_portName = "N/A";
   wifi_portName = "N/A";
 
-  // ganglion.setSampleRate(1600);
-  // cyton.setSampleRate(1000);
 
-  hub.setLatency(hub.LATENCY_10_MS);
+
+  // cyton.setSampleRate(1000);
+  // sampleRate250.color_notPressed = autoFileName.color_notPressed;
+  // sampleRate1000.color_notPressed = isSelected_color;
+  // latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed;
+  // latencyGanglion10ms.color_notPressed = isSelected_color; //default color of button
+  // latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+  //
+  // ganglion.setSampleRate(1600);
+  // sampleRate200.color_notPressed = autoFileName.color_notPressed;
+  // sampleRate1600.color_notPressed = isSelected_color;
+  // latencyCyton5ms.color_notPressed = autoFileName.color_notPressed;
+  // latencyCyton10ms.color_notPressed = isSelected_color; //default color of button
+  // latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+  //
+  // hub.setLatency(hub.LATENCY_10_MS);
 
   controlPanel.resetListItems();
 
@@ -828,12 +842,23 @@ void haltSystem() {
     cyton.closeSDandPort();
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
+    if(ganglion.isCheckingImpedance()){
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
     closeLogFile();  //close log file
     ganglion.closePort();
   }
   systemMode = SYSTEMMODE_PREINIT;
   hub.changeState(hub.STATE_NOCOM);
   abandonInit = false;
+
+  bleList.items.clear();
+  wifiList.items.clear();
+
+  if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
+    hub.searchDeviceStart();
+  }
 }
 
 void delayedInit() {
