@@ -394,10 +394,6 @@ class DataProcessing {
     defineFilters();  //define the filters anyway just so that the code doesn't bomb
   }
 
-  public float getSampleRateHz() {
-    return fs_Hz;
-  };
-
   //define filters depending on the sampling rate
   private void defineFilters() {
     int n_filt;

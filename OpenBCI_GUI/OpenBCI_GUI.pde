@@ -552,6 +552,24 @@ void initSystem() {
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
+
+  if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+    //open and load the data file
+    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
+    try {
+      playbackData_table = new Table_CSV(playbackData_fname);
+      playbackData_table.removeColumn(0);
+    } catch (Exception e) {
+      println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
+      println("   : quitting...");
+      abandonInit = true;
+      hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
+    }
+    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
+    //removing first column of data from data file...the first column is a time index and not eeg data
+
+  }
+
   fs_Hz = getSampleRateSafe();
   Nfft = getNfftSafe();
   nDataBackBuff = 3*(int)fs_Hz;
@@ -620,19 +638,6 @@ void initSystem() {
       //do nothing
       break;
     case DATASOURCE_PLAYBACKFILE:
-      //open and load the data file
-      println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
-      try {
-        playbackData_table = new Table_CSV(playbackData_fname);
-      }
-      catch (Exception e) {
-        println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-        println("   : quitting...");
-        exit();
-      }
-      println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
-      //removing first column of data from data file...the first column is a time index and not eeg data
-      playbackData_table.removeColumn(0);
       break;
     case DATASOURCE_GANGLION:
       if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
@@ -703,9 +708,12 @@ void initSystem() {
 float getSampleRateSafe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
     return ganglion.getSampleRate();
-  } else {
-    // println("cyton sr: " + cyton.getSampleRate());
+  } else if (eegDataSource == DATASOURCE_CYTON){
     return cyton.getSampleRate();
+  } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+    return playbackData_table.getSampleRate();
+  } else {
+    return 250;
   }
 }
 
@@ -713,12 +721,18 @@ float getSampleRateSafe() {
 * @description Get the correct points of FFT based on sampling rate
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
-
 int getNfftSafe() {
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    return ganglion.getNfft();
-  } else {
-    return cyton.getNfft();
+  int sampleRate = (int)getSampleRateSafe();
+  switch (sampleRate) {
+    case 1000:
+      return 1024;
+    case 1600:
+      return 2048;
+    case 125:
+    case 200:
+    case 250:
+    default:
+      return 256;
   }
 }
 
