@@ -270,7 +270,7 @@ PApplet ourApplet;
 int frameRateCounter = 0; //0 = 30, 1 = 45, 2 = 60
 
 void setup() {
-  hubStop(); //kill any existing hubs before starting a new one..
+  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 12/20/2016"); //Welcome line.
@@ -400,8 +400,10 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  hubStart();
-  prepareExitHandler();
+  if (!isWindows()) {    
+    hubStart();
+    prepareExitHandler();
+  }
 }
 
 /**
