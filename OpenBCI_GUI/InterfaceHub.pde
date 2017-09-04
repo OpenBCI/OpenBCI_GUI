@@ -323,7 +323,7 @@ class Hub {
         break;
       default:
         println("Hub: parseMessage: default: " + msg);
-        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest")
+        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
         break;
     }
   }
