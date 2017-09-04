@@ -1316,6 +1316,8 @@ public class OutputFile_BDF {
 ///////////////////////////////////////////////////////////////
 
 class Table_CSV extends Table {
+  private int sampleRate;
+  public int getSampleRate() { return sampleRate; }
   Table_CSV(String fname) throws IOException {
     init();
     readCSV(PApplet.createReader(createInput(fname)));
@@ -1336,7 +1338,24 @@ class Table_CSV extends Table {
       while ( (line = reader.readLine ()) != null) {
         //added by Chip, May 2, 2014 to ignore lines that are comments
         if (line.charAt(0) == '%') {
-          //println("Table_CSV: readCSV: ignoring commented line...");
+          if (line.length() > 18) {
+            if (line.charAt(1) == 'S') {
+              // println(line.substring(15, 18));
+              sampleRate = Integer.parseInt(line.substring(15, 18));
+              if (sampleRate == 100 || sampleRate == 160) {
+                sampleRate = Integer.parseInt(line.substring(15, 19));
+              }
+              println("Sample rate set to " + sampleRate);
+              // String[] m = match(line, "\\d+");
+              // if (m != null) {
+                // println("Found '" + m[1] + "' inside the line");
+              // }
+            }
+          }
+          println(line);
+          // if (line.charAt(1) == 'S') {
+          //   println("sampel rarteakjdsf;ldj");
+          // }
           continue;
         }
 
