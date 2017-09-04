@@ -972,93 +972,100 @@ class ControlPanel {
     if(popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed){
       popOutRadioConfigButton.wasPressed = false;
       popOutRadioConfigButton.setIsActive(false);
-      if(rcBox.isShowing){
-        hideRadioPopoutBox();
+      if (cyton.isSerial()) {
+        if(rcBox.isShowing){
+          hideRadioPopoutBox();
+        }
+        else{
+          rcBox.isShowing = true;
+          popOutRadioConfigButton.setString("<");
+        }
       }
-      else{
-        rcBox.isShowing = true;
-        popOutRadioConfigButton.setString("<");
+    }
+
+    if (rcBox.isShowing) {
+      if(getChannel.isMouseHere() && getChannel.wasPressed){
+        // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
+        get_channel(rcBox);
+        getChannel.wasPressed=false;
+        getChannel.setIsActive(false);
       }
-    }
 
-    if(getChannel.isMouseHere() && getChannel.wasPressed){
-      // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
-      get_channel(rcBox);
-      getChannel.wasPressed=false;
-      getChannel.setIsActive(false);
-    }
+      if (setChannel.isMouseHere() && setChannel.wasPressed){
+        channelPopup.setClicked(true);
+        pollPopup.setClicked(false);
+        setChannel.setIsActive(false);
+      }
 
-    if (setChannel.isMouseHere() && setChannel.wasPressed){
-      channelPopup.setClicked(true);
-      pollPopup.setClicked(false);
-      setChannel.setIsActive(false);
-    }
+      if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
+        channelPopup.setClicked(true);
+        pollPopup.setClicked(false);
+        ovrChannel.setIsActive(false);
+      }
 
-    if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
-      channelPopup.setClicked(true);
-      pollPopup.setClicked(false);
-      ovrChannel.setIsActive(false);
-    }
+      if(autoscan.isMouseHere() && autoscan.wasPressed){
+        autoscan.wasPressed = false;
+        autoscan.setIsActive(false);
+        scan_channels(rcBox);
+      }
 
-    if(autoscan.isMouseHere() && autoscan.wasPressed){
-      autoscan.wasPressed = false;
-      autoscan.setIsActive(false);
-      scan_channels(rcBox);
-    }
-
-    if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-      system_status(rcBox);
-      systemStatus.setIsActive(false);
-      systemStatus.wasPressed = false;
+      if(systemStatus.isMouseHere() && systemStatus.wasPressed){
+        system_status(rcBox);
+        systemStatus.setIsActive(false);
+        systemStatus.wasPressed = false;
+      }
     }
 
     if(popOutWifiConfigButton.isMouseHere() && popOutWifiConfigButton.wasPressed){
       popOutWifiConfigButton.wasPressed = false;
       popOutWifiConfigButton.setIsActive(false);
-      println("clicked");
-      if(wcBox.isShowing){
-        hideWifiPopoutBox();
-      } else {
-        if (wifi_portName == "N/A") {
-          output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
+      if (cyton.isWifi() || ganglion.isWifi()) {
+        if(wcBox.isShowing){
+          hideWifiPopoutBox();
         } else {
-          output("Attempting to connect to WiFi Shield named " + wifi_portName);
-          hub.examineWifi(wifi_portName);
-          wcBox.isShowing = true;
-          popOutWifiConfigButton.setString("<");
+          if (wifi_portName == "N/A") {
+            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
+          } else {
+            output("Attempting to connect to WiFi Shield named " + wifi_portName);
+            hub.examineWifi(wifi_portName);
+            wcBox.isShowing = true;
+            popOutWifiConfigButton.setString("<");
+          }
         }
       }
     }
 
-    if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
-      hub.getWifiInfo(hub.TCP_WIFI_GET_IP_ADDRESS);
-      getIpAddress.wasPressed = false;
-      getIpAddress.setIsActive(false);
-    }
+    if (wcBox.isShowing) {
+      if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_GET_IP_ADDRESS);
+        getIpAddress.wasPressed = false;
+        getIpAddress.setIsActive(false);
+      }
 
-    if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
-      hub.getWifiInfo(hub.TCP_WIFI_GET_FIRMWARE_VERSION);
-      getFirmwareVersion.wasPressed = false;
-      getFirmwareVersion.setIsActive(false);
-    }
+      if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_GET_FIRMWARE_VERSION);
+        getFirmwareVersion.wasPressed = false;
+        getFirmwareVersion.setIsActive(false);
+      }
 
-    if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
-      hub.getWifiInfo(hub.TCP_WIFI_GET_MAC_ADDRESS);
-      getMacAddress.wasPressed = false;
-      getMacAddress.setIsActive(false);
-    }
+      if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_GET_MAC_ADDRESS);
+        getMacAddress.wasPressed = false;
+        getMacAddress.setIsActive(false);
+      }
 
-    if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
-      hub.getWifiInfo(hub.TCP_WIFI_ERASE_CREDENTIALS);
-      eraseCredentials.wasPressed=false;
-      eraseCredentials.setIsActive(false);
-    }
+      if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_ERASE_CREDENTIALS);
+        eraseCredentials.wasPressed=false;
+        eraseCredentials.setIsActive(false);
+      }
 
-    if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
-      // Wifi_Config will handle creating the connection
-      hub.getWifiInfo(hub.TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
-      getTypeOfAttachedBoard.wasPressed=false;
-      getTypeOfAttachedBoard.setIsActive(false);
+      if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
+        // Wifi_Config will handle creating the connection
+        hub.getWifiInfo(hub.TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
+        getTypeOfAttachedBoard.wasPressed=false;
+        getTypeOfAttachedBoard.setIsActive(false);
+      }
     }
 
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
@@ -1540,7 +1547,9 @@ class SerialBox {
     // openClosePort.draw();
     refreshPort.draw();
     // autoconnect.draw();
-    popOutRadioConfigButton.draw();
+    if (cyton.isSerial()) {
+      popOutRadioConfigButton.draw();
+    }
   }
 
   public void refreshSerialList() {

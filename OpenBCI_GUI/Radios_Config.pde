@@ -255,6 +255,8 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
 //==========================================
 
 void system_status(RadioConfigBox rcConfig){
+  println("Radios_Config: system_status");
+
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -275,6 +277,7 @@ void system_status(RadioConfigBox rcConfig){
 
 //Scans through channels until a success message has been found
 void scan_channels(RadioConfigBox rcConfig){
+  println("Radios_Config: scan_channels");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -302,6 +305,7 @@ void scan_channels(RadioConfigBox rcConfig){
 //==========================================
 
 void get_channel(RadioConfigBox rcConfig){
+  println("Radios_Config: get_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -336,6 +340,7 @@ void get_channel(RadioConfigBox rcConfig){
 //==========================================
 
 void set_channel(RadioConfigBox rcConfig, int channel_number){
+  println("Radios_Config: set_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -373,6 +378,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
 //==========================================
 
 void set_channel_over(RadioConfigBox rcConfig, int channel_number){
+  println("Radios_Config: set_ovr_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;

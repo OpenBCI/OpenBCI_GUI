@@ -340,17 +340,15 @@ class Hub {
 
   private void processBoardType(String msg) {
     String[] list = split(msg, ',');
-    if (isSuccessCode(Integer.parseInt(list[1]))) {
-      println("Hub: processBoardType: set board to " + list[2] + " -- " + millis());
-      if (sdSetting > 0) {
-        hub.sdCardStart(sdSetting);
-      } else {
-        // cyton.syncChannelSettings();
+    int code = Integer.parseInt(list[1]);
+    switch (code) {
+      case RESP_SUCCESS:
         initAndShowGUI();
-      }
-    } else {
-      println("Hub: processBoardType: set board to failure!");
-      killAndShowMsg(list[2]);
+        break;
+      case RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE:
+      default:
+        killAndShowMsg(list[2]);
+        break;
     }
   }
 
@@ -388,16 +386,18 @@ class Hub {
     int code = Integer.parseInt(list[1]);
     switch (code) {
       case RESP_SUCCESS:
+        portIsOpen = true;
         output("Connected to WiFi Shield named " + wifi_portName);
         if (wcBox.isShowing) {
           wcBox.updateMessage("Connected to WiFi Shield named " + wifi_portName);
         }
         break;
       case RESP_ERROR_ALREADY_CONNECTED:
+        portIsOpen = true;
         output("WiFi Shield is still connected to " + wifi_portName);
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
-        output("No WiFi Shield found, visit docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guidew to learn to connect.");
+        output("No WiFi Shield found, visit docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide to learn how to connect.");
         break;
       default:
         if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
