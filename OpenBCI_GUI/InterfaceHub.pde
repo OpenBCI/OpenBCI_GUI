@@ -298,6 +298,7 @@ class Hub {
         break;
       case 'e': // Error
         println("Hub: parseMessage: error: " + list[2]);
+        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest")
         break;
       case 'x':
         processExamine(msg);
@@ -322,6 +323,7 @@ class Hub {
         break;
       default:
         println("Hub: parseMessage: default: " + msg);
+        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest")
         break;
     }
   }
@@ -393,6 +395,9 @@ class Hub {
         break;
       case RESP_ERROR_ALREADY_CONNECTED:
         output("WiFi Shield is still connected to " + wifi_portName);
+        break;
+      case RESP_ERROR_UNABLE_TO_CONNECT:
+        output("No WiFi Shield found, visit docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guidew to learn to connect.");
         break;
       default:
         if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
