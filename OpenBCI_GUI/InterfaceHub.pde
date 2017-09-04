@@ -298,7 +298,7 @@ class Hub {
         break;
       case 'e': // Error
         println("Hub: parseMessage: error: " + list[2]);
-        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest")
+        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
         break;
       case 'x':
         processExamine(msg);
