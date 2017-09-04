@@ -372,7 +372,15 @@ class Hub {
         }
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
-        killAndShowMsg(list[2]);
+        if (list[2].equals("Error: Invalid sample rate")) {
+          if (eegDataSource == DATASOURCE_CYTON) {
+            killAndShowMsg("WiFi Shield is connected to a Ganglion. Please select LIVE (from Ganglion) instead of LIVE (from Cyton)");
+          } else {
+            killAndShowMsg("WiFi Shield is connected to a Cyton. Please select LIVE (from Cyton) instead LIVE (from Cyton)");
+          }
+        } else {
+          killAndShowMsg(list[2]);
+        }
         break;
       default:
         handleError(code, list[2]);
@@ -555,6 +563,7 @@ class Hub {
     } else {
       waitingForResponse = false;
     }
+    portIsOpen = false;
   }
 
   private void processImpedance(String msg) {
