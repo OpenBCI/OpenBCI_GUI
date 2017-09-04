@@ -646,7 +646,7 @@ class ControlPanel {
     //only able to click buttons of control panel when system is not running
     if (systemMode != 10) {
 
-      if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+      if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && (cyton.isWifi() || ganglion.isWifi())) {
         if(getIpAddress.isMouseHere()) {
           getIpAddress.setIsActive(true);
           getIpAddress.wasPressed = true;
@@ -680,15 +680,25 @@ class ControlPanel {
 
       //active buttons during DATASOURCE_CYTON
       if (eegDataSource == DATASOURCE_CYTON) {
-        if (popOutRadioConfigButton.isMouseHere()){
-          popOutRadioConfigButton.setIsActive(true);
-          popOutRadioConfigButton.wasPressed = true;
+        if (cyton.isSerial()) {
+          if (popOutRadioConfigButton.isMouseHere()){
+            popOutRadioConfigButton.setIsActive(true);
+            popOutRadioConfigButton.wasPressed = true;
+          }
+          if (refreshPort.isMouseHere()) {
+            refreshPort.setIsActive(true);
+            refreshPort.wasPressed = true;
+          }
         }
 
-        if (refreshPort.isMouseHere()) {
-          refreshPort.setIsActive(true);
-          refreshPort.wasPressed = true;
+        if (cyton.isWifi()) {
+          if (refreshWifi.isMouseHere()) {
+            refreshWifi.setIsActive(true);
+            refreshWifi.wasPressed = true;
+          }
         }
+
+
 
         if (autoFileName.isMouseHere()) {
           autoFileName.setIsActive(true);
@@ -738,10 +748,7 @@ class ControlPanel {
           ovrChannel.wasPressed = true;
         }
 
-        if (refreshWifi.isMouseHere()) {
-          refreshWifi.setIsActive(true);
-          refreshWifi.wasPressed = true;
-        }
+
 
         if (protocolWifiCyton.isMouseHere()) {
           protocolWifiCyton.setIsActive(true);
@@ -1013,7 +1020,7 @@ class ControlPanel {
         hideWifiPopoutBox();
       } else {
         if (wifi_portName == "N/A") {
-          output("Please select a WiFi Shield before hitting config.");
+          output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
         } else {
           output("Attempting to connect to WiFi Shield named " + wifi_portName);
           hub.examineWifi(wifi_portName);
