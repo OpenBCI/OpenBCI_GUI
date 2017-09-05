@@ -49,7 +49,7 @@ class HelpWidget {
   public float x, y, w, h;
   // ArrayList<String> prevOutputs; //growing list of all previous system interactivity
 
-  String currentOutput = "Learn how to use this application and more at docs.openbci.com"; //current text shown in help widget, based on most recent command
+  String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI"; //current text shown in help widget, based on most recent command
 
   int padding = 5;
 

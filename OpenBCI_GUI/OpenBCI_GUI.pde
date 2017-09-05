@@ -271,6 +271,7 @@ int frameRateCounter = 0; //0 = 30, 1 = 45, 2 = 60
 
 void setup() {
   if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
+  hubInit(); // putting down here gives windows time to close any open apps
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("Last update: 12/20/2016"); //Welcome line.
@@ -357,8 +358,6 @@ void setup() {
 
   myPresentation = new Presentation();
 
-  hubInit(); // putting down here gives windows time to close any open apps
-
   timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
 //====================== END-OF-SETUP ==========================//
@@ -400,7 +399,7 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  if (!isWindows()) {    
+  if (!isWindows()) {
     hubStart();
     prepareExitHandler();
   }
@@ -823,30 +822,8 @@ void haltSystem() {
   ganglion_portName = "N/A";
   wifi_portName = "N/A";
 
-
-
-  // cyton.setSampleRate(1000);
-  // sampleRate250.color_notPressed = autoFileName.color_notPressed;
-  // sampleRate1000.color_notPressed = isSelected_color;
-  // latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed;
-  // latencyGanglion10ms.color_notPressed = isSelected_color; //default color of button
-  // latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-  //
-  // ganglion.setSampleRate(1600);
-  // sampleRate200.color_notPressed = autoFileName.color_notPressed;
-  // sampleRate1600.color_notPressed = isSelected_color;
-  // latencyCyton5ms.color_notPressed = autoFileName.color_notPressed;
-  // latencyCyton10ms.color_notPressed = isSelected_color; //default color of button
-  // latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-  //
-  // hub.setLatency(hub.LATENCY_10_MS);
-
   controlPanel.resetListItems();
-
-  // w_networking.clearCP5(); //closes all networking controllers
-
-  // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
-
+  
   if (eegDataSource == DATASOURCE_CYTON) {
     closeLogFile();  //close log file
     cyton.closeSDandPort();
