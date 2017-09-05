@@ -10,3 +10,4 @@ OpenBCI_GUI/SavedData
 OpenBCI_GUI/SavedData/EEG_Data/SDconverted-*
 OpenBCI_GUI/data/EEG_Data/*
 OpenBCI_GUI/application.*.zip
+OpenBCI_GUI/application.*

@@ -10,6 +10,23 @@ v3.0.0 set out to move **all** of the data collection to the electron hub. This 
 
 * Dependent on electron hub for all data streaming activity.
 
+# Release Candidate 4
+
+### Bug Fixes
+
+* Closes: #208 - ganglion not using correct scale factor when on wifi high resolution mode
+* Fixes bug where gui started in 45 fps frame rate
+
+# Release Candidate 2/3
+
+### Bug Fixes
+
+* Critical windows hub patches
+
+# Release Candidate 1
+
+Initial RC
+
 ## Beta 6
 
 * Closes #202 #205 #207
