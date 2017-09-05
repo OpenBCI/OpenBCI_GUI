@@ -282,14 +282,18 @@ void setup() {
   ourApplet = this;
 
   if(frameRateCounter==0){
-    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
   if(frameRateCounter==1){
-    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
   if(frameRateCounter==2){
+    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  }
+  if(frameRateCounter==3){
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
+
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
