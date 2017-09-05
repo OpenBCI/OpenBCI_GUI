@@ -824,7 +824,7 @@ void haltSystem() {
   wifi_portName = "N/A";
 
   controlPanel.resetListItems();
-
+  
   if (eegDataSource == DATASOURCE_CYTON) {
     closeLogFile();  //close log file
     cyton.closeSDandPort();
