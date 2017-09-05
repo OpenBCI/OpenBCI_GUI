@@ -72,7 +72,8 @@ class Ganglion {
   private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
   private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
   // private float scale_fac_accel_G_per_count = 0.032;
-  private float scale_fac_accel_G_per_count = 0.016;
+  private float scale_fac_accel_G_per_count_ble = 0.016;
+  private float scale_fac_accel_G_per_count_wifi = 0.001;
   // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
   // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
@@ -113,7 +114,13 @@ class Ganglion {
     }
   }
   public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
-  public float get_scale_fac_accel_G_per_count() { return scale_fac_accel_G_per_count; }
+  public float get_scale_fac_accel_G_per_count() {
+    if (isWifi()) {
+      return scale_fac_accel_G_per_count_wifi;
+    } else {
+      return scale_fac_accel_G_per_count_ble;
+    }
+  }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
   public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; }

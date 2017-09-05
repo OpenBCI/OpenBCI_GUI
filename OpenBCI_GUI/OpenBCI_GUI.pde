@@ -6,6 +6,7 @@
 //   Created: Chip Audette, Oct 2013 - May 2014
 //   Modified: Conor Russomanno & Joel Murphy, August 2014 - Dec 2014
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
+//   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -267,7 +268,7 @@ PApplet ourApplet;
 
 //========================SETUP============================//
 
-int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
+int frameRateCounter = 0; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void setup() {
   if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..

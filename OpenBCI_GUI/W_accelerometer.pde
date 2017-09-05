@@ -166,15 +166,9 @@ class W_accelerometer extends Widget {
 
         shiftWave();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion.isBLE()) {
-          currentXvalue = hub.validAccelValues[0] * ganglion.get_scale_fac_accel_G_per_count();
-          currentYvalue = hub.validAccelValues[1] * ganglion.get_scale_fac_accel_G_per_count();
-          currentZvalue = hub.validAccelValues[2] * ganglion.get_scale_fac_accel_G_per_count();
-        } else {
-          currentXvalue = hub.validAccelValues[0] * cyton.get_scale_fac_accel_G_per_count();
-          currentYvalue = hub.validAccelValues[1] * cyton.get_scale_fac_accel_G_per_count();
-          currentZvalue = hub.validAccelValues[2] * cyton.get_scale_fac_accel_G_per_count();
-        }
+        currentXvalue = hub.validAccelValues[0] * ganglion.get_scale_fac_accel_G_per_count();
+        currentYvalue = hub.validAccelValues[1] * ganglion.get_scale_fac_accel_G_per_count();
+        currentZvalue = hub.validAccelValues[2] * ganglion.get_scale_fac_accel_G_per_count();
         X[X.length-1] =
           int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
         X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
