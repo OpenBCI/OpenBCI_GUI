@@ -981,6 +981,11 @@ class Hub {
       tcpClient.write(out);
       return true;
     } catch (Exception e) {
+      if (isWindows()) {
+        killAndShowMsg("Please start OpenBCIHub before launching this application.");
+      } else {
+        killAndShowMsg("Hub has crashed, please restart your application.");
+      }
       println("Error: Attempted to TCP write with no server connection initialized");
       return false;
     }

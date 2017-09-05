@@ -143,20 +143,30 @@ public void controlEvent(ControlEvent theEvent) {
     // THIS IS TRIGGERED WHEN A USER SELECTS 'LIVE (from Cyton) or LIVE (from Ganglion), etc...'
     controlPanel.hideAllBoxes();
 
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    String str = (String)bob.get("headline");
+    int newDataSource = int(theEvent.getValue());
+
+    if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
+      if (isWindows()) {
+        output("Please launch OpenBCI Hub prior to launching this application. Learn at docs.openbci.com");
+      } else {
+        output("Unable to establish link to Hub. Checkout tutorial at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
+      }
+      eegDataSource = -1;
+      return;
+    }
+
     protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
     protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
 
+    eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
+
+
     ganglion.setInterface(INTERFACE_NONE);
     cyton.setInterface(INTERFACE_NONE);
-
-    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-    String str = (String)bob.get("headline");
-    // str = str.substring(0, str.length()-5);
-    //output("Data Source = " + str);
-    int newDataSource = int(theEvent.getValue());
-    eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
     if(newDataSource == DATASOURCE_CYTON){
       updateToNChan(8);
@@ -844,14 +854,16 @@ class ControlPanel {
           outputODFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
-        if (refreshBLE.isMouseHere()) {
-          refreshBLE.setIsActive(true);
-          refreshBLE.wasPressed = true;
-        }
-
-        if (refreshWifi.isMouseHere()) {
-          refreshWifi.setIsActive(true);
-          refreshWifi.wasPressed = true;
+        if (ganglion.isWifi()) {
+          if (refreshWifi.isMouseHere()) {
+            refreshWifi.setIsActive(true);
+            refreshWifi.wasPressed = true;
+          }
+        } else {
+          if (refreshBLE.isMouseHere()) {
+            refreshBLE.setIsActive(true);
+            refreshBLE.wasPressed = true;
+          }
         }
 
         if (protocolBLEGanglion.isMouseHere()) {
