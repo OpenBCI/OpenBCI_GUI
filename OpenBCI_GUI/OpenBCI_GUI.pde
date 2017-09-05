@@ -268,7 +268,7 @@ PApplet ourApplet;
 
 //========================SETUP============================//
 
-int frameRateCounter = 0; //0 = 24, 1 = 30, 2 = 45, 3 = 60
+int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void setup() {
   if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
