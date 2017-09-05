@@ -1690,6 +1690,11 @@ class WifiBox {
       refreshWifi.setString("SEARCHING...");
     } else {
       refreshWifi.setString("START SEARCH");
+      pushStyle();
+      fill(#999999);
+      ellipseMode(CENTER);
+      ellipse(w + 225 + 10,  y + padding*4 + 72 + 10 + 10, 12, 12);
+      popStyle();
     }
   }
 
@@ -2321,10 +2326,10 @@ class RadioConfigBox {
     isShowing = false;
 
     getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-    systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-    setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHANNEL", fontInfo.buttonLabel_size);
-    ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
-    autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
+    systemStatus = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+    setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+    autoscan = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
+    ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
 
     //Set help text
     getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
@@ -2357,17 +2362,16 @@ class RadioConfigBox {
 
   public void print_onscreen(String localstring){
     textAlign(LEFT);
-    fill(0);
-    rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     this.last_message = localstring;
   }
 
   public void print_lastmessage(){
-
-    fill(0);
-    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
     fill(255);
     text(this.last_message, 180, 340, 240, 60);
   }
@@ -2388,10 +2392,13 @@ class WifiConfigBox {
     isShowing = false;
 
     getTypeOfAttachedBoard = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "OPENBCI BOARD", fontInfo.buttonLabel_size);
-    getIpAddress = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
-    eraseCredentials = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "ERASE CREDENTIALS", fontInfo.buttonLabel_size);
-    getMacAddress = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
-    getFirmwareVersion = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "FIRMWARE VERSION", fontInfo.buttonLabel_size);
+    getIpAddress = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
+    // getIpAddress = new Button(x + w -padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
+    getMacAddress = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
+    getFirmwareVersion = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "FIRMWARE VERS.", fontInfo.buttonLabel_size);
+    eraseCredentials = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "ERASE NETWORK CREDENTIALS", fontInfo.buttonLabel_size);
+
+    //y + padding*4 + 18 + 24*2
 
     //Set help text
     getTypeOfAttachedBoard.setHelpText("Get the type of OpenBCI board attached to the WiFi Shield");
@@ -2428,17 +2435,29 @@ class WifiConfigBox {
 
   public void print_onscreen(String localstring){
     textAlign(LEFT);
-    fill(0);
-    rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    // this.last_message = localstring;
+
+
+    // textAlign(LEFT);
+    // fill(0);
+    // rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
+    // fill(255);
+    // text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
   }
 
   public void print_lastmessage(){
 
-    fill(0);
-    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
     fill(255);
+
+    // fill(0);
+    // rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    // fill(255);
     text(this.last_message, 180, 340, 240, 60);
   }
 };

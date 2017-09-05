@@ -49,14 +49,18 @@ class TopNav {
 
     fpsButton = new Button(3+3+256, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
     if(frameRateCounter==0){
-      fpsButton.setString("30 fps");
+      fpsButton.setString("24 fps");
     }
     if(frameRateCounter==1){
-      fpsButton.setString("45 fps");
+      fpsButton.setString("30 fps");
     }
     if(frameRateCounter==2){
+      fpsButton.setString("45 fps");
+    }
+    if(frameRateCounter==3){
       fpsButton.setString("60 fps");
     }
+
     fpsButton.setFont(h3, 16);
     fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate and see if it helps!");
 
@@ -764,9 +768,9 @@ class TutorialSelector{
 
     buttonNumber = 3;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Widgets");
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/blob/master/README.md#widgets");
+    tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
     tutorialOptions.add(tempTutorialButton);
 
   }

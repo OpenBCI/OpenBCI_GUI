@@ -995,20 +995,24 @@ void openURLInBrowser(String _url){
 }
 
 void toggleFrameRate(){
-  if(frameRateCounter<2){
+  if(frameRateCounter<3){
     frameRateCounter++;
   } else {
-    frameRateCounter = 0;
+    frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
   }
   if(frameRateCounter==0){
+    frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    topNav.fpsButton.setString("24 fps");
+  }
+  if(frameRateCounter==1){
     frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     topNav.fpsButton.setString("30 fps");
   }
-  if(frameRateCounter==1){
+  if(frameRateCounter==2){
     frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     topNav.fpsButton.setString("45 fps");
   }
-  if(frameRateCounter==2){
+  if(frameRateCounter==3){
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     topNav.fpsButton.setString("60 fps");
   }
