@@ -34,11 +34,21 @@ class W_Focus extends Widget {
   boolean showAbout = false;
   PFont myfont = createFont("fonts/Raleway-SemiBold.otf", 12);
   PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
-  color cBack = #020916;
-  color cDark = #032e61;
-  color cMark = #306aaf;        //#20669c;
-  color cFocus = #fefaea;      //#f0fbfd;
-  color cWave = #ffdd3a;
+
+  // original colors
+  // color cBack = #020916;       //darker blue
+  // color cDark = #032e61;   //medium/dark blue
+  // color cMark = #306aaf;    //lighter blue
+  // color cFocus = #fefaea;   //peach
+  // color cWave = #ffdd3a;    //yellow
+
+  //new colors (to match GUI)
+  color cBack = #ffffff;   //white
+  color cDark = #032e61;   //medium/dark blue
+  color cMark = #306aaf;    //lighter blue
+  color cFocus = #020916;   //peach
+  color cWave = #ffdd3a;    //yellow
+
   // float x, y, w, h;  //widget topleft xy, width and height
   float xc, yc, wc, hc; // crystal ball center xy, width and height
   float wg, hg;  //graph width, graph height
@@ -194,18 +204,21 @@ class W_Focus extends Widget {
     //----------------- draw focus crystalball -----------------
     noStroke();
     if (isFocused) {
-      fill(cFocus);
+      fill(#FFFFFF);
+      stroke(cFocus);
     } else {
       fill(cDark);
     }
     ellipse(xc, yc, wc, hc);
+    noStroke();
     // draw focus label
     if (isFocused) {
       fill(cFocus);
+      text("focused!", xc, yc + hc/2 + 16);
     } else {
       fill(cMark);
+      text("not focused", xc, yc + hc/2 + 16);
     }
-    text("focus", xc, yc + hc/2 + 16);
 
     //----------------- draw alpha meter -----------------
     noStroke();
@@ -296,7 +309,8 @@ class W_Focus extends Widget {
     translate(x, y);
     if (showAbout) {
       stroke(255);
-      fill(cBack);
+      // fill(cBack);
+      fill(#dddddd);
 
       rect(rp, rp, w-rp*2, h-rp*2);
       textAlign(LEFT, TOP);
@@ -305,7 +319,7 @@ class W_Focus extends Widget {
     }
     // draw the button that toggles information
     noStroke();
-    fill(cFocus);
+    fill(cDark);
     ellipse(xb, yb, rb, rb);
     fill(cBack);
     textAlign(CENTER, CENTER);
@@ -385,7 +399,7 @@ public abstract class BasicSlider {
   float x, y, w, h;  // center x, y. w, h means width and height of triangle
   float yBot, yTop;   // y range. Notice val of top y is less than bottom y
   boolean isPressed = false;
-  color cNormal = #FFFFFF;
+  color cNormal = #CCCCCC;
   color cPressed = #FF0000;
 
   BasicSlider(float _x, float _yBot, float _yTop) {

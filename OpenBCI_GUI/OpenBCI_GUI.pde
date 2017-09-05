@@ -267,7 +267,7 @@ PApplet ourApplet;
 
 //========================SETUP============================//
 
-int frameRateCounter = 0; //0 = 30, 1 = 45, 2 = 60
+int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void setup() {
   // Step 1: Prepare the exit handler that will attempt to close a running node
@@ -1169,7 +1169,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.0.0-beta6\nAugust 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.0.0\nSeptember 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
