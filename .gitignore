@@ -9,3 +9,4 @@ OpenBCI_GUI/build/source/*.java
 OpenBCI_GUI/SavedData
 OpenBCI_GUI/SavedData/EEG_Data/SDconverted-*
 OpenBCI_GUI/data/EEG_Data/*
+OpenBCI_GUI/application.*.zip
