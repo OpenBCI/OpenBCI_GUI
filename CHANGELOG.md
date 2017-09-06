@@ -10,20 +10,30 @@ v3.0.0 set out to move **all** of the data collection to the electron hub. This 
 
 * Dependent on electron hub for all data streaming activity.
 
-# Release Candidate 4
+## Release Candidate 5
+
+Uses OpenBCIHub v1.3.0
+
+### Bug Fixes
+
+* Closes: #191
+
+## Release Candidate 4
+
+Uses OpenBCIHub v1.2.0
 
 ### Bug Fixes
 
 * Closes: #208 - ganglion not using correct scale factor when on wifi high resolution mode
 * Fixes bug where gui started in 45 fps frame rate
 
-# Release Candidate 2/3
+## Release Candidate 2/3
 
 ### Bug Fixes
 
 * Critical windows hub patches
 
-# Release Candidate 1
+## Release Candidate 1
 
 Initial RC
 

@@ -341,8 +341,10 @@ class W_accelerometer extends Widget {
     //put your code here...
     if(eegDataSource == DATASOURCE_GANGLION){
       //put your code here...
-      if (accelModeButton.isMouseHere()) {
-        accelModeButton.setIsActive(true);
+      if (ganglion.isBLE()) {
+        if (accelModeButton.isMouseHere()) {
+          accelModeButton.setIsActive(true);
+        }
       }
     }
   }
