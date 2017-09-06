@@ -488,8 +488,8 @@ class Hub {
               } else {
                 numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
               }
-              // println("Ganglion: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-              // println("numPacketsDropped = " + numPacketsDroppedHub);
+              println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+              println("numPacketsDropped = " + numPacketsDroppedHub);
             }
           }
           prevSampleIndex = dataPacket.sampleIndex;
@@ -504,6 +504,40 @@ class Hub {
               dataPacket.auxValues[i] = accelArray[i];
               dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
             }
+          } else {
+            if (list.length > nEEGValuesPerPacket + 5) {
+              int valCounter = nEEGValuesPerPacket + 3;
+              // println(list[valCounter]);
+              int stopByte = Integer.parseInt(list[valCounter++]);
+              int valsToRead = list.length - valCounter - 1;
+              // println(msg);
+              // println("stopByte: " + stopByte + " valCounter: " + valCounter + " valsToRead: " + valsToRead);
+              if (stopByte == 0xC0) {
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                  accelArray[i] = Integer.parseInt(list[valCounter++]);
+                  dataPacket.auxValues[i] = accelArray[i];
+                  dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+                  dataPacket.rawAuxValues[i][1] = byte(accelArray[i] >> 8);
+                }
+                if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+                  // println(msg);
+                  for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                    validAccelValues[i] = accelArray[i];
+                  }
+                }
+              } else {
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                  for (int j = 0; j < 2; j++) {
+                    int val = Integer.parseInt(list[valCounter++]);
+                    if (j == 1) {
+                      dataPacket.auxValues[i] = val;
+                      // println("i " + i + " " + val);
+                    }
+                    dataPacket.rawAuxValues[i][j] = byte(val);
+                  }
+                }
+              }
+            }
           }
 
           getRawValues(dataPacket);
@@ -513,23 +547,23 @@ class Hub {
           copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
           // KILL SPIKES!!!
-          // if(werePacketsDroppedHub){
-          //   // println("Packets Dropped ... doing some stuff...");
-          //   for(int i = numPacketsDroppedHub; i > 0; i--){
-          //     int tempDataPacketInd = curDataPacketInd - i; //
-          //     if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-          //       // println("i = " + i);
-          //       copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-          //     } else {
-          //       copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-          //     }
-          //     //put the last stored packet in # of packets dropped after that packet
-          //   }
-          //
-          //   //reset werePacketsDropped & numPacketsDropped
-          //   werePacketsDroppedHub = false;
-          //   numPacketsDroppedHub = 0;
-          // }
+          if(werePacketsDroppedHub){
+            // println("Packets Dropped ... doing some stuff...");
+            for(int i = numPacketsDroppedHub; i > 0; i--){
+              int tempDataPacketInd = curDataPacketInd - i; //
+              if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+                // println("i = " + i);
+                copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+              } else {
+                copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+              }
+              //put the last stored packet in # of packets dropped after that packet
+            }
+
+            //reset werePacketsDropped & numPacketsDropped
+            werePacketsDroppedHub = false;
+            numPacketsDroppedHub = 0;
+          }
 
           switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:

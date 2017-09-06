@@ -275,7 +275,7 @@ void setup() {
   hubInit(); // putting down here gives windows time to close any open apps
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 12/20/2016"); //Welcome line.
+  println("Last update: 9/5/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
@@ -810,6 +810,15 @@ void haltSystem() {
 
   stopRunning();  //stop data transfer
 
+  if(cyton.isPortOpen()) {
+    if (w_pulsesensor.analogReadOn) {
+      hub.sendCommand("/0");
+      println("Stopping Analog Read to read accelerometer");
+      w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
+      w_pulsesensor.analogReadOn = false;
+    }
+  }
+
   //reset variables for data processing
   curDataPacketInd = -1;
   lastReadDataPacketInd = -1;
@@ -828,7 +837,7 @@ void haltSystem() {
   wifi_portName = "N/A";
 
   controlPanel.resetListItems();
-  
+
   if (eegDataSource == DATASOURCE_CYTON) {
     closeLogFile();  //close log file
     cyton.closeSDandPort();
