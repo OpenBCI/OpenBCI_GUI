@@ -12,11 +12,15 @@ v3.0.0 set out to move **all** of the data collection to the electron hub. This 
 
 ## Release Candidate 5
 
+Uses OpenBCIHub v1.3.0
+
 ### Bug Fixes
 
 * Closes: #191
 
 ## Release Candidate 4
+
+Uses OpenBCIHub v1.2.0
 
 ### Bug Fixes
 
