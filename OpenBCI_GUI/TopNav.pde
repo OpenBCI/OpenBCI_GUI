@@ -49,16 +49,20 @@ class TopNav {
 
     fpsButton = new Button(3+3+256, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
     if(frameRateCounter==0){
-      fpsButton.setString("30 fps");
+      fpsButton.setString("24 fps");
     }
     if(frameRateCounter==1){
-      fpsButton.setString("45 fps");
+      fpsButton.setString("30 fps");
     }
     if(frameRateCounter==2){
+      fpsButton.setString("45 fps");
+    }
+    if(frameRateCounter==3){
       fpsButton.setString("60 fps");
     }
+
     fpsButton.setFont(h3, 16);
-    fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate to see if it helps!");
+    fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate and see if it helps!");
 
     highRezButton = new Button(3+3+256+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
     controlPanelCollapser.setFont(h3, 16);
@@ -67,12 +71,12 @@ class TopNav {
     int butNum = 1;
     tutorialsButton = new Button(width - 3*(butNum) - 80, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
     tutorialsButton.setFont(h3, 16);
-    tutorialsButton.setHelpText("Here you will find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+    tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
 
     butNum = 2;
     issuesButton = new Button(width - 3*(butNum) - 80 - tutorialsButton.but_dx, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
     issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
-    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI_v2.0/issues");
+    issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/issues");
     issuesButton.setFont(h3, 16);
 
     butNum = 3;
@@ -98,8 +102,11 @@ class TopNav {
 
     filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
     filtNotchButton.setFont(p5, 12);
+    filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
+
     filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
     filtBPButton.setFont(p5, 12);
+    filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
 
     //right to left in top right (secondary nav)
     layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
@@ -742,14 +749,14 @@ class TutorialSelector{
     int buttonNumber = 0;
     Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/");
+    tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide");
     tutorialOptions.add(tempTutorialButton);
 
     buttonNumber = 1;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
     tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/hardware/01-OpenBCI_Hardware");
+    tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
     tutorialOptions.add(tempTutorialButton);
 
     buttonNumber = 2;
@@ -761,9 +768,9 @@ class TutorialSelector{
 
     buttonNumber = 3;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Widgets");
+    tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
     tempTutorialButton.setFont(p5, 12);
-    tempTutorialButton.setURL("http://docs.openbci.com/software/01-OpenBCI_SDK");
+    tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
     tutorialOptions.add(tempTutorialButton);
 
   }

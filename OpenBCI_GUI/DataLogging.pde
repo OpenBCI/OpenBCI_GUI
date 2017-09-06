@@ -49,14 +49,11 @@ void openNewLogFileBDF(String _fileName) {
     closeLogFile();
   }
   //open the new file
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    fileoutput_bdf = new OutputFile_BDF(ganglion.get_fs_Hz(), nchan, _fileName);
-  } else {
-    fileoutput_bdf = new OutputFile_BDF(openBCI.get_fs_Hz(), nchan, _fileName);
-  }
+  fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
+
   output_fname = fileoutput_bdf.fname;
-  println("openBCI: openNewLogFile: opened BDF output file: " + output_fname);
-  output("openBCI: openNewLogFile: opened BDF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened BDF output file: " + output_fname);
+  output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
 /**
@@ -70,14 +67,11 @@ void openNewLogFileODF(String _fileName) {
     closeLogFile();
   }
   //open the new file
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    fileoutput_odf = new OutputFile_rawtxt(ganglion.get_fs_Hz(), _fileName);
-  } else {
-    fileoutput_odf = new OutputFile_rawtxt(openBCI.get_fs_Hz(), _fileName);
-  }
+  fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
+
   output_fname = fileoutput_odf.fname;
-  println("openBCI: openNewLogFile: opened ODF output file: " + output_fname);
-  output("openBCI: openNewLogFile: opened ODF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened ODF output file: " + output_fname);
+  output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
 }
 
 /**
@@ -510,14 +504,14 @@ public class OutputFile_BDF {
     }
 
     writeChannelDataValues(data.rawValues);
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (eegDataSource == DATASOURCE_CYTON) {
       writeAuxDataValues(data.rawAuxValues);
     }
     samplesInDataRecord++;
     // writeValues(data.auxValues,scale_for_aux);
     if (samplesInDataRecord >= fs_Hz) {
       arrayCopy(chanValBuf,chanValBuf_buffer);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource == DATASOURCE_CYTON) {
         arrayCopy(auxValBuf,auxValBuf_buffer);
       }
 
@@ -535,7 +529,7 @@ public class OutputFile_BDF {
           }
         }
       }
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource == DATASOURCE_CYTON) {
         for (int i = 0; i < nbAux; i++) {
           for (int j = 0; j < fs_Hz; j++) {
             for (int k = 0; k < 3; k++) {
@@ -952,7 +946,7 @@ public class OutputFile_BDF {
    * @returns {int} - The number of signals in the header.
    */
   private int getNbSignals() {
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+    if (eegDataSource == DATASOURCE_CYTON) {
       return nbChan + nbAux + nbAnnotations;
     } else {
       return nbChan + nbAnnotations;
@@ -1229,43 +1223,43 @@ public class OutputFile_BDF {
       writeString(padStringRight(str(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
 
       writeStringArrayWithPaddingTimes(labelsEEG, BDF_HEADER_NS_SIZE_LABEL, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
       writeStringArrayWithPaddingTimes(labelsAnnotations, BDF_HEADER_NS_SIZE_LABEL, o);
 
       writeStringArrayWithPaddingTimes(transducerEEG, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(transducerAux, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(transducerAux, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
       writeStringArrayWithPaddingTimes(transducerAnnotations, BDF_HEADER_NS_SIZE_TRANSDUCER_TYPE, o);
 
       writeStringArrayWithPaddingTimes(physicalDimensionEEG, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(physicalDimensionAux, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(physicalDimensionAux, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
       writeStringArrayWithPaddingTimes(physicalDimensionAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_DIMENSION, o);
 
       writeStringArrayWithPaddingTimes(physicalMinimumEEG, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(physicalMinimumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(physicalMinimumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
       writeStringArrayWithPaddingTimes(physicalMinimumAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_MINIMUM, o);
 
       writeStringArrayWithPaddingTimes(physicalMaximumEEG, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(physicalMaximumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(physicalMaximumAux, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
       writeStringArrayWithPaddingTimes(physicalMaximumAnnotations, BDF_HEADER_NS_SIZE_PHYSICAL_MAXIMUM, o);
 
       writeStringArrayWithPaddingTimes(digitalMinimumEEG, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(digitalMinimumAux, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(digitalMinimumAux, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
       writeStringArrayWithPaddingTimes(digitalMinimumAnnotations, BDF_HEADER_NS_SIZE_DIGITAL_MINIMUM, o);
 
       writeStringArrayWithPaddingTimes(digitalMaximumEEG, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(digitalMaximumAux, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(digitalMaximumAux, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
       writeStringArrayWithPaddingTimes(digitalMaximumAnnotations, BDF_HEADER_NS_SIZE_DIGITAL_MAXIMUM, o);
 
       writeStringArrayWithPaddingTimes(prefilteringEEG, BDF_HEADER_NS_SIZE_PREFILTERING, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(prefilteringAux, BDF_HEADER_NS_SIZE_PREFILTERING, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(prefilteringAux, BDF_HEADER_NS_SIZE_PREFILTERING, o);
       writeStringArrayWithPaddingTimes(prefilteringAnnotations, BDF_HEADER_NS_SIZE_PREFILTERING, o);
 
       writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordEEG, BDF_HEADER_NS_SIZE_NR, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAux, BDF_HEADER_NS_SIZE_NR, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAux, BDF_HEADER_NS_SIZE_NR, o);
       writeStringArrayWithPaddingTimes(nbSamplesPerDataRecordAnnotations, BDF_HEADER_NS_SIZE_NR, o);
 
       writeStringArrayWithPaddingTimes(reservedEEG, BDF_HEADER_NS_SIZE_RESERVED, o);
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) writeStringArrayWithPaddingTimes(reservedAux, BDF_HEADER_NS_SIZE_RESERVED, o);
+      if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(reservedAux, BDF_HEADER_NS_SIZE_RESERVED, o);
       writeStringArrayWithPaddingTimes(reservedAnnotations, BDF_HEADER_NS_SIZE_RESERVED, o);
 
       // println("writeHeader: done...");
@@ -1322,6 +1316,8 @@ public class OutputFile_BDF {
 ///////////////////////////////////////////////////////////////
 
 class Table_CSV extends Table {
+  private int sampleRate;
+  public int getSampleRate() { return sampleRate; }
   Table_CSV(String fname) throws IOException {
     init();
     readCSV(PApplet.createReader(createInput(fname)));
@@ -1342,7 +1338,24 @@ class Table_CSV extends Table {
       while ( (line = reader.readLine ()) != null) {
         //added by Chip, May 2, 2014 to ignore lines that are comments
         if (line.charAt(0) == '%') {
-          //println("Table_CSV: readCSV: ignoring commented line...");
+          if (line.length() > 18) {
+            if (line.charAt(1) == 'S') {
+              // println(line.substring(15, 18));
+              sampleRate = Integer.parseInt(line.substring(15, 18));
+              if (sampleRate == 100 || sampleRate == 160) {
+                sampleRate = Integer.parseInt(line.substring(15, 19));
+              }
+              println("Sample rate set to " + sampleRate);
+              // String[] m = match(line, "\\d+");
+              // if (m != null) {
+                // println("Found '" + m[1] + "' inside the line");
+              // }
+            }
+          }
+          println(line);
+          // if (line.charAt(1) == 'S') {
+          //   println("sampel rarteakjdsf;ldj");
+          // }
           continue;
         }
 
@@ -1501,9 +1514,9 @@ void convert16channelLine() {
     }
 
     if (i>=1 && i<=16) {
-      floatData[i] *= openBCI.get_scale_fac_uVolts_per_count();
+      floatData[i] *= cyton.get_scale_fac_uVolts_per_count();
     }else if(i != 0){
-      floatData[i] *= openBCI.get_scale_fac_accel_G_per_count();
+      floatData[i] *= cyton.get_scale_fac_accel_G_per_count();
     }
 
     if(i == 0){
@@ -1562,9 +1575,9 @@ void convert8channelLine() {
     }
 
     if (i>=1 && i<=8) {
-      floatData[i] *= openBCI.get_scale_fac_uVolts_per_count();
+      floatData[i] *= cyton.get_scale_fac_uVolts_per_count();
     }else if(i != 0){
-      floatData[i] *= openBCI.get_scale_fac_accel_G_per_count();
+      floatData[i] *= cyton.get_scale_fac_accel_G_per_count();
     }
 
     if(i == 0){

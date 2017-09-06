@@ -7,7 +7,7 @@
 //    You can ask a robot to press Up Arrow key stroke whenever you are focused.
 //    You can also send the focused state to Arduino
 //
-//    Created by: Conor Russomanno, November 2016
+//    Created by: Wangshu Sun, August 2016
 //
 ///////////////////////////////////////////////////,
 
@@ -28,16 +28,27 @@ class W_Focus extends Widget {
   boolean isFocused;
 
   // threshold parameters
-  float alpha_thresh = 0.7, beta_thresh = 0.7, alpha_upper = 2;
+  float alpha_thresh = 0.7, beta_thresh = 0.7, alpha_upper = 2, beta_upper = 2;
 
   // drawing parameters
   boolean showAbout = false;
   PFont myfont = createFont("fonts/Raleway-SemiBold.otf", 12);
   PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
-  color cBack = #020916;
-  color cFocus = #ffffff;  //#f0fbfd;
-  color cDark = #032e61;
-  color cLine = #20669c;
+
+  // original colors
+  // color cBack = #020916;       //darker blue
+  // color cDark = #032e61;   //medium/dark blue
+  // color cMark = #306aaf;    //lighter blue
+  // color cFocus = #fefaea;   //peach
+  // color cWave = #ffdd3a;    //yellow
+
+  //new colors (to match GUI)
+  color cBack = #ffffff;   //white
+  color cDark = #032e61;   //medium/dark blue
+  color cMark = #306aaf;    //lighter blue
+  color cFocus = #020916;   //peach
+  color cWave = #ffdd3a;    //yellow
+
   // float x, y, w, h;  //widget topleft xy, width and height
   float xc, yc, wc, hc; // crystal ball center xy, width and height
   float wg, hg;  //graph width, graph height
@@ -47,6 +58,10 @@ class W_Focus extends Widget {
   float rp;  // padding radius
   float rb;  // button radius
   float xb, yb; // button center xy
+
+  // two sliders for alpha and one slider for beta
+  FocusSlider sliderAlphaMid, sliderBetaMid;
+  FocusSlider_Static sliderAlphaTop;
 
   W_Focus(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -66,12 +81,37 @@ class W_Focus extends Widget {
     }
     update_graphic_parameters();
 
+    // sliders
+    sliderAlphaMid = new FocusSlider(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2, alpha_thresh / alpha_upper);
+    sliderAlphaTop = new FocusSlider_Static(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
+    sliderBetaMid = new FocusSlider(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2, beta_thresh / beta_upper);
+
   }
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-    //put your code here...
+    updateFocusState(); // focus calculation
+    invokeKeyStroke();  // robot keystroke
+    sendFocusSerial();  // send focus data to serial port
+
+    // update sliders
+    sliderAlphaMid.update();
+    sliderAlphaTop.update();
+    sliderBetaMid.update();
+
+    // update threshold values
+    alpha_thresh = alpha_upper * sliderAlphaMid.getVal();
+    beta_thresh = beta_upper * sliderBetaMid.getVal();
+
+    alpha_upper = sliderAlphaTop.getVal() * 2;
+    beta_upper = alpha_upper;
+
+    sliderAlphaMid.setVal(alpha_thresh / alpha_upper);
+    sliderBetaMid.setVal(beta_thresh / beta_upper);
+  }
+
+  void updateFocusState() {
     // focus detection algorithm based on Jordan's clean mind: focus == high alpha average && low beta average
     float FFT_freq_Hz, FFT_value_uV;
     int alpha_count = 0, beta_count = 0;
@@ -93,18 +133,24 @@ class W_Focus extends Widget {
     }
 
     alpha_avg = alpha_avg / alpha_count;  // average uV per bin
-    //alpha_avg = alpha_avg / (openBCI.get_fs_Hz()/Nfft);  // average uV per delta freq
+    //alpha_avg = alpha_avg / (cyton.getSampleRate()/Nfft);  // average uV per delta freq
     beta_avg = beta_avg / beta_count;  // average uV per bin
-    //beta_avg = beta_avg / (openBCI.get_fs_Hz()/Nfft);  // average uV per delta freq
-    //current time = int(float(currentTableRowIndex)/openBCI.get_fs_Hz());
+    //beta_avg = beta_avg / (cyton.getSampleRate()/Nfft);  // average uV per delta freq
+    //current time = int(float(currentTableRowIndex)/cyton.getSampleRate());
 
     // version 1
-    if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper && beta_avg < alpha_thresh) {
+    if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper && beta_avg < beta_thresh) {
       isFocused = true;
     } else {
       isFocused = false;
     }
 
+    //alpha_avg = beta_avg = 0;
+    alpha_count = beta_count = 0;
+
+  }
+
+  void invokeKeyStroke() {
     // robot keystroke
     if (enableKey) {
       if (keyNum == 0) {
@@ -124,11 +170,10 @@ class W_Focus extends Widget {
         }
       }
     }
+  }
 
-    //alpha_avg = beta_avg = 0;
-    alpha_count = beta_count = 0;
-
-    // ----------- send the focused state to Arduino if turned on -----------
+  void sendFocusSerial() {
+    // ----------- if turned on, send the focused state to Arduino via serial port -----------
     if (enableSerial) {
       try {
         serial_output.write(int(isFocused) + 48);
@@ -138,7 +183,6 @@ class W_Focus extends Widget {
         if (isVerbose) println("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
       }
     }
-
   }
 
   void draw(){
@@ -147,96 +191,126 @@ class W_Focus extends Widget {
     //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     pushStyle();
 
-    // presettings before drawing Focus Viz
+    //----------------- presettings before drawing Focus Viz --------------
     translate(x, y);
     textAlign(CENTER, CENTER);
     textFont(myfont);
 
-    // draw background rectangle
+    //----------------- draw background rectangle -----------------
     fill(cBack);
     noStroke();
     rect(0, 0, w, h);
 
-    // draw focus crystalball
+    //----------------- draw focus crystalball -----------------
     noStroke();
     if (isFocused) {
-      fill(cFocus);
+      fill(#FFFFFF);
+      stroke(cFocus);
     } else {
       fill(cDark);
     }
     ellipse(xc, yc, wc, hc);
+    noStroke();
     // draw focus label
     if (isFocused) {
       fill(cFocus);
+      text("focused!", xc, yc + hc/2 + 16);
     } else {
-      fill(cLine);
+      fill(cMark);
+      text("not focused", xc, yc + hc/2 + 16);
     }
-    text("focus", xc, yc + hc/2 + 16);
 
-    // draw alpha meter
+    //----------------- draw alpha meter -----------------
     noStroke();
     fill(cDark);
     rect(xg1 - wg/2, yg1 - hg/2, wg, hg);
 
-    stroke(cLine);
-    line(xg1 - wl/2, yg1 - hg/2, xg1 + wl/2, yg1 - hg/2);
     float hat = map(alpha_thresh, 0, alpha_upper, 0, hg);  // alpha threshold height
-    line(xg1 - wl/2, yg1 + hg/2 - hat, xg1 + wl/2, yg1 + hg/2 - hat);
+    stroke(cMark);
     line(xg1 - wl/2, yg1 + hg/2, xg1 + wl/2, yg1 + hg/2);
+    line(xg1 - wl/2, yg1 - hg/2, xg1 + wl/2, yg1 - hg/2);
+    line(xg1 - wl/2, yg1 + hg/2 - hat, xg1 + wl/2, yg1 + hg/2 - hat);
+
+    // draw alpha zone and text
+    noStroke();
+    if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper) {
+      fill(cFocus);
+    } else {
+      fill(cMark);
+    }
+    rect(xg1 - wg/2, yg1 - hg/2, wg, hg - hat);
+    text("alpha", xg1, yg1 + hg/2 + 16);
+
+    // draw connection between two sliders
+    stroke(cFocus);
+    line(xg1 + wg * 0.8, yg1 - hg/2 + 10, xg1 + wg * 0.8, yg1 + hg/2 - hat - 10);
 
     noStroke();
-    fill(cLine);
+    fill(cMark);
     text(String.format("%.01f", alpha_upper), xg1 - wl/2 - 14, yg1 - hg/2);
     text(String.format("%.01f", alpha_thresh), xg1 - wl/2 - 14, yg1 + hg/2 - hat);
     text("0.0", xg1 - wl/2 - 14, yg1 + hg/2);
 
-    noStroke();
-    fill(cFocus);
+    stroke(cWave);
+    strokeWeight(4);
     float ha = map(alpha_avg, 0, alpha_upper, 0, hg);  //alpha height
     ha = constrain(ha, 0, hg);
-    rect(xg1 - wg/2, yg1 + hg/2 - ha, wg, ha);
-    // draw alpha label
-    if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper) {
-      fill(cFocus);
-    } else {
-      fill(cLine);
-    }
-    text("alpha", xg1, yg1 + hg/2 + 16);
+    line(xg1 - wl/2, yg1 + hg/2 - ha, xg1 + wl/2, yg1 + hg/2 - ha);
+    strokeWeight(1);
 
-    // draw beta meter
+    //----------------- draw beta meter -----------------
     noStroke();
     fill(cDark);
     rect(xg2 - wg/2, yg2 - hg/2, wg, hg);
 
-    stroke(cLine);
-    line(xg2 - wl/2, yg2 - hg/2, xg2 + wl/2, yg2 - hg/2);
-    float hbt = map(beta_thresh, 0, alpha_upper, 0, hg);  // beta threshold height
-    line(xg2 - wl/2, yg2 + hg/2 - hbt, xg2 + wl/2, yg2 + hg/2 - hbt);
+    float hbt = map(beta_thresh, 0, beta_upper, 0, hg);  // beta threshold height
+    stroke(cMark);
     line(xg2 - wl/2, yg2 + hg/2, xg2 + wl/2, yg2 + hg/2);
+    line(xg2 - wl/2, yg2 - hg/2, xg2 + wl/2, yg2 - hg/2);
+    line(xg2 - wl/2, yg2 + hg/2 - hbt, xg2 + wl/2, yg2 + hg/2 - hbt);
+
+    // draw beta zone and text
+    noStroke();
+    if (beta_avg < beta_thresh) {
+      fill(cFocus);
+    } else {
+      fill(cMark);
+    }
+    rect(xg2 - wg/2, yg2 + hg/2 - hbt, wg, hbt);
+    text("beta", xg2, yg2 + hg/2 + 16);
+
+    // draw connection between slider and bottom
+    stroke(cFocus);
+    float yt = yg2 + hg/2 - hbt + 10;   // y threshold
+    yt = constrain(yt, yg2 - hg/2 + 10, yg2 + hg/2);
+    line(xg2 + wg * 0.8, yg2 + hg/2, xg2 + wg * 0.8, yt);
 
     noStroke();
-    fill(cLine);
-    text(String.format("%.01f", alpha_upper), xg2 - wl/2 - 14, yg2 - hg/2);
+    fill(cMark);
+    text(String.format("%.01f", beta_upper), xg2 - wl/2 - 14, yg2 - hg/2);
     text(String.format("%.01f", beta_thresh), xg2 - wl/2 - 14, yg2 + hg/2 - hbt);
     text("0.0", xg2 - wl/2 - 14, yg2 + hg/2);
 
-    noStroke();
-    fill(cFocus);
-    float hb = map(beta_avg, 0, alpha_upper, 0, hg);  //beta height
+    stroke(cWave);
+    strokeWeight(4);
+    float hb = map(beta_avg, 0, beta_upper, 0, hg);  //beta height
     hb = constrain(hb, 0, hg);
-    rect(xg2 - wg/2, yg2 + hg/2 - hb, wg, hb);
-    // draw beta label
-    if (beta_avg < alpha_thresh) {
-      fill(cFocus);
-    } else {
-      fill(cLine);
-    }
-    text("beta", xg2, yg2 + hg/2 + 16);
+    line(xg2 - wl/2, yg2 + hg/2 - hb, xg2 + wl/2, yg2 + hg/2 - hb);
+    strokeWeight(1);
 
-    // draw about
+    translate(-x, -y);
+
+    //------------------ draw sliders --------------------
+    sliderAlphaMid.draw();
+    sliderAlphaTop.draw();
+    sliderBetaMid.draw();
+
+    //----------------- draw about button -----------------
+    translate(x, y);
     if (showAbout) {
       stroke(255);
-      fill(cBack);
+      // fill(cBack);
+      fill(#dddddd);
 
       rect(rp, rp, w-rp*2, h-rp*2);
       textAlign(LEFT, TOP);
@@ -245,7 +319,7 @@ class W_Focus extends Widget {
     }
     // draw the button that toggles information
     noStroke();
-    fill(cFocus);
+    fill(cDark);
     ellipse(xb, yb, rb, rb);
     fill(cBack);
     textAlign(CENTER, CENTER);
@@ -255,7 +329,7 @@ class W_Focus extends Widget {
       text("?", xb, yb);
     }
 
-    // revert origin point of draw to default
+    //----------------- revert origin point of draw to default -----------------
     translate(-x, -y);
     textAlign(LEFT, BASELINE);
 
@@ -269,6 +343,10 @@ class W_Focus extends Widget {
     //put your code here...
     update_graphic_parameters();
 
+    //update sliders...
+    sliderAlphaMid.screenResized(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
+    sliderAlphaTop.screenResized(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
+    sliderBetaMid.screenResized(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2);
   }
 
   void update_graphic_parameters () {
@@ -292,25 +370,149 @@ class W_Focus extends Widget {
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    //put your code here...
+    //  about button
     if (dist(mouseX,mouseY,xb+x,yb+y) <= rb) {
       showAbout = !showAbout;
     }
 
+    // sliders
+    sliderAlphaMid.mousePressed();
+    sliderAlphaTop.mousePressed();
+    sliderBetaMid.mousePressed();
   }
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-  }
-
-  //add custom functions here
-  void customFunction(){
-    //this is a fake function... replace it with something relevant to this widget
-
+    // sliders
+    sliderAlphaMid.mouseReleased();
+    sliderAlphaTop.mouseReleased();
+    sliderBetaMid.mouseReleased();
   }
 
 };
+
+/* ---------------------- Supporting Slider Classes ---------------------------*/
+
+// abstract basic slider
+public abstract class BasicSlider {
+  float x, y, w, h;  // center x, y. w, h means width and height of triangle
+  float yBot, yTop;   // y range. Notice val of top y is less than bottom y
+  boolean isPressed = false;
+  color cNormal = #CCCCCC;
+  color cPressed = #FF0000;
+
+  BasicSlider(float _x, float _yBot, float _yTop) {
+    x = _x;
+    yBot = _yBot;
+    yTop = _yTop;
+    w = 10;
+    h = 10;
+  }
+
+  // abstract functions
+
+  abstract void update();
+  abstract void screenResized(float _x, float _yBot, float _yTop);
+  abstract float getVal();
+  abstract void setVal(float _val);
+
+  // shared functions
+
+  void draw() {
+    if (isPressed) fill(cPressed);
+    else fill(cNormal);
+    noStroke();
+    triangle(x-w/2, y, x+w/2, y-h/2, x+w/2, y+h/2);
+  }
+
+  void mousePressed() {
+    if (abs(mouseX - (x)) <= w/2 && abs(mouseY - y) <= h/2) {
+      isPressed = true;
+    }
+  }
+
+  void mouseReleased() {
+    if (isPressed) {
+      isPressed = false;
+    }
+  }
+}
+
+// middle slider that changes value and move
+public class FocusSlider extends BasicSlider {
+  private float val = 0;  // val = 0 ~ 1 -> yBot to yTop
+  final float valMin = 0;
+  final float valMax = 0.90;
+  FocusSlider(float _x, float _yBot, float _yTop, float _val) {
+    super(_x, _yBot, _yTop);
+    val = constrain(_val, valMin, valMax);
+    y = map(val, 0, 1, yBot, yTop);
+  }
+
+  public void update() {
+    if (isPressed) {
+      float newVal = map(mouseY, yBot, yTop, 0, 1);
+      val = constrain(newVal, valMin, valMax);
+      y = map(val, 0, 1, yBot, yTop);
+      println(val);
+    }
+  }
+
+  public void screenResized(float _x, float _yBot, float _yTop) {
+    x = _x;
+    yBot = _yBot;
+    yTop = _yTop;
+    y = map(val, 0, 1, yBot, yTop);
+  }
+
+  public float getVal() {
+     return val;
+  }
+
+  public void setVal(float _val) {
+     val = constrain(_val, valMin, valMax);
+     y = map(val, 0, 1, yBot, yTop);
+  }
+}
+
+// top slider that changes value but doesn't move
+public class FocusSlider_Static extends BasicSlider {
+  private float val = 0;  // val = 0 ~ 1 -> yBot to yTop
+  final float valMin = 0.5;
+  final float valMax = 5.0;
+  FocusSlider_Static(float _x, float _yBot, float _yTop) {
+    super(_x, _yBot, _yTop);
+    val = 1;
+    y = yTop;
+  }
+
+  public void update() {
+    if (isPressed) {
+      float diff = map(mouseY, yBot, yTop, -0.07, 0);
+      val = constrain(val + diff, valMin, valMax);
+      println(val);
+    }
+  }
+
+  public void screenResized(float _x, float _yBot, float _yTop) {
+    x = _x;
+    yBot = _yBot;
+    yTop = _yTop;
+    y = yTop;
+  }
+
+  public float getVal() {
+     return val;
+  }
+
+  public void setVal(float _val) {
+     val = constrain(_val, valMin, valMax);
+  }
+
+}
+
+/* ---------------- Global Functions For Menu Entries --------------------*/
 
 // //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void StrokeKeyWhenFocused(int n){

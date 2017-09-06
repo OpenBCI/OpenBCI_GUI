@@ -28,10 +28,12 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
   public void controlEvent(CallbackEvent theEvent) {
 
     if (cp5.isMouseOver(cp5.get(Textfield.class, "fileName"))){
-      println("CallbackListener: controlEvent: clearing");
+      println("CallbackListener: controlEvent: clearing cyton");
       cp5.get(Textfield.class, "fileName").clear();
+      // cp5.get(Textfield.class, "fileNameGanglion").clear();
+
     } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
-      println("CallbackListener: controlEvent: clearing");
+      println("CallbackListener: controlEvent: clearing ganglion");
       cp5.get(Textfield.class, "fileNameGanglion").clear();
     }
   }
@@ -44,6 +46,7 @@ MenuList serialList;
 String[] serialPorts = new String[Serial.list().length];
 
 MenuList bleList;
+MenuList wifiList;
 
 MenuList sdTimes;
 
@@ -59,10 +62,16 @@ color isSelected_color = color(184, 220, 105);
 // boolean portButtonPressed;
 
 boolean calledForBLEList = false;
+boolean calledForWifiList = false;
 
 Button refreshPort;
 Button refreshBLE;
-Button autoconnect;
+Button refreshWifi;
+Button protocolSerialCyton;
+Button protocolWifiCyton;
+Button protocolWifiGanglion;
+Button protocolBLEGanglion;
+// Button autoconnect;
 Button initSystemButton;
 Button autoFileName;
 Button outputBDF;
@@ -76,7 +85,8 @@ Button chanButton8;
 Button chanButton16;
 Button selectPlaybackFile;
 Button selectSDFile;
-Button popOut;
+Button popOutRadioConfigButton;
+Button popOutWifiConfigButton;
 
 //Radio Button Definitions
 Button getChannel;
@@ -90,6 +100,22 @@ Button autoscan;
 // Button autoconnectNoStartDefault;
 // Button autoconnectNoStartHigh;
 Button systemStatus;
+
+Button eraseCredentials;
+Button getIpAddress;
+Button getFirmwareVersion;
+Button getMacAddress;
+Button getTypeOfAttachedBoard;
+Button sampleRate200;
+Button sampleRate250;
+Button sampleRate1000;
+Button sampleRate1600;
+Button latencyCyton5ms;
+Button latencyCyton10ms;
+Button latencyCyton20ms;
+Button latencyGanglion5ms;
+Button latencyGanglion10ms;
+Button latencyGanglion20ms;
 
 Button synthChanButton4;
 Button synthChanButton8;
@@ -105,6 +131,8 @@ ChannelPopup channelPopup;
 PollPopup pollPopup;
 RadioConfigBox rcBox;
 
+WifiConfigBox wcBox;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -112,26 +140,52 @@ RadioConfigBox rcBox;
 public void controlEvent(ControlEvent theEvent) {
 
   if (theEvent.isFrom("sourceList")) {
-
+    // THIS IS TRIGGERED WHEN A USER SELECTS 'LIVE (from Cyton) or LIVE (from Ganglion), etc...'
     controlPanel.hideAllBoxes();
 
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
-    // str = str.substring(0, str.length()-5);
-    //output("Data Source = " + str);
     int newDataSource = int(theEvent.getValue());
+
+    if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
+      if (isWindows()) {
+        output("Please launch OpenBCI Hub prior to launching this application. Learn at docs.openbci.com");
+      } else {
+        output("Unable to establish link to Hub. Checkout tutorial at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
+      }
+      eegDataSource = -1;
+      return;
+    }
+
+    protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+    protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+    protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
+    protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
+
     eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
-    if(newDataSource == DATASOURCE_NORMAL_W_AUX){
+
+    ganglion.setInterface(INTERFACE_NONE);
+    cyton.setInterface(INTERFACE_NONE);
+
+    if(newDataSource == DATASOURCE_CYTON){
       updateToNChan(8);
       chanButton8.color_notPressed = isSelected_color;
       chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+      latencyCyton5ms.color_notPressed = autoFileName.color_notPressed;
+      latencyCyton10ms.color_notPressed = isSelected_color;
+      latencyCyton20ms.color_notPressed = autoFileName.color_notPressed;
+      hub.setLatency(hub.LATENCY_10_MS);
     } else if(newDataSource == DATASOURCE_GANGLION){
       updateToNChan(4);
       if (isWindows() && isHubInitialized == false) {
         hubInit();
         timeOfSetup = millis();
       }
+      latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed;
+      latencyGanglion10ms.color_notPressed = isSelected_color;
+      latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed;
+      hub.setLatency(hub.LATENCY_10_MS);
     } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
       updateToNChan(8);
       playbackChanButton4.color_notPressed = autoFileName.color_notPressed;
@@ -157,6 +211,12 @@ public void controlEvent(ControlEvent theEvent) {
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     ganglion_portName = (String)bob.get("headline");
     output("Ganglion Device Name = " + ganglion_portName);
+  }
+
+  if (theEvent.isFrom("wifiList")) {
+    Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+    wifi_portName = (String)bob.get("headline");
+    output("Wifi Device Name = " + wifi_portName);
   }
 
   if (theEvent.isFrom("sdTimes")) {
@@ -185,17 +245,7 @@ public void controlEvent(ControlEvent theEvent) {
       ovrChannel.wasPressed = false;
     }
     println("still goin off");
-
   }
-
-  // if (theEvent.isFrom("pollList")){
-  //   int setChannelInt = int(theEvent.getValue());
-  //   //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-  //   cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-  //   channelPopup.setClicked(false);
-  //   set_poll(rcBox,setChannelInt);
-  //   setPoll.wasPressed = false;
-  // }
 }
 
 //------------------------------------------------------------------------
@@ -224,6 +274,14 @@ class ControlPanel {
 
   BLEBox bleBox;
   DataLogBoxGanglion dataLogBoxGanglion;
+
+  WifiBox wifiBox;
+  InterfaceBoxCyton interfaceBoxCyton;
+  InterfaceBoxGanglion interfaceBoxGanglion;
+  SampleRateCytonBox sampleRateCytonBox;
+  SampleRateGanglionBox sampleRateGanglionBox;
+  LatencyCytonBox latencyCytonBox;
+  LatencyGanglionBox latencyGanglionBox;
 
   SDBox sdBox;
 
@@ -264,11 +322,18 @@ class ControlPanel {
 
     //boxes active when eegDataSource = Normal (OpenBCI)
     dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
-    serialBox = new SerialBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
+    interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
+
+    serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
+    wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
+
     dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
     channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
     synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
+    sampleRateCytonBox = new SampleRateCytonBox(x + w, (sdBox.y + sdBox.h), w, h, globalPadding);
+    latencyCytonBox = new LatencyCytonBox(x + w + x + w - 3, (sdBox.y + sdBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
     playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
@@ -279,16 +344,21 @@ class ControlPanel {
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
     pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
+    wcBox = new WifiConfigBox(x+w, y, w, h, globalPadding);
+
     initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
     // Ganglion
-    bleBox = new BLEBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
     dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
+    sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
+    latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
   }
 
   public void resetListItems(){
     serialList.activeItem = -1;
     bleList.activeItem = -1;
+    wifiList.activeItem = -1;
   }
 
   public void open(){
@@ -331,23 +401,43 @@ class ControlPanel {
     playbackChannelCountBox.update();
     sdBox.update();
     rcBox.update();
+    wcBox.update();
     initBox.update();
 
     channelPopup.update();
     serialList.updateMenu();
     bleList.updateMenu();
+    wifiList.updateMenu();
     dataLogBoxGanglion.update();
+    latencyCytonBox.update();
+
+    wifiBox.update();
+    interfaceBoxCyton.update();
+    interfaceBoxGanglion.update();
+    latencyGanglionBox.update();
 
     //SD File Conversion
     while (convertingSD == true) {
       convertSDFile();
     }
 
-    if (isHubInitialized && isGanglionObjectInitialized) {
-      if (!calledForBLEList) {
-        calledForBLEList = true;
-        if (ganglion.isHubRunning()) {
-          ganglion.searchDeviceStart();
+    if (isHubInitialized && isHubObjectInitialized) {
+      if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
+        if (!calledForBLEList) {
+          calledForBLEList = true;
+          if (hub.isHubRunning()) {
+            // Commented out because noble will auto scan
+            // hub.searchDeviceStart();
+          }
+        }
+      }
+
+      if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
+        if (!calledForWifiList) {
+          calledForWifiList = true;
+          if (hub.isHubRunning()) {
+            hub.searchDeviceStart();
+          }
         }
       }
     }
@@ -402,44 +492,51 @@ class ControlPanel {
       cp5.setVisible(true);//make sure controlP5 elements are visible
       cp5Popup.setVisible(true);
 
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {	//when data source is from OpenBCI
-        // hideAllBoxes();
-        serialBox.draw();
-        // dataLogBox.y = serialBox.y + serialBox.h;
-        dataLogBox.draw();
-        channelCountBox.draw();
-        sdBox.draw();
-        cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
-        cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
-
-        if(rcBox.isShowing){
-          rcBox.draw();
-          if(channelPopup.wasClicked()){
-            channelPopup.draw();
-            cp5Popup.get(MenuList.class, "channelList").setVisible(true);
-            cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-            cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-            cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+      if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
+        if (cyton.getInterface() == INTERFACE_NONE) {
+          interfaceBoxCyton.draw();
+        } else {
+          interfaceBoxCyton.draw();
+          if (cyton.getInterface() == INTERFACE_SERIAL) {
+            serialBox.draw();
+            cp5.get(MenuList.class, "serialList").setVisible(true);
+            if (rcBox.isShowing) {
+              rcBox.draw();
+              if (channelPopup.wasClicked()) {
+                channelPopup.draw();
+                cp5Popup.get(MenuList.class, "channelList").setVisible(true);
+                cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+                cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+              } else if (pollPopup.wasClicked()) {
+                pollPopup.draw();
+                cp5Popup.get(MenuList.class, "pollList").setVisible(true);
+                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+                // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
+                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
+                cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+              }
+            }
+          } else if (cyton.getInterface() == INTERFACE_HUB_WIFI) {
+            wifiBox.draw();
+            cp5.get(MenuList.class, "wifiList").setVisible(true);
+            if(wcBox.isShowing){
+              wcBox.draw();
+            }
+            sampleRateCytonBox.draw();
+            latencyCytonBox.draw();
           }
-          else if(pollPopup.wasClicked()){
-            pollPopup.draw();
-            cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-            cp5Popup.get(MenuList.class, "channelList").setVisible(false);
-            cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
-            // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
-            cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-            cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
-          }
-
+          // dataLogBox.y = serialBox.y + serialBox.h;
+          dataLogBox.draw();
+          channelCountBox.draw();
+          sdBox.draw();
+          cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+          cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
+          // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
+          cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         }
-        cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
-        // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
-        cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-        cp5.get(MenuList.class, "bleList").setVisible(false); //make sure the serialList menulist is visible
-        cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
-
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
-        // hideAllBoxes(); //clear lists, so they don't appear
         playbackChannelCountBox.draw();
         playbackFileBox.draw();
         sdConverterBox.draw();
@@ -457,14 +554,27 @@ class ControlPanel {
         // hideAllBoxes();
         synthChannelCountBox.draw();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
-        // hideAllBoxes();
-        bleBox.draw();
-        // dataLogBox.y = bleBox.y + bleBox.h;
-        dataLogBoxGanglion.draw();
-        cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
-        cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
-        cp5.get(MenuList.class, "bleList").setVisible(true); //make sure the bleList menulist is visible
-
+        if (ganglion.getInterface() == INTERFACE_NONE) {
+          interfaceBoxGanglion.draw();
+        } else {
+          interfaceBoxGanglion.draw();
+          if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
+            bleBox.draw();
+            cp5.get(MenuList.class, "bleList").setVisible(true);
+          } else if (ganglion.getInterface() == INTERFACE_HUB_WIFI) {
+            wifiBox.draw();
+            cp5.get(MenuList.class, "wifiList").setVisible(true);
+            if(wcBox.isShowing){
+              wcBox.draw();
+            }
+            latencyGanglionBox.draw();
+            sampleRateGanglionBox.draw();
+          }
+          // dataLogBox.y = bleBox.y + bleBox.h;
+          dataLogBoxGanglion.draw();
+          cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+          cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
+        }
       } else {
         //set other CP5 controllers invisible
         hideAllBoxes();
@@ -496,7 +606,27 @@ class ControlPanel {
     cp5.draw();
 
     popStyle();
+  }
 
+  public void hideRadioPopoutBox() {
+    rcBox.isShowing = false;
+    cp5Popup.hide(); // make sure to hide the controlP5 object
+    cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+    cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+    // cp5Popup.hide(); // make sure to hide the controlP5 object
+    popOutRadioConfigButton.setString(">");
+    rcBox.print_onscreen("");
+    if (board != null) {
+      board.stop();
+    }
+    board = null;
+  }
+
+  public void hideWifiPopoutBox() {
+    wcBox.isShowing = false;
+    popOutWifiConfigButton.setString(">");
+    wcBox.updateMessage("");
+    if (hub.isPortOpen()) hub.closePort();
   }
 
   public void refreshPortList(){
@@ -512,18 +642,20 @@ class ControlPanel {
 
   public void hideAllBoxes() {
     //set other CP5 controllers invisible
+    //
     cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
     cp5.get(MenuList.class, "serialList").setVisible(false);
     cp5.get(MenuList.class, "bleList").setVisible(false);
     cp5.get(MenuList.class, "sdTimes").setVisible(false);
+    cp5.get(MenuList.class, "wifiList").setVisible(false);
     cp5Popup.get(MenuList.class, "channelList").setVisible(false);
     cp5Popup.get(MenuList.class, "pollList").setVisible(false);
   }
 
   //mouse pressed in control panel
   public void CPmousePressed() {
-    verbosePrint("CPmousePressed");
+    // verbosePrint("CPmousePressed");
 
     if (initSystemButton.isMouseHere()) {
       initSystemButton.setIsActive(true);
@@ -533,22 +665,59 @@ class ControlPanel {
     //only able to click buttons of control panel when system is not running
     if (systemMode != 10) {
 
-      //active buttons during DATASOURCE_NORMAL_W_AUX
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-        if(autoconnect.isMouseHere()){
-          autoconnect.setIsActive(true);
-          autoconnect.wasPressed = true;
+      if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && (cyton.isWifi() || ganglion.isWifi())) {
+        if(getIpAddress.isMouseHere()) {
+          getIpAddress.setIsActive(true);
+          getIpAddress.wasPressed = true;
         }
 
-        if (popOut.isMouseHere()){
-          popOut.setIsActive(true);
-          popOut.wasPressed = true;
+        if(getFirmwareVersion.isMouseHere()) {
+          getFirmwareVersion.setIsActive(true);
+          getFirmwareVersion.wasPressed = true;
         }
 
-        if (refreshPort.isMouseHere()) {
-          refreshPort.setIsActive(true);
-          refreshPort.wasPressed = true;
+        if(getMacAddress.isMouseHere()) {
+          getMacAddress.setIsActive(true);
+          getMacAddress.wasPressed = true;
         }
+
+        if(eraseCredentials.isMouseHere()) {
+          eraseCredentials.setIsActive(true);
+          eraseCredentials.wasPressed = true;
+        }
+
+        if(getTypeOfAttachedBoard.isMouseHere()) {
+          getTypeOfAttachedBoard.setIsActive(true);
+          getTypeOfAttachedBoard.wasPressed = true;
+        }
+
+        if (popOutWifiConfigButton.isMouseHere()){
+          popOutWifiConfigButton.setIsActive(true);
+          popOutWifiConfigButton.wasPressed = true;
+        }
+      }
+
+      //active buttons during DATASOURCE_CYTON
+      if (eegDataSource == DATASOURCE_CYTON) {
+        if (cyton.isSerial()) {
+          if (popOutRadioConfigButton.isMouseHere()){
+            popOutRadioConfigButton.setIsActive(true);
+            popOutRadioConfigButton.wasPressed = true;
+          }
+          if (refreshPort.isMouseHere()) {
+            refreshPort.setIsActive(true);
+            refreshPort.wasPressed = true;
+          }
+        }
+
+        if (cyton.isWifi()) {
+          if (refreshWifi.isMouseHere()) {
+            refreshWifi.setIsActive(true);
+            refreshWifi.wasPressed = true;
+          }
+        }
+
+
 
         if (autoFileName.isMouseHere()) {
           autoFileName.setIsActive(true);
@@ -598,47 +767,69 @@ class ControlPanel {
           ovrChannel.wasPressed = true;
         }
 
-        // if (getPoll.isMouseHere()){
-        //   getPoll.setIsActive(true);
-        //   getPoll.wasPressed = true;
-        // }
 
-        // if (setPoll.isMouseHere()){
-        //   setPoll.setIsActive(true);
-        //   setPoll.wasPressed = true;
-        // }
 
-        // if (defaultBAUD.isMouseHere()){
-        //   defaultBAUD.setIsActive(true);
-        //   defaultBAUD.wasPressed = true;
-        // }
+        if (protocolWifiCyton.isMouseHere()) {
+          protocolWifiCyton.setIsActive(true);
+          protocolWifiCyton.wasPressed = true;
+          protocolWifiCyton.color_notPressed = isSelected_color;
+          protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
+        }
 
-        // if (highBAUD.isMouseHere()){
-        //   highBAUD.setIsActive(true);
-        //   highBAUD.wasPressed = true;
-        // }
+        if (protocolSerialCyton.isMouseHere()) {
+          protocolSerialCyton.setIsActive(true);
+          protocolSerialCyton.wasPressed = true;
+          protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
+          protocolSerialCyton.color_notPressed = isSelected_color;
+        }
 
         if (autoscan.isMouseHere()){
           autoscan.setIsActive(true);
           autoscan.wasPressed = true;
         }
 
-        // if (autoconnectNoStartDefault.isMouseHere()){
-        //   autoconnectNoStartDefault.setIsActive(true);
-        //   autoconnectNoStartDefault.wasPressed = true;
-        // }
-
-        // if (autoconnectNoStartHigh.isMouseHere()){
-        //   autoconnectNoStartHigh.setIsActive(true);
-        //   autoconnectNoStartHigh.wasPressed = true;
-        // }
-
-
         if (systemStatus.isMouseHere()){
           systemStatus.setIsActive(true);
           systemStatus.wasPressed = true;
         }
 
+        if (sampleRate250.isMouseHere()) {
+          sampleRate250.setIsActive(true);
+          sampleRate250.wasPressed = true;
+          sampleRate250.color_notPressed = isSelected_color;
+          sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (sampleRate1000.isMouseHere()) {
+          sampleRate1000.setIsActive(true);
+          sampleRate1000.wasPressed = true;
+          sampleRate1000.color_notPressed = isSelected_color;
+          sampleRate250.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (latencyCyton5ms.isMouseHere()) {
+          latencyCyton5ms.setIsActive(true);
+          latencyCyton5ms.wasPressed = true;
+          latencyCyton5ms.color_notPressed = isSelected_color;
+          latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+          latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (latencyCyton10ms.isMouseHere()) {
+          latencyCyton10ms.setIsActive(true);
+          latencyCyton10ms.wasPressed = true;
+          latencyCyton10ms.color_notPressed = isSelected_color;
+          latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+          latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (latencyCyton20ms.isMouseHere()) {
+          latencyCyton20ms.setIsActive(true);
+          latencyCyton20ms.wasPressed = true;
+          latencyCyton20ms.color_notPressed = isSelected_color;
+          latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+          latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
       }
 
       if (eegDataSource == DATASOURCE_GANGLION) {
@@ -663,11 +854,69 @@ class ControlPanel {
           outputODFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
-        if (refreshBLE.isMouseHere()) {
-          refreshBLE.setIsActive(true);
-          refreshBLE.wasPressed = true;
+        if (ganglion.isWifi()) {
+          if (refreshWifi.isMouseHere()) {
+            refreshWifi.setIsActive(true);
+            refreshWifi.wasPressed = true;
+          }
+        } else {
+          if (refreshBLE.isMouseHere()) {
+            refreshBLE.setIsActive(true);
+            refreshBLE.wasPressed = true;
+          }
         }
 
+        if (protocolBLEGanglion.isMouseHere()) {
+          protocolBLEGanglion.setIsActive(true);
+          protocolBLEGanglion.wasPressed = true;
+          protocolBLEGanglion.color_notPressed = isSelected_color;
+          protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+        }
+
+        if (protocolWifiGanglion.isMouseHere()) {
+          protocolWifiGanglion.setIsActive(true);
+          protocolWifiGanglion.wasPressed = true;
+          protocolWifiGanglion.color_notPressed = isSelected_color;
+          protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+        }
+
+        if (sampleRate200.isMouseHere()) {
+          sampleRate200.setIsActive(true);
+          sampleRate200.wasPressed = true;
+          sampleRate200.color_notPressed = isSelected_color;
+          sampleRate1600.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (sampleRate1600.isMouseHere()) {
+          sampleRate1600.setIsActive(true);
+          sampleRate1600.wasPressed = true;
+          sampleRate1600.color_notPressed = isSelected_color;
+          sampleRate200.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (latencyGanglion5ms.isMouseHere()) {
+          latencyGanglion5ms.setIsActive(true);
+          latencyGanglion5ms.wasPressed = true;
+          latencyGanglion5ms.color_notPressed = isSelected_color;
+          latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+          latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (latencyGanglion10ms.isMouseHere()) {
+          latencyGanglion10ms.setIsActive(true);
+          latencyGanglion10ms.wasPressed = true;
+          latencyGanglion10ms.color_notPressed = isSelected_color;
+          latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+          latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (latencyGanglion20ms.isMouseHere()) {
+          latencyGanglion20ms.setIsActive(true);
+          latencyGanglion20ms.wasPressed = true;
+          latencyGanglion20ms.color_notPressed = isSelected_color;
+          latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+          latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
       }
 
       //active buttons during DATASOURCE_PLAYBACKFILE
@@ -741,127 +990,112 @@ class ControlPanel {
   //mouse released in control panel
   public void CPmouseReleased() {
     //verbosePrint("CPMouseReleased: CPmouseReleased start...");
-    if(popOut.isMouseHere() && popOut.wasPressed){
-      popOut.wasPressed = false;
-      popOut.setIsActive(false);
-      if(rcBox.isShowing){
-        rcBox.isShowing = false;
-        cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-        // cp5Popup.hide(); // make sure to hide the controlP5 object
-        popOut.setString(">");
-      }
-      else{
-        rcBox.isShowing = true;
-        popOut.setString("<");
+    if(popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed){
+      popOutRadioConfigButton.wasPressed = false;
+      popOutRadioConfigButton.setIsActive(false);
+      if (cyton.isSerial()) {
+        if(rcBox.isShowing){
+          hideRadioPopoutBox();
+        }
+        else{
+          rcBox.isShowing = true;
+          popOutRadioConfigButton.setString("<");
+        }
       }
     }
 
-    if(getChannel.isMouseHere() && getChannel.wasPressed){
-      // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
-      get_channel( rcBox);
-      getChannel.wasPressed=false;
-      getChannel.setIsActive(false);
+    if (rcBox.isShowing) {
+      if(getChannel.isMouseHere() && getChannel.wasPressed){
+        // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
+        get_channel(rcBox);
+        getChannel.wasPressed=false;
+        getChannel.setIsActive(false);
+      }
+
+      if (setChannel.isMouseHere() && setChannel.wasPressed){
+        channelPopup.setClicked(true);
+        pollPopup.setClicked(false);
+        setChannel.setIsActive(false);
+      }
+
+      if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
+        channelPopup.setClicked(true);
+        pollPopup.setClicked(false);
+        ovrChannel.setIsActive(false);
+      }
+
+      if(autoscan.isMouseHere() && autoscan.wasPressed){
+        autoscan.wasPressed = false;
+        autoscan.setIsActive(false);
+        scan_channels(rcBox);
+      }
+
+      if(systemStatus.isMouseHere() && systemStatus.wasPressed){
+        system_status(rcBox);
+        systemStatus.setIsActive(false);
+        systemStatus.wasPressed = false;
+      }
     }
 
-    if (setChannel.isMouseHere() && setChannel.wasPressed){
-      channelPopup.setClicked(true);
-      pollPopup.setClicked(false);
-      setChannel.setIsActive(false);
+    if(popOutWifiConfigButton.isMouseHere() && popOutWifiConfigButton.wasPressed){
+      popOutWifiConfigButton.wasPressed = false;
+      popOutWifiConfigButton.setIsActive(false);
+      if (cyton.isWifi() || ganglion.isWifi()) {
+        if(wcBox.isShowing){
+          hideWifiPopoutBox();
+        } else {
+          if (wifi_portName == "N/A") {
+            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
+          } else {
+            output("Attempting to connect to WiFi Shield named " + wifi_portName);
+            hub.examineWifi(wifi_portName);
+            wcBox.isShowing = true;
+            popOutWifiConfigButton.setString("<");
+          }
+        }
+      }
     }
 
-    if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
-      channelPopup.setClicked(true);
-      pollPopup.setClicked(false);
-      ovrChannel.setIsActive(false);
+    if (wcBox.isShowing) {
+      if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_GET_IP_ADDRESS);
+        getIpAddress.wasPressed = false;
+        getIpAddress.setIsActive(false);
+      }
+
+      if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_GET_FIRMWARE_VERSION);
+        getFirmwareVersion.wasPressed = false;
+        getFirmwareVersion.setIsActive(false);
+      }
+
+      if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_GET_MAC_ADDRESS);
+        getMacAddress.wasPressed = false;
+        getMacAddress.setIsActive(false);
+      }
+
+      if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
+        hub.getWifiInfo(hub.TCP_WIFI_ERASE_CREDENTIALS);
+        eraseCredentials.wasPressed=false;
+        eraseCredentials.setIsActive(false);
+      }
+
+      if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
+        // Wifi_Config will handle creating the connection
+        hub.getWifiInfo(hub.TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
+        getTypeOfAttachedBoard.wasPressed=false;
+        getTypeOfAttachedBoard.setIsActive(false);
+      }
     }
-
-
-    // if (getPoll.isMouseHere() && getPoll.wasPressed){
-    //   get_poll(rcBox);
-    //   getPoll.setIsActive(false);
-    //   getPoll.wasPressed = false;
-    // }
-
-    // if (setPoll.isMouseHere() && setPoll.wasPressed){
-    //   pollPopup.setClicked(true);
-    //   channelPopup.setClicked(false);
-    //   setPoll.setIsActive(false);
-    // }
-
-    // if (defaultBAUD.isMouseHere() && defaultBAUD.wasPressed){
-    //   set_baud_default(rcBox,openBCI_portName);
-    //   defaultBAUD.setIsActive(false);
-    //   defaultBAUD.wasPressed=false;
-    // }
-
-    // if (highBAUD.isMouseHere() && highBAUD.wasPressed){
-    //   set_baud_high(rcBox,openBCI_portName);
-    //   highBAUD.setIsActive(false);
-    //   highBAUD.wasPressed=false;
-    // }
-
-    // if(autoconnectNoStartDefault.isMouseHere() && autoconnectNoStartDefault.wasPressed){
-    //
-    //   if(board == null){
-    //     try{
-    //       board = autoconnect_return_default();
-    //       rcBox.print_onscreen("Successfully connected to board");
-    //     }
-    //     catch (Exception e){
-    //       rcBox.print_onscreen("Error connecting to board...");
-    //     }
-    //
-    //
-    //   }
-    //  else rcBox.print_onscreen("Board already connected!");
-    //   autoconnectNoStartDefault.setIsActive(false);
-    //   autoconnectNoStartDefault.wasPressed = false;
-    // }
-
-    // if(autoconnectNoStartHigh.isMouseHere() && autoconnectNoStartHigh.wasPressed){
-    //
-    //   if(board == null){
-    //
-    //     try{
-    //
-    //       board = autoconnect_return_high();
-    //       rcBox.print_onscreen("Successfully connected to board");
-    //     }
-    //     catch (Exception e2){
-    //       rcBox.print_onscreen("Error connecting to board...");
-    //     }
-    //
-    //   }
-    //  else rcBox.print_onscreen("Board already connected!");
-    //   autoconnectNoStartHigh.setIsActive(false);
-    //   autoconnectNoStartHigh.wasPressed = false;
-    // }
-
-    if(autoscan.isMouseHere() && autoscan.wasPressed){
-      autoscan.wasPressed = false;
-      autoscan.setIsActive(false);
-      scan_channels(rcBox);
-
-    }
-
-    if(autoconnect.isMouseHere() && autoconnect.wasPressed && eegDataSource != DATASOURCE_PLAYBACKFILE){
-      autoconnect();
-      initButtonPressed();
-      autoconnect.wasPressed = false;
-      autoconnect.setIsActive(false);
-    }
-
-    if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-      system_status(rcBox);
-      systemStatus.setIsActive(false);
-      systemStatus.wasPressed = false;
-    }
-
 
     if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-      if(board != null) board.stop();
+      if (rcBox.isShowing) {
+        hideRadioPopoutBox();
+      }
+      if (wcBox.isShowing) {
+        hideWifiPopoutBox();
+      }
       //if system is not active ... initate system and flip button state
       initButtonPressed();
       //cursor(ARROW); //this this back to ARROW
@@ -873,20 +1107,93 @@ class ControlPanel {
       refreshPortList();
     }
 
-    //open or close serial port if serial port button is pressed (left button in serial widget)
     if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-      if (isGanglionObjectInitialized) {
+      if (isHubObjectInitialized) {
         output("BLE Devices Refreshing");
         bleList.items.clear();
-        ganglion.searchDeviceStart();
+        hub.searchDeviceStart();
       } else {
         output("Please wait till BLE is fully initalized");
       }
     }
 
+    if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
+      if (isHubObjectInitialized) {
+        output("Wifi Devices Refreshing");
+        wifiList.items.clear();
+        hub.searchDeviceStart();
+      } else {
+        output("Please wait till hub is fully initalized");
+      }
+    }
+
+    if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      if (isHubObjectInitialized) {
+        output("Protocol BLE Selected for Ganglion");
+        if (hub.isPortOpen()) hub.closePort();
+        ganglion.setInterface(INTERFACE_HUB_BLE);
+      } else {
+        output("Please wait till hub is fully initalized");
+      }
+    }
+
+    if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
+      println("protocolWifiGanglion");
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
+      if (isHubObjectInitialized) {
+        output("Protocol Wifi Selected for Ganglion");
+        if (hub.isPortOpen()) hub.closePort();
+        ganglion.setInterface(INTERFACE_HUB_WIFI);
+      } else {
+        output("Please wait till hub is fully initalized");
+      }
+    }
+
+    if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      if (isHubObjectInitialized) {
+        output("Protocol Serial Selected for Cyton");
+        if (hub.isPortOpen()) hub.closePort();
+        cyton.setInterface(INTERFACE_SERIAL);
+      } else {
+        output("Please wait till hub is fully initalized");
+      }
+    }
+
+    if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      if (isHubObjectInitialized) {
+        output("Protocol Wifi Selected for Cyton");
+        if (hub.isPortOpen()) hub.closePort();
+        cyton.setInterface(INTERFACE_HUB_WIFI);
+      } else {
+        output("Please wait till hub is fully initalized");
+      }
+    }
+
+    // if (protocolBLEGanglion.isMouseHere()) {
+    //   protocolBLEGanglion.setIsActive(true);
+    //   protocolBLEGanglion.wasPressed = true;
+    // }
+    //
+    // if (protocolWifiGanglion.isMouseHere()) {
+    //   protocolWifiGanglion.setIsActive(true);
+    //   protocolWifiGanglion.wasPressed = true;
+    // }
+
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (autoFileName.isMouseHere() && autoFileName.wasPressed) {
-      output("Autogenerated \"File Name\" based on current date/time");
+      output("Autogenerated Cyton \"File Name\" based on current date/time");
       cp5.get(Textfield.class, "fileName").setText(getDateString());
     }
 
@@ -901,7 +1208,7 @@ class ControlPanel {
     }
 
     if (autoFileNameGanglion.isMouseHere() && autoFileNameGanglion.wasPressed) {
-      output("Autogenerated \"File Name\" based on current date/time");
+      output("Autogenerated Ganglion \"File Name\" based on current date/time");
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString());
     }
 
@@ -921,6 +1228,22 @@ class ControlPanel {
 
     if (chanButton16.isMouseHere() && chanButton16.wasPressed ) {
       updateToNChan(16);
+    }
+
+    if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
+      ganglion.setSampleRate(200);
+    }
+
+    if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
+      ganglion.setSampleRate(1600);
+    }
+
+    if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
+      cyton.setSampleRate(250);
+    }
+
+    if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
+      cyton.setSampleRate(1000);
     }
 
     if (playbackChanButton4.isMouseHere() && playbackChanButton4.wasPressed) {
@@ -947,6 +1270,31 @@ class ControlPanel {
       updateToNChan(16);
     }
 
+    if (latencyCyton5ms.isMouseHere() && latencyCyton5ms.wasPressed) {
+      hub.setLatency(hub.LATENCY_5_MS);
+    }
+
+    if (latencyCyton10ms.isMouseHere() && latencyCyton10ms.wasPressed) {
+      hub.setLatency(hub.LATENCY_10_MS);
+    }
+
+    if (latencyCyton20ms.isMouseHere() && latencyCyton20ms.wasPressed) {
+      hub.setLatency(hub.LATENCY_20_MS);
+    }
+
+    if (latencyGanglion5ms.isMouseHere() && latencyGanglion5ms.wasPressed) {
+      hub.setLatency(hub.LATENCY_5_MS);
+    }
+
+    if (latencyGanglion10ms.isMouseHere() && latencyGanglion10ms.wasPressed) {
+      hub.setLatency(hub.LATENCY_10_MS);
+    }
+
+    if (latencyGanglion20ms.isMouseHere() && latencyGanglion20ms.wasPressed) {
+      hub.setLatency(hub.LATENCY_20_MS);
+    }
+
+
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelected");
@@ -963,6 +1311,16 @@ class ControlPanel {
     refreshPort.wasPressed = false;
     refreshBLE.setIsActive(false);
     refreshBLE.wasPressed = false;
+    refreshWifi.setIsActive(false);
+    refreshWifi.wasPressed = false;
+    protocolBLEGanglion.setIsActive(false);
+    protocolBLEGanglion.wasPressed = false;
+    protocolWifiGanglion.setIsActive(false);
+    protocolWifiGanglion.wasPressed = false;
+    protocolSerialCyton.setIsActive(false);
+    protocolSerialCyton.wasPressed = false;
+    protocolWifiCyton.setIsActive(false);
+    protocolWifiCyton.wasPressed = false;
     initSystemButton.setIsActive(false);
     initSystemButton.wasPressed = false;
     autoFileName.setIsActive(false);
@@ -979,6 +1337,26 @@ class ControlPanel {
     outputODFGanglion.wasPressed = false;
     chanButton8.setIsActive(false);
     chanButton8.wasPressed = false;
+    sampleRate200.setIsActive(false);
+    sampleRate200.wasPressed = false;
+    sampleRate1600.setIsActive(false);
+    sampleRate1600.wasPressed = false;
+    sampleRate250.setIsActive(false);
+    sampleRate250.wasPressed = false;
+    sampleRate1000.setIsActive(false);
+    sampleRate1000.wasPressed = false;
+    latencyCyton5ms.setIsActive(false);
+    latencyCyton5ms.wasPressed = false;
+    latencyCyton10ms.setIsActive(false);
+    latencyCyton10ms.wasPressed = false;
+    latencyCyton20ms.setIsActive(false);
+    latencyCyton20ms.wasPressed = false;
+    latencyGanglion5ms.setIsActive(false);
+    latencyGanglion5ms.wasPressed = false;
+    latencyGanglion10ms.setIsActive(false);
+    latencyGanglion10ms.wasPressed = false;
+    latencyGanglion20ms.setIsActive(false);
+    latencyGanglion20ms.wasPressed = false;
     synthChanButton4.setIsActive(false);
     synthChanButton4.wasPressed = false;
     synthChanButton8.setIsActive(false);
@@ -1002,9 +1380,18 @@ class ControlPanel {
 
 public void initButtonPressed(){
   if (initSystemButton.but_txt == "START SYSTEM") {
-
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+      if ((eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_NONE) || (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_NONE)) {
+        output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
         output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
+      } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+        output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
@@ -1013,17 +1400,16 @@ public void initButtonPressed(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion_portName == "N/A") {
+      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_BLE && ganglion_portName == "N/A") {
         output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      // } else if (eegDataSource == DATASOURCE_SYNTHETIC){
-      //   nchan = 16;
-      //   output("Starting system with 16 channels of synthetically generated data...");
-      //   initSystemButton.wasPressed = false;
-      //   initSystemButton.setIsActive(false);
-      //   return;
+      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+        output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+        initSystemButton.wasPressed = false;
+        initSystemButton.setIsActive(false);
+        return;
       } else if (eegDataSource == -1) {//if no data source selected
         output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
         initSystemButton.wasPressed = false;
@@ -1034,46 +1420,35 @@ public void initButtonPressed(){
         initSystemButton.setString("STOP SYSTEM");
         //global steps to START SYSTEM
         // prepare the serial port
-        if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
-          verbosePrint("ControlPanel — port is open: " + openBCI.isSerialPortOpen());
-          if (openBCI.isSerialPortOpen() == true) {
-            openBCI.closeSerialPort();
+        if (eegDataSource == DATASOURCE_CYTON) {
+          verbosePrint("ControlPanel — port is open: " + cyton.isPortOpen());
+          if (cyton.isPortOpen() == true) {
+            cyton.closePort();
           }
         } else if(eegDataSource == DATASOURCE_GANGLION){
           verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
           if (ganglion.isPortOpen()) {
-            ganglion.disconnectBLE();
-          } else {
-            //do nothing
+            ganglion.closePort();
           }
         }
         if(eegDataSource == DATASOURCE_GANGLION){
           fileName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
-        } else if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+        } else if(eegDataSource == DATASOURCE_CYTON){
           fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
         }
         midInit = true;
+        println("initSystem yoo");
         initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
     }
 
     //if system is already active ... stop system and flip button state back
     else {
-      output("SYSTEM STOPPED");
+      output("Learn how to use this application and more at docs.openbci.com");
       initSystemButton.setString("START SYSTEM");
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
-      if(eegDataSource == DATASOURCE_GANGLION){
-        if(ganglion.isCheckingImpedance()){
-          ganglion.impedanceStop();
-          w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
-        }
-      }
       haltSystem();
-      if(eegDataSource == DATASOURCE_GANGLION){
-        ganglion.searchDeviceStart();
-        bleList.items.clear();
-      }
     }
 }
 
@@ -1082,6 +1457,9 @@ void updateToNChan(int _nchan) {
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
   output("channel count set to " + str(nchan));
+  hub.initDataPackets(_nchan, 3);
+  ganglion.initDataPackets(_nchan, 3);
+  cyton.initDataPackets(_nchan, 3);
   updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
@@ -1153,16 +1531,16 @@ class SerialBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 171 + _padding;
+    h = 140 + _padding;
     padding = _padding;
 
-    autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
-    refreshPort = new Button (x + padding, y + padding*4 + 13 + 71 + 24, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    popOut = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+    // autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
+    refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+    popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
     // println(w-padding*2);
-    serialList.setPosition(x + padding, y + padding*3 + 13 + 24);
+    serialList.setPosition(x + padding, y + padding*3 + 8);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {
       String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
@@ -1188,8 +1566,10 @@ class SerialBox {
 
     // openClosePort.draw();
     refreshPort.draw();
-    autoconnect.draw();
-    popOut.draw();
+    // autoconnect.draw();
+    if (cyton.isSerial()) {
+      popOutRadioConfigButton.draw();
+    }
   }
 
   public void refreshSerialList() {
@@ -1206,13 +1586,13 @@ class BLEBox {
     x = _x;
     y = _y;
     w = _w;
-    h = 171 - 24 + _padding;
+    h = 140 + _padding;
     padding = _padding;
 
-    refreshBLE = new Button (x + padding, y + padding * 4 + 13 + 71, w - padding * 2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-    bleList = new MenuList(cp5, "bleList", w - padding * 2, 84, p4);
+    refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
+    bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
     // println(w-padding*2);
-    bleList.setPosition(x + padding, y + padding * 3);
+    bleList.setPosition(x + padding, y + padding*3 + 8);
     // Call to update the list
     // ganglion.getBLEDevices();
   }
@@ -1239,15 +1619,161 @@ class BLEBox {
     popStyle();
 
     refreshBLE.draw();
+
+    if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE() && hub.isSearching()){
+      image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
+      refreshBLE.setString("SEARCHING...");
+    } else {
+      refreshBLE.setString("START SEARCH");
+    }
   }
 
   public void refreshBLEList() {
     bleList.items.clear();
-    for (int i = 0; i < ganglion.deviceList.length; i++) {
-      String tempPort = ganglion.deviceList[i];
+    for (int i = 0; i < hub.deviceList.length; i++) {
+      String tempPort = hub.deviceList[i];
       bleList.addItem(makeItem(tempPort));
     }
     bleList.updateMenu();
+  }
+};
+
+class WifiBox {
+  int x, y, w, h, padding; //size and position
+  //connect/disconnect button
+  //Refresh list button
+  //String port status;
+
+  WifiBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 140 + _padding;
+    padding = _padding;
+
+    refreshWifi = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
+    wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72, p4);
+    popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+
+    // println(w-padding*2);
+    wifiList.setPosition(x + padding, y + padding*3 + 8);
+    // Call to update the list
+    // ganglion.getBLEDevices();
+  }
+
+  public void update() {
+    // Quick check to see if there are just more or less devices in general
+
+  }
+
+  public void updateListPosition(){
+    wifiList.setPosition(x + padding, y + padding * 3);
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("WIFI SHIELDS", x + padding, y + padding);
+    popStyle();
+
+    refreshWifi.draw();
+    popOutWifiConfigButton.draw();
+
+    if(isHubInitialized && isHubObjectInitialized && (ganglion.isWifi() || cyton.isWifi()) && hub.isSearching()){
+      image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
+      refreshWifi.setString("SEARCHING...");
+    } else {
+      refreshWifi.setString("START SEARCH");
+      pushStyle();
+      fill(#999999);
+      ellipseMode(CENTER);
+      ellipse(w + 225 + 10,  y + padding*4 + 72 + 10 + 10, 12, 12);
+      popStyle();
+    }
+  }
+
+  public void refreshWifiList() {
+    println("refreshWifiList");
+    wifiList.items.clear();
+    if (hub.deviceList != null) {
+      for (int i = 0; i < hub.deviceList.length; i++) {
+        String tempPort = hub.deviceList[i];
+        wifiList.addItem(makeItem(tempPort));
+      }
+    }
+    wifiList.updateMenu();
+  }
+};
+
+class InterfaceBoxCyton {
+  int x, y, w, h, padding; //size and position
+
+  InterfaceBoxCyton(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = (24 + _padding) * 3;
+    padding = _padding;
+
+    protocolSerialCyton = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
+    protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+  }
+
+  public void update() {}
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
+    popStyle();
+
+    protocolSerialCyton.draw();
+    protocolWifiCyton.draw();
+  }
+};
+
+class InterfaceBoxGanglion {
+  int x, y, w, h, padding; //size and position
+
+  InterfaceBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = (24 + _padding) * 3;
+    padding = _padding;
+
+    protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "BLE (on Win from Dongle)", fontInfo.buttonLabel_size);
+    protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+  }
+
+  public void update() {}
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
+    popStyle();
+
+    protocolBLEGanglion.draw();
+    protocolWifiGanglion.draw();
   }
 };
 
@@ -1442,6 +1968,176 @@ class ChannelCountBox {
   }
 };
 
+class SampleRateGanglionBox {
+  int x, y, w, h, padding; //size and position
+
+  boolean isSystemInitialized;
+  // button for init/halt system
+
+  SampleRateGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    sampleRate200 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "200Hz", fontInfo.buttonLabel_size);
+    sampleRate1600 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1600Hz", fontInfo.buttonLabel_size);
+    sampleRate1600.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("SAMPLE RATE ", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("  " + str((int)ganglion.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    popStyle();
+
+    sampleRate200.draw();
+    sampleRate1600.draw();
+  }
+};
+
+class SampleRateCytonBox {
+  int x, y, w, h, padding; //size and position
+
+  boolean isSystemInitialized;
+  // button for init/halt system
+
+  SampleRateCytonBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "250Hz", fontInfo.buttonLabel_size);
+    sampleRate1000 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1000Hz", fontInfo.buttonLabel_size);
+    sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("SAMPLE RATE ", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("  " + str((int)cyton.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    popStyle();
+
+    sampleRate250.draw();
+    sampleRate1000.draw();
+  }
+};
+
+class LatencyGanglionBox {
+  int x, y, w, h, padding; //size and position
+
+  LatencyGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    latencyGanglion5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
+    if (hub.getLatency() == hub.LATENCY_5_MS) latencyGanglion5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    latencyGanglion10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
+    if (hub.getLatency() == hub.LATENCY_10_MS) latencyGanglion10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    latencyGanglion20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
+    if (hub.getLatency() == hub.LATENCY_20_MS) latencyGanglion20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("LATENCY ", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    popStyle();
+
+    latencyGanglion5ms.draw();
+    latencyGanglion10ms.draw();
+    latencyGanglion20ms.draw();
+  }
+};
+
+class LatencyCytonBox {
+  int x, y, w, h, padding; //size and position
+
+  LatencyCytonBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    latencyCyton5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
+    if (hub.getLatency() == hub.LATENCY_5_MS) latencyCyton5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    latencyCyton10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
+    if (hub.getLatency() == hub.LATENCY_10_MS) latencyCyton10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    latencyCyton20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
+    if (hub.getLatency() == hub.LATENCY_20_MS) latencyCyton20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("LATENCY ", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
+    popStyle();
+
+    latencyCyton5ms.draw();
+    latencyCyton10ms.draw();
+    latencyCyton20ms.draw();
+  }
+};
+
 class SyntheticChannelCountBox {
   int x, y, w, h, padding; //size and position
 
@@ -1615,7 +2311,6 @@ class SDBox {
   }
 };
 
-
 class RadioConfigBox {
   int x, y, w, h, padding; //size and position
   String last_message = "";
@@ -1631,16 +2326,10 @@ class RadioConfigBox {
     isShowing = false;
 
     getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-    systemStatus = new Button(x + padding + (w-padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-    setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHANNEL", fontInfo.buttonLabel_size);
-    ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
-    autoscan = new Button(x + padding + (w-padding*2)/2, y + padding*4 + 18 + 24*2, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
-    // getPoll = new Button(x + padding + (w-padding*2)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET POLL", fontInfo.buttonLabel_size);
-    // highBAUD = new Button(x + padding, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "HIGH BAUD", fontInfo.buttonLabel_size);
-    // setPoll = new Button(x + padding + (w-padding*2)/2, y + padding*5 + 18 + 24*3, (w-padding*3)/2, 24, "", fontInfo.buttonLabel_size);
-    // autoconnectNoStartDefault = new Button(x + padding, y + padding*6 + 18 + 24*4, (w-padding*3 )/2 , 24, "CONNECT 115200", fontInfo.buttonLabel_size);
-    // deraultBaud = new Button(x + padding + (w-padding*2)/2, y + padding*6 + 18 + 24*4, (w-padding*3 )/2, 24, "", fontInfo.buttonLabel_size);
-    // autoconnectNoStartHigh = new Button(x + padding, y + padding*7 + 18 + 24*5, (w-padding*3 )/2, 24, "CONNECT 230400", fontInfo.buttonLabel_size);
+    systemStatus = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+    setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+    autoscan = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
+    ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
 
     //Set help text
     getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
@@ -1648,16 +2337,8 @@ class RadioConfigBox {
     ovrChannel.setHelpText("Change the channel of the USB Dongle only");
     autoscan.setHelpText("Scan through channels and connect to a nearby Cyton");
     systemStatus.setHelpText("Get the connection status of your Cyton system");
-    // getPoll.setHelpText("Gets the current POLL value.");
-    // setPoll.setHelpText("Sets the current POLL value.");
-    // defaultBAUD.setHelpText("Sets the BAUD rate to 115200.");
-    // highBAUD.setHelpText("Sets the BAUD rate to 230400.");
-    // autoconnectNoStartDefault.setHelpText("Automatically connects to a board with the DEFAULT (115200) BAUD");
-    // autoconnectNoStartHigh.setHelpText("Automatically connects to a board with the HIGH (230400) BAUD");
-
   }
-  public void update() {
-  }
+  public void update() {}
 
   public void draw() {
     pushStyle();
@@ -1668,40 +2349,115 @@ class RadioConfigBox {
     fill(bgColor);
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("RADIO CONFIGURATION (v2)", x + padding, y + padding);
+    text("RADIO CONFIGURATION", x + padding, y + padding);
     popStyle();
     getChannel.draw();
     setChannel.draw();
     ovrChannel.draw();
     systemStatus.draw();
     autoscan.draw();
-    // getPoll.draw();
-    // setPoll.draw();
-    // defaultBAUD.draw();
-    // highBAUD.draw();
-    // autoconnectNoStartDefault.draw();
-    // autoconnectNoStartHigh.draw();
 
     this.print_onscreen(last_message);
-
-    //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
-
   }
 
   public void print_onscreen(String localstring){
     textAlign(LEFT);
-    fill(0);
-    rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
     fill(255);
-    text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     this.last_message = localstring;
   }
 
   public void print_lastmessage(){
-
-    fill(0);
-    rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
     fill(255);
+    text(this.last_message, 180, 340, 240, 60);
+  }
+};
+
+class WifiConfigBox {
+  int x, y, w, h, padding; //size and position
+  String last_message = "";
+  Serial board;
+  boolean isShowing;
+
+  WifiConfigBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x + _w;
+    y = _y;
+    w = _w;
+    h = 255;
+    padding = _padding;
+    isShowing = false;
+
+    getTypeOfAttachedBoard = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "OPENBCI BOARD", fontInfo.buttonLabel_size);
+    getIpAddress = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
+    // getIpAddress = new Button(x + w -padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
+    getMacAddress = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
+    getFirmwareVersion = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "FIRMWARE VERS.", fontInfo.buttonLabel_size);
+    eraseCredentials = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "ERASE NETWORK CREDENTIALS", fontInfo.buttonLabel_size);
+
+    //y + padding*4 + 18 + 24*2
+
+    //Set help text
+    getTypeOfAttachedBoard.setHelpText("Get the type of OpenBCI board attached to the WiFi Shield");
+    getIpAddress.setHelpText("Get the IP Address of the WiFi shield");
+    getMacAddress.setHelpText("Get the MAC Address of the WiFi shield");
+    getFirmwareVersion.setHelpText("Get the firmware version of the WiFi Shield");
+    eraseCredentials.setHelpText("Erase the store credentials on the WiFi Shield to join another wireless network. Always remove WiFi Shield from OpenBCI board prior to erase and WiFi Shield will become a hotspot again.");
+  }
+  public void update() {}
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("WIFI CONFIGURATION", x + padding, y + padding);
+    popStyle();
+    getTypeOfAttachedBoard.draw();
+    getIpAddress.draw();
+    getMacAddress.draw();
+    getFirmwareVersion.draw();
+    eraseCredentials.draw();
+
+    this.print_onscreen(last_message);
+  }
+
+  public void updateMessage(String str) {
+    last_message = str;
+  }
+
+  public void print_onscreen(String localstring){
+    textAlign(LEFT);
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
+    fill(255);
+    text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+    // this.last_message = localstring;
+
+
+    // textAlign(LEFT);
+    // fill(0);
+    // rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
+    // fill(255);
+    // text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+  }
+
+  public void print_lastmessage(){
+
+    fill(bgColor);
+    rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
+    fill(255);
+
+    // fill(0);
+    // rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
+    // fill(255);
     text(this.last_message, 180, 340, 240, 60);
   }
 };
@@ -1737,7 +2493,6 @@ class SDConverterBox {
     selectSDFile.draw();
   }
 };
-
 
 class ChannelPopup {
   int x, y, w, h, padding; //size and position
@@ -1780,7 +2535,7 @@ class ChannelPopup {
 
     // openClosePort.draw();
     refreshPort.draw();
-    autoconnect.draw();
+    // autoconnect.draw();
   }
 
   public void setClicked(boolean click){this.clicked = click; }
@@ -1831,7 +2586,7 @@ class PollPopup {
 
     // openClosePort.draw();
     refreshPort.draw();
-    autoconnect.draw();
+    // autoconnect.draw();
   }
 
   public void setClicked(boolean click){this.clicked = click; }

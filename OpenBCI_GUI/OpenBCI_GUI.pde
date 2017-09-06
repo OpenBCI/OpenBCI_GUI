@@ -6,6 +6,7 @@
 //   Created: Chip Audette, Oct 2013 - May 2014
 //   Modified: Conor Russomanno & Joel Murphy, August 2014 - Dec 2014
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
+//   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -63,17 +64,24 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = false;
+boolean hasIntroAnimation = true;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
 
+boolean initSystemThreadLock = false;
+
 //choose where to get the EEG data
-final int DATASOURCE_NORMAL_W_AUX = 0; // new default, data from serial with Accel data CHIP 2014-11-03
+final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
+
+final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interface
+final int INTERFACE_SERIAL = 0; // Used only by cyton
+final int INTERFACE_HUB_BLE = 1; // used only by ganglion
+final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
@@ -83,16 +91,26 @@ int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
-//Global Serial/COM communications constants
-OpenBCI_ADS1299 openBCI = new OpenBCI_ADS1299(); //dummy creation to get access to constants, create real one later
+// Initialize boards for constants
+Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
+Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
+// Intialize interface protocols
+InterfaceSerial iSerial = new InterfaceSerial();
+Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
+
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
-OpenBCI_Ganglion ganglion; //dummy creation to get access to constants, create real one later
 String ganglion_portName = "N/A";
 
+String wifi_portName = "N/A";
+
+final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_SERIAL = "serial";
+final static String PROTOCOL_WIFI = "wifi";
+
 ////// ---- Define variables related to OpenBCI board operations
-//Define number of channels from openBCI...first EEG channels, then aux channels
+//Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
 int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
@@ -102,9 +120,9 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //OpenBCI SD Card setting (if eegDataSource == 0)
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
-//openBCI data packet
-final int nDataBackBuff = 3*(int)get_fs_Hz_safe();
-DataPacket_ADS1299 dataPacketBuff[] = new DataPacket_ADS1299[nDataBackBuff]; //allocate the array, but doesn't call constructor.  Still need to call the constructor!
+//cyton data packet
+int nDataBackBuff;
+DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
@@ -120,19 +138,24 @@ long timeOfInit;
 long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
+// Calculate nPointsPerUpdate based on sampling rate and buffer update rate
+// @update_millis: update the buffer every 40 milliseconds
+// @nPointsPerUpdate: update the GUI after this many data points have been received.
+// The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
+final int update_millis = 40;
+int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 // final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
 // final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
-final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
-
+// final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
 
 //define some data fields for handling data here in processing
 float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float yLittleBuff[] = new float[nPointsPerUpdate];
-float yLittleBuff_uV[][] = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+float yLittleBuff[];
+float yLittleBuff_uV[][]; //small buffer used to send data to the filters
 float accelerometerBuff[][]; // accelerometer buff 500 points
-float auxBuff[][] = new float[3][nPointsPerUpdate];
+float auxBuff[][];
 float data_elec_imp_ohm[];
 
 float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -224,7 +247,7 @@ boolean synthesizeData = false;
 
 int timeOfSetup = 0;
 boolean isHubInitialized = false;
-boolean isGanglionObjectInitialized = false;
+boolean isHubObjectInitialized = false;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
@@ -234,7 +257,7 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
 int hubPid = 0;
-String nodeHubName = "GanglionHub";
+String nodeHubName = "OpenBCIHub";
 Robot rob3115;
 
 PApplet ourApplet;
@@ -245,37 +268,32 @@ PApplet ourApplet;
 
 //========================SETUP============================//
 
-int frameRateCounter = 2; //0 = 30, 1 = 45, 2 = 60
+int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void setup() {
-  // Step 1: Prepare the exit handler that will attempt to close a running node
-  //  server on shut down of this app, the main process.
-  // prepareExitHandler();
-  if (dev == false) {
-    // On windows wait to start the hub until Ganglion is clicked on in the control panel.
-    //  See issue #111
-    hubStop(); //kill any existing hubs before starting a new one..
-    if (!isWindows()) {
-      hubInit();
-    }
-  }
+  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
+  hubInit(); // putting down here gives windows time to close any open apps
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 12/20/2016"); //Welcome line.
+  println("Last update: 9/5/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
   ourApplet = this;
 
   if(frameRateCounter==0){
-    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
   if(frameRateCounter==1){
-    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
   if(frameRateCounter==2){
+    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+  }
+  if(frameRateCounter==3){
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
+
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -341,29 +359,9 @@ void setup() {
 
   playground = new Playground(navBarHeight);
 
-  //attempt to open a serial port for "output"
-  // try {
-  //   verbosePrint("OpenBCI_GUI.pde: attempting to open serial/COM port for data output = " + serial_output_portName);
-  //   serial_output = new Serial(this, serial_output_portName, serial_output_baud); //open the com port
-  //   serial_output.clear(); // clear anything in the com port's buffer
-  // }
-  // catch (RuntimeException e) {
-  //   verbosePrint("OpenBCI_GUI.pde: could not open " + serial_output_portName);
-  // }
-
-  // println("OpenBCI_GUI: setup: hub is running " + ganglion.isHubRunning());
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
-
-  // try{
-  //   rob3115 = new Robot();
-  // } catch (AWTException e){
-  //   println("couldn't create robot...");
-  // }
-
-  // ganglion = new OpenBCI_Ganglion(this);
-  // wm = new WidgetManager(this);
 
   timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
@@ -406,8 +404,10 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  hubStart();
-  prepareExitHandler();
+  if (!isWindows()) {
+    hubStart();
+    prepareExitHandler();
+  }
 }
 
 /**
@@ -419,13 +419,13 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("GanglionHub.exe"));
+      nodeHubby = launch(dataPath("OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = exec(dataPath("GanglionHub"));
+      nodeHubby = exec(dataPath("OpenBCIHub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
-      nodeHubby = launch(dataPath("GanglionHub.app"));
+      nodeHubby = launch(dataPath("OpenBCIHub.app"));
     }
     // hubRunning = true;
   }
@@ -497,7 +497,7 @@ void killRunningProcessMac() {
  */
 boolean killRunningprocessWin() {
   try {
-    Runtime.getRuntime().exec("taskkill /F /IM GanglionHub.exe");
+    Runtime.getRuntime().exec("taskkill /F /IM OpenBCIHub.exe");
     return true;
   }
   catch (Exception err) {
@@ -539,7 +539,6 @@ void setupWidgetManager() {
 }
 
 void initSystem() {
-
   println();
   println();
   println("=================================================");
@@ -553,9 +552,35 @@ void initSystem() {
 
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
-  dataBuffX = new float[(int)(dataBuff_len_sec * get_fs_Hz_safe())];
+
+  if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+    //open and load the data file
+    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
+    try {
+      playbackData_table = new Table_CSV(playbackData_fname);
+      playbackData_table.removeColumn(0);
+    } catch (Exception e) {
+      println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
+      println("   : quitting...");
+      abandonInit = true;
+      hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
+    }
+    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
+    //removing first column of data from data file...the first column is a time index and not eeg data
+
+  }
+
+  fs_Hz = getSampleRateSafe();
+  Nfft = getNfftSafe();
+  nDataBackBuff = 3*(int)fs_Hz;
+  dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
+  nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
+  dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  yLittleBuff = new float[nPointsPerUpdate];
+  yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+  auxBuff = new float[3][nPointsPerUpdate];
   accelerometerBuff = new float[3][500]; // 500 points
   for (int i=0; i<n_aux_ifEnabled; i++) {
     for (int j=0; j<accelerometerBuff[0].length; j++) {
@@ -569,61 +594,61 @@ void initSystem() {
   for (int i=0; i<nDataBackBuff; i++) {
     dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
   }
-  dataProcessing = new DataProcessing(nchan, get_fs_Hz_safe());
-  dataProcessing_user = new DataProcessing_User(nchan, get_fs_Hz_safe());
+  dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
+  dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
 
 
 
   //initialize the data
-  prepareData(dataBuffX, dataBuffY_uV, get_fs_Hz_safe());
+  prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
-    verbosePrint("Init FFT Buff – "+Ichan);
-    fftBuff[Ichan] = new FFT(Nfft, get_fs_Hz_safe());
+    verbosePrint("Init FFT Buff – " + Ichan);
+    fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
   }  //make the FFT objects
 
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, get_fs_Hz_safe());
+  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
 
+  controlPanel.close();
+  topNav.controlPanelCollapser.setIsActive(false);
+  hub.changeState(hub.STATE_COMINIT);
+  // hub.searchDeviceStop();
+
   //prepare the source of the input data
   switch (eegDataSource) {
-  case DATASOURCE_NORMAL_W_AUX:
-    int nEEDataValuesPerPacket = nchan;
-    boolean useAux = false;
-    if (eegDataSource == DATASOURCE_NORMAL_W_AUX) useAux = true;  //switch this back to true CHIP 2014-11-04
-    openBCI = new OpenBCI_ADS1299(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled); //this also starts the data transfer after XX seconds
-    break;
-  case DATASOURCE_SYNTHETIC:
-    //do nothing
-    break;
-  case DATASOURCE_PLAYBACKFILE:
-    //open and load the data file
-    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
-    try {
-      playbackData_table = new Table_CSV(playbackData_fname);
+    case DATASOURCE_CYTON:
+      int nEEDataValuesPerPacket = nchan;
+      boolean useAux = false;
+      if (eegDataSource == DATASOURCE_CYTON) useAux = true;  //switch this back to true CHIP 2014-11-04
+      if (cyton.getInterface() == INTERFACE_SERIAL) {
+        cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+      } else {
+        cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+      }
+      break;
+    case DATASOURCE_SYNTHETIC:
+      //do nothing
+      break;
+    case DATASOURCE_PLAYBACKFILE:
+      break;
+    case DATASOURCE_GANGLION:
+      if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
+        hub.connectBLE(ganglion_portName);
+      } else {
+        hub.connectWifi(wifi_portName);
+      }
+      break;
+    default:
+      break;
     }
-    catch (Exception e) {
-      println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-      println("   : quitting...");
-      exit();
-    }
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/get_fs_Hz_safe()) + " seconds of EEG data");
-    //removing first column of data from data file...the first column is a time index and not eeg data
-    playbackData_table.removeColumn(0);
-    break;
-  case DATASOURCE_GANGLION:
-    ganglion.connectBLE(ganglion_portName);
-    break;
-  default:
-    break;
-  }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -638,6 +663,10 @@ void initSystem() {
     topNav.initSecondaryNav();
     println("  3b -- " + millis());
 
+    //open data file
+    if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
+    if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
+
     // wm = new WidgetManager(this);
     setupWidgetManager();
 
@@ -645,27 +674,23 @@ void initSystem() {
       println("  3c -- " + millis());
       // setupGUIWidgets(); //####
 
-      //open data file
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) openNewLogFile(fileName);  //open a new log file
-      if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
-
       nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+      w_timeSeries.hsc.loadDefaultChannelSettings();
 
-      if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
         systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
       }
       if (!abandonInit) {
-        println("WOOHOO!!!");
         controlPanel.close();
       } else {
         haltSystem();
         println("Failed to connect to data source...");
-        output("Failed to connect to data source...");
+        // output("Failed to connect to data source...");
       }
     } else {
       haltSystem();
       println("Failed to connect to data source...");
-      output("Failed to connect to data source...");
+      // output("Failed to connect to data source...");
     }
   }
 
@@ -680,13 +705,101 @@ void initSystem() {
  * @description Useful function to get the correct sample rate based on data source
  * @returns `float` - The frequency / sample rate of the data source
  */
-float get_fs_Hz_safe() {
+float getSampleRateSafe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
-    return ganglion.get_fs_Hz();
+    return ganglion.getSampleRate();
+  } else if (eegDataSource == DATASOURCE_CYTON){
+    return cyton.getSampleRate();
+  } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+    return playbackData_table.getSampleRate();
   } else {
-    return openBCI.get_fs_Hz();
+    return 250;
   }
 }
+
+/**
+* @description Get the correct points of FFT based on sampling rate
+* @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
+*/
+int getNfftSafe() {
+  int sampleRate = (int)getSampleRateSafe();
+  switch (sampleRate) {
+    case 1000:
+      return 1024;
+    case 1600:
+      return 2048;
+    case 125:
+    case 200:
+    case 250:
+    default:
+      return 256;
+  }
+}
+
+void startRunning() {
+  verbosePrint("startRunning...");
+  output("Data stream started.");
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    if (ganglion != null) {
+      ganglion.startDataTransfer();
+    }
+  } else {
+    if (cyton != null) {
+      println("DEBUG: start data transfer");
+      cyton.startDataTransfer();
+    }
+  }
+  isRunning = true;
+}
+
+void stopRunning() {
+  // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+  verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
+  output("Data stream stopped.");
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    if (ganglion != null) {
+      ganglion.stopDataTransfer();
+    }
+  } else {
+    if (cyton != null) {
+      cyton.stopDataTransfer();
+    }
+  }
+
+  timeSinceStopRunning = millis(); //used as a timer to prevent misc. bytes from flooding serial...
+  isRunning = false;
+  // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+  // systemMode = 0;
+  // closeLogFile();
+}
+
+//execute this function whenver the stop button is pressed
+void stopButtonWasPressed() {
+  //toggle the data transfer state of the ADS1299...stop it or start it...
+  if (isRunning) {
+    verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
+    wm.setUpdating(false);
+    stopRunning();
+    topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
+    topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+    if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+  } else { //not running
+    verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
+    wm.setUpdating(true);
+    startRunning();
+    topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
+    topNav.stopButton.setColorNotPressed(color(224, 56, 45));
+    nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
+  }
+}
+
 
 //halt the data collection
 void haltSystem() {
@@ -694,7 +807,17 @@ void haltSystem() {
   if (initSystemButton.but_txt == "STOP SYSTEM") {
     initSystemButton.but_txt = "START SYSTEM";
   }
+
   stopRunning();  //stop data transfer
+
+  if(cyton.isPortOpen()) {
+    if (w_pulsesensor.analogReadOn) {
+      hub.sendCommand("/0");
+      println("Stopping Analog Read to read accelerometer");
+      w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
+      w_pulsesensor.analogReadOn = false;
+    }
+  }
 
   //reset variables for data processing
   curDataPacketInd = -1;
@@ -710,36 +833,57 @@ void haltSystem() {
 
   //reset connect loadStrings
   openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-  ganglion_portName = "";
+  ganglion_portName = "N/A";
+  wifi_portName = "N/A";
+
   controlPanel.resetListItems();
 
-  // w_networking.clearCP5(); //closes all networking controllers
-
-  // stopDataTransfer(); // make sure to stop data transfer, if data is streaming and being drawn
-
-  if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+  if (eegDataSource == DATASOURCE_CYTON) {
     closeLogFile();  //close log file
-    openBCI.closeSDandSerialPort();
+    cyton.closeSDandPort();
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
+    if(ganglion.isCheckingImpedance()){
+      ganglion.impedanceStop();
+      w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+    }
     closeLogFile();  //close log file
-    ganglion.disconnectBLE();
+    ganglion.closePort();
   }
   systemMode = SYSTEMMODE_PREINIT;
+  hub.changeState(hub.STATE_NOCOM);
+  abandonInit = false;
+
+  bleList.items.clear();
+  wifiList.items.clear();
+
+  if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
+    hub.searchDeviceStart();
+  }
+}
+
+void delayedInit() {
+  // Initialize a plot
+  GPlot plot = new GPlot(this);
 }
 
 void systemUpdate() { // for updating data values and variables
 
-  if (isHubInitialized && isGanglionObjectInitialized == false && millis() - timeOfSetup >= 1500) {
-    ganglion = new OpenBCI_Ganglion(this);
-    println("Instantiating Ganglion object...");
-    isGanglionObjectInitialized = true;
+  if (isHubInitialized && isHubObjectInitialized == false && millis() - timeOfSetup >= 1500) {
+    hub = new Hub(this);
+    println("Instantiating hub object...");
+    isHubObjectInitialized = true;
+    thread("delayedInit");
   }
 
-  //update the sync state with the OpenBCI hardware
-  if (openBCI.state == openBCI.STATE_NOCOM || openBCI.state == openBCI.STATE_COMINIT || openBCI.state == openBCI.STATE_SYNCWITHHARDWARE) {
-    openBCI.updateSyncState(sdSetting);
-  }
+  // //update the sync state with the OpenBCI hardware
+  // if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
+  //   iSerial.updateSyncState(sdSetting);
+  // }
+
+  // if (hub.get_state() == hub.STATE_NOCOM || hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) {
+  //   hub.updateSyncState(sdSetting);
+  // }
 
   //prepare for updating the GUI
   win_x = width;
@@ -830,8 +974,12 @@ void systemUpdate() { // for updating data values and variables
       playground.x = width; //reset the x for the playground...
     }
 
-    wm.update();
-    playground.update();
+    if (!initSystemThreadLock) {
+      if (wm.isWMInitialized) {
+        wm.update();
+        playground.update();
+      }
+    }
   }
 }
 
@@ -855,7 +1003,7 @@ void systemDraw() { //for drawing to the screen
   noStroke();
   //background(255);  //clear the screen
 
-  if (systemMode >= SYSTEMMODE_POSTINIT) {
+  if (systemMode >= SYSTEMMODE_POSTINIT && !initSystemThreadLock) {
     int drawLoopCounter_thresh = 100;
     if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
       //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
@@ -864,17 +1012,17 @@ void systemDraw() { //for drawing to the screen
 
       //update the title of the figure;
       switch (eegDataSource) {
-      case DATASOURCE_NORMAL_W_AUX:
+      case DATASOURCE_CYTON:
         switch (outputDataSource) {
         case OUTPUT_SOURCE_ODF:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(float(fileoutput_odf.getRowsWritten())/get_fs_Hz_safe()) + " secs Saved, Writing to " + output_fname);
+          surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
           break;
         case OUTPUT_SOURCE_BDF:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps" + ", " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+          surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
           break;
         case OUTPUT_SOURCE_NONE:
         default:
-          surface.setTitle(int(frameRate) + " fps, Byte Count = " + openBCI_byteCount + ", bit rate = " + byteRate_perSec*8 + " bps");
+          surface.setTitle(int(frameRate) + " fps");
           break;
         }
         break;
@@ -882,7 +1030,7 @@ void systemDraw() { //for drawing to the screen
         surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
         break;
       case DATASOURCE_PLAYBACKFILE:
-        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/get_fs_Hz_safe()) + " of " + int(float(playbackData_table.getRowCount())/get_fs_Hz_safe()) + " secs, Reading from: " + playbackData_fname);
+        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/getSampleRateSafe()) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
         break;
       case DATASOURCE_GANGLION:
         surface.setTitle(int(frameRate) + " fps, Ganglion!");
@@ -947,8 +1095,7 @@ void systemDraw() { //for drawing to the screen
     }
   }
 
-
-  if ((openBCI.get_state() == openBCI.STATE_COMINIT || openBCI.get_state() == openBCI.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+  if ((hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);
@@ -1009,7 +1156,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v2.2.1\nJuly 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.0.0\nSeptember 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

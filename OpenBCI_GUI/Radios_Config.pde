@@ -8,7 +8,7 @@
 //
 //  Handles interactions between the radio system and OpenBCI systems.
 //  It is important to note that this is using Serial communication directly
-//  rather than the OpenBCI_ADS1299 class. I just found this easier to work
+//  rather than the Cyton class. I just found this easier to work
 //  with.
 //
 //  Modified by Joel Murphy, January 2017
@@ -33,7 +33,7 @@ void autoconnect(){
       try{
           serialPort = serialPorts[i];
           board = new Serial(this,serialPort,115200);
-          print("try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
+          print("blasss try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
           output("Attempting to connect at 115200 baud to " + serialPort);  // not working
           delay(5000);
 
@@ -212,7 +212,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
     output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {
       println("Radios_Config: connect_to_portName: attempting to open serial port: " + openBCI_portName);
-      serial_output = new Serial(this,openBCI_portName,openBCI_baud); //open the com port
+      serial_output = new Serial(this, openBCI_portName, openBCI_baud); //open the com port
       serial_output.clear(); // clear anything in the com port's buffer
       // portIsOpen = true;
       println("Radios_Config: connect_to_portName: port is open!");
@@ -255,6 +255,8 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
 //==========================================
 
 void system_status(RadioConfigBox rcConfig){
+  println("Radios_Config: system_status");
+
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -275,6 +277,7 @@ void system_status(RadioConfigBox rcConfig){
 
 //Scans through channels until a success message has been found
 void scan_channels(RadioConfigBox rcConfig){
+  println("Radios_Config: scan_channels");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -302,6 +305,7 @@ void scan_channels(RadioConfigBox rcConfig){
 //==========================================
 
 void get_channel(RadioConfigBox rcConfig){
+  println("Radios_Config: get_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -336,6 +340,7 @@ void get_channel(RadioConfigBox rcConfig){
 //==========================================
 
 void set_channel(RadioConfigBox rcConfig, int channel_number){
+  println("Radios_Config: set_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -373,6 +378,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
 //==========================================
 
 void set_channel_over(RadioConfigBox rcConfig, int channel_number){
+  println("Radios_Config: set_ovr_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;

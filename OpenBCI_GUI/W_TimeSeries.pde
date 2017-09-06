@@ -57,7 +57,6 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-
     addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
     addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
@@ -92,7 +91,7 @@ class W_timeSeries extends Widget {
       channelBars[i] = tempBar;
     }
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
       hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
       hardwareSettingsButton.setFont(p6,10);
@@ -110,7 +109,6 @@ class W_timeSeries extends Widget {
     int y_hsc = int(ts_y);
     int w_hsc = int(ts_w); //width of montage controls (on left of montage)
     int h_hsc = int(ts_h); //height of montage controls (on left of montage)
-
     hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
   }
 
@@ -154,7 +152,7 @@ class W_timeSeries extends Widget {
         channelBars[i].draw();
       }
 
-      if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+      if(eegDataSource == DATASOURCE_CYTON){
         hardwareSettingsButton.draw();
       }
 
@@ -198,7 +196,7 @@ class W_timeSeries extends Widget {
 
     hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
     }
   }
@@ -207,7 +205,7 @@ class W_timeSeries extends Widget {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       //put your code here...
       if (hardwareSettingsButton.isMouseHere()) {
         hardwareSettingsButton.setIsActive(true);
@@ -228,7 +226,7 @@ class W_timeSeries extends Widget {
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       //put your code here...
       if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
         println("toggle...");
@@ -390,7 +388,7 @@ class ChannelBar{
     onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
     onOffButton.hasStroke(false);
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       impButton_diameter = 22;
       impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
       impCheckButton.setFont(h2, 16);
@@ -400,7 +398,6 @@ class ChannelBar{
     } else {
       impButton_diameter = 0;
     }
-
     numSeconds = 5;
     plot = new GPlot(_parent);
     plot.setPos(x + 36 + 4 + impButton_diameter, y);
@@ -411,21 +408,12 @@ class ChannelBar{
     plot.setYLim(-200,200);
     plot.setPointSize(2);
     plot.setPointColor(0);
-
     if(channelNumber == nchan){
       plot.getXAxis().setAxisLabelText("Time (s)");
     }
     // plot.setBgColor(color(31,69,110));
 
     nPoints = nPointsBasedOnDataSource();
-
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      nPoints = numSeconds * (int)openBCI.fs_Hz;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
-      nPoints = numSeconds * (int)ganglion.fs_Hz;
-    }else{
-      nPoints = numSeconds * (int)openBCI.fs_Hz;
-    }
 
     channelPoints = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
@@ -529,7 +517,7 @@ class ChannelBar{
     //draw onOff Button
     onOffButton.draw();
     //draw impedance check Button
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       impCheckButton.draw();
     }
 
@@ -566,16 +554,7 @@ class ChannelBar{
   }
 
   int nPointsBasedOnDataSource(){
-    int _nPoints;
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
-      _nPoints = numSeconds * (int)openBCI.fs_Hz;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
-      _nPoints = numSeconds * (int)ganglion.fs_Hz;
-    }else{
-      _nPoints = numSeconds * (int)openBCI.fs_Hz;
-    }
-
-    return _nPoints;
+    return numSeconds * (int)getSampleRateSafe();
   }
 
   void adjustTimeAxis(int _newTimeSize){
@@ -635,7 +614,7 @@ class ChannelBar{
     onOffButton.but_x = x + 6;
     onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       impCheckButton.but_x = x + 36;
       impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
     }
@@ -657,7 +636,7 @@ class ChannelBar{
       onOffButton.setIsActive(true);
     }
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       if(impCheckButton.isMouseHere()){
         println("[" + channelNumber + "] imp pressed");
         impCheckButton.setIsActive(true);
@@ -683,7 +662,7 @@ class ChannelBar{
 
     onOffButton.setIsActive(false);
 
-    if(eegDataSource == DATASOURCE_NORMAL_W_AUX){
+    if(eegDataSource == DATASOURCE_CYTON){
       if(impCheckButton.isMouseHere() && impCheckButton.isActive()){
         println("[" + channelNumber + "] imp released");
         w_timeSeries.hsc.toggleImpedanceCheck(channelNumber-1);  // 'n' indicates the N inputs and '1' indicates test impedance
@@ -864,7 +843,7 @@ if(has_processed){
         val_uV = processed_file.get(elm)[Ichan][startIndex];
 
 
-        data[Ichan][i] = (int) (0.5f+ val_uV / openBCI.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+        data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
       }
       i++;
     }

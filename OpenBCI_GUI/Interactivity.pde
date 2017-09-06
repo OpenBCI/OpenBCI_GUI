@@ -249,19 +249,19 @@ void parseKey(char val) {
       // stopButtonWasPressed();
       break;
     case 'n':
-      println("openBCI: " + openBCI);
+      println("cyton: " + cyton);
       break;
 
     case '?':
-      printRegisters();
+      cyton.printRegisters();
       break;
 
     case 'd':
       verbosePrint("Updating GUI's channel settings to default...");
       // gui.cc.loadDefaultChannelSettings();
       w_timeSeries.hsc.loadDefaultChannelSettings();
-      //openBCI.serial_openBCI.write('d');
-      openBCI.configureAllChannelsToDefault();
+      //cyton.serial_openBCI.write('d');
+      cyton.configureAllChannelsToDefault();
       break;
 
     // //change the state of the impedance measurements...activate the N-channels
@@ -324,12 +324,12 @@ void parseKey(char val) {
      break;
 
     default:
-      if (eegDataSource == DATASOURCE_NORMAL_W_AUX) {
+      if (eegDataSource == DATASOURCE_CYTON) {
         println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-        openBCI.sendChar(key);
+        cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
-        ganglion.passthroughCommand(key);
+        hub.sendCommand(key);
       }
       break;
   }
@@ -463,7 +463,9 @@ void mouseDragged() {
 //swtich yard if a click is detected
 void mousePressed() {
 
-  verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // println("systemMode" + systemMode);
+  // controlPanel.CPmousePressed();
 
   //if not before "Start System" ... i.e. after initial setup
   if (systemMode >= SYSTEMMODE_POSTINIT) {
@@ -993,20 +995,24 @@ void openURLInBrowser(String _url){
 }
 
 void toggleFrameRate(){
-  if(frameRateCounter<2){
+  if(frameRateCounter<3){
     frameRateCounter++;
   } else {
-    frameRateCounter = 0;
+    frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
   }
   if(frameRateCounter==0){
+    frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    topNav.fpsButton.setString("24 fps");
+  }
+  if(frameRateCounter==1){
     frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     topNav.fpsButton.setString("30 fps");
   }
-  if(frameRateCounter==1){
+  if(frameRateCounter==2){
     frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     topNav.fpsButton.setString("45 fps");
   }
-  if(frameRateCounter==2){
+  if(frameRateCounter==3){
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     topNav.fpsButton.setString("60 fps");
   }
@@ -1014,10 +1020,12 @@ void toggleFrameRate(){
 
 boolean isNetworkingTextActive(){
   boolean isAFieldActive = false;
-  int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
-  for(int i = 0; i < numTextFields; i++){
-    if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
-      isAFieldActive = true;
+  if (w_networking != null) {
+    int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
+    for(int i = 0; i < numTextFields; i++){
+      if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
+        isAFieldActive = true;
+      }
     }
   }
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
