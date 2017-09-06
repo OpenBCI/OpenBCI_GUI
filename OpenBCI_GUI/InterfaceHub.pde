@@ -527,14 +527,13 @@ class Hub {
                 }
               } else {
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                  for (int j = 0; j < 2; j++) {
-                    int val = Integer.parseInt(list[valCounter++]);
-                    if (j == 1) {
-                      dataPacket.auxValues[i] = val;
-                      // println("i " + i + " " + val);
-                    }
-                    dataPacket.rawAuxValues[i][j] = byte(val);
-                  }
+                  int val1 = Integer.parseInt(list[valCounter++]);
+                  int val2 = Integer.parseInt(list[valCounter++]);
+
+                  dataPacket.auxValues[i] = (val1 << 8) | val2;
+                  dataPacket.rawAuxValues[i][0] = byte(val2);
+                  dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                  // println(dataPacket.auxValues[i]);
                 }
               }
             }
