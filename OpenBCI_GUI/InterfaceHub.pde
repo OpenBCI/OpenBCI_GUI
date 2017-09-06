@@ -547,23 +547,27 @@ class Hub {
           copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
           // KILL SPIKES!!!
-          if(werePacketsDroppedHub){
-            // println("Packets Dropped ... doing some stuff...");
-            for(int i = numPacketsDroppedHub; i > 0; i--){
-              int tempDataPacketInd = curDataPacketInd - i; //
-              if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-                // println("i = " + i);
-                copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-              } else {
-                copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-              }
-              //put the last stored packet in # of packets dropped after that packet
-            }
-
-            //reset werePacketsDropped & numPacketsDropped
-            werePacketsDroppedHub = false;
-            numPacketsDroppedHub = 0;
-          }
+          // if(werePacketsDroppedHub){
+          //   // println("Packets Dropped ... doing some stuff...");
+          //   for(int i = numPacketsDroppedHub; i > 0; i--){
+          //     int tempDataPacketInd = curDataPacketInd - i; //
+          //     if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+          //       // println("i = " + i);
+          //       copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+          //     } else {
+          //       if (eegDataSource == DATASOURCE_GANGLION) {
+          //         copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+          //       } else {
+          //         copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
+          //       }
+          //     }
+          //     //put the last stored packet in # of packets dropped after that packet
+          //   }
+          //
+          //   //reset werePacketsDropped & numPacketsDropped
+          //   werePacketsDroppedHub = false;
+          //   numPacketsDroppedHub = 0;
+          // }
 
           switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
