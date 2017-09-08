@@ -1,4 +1,10 @@
-# 3.0.0
+# v3.0.1
+
+### Bug Fixes
+
+* FIX: #254 LSL, UDP, OSC ArrayIndexOutOfBoundsException Stream with 4 or 16 channels
+
+# v3.0.0
 
 v3.0.0 set out to move **all** of the data collection to the electron hub. This means moving serial port parsing as well.
 
