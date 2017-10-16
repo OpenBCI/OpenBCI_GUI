@@ -1,8 +1,11 @@
 # v3.0.2
 
+Use hub v1.3.3 please.
+
 ### Bug Fixes
 
 * "Data stream stopped" would be shown to users even if no data stream was stopped
+* Accel did not work for wifi Daisy
 
 # v3.0.1
 
