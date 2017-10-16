@@ -1,3 +1,9 @@
+# v3.0.2
+
+### Bug Fixes
+
+* "Data stream stopped" would be shown to users even if no data stream was stopped
+
 # v3.0.1
 
 ### Bug Fixes

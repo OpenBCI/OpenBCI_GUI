@@ -755,7 +755,9 @@ void startRunning() {
 void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
-  output("Data stream stopped.");
+  if (isRunning) {
+    output("Data stream stopped.");
+  }
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
       ganglion.stopDataTransfer();
