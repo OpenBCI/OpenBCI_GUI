@@ -2,6 +2,10 @@
 
 Use hub v1.3.3 please.
 
+### Breaking Changes
+
+* SD Converted file goes into `data/SavedData` instead of `data/EED_Data`.
+
 ### Bug Fixes
 
 * "Data stream stopped" would be shown to users even if no data stream was stopped
