@@ -1,4 +1,4 @@
-# v3.0.2
+# v3.1.0
 
 Use hub v1.3.3 please.
 
@@ -8,8 +8,9 @@ Use hub v1.3.3 please.
 
 ### Bug Fixes
 
-* "Data stream stopped" would be shown to users even if no data stream was stopped
-* Accel did not work for wifi Daisy
+* "Data stream stopped" would be shown to users even if no data stream was stopped #263
+* Accel did not work for wifi Daisy #265
+* Users would have to close the GUI before restarting after cyton or ganglion session #262
 
 # v3.0.1
 
