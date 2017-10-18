@@ -1,3 +1,18 @@
+# v3.1.0
+
+Use hub v1.3.3 please.
+
+### Breaking Changes
+
+* SD Converted file goes into `data/SavedData` instead of `data/EED_Data`. #267
+
+### Bug Fixes
+
+* "Data stream stopped" would be shown to users even if no data stream was stopped #263
+* Accel did not work for wifi Daisy #265
+* Users would have to close the GUI before restarting after cyton or ganglion session #262
+* Design your own widget link #261
+
 # v3.0.1
 
 ### Bug Fixes

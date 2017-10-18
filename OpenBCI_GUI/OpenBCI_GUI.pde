@@ -755,7 +755,9 @@ void startRunning() {
 void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
-  output("Data stream stopped.");
+  if (isRunning) {
+    output("Data stream stopped.");
+  }
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
       ganglion.stopDataTransfer();
@@ -1156,7 +1158,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.0.1\nSeptember 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.1.0\nOctober 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

@@ -152,7 +152,7 @@ String getDateString() {
 
 //these functions are relevant to convertSDFile
 void createPlaybackFileFromSD() {
-  logFileName = "data/EEG_Data/SDconverted-"+getDateString()+".csv";
+  logFileName = "SavedData/SDconverted-"+getDateString()+".csv";
   dataWriter = createWriter(logFileName);
   dataWriter.println("%OBCI Data Log - " + getDateString());
 }
@@ -1442,6 +1442,7 @@ public void convertSDFile() {
     controlPanel.convertingSD = false;
     println("nothing left in file");
     println("SD file conversion took "+thisTime+" mS");
+    output("SD file converted to " + logFileName);
     dataWriter.flush();
     dataWriter.close();
   }
@@ -1466,9 +1467,6 @@ public void convertSDFile() {
     }
   }
 }
-
-
-
 
 void convert16channelLine() {
   if(printNextLine){
