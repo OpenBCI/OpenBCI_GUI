@@ -18,6 +18,14 @@ Use hub v1.3.3 please.
 * Users would have to close the GUI before restarting after cyton or ganglion session #262
 * Design your own widget link #261
 
+## Beta 2
+
+Implement overhaul of GUI docs.
+
+## Beta 1
+
+Initial release.
+
 # v3.0.1
 
 ### Bug Fixes
