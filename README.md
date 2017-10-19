@@ -34,7 +34,7 @@ This document (the README file) is a hub to give you some information about the 
 * Users use macOS, Windows and Linux to acquire data
 * Users want to filter incoming data in real time
 * Users want to make their own experiments to test their awesome theories or duplicate state of the art research at home!
-* Users continuously struggle to get prerequisites properly installed to get current OpenBCI Cyton and Ganglion, hours/days/weeks are wasted just _trying to get the data_.
+* Users struggle to get prerequisites properly installed to get data on their own from OpenBCI Cyton and Ganglion.
 * Users want to stream data into their own custom applications such as MATLAB.
 
 So, if even the very best researchers and hackers buy OpenBCI, there is still a lot of work needed to be done to visualize the data.
