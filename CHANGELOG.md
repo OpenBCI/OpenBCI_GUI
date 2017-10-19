@@ -22,6 +22,10 @@ Use hub v1.3.3 please.
 
 Implement overhaul of GUI docs.
 
+### Bug Fixes
+
+* #261 #267
+
 ## Beta 1
 
 Initial release.
