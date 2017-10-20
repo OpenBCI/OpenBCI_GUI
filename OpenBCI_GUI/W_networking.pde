@@ -1285,17 +1285,24 @@ class Stream extends Thread{
        }
       // UDP
      }else if (this.protocol.equals("UDP")){
-       for (int i=0;i<numChan;i++){
-         buffer.rewind();
-         buffer.putFloat(i+1);
-         for (int j=0;j<125;j++){
-           buffer.putFloat(fftBuff[i].getBand(j));
+       String outputter = "{\"type\":\"fft\",\"data\":[[";
+       for (int i = 0;i < numChan; i++){
+         for (int j = 0; j < 125; j++) {
+           outputter += str(fftBuff[i].getBand(j));
+           if (j != 125 - 1) {
+             outputter += ",";
+           }
          }
-         try{
-           this.udp.send(buffer.array(),this.ip,this.port);
-         }catch (Exception e){
-           println(e);
+         if (i != numChan - 1) {
+           outputter += "],[";
+         } else {
+           outputter += "]]}\r\n";
          }
+       }
+       try {
+         this.udp.send(outputter, this.ip, this.port);
+       } catch (Exception e) {
+         println(e);
        }
        // LSL
      }else if (this.protocol.equals("LSL")){
@@ -1346,17 +1353,25 @@ class Stream extends Thread{
         }
        // UDP
       }else if (this.protocol.equals("UDP")){
-        for (int i=0;i<numChan;i++){
-          buffer.rewind();
-          buffer.putFloat(i+1);
+        // DELTA, THETA, ALPHA, BETA, GAMMA
+        String outputter = "{\"type\":\"bandPower\",\"data\":[[";
+        for (int i = 0;i < numChan; i++){
           for (int j=0;j<numBandPower;j++){
-            buffer.putFloat(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
+            outputter += str(dataProcessing.avgPowerInBins[i][j]); //[CHAN][BAND]
+            if (j != numBandPower - 1) {
+              outputter += ",";
+            }
           }
-          try{
-            this.udp.send(buffer.array(),this.ip,this.port);
-          }catch (Exception e){
-            println(e);
+          if (i != numChan - 1) {
+            outputter += "],[";
+          } else {
+            outputter += "]]}\r\n";
           }
+        }
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
+          println(e);
         }
         // LSL
       }else if (this.protocol.equals("LSL")){
@@ -1410,17 +1425,20 @@ class Stream extends Thread{
           }
         }
        // UDP
-      }else if (this.protocol.equals("UDP")){
-        for (int i=0;i<numChan;i++){
-          buffer.rewind();
-          buffer.putFloat(i+1);
-          //ADD NORMALIZED EMG CHANNEL DATA
-          buffer.putFloat(w_emg.motorWidgets[i].output_normalized);
-          try{
-            this.udp.send(buffer.array(),this.ip,this.port);
-          }catch (Exception e){
-            println(e);
+      } else if (this.protocol.equals("UDP")) {
+        String outputter = "{\"type\":\"emg\",\"data\":[";
+        for (int i = 0;i < numChan; i++){
+          outputter += str(w_emg.motorWidgets[i].output_normalized);
+          if (i != numChan - 1) {
+            outputter += ",";
+          } else {
+            outputter += "]}\r\n";
           }
+        }
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
+          println(e);
         }
         // LSL
       }else if (this.protocol.equals("LSL")){
@@ -1538,7 +1556,7 @@ class Stream extends Thread{
       this.msg = new OscMessage(this.address);
     }else if (this.protocol.equals("UDP")){
       this.udp = new UDP(this);
-      this.udp.setBuffer(1024);
+      this.udp.setBuffer(20000);
       this.udp.listen(false);
       this.udp.log(false);
       println("UDP successfully connected");

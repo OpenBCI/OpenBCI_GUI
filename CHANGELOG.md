@@ -10,6 +10,7 @@ Use hub v1.3.3 please.
 ### Breaking Changes
 
 * SD Converted file goes into `data/SavedData` instead of `data/EED_Data`. #267
+* Sending data over UDP produced unreadable raw format. Switched to JSON output.
 
 ### Bug Fixes
 
