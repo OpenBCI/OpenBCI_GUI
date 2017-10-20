@@ -5,10 +5,15 @@ import argparse
 import signal
 import struct
 import os
+import json
 
 # Print received message to console
 def print_message(*args):
-    print(args[0])
+    try:
+        obj = json.loads(args[0])
+        print obj.get('data')
+    except BaseException as e:
+        print e
  #  print("(%s) RECEIVED MESSAGE: " % time.time() +
  # ''.join(str(struct.unpack('>%df' % int(length), args[0]))))
 
@@ -74,7 +79,7 @@ if __name__ == "__main__":
   # Receive messages
   print("Listening...")
   while True:
-    data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+    data, addr = sock.recvfrom(20000) # buffer size is 20000 bytes
     if args.option=="print":
       print_message(data)
     elif args.option=="record":
