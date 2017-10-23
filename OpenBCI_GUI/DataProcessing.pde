@@ -254,7 +254,7 @@ void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
 }
 
 
-void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int N, float fs_Hz) {
+void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
 
   float[] fooData;
   for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -455,7 +455,7 @@ class DataProcessing {
               b2 = new double[] { 0.965080986344734, -1.19328255433335, 2.29902305135123, -1.19328255433335, 0.965080986344734 };
               a2 = new double[] { 1, -1.21449347931898, 2.29780334191380, -1.17207162934771, 0.931381682126901 };
               break;
-            case 500;
+            case 500:
               b2 = new double[] { 0.982385438526090, -3.17931708468811, 4.53709552901242, -3.17931708468811, 0.982385438526090 };
               a2 = new double[] { 1, -3.20756923909868, 4.53678523216547, -3.15106493027754, 0.965081173899133 };
               break;
@@ -503,7 +503,7 @@ class DataProcessing {
               b = new double[] { 0.200138725658073, 0, -0.400277451316145, 0, 0.200138725658073 };
               a = new double[] { 1, -2.35593463113158, 1.94125708865521, -0.784706375533419, 0.199907605296834 };
               break;
-            case 500;
+            case 500:
               b = new double[] { 0.0652016551604422, 0, -0.130403310320884, 0, 0.0652016551604422 };
               a = new double[] { 1, -3.14636562553919, 3.71754597063790, -1.99118301927812, 0.420045500522989 };
               break;
@@ -538,7 +538,7 @@ class DataProcessing {
               b = new double[] { 0.00512926836610803, 0, -0.0102585367322161, 0, 0.00512926836610803 };
               a = new double[] { 1, -3.67889546976404, 5.17970041352212, -3.30580189001670, 0.807949591420914 };
               break;
-            case 500;
+            case 500:
               b = new double[] { 0.00134871194834618, 0, -0.00269742389669237, 0, 0.00134871194834618 };
               a = new double[] { 1, -3.86550956895320, 5.63152598761351, -3.66467991638185, 0.898858994155253 };
               break;
@@ -573,7 +573,7 @@ class DataProcessing {
               b = new double[] { 0.117351036724609, 0, -0.234702073449219, 0, 0.117351036724609 };
               a = new double[] { 1, -2.13743018017206, 2.03857800810852, -1.07014439920093, 0.294636527587914 };
               break;
-            case 500;
+            case 500:
               b = new double[] { 0.0365748358439273, 0, -0.0731496716878546, 0, 0.0365748358439273 };
               a = new double[] { 1, -3.18880661866679, 3.98037203788323, -2.31835989524663, 0.537194624801103 };
               break;
@@ -608,7 +608,7 @@ class DataProcessing {
               b = new double[] { 0.175087643672101, 0, -0.350175287344202, 0, 0.175087643672101 };
               a = new double[] { 1, -2.29905535603850, 1.96749775998445, -0.874805556449481, 0.219653983913695 };
               break;
-            case 500;
+            case 500:
               b = new double[] { 0.0564484622607352, 0, -0.112896924521470, 0, 0.0564484622607352 };
               a = new double[] { 1, -3.15946330211917, 3.79268442285094, -2.08257331718360, 0.450445430056042 };
               break;
@@ -668,7 +668,7 @@ class DataProcessing {
     float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
     float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
     FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
-
+    int Nfft = getNfftSafe();
     //loop over each EEG channel
     for (int Ichan=0; Ichan < nchan; Ichan++) {
 

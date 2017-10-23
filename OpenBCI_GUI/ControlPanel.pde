@@ -108,6 +108,7 @@ Button getMacAddress;
 Button getTypeOfAttachedBoard;
 Button sampleRate200;
 Button sampleRate250;
+Button sampleRate500;
 Button sampleRate1000;
 Button sampleRate1600;
 Button latencyCyton5ms;
@@ -797,6 +798,15 @@ class ControlPanel {
           sampleRate250.setIsActive(true);
           sampleRate250.wasPressed = true;
           sampleRate250.color_notPressed = isSelected_color;
+          sampleRate500.color_pressed = autoFileName.color_notPressed;
+          sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
+        }
+
+        if (sampleRate500.isMouseHere()) {
+          sampleRate500.setIsActive(true);
+          sampleRate500.wasPressed = true;
+          sampleRate500.color_notPressed = isSelected_color;
+          sampleRate250.color_pressed = autoFileName.color_notPressed;
           sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
@@ -805,6 +815,7 @@ class ControlPanel {
           sampleRate1000.wasPressed = true;
           sampleRate1000.color_notPressed = isSelected_color;
           sampleRate250.color_notPressed = autoFileName.color_notPressed; //default color of button
+          sampleRate500.color_pressed = autoFileName.color_notPressed;
         }
 
         if (latencyCyton5ms.isMouseHere()) {
@@ -1242,6 +1253,10 @@ class ControlPanel {
       cyton.setSampleRate(250);
     }
 
+    if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
+      cyton.setSampleRate(500);
+    }
+
     if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
       cyton.setSampleRate(1000);
     }
@@ -1343,6 +1358,8 @@ class ControlPanel {
     sampleRate1600.wasPressed = false;
     sampleRate250.setIsActive(false);
     sampleRate250.wasPressed = false;
+    sampleRate500.setIsActive(false);
+    sampleRate500.wasPressed = false;
     sampleRate1000.setIsActive(false);
     sampleRate1000.wasPressed = false;
     latencyCyton5ms.setIsActive(false);
@@ -2023,9 +2040,12 @@ class SampleRateCytonBox {
     h = 73;
     padding = _padding;
 
-    sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "250Hz", fontInfo.buttonLabel_size);
-    sampleRate1000 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1000Hz", fontInfo.buttonLabel_size);
-    sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
+    if ((int)cyton.getSampleRate() == 250) sampleRate250.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    sampleRate500 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
+    if ((int)cyton.getSampleRate() == 500) sampleRate500.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    sampleRate1000 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
+    if ((int)cyton.getSampleRate() == 1000) sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2048,6 +2068,7 @@ class SampleRateCytonBox {
     popStyle();
 
     sampleRate250.draw();
+    sampleRate500.draw();
     sampleRate1000.draw();
   }
 };

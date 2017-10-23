@@ -570,7 +570,7 @@ void initSystem() {
 
   }
 
-  Nfft = getNfftSafe();
+  // Nfft = getNfftSafe();
   nDataBackBuff = 3*(int)getSampleRateSafe();
   dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
   nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
@@ -604,10 +604,10 @@ void initSystem() {
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
     // verbosePrint("Init FFT Buff – " + Ichan);
-    fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
+    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
   }  //make the FFT objects
 
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
+  initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
