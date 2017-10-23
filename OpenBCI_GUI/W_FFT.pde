@@ -11,8 +11,8 @@
 ///////////////////////////////////////////////////
 
 //fft global variables
-int Nfft; //125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.  //prev: Use N=256 for normal, N=512 for MU waves
-float fs_Hz;
+// int Nfft; //125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.  //prev: Use N=256 for normal, N=512 for MU waves
+// float fs_Hz; // AJ Keller removed because shall get sample rate at runtime
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
@@ -63,7 +63,7 @@ class W_fft extends Widget {
     addDropdown("UnfiltFilt", "Filters?", Arrays.asList("Filtered", "Unfilt."), 0);
 
     fft_points = new GPointsArray[nchan];
-    println(fft_points.length);
+    // println("fft_points.length: " + fft_points.length);
     initializeFFTPlot(_parent);
 
   }
