@@ -42,7 +42,7 @@ class W_fft extends Widget {
     (int)color(162, 82, 49)
   };
 
-  int[] xLimOptions = {20, 40, 60, 100, 120, 500, 800};
+  int[] xLimOptions = {20, 40, 60, 100, 120, 250, 500, 800};
   int[] yLimOptions = {10, 50, 100, 1000};
 
   int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz

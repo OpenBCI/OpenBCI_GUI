@@ -2041,11 +2041,9 @@ class SampleRateCytonBox {
     padding = _padding;
 
     sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
-    if ((int)cyton.getSampleRate() == 250) sampleRate250.color_notPressed = isSelected_color; //make it appear like this one is already selected
     sampleRate500 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
-    if ((int)cyton.getSampleRate() == 500) sampleRate500.color_notPressed = isSelected_color; //make it appear like this one is already selected
     sampleRate1000 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
-    if ((int)cyton.getSampleRate() == 1000) sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {

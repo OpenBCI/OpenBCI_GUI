@@ -6,6 +6,7 @@ Use hub v1.3.3 please.
 
 * Added new files for Contributing, code of conduct and roadmap
 * Refactored readme with banner image, and all in all made it sweet.
+* Added 500Hz sample rate option for WiFi Shield Cyton
 
 ### Breaking Changes
 
