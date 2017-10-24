@@ -1,6 +1,6 @@
 # v3.1.0
 
-Use hub v1.3.3 please.
+Use hub v1.3.4 please.
 
 ### New Features
 
@@ -13,6 +13,7 @@ Use hub v1.3.3 please.
 * SD Converted file goes into `data/SavedData` instead of `data/EED_Data`. #267
 * Sending data over UDP produced unreadable raw format. Switched to JSON output.
 * All UDP output sends a serialized json packet ending with `\r\n`
+* Data files are now saved with `.csv` instead of `.txt`
 
 ### Bug Fixes
 
