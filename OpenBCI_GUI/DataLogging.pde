@@ -201,7 +201,7 @@ public class OutputFile_rawtxt {
     fname = fname + second();
 
     //add the extension
-    fname = fname + ".txt";
+    fname = fname + ".csv";
 
     //open the file
     output = createWriter(fname);
