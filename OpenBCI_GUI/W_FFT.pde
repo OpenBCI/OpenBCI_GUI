@@ -11,8 +11,8 @@
 ///////////////////////////////////////////////////
 
 //fft global variables
-int Nfft; //125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.  //prev: Use N=256 for normal, N=512 for MU waves
-float fs_Hz;
+// int Nfft; //125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.  //prev: Use N=256 for normal, N=512 for MU waves
+// float fs_Hz; // AJ Keller removed because shall get sample rate at runtime
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
@@ -42,12 +42,12 @@ class W_fft extends Widget {
     (int)color(162, 82, 49)
   };
 
-  int[] xLimOptions = {20, 40, 60, 100, 120, 500, 800};
+  int[] xLimOptions = {20, 40, 60, 100, 120, 250, 500, 800};
   int[] yLimOptions = {10, 50, 100, 1000};
 
   int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
   int xMax = xLimOptions[3];
-  int FFT_indexLim = int(1.0*xMax*(Nfft/getSampleRateSafe()));   // maxim value of FFT index
+  int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/getSampleRateSafe()));   // maxim value of FFT index
   int yLim = 100;  //maximum value of y axis ... 100 uV
 
   W_fft(PApplet _parent){
@@ -56,14 +56,14 @@ class W_fft extends Widget {
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("MaxFreq", "Max Freq", Arrays.asList("20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "500 Hz", "800 Hz"), 2);
+    addDropdown("MaxFreq", "Max Freq", Arrays.asList("20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"), 2);
     addDropdown("VertScale", "Max uV", Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV"), 2);
     addDropdown("LogLin", "Log/Lin", Arrays.asList("Log", "Linear"), 0);
     addDropdown("Smoothing", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
     addDropdown("UnfiltFilt", "Filters?", Arrays.asList("Filtered", "Unfilt."), 0);
 
     fft_points = new GPointsArray[nchan];
-    println(fft_points.length);
+    // println("fft_points.length: " + fft_points.length);
     initializeFFTPlot(_parent);
 
   }
@@ -107,6 +107,8 @@ class W_fft extends Widget {
   void update(){
 
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+    float sr = getSampleRateSafe();
+    int nfft = getNfftSafe();
 
     //put your code here...
     //update the points of the FFT channel arrays
@@ -125,7 +127,7 @@ class W_fft extends Widget {
         // float b = fftBuff[i].getBand(j);
         // float c = Nfft;
 
-        powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
+        powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
         // GPoint powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
 
