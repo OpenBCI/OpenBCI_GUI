@@ -1,3 +1,39 @@
+# v3.1.0
+
+Use hub v1.3.4 please.
+
+### New Features
+
+* Added new files for Contributing, code of conduct and roadmap
+* Refactored readme with banner image, and all in all made it sweet.
+* Added 500Hz sample rate option for WiFi Shield Cyton
+
+### Breaking Changes
+
+* SD Converted file goes into `data/SavedData` instead of `data/EED_Data`. #267
+* Sending data over UDP produced unreadable raw format. Switched to JSON output.
+* All UDP output sends a serialized json packet ending with `\r\n`
+* Data files are now saved with `.csv` instead of `.txt`
+
+### Bug Fixes
+
+* "Data stream stopped" would be shown to users even if no data stream was stopped #263
+* Accel did not work for wifi Daisy #265
+* Users would have to close the GUI before restarting after cyton or ganglion session #262
+* Design your own widget link #261
+
+## Beta 2
+
+Implement overhaul of GUI docs.
+
+### Bug Fixes
+
+* #261 #267
+
+## Beta 1
+
+Initial release.
+
 # v3.0.1
 
 ### Bug Fixes

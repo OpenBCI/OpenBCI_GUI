@@ -570,9 +570,8 @@ void initSystem() {
 
   }
 
-  fs_Hz = getSampleRateSafe();
-  Nfft = getNfftSafe();
-  nDataBackBuff = 3*(int)fs_Hz;
+  // Nfft = getNfftSafe();
+  nDataBackBuff = 3*(int)getSampleRateSafe();
   dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
   nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
   dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
@@ -597,8 +596,6 @@ void initSystem() {
   dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
   dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
 
-
-
   //initialize the data
   prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
@@ -606,11 +603,11 @@ void initSystem() {
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
-    verbosePrint("Init FFT Buff – " + Ichan);
-    fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
+    // verbosePrint("Init FFT Buff – " + Ichan);
+    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
   }  //make the FFT objects
 
-  initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
+  initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -755,7 +752,9 @@ void startRunning() {
 void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
-  output("Data stream stopped.");
+  if (isRunning) {
+    output("Data stream stopped.");
+  }
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
       ganglion.stopDataTransfer();
@@ -1156,7 +1155,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.0.1\nSeptember 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.1.0\nOctober 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

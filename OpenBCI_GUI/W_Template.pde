@@ -28,8 +28,7 @@ class W_template extends Widget {
 
     widgetTemplateButton = new Button (x + w/2, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
     widgetTemplateButton.setFont(p4, 14);
-    widgetTemplateButton.setURL("http://docs.openbci.com/OpenBCI%20Software/");
-
+    widgetTemplateButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
   }
 
   void update(){
