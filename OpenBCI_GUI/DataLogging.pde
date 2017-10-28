@@ -233,7 +233,7 @@ public class OutputFile_rawtxt {
     output.flush();
   }
 
-  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, byte stopByte) {
+  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte) {
     //get current date time with Date()
     Date date = new Date();
 
@@ -243,7 +243,6 @@ public class OutputFile_rawtxt {
       if (eegDataSource == DATASOURCE_GANGLION) {
         writeAccValues(data.auxValues, scale_for_aux);
       } else {
-        println(stopByte);
         if (stopByte == 0xC1) {
           writeAuxValues(data);
         } else {
@@ -277,15 +276,15 @@ public class OutputFile_rawtxt {
       if (cyton.getBoardMode() == BOARD_MODE_DIGITAL) {
         println("digital");
         if (cyton.isWifi()) {
-          output.print(", " + data.rawAuxValues[0]);
-          output.print(", " + data.rawAuxValues[1]);
-          output.print(", " + data.rawAuxValues[3]);
+          output.print(", " + String(data.auxValues[0] & 0xFF));
+          output.print(", " + String((data.auxValues[0] & 0xFF00) >> 8));
+          output.print(", " + String((data.auxValues[1] & 0xFF00) >> 8));
         } else {
-          output.print(", " + data.rawAuxValues[0]);
-          output.print(", " + data.rawAuxValues[1]);
-          output.print(", " + data.rawAuxValues[2]);
-          output.print(", " + data.rawAuxValues[3]);
-          output.print(", " + data.rawAuxValues[5]);
+          output.print(", " + String(data.auxValues[0] & 0xFF));
+          output.print(", " + String((data.auxValues[0] & 0xFF00) >> 8));
+          output.print(", " + String(data.auxValues[1] & 0xFF));
+          output.print(", " + String((data.auxValues[1] & 0xFF00) >> 8));
+          output.print(", " + String((data.auxValues[2] & 0xFF00) >> 8));
         }
       } else if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
         println("analog");
@@ -300,6 +299,7 @@ public class OutputFile_rawtxt {
       } else if (cyton.getBoardMode() == BOARD_MODE_MARKER) {
         output.print(", " + data.auxValues[0]);
       } else {
+
         println("default");
 
         for (int Ival = 0; Ival < 3; Ival++) {
@@ -308,9 +308,9 @@ public class OutputFile_rawtxt {
         }
       }
     } else {
-      for (int Ival = 0; Ival < 3; Ival++) {
-        output.print(", ");
-        output.print(String.format(Locale.US, "%.3f", data.auxValues[Ival]));
+      for (int i = 0; i < 3; i++) {
+        output.print(", " + String(data.auxValues[i] & 0xFF));
+        output.print(", " + String((data.auxValues[i] & 0xFF00) >> 8));
       }
     }
   }

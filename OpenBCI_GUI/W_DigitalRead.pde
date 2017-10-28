@@ -19,13 +19,17 @@ class W_DigitalRead extends Widget {
   W_DigitalRead(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
+    digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Digital Read On", 12);
     digitalModeButton.setCornerRoundess((int)(navHeight-6));
     digitalModeButton.setFont(p6,10);
     digitalModeButton.setColorNotPressed(color(57,128,204));
     digitalModeButton.textColorNotActive = color(255);
     digitalModeButton.hasStroke(false);
-    digitalModeButton.setHelpText("Click this button to activate analog reading on the Cyton");
+    if (cyton.isWifi()) {
+      digitalModeButton.setHelpText("Click this button to activate digital reading on the Cyton D11, D12, and D17");
+    } else {
+      digitalModeButton.setHelpText("Click this button to activate digital reading on the Cyton D11, D12, D13, D17 and D18");
+    }
 
   }
 
@@ -73,7 +77,7 @@ class W_DigitalRead extends Widget {
         if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
           cyton.setBoardMode(BOARD_MODE_DIGITAL);
           output("Starting to read digital inputs on pin marked D11");
-          digitalModeButton.setString("Turn Analog Read Off");
+          digitalModeButton.setString("Turn Digital Read Off");
         } else {
           cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");

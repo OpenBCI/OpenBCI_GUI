@@ -471,9 +471,10 @@ class Hub {
 
   public void processData(String msg) {
     try {
+      // println(msg);
       String[] list = split(msg, ',');
       int code = Integer.parseInt(list[1]);
-      byte stopByte = byte(0xC0);
+      int stopByte = 0xC0;
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
@@ -509,7 +510,7 @@ class Hub {
             if (list.length > nEEGValuesPerPacket + 5) {
               int valCounter = nEEGValuesPerPacket + 3;
               // println(list[valCounter]);
-              stopByte = byte(Integer.parseInt(list[valCounter++]));
+              stopByte = Integer.parseInt(list[valCounter++]);
               int valsToRead = list.length - valCounter - 1;
               // println(msg);
               // println("stopByte: " + stopByte + " valCounter: " + valCounter + " valsToRead: " + valsToRead);
@@ -527,15 +528,33 @@ class Hub {
                   }
                 }
               } else {
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                  int val1 = Integer.parseInt(list[valCounter++]);
-                  int val2 = Integer.parseInt(list[valCounter++]);
+                println("Vals to read: " + valsToRead);
+                if (valsToRead == 6) {
+                  for (int i = 0; i < 3; i++) {
+                    println(list[valCounter]);
+                    int val1 = Integer.parseInt(list[valCounter++]);
+                    int val2 = Integer.parseInt(list[valCounter++]);
 
-                  dataPacket.auxValues[i] = (val1 << 8) | val2;
-                  dataPacket.rawAuxValues[i][0] = byte(val2);
-                  dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                    dataPacket.auxValues[i] = (val1 << 8) | val2;
+                    dataPacket.rawAuxValues[i][0] = byte(val2);
+                    dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                  }
+                }
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                  // int val1 = Integer.parseInt(list[valCounter++]);
+                  // int val2 = Integer.parseInt(list[valCounter++]);
+
+                  // dataPacket.auxValues[i] = (val1 << 8) | val2;
+                  // dataPacket.rawAuxValues[i][0] = byte(val2);
+                  // dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
                   // println(dataPacket.auxValues[i]);
                 }
+                // if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+                //   // println(msg);
+                //   for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                //     validAccelValues[i] = accelArray[i];
+                //   }
+                // }
               }
             }
           }
@@ -594,6 +613,8 @@ class Hub {
         }
       }
     } catch (Exception e) {
+      print("\n\n");
+      println(msg);
       println("Hub: parseMessage: error: " + e);
       e.printStackTrace();
     }
