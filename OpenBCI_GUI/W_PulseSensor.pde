@@ -208,11 +208,11 @@ class W_PulseSensor extends Widget {
       // println("analogModeButton...");
       if(cyton.isPortOpen()) {
         if (analogReadOn) {
-          hub.sendCommand("/0");
+          cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");
           analogModeButton.setString("Turn Analog Read On");
         } else {
-          hub.sendCommand("/2");
+          cyton.setBoardMode(BOARD_MODE_ANALOG);
           output("Starting to read analog inputs on pin marked D11");
           analogModeButton.setString("Turn Analog Read Off");
         }

@@ -473,6 +473,7 @@ class Hub {
     try {
       String[] list = split(msg, ',');
       int code = Integer.parseInt(list[1]);
+      byte stopByte = byte(0xC0);
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
@@ -508,7 +509,7 @@ class Hub {
             if (list.length > nEEGValuesPerPacket + 5) {
               int valCounter = nEEGValuesPerPacket + 3;
               // println(list[valCounter]);
-              int stopByte = Integer.parseInt(list[valCounter++]);
+              stopByte = byte(Integer.parseInt(list[valCounter++]));
               int valsToRead = list.length - valCounter - 1;
               // println(msg);
               // println("stopByte: " + stopByte + " valCounter: " + valCounter + " valsToRead: " + valsToRead);
@@ -571,9 +572,9 @@ class Hub {
           switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
               if (eegDataSource == DATASOURCE_GANGLION) {
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count());
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count(), stopByte);
               } else {
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count());
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), stopByte);
               }
               break;
             case OUTPUT_SOURCE_BDF:
