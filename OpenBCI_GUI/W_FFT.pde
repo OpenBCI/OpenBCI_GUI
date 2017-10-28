@@ -46,9 +46,9 @@ class W_fft extends Widget {
   int[] yLimOptions = {10, 50, 100, 1000};
 
   int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
-  int xMax = xLimOptions[3];
+  int xMax = xLimOptions[xLimOptions.length-1];   //maximum possible frequency in FFT
   int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/getSampleRateSafe()));   // maxim value of FFT index
-  int yLim = 100;  //maximum value of y axis ... 100 uV
+  int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
 
   W_fft(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
