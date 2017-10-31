@@ -376,7 +376,6 @@ void setup() {
   udpRX.setReceiveHandler("udpReceiveHandler");
   udpRX.log(true);
   udpRX.listen(true);
-
   // Print some useful diagnostics 
   println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
   println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
