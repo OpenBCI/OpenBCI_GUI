@@ -31,6 +31,8 @@ final char command_startBinary_4chan = 'v';  // not necessary now
 final char command_activateFilters = 'f';  // swithed from 'F' to 'f'  ... but not necessary because taken out of hardware code
 final char command_deactivateFilters = 'g';  // not necessary anymore
 
+final String command_setMode = "/";  // this is used to set the board into different modes
+
 final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
 final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
@@ -83,8 +85,11 @@ class Cyton {
   private float openBCI_series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
   private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
   //float LIS3DH_full_scale_G = 4;  // +/- 4G, assumed full scale setting for the accelerometer
-  private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
-  //final float scale_fac_accel_G_per_count = 1.0;
+  //float LIS3DH_full_scale_G = 4;  // +/- 4G, assumed full scale setting for the accelerometer
+  // GvZ Hack avoid scaling markers  
+  // Need AJ's advice on how to do this more elegantly
+  //private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
+  private final float scale_fac_accel_G_per_count = 1.0;  //to test stimulations  //final float scale_fac_accel_G_per_count = 1.0;
   private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
   boolean isBiasAuto = true; //not being used?
@@ -362,16 +367,35 @@ class Cyton {
 
   public void startDataTransfer() {
     if (isPortOpen()) {
-      // stopDataTransfer();
+
+      // Put the board into the correct mode
+      // For now the only mode is BOARD_MODE_MARKER (4)
+      // Need AJ's help in adding board mode selection in GUI and setting the mode here
+      int boardMode = 4;  // hardwired for now
+      
+      println("BoardCyton: startDataTransfer(): Set board mode to 4 (Marker mode)");
+      
+      if (isSerial()) {
+        println("BoardCyton: startDataTransfer(): write(\'/" + boardMode + "\') to the BLE Serial ...");
+        write("/"+boardMode);
+       
+      } else if (isWifi()) {
+        println("BoardCyton: startDataTransfer(): hub.sendCommand(\'/" + boardMode + "\') to the wifi shield ...");
+        hub.sendCommand(command_setMode+boardMode);
+      }
+      
+      delay(500); // delay to ensure that the board captures two successive mulitcharcommands
+
+      // Now give the command to start binary data transmission
       if (isSerial()) {
         hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
         // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
+        write(command_startBinary);
       } else if (isWifi()) {
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
-
+        write(command_startBinary);
       }
-      write(command_startBinary);
 
     } else {
       println("port not open");
