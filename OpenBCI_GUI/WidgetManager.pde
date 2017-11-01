@@ -26,6 +26,7 @@ W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
 W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
+W_MarkerMode w_markermode;
 
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -100,6 +101,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_analogRead = new W_AnalogRead(_this);
     w_analogRead.setTitle("Analog Read");
     addWidget(w_analogRead, w);
+    
+    w_markermode = new W_MarkerMode(_this);
+    w_markermode.setTitle("Marker Mode");
+    addWidget(w_markermode, w);
   }
 
   w_template1 = new W_template(_this);

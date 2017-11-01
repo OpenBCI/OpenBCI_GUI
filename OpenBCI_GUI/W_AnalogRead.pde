@@ -273,11 +273,11 @@ class W_AnalogRead extends Widget {
         if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
           cyton.setBoardMode(BOARD_MODE_ANALOG);
           output("Starting to read analog inputs on pin marked D11");
-          analogModeButton.setString("Turn Digital Read Off");
+          analogModeButton.setString("Turn Analog Read Off");
         } else {
           cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");
-          analogModeButton.setString("Turn Digital Read On");
+          analogModeButton.setString("Turn Analog Read On");
         }
       }
     }
