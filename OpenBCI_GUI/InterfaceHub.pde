@@ -374,7 +374,7 @@ class Hub {
         } else {
           if (sdSetting >= 0) {
             println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
-            cyton.sdCardStart(sdSetting);
+            sdCardStart(sdSetting);
           } else {
             println("Hub: parseMessage: connect: success! -- " + millis());
             initAndShowGUI();
@@ -536,7 +536,7 @@ class Hub {
                 // println("Vals to read: " + valsToRead);
                 if (valsToRead == 6) {
                   for (int i = 0; i < 3; i++) {
-                    println(list[valCounter]);
+                    // println(list[valCounter]);
                     int val1 = Integer.parseInt(list[valCounter++]);
                     int val2 = Integer.parseInt(list[valCounter++]);
 
