@@ -38,6 +38,12 @@ final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*',
 
 int channelDeactivateCounter = 0; //used for re-deactivating channels after switching settings...
 
+final int BOARD_MODE_DEFAULT = 0;
+final int BOARD_MODE_DEBUG = 1;
+final int BOARD_MODE_ANALOG = 2;
+final int BOARD_MODE_DIGITAL = 3;
+final int BOARD_MODE_MARKER = 4;
+
 //everything below is now deprecated...
 // final String[] command_activate_leadoffP_channel = {'!', '@', '#', '$', '%', '^', '&', '*'};  //shift + 1-8
 // final String[] command_deactivate_leadoffP_channel = {'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};   //letters (plus shift) right below 1-8
@@ -94,6 +100,8 @@ class Cyton {
 
   boolean isBiasAuto = true; //not being used?
 
+  private int curBoardMode = BOARD_MODE_DEFAULT;
+
   //data related to Conor's setup for V3 boards
   final char[] EOT = {'$', '$', '$'};
   char[] prev3chars = {'#', '#', '#'};
@@ -136,6 +144,9 @@ class Cyton {
       }
     }
   }
+  public int getBoardMode() {
+    return curBoardMode;
+  }
   public int getInterface() {
     return curInterface;
   }
@@ -163,6 +174,11 @@ class Cyton {
   }
   public String get_defaultChannelSettings() {
     return defaultChannelSettings;
+  }
+
+  public void setBoardMode(int boardMode) {
+    hub.sendCommand("/" + boardMode);
+    curBoardMode = boardMode;
   }
 
   public void setSampleRate(int _sampleRate) {

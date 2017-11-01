@@ -1,3 +1,13 @@
+# v3.1.1
+
+### New Features
+
+* Added the Digital Read widget
+
+### Bug Fixes
+
+* Did not write aux values for different board modes.
+
 # v3.1.0
 
 Use hub v1.3.4 please.
