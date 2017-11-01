@@ -371,15 +371,15 @@ class Hub {
           } else {
             setBoardType("daisy");
           }
+        } 
+        if (sdSetting >= 0) {
+          println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
+          sdCardStart(sdSetting);
         } else {
-          if (sdSetting >= 0) {
-            println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
-            sdCardStart(sdSetting);
-          } else {
-            println("Hub: parseMessage: connect: success! -- " + millis());
-            initAndShowGUI();
-          }
+          println("Hub: parseMessage: connect: success! -- " + millis());
+          initAndShowGUI();
         }
+     
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
         if (list[2].equals("Error: Invalid sample rate")) {
