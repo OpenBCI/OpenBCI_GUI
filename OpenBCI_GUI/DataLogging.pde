@@ -273,18 +273,19 @@ public class OutputFile_rawtxt {
 
   private void writeAuxValues(DataPacket_ADS1299 data) {
     if (eegDataSource == DATASOURCE_CYTON) {
+      println("board mode: " + cyton.getBoardMode());
       if (cyton.getBoardMode() == BOARD_MODE_DIGITAL) {
         println("digital");
         if (cyton.isWifi()) {
-          output.print(", " + String(data.auxValues[0] & 0xFF));
-          output.print(", " + String((data.auxValues[0] & 0xFF00) >> 8));
-          output.print(", " + String((data.auxValues[1] & 0xFF00) >> 8));
+          output.print(", " + (data.auxValues[0] & 0xFF));
+          output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
+          output.print(", " + ((data.auxValues[1] & 0xFF00) >> 8));
         } else {
-          output.print(", " + String(data.auxValues[0] & 0xFF));
-          output.print(", " + String((data.auxValues[0] & 0xFF00) >> 8));
-          output.print(", " + String(data.auxValues[1] & 0xFF));
-          output.print(", " + String((data.auxValues[1] & 0xFF00) >> 8));
-          output.print(", " + String((data.auxValues[2] & 0xFF00) >> 8));
+          output.print(", " + (data.auxValues[0] & 0xFF));
+          output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
+          output.print(", " + (data.auxValues[1] & 0xFF));
+          output.print(", " + ((data.auxValues[1] & 0xFF00) >> 8));
+          output.print(", " + ((data.auxValues[2] & 0xFF00) >> 8));
         }
       } else if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
         println("analog");
@@ -297,20 +298,20 @@ public class OutputFile_rawtxt {
           output.print(", " + data.auxValues[2]);
         }
       } else if (cyton.getBoardMode() == BOARD_MODE_MARKER) {
+        println("marker");
+
         output.print(", " + data.auxValues[0]);
       } else {
 
         println("default");
-
         for (int Ival = 0; Ival < 3; Ival++) {
-          output.print(", ");
-          output.print(String.format(Locale.US, "%.3f", data.auxValues[Ival]));
+          output.print(", " + data.auxValues[Ival]);
         }
       }
     } else {
       for (int i = 0; i < 3; i++) {
-        output.print(", " + String(data.auxValues[i] & 0xFF));
-        output.print(", " + String((data.auxValues[i] & 0xFF00) >> 8));
+        output.print(", " + (data.auxValues[i] & 0xFF));
+        output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
       }
     }
   }
