@@ -377,11 +377,11 @@ class Cyton {
       
       if (isSerial()) {
         println("BoardCyton: startDataTransfer(): write(\'/" + boardMode + "\') to the BLE Serial ...");
-        write("/"+boardMode);
+        hub.sendCommand(command_setMode+String.valueOf(boardMode));
        
       } else if (isWifi()) {
         println("BoardCyton: startDataTransfer(): hub.sendCommand(\'/" + boardMode + "\') to the wifi shield ...");
-        hub.sendCommand(command_setMode+boardMode);
+        hub.sendCommand(command_setMode+String.valueOf(boardMode));
       }
       
       delay(500); // delay to ensure that the board captures two successive mulitcharcommands

@@ -407,7 +407,9 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
       
     if (intValue > 0 && intValue < 255){ // Since we only send single char markers must limit to 255
       
-      println("Marker value: "+udpString+" with numeric value of "+intValue);
+      String sendString = "`"+char(intValue);
+      
+      println("Marker value: "+udpString+" with numeric value of "+intValue+"as :"+sendString);
       hub.sendCommand("`"+char(intValue));
 
     } else {
