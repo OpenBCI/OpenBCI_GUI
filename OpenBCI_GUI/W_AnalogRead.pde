@@ -106,7 +106,7 @@ class W_AnalogRead extends Widget {
     // auxModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
     auxModeButton.hasStroke(false);
     // auxModeButton.setColorNotPressed((int)(color(138, 182, 229)));
-    auxModeButton.setHelpText("Click this button to activate/deactivate the accelerometer of your Ganglion board!");
+    auxModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board!");
   }
 
   public void initPlayground(Cyton _OBCI) {
@@ -218,11 +218,6 @@ class W_AnalogRead extends Widget {
         drawAccValues();
         draw3DGraph();
         drawAccWave();
-      } else if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion.isBLE()) auxModeButton.draw();
-        drawAccValues();
-        draw3DGraph();
-        drawAccWave();
       } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
         // fill(Xcolor);
         // text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
@@ -330,10 +325,10 @@ class W_AnalogRead extends Widget {
         if(ganglion.isAccelModeActive()){
           ganglion.accelStop();
 
-          auxModeButton.setString("Turn Accel On");
+          auxModeButton.setString("Turn Analog Read On");
         } else{
           ganglion.accelStart();
-          auxModeButton.setString("Turn Accel Off");
+          auxModeButton.setString("Turn Analog Read Off");
         }
       }
       auxModeButton.setIsActive(false);
@@ -346,11 +341,11 @@ class W_AnalogRead extends Widget {
     textAlign(LEFT,CENTER);
     textFont(h1,20);
     fill(Xcolor);
-    text("X = " + nf(currentXvalue, 1, 0), x+padding , y + (h/12)*1.5);
+    text("A5 = " + nf(currentXvalue, 1, 0), x+padding , y + (h/12)*1.5);
     fill(Ycolor);
-    text("Y = " + nf(currentYvalue, 1, 0), x+padding, y + (h/12)*3);
+    text("A6 = " + nf(currentYvalue, 1, 0), x+padding, y + (h/12)*3);
     fill(Zcolor);
-    text("Z = " + nf(currentZvalue, 1, 0), x+padding, y + (h/12)*4.5);
+    text("A7 = " + nf(currentZvalue, 1, 0), x+padding, y + (h/12)*4.5);
   }
 
   void shiftWave() {
