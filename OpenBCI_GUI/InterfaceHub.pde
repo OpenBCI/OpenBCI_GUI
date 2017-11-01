@@ -348,7 +348,13 @@ class Hub {
     int code = Integer.parseInt(list[1]);
     switch (code) {
       case RESP_SUCCESS:
-        initAndShowGUI();
+        if (sdSetting >= 0) {
+          println("Hub: processBoardType: success, starting SD card now -- " + millis());
+          sdCardStart(sdSetting);
+        } else {
+          println("Hub: processBoardType: success -- " + millis());
+          initAndShowGUI();
+        }
         break;
       case RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE:
       default:
@@ -372,13 +378,8 @@ class Hub {
             setBoardType("daisy");
           }
         } else {
-          if (sdSetting >= 0) {
-            println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
-            sdCardStart(sdSetting);
-          } else {
-            println("Hub: parseMessage: connect: success! -- " + millis());
-            initAndShowGUI();
-          }
+          println("Hub: parseMessage: connect: success! -- " + millis());
+          initAndShowGUI();
         }
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
