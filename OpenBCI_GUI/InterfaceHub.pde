@@ -348,7 +348,13 @@ class Hub {
     int code = Integer.parseInt(list[1]);
     switch (code) {
       case RESP_SUCCESS:
-        initAndShowGUI();
+        if (sdSetting >= 0) {
+          println("Hub: processBoardType: success, starting SD card now -- " + millis());
+          sdCardStart(sdSetting);
+        } else {
+          println("Hub: processBoardType: success -- " + millis());
+          initAndShowGUI();
+        }
         break;
       case RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE:
       default:
@@ -541,9 +547,12 @@ class Hub {
                     int val2 = Integer.parseInt(list[valCounter++]);
 
                     dataPacket.auxValues[i] = (val1 << 8) | val2;
+                    validAccelValues[i] = (val1 << 8) | val2;
+
                     dataPacket.rawAuxValues[i][0] = byte(val2);
                     dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
                   }
+                  // println(validAccelValues[1]);
                 }
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
                   // int val1 = Integer.parseInt(list[valCounter++]);

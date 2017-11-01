@@ -45,13 +45,13 @@ class W_AnalogRead extends Widget {
 
   float yMaxMin;
 
-  float currentXvalue;
-  float currentYvalue;
-  float currentZvalue;
+  float currentA5Value;
+  float currentA6Value;
+  float currentA7Value;
 
-  int[] X;
-  int[] Y;
-  int[] Z;
+  int[] A5;
+  int[] A6;
+  int[] A7;
 
   float dummyX;
   float dummyY;
@@ -59,9 +59,9 @@ class W_AnalogRead extends Widget {
   boolean Xrising;
   boolean Yrising;
   boolean Zrising;
-  boolean OBCI_inited= true;
+  boolean OBCI_inited = true;
 
-  Button auxModeButton;
+  Button analogModeButton;
 
   W_AnalogRead(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -80,9 +80,9 @@ class W_AnalogRead extends Widget {
     yMaxMin = adjustYMaxMinBasedOnSource();
 
     // XYZ buffer for bottom graph
-    X = new int[AccelBuffSize];
-    Y = new int[AccelBuffSize];
-    Z = new int[AccelBuffSize];
+    A5 = new int[AccelBuffSize];
+    A6 = new int[AccelBuffSize];
+    A7 = new int[AccelBuffSize];
 
     // for synthesizing values
     Xrising = true;
@@ -90,23 +90,27 @@ class W_AnalogRead extends Widget {
     Zrising = true;
 
     // initialize data
-    for (int i=0; i<X.length; i++) {  // initialize the accelerometer data
-      X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
-      Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
-      Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
+    for (int i=0; i<A5.length; i++) {  // initialize the accelerometer data
+      A5[i] = AccelWindowY + AccelWindowHeight/4; // A5 at 1/4
+      A6[i] = AccelWindowY + AccelWindowHeight/2;  // A6 at 1/2
+      A7[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // A7 at 3/4
     }
 
-    auxModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
-    auxModeButton.setCornerRoundess((int)(navHeight-6));
-    auxModeButton.setFont(p6,10);
-    // auxModeButton.setStrokeColor((int)(color(150)));
-    // auxModeButton.setColorNotPressed(openbciBlue);
-    auxModeButton.setColorNotPressed(color(57,128,204));
-    auxModeButton.textColorNotActive = color(255);
-    // auxModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
-    auxModeButton.hasStroke(false);
-    // auxModeButton.setColorNotPressed((int)(color(138, 182, 229)));
-    auxModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board!");
+    analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
+    analogModeButton.setCornerRoundess((int)(navHeight-6));
+    analogModeButton.setFont(p6,10);
+    // analogModeButton.setStrokeColor((int)(color(150)));
+    // analogModeButton.setColorNotPressed(openbciBlue);
+    analogModeButton.setColorNotPressed(color(57,128,204));
+    analogModeButton.textColorNotActive = color(255);
+    // analogModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
+    analogModeButton.hasStroke(false);
+    // analogModeButton.setColorNotPressed((int)(color(138, 182, 229)));
+    if (cyton.isWifi()) {
+      analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11) and A6(D12)");
+    } else {
+      analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11), A6(D12) and A7(D13)");
+    }
   }
 
   public void initPlayground(Cyton _OBCI) {
@@ -114,16 +118,7 @@ class W_AnalogRead extends Widget {
   }
 
   float adjustYMaxMinBasedOnSource(){
-    float _yMaxMin;
-    if(eegDataSource == DATASOURCE_CYTON){
-      _yMaxMin = 4.0;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
-      _yMaxMin = 2.0;
-    }else{
-      _yMaxMin = 4.0;
-    }
-
-    return _yMaxMin;
+    return 0.0;
   }
 
   void update(){
@@ -133,29 +128,29 @@ class W_AnalogRead extends Widget {
     if (isRunning && cyton.getBoardMode() == BOARD_MODE_ANALOG) {
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
         synthesizeAccelerometerData();
-        currentXvalue = map(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
-        currentYvalue = map(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
-        currentZvalue = map(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
+        currentA5Value = map(A5[A5.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
+        currentA6Value = map(A6[A6.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
+        currentA7Value = map(A7[A7.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
         shiftWave();
       } else if (eegDataSource == DATASOURCE_CYTON) {
-        currentXvalue = hub.validAccelValues[0];
-        currentYvalue = hub.validAccelValues[1];
-        currentZvalue = hub.validAccelValues[2];
-        X[X.length-1] =
-          int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
-        X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
-        Y[Y.length-1] =
-          int(map(currentYvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
-        Y[Y.length-1] = constrain(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
-        Z[Z.length-1] =
-          int(map(currentZvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
-        Z[Z.length-1] = constrain(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        currentA5Value = hub.validAccelValues[0];
+        currentA6Value = hub.validAccelValues[1];
+        currentA7Value = hub.validAccelValues[2];
+        A5[A5.length-1] =
+          int(map(currentA5Value, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        A5[A5.length-1] = constrain(A5[A5.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        A6[A6.length-1] =
+          int(map(currentA6Value, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        A6[A6.length-1] = constrain(A6[A6.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        A7[A7.length-1] =
+          int(map(currentA7Value, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        A7[A7.length-1] = constrain(A7[A7.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
 
         shiftWave();
       } else {  // playback data
-        currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1];
-        currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
-        currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
+        currentA5Value = accelerometerBuff[0][accelerometerBuff[0].length-1];
+        currentA6Value = accelerometerBuff[1][accelerometerBuff[1].length-1];
+        currentA7Value = accelerometerBuff[2][accelerometerBuff[2].length-1];
       }
     }
   }
@@ -178,9 +173,11 @@ class W_AnalogRead extends Widget {
       fill(50);
       textFont(p4, 14);
       textAlign(CENTER,CENTER);
-      text("z", PolarWindowX, (PolarWindowY-PolarWindowHeight/2)-12);
-      text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
-      text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
+      text("A5", PolarWindowX, (PolarWindowY-PolarWindowHeight/2)-12);
+      text("A6", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
+      if (cyton.isSerial()) {
+        text("A7", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
+      }
 
       fill(graphBG);
       stroke(graphStroke);
@@ -190,66 +187,38 @@ class W_AnalogRead extends Widget {
       fill(50);
       textFont(p5, 12);
       textAlign(CENTER,CENTER);
-      text("+"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
-      text("0g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight/2);
-      text("-"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
+      text("4096", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
+      text("0", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
 
 
-      fill(graphBG);  // pulse window background
-      stroke(graphStroke);
-      ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
-
-      stroke(180);
-      line(PolarWindowX-PolarWindowWidth/2, PolarWindowY, PolarWindowX+PolarWindowWidth/2, PolarWindowY);
-      line(PolarWindowX, PolarWindowY-PolarWindowHeight/2, PolarWindowX, PolarWindowY+PolarWindowHeight/2);
-      line(PolarWindowX-PolarCorner, PolarWindowY+PolarCorner, PolarWindowX+PolarCorner, PolarWindowY-PolarCorner);
-
-      fill(50);
-      textFont(p3, 16);
+      // fill(graphBG);  // pulse window background
+      // stroke(graphStroke);
+      // ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
+      //
+      // stroke(180);
+      // line(PolarWindowX-PolarWindowWidth/2, PolarWindowY, PolarWindowX+PolarWindowWidth/2, PolarWindowY);
+      // line(PolarWindowX, PolarWindowY-PolarWindowHeight/2, PolarWindowX, PolarWindowY+PolarWindowHeight/2);
+      // line(PolarWindowX-PolarCorner, PolarWindowY+PolarCorner, PolarWindowX+PolarCorner, PolarWindowY-PolarCorner);
+      //
+      // fill(50);
+      // textFont(p3, 16);
 
       if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
-        // fill(Xcolor);
-        // text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
-        // fill(Ycolor);
-        // text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
-        // fill(Zcolor);
-        // text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
-        auxModeButton.draw();
+        analogModeButton.draw();
         drawAccValues();
         draw3DGraph();
         drawAccWave();
-      } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-        // fill(Xcolor);
-        // text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
-        // fill(Ycolor);
-        // text("Y "+nf(currentYvalue, 1, 3), x+10, y+80);
-        // fill(Zcolor);
-        // text("Z "+nf(currentZvalue, 1, 3), x+10, y+120);
-        drawAccValues();
-        draw3DGraph();
-        drawAccWave();
-      }
-      else {  // PLAYBACK
+      } else {  // PLAYBACK
         drawAccValues();
         draw3DGraph();
         drawAccWave2();
       }
     }
 
-    // pushStyle();
-    // textFont(h1,24);
-    // fill(bgColor);
-    // textAlign(CENTER,CENTER);
-    // text(widgetTitle, x + w/2, y + h/2);
-    // popStyle();
     popStyle();
   }
 
   void setGraphDimensions(){
-    println("accel w "+w);
-    println("accel h "+h);
-    println("accel x "+x);
-    println("accel y "+y);
     AccelWindowWidth = w - padding*2;
     AccelWindowHeight = int((float(h) - float(padding*3))/2.0);
     AccelWindowX = x + padding;
@@ -273,44 +242,24 @@ class W_AnalogRead extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     int dy = y - prevY;
-    println("dy = " + dy);
-
-    //put your code here...
-    // AccelWindowWidth = int(w) - 10;
-    // AccelWindowX = int(x)+5;
-    // AccelWindowY = int(y)-10+int(h)/2;
-    //
-    // PolarWindowX = x+AccelWindowWidth-90;
-    // PolarWindowY = y+83;
-    // PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
-    println("Acc Widget -- Screen Resized.");
 
     setGraphDimensions();
 
     //empty arrays to start redrawing from scratch
-    for (int i=0; i<X.length; i++) {  // initialize the accelerometer data
-      X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
-      Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
-      Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
-      // X[i] = X[i] + dy;
-      // Y[i] = Y[i] + dy;
-      // Z[i] = Z[i] + dy;
+    for (int i=0; i<A5.length; i++) {  // initialize the accelerometer data
+      A5[i] = AccelWindowY + AccelWindowHeight/4; // A5 at 1/4
+      A6[i] = AccelWindowY + AccelWindowHeight/2;  // A6 at 1/2
+      A7[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // A7 at 3/4
     }
 
-    auxModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
+    analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    //put your code here...
-    if(eegDataSource == DATASOURCE_GANGLION){
-      //put your code here...
-      if (ganglion.isBLE()) {
-        if (auxModeButton.isMouseHere()) {
-          auxModeButton.setIsActive(true);
-        }
-      }
+    if (analogModeButton.isMouseHere()) {
+      analogModeButton.setIsActive(true);
     }
   }
 
@@ -318,22 +267,21 @@ class W_AnalogRead extends Widget {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    if(eegDataSource == DATASOURCE_GANGLION){
-      //put your code here...
-      if(auxModeButton.isActive && auxModeButton.isMouseHere()){
-        println("toggle...");
-        if(ganglion.isAccelModeActive()){
-          ganglion.accelStop();
-
-          auxModeButton.setString("Turn Analog Read On");
-        } else{
-          ganglion.accelStart();
-          auxModeButton.setString("Turn Analog Read Off");
+    if(analogModeButton.isActive && analogModeButton.isMouseHere()){
+      // println("analogModeButton...");
+      if(cyton.isPortOpen()) {
+        if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
+          cyton.setBoardMode(BOARD_MODE_ANALOG);
+          output("Starting to read analog inputs on pin marked D11");
+          analogModeButton.setString("Turn Digital Read Off");
+        } else {
+          cyton.setBoardMode(BOARD_MODE_DEFAULT);
+          output("Starting to read accelerometer");
+          analogModeButton.setString("Turn Digital Read On");
         }
       }
-      auxModeButton.setIsActive(false);
     }
-
+    analogModeButton.setIsActive(false);
   }
 
   //add custom classes functions here
@@ -341,18 +289,18 @@ class W_AnalogRead extends Widget {
     textAlign(LEFT,CENTER);
     textFont(h1,20);
     fill(Xcolor);
-    text("A5 = " + nf(currentXvalue, 1, 0), x+padding , y + (h/12)*1.5);
+    text("A5 = " + nf(currentA5Value, 1, 0), x+padding , y + (h/12)*1.5);
     fill(Ycolor);
-    text("A6 = " + nf(currentYvalue, 1, 0), x+padding, y + (h/12)*3);
+    text("A6 = " + nf(currentA6Value, 1, 0), x+padding, y + (h/12)*3);
     fill(Zcolor);
-    text("A7 = " + nf(currentZvalue, 1, 0), x+padding, y + (h/12)*4.5);
+    text("A7 = " + nf(currentA7Value, 1, 0), x+padding, y + (h/12)*4.5);
   }
 
   void shiftWave() {
-    for (int i = 0; i < X.length-1; i++) {      // move the pulse waveform by
-      X[i] = X[i+1];
-      Y[i] = Y[i+1];
-      Z[i] = Z[i+1];
+    for (int i = 0; i < A5.length-1; i++) {      // move the pulse waveform by
+      A5[i] = A5[i+1];
+      A6[i] = A6[i+1];
+      A7[i] = A7[i+1];
     }
   }
 
@@ -360,11 +308,11 @@ class W_AnalogRead extends Widget {
     noFill();
     strokeWeight(3);
     stroke(Xcolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentA5Value, -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
     stroke(Ycolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentA6Value/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentA6Value/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
     stroke(Zcolor);
-    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
+    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentA7Value, -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
   }
 
   void drawAccWave() {
@@ -372,29 +320,29 @@ class W_AnalogRead extends Widget {
     strokeWeight(1);
     beginShape();                                  // using beginShape() renders fast
     stroke(Xcolor);
-    for (int i = 0; i < X.length; i++) {
-      // int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
-      // vertex(AccelWindowX+xi, X[i]);                    //draw a line connecting the data points
-      int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
-      // int yi = int(map(X[i], yMaxMin, -yMaxMin, 0.0, AccelWindowHeight-1));
+    for (int i = 0; i < A5.length; i++) {
+      // int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      // vertex(AccelWindowX+xi, A5[i]);                    //draw a line connecting the data points
+      int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      // int yi = int(map(A5[i], yMaxMin, -yMaxMin, 0.0, AccelWindowHeight-1));
       // int yi = 2;
-      vertex(AccelWindowX+xi, X[i]);                    //draw a line connecting the data points
+      vertex(AccelWindowX+xi, A5[i]);                    //draw a line connecting the data points
     }
     endShape();
 
     beginShape();
     stroke(Ycolor);
-    for (int i = 0; i < Y.length; i++) {
-      int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
-      vertex(AccelWindowX+xi, Y[i]);
+    for (int i = 0; i < A6.length; i++) {
+      int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      vertex(AccelWindowX+xi, A6[i]);
     }
     endShape();
 
     beginShape();
     stroke(Zcolor);
-    for (int i = 0; i < Z.length; i++) {
-      int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
-      vertex(AccelWindowX+xi, Z[i]);
+    for (int i = 0; i < A7.length; i++) {
+      int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      vertex(AccelWindowX+xi, A7[i]);
     }
     endShape();
   }
@@ -432,37 +380,37 @@ class W_AnalogRead extends Widget {
 
   void synthesizeAccelerometerData() {
     if (Xrising) {  // MAKE A SAW WAVE FOR TESTING
-      X[X.length-1]--;   // place the new raw datapoint at the end of the array
-      if (X[X.length-1] <= AccelWindowY) {
+      A5[A5.length-1]--;   // place the new raw datapoint at the end of the array
+      if (A5[A5.length-1] <= AccelWindowY) {
         Xrising = false;
       }
     } else {
-      X[X.length-1]++;   // place the new raw datapoint at the end of the array
-      if (X[X.length-1] >= AccelWindowY+AccelWindowHeight) {
+      A5[A5.length-1]++;   // place the new raw datapoint at the end of the array
+      if (A5[A5.length-1] >= AccelWindowY+AccelWindowHeight) {
         Xrising = true;
       }
     }
 
     if (Yrising) {  // MAKE A SAW WAVE FOR TESTING
-      Y[Y.length-1]--;   // place the new raw datapoint at the end of the array
-      if (Y[Y.length-1] <= AccelWindowY) {
+      A6[A6.length-1]--;   // place the new raw datapoint at the end of the array
+      if (A6[A6.length-1] <= AccelWindowY) {
         Yrising = false;
       }
     } else {
-      Y[Y.length-1]++;   // place the new raw datapoint at the end of the array
-      if (Y[Y.length-1] >= AccelWindowY+AccelWindowHeight) {
+      A6[A6.length-1]++;   // place the new raw datapoint at the end of the array
+      if (A6[A6.length-1] >= AccelWindowY+AccelWindowHeight) {
         Yrising = true;
       }
     }
 
     if (Zrising) {  // MAKE A SAW WAVE FOR TESTING
-      Z[Z.length-1]--;   // place the new raw datapoint at the end of the array
-      if (Z[Z.length-1] <= AccelWindowY) {
+      A7[A7.length-1]--;   // place the new raw datapoint at the end of the array
+      if (A7[A7.length-1] <= AccelWindowY) {
         Zrising = false;
       }
     } else {
-      Z[Z.length-1]++;   // place the new raw datapoint at the end of the array
-      if (Z[Z.length-1] >= AccelWindowY+AccelWindowHeight) {
+      A7[A7.length-1]++;   // place the new raw datapoint at the end of the array
+      if (A7[A7.length-1] >= AccelWindowY+AccelWindowHeight) {
         Zrising = true;
       }
     }
