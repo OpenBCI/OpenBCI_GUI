@@ -71,6 +71,9 @@ Gif loadingGIF_blue;
 
 boolean initSystemThreadLock = false;
 
+// ---- Define variables related to OpenBCI_GUI UDPMarker functionality
+UDP udpRX;
+ 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
@@ -363,9 +366,61 @@ void setup() {
 
   myPresentation = new Presentation();
 
+  // UDPMarker functionality
+  // Setup the UDP receiver
+  int portRX = 51000;  // this is the UDP port the application will be listening on 
+  String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
+  
+  //create new object for receiving 
+  udpRX=new UDP(this,portRX,ip);
+  udpRX.setReceiveHandler("udpReceiveHandler");
+  udpRX.log(true);
+  udpRX.listen(true);
+  // Print some useful diagnostics 
+  println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
+  println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
+
   timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
 }
 //====================== END-OF-SETUP ==========================//
+
+//====================UDP Packet Handler==========================//
+// This function handles the received UDP packet 
+// See the documentation for the Java UDP class here:
+// https://ubaa.net/shared/processing/udp/udp_class_udp.htm
+
+String udpReceiveString = null;
+
+void udpReceiveHandler(byte[] data, String ip, int portRX){
+  
+  String udpString = new String(data);
+  println(udpString+" from: "+ip+" and port: "+portRX);
+  if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0){
+    
+    /*  Old version with 10 markers
+    char c = value.charAt(4);
+  if ( c>= '0' && c <= '9'){
+      println("Found a valid UDP STIM of value: "+int(c)+" chr: "+c);
+      hub.sendCommand("`"+char(c-(int)'0'));
+      */
+    int intValue = Integer.parseInt(udpString.substring(4));
+      
+    if (intValue > 0 && intValue < 255){ // Since we only send single char markers must limit to 255
+      
+      String sendString = "`"+char(intValue);
+      
+      println("Marker value: "+udpString+" with numeric value of "+intValue+"as :"+sendString);
+      hub.sendCommand("`"+char(intValue));
+
+    } else {
+      println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
+    }
+  } else {
+      println("udpReceiveHandler::Warning:invalid UDP marker packet: "+udpString);
+
+  }
+}
+
 
 //======================== DRAW LOOP =============================//
 
@@ -569,6 +624,7 @@ void initSystem() {
     //removing first column of data from data file...the first column is a time index and not eeg data
 
   }
+  verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
   // Nfft = getNfftSafe();
   nDataBackBuff = 3*(int)getSampleRateSafe();
@@ -600,6 +656,7 @@ void initSystem() {
   prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
+  verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -613,9 +670,11 @@ void initSystem() {
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+  verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
 
   controlPanel.close();
   topNav.controlPanelCollapser.setIsActive(false);
+  verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
   hub.changeState(hub.STATE_COMINIT);
   // hub.searchDeviceStop();
 
@@ -623,8 +682,7 @@ void initSystem() {
   switch (eegDataSource) {
     case DATASOURCE_CYTON:
       int nEEDataValuesPerPacket = nchan;
-      boolean useAux = false;
-      if (eegDataSource == DATASOURCE_CYTON) useAux = true;  //switch this back to true CHIP 2014-11-04
+      boolean useAux = true;
       if (cyton.getInterface() == INTERFACE_SERIAL) {
         cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
       } else {
@@ -1155,7 +1213,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.1.0\nOctober 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.1.1\nNovember 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
