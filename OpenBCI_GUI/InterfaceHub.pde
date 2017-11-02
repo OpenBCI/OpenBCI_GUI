@@ -377,16 +377,10 @@ class Hub {
           } else {
             setBoardType("daisy");
           }
-        } 
-/*        if (sdSetting >= 0) {
-          println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
-          sdCardStart(sdSetting);
         } else {
           println("Hub: parseMessage: connect: success! -- " + millis());
           initAndShowGUI();
         }
-*/
-     
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
         if (list[2].equals("Error: Invalid sample rate")) {
@@ -540,7 +534,7 @@ class Hub {
                   }
                 }
               } else {
-                // println("Vals to read: " + valsToRead);
+                println("Vals to read: " + valsToRead);
                 if (valsToRead == 6) {
                   for (int i = 0; i < 3; i++) {
                     // println(list[valCounter]);
