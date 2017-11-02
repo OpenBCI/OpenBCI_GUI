@@ -534,7 +534,6 @@ class Hub {
                   }
                 }
               } else {
-                println("Vals to read: " + valsToRead);
                 if (valsToRead == 6) {
                   for (int i = 0; i < 3; i++) {
                     // println(list[valCounter]);
