@@ -73,7 +73,7 @@ boolean initSystemThreadLock = false;
 
 // ---- Define variables related to OpenBCI_GUI UDPMarker functionality
 UDP udpRX;
- 
+
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
@@ -368,15 +368,15 @@ void setup() {
 
   // UDPMarker functionality
   // Setup the UDP receiver
-  int portRX = 51000;  // this is the UDP port the application will be listening on 
+  int portRX = 51000;  // this is the UDP port the application will be listening on
   String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
-  
-  //create new object for receiving 
+
+  //create new object for receiving
   udpRX=new UDP(this,portRX,ip);
   udpRX.setReceiveHandler("udpReceiveHandler");
   udpRX.log(true);
   udpRX.listen(true);
-  // Print some useful diagnostics 
+  // Print some useful diagnostics
   println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
   println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
@@ -385,18 +385,18 @@ void setup() {
 //====================== END-OF-SETUP ==========================//
 
 //====================UDP Packet Handler==========================//
-// This function handles the received UDP packet 
+// This function handles the received UDP packet
 // See the documentation for the Java UDP class here:
 // https://ubaa.net/shared/processing/udp/udp_class_udp.htm
 
 String udpReceiveString = null;
 
 void udpReceiveHandler(byte[] data, String ip, int portRX){
-  
+
   String udpString = new String(data);
   println(udpString+" from: "+ip+" and port: "+portRX);
   if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0){
-    
+
     /*  Old version with 10 markers
     char c = value.charAt(4);
   if ( c>= '0' && c <= '9'){
@@ -404,11 +404,11 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
       hub.sendCommand("`"+char(c-(int)'0'));
       */
     int intValue = Integer.parseInt(udpString.substring(4));
-      
+
     if (intValue > 0 && intValue < 255){ // Since we only send single char markers must limit to 255
-      
+
       String sendString = "`"+char(intValue);
-      
+
       println("Marker value: "+udpString+" with numeric value of "+intValue+"as :"+sendString);
       hub.sendCommand("`"+char(intValue));
 
@@ -1213,7 +1213,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.1.1\nNovember 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.2.0\nNovember 2017", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
