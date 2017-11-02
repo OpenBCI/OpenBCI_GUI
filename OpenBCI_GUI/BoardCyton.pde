@@ -31,6 +31,8 @@ final char command_startBinary_4chan = 'v';  // not necessary now
 final char command_activateFilters = 'f';  // swithed from 'F' to 'f'  ... but not necessary because taken out of hardware code
 final char command_deactivateFilters = 'g';  // not necessary anymore
 
+final String command_setMode = "/";  // this is used to set the board into different modes
+
 final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
 final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
@@ -90,7 +92,7 @@ class Cyton {
   private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
   //float LIS3DH_full_scale_G = 4;  // +/- 4G, assumed full scale setting for the accelerometer
   private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
-  //final float scale_fac_accel_G_per_count = 1.0;
+  //private final float scale_fac_accel_G_per_count = 1.0;  //to test stimulations  //final float scale_fac_accel_G_per_count = 1.0;
   private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
   boolean isBiasAuto = true; //not being used?
@@ -378,16 +380,16 @@ class Cyton {
 
   public void startDataTransfer() {
     if (isPortOpen()) {
-      // stopDataTransfer();
+      // Now give the command to start binary data transmission
       if (isSerial()) {
         hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
         // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
+        write(command_startBinary);
       } else if (isWifi()) {
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
-
+        write(command_startBinary);
       }
-      write(command_startBinary);
 
     } else {
       println("port not open");
