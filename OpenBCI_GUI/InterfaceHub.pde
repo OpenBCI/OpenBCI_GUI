@@ -71,8 +71,8 @@ class Hub {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA = "t";
-  final static String TCP_CMD_ERROR = "e"; //<>//
-  final static String TCP_CMD_EXAMINE = "x"; //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
+  final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_PROTOCOL = "p";
@@ -378,15 +378,17 @@ class Hub {
             setBoardType("daisy");
           }
         } 
-/*        if (sdSetting >= 0) {
+/*  AJ: this is duplicated in  processBoardType(String msg) above.  You make the call on which one to delete
+    I cannot see the purpose of the processBoardType(String msg) method if the SD card stuff is taken out. 
+    I guess it is some kind of async state machine
+        if (sdSetting >= 0) {
           println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
           sdCardStart(sdSetting);
         } else {
           println("Hub: parseMessage: connect: success! -- " + millis());
           initAndShowGUI();
         }
-*/
-     
+*/     
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
         if (list[2].equals("Error: Invalid sample rate")) {
@@ -485,8 +487,8 @@ class Hub {
     try {
       // println(msg);
       String[] list = split(msg, ',');
-      int code = Integer.parseInt(list[1]);
-      int stopByte = 0xC0;
+      int code = Integer.parseInt(list[1]); //<>//
+      int stopByte = 0xC0; //<>//
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
@@ -573,7 +575,7 @@ class Hub {
               }
             }
           }
-
+ //<>//
           getRawValues(dataPacket);
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
           // println(dataPacket.values[7]);
