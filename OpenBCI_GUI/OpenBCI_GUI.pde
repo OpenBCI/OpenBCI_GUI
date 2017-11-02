@@ -624,6 +624,7 @@ void initSystem() {
     //removing first column of data from data file...the first column is a time index and not eeg data
 
   }
+  verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
   // Nfft = getNfftSafe();
   nDataBackBuff = 3*(int)getSampleRateSafe();
@@ -655,6 +656,7 @@ void initSystem() {
   prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
+  verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -668,9 +670,11 @@ void initSystem() {
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+  verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
 
   controlPanel.close();
   topNav.controlPanelCollapser.setIsActive(false);
+  verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
   hub.changeState(hub.STATE_COMINIT);
   // hub.searchDeviceStop();
 
@@ -678,8 +682,7 @@ void initSystem() {
   switch (eegDataSource) {
     case DATASOURCE_CYTON:
       int nEEDataValuesPerPacket = nchan;
-      boolean useAux = false;
-      if (eegDataSource == DATASOURCE_CYTON) useAux = true;  //switch this back to true CHIP 2014-11-04
+      boolean useAux = true;
       if (cyton.getInterface() == INTERFACE_SERIAL) {
         cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
       } else {

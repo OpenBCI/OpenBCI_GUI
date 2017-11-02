@@ -348,7 +348,7 @@ class Hub {
     int code = Integer.parseInt(list[1]);
     switch (code) {
       case RESP_SUCCESS:
-        if (sdSetting >= 0) {
+        if (sdSetting > 0) {
           println("Hub: processBoardType: success, starting SD card now -- " + millis());
           sdCardStart(sdSetting);
         } else {
@@ -823,7 +823,7 @@ class Hub {
 
   public void sdCardStart(int sdSetting) {
     String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
-    println("Hub: sdCardStart(): sending \'" + sdSettingStr);
+    println("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
     write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
   }
 
@@ -934,6 +934,8 @@ class Hub {
   // CONNECTION
   public void connectBLE(String id) {
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
+
   }
   public void disconnectBLE() {
     waitingForResponse = true;
@@ -942,6 +944,8 @@ class Hub {
 
   public void connectWifi(String id) {
     write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + TCP_STOP);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
+
   }
 
   public void examineWifi(String id) {
@@ -957,6 +961,9 @@ class Hub {
   public void connectSerial(String id) {
     waitingForResponse = true;
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
+    delay(1000);
+
   }
   public int disconnectSerial() {
     println("disconnecting serial");
