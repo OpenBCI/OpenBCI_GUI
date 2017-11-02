@@ -378,13 +378,14 @@ class Hub {
             setBoardType("daisy");
           }
         } 
-        if (sdSetting >= 0) {
+/*        if (sdSetting >= 0) {
           println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
           sdCardStart(sdSetting);
         } else {
           println("Hub: parseMessage: connect: success! -- " + millis());
           initAndShowGUI();
         }
+*/
      
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:

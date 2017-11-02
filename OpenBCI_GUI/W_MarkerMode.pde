@@ -75,11 +75,6 @@ class W_MarkerMode extends Widget {
     // for synthesizing values
     synthTime = 0.0;
     
-    // initialize data
-    for (int i=0; i<X.length; i++) {  // initialize the marker data
-      X[i] = 0; 
-    }
-
     markerModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn MarkerMode On", 12);
     markerModeButton.setCornerRoundess((int)(navHeight-6));
     markerModeButton.setFont(p6,10);
@@ -129,13 +124,6 @@ class W_MarkerMode extends Widget {
     //put your code here...
     //remember to refer to x,y,w,h which are the positioning variables of the Widget class
     if (true) {
-      // fill(graphBG);
-      // stroke(strokeColor);
-      // rect(x, y, w, h);
-      // textFont(f4, 24);
-      // textAlign(LEFT, TOP);
-      // fill(textColor);
-      // text("Acellerometer Gs", x + 10, y + 10);
 
       fill(50);
       textFont(p4, 14);
@@ -149,7 +137,8 @@ class W_MarkerMode extends Widget {
       fill(50);
       textFont(p5, 12);
       textAlign(CENTER,CENTER);
-      text((int)yMaxMin-20, MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY);
+      text((int)yMaxMin-10, MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY);
+      text((int)16, MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY + MarkerWindowHeight/2);
       text("0", MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY + MarkerWindowHeight);
 
 
@@ -162,22 +151,10 @@ class W_MarkerMode extends Widget {
       textFont(p3, 16);
 
       if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
-        // fill(Xcolor);
-        // text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
-        // fill(Ycolor);
-        // text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
-        // fill(Zcolor);
-        // text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
         markerModeButton.draw();
         drawMarkerValues();
         drawMarkerWave();
       } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-        // fill(Xcolor);
-        // text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
-        // fill(Ycolor);
-        // text("Y "+nf(currentYvalue, 1, 3), x+10, y+80);
-        // fill(Zcolor);
-        // text("Z "+nf(currentZvalue, 1, 3), x+10, y+120);
         drawMarkerValues();
         drawMarkerWave();
       }
@@ -186,13 +163,6 @@ class W_MarkerMode extends Widget {
         drawMarkerWave2();
       }
     }
-
-    // pushStyle();
-    // textFont(h1,24);
-    // fill(bgColor);
-    // textAlign(CENTER,CENTER);
-    // text(widgetTitle, x + w/2, y + h/2);
-    // popStyle();
     popStyle();
   }
 
@@ -216,20 +186,13 @@ class W_MarkerMode extends Widget {
     println("dy = " + dy);
 
     //put your code here...
-    // MarkerWindowWidth = int(w) - 10;
-    // MarkerWindowX = int(x)+5;
-    // MarkerWindowY = int(y)-10+int(h)/2;
-    //
-    // PolarWindowX = x+MarkerWindowWidth-90;
-    // PolarWindowY = y+83;
-    // PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
     println("Acc Widget -- Screen Resized.");
 
     setGraphDimensions();
 
     //empty arrays to start redrawing from scratch
     for (int i=0; i<X.length; i++) {  // initialize the accelerometer data
-      X[i] = MarkerWindowY + MarkerWindowHeight/4; // X at 1/4
+      X[i] = MarkerWindowY + MarkerWindowHeight; // X at 1/4
     }
 
     markerModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
@@ -280,7 +243,7 @@ class W_MarkerMode extends Widget {
 
   void drawMarkerWave() {
     noFill();
-    strokeWeight(1);
+    strokeWeight(2);
     beginShape();                                  // using beginShape() renders fast
     stroke(Xcolor);
     for (int i = 0; i < X.length; i++) {
@@ -330,26 +293,3 @@ class W_MarkerMode extends Widget {
   }
 
 };
-
-
-// //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-// void Thisdrop(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 1");
-//   if(n==0){
-//     //do this
-//   } else if(n==1){
-//     //do this instead
-//   }
-//
-//   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-// }
-//
-// void Dropdown2(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 2");
-//   closeAllDropdowns();
-// }
-//
-// void Dropdown3(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 3");
-//   closeAllDropdowns();
-// }

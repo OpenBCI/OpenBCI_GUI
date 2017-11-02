@@ -26,7 +26,7 @@ W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
 // W_AnalogRead w_analogRead;
 // W_DigitalRead w_digitalRead;
-// W_MarkerMode w_markermode;
+W_MarkerMode w_markermode;
 
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
