@@ -197,10 +197,6 @@ class W_MarkerMode extends Widget {
   }
 
   void setGraphDimensions(){
-    println("maker w "+w);
-    println("marker h "+h);
-    println("marker x "+x);
-    println("marker y "+y);
     MarkerWindowWidth = w - padding*2;
     MarkerWindowHeight = int((float(h) - float(padding*3)));
     MarkerWindowX = x + padding;
