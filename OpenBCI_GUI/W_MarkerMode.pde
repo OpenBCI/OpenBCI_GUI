@@ -42,6 +42,7 @@ class W_MarkerMode extends Widget {
   int[] X;
 
   int lastMarker=0;
+  int localValidLastMarker;
 
   float dummyX;
 
@@ -66,8 +67,8 @@ class W_MarkerMode extends Widget {
 
     setGraphDimensions();
 
-    // this is set to 255+20 we will add 20 to all markers so even marker of value=1 can be seen
-    yMaxMin = 265;
+    // The range of markers
+    yMaxMin = 256;
 
     // XYZ buffer for bottom graph
     X = new int[MarkerBuffSize];
@@ -91,23 +92,19 @@ class W_MarkerMode extends Widget {
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-    //put your code here...
-    if (eegDataSource == DATASOURCE_SYNTHETIC) {
-      synthesizeMarkerData();
-      currentXvalue = map(X[X.length-1], MarkerWindowY, MarkerWindowY+MarkerWindowHeight, yMaxMin, 0);
-      shiftWave();
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-      if (isRunning && cyton.getBoardMode() == BOARD_MODE_MARKER) {
+    localValidLastMarker =  hub.validLastMarker;  // make a local copy so it can be manipulated in SYNTHETIC mode
+    hub.validLastMarker = 0;
 
-// todo        currentXvalue = dataPacket.auxValues[0];
-        currentXvalue = 1;
-        if (currentXvalue > 1.0)
-          lastMarker = int(currentXvalue);
-        if (currentXvalue > 0.0)
-          currentXvalue += 10;
-           
+    if (eegDataSource == DATASOURCE_SYNTHETIC) {
+      localValidLastMarker = synthesizeMarkerData();
+    }
+    if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {
+      if (isRunning && cyton.getBoardMode() == BOARD_MODE_MARKER) {
+        if (localValidLastMarker > 0){
+          lastMarker = localValidLastMarker;  // this holds the last marker for the display
+        } 
         X[X.length-1] =
-          int(map(logScaleMarker(currentXvalue), 0, yMaxMin, float(MarkerWindowY+MarkerWindowHeight), float(MarkerWindowY)));
+          int(map(logScaleMarker(localValidLastMarker), 0, yMaxMin, float(MarkerWindowY+MarkerWindowHeight), float(MarkerWindowY)));
         X[X.length-1] = constrain(X[X.length-1], MarkerWindowY, MarkerWindowY+MarkerWindowHeight);
 
         shiftWave();
@@ -137,7 +134,7 @@ class W_MarkerMode extends Widget {
       fill(50);
       textFont(p5, 12);
       textAlign(CENTER,CENTER);
-      text((int)yMaxMin-10, MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY);
+      text((int)yMaxMin, MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY);
       text((int)16, MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY + MarkerWindowHeight/2);
       text("0", MarkerWindowX+MarkerWindowWidth + 12, MarkerWindowY + MarkerWindowHeight);
 
@@ -150,11 +147,8 @@ class W_MarkerMode extends Widget {
       fill(50);
       textFont(p3, 16);
 
-      if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
+      if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {  // LIVE
         markerModeButton.draw();
-        drawMarkerValues();
-        drawMarkerWave();
-      } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
         drawMarkerValues();
         drawMarkerWave();
       }
@@ -211,8 +205,8 @@ class W_MarkerMode extends Widget {
 
     //put your code here...
     if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-      // println("digitalModeButton...");
-      if(cyton.isPortOpen()) {
+      // println("markerModeButton...");
+      if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
         if (cyton.getBoardMode() != BOARD_MODE_MARKER) {
           cyton.setBoardMode(BOARD_MODE_MARKER);
           output("Starting to read markers");
@@ -222,7 +216,7 @@ class W_MarkerMode extends Widget {
           output("Starting to read accelerometer");
           markerModeButton.setString("Turn Marker On");
         }
-      }
+      } 
     }
     markerModeButton.setIsActive(false);
   }
@@ -270,26 +264,24 @@ class W_MarkerMode extends Widget {
     endShape();
   }
 
-  void synthesizeMarkerData() {
+  int synthesizeMarkerData() {
     synthTime += 0.02;
+    int valueMarker;
     
     if (synthCount++ > 10){      
-      currentXvalue =  (sin(synthTime) +1.0)*127.;
-      lastMarker = int(currentXvalue);
+      valueMarker =  int((sin(synthTime) +1.0)*127.);
       synthCount = 0;
     } else {
-      currentXvalue = 0.0;
+      valueMarker = 0;
     }
 
-
-    X[X.length-1] = int(map(logScaleMarker(currentXvalue), 0, yMaxMin, float(MarkerWindowY+MarkerWindowHeight), float(MarkerWindowY)));
-        X[X.length-1] = constrain(X[X.length-1], MarkerWindowY, MarkerWindowY+MarkerWindowHeight);
+    return valueMarker;
   }
 
 
   int logScaleMarker( float value ) {
-    // this returns log value between 0 and yMaxMin for a value between 0. and 265.
-    return int(log(int(value)+1.0)*yMaxMin/log(265.0));
+    // this returns log value between 0 and yMaxMin for a value between 0. and 255.
+    return int(log(int(value)+1.0)*yMaxMin/log(yMaxMin+1));
   }
 
 };

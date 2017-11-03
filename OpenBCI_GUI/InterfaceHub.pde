@@ -71,8 +71,8 @@ class Hub {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA = "t";
-  final static String TCP_CMD_ERROR = "e"; //<>//
-  final static String TCP_CMD_EXAMINE = "x"; //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
+  final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_PROTOCOL = "p";
@@ -198,6 +198,7 @@ class Hub {
   private boolean newAccelData = false;
   public int[] accelArray = new int[NUM_ACCEL_DIMS];
   public int[] validAccelValues = {0, 0, 0};
+  public int validLastMarker;
   public boolean validNewAccelData = false;
 
   public boolean impedanceUpdated = false;
@@ -479,8 +480,8 @@ class Hub {
     try {
       // println(msg);
       String[] list = split(msg, ',');
-      int code = Integer.parseInt(list[1]);
-      int stopByte = 0xC0;
+      int code = Integer.parseInt(list[1]); //<>//
+      int stopByte = 0xC0; //<>//
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
@@ -566,7 +567,7 @@ class Hub {
               }
             }
           }
-
+ //<>//
           getRawValues(dataPacket);
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
           // println(dataPacket.values[7]);

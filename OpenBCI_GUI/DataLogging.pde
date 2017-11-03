@@ -297,6 +297,10 @@ public class OutputFile_rawtxt {
         }
       } else if (cyton.getBoardMode() == BOARD_MODE_MARKER) {
         output.print(", " + data.auxValues[0]);
+        if ( data.auxValues[0] > 0) {
+          hub.validLastMarker = data.auxValues[0];
+        }
+          
       } else {
         for (int Ival = 0; Ival < 3; Ival++) {
           output.print(", " + data.auxValues[Ival]);
@@ -308,6 +312,8 @@ public class OutputFile_rawtxt {
         output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
       }
     }
+    
+
   }
 
   public void closeFile() {
