@@ -198,6 +198,7 @@ class Hub {
   private boolean newAccelData = false;
   public int[] accelArray = new int[NUM_ACCEL_DIMS];
   public int[] validAccelValues = {0, 0, 0};
+  public int validLastMarker;
   public boolean validNewAccelData = false;
 
   public boolean impedanceUpdated = false;
