@@ -100,7 +100,7 @@ class W_MarkerMode extends Widget {
       if (isRunning && cyton.getBoardMode() == BOARD_MODE_MARKER) {
 
 // todo        currentXvalue = dataPacket.auxValues[0];
-        currentXvalue = 1;
+        currentXvalue = 0;
         if (currentXvalue > 1.0)
           lastMarker = int(currentXvalue);
         if (currentXvalue > 0.0)

@@ -176,6 +176,7 @@ class Cyton {
   public void setBoardMode(int boardMode) {
     hub.sendCommand("/" + boardMode);
     curBoardMode = boardMode;
+    print("Cyton: setBoardMode to :" + curBoardMode);
   }
 
   public void setSampleRate(int _sampleRate) {
