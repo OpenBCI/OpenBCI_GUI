@@ -1,12 +1,17 @@
-# v3.1.1
+# v3.2.0
+
+Use OpenBCIHub v1.3.5 please.
 
 ### New Features
 
-* Added the Digital Read widget
+* Add the Digital Read widget
+* Add the Analog Read widget
+* Add the Marker Mode widget
 
 ### Bug Fixes
 
-* Did not write aux values for different board modes.
+* Did not write aux values for Cyton with Daisy #272
+* Did not write to the SD card #277
 
 # v3.1.0
 

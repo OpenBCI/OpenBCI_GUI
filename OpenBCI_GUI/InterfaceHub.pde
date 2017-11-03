@@ -378,18 +378,10 @@ class Hub {
           } else {
             setBoardType("daisy");
           }
-        } 
-/*  AJ: this is duplicated in  processBoardType(String msg) above.  You make the call on which one to delete
-    I cannot see the purpose of the processBoardType(String msg) method if the SD card stuff is taken out. 
-    I guess it is some kind of async state machine
-        if (sdSetting >= 0) {
-          println("Hub: parseMessage: connect: success, starting SD card now -- " + millis());
-          sdCardStart(sdSetting);
         } else {
           println("Hub: parseMessage: connect: success! -- " + millis());
           initAndShowGUI();
         }
-*/     
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
         if (list[2].equals("Error: Invalid sample rate")) {
@@ -543,7 +535,6 @@ class Hub {
                   }
                 }
               } else {
-                // println("Vals to read: " + valsToRead);
                 if (valsToRead == 6) {
                   for (int i = 0; i < 3; i++) {
                     // println(list[valCounter]);

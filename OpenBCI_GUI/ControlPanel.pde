@@ -1473,7 +1473,8 @@ void updateToNChan(int _nchan) {
   nchan = _nchan;
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-  output("channel count set to " + str(nchan));
+  output("Channel count set to " + str(nchan));
+  println("channel count set to " + str(nchan));
   hub.initDataPackets(_nchan, 3);
   ganglion.initDataPackets(_nchan, 3);
   cyton.initDataPackets(_nchan, 3);

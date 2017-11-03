@@ -96,7 +96,7 @@ class W_AnalogRead extends Widget {
       A7[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // A7 at 3/4
     }
 
-    analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
+    analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
     analogModeButton.setCornerRoundess((int)(navHeight-6));
     analogModeButton.setFont(p6,10);
     // analogModeButton.setStrokeColor((int)(color(150)));
@@ -206,11 +206,16 @@ class W_AnalogRead extends Widget {
       if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
         analogModeButton.draw();
         drawAccValues();
-        draw3DGraph();
+        // draw3DGraph();
         drawAccWave();
+        if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
+          analogModeButton.setString("Turn Analog Read Off");
+        } else {
+          analogModeButton.setString("Turn Analog Read On");
+        }
       } else {  // PLAYBACK
         drawAccValues();
-        draw3DGraph();
+        // draw3DGraph();
         drawAccWave2();
       }
     }
@@ -273,11 +278,9 @@ class W_AnalogRead extends Widget {
         if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
           cyton.setBoardMode(BOARD_MODE_ANALOG);
           output("Starting to read analog inputs on pin marked D11");
-          analogModeButton.setString("Turn Analog Read Off");
         } else {
           cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");
-          analogModeButton.setString("Turn Analog Read On");
         }
       }
     }
