@@ -384,6 +384,7 @@ class Hub {
         }
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
+        println("Error in processConnect: RESP_ERROR_UNABLE_TO_CONNECT");
         if (list[2].equals("Error: Invalid sample rate")) {
           if (eegDataSource == DATASOURCE_CYTON) {
             killAndShowMsg("WiFi Shield is connected to a Ganglion. Please select LIVE (from Ganglion) instead of LIVE (from Cyton)");
@@ -395,6 +396,7 @@ class Hub {
         }
         break;
       default:
+        println("Error in processConnect");
         handleError(code, list[2]);
         break;
     }
@@ -437,12 +439,12 @@ class Hub {
   }
 
   private void killAndShowMsg(String msg) {
-    haltSystem();
+    abandonInit = true;
     initSystemButton.setString("START SYSTEM");
     controlPanel.open();
-    abandonInit = true;
     output(msg);
     portIsOpen = false;
+    haltSystem();
   }
 
   /**
@@ -480,10 +482,10 @@ class Hub {
     try {
       // println(msg);
       String[] list = split(msg, ',');
-      int code = Integer.parseInt(list[1]); //<>//
+      int code = Integer.parseInt(list[1]);
       int stopByte = 0xC0; //<>//
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
-        if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
+        if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) {
           // Sample number stuff
           dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
 
@@ -549,25 +551,9 @@ class Hub {
                   }
                   // println(validAccelValues[1]);
                 }
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                  // int val1 = Integer.parseInt(list[valCounter++]);
-                  // int val2 = Integer.parseInt(list[valCounter++]);
-
-                  // dataPacket.auxValues[i] = (val1 << 8) | val2;
-                  // dataPacket.rawAuxValues[i][0] = byte(val2);
-                  // dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
-                  // println(dataPacket.auxValues[i]);
-                }
-                // if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
-                //   // println(msg);
-                //   for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                //     validAccelValues[i] = accelArray[i];
-                //   }
-                // }
               }
             }
           }
- //<>//
           getRawValues(dataPacket);
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
           // println(dataPacket.values[7]);
