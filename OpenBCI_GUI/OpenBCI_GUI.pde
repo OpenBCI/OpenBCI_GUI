@@ -392,11 +392,11 @@ void setup() {
 String udpReceiveString = null;
 
 void udpReceiveHandler(byte[] data, String ip, int portRX){
-
+  
   String udpString = new String(data);
   println(udpString+" from: "+ip+" and port: "+portRX);
   if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0){
-
+    
     /*  Old version with 10 markers
     char c = value.charAt(4);
   if ( c>= '0' && c <= '9'){
@@ -404,13 +404,13 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
       hub.sendCommand("`"+char(c-(int)'0'));
       */
     int intValue = Integer.parseInt(udpString.substring(4));
-
-    if (intValue > 0 && intValue < 255){ // Since we only send single char markers must limit to 255
-
-      String sendString = "`"+char(intValue);
-
-      println("Marker value: "+udpString+" with numeric value of "+intValue+"as :"+sendString);
-      hub.sendCommand("`"+char(intValue));
+      
+    if (intValue > 0 && intValue <= 255){ // Since we only send single char markers must limit to 255
+      
+      String sendString = "`"+String.format("%02X", intValue);
+      
+      println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
+      hub.sendCommand("`"+String.format("%02X", intValue));
 
     } else {
       println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
@@ -420,7 +420,6 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
 
   }
 }
-
 
 //======================== DRAW LOOP =============================//
 
