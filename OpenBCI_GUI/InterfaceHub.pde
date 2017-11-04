@@ -71,8 +71,8 @@ class Hub {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA = "t";
-  final static String TCP_CMD_ERROR = "e"; //<>//
-  final static String TCP_CMD_EXAMINE = "x"; //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
+  final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_PROTOCOL = "p";
@@ -198,6 +198,7 @@ class Hub {
   private boolean newAccelData = false;
   public int[] accelArray = new int[NUM_ACCEL_DIMS];
   public int[] validAccelValues = {0, 0, 0};
+  public int validLastMarker;
   public boolean validNewAccelData = false;
 
   public boolean impedanceUpdated = false;
@@ -348,7 +349,13 @@ class Hub {
     int code = Integer.parseInt(list[1]);
     switch (code) {
       case RESP_SUCCESS:
-        initAndShowGUI();
+        if (sdSetting > 0) {
+          println("Hub: processBoardType: success, starting SD card now -- " + millis());
+          sdCardStart(sdSetting);
+        } else {
+          println("Hub: processBoardType: success -- " + millis());
+          initAndShowGUI();
+        }
         break;
       case RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE:
       default:
@@ -471,8 +478,10 @@ class Hub {
 
   public void processData(String msg) {
     try {
+      // println(msg);
       String[] list = split(msg, ',');
-      int code = Integer.parseInt(list[1]);
+      int code = Integer.parseInt(list[1]); //<>//
+      int stopByte = 0xC0; //<>//
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) { //<>//
           // Sample number stuff
@@ -508,7 +517,7 @@ class Hub {
             if (list.length > nEEGValuesPerPacket + 5) {
               int valCounter = nEEGValuesPerPacket + 3;
               // println(list[valCounter]);
-              int stopByte = Integer.parseInt(list[valCounter++]);
+              stopByte = Integer.parseInt(list[valCounter++]);
               int valsToRead = list.length - valCounter - 1;
               // println(msg);
               // println("stopByte: " + stopByte + " valCounter: " + valCounter + " valsToRead: " + valsToRead);
@@ -526,19 +535,39 @@ class Hub {
                   }
                 }
               } else {
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                  int val1 = Integer.parseInt(list[valCounter++]);
-                  int val2 = Integer.parseInt(list[valCounter++]);
+                if (valsToRead == 6) {
+                  for (int i = 0; i < 3; i++) {
+                    // println(list[valCounter]);
+                    int val1 = Integer.parseInt(list[valCounter++]);
+                    int val2 = Integer.parseInt(list[valCounter++]);
 
-                  dataPacket.auxValues[i] = (val1 << 8) | val2;
-                  dataPacket.rawAuxValues[i][0] = byte(val2);
-                  dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                    dataPacket.auxValues[i] = (val1 << 8) | val2;
+                    validAccelValues[i] = (val1 << 8) | val2;
+
+                    dataPacket.rawAuxValues[i][0] = byte(val2);
+                    dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                  }
+                  // println(validAccelValues[1]);
+                }
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                  // int val1 = Integer.parseInt(list[valCounter++]);
+                  // int val2 = Integer.parseInt(list[valCounter++]);
+
+                  // dataPacket.auxValues[i] = (val1 << 8) | val2;
+                  // dataPacket.rawAuxValues[i][0] = byte(val2);
+                  // dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
                   // println(dataPacket.auxValues[i]);
                 }
+                // if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+                //   // println(msg);
+                //   for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                //     validAccelValues[i] = accelArray[i];
+                //   }
+                // }
               }
             }
           }
-
+ //<>//
           getRawValues(dataPacket);
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
           // println(dataPacket.values[7]);
@@ -571,9 +600,9 @@ class Hub {
           switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
               if (eegDataSource == DATASOURCE_GANGLION) {
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count());
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count(), stopByte);
               } else {
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count());
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), stopByte);
               }
               break;
             case OUTPUT_SOURCE_BDF:
@@ -593,6 +622,8 @@ class Hub {
         }
       }
     } catch (Exception e) {
+      print("\n\n");
+      println(msg);
       println("Hub: parseMessage: error: " + e);
       e.printStackTrace();
     }
@@ -786,7 +817,7 @@ class Hub {
 
   public void sdCardStart(int sdSetting) {
     String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
-    println("Hub: sdCardStart(): sending \'" + sdSettingStr);
+    println("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
     write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
   }
 
@@ -897,6 +928,8 @@ class Hub {
   // CONNECTION
   public void connectBLE(String id) {
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
+
   }
   public void disconnectBLE() {
     waitingForResponse = true;
@@ -905,6 +938,8 @@ class Hub {
 
   public void connectWifi(String id) {
     write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + TCP_STOP);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
+
   }
 
   public void examineWifi(String id) {
@@ -920,6 +955,9 @@ class Hub {
   public void connectSerial(String id) {
     waitingForResponse = true;
     write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
+    delay(1000);
+
   }
   public int disconnectSerial() {
     println("disconnecting serial");

@@ -233,17 +233,22 @@ public class OutputFile_rawtxt {
     output.flush();
   }
 
-
-
-  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux) {
-
+  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte) {
     //get current date time with Date()
     Date date = new Date();
 
     if (output != null) {
       output.print(Integer.toString(data.sampleIndex));
       writeValues(data.values,scale_to_uV);
-      writeAccValues(data.auxValues,scale_for_aux);
+      if (eegDataSource == DATASOURCE_GANGLION) {
+        writeAccValues(data.auxValues, scale_for_aux);
+      } else {
+        if (stopByte == 0xC1) {
+          writeAuxValues(data);
+        } else {
+          writeAccValues(data.auxValues, scale_for_aux);
+        }
+      }
       output.print( ", " + dateFormat.format(date));
       output.println(); rowsWritten++;
       //output.flush();
@@ -264,6 +269,51 @@ public class OutputFile_rawtxt {
       output.print(", ");
       output.print(String.format(Locale.US, "%.3f", scale_fac * float(values[Ival])));
     }
+  }
+
+  private void writeAuxValues(DataPacket_ADS1299 data) {
+    if (eegDataSource == DATASOURCE_CYTON) {
+      // println("board mode: " + cyton.getBoardMode());
+      if (cyton.getBoardMode() == BOARD_MODE_DIGITAL) {
+        if (cyton.isWifi()) {
+          output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
+          output.print(", " + (data.auxValues[0] & 0xFF));
+          output.print(", " + data.auxValues[1]);
+        } else {
+          output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
+          output.print(", " + (data.auxValues[0] & 0xFF));
+          output.print(", " + ((data.auxValues[1] & 0xFF00) >> 8));
+          output.print(", " + (data.auxValues[1] & 0xFF));
+          output.print(", " + data.auxValues[2]);
+        }
+      } else if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
+        if (cyton.isWifi()) {
+          output.print(", " + data.auxValues[0]);
+          output.print(", " + data.auxValues[1]);
+        } else {
+          output.print(", " + data.auxValues[0]);
+          output.print(", " + data.auxValues[1]);
+          output.print(", " + data.auxValues[2]);
+        }
+      } else if (cyton.getBoardMode() == BOARD_MODE_MARKER) {
+        output.print(", " + data.auxValues[0]);
+        if ( data.auxValues[0] > 0) {
+          hub.validLastMarker = data.auxValues[0];
+        }
+          
+      } else {
+        for (int Ival = 0; Ival < 3; Ival++) {
+          output.print(", " + data.auxValues[Ival]);
+        }
+      }
+    } else {
+      for (int i = 0; i < 3; i++) {
+        output.print(", " + (data.auxValues[i] & 0xFF));
+        output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
+      }
+    }
+    
+
   }
 
   public void closeFile() {

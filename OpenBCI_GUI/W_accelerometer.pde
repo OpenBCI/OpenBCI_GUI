@@ -356,7 +356,6 @@ class W_accelerometer extends Widget {
     if(eegDataSource == DATASOURCE_GANGLION){
       //put your code here...
       if(accelModeButton.isActive && accelModeButton.isMouseHere()){
-        println("toggle...");
         if(ganglion.isAccelModeActive()){
           ganglion.accelStop();
 
