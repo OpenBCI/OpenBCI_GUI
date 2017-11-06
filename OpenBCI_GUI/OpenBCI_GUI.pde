@@ -617,7 +617,6 @@ void initSystem() {
     } catch (Exception e) {
       println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
       println("   : quitting...");
-      abandonInit = true;
       hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
     }
     println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
@@ -709,8 +708,8 @@ void initSystem() {
 
   if (abandonInit) {
     haltSystem();
-    println("Failed to connect to data source...");
-    output("Failed to connect to data source...");
+    println("Failed to connect to data source... 1");
+    output("Failed to connect to data source... 1");
   } else {
     println("  3a -- " + millis());
     //initilize the GUI
@@ -739,12 +738,12 @@ void initSystem() {
         controlPanel.close();
       } else {
         haltSystem();
-        println("Failed to connect to data source...");
+        println("Failed to connect to data source... 2");
         // output("Failed to connect to data source...");
       }
     } else {
       haltSystem();
-      println("Failed to connect to data source...");
+      println("Failed to connect to data source... 3");
       // output("Failed to connect to data source...");
     }
   }
