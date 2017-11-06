@@ -405,12 +405,12 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
       */
     int intValue = Integer.parseInt(udpString.substring(4));
       
-    if (intValue > 0 && intValue <= 255){ // Since we only send single char markers must limit to 255
+    if (intValue > 0 && intValue < 96){ // Since we only send single char ascii value markers (from space to char(126)
       
-      String sendString = "`"+String.format("%02X", intValue);
+      String sendString = "`"+char(intValue+31);
       
       println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
-      hub.sendCommand("`"+String.format("%02X", intValue));
+      hub.sendCommand(sendString);
 
     } else {
       println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
