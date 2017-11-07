@@ -418,9 +418,6 @@ class ChannelBar{
   String channelString;
   int x, y, w, h;
   boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
-  Button onOffButton;
-  int onOff_diameter, impButton_diameter;
-  Button impCheckButton;
 
   GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
   GPointsArray channelPoints;
@@ -434,10 +431,8 @@ class ChannelBar{
   int autoScaleYLim = 0;
 
   TextBox analogValue;
-  TextBox impValue;
 
   boolean drawAnalogValue;
-  boolean drawImpValue;
 
   ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
@@ -450,28 +445,6 @@ class ChannelBar{
     w = _w;
     h = _h;
 
-    if(h > 26){
-      onOff_diameter = 26;
-    } else{
-      onOff_diameter = h - 2;
-    }
-
-    onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
-    onOffButton.setFont(h2, 16);
-    onOffButton.setCircleButton(true);
-    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
-    onOffButton.hasStroke(false);
-
-    if(eegDataSource == DATASOURCE_CYTON){
-      impButton_diameter = 22;
-      impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
-      impCheckButton.setFont(h2, 16);
-      impCheckButton.setCircleButton(true);
-      impCheckButton.setColorNotPressed(color(255));
-      impCheckButton.hasStroke(false);
-    } else {
-      impButton_diameter = 0;
-    }
     numSeconds = 5;
     plot = new GPlot(_parent);
     plot.setPos(x + 36 + 4 + impButton_diameter, y);
@@ -510,15 +483,7 @@ class ChannelBar{
     analogValue.drawBackground = true;
     analogValue.backgroundColor = color(255,255,255,125);
 
-    impValue = new TextBox("", x + 36 + 4 + impButton_diameter + 2, y + h);
-    impValue.textColor = color(bgColor);
-    impValue.alignH = LEFT;
-    // impValue.alignV = TOP;
-    impValue.drawBackground = true;
-    impValue.backgroundColor = color(255,255,255,125);
-
     drawAnalogValue = true;
-    drawImpValue = false;
 
   }
 
@@ -529,23 +494,7 @@ class ChannelBar{
 
     //update the voltage values
     val = dataProcessing.data_std_uV[channelNumber-1];
-    analogValue.string = String.format(getFmt(val),val) + " uVrms";
-    if (is_railed != null) {
-      if (is_railed[channelNumber-1].is_railed == true) {
-        analogValue.string = "RAILED";
-      } else if (is_railed[channelNumber-1].is_railed_warn == true) {
-        analogValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
-      }
-    }
-
-    //update the impedance values
-    val = data_elec_imp_ohm[channelNumber-1]/1000;
-    impValue.string = String.format(getFmt(val),val) + " kOhm";
-    if (is_railed != null) {
-      if (is_railed[channelNumber-1].is_railed == true) {
-        impValue.string = "RAILED";
-      }
-    }
+    analogValue.string = String.format(getFmt(val),val) + " V";
 
     // update data in plot
     updatePlotPoints();
@@ -568,6 +517,34 @@ class ChannelBar{
 
   void updatePlotPoints(){
     // update data in plot
+    int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
+    if (numSamplesToProcess < 0) {
+      numSamplesToProcess += dataPacketBuff.length; //<>//
+    }
+    // Shift internal ring buffer numSamplesToProcess
+    if (numSamplesToProcess > 0) {
+      for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
+        PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>//
+      }
+    }
+
+    // for each new sample
+    int samplesProcessed = 0;
+    while (samplesProcessed < numSamplesToProcess) {
+      lastProcessedDataPacketInd++;
+
+      // Watch for wrap around
+      if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
+        lastProcessedDataPacketInd = 0;
+      }
+
+      int signal = dataPacketBuff[lastProcessedDataPacketInd].auxValues[0];
+
+      processSignal(signal);
+      PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>//
+
+      samplesProcessed++;
+    }
     if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
       for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
         float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
