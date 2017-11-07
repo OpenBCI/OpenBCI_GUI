@@ -26,17 +26,10 @@ class W_AnalogRead extends Widget {
   int padding = 30;
 
   // bottom xyz graph
-  int AccelWindowWidth;
-  int AccelWindowHeight;
+  int AnalogGraphWindowWidth;
+  int AnalogGraphWindowHeight;
   int AccelWindowX;
   int AccelWindowY;
-
-  // circular 3d xyz graph
-  float PolarWindowX;
-  float PolarWindowY;
-  int PolarWindowWidth;
-  int PolarWindowHeight;
-  float PolarCorner;
 
   color eggshell;
   color Xcolor;
@@ -53,9 +46,6 @@ class W_AnalogRead extends Widget {
   int[] A6;
   int[] A7;
 
-  float dummyX;
-  float dummyY;
-  float dummyZ;
   boolean Xrising;
   boolean Yrising;
   boolean Zrising;
@@ -91,9 +81,9 @@ class W_AnalogRead extends Widget {
 
     // initialize data
     for (int i=0; i<A5.length; i++) {  // initialize the accelerometer data
-      A5[i] = AccelWindowY + AccelWindowHeight/4; // A5 at 1/4
-      A6[i] = AccelWindowY + AccelWindowHeight/2;  // A6 at 1/2
-      A7[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // A7 at 3/4
+      A5[i] = AccelWindowY + AnalogGraphWindowHeight/4; // A5 at 1/4
+      A6[i] = AccelWindowY + AnalogGraphWindowHeight/2;  // A6 at 1/2
+      A7[i] = AccelWindowY + (AnalogGraphWindowHeight/4)*3;  // A7 at 3/4
     }
 
     analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
@@ -128,23 +118,23 @@ class W_AnalogRead extends Widget {
     if (isRunning && cyton.getBoardMode() == BOARD_MODE_ANALOG) {
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
         synthesizeAccelerometerData();
-        currentA5Value = map(A5[A5.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
-        currentA6Value = map(A6[A6.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
-        currentA7Value = map(A7[A7.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight, yMaxMin, -yMaxMin);
+        currentA5Value = map(A5[A5.length-1], AccelWindowY, AccelWindowY+AnalogGraphWindowHeight, yMaxMin, -yMaxMin);
+        currentA6Value = map(A6[A6.length-1], AccelWindowY, AccelWindowY+AnalogGraphWindowHeight, yMaxMin, -yMaxMin);
+        currentA7Value = map(A7[A7.length-1], AccelWindowY, AccelWindowY+AnalogGraphWindowHeight, yMaxMin, -yMaxMin);
         shiftWave();
       } else if (eegDataSource == DATASOURCE_CYTON) {
         currentA5Value = hub.validAccelValues[0];
         currentA6Value = hub.validAccelValues[1];
         currentA7Value = hub.validAccelValues[2];
         A5[A5.length-1] =
-          int(map(currentA5Value, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
-        A5[A5.length-1] = constrain(A5[A5.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+          int(map(currentA5Value, -yMaxMin, yMaxMin, float(AccelWindowY+AnalogGraphWindowHeight), float(AccelWindowY)));
+        A5[A5.length-1] = constrain(A5[A5.length-1], AccelWindowY, AccelWindowY+AnalogGraphWindowHeight);
         A6[A6.length-1] =
-          int(map(currentA6Value, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
-        A6[A6.length-1] = constrain(A6[A6.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+          int(map(currentA6Value, -yMaxMin, yMaxMin, float(AccelWindowY+AnalogGraphWindowHeight), float(AccelWindowY)));
+        A6[A6.length-1] = constrain(A6[A6.length-1], AccelWindowY, AccelWindowY+AnalogGraphWindowHeight);
         A7[A7.length-1] =
-          int(map(currentA7Value, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
-        A7[A7.length-1] = constrain(A7[A7.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+          int(map(currentA7Value, -yMaxMin, yMaxMin, float(AccelWindowY+AnalogGraphWindowHeight), float(AccelWindowY)));
+        A7[A7.length-1] = constrain(A7[A7.length-1], AccelWindowY, AccelWindowY+AnalogGraphWindowHeight);
 
         shiftWave();
       } else {  // playback data
@@ -181,14 +171,14 @@ class W_AnalogRead extends Widget {
 
       fill(graphBG);
       stroke(graphStroke);
-      rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
-      line(AccelWindowX, AccelWindowY + AccelWindowHeight/2, AccelWindowX+AccelWindowWidth, AccelWindowY + AccelWindowHeight/2); //midline
+      rect(AccelWindowX, AccelWindowY, AnalogGraphWindowWidth, AnalogGraphWindowHeight);
+      line(AccelWindowX, AccelWindowY + AnalogGraphWindowHeight/2, AccelWindowX+AnalogGraphWindowWidth, AccelWindowY + AnalogGraphWindowHeight/2); //midline
 
       fill(50);
       textFont(p5, 12);
       textAlign(CENTER,CENTER);
-      text("4096", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
-      text("0", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
+      text("4096", AccelWindowX+AnalogGraphWindowWidth + 12, AccelWindowY);
+      text("0", AccelWindowX+AnalogGraphWindowWidth + 12, AccelWindowY + AnalogGraphWindowHeight);
 
 
       // fill(graphBG);  // pulse window background
@@ -224,18 +214,14 @@ class W_AnalogRead extends Widget {
   }
 
   void setGraphDimensions(){
-    AccelWindowWidth = w - padding*2;
-    AccelWindowHeight = int((float(h) - float(padding*3))/2.0);
+    AnalogGraphWindowWidth = w - padding*2;
+    if (cyton.isWifi()) {
+      AnalogGraphWindowHeight = int((float(h) - float(padding*3))/3.0);
+    } else {
+      AnalogGraphWindowHeight = int((float(h) - float(padding*3))/4.0);
+    }
     AccelWindowX = x + padding;
-    AccelWindowY = y + h - AccelWindowHeight - padding;
-
-    // PolarWindowWidth = 155;
-    // PolarWindowHeight = 155;
-    PolarWindowWidth = AccelWindowHeight;
-    PolarWindowHeight = AccelWindowHeight;
-    PolarWindowX = x + w - padding - PolarWindowWidth/2;
-    PolarWindowY = y + padding + PolarWindowHeight/2;
-    PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+    AccelWindowY = y + h - AnalogGraphWindowHeight - padding;
   }
 
   void screenResized(){
@@ -252,9 +238,9 @@ class W_AnalogRead extends Widget {
 
     //empty arrays to start redrawing from scratch
     for (int i=0; i<A5.length; i++) {  // initialize the accelerometer data
-      A5[i] = AccelWindowY + AccelWindowHeight/4; // A5 at 1/4
-      A6[i] = AccelWindowY + AccelWindowHeight/2;  // A6 at 1/2
-      A7[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // A7 at 3/4
+      A5[i] = AccelWindowY + AnalogGraphWindowHeight/4; // A5 at 1/4
+      A6[i] = AccelWindowY + AnalogGraphWindowHeight/2;  // A6 at 1/2
+      A7[i] = AccelWindowY + (AnalogGraphWindowHeight/4)*3;  // A7 at 3/4
     }
 
     analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
@@ -324,10 +310,10 @@ class W_AnalogRead extends Widget {
     beginShape();                                  // using beginShape() renders fast
     stroke(Xcolor);
     for (int i = 0; i < A5.length; i++) {
-      // int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      // int xi = int(map(i, 0, A5.length-1, 0, AnalogGraphWindowWidth-1));
       // vertex(AccelWindowX+xi, A5[i]);                    //draw a line connecting the data points
-      int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
-      // int yi = int(map(A5[i], yMaxMin, -yMaxMin, 0.0, AccelWindowHeight-1));
+      int xi = int(map(i, 0, A5.length-1, 0, AnalogGraphWindowWidth-1));
+      // int yi = int(map(A5[i], yMaxMin, -yMaxMin, 0.0, AnalogGraphWindowHeight-1));
       // int yi = 2;
       vertex(AccelWindowX+xi, A5[i]);                    //draw a line connecting the data points
     }
@@ -336,7 +322,7 @@ class W_AnalogRead extends Widget {
     beginShape();
     stroke(Ycolor);
     for (int i = 0; i < A6.length; i++) {
-      int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      int xi = int(map(i, 0, A5.length-1, 0, AnalogGraphWindowWidth-1));
       vertex(AccelWindowX+xi, A6[i]);
     }
     endShape();
@@ -344,7 +330,7 @@ class W_AnalogRead extends Widget {
     beginShape();
     stroke(Zcolor);
     for (int i = 0; i < A7.length; i++) {
-      int xi = int(map(i, 0, A5.length-1, 0, AccelWindowWidth-1));
+      int xi = int(map(i, 0, A5.length-1, 0, AnalogGraphWindowWidth-1));
       vertex(AccelWindowX+xi, A7[i]);
     }
     endShape();
@@ -356,8 +342,8 @@ class W_AnalogRead extends Widget {
     beginShape();                                  // using beginShape() renders fast
     stroke(Xcolor);
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
-      int x = int(map(accelerometerBuff[0][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
-      x = constrain(x, AccelWindowY, AccelWindowY+AccelWindowHeight);
+      int x = int(map(accelerometerBuff[0][i], -yMaxMin, yMaxMin, float(AccelWindowY+AnalogGraphWindowHeight), float(AccelWindowY)));  // ss
+      x = constrain(x, AccelWindowY, AccelWindowY+AnalogGraphWindowHeight);
       vertex(AccelWindowX+i, x);                    //draw a line connecting the data points
     }
     endShape();
@@ -365,8 +351,8 @@ class W_AnalogRead extends Widget {
     beginShape();
     stroke(Ycolor);
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
-      int y = int(map(accelerometerBuff[1][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
-      y = constrain(y, AccelWindowY, AccelWindowY+AccelWindowHeight);
+      int y = int(map(accelerometerBuff[1][i], -yMaxMin, yMaxMin, float(AccelWindowY+AnalogGraphWindowHeight), float(AccelWindowY)));  // ss
+      y = constrain(y, AccelWindowY, AccelWindowY+AnalogGraphWindowHeight);
       vertex(AccelWindowX+i, y);
     }
     endShape();
@@ -374,8 +360,8 @@ class W_AnalogRead extends Widget {
     beginShape();
     stroke(Zcolor);
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
-      int z = int(map(accelerometerBuff[2][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
-      z = constrain(z, AccelWindowY, AccelWindowY+AccelWindowHeight);
+      int z = int(map(accelerometerBuff[2][i], -yMaxMin, yMaxMin, float(AccelWindowY+AnalogGraphWindowHeight), float(AccelWindowY)));  // ss
+      z = constrain(z, AccelWindowY, AccelWindowY+AnalogGraphWindowHeight);
       vertex(AccelWindowX+i, z);
     }
     endShape();
@@ -389,7 +375,7 @@ class W_AnalogRead extends Widget {
       }
     } else {
       A5[A5.length-1]++;   // place the new raw datapoint at the end of the array
-      if (A5[A5.length-1] >= AccelWindowY+AccelWindowHeight) {
+      if (A5[A5.length-1] >= AccelWindowY+AnalogGraphWindowHeight) {
         Xrising = true;
       }
     }
@@ -401,7 +387,7 @@ class W_AnalogRead extends Widget {
       }
     } else {
       A6[A6.length-1]++;   // place the new raw datapoint at the end of the array
-      if (A6[A6.length-1] >= AccelWindowY+AccelWindowHeight) {
+      if (A6[A6.length-1] >= AccelWindowY+AnalogGraphWindowHeight) {
         Yrising = true;
       }
     }
@@ -413,7 +399,7 @@ class W_AnalogRead extends Widget {
       }
     } else {
       A7[A7.length-1]++;   // place the new raw datapoint at the end of the array
-      if (A7[A7.length-1] >= AccelWindowY+AccelWindowHeight) {
+      if (A7[A7.length-1] >= AccelWindowY+AnalogGraphWindowHeight) {
         Zrising = true;
       }
     }
@@ -421,24 +407,264 @@ class W_AnalogRead extends Widget {
 
 };
 
-// //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-// void Thisdrop(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 1");
-//   if(n==0){
-//     //do this
-//   } else if(n==1){
-//     //do this instead
-//   }
-//
-//   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-// }
-//
-// void Dropdown2(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 2");
-//   closeAllDropdowns();
-// }
-//
-// void Dropdown3(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 3");
-//   closeAllDropdowns();
-// }
+//========================================================================================================================
+//                      CHANNEL BAR CLASS -- Implemented by Time Series Widget Class
+//========================================================================================================================
+//this class contains the plot and buttons for a single channel of the Time Series widget
+//one of these will be created for each channel (4, 8, or 16)
+class ChannelBar{
+
+  int channelNumber; //duh
+  String channelString;
+  int x, y, w, h;
+  boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
+  Button onOffButton;
+  int onOff_diameter, impButton_diameter;
+  Button impCheckButton;
+
+  GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+  GPointsArray channelPoints;
+  int nPoints;
+  int numSeconds;
+  float timeBetweenPoints;
+
+  color channelColor; //color of plot trace
+
+  boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+  int autoScaleYLim = 0;
+
+  TextBox analogValue;
+  TextBox impValue;
+
+  boolean drawAnalogValue;
+  boolean drawImpValue;
+
+  ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
+
+    channelNumber = _channelNumber;
+    channelString = str(channelNumber);
+    isOn = true;
+
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+
+    if(h > 26){
+      onOff_diameter = 26;
+    } else{
+      onOff_diameter = h - 2;
+    }
+
+    onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
+    onOffButton.setFont(h2, 16);
+    onOffButton.setCircleButton(true);
+    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
+    onOffButton.hasStroke(false);
+
+    if(eegDataSource == DATASOURCE_CYTON){
+      impButton_diameter = 22;
+      impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
+      impCheckButton.setFont(h2, 16);
+      impCheckButton.setCircleButton(true);
+      impCheckButton.setColorNotPressed(color(255));
+      impCheckButton.hasStroke(false);
+    } else {
+      impButton_diameter = 0;
+    }
+    numSeconds = 5;
+    plot = new GPlot(_parent);
+    plot.setPos(x + 36 + 4 + impButton_diameter, y);
+    plot.setDim(w - 36 - 4 - impButton_diameter, h);
+    plot.setMar(0f, 0f, 0f, 0f);
+    plot.setLineColor((int)channelColors[(channelNumber-1)%8]);
+    plot.setXLim(-5,0);
+    plot.setYLim(-200,200);
+    plot.setPointSize(2);
+    plot.setPointColor(0);
+    if(channelNumber == nchan){
+      plot.getXAxis().setAxisLabelText("Time (s)");
+    }
+    // plot.setBgColor(color(31,69,110));
+
+    nPoints = nPointsBasedOnDataSource();
+
+    channelPoints = new GPointsArray(nPoints);
+    timeBetweenPoints = (float)numSeconds / (float)nPoints;
+
+    for (int i = 0; i < nPoints; i++) {
+      float time = -(float)numSeconds + (float)i*timeBetweenPoints;
+      // float time = (-float(numSeconds))*(float(i)/float(nPoints));
+      // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
+      float filt_uV_value = 0.0; //0.0 for all points to start
+      GPoint tempPoint = new GPoint(time, filt_uV_value);
+      channelPoints.set(i, tempPoint);
+    }
+
+    plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
+
+    analogValue = new TextBox("", x + 36 + 4 + impButton_diameter + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+    analogValue.textColor = color(bgColor);
+    analogValue.alignH = RIGHT;
+    // analogValue.alignV = TOP;
+    analogValue.drawBackground = true;
+    analogValue.backgroundColor = color(255,255,255,125);
+
+    impValue = new TextBox("", x + 36 + 4 + impButton_diameter + 2, y + h);
+    impValue.textColor = color(bgColor);
+    impValue.alignH = LEFT;
+    // impValue.alignV = TOP;
+    impValue.drawBackground = true;
+    impValue.backgroundColor = color(255,255,255,125);
+
+    drawAnalogValue = true;
+    drawImpValue = false;
+
+  }
+
+  void update(){
+
+    //update the voltage value text string
+    String fmt; float val;
+
+    //update the voltage values
+    val = dataProcessing.data_std_uV[channelNumber-1];
+    analogValue.string = String.format(getFmt(val),val) + " uVrms";
+    if (is_railed != null) {
+      if (is_railed[channelNumber-1].is_railed == true) {
+        analogValue.string = "RAILED";
+      } else if (is_railed[channelNumber-1].is_railed_warn == true) {
+        analogValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
+      }
+    }
+
+    //update the impedance values
+    val = data_elec_imp_ohm[channelNumber-1]/1000;
+    impValue.string = String.format(getFmt(val),val) + " kOhm";
+    if (is_railed != null) {
+      if (is_railed[channelNumber-1].is_railed == true) {
+        impValue.string = "RAILED";
+      }
+    }
+
+    // update data in plot
+    updatePlotPoints();
+    if(isAutoscale){
+      autoScale();
+    }
+  }
+
+  private String getFmt(float val) {
+    String fmt;
+      if (val > 100.0f) {
+        fmt = "%.0f";
+      } else if (val > 10.0f) {
+        fmt = "%.1f";
+      } else {
+        fmt = "%.2f";
+      }
+      return fmt;
+  }
+
+  void updatePlotPoints(){
+    // update data in plot
+    if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
+      for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
+        float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
+        float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
+        // float filt_uV_value = 0.0;
+        GPoint tempPoint = new GPoint(time, filt_uV_value);
+        channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), tempPoint);
+      }
+      plot.setPoints(channelPoints); //reset the plot with updated channelPoints
+    }
+  }
+
+  void draw(){
+    pushStyle();
+
+    //draw plot
+    stroke(31,69,110, 50);
+    fill(color(125,30,12,30));
+
+    rect(x + 36 + 4, y, w - 36 - 4, h);
+
+    plot.beginDraw();
+    plot.drawBox(); // we won't draw this eventually ...
+    plot.drawGridLines(0);
+    plot.drawLines();
+    // plot.drawPoints();
+    // plot.drawYAxis();
+    if(channelNumber == nchan){ //only draw the x axis label on the bottom channel bar
+      plot.drawXAxis();
+      plot.getXAxis().draw();
+    }
+    plot.endDraw();
+
+    if(drawAnalogValue){
+      analogValue.draw();
+    }
+
+    popStyle();
+  }
+
+  void setDrawImp(boolean _trueFalse){
+    drawImpValue = _trueFalse;
+  }
+
+  int nPointsBasedOnDataSource(){
+    return numSeconds * (int)getSampleRateSafe();
+  }
+
+  void adjustTimeAxis(int _newTimeSize){
+    numSeconds = _newTimeSize;
+    plot.setXLim(-_newTimeSize,0);
+
+    nPoints = nPointsBasedOnDataSource();
+
+    channelPoints = new GPointsArray(nPoints);
+    if(_newTimeSize > 1){
+      plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
+    }else{
+      plot.getXAxis().setNTicks(10);
+    }
+    if(w_timeSeries.isUpdating()){
+      updatePlotPoints();
+    }
+    // println("New X axis = " + _newTimeSize);
+  }
+
+  void adjustVertScale(int _vertScaleValue){
+    if(_vertScaleValue == 0){
+      isAutoscale = true;
+    } else {
+      isAutoscale = false;
+      plot.setYLim(-_vertScaleValue, _vertScaleValue);
+    }
+  }
+
+  void autoScale(){
+    autoScaleYLim = 0;
+    for(int i = 0; i < nPoints; i++){
+      if(int(abs(channelPoints.getY(i))) > autoScaleYLim){
+        autoScaleYLim = int(abs(channelPoints.getY(i)));
+      }
+    }
+    plot.setYLim(-autoScaleYLim, autoScaleYLim);
+  }
+
+  void screenResized(int _x, int _y, int _w, int _h){
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+
+    //reposition & resize the plot
+    plot.setPos(x + 36 + 4, y);
+    plot.setDim(w - 36 - 4, h);
+
+    analogValue.x = x + 36 + 4 + (w - 36 - 4) - 2;
+    analogValue.y = y + h;
+
+  }
+};
