@@ -37,9 +37,11 @@ class W_AnalogRead extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  int startingVertScaleIndex = 3;
+  int startingVertScaleIndex = 0;
 
   private boolean hasScrollbar = false;
+
+  Button analogModeButton;
 
   W_AnalogRead(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -77,8 +79,24 @@ class W_AnalogRead extends Widget {
     //create our channel bars and populate our analogReadBars array!
     for(int i = 0; i < numAnalogReadBars; i++){
       int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
-      AnalogReadBar tempBar = new AnalogReadBar(_parent, i+1, int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+      AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
+    }
+
+    analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
+    analogModeButton.setCornerRoundess((int)(navHeight-6));
+    analogModeButton.setFont(p6,10);
+    // analogModeButton.setStrokeColor((int)(color(150)));
+    // analogModeButton.setColorNotPressed(openbciBlue);
+    analogModeButton.setColorNotPressed(color(57,128,204));
+    analogModeButton.textColorNotActive = color(255);
+    // analogModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
+    analogModeButton.hasStroke(false);
+    // analogModeButton.setColorNotPressed((int)(color(138, 182, 229)));
+    if (cyton.isWifi()) {
+      analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11) and A6(D12)");
+    } else {
+      analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11), A6(D12) and A7(D13)");
     }
   }
 
@@ -115,8 +133,14 @@ class W_AnalogRead extends Widget {
       //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
       pushStyle();
       //draw channel bars
-      for(int i = 0; i < numAnalogReadBars; i++){
-        analogReadBars[i].draw();
+      analogModeButton.draw();
+      if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
+        analogModeButton.setString("Turn Analog Read On");
+      } else {
+        analogModeButton.setString("Turn Analog Read Off");
+        for(int i = 0; i < numAnalogReadBars; i++){
+          analogReadBars[i].draw();
+        }
       }
       popStyle();
     }
@@ -141,45 +165,70 @@ class W_AnalogRead extends Widget {
       int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
       analogReadBars[i].screenResized(int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
     }
+
+    analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+
+    if (analogModeButton.isMouseHere()) {
+      analogModeButton.setIsActive(true);
+    }
   }
 
   void mouseReleased(){
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+    //put your code here...
+    if(analogModeButton.isActive && analogModeButton.isMouseHere()){
+      // println("analogModeButton...");
+      if(cyton.isPortOpen()) {
+        if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
+          cyton.setBoardMode(BOARD_MODE_ANALOG);
+          if (cyton.isWifi()) {
+            output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
+          } else {
+            output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+          }
+        } else {
+          cyton.setBoardMode(BOARD_MODE_DEFAULT);
+          output("Starting to read accelerometer");
+        }
+      }
+    }
+    analogModeButton.setIsActive(false);
   }
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_AR(int n) {
   if (n==0) { //autoscale
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(0);
     }
   } else if(n==1) { //50uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(50);
     }
   } else if(n==2) { //100uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(100);
     }
   } else if(n==3) { //200uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(200);
     }
   } else if(n==4) { //400uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(400);
     }
   } else if(n==5) { //1000uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(1000);
     }
   } else if(n==6) { //10000uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(10000);
     }
   }
@@ -187,22 +236,22 @@ void VertScale_AR(int n) {
 }
 
 //triggered when there is an event in the LogLin Dropdown
-void Duration(int n) {
+void Duration_AR(int n) {
   // println("adjust duration to: ");
   if(n==0){ //set time series x axis to 1 secconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustTimeAxis(1);
     }
   } else if(n==1){ //set time series x axis to 3 secconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustTimeAxis(3);
     }
   } else if(n==2){ //set to 5 seconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustTimeAxis(5);
     }
   } else if(n==3){ //set to 7 seconds (max due to arry size ... 2000 total packets saved)
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustTimeAxis(7);
     }
   }
@@ -236,6 +285,7 @@ class AnalogReadBar{
   TextBox analogValue;
 
   boolean drawAnalogValue;
+  int lastProcessedDataPacketInd = 0;
 
   AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
@@ -259,8 +309,8 @@ class AnalogReadBar{
 
     numSeconds = 5;
     plot = new GPlot(_parent);
-    plot.setPos(x + 36 + 4 + impButton_diameter, y);
-    plot.setDim(w - 36 - 4 - impButton_diameter, h);
+    plot.setPos(x + 36 + 4, y);
+    plot.setDim(w - 36 - 4, h);
     plot.setMar(0f, 0f, 0f, 0f);
     plot.setLineColor((int)channelColors[(auxValuesPosition)%8]);
     plot.setXLim(-5,0);
@@ -291,7 +341,7 @@ class AnalogReadBar{
 
     plot.setPoints(analogReadPoints); //set the plot with 0.0 for all analogReadPoints to start
 
-    analogValue = new TextBox("", x + 36 + 4 + impButton_diameter + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+    analogValue = new TextBox("", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
     analogValue.textColor = color(bgColor);
     analogValue.alignH = RIGHT;
     // analogValue.alignV = TOP;
@@ -308,8 +358,8 @@ class AnalogReadBar{
     String fmt; float val;
 
     //update the voltage values
-    val = dataProcessing.data_std_uV[analogInputPin-1];
-    analogValue.string = String.format(getFmt(val),val) + " V";
+    val = hub.validAccelValues[auxValuesPosition];
+    analogValue.string = String.format(getFmt(val),val);
 
     // update data in plot
     updatePlotPoints();
@@ -335,6 +385,10 @@ class AnalogReadBar{
     int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
     if (numSamplesToProcess < 0) {
       numSamplesToProcess += dataPacketBuff.length; //<>//
+    }
+
+    if (numSamplesToProcess >= nPoints) {
+      numSamplesToProcess = nPoints - 1;
     }
 
     // for each new sample
@@ -412,7 +466,7 @@ class AnalogReadBar{
     }else{
       plot.getXAxis().setNTicks(10);
     }
-    if(w_timeSeries.isUpdating()){
+    if(w_analogRead.isUpdating()){
       updatePlotPoints();
     }
     // println("New X axis = " + _newTimeSize);
