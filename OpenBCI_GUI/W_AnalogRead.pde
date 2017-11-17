@@ -287,6 +287,8 @@ class AnalogReadBar{
   boolean drawAnalogValue;
   int lastProcessedDataPacketInd = 0;
 
+  int[] analogReadData;
+
   AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
     analogInputPin = _analogInputPin;
@@ -313,7 +315,7 @@ class AnalogReadBar{
     plot.setDim(w - 36 - 4, h);
     plot.setMar(0f, 0f, 0f, 0f);
     plot.setLineColor((int)channelColors[(auxValuesPosition)%8]);
-    plot.setXLim(-5,0);
+    plot.setXLim(-3.2,-2.9);
     plot.setYLim(-200,200);
     plot.setPointSize(2);
     plot.setPointColor(0);
@@ -328,6 +330,8 @@ class AnalogReadBar{
     }
 
     nPoints = nPointsBasedOnDataSource();
+
+    analogReadData = new int[nPoints];
 
     analogReadPoints = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
@@ -384,11 +388,14 @@ class AnalogReadBar{
     // update data in plot
     int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
     if (numSamplesToProcess < 0) {
-      numSamplesToProcess += dataPacketBuff.length; //<>//
+      numSamplesToProcess += dataPacketBuff.length;
     }
 
-    if (numSamplesToProcess >= nPoints) {
-      numSamplesToProcess = nPoints - 1;
+    // Shift internal ring buffer numSamplesToProcess
+    if (numSamplesToProcess > 0) {
+      for(int i = 0; i < analogReadData.length - numSamplesToProcess; i++){
+        analogReadData[i] = analogReadData[i + numSamplesToProcess];
+      }
     }
 
     // for each new sample
@@ -401,15 +408,22 @@ class AnalogReadBar{
         lastProcessedDataPacketInd = 0;
       }
 
-      float time = -(float)numSeconds + (float)(samplesProcessed-(dataPacketBuff.length-nPoints))*timeBetweenPoints;
-      float voltage = hub.validAccelValues[auxValuesPosition];
+      int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
 
-      GPoint tempPoint = new GPoint(time, voltage);
-      analogReadPoints.set(samplesProcessed-(dataPacketBuff.length-nPoints), tempPoint);
+      analogReadData[analogReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
 
       samplesProcessed++;
     }
+
     if (numSamplesToProcess > 0) {
+      for (int i = 0; i < nPoints; i++) {
+        float timey = -(float)numSeconds + (float)i*timeBetweenPoints;
+        float voltage = analogReadData[i];
+
+        GPoint tempPoint = new GPoint(timey, voltage);
+        analogReadPoints.set(i, tempPoint);
+
+      }
       plot.setPoints(analogReadPoints); //reset the plot with updated analogReadPoints
     }
   }
