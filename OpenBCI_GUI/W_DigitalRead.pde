@@ -50,7 +50,6 @@ class W_DigitalRead extends Widget {
     wF = float(w);
     hF = float(h);
 
-    plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
     dot_padding = 10;
     dot_x = xF + dot_padding;
     dot_y = yF + (dot_padding);
@@ -152,20 +151,41 @@ class W_DigitalRead extends Widget {
     yF = float(y);
     wF = float(w);
     hF = float(h);
-    println("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h);
+    println("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h + " navBarHeight: " + navBarHeight);
 
-    dot_x = xF + dot_padding;
-    dot_y = yF + (dot_padding * 2) + navHeight;
-    dot_w = wF - dot_padding*2;
-    dot_h = hF - playbackWidgetHeight - plotBottomWell - (dot_padding*2);
-    digitalReadDotHeight = int(dot_h/numDigitalReadDots);
-
-    for(int i = 0; i < numDigitalReadDots; i++){
-      int digitalReadDotY = int(dot_y) + i*(digitalReadDotHeight) + (dot_padding*2); //iterate through bar locations
-      int digitalReadDotX = int(dot_x) + int(wF/float(numDigitalReadDots))*i + (dot_padding*4); //iterate through bar locations
-      digitalReadDots[i].screenResized(digitalReadDotX, digitalReadDotY, digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+    if (wF > hF) {
+      digitalReadDotHeight = int(hF/(numDigitalReadDots+1));
+    } else {
+      digitalReadDotHeight = int(wF/(numDigitalReadDots+1));
     }
 
+    if (numDigitalReadDots == 3) {
+      digitalReadDots[0].screenResized(x+(w*(1/3)), y+(h*(1/3)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[1].screenResized(x+(w/2), y+(h/2), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[2].screenResized(x+(w*(2/3)), y+(h*(2/3)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+    } else {
+      digitalReadDots[0].screenResized(x+(w*(1/8)), y+(h*(1/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[1].screenResized(x+(w*(3/8)), y+(h*(3/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[2].screenResized(x+(w/2), y+(h/2), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[3].screenResized(x+(w*(5/8)), y+(h*(5/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[4].screenResized(x+(w*(7/8)), y+(h*(7/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+
+    }
+
+    // for(int i = 0; i < numDigitalReadDots; i++) {
+    //   int digitalReadDotY = 0;
+    //   int digitalReadDotX = 0;
+    //   if (wF > hF) {
+    //     digitalReadDotHeight = int(hF/numDigitalReadDots);
+    //     digitalReadDotX = x + int(wF/float(numDigitalReadDots))*(i+1) - digitalReadDotHeight;
+    //     digitalReadDotY = y + (i+1)*int(digitalReadDotHeight*0.8);
+    //   } else {
+    //     digitalReadDotHeight = int(wF/numDigitalReadDots);
+    //     digitalReadDotX = x + (i+1)*int(digitalReadDotHeight*0.8);
+    //     digitalReadDotY = y + int(hF/float(numDigitalReadDots))*(i+1) - digitalReadDotHeight;
+    //   }
+    //   digitalReadDots[i].screenResized(digitalReadDotX, digitalReadDotY, digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+    // }
     digitalModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
