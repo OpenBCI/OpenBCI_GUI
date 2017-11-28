@@ -1,7 +1,7 @@
 
 ////////////////////////////////////////////////////
 //
-//  W_AnalogRead is used to visiualze accelerometer data
+//  W_AnalogRead is used to visiualze analog voltage values
 //
 //  Created: AJ Keller
 //
@@ -26,9 +26,6 @@ class W_AnalogRead extends Widget {
   int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
-  int xLim = xLimOptions[1];  //start at 5s
-  int xMax = xLimOptions[0];  //start w/ autoscale
-
   boolean allowSpillover = false;
 
   TextBox[] chanValuesMontage;
@@ -37,7 +34,8 @@ class W_AnalogRead extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  int startingVertScaleIndex = 0;
+  int startingVertScaleIndex = 5;
+  int startingHoriztonalScaleIndex = 0;
 
   private boolean hasScrollbar = false;
 
@@ -51,7 +49,7 @@ class W_AnalogRead extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
     addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
-    addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
+    addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), startingHoriztonalScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //set number of anaolg reads
@@ -78,9 +76,12 @@ class W_AnalogRead extends Widget {
 
     //create our channel bars and populate our analogReadBars array!
     for(int i = 0; i < numAnalogReadBars; i++){
+      println("init analog read bar " + i);
       int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
       AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
+      analogReadBars[i].adjustVertScale(yLimOptions[startingVertScaleIndex]);
+      analogReadBars[i].adjustTimeAxis(xLimOptions[startingHoriztonalScaleIndex]);
     }
 
     analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
@@ -480,8 +481,10 @@ class AnalogReadBar{
     }else{
       plot.getXAxis().setNTicks(10);
     }
-    if(w_analogRead.isUpdating()){
-      updatePlotPoints();
+    if (w_analogRead != null) {
+      if(w_analogRead.isUpdating()){
+        updatePlotPoints();
+      }
     }
     // println("New X axis = " + _newTimeSize);
   }
