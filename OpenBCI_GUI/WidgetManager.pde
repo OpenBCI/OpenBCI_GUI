@@ -45,6 +45,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   // println("  setupWidgets fft -- " + millis());
 
 
+  w_accelerometer = new W_accelerometer(_this);
+  w_accelerometer.setTitle("Accelerometer");
+  addWidget(w_accelerometer, w);
+  // println("  setupWidgets Accelerometer -- " + millis());
+
+
   //only instantiate this widget if you are using a Ganglion board for live streaming
   if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
     w_ganglionImpedance = new W_ganglionImpedance(_this);
@@ -62,12 +68,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
   // println("  setupWidgets band power -- " + millis());
-
-
-  w_accelerometer = new W_accelerometer(_this);
-  w_accelerometer.setTitle("Accelerometer");
-  addWidget(w_accelerometer, w);
-  // println("  setupWidgets Accelerometer -- " + millis());
 
 
   w_headPlot = new W_headPlot(_this);

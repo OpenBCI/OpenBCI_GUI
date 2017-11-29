@@ -35,7 +35,7 @@ class W_AnalogRead extends Widget {
   private boolean updating = true;
 
   int startingVertScaleIndex = 5;
-  int startingHoriztonalScaleIndex = 0;
+  int startingHoriztonalScaleIndex = 2;
 
   private boolean hasScrollbar = false;
 
@@ -284,6 +284,8 @@ class AnalogReadBar{
   int autoScaleYLim = 0;
 
   TextBox analogValue;
+  TextBox analogPin;
+  TextBox digitalPin;
 
   boolean drawAnalogValue;
   int lastProcessedDataPacketInd = 0;
@@ -293,13 +295,17 @@ class AnalogReadBar{
   AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
     analogInputPin = _analogInputPin;
+    int digitalPinNum = 0;
     if (analogInputPin == 7) {
       auxValuesPosition = 2;
+      digitalPinNum = 13;
     } else if (analogInputPin == 6) {
       auxValuesPosition = 1;
+      digitalPinNum = 12;
     } else {
       analogInputPin = 5;
       auxValuesPosition = 0;
+      digitalPinNum = 11;
     }
 
     analogInputString = str(analogInputPin);
@@ -346,12 +352,19 @@ class AnalogReadBar{
 
     plot.setPoints(analogReadPoints); //set the plot with 0.0 for all analogReadPoints to start
 
-    analogValue = new TextBox("", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
+    analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
     analogValue.textColor = color(bgColor);
     analogValue.alignH = RIGHT;
     // analogValue.alignV = TOP;
     analogValue.drawBackground = true;
     analogValue.backgroundColor = color(255,255,255,125);
+
+    analogPin = new TextBox("A" + analogInputString, x+3, y + h);
+    analogPin.textColor = color(bgColor);
+    analogPin.alignH = CENTER;
+    digitalPin = new TextBox("(D" + digitalPinNum + ")", x+3, y + h + 12);
+    digitalPin.textColor = color(bgColor);
+    digitalPin.alignH = CENTER;
 
     drawAnalogValue = true;
 
@@ -460,6 +473,8 @@ class AnalogReadBar{
 
     if(drawAnalogValue){
       analogValue.draw();
+      analogPin.draw();
+      digitalPin.draw();
     }
 
     popStyle();
@@ -521,5 +536,9 @@ class AnalogReadBar{
     analogValue.x = x + 36 + 4 + (w - 36 - 4) - 2;
     analogValue.y = y + h;
 
+    analogPin.x = x + 14;
+    analogPin.y = y + int(h/2.0);
+    digitalPin.x = analogPin.x;
+    digitalPin.y = analogPin.y + 12;
   }
 };
