@@ -1,6 +1,6 @@
 # v3.2.0
 
-Use OpenBCIHub v1.3.5 please.
+Use OpenBCIHub v1.3.6 please.
 
 ### New Features
 
@@ -12,6 +12,15 @@ Use OpenBCIHub v1.3.5 please.
 
 * Did not write aux values for Cyton with Daisy #272
 * Did not write to the SD card #277
+* Add button to accelerometer widget to turn accel mode on if the user was just using digital, analog, or marker mode.
+
+### Beta 3
+
+Finished Analog and Digital read widgets.
+
+### Beta 2
+
+Initial release
 
 # v3.1.0
 
