@@ -151,7 +151,7 @@ class W_DigitalRead extends Widget {
     yF = float(y);
     wF = float(w);
     hF = float(h);
-    println("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h + " navBarHeight: " + navBarHeight);
+    // println("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h + " navBarHeight: " + navBarHeight);
 
     if (wF > hF) {
       digitalReadDotHeight = int(hF/(numDigitalReadDots+1));
@@ -160,32 +160,19 @@ class W_DigitalRead extends Widget {
     }
 
     if (numDigitalReadDots == 3) {
-      digitalReadDots[0].screenResized(x+(w*(1/3)), y+(h*(1/3)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-      digitalReadDots[1].screenResized(x+(w/2), y+(h/2), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-      digitalReadDots[2].screenResized(x+(w*(2/3)), y+(h*(2/3)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[0].screenResized(x+int(wF*(1.0/3.0)), y+int(hF*(1.0/3.0)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[1].screenResized(x+int(wF/2), y+int(hF/2), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      digitalReadDots[2].screenResized(x+int(wF*(2.0/3.0)), y+int(hF*(2.0/3.0)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
     } else {
-      digitalReadDots[0].screenResized(x+(w*(1/8)), y+(h*(1/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-      digitalReadDots[1].screenResized(x+(w*(3/8)), y+(h*(3/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-      digitalReadDots[2].screenResized(x+(w/2), y+(h/2), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-      digitalReadDots[3].screenResized(x+(w*(5/8)), y+(h*(5/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-      digitalReadDots[4].screenResized(x+(w*(7/8)), y+(h*(7/8)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+      int y_pad = y + dot_padding;
+      digitalReadDots[0].screenResized(x+int(wF*(1.0/8.0)), y_pad+int(hF*(1.0/8.0)), digitalReadDotHeight, digitalReadDotHeight);
+      digitalReadDots[2].screenResized(x+int(wF/2), y_pad+int(hF/2), digitalReadDotHeight, digitalReadDotHeight);
+      digitalReadDots[4].screenResized(x+int(wF*(7.0/8.0)), y_pad+int(hF*(7.0/8.0)), digitalReadDotHeight, digitalReadDotHeight);
+      digitalReadDots[1].screenResized(digitalReadDots[0].DotX+int(wF*(3.0/16.0)), digitalReadDots[0].DotY+int(hF*(3.0/16.0)), digitalReadDotHeight, digitalReadDotHeight);
+      digitalReadDots[3].screenResized(digitalReadDots[2].DotX+int(wF*(3.0/16.0)), digitalReadDots[2].DotY+int(hF*(3.0/16.0)), digitalReadDotHeight, digitalReadDotHeight);
 
     }
 
-    // for(int i = 0; i < numDigitalReadDots; i++) {
-    //   int digitalReadDotY = 0;
-    //   int digitalReadDotX = 0;
-    //   if (wF > hF) {
-    //     digitalReadDotHeight = int(hF/numDigitalReadDots);
-    //     digitalReadDotX = x + int(wF/float(numDigitalReadDots))*(i+1) - digitalReadDotHeight;
-    //     digitalReadDotY = y + (i+1)*int(digitalReadDotHeight*0.8);
-    //   } else {
-    //     digitalReadDotHeight = int(wF/numDigitalReadDots);
-    //     digitalReadDotX = x + (i+1)*int(digitalReadDotHeight*0.8);
-    //     digitalReadDotY = y + int(hF/float(numDigitalReadDots))*(i+1) - digitalReadDotHeight;
-    //   }
-    //   digitalReadDots[i].screenResized(digitalReadDotX, digitalReadDotY, digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-    // }
     digitalModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
@@ -336,7 +323,7 @@ class DigitalReadDot{
     DotHeight = _h;
     DotCorner = (sqrt(2)*DotWidth/2)/2;
 
-    println("DigitalReadDot: " + digitalInputPin + " screenResized: DotX: " + DotX + " DotY: " + DotY + " DotWidth: "+ DotWidth + " DotHeight: " + DotHeight);
+    // println("DigitalReadDot: " + digitalInputPin + " screenResized: DotX: " + DotX + " DotY: " + DotY + " DotWidth: "+ DotWidth + " DotHeight: " + DotHeight);
 
     digitalPin.x = DotX;
     digitalPin.y = DotY - int(DotWidth/2.0);
