@@ -152,6 +152,10 @@ class Hub {
   final static int LATENCY_10_MS = 10000;
   final static int LATENCY_20_MS = 20000;
 
+  final static String TCP = 'tcp';
+  final static String UDP = 'udp';
+  final static String UDP_BURST = 'udpBurst';
+
   public int curLatency = LATENCY_10_MS;
 
   public String[] deviceList = new String[0];
@@ -187,6 +191,7 @@ class Hub {
   public char[] tcpBuffer = new char[4096];
   public int tcpBufferPositon = 0;
   private String curProtocol = PROTOCOL_WIFI;
+  private String curInternetProtocol = TCP;
 
   private boolean waitingForResponse = false;
   private boolean nodeProcessHandshakeComplete = false;
@@ -207,12 +212,14 @@ class Hub {
   // Getters
   public int get_state() { return state; }
   public int getLatency() { return curLatency; }
+  public int getWifiInternetProtocol() { return curInternetProtocol; }
   public boolean isPortOpen() { return portIsOpen; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isSearching() { return searching; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
   public void setLatency(int latency) { curLatency = latency; }
+  public void setWifiInternetProtocol(String internetProtocol) { curInternetProtocol = internetProtocol; }
 
   private PApplet mainApplet;
 
@@ -923,7 +930,7 @@ class Hub {
   }
 
   public void connectWifi(String id) {
-    write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + TCP_STOP);
+    write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + "," + curInternetProtocol + TCP_STOP);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
 
   }
