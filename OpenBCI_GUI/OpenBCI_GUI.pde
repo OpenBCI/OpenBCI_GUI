@@ -392,11 +392,11 @@ void setup() {
 String udpReceiveString = null;
 
 void udpReceiveHandler(byte[] data, String ip, int portRX){
-  
+
   String udpString = new String(data);
   println(udpString+" from: "+ip+" and port: "+portRX);
   if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0){
-    
+
     /*  Old version with 10 markers
     char c = value.charAt(4);
   if ( c>= '0' && c <= '9'){
@@ -404,11 +404,11 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
       hub.sendCommand("`"+char(c-(int)'0'));
       */
     int intValue = Integer.parseInt(udpString.substring(4));
-      
+
     if (intValue > 0 && intValue < 96){ // Since we only send single char ascii value markers (from space to char(126)
-      
+
       String sendString = "`"+char(intValue+31);
-      
+
       println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
       hub.sendCommand(sendString);
 
