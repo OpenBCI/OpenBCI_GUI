@@ -171,7 +171,6 @@ class W_Focus extends Widget {
     }
 
     //alpha_avg = beta_avg = 0;
-    alpha_count = beta_count = 0;
 
   }
 
