@@ -37,7 +37,7 @@ class W_Focus extends Widget {
   // drawing parameters
   boolean showAbout = false;
   PFont myfont = createFont("fonts/Raleway-SemiBold.otf", 12);
-  PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
+  PFont f = createFont("Arial Bold", 24); //for widget title
 
   FocusColors focusColors = FocusColors.GREEN;
 
