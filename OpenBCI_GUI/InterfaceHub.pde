@@ -152,9 +152,9 @@ class Hub {
   final static int LATENCY_10_MS = 10000;
   final static int LATENCY_20_MS = 20000;
 
-  final static String TCP = 'tcp';
-  final static String UDP = 'udp';
-  final static String UDP_BURST = 'udpBurst';
+  final static String TCP = "tcp";
+  final static String UDP = "udp";
+  final static String UDP_BURST = "udpBurst";
 
   public int curLatency = LATENCY_10_MS;
 
@@ -212,7 +212,7 @@ class Hub {
   // Getters
   public int get_state() { return state; }
   public int getLatency() { return curLatency; }
-  public int getWifiInternetProtocol() { return curInternetProtocol; }
+  public String getWifiInternetProtocol() { return curInternetProtocol; }
   public boolean isPortOpen() { return portIsOpen; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isSearching() { return searching; }

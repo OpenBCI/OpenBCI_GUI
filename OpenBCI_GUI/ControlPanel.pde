@@ -297,6 +297,8 @@ class ControlPanel {
   SampleRateGanglionBox sampleRateGanglionBox;
   LatencyCytonBox latencyCytonBox;
   LatencyGanglionBox latencyGanglionBox;
+  WifiTransferProtcolCytonBox wifiTransferProtcolCytonBox;
+  WifiTransferProtcolGanglionBox wifiTransferProtcolGanglionBox;
 
   SDBox sdBox;
 
@@ -349,6 +351,7 @@ class ControlPanel {
     sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
     sampleRateCytonBox = new SampleRateCytonBox(x + w + x + w - 3, channelCountBox.y, w, h, globalPadding);
     latencyCytonBox = new LatencyCytonBox(x + w + x + w - 3, (sampleRateCytonBox.y + sampleRateCytonBox.h), w, h, globalPadding);
+    wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
     playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
@@ -368,6 +371,7 @@ class ControlPanel {
     dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
     sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
+    wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w + x + w - 3, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
   }
 
   public void resetListItems(){
@@ -425,11 +429,13 @@ class ControlPanel {
     wifiList.updateMenu();
     dataLogBoxGanglion.update();
     latencyCytonBox.update();
+    wifiTransferProtcolCytonBox.update();
 
     wifiBox.update();
     interfaceBoxCyton.update();
     interfaceBoxGanglion.update();
     latencyGanglionBox.update();
+    wifiTransferProtcolGanglionBox.update();
 
     //SD File Conversion
     while (convertingSD == true) {
@@ -541,6 +547,7 @@ class ControlPanel {
             }
             sampleRateCytonBox.draw();
             latencyCytonBox.draw();
+            wifiTransferProtcolCytonBox.draw();
           }
           // dataLogBox.y = serialBox.y + serialBox.h;
           dataLogBox.draw();
@@ -584,6 +591,7 @@ class ControlPanel {
             }
             latencyGanglionBox.draw();
             sampleRateGanglionBox.draw();
+            wifiTransferProtcolGanglionBox.draw();
           }
           // dataLogBox.y = bleBox.y + bleBox.h;
           dataLogBoxGanglion.draw();
@@ -2266,11 +2274,11 @@ class WifiTransferProtcolGanglionBox {
     padding = _padding;
 
     wifiInternetProtocolGanglionTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol() == hub.TCP) wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(hub.TCP)) wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolGanglionUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol() == hub.UDP) wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(hub.UDP)) wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolGanglionUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol() == hub.UDP_BURST) wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(hub.UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2289,7 +2297,15 @@ class WifiTransferProtcolGanglionBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("  " + str(hub.getWifiInternetProtocol()), x + padding + 142, y + padding); // print the channel count in green next to the box title
+    String dispText;
+    if (hub.getWifiInternetProtocol().equals(hub.TCP)) {
+      dispText = "TCP";
+    } else if (hub.getWifiInternetProtocol().equals(hub.UDP)) {
+      dispText = "UDP";
+    } else {
+      dispText = "UDPx3";
+    }
+    text(dispText, x + padding + 184, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     wifiInternetProtocolGanglionTCP.draw();
@@ -2309,11 +2325,11 @@ class WifiTransferProtcolCytonBox {
     padding = _padding;
 
     wifiInternetProtocolCytonTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol() == hub.TCP) wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(hub.TCP)) wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolCytonUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol() == hub.UDP) wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(hub.UDP)) wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolCytonUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol() == hub.UDP_BURST) wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(hub.UDP_BURST)) wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2332,7 +2348,15 @@ class WifiTransferProtcolCytonBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    text("  " + str(hub.getWifiInternetProtocol()), x + padding + 142, y + padding); // print the channel count in green next to the box title
+    String dispText;
+    if (hub.getWifiInternetProtocol().equals(hub.TCP)) {
+      dispText = "TCP";
+    } else if (hub.getWifiInternetProtocol().equals(hub.UDP)) {
+      dispText = "UDP";
+    } else {
+      dispText = "UDPx3";
+    }
+    text(dispText, x + padding + 184, y + padding); // print the channel count in green next to the box title
     popStyle();
 
     wifiInternetProtocolCytonTCP.draw();
