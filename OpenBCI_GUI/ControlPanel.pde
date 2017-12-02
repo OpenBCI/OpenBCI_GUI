@@ -820,7 +820,7 @@ class ControlPanel {
           sampleRate250.setIsActive(true);
           sampleRate250.wasPressed = true;
           sampleRate250.color_notPressed = isSelected_color;
-          sampleRate500.color_pressed = autoFileName.color_notPressed;
+          sampleRate500.color_notPressed = autoFileName.color_notPressed;
           sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
@@ -828,7 +828,7 @@ class ControlPanel {
           sampleRate500.setIsActive(true);
           sampleRate500.wasPressed = true;
           sampleRate500.color_notPressed = isSelected_color;
-          sampleRate250.color_pressed = autoFileName.color_notPressed;
+          sampleRate250.color_notPressed = autoFileName.color_notPressed;
           sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
 
@@ -837,7 +837,7 @@ class ControlPanel {
           sampleRate1000.wasPressed = true;
           sampleRate1000.color_notPressed = isSelected_color;
           sampleRate250.color_notPressed = autoFileName.color_notPressed; //default color of button
-          sampleRate500.color_pressed = autoFileName.color_notPressed;
+          sampleRate500.color_notPressed = autoFileName.color_notPressed;
         }
 
         if (latencyCyton5ms.isMouseHere()) {

@@ -113,7 +113,8 @@ class Hub {
   final static int RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS = 422;
   final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL = 424;
   final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE = 425;
-  final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 406;
+  final static int RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT = 406;
+  final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 434;
   final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
   final static int RESP_ERROR_IMPEDANCE_COULD_NOT_START = 414;
   final static int RESP_ERROR_IMPEDANCE_COULD_NOT_STOP = 415;
@@ -218,8 +219,16 @@ class Hub {
   public boolean isSearching() { return searching; }
   public boolean isCheckingImpedance() { return checkingImpedance; }
   public boolean isAccelModeActive() { return accelModeActive; }
-  public void setLatency(int latency) { curLatency = latency; }
-  public void setWifiInternetProtocol(String internetProtocol) { curInternetProtocol = internetProtocol; }
+  public void setLatency(int latency) {
+    curLatency = latency;
+    output("Setting Latency to " + latency);
+    println("Setting Latency Protocol to " + latency);
+  }
+  public void setWifiInternetProtocol(String internetProtocol) {
+    curInternetProtocol = internetProtocol;
+    output("Setting WiFi Internet Protocol to " + internetProtocol);
+    println("Setting WiFi Internet Protocol to " + internetProtocol);
+  }
 
   private PApplet mainApplet;
 
@@ -305,8 +314,11 @@ class Hub {
         processData(msg);
         break;
       case 'e': // Error
+        int code = int(list[1]);
         println("Hub: parseMessage: error: " + list[2]);
-        output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
+        if (code == RESP_ERROR_COMMAND_NOT_RECOGNIZED) {
+          output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
+        }
         break;
       case 'x':
         processExamine(msg);
@@ -333,6 +345,7 @@ class Hub {
         processWifi(msg);
         break;
       case 'k':
+        processCommand(msg);
         break;
       default:
         println("Hub: parseMessage: default: " + msg);
@@ -468,6 +481,24 @@ class Hub {
   public void sendCommand(String s) {
     println("Hub: sendCommand(String): sending \'" + s + "\'");
     write(TCP_CMD_COMMAND + "," + s + TCP_STOP);
+  }
+
+  public void processCommand(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+    switch (code) {
+      case RESP_SUCCESS:
+        println("Hub: processCommand: success -- " + millis());
+        break;
+      case RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT:
+        println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + list[2]);
+        break;
+      case RESP_ERROR_PROTOCOL_NOT_STARTED:
+        println("Hub: processCommand: RESP_ERROR_PROTOCOL_NOT_STARTED -- " + millis() + " " + list[2]);
+        break;
+      default:
+        break;
+    }
   }
 
   public void processAccel(String msg) {
