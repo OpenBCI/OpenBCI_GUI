@@ -25,6 +25,12 @@ boolean printSignPosts = true;
 float millisOfLastSignPost = 0.0;
 float millisSinceLastSignPost = 0.0;
 
+final static int OUTPUT_LEVEL_DEFAULT = 0;
+final static int OUTPUT_LEVEL_INFO = 1;
+final static int OUTPUT_LEVEL_SUCCESS = 2;
+final static int OUTPUT_LEVEL_WARN = 3;
+final static int OUTPUT_LEVEL_ERROR = 4;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -52,6 +58,10 @@ class HelpWidget {
   String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI"; //current text shown in help widget, based on most recent command
 
   int padding = 5;
+  int outputStart = 0;
+  int outputDurationMs = 3000;
+  boolean animatingMessage = false;
+  int curOutputLevel = OUTPUT_LEVEL_DEFAULT;
 
   HelpWidget(float _xPos, float _yPos, float _width, float _height) {
     x = _xPos;
@@ -61,7 +71,12 @@ class HelpWidget {
   }
 
   public void update() {
-    //nothing needed here
+    if (animatingMessage) {
+      if (millis() > outputStart + outputDurationMs) {
+        animatingMessage = false;
+        curOutputLevel = OUTPUT_LEVEL_DEFAULT;
+      }
+    }
   }
 
   public void draw() {
@@ -95,15 +110,17 @@ class HelpWidget {
 
       //draw bg of text field of widget
       strokeWeight(1);
-      stroke(color(0, 5, 11));
-      fill(200);
-      fill(255);
+      stroke(getBackgroundColor());
+      // fill(200);
+      // fill(255);
+      fill(getBackgroundColor());
       // fill(57,128,204);
       rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
       textFont(p4);
       textSize(14);
-      fill(bgColor);
+      // fill(bgColor);
+      fill(getTextColor());
       // fill(57,128,204);
       // fill(openbciBlue);
       textAlign(LEFT, TOP);
@@ -113,14 +130,73 @@ class HelpWidget {
     popStyle();
   }
 
-  public void output(String _output) {
+  private color getTextColor() {
+    switch (curOutputLevel) {
+      case OUTPUT_LEVEL_INFO:
+        return #00529B;
+      case OUTPUT_LEVEL_SUCCESS:
+        return #4F8A10;
+      case OUTPUT_LEVEL_WARN:
+        return #9F6000;
+      case OUTPUT_LEVEL_ERROR:
+        return #D8000C;
+      case OUTPUT_LEVEL_DEFAULT:
+      default:
+        return color(0, 5, 11);
+    }
+  }
+
+  private color getBackgroundColor() {
+    switch (curOutputLevel) {
+      case OUTPUT_LEVEL_INFO:
+        return #BDE5F8;
+      case OUTPUT_LEVEL_SUCCESS:
+        return #DFF2BF;
+      case OUTPUT_LEVEL_WARN:
+        return #FEEFB3;
+      case OUTPUT_LEVEL_ERROR:
+        return #FFD2D2;
+      case OUTPUT_LEVEL_DEFAULT:
+      default:
+        return color(255);
+    }
+  }
+
+  public void output(String _output, int level) {
+    if (OUTPUT_LEVEL_DEFAULT == level) {
+      animatingMessage = false;
+    } else {
+      animatingMessage = true;
+      outputStart = millis();
+    }
+    curOutputLevel = level;
     currentOutput = _output;
     // prevOutputs.add(_output);
   }
 };
 
 public void output(String _output) {
-  helpWidget.output(_output);
+  output(_output, OUTPUT_LEVEL_DEFAULT);
+}
+
+public void output(String _output, int level) {
+  helpWidget.output(_output, level);
+}
+
+public void outputError(String _output) {
+  output(_output, OUTPUT_LEVEL_ERROR);
+}
+
+public void outputInfo(String _output) {
+  output(_output, OUTPUT_LEVEL_INFO);
+}
+
+public void outputSuccess(String _output) {
+  output(_output, OUTPUT_LEVEL_SUCCESS);
+}
+
+public void outputWarn(String _output) {
+  output(_output, OUTPUT_LEVEL_WARN);
 }
 
 // created 2/10/16 by Conor Russomanno to dissect the aspects of the GUI that are slowing it down

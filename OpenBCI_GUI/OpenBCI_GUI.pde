@@ -708,7 +708,7 @@ void initSystem() {
   if (abandonInit) {
     haltSystem();
     println("Failed to connect to data source... 1");
-    output("Failed to connect to data source... 1");
+    outputError("Failed to connect to data source fail point 1");
   } else {
     println("  3a -- " + millis());
     //initilize the GUI
@@ -944,7 +944,7 @@ void systemUpdate() { // for updating data values and variables
   win_x = width;
   win_y = height;
 
-
+  helpWidget.update();
   if (systemMode == SYSTEMMODE_PREINIT) {
     //updates while in system control panel before START SYSTEM
     controlPanel.update();

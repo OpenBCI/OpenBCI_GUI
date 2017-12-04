@@ -48,7 +48,7 @@ class W_AnalogRead extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
+    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), startingVertScaleIndex);
     addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), startingHoriztonalScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
