@@ -1,18 +1,25 @@
 # v3.2.0
 
-Use OpenBCIHub v1.3.6 please.
+Use OpenBCIHub v1.3.7 please.
 
 ### New Features
 
 * Add the Digital Read widget
 * Add the Analog Read widget
 * Add the Marker Mode widget
+* Add info, warn, success, and error types to output function to alert user in help widget.
 
 ### Bug Fixes
 
 * Did not write aux values for Cyton with Daisy #272
 * Did not write to the SD card #277
 * Add button to accelerometer widget to turn accel mode on if the user was just using digital, analog, or marker mode.
+
+### rc1
+
+Update the hub to 1.3.7 to catch more wifi errors
+Finished the udp/tcp
+Add colors to help widget.
 
 ### Beta 3
 
