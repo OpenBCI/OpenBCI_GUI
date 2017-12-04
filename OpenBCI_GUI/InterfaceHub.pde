@@ -136,6 +136,7 @@ class Hub {
   final static int RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED = 427;
   final static int RESP_ERROR_WIFI_COULD_NOT_ERASE_CREDENTIALS = 428;
   final static int RESP_ERROR_WIFI_COULD_NOT_SET_LATENCY = 429;
+  final static int RESP_ERROR_WIFI_NEEDS_UPDATE = 435;
   final static int RESP_ERROR_WIFI_NOT_CONNECTED = 426;
   final static int RESP_GANGLION_FOUND = 201;
   final static int RESP_SUCCESS = 200;
@@ -386,8 +387,8 @@ class Hub {
 
   private void processConnect(String msg) {
     String[] list = split(msg, ',');
-    println("Hub: processConnect: made it -- " + millis());
     int code = Integer.parseInt(list[1]);
+    println("Hub: processConnect: made it -- " + millis() + " code: " + code);
     switch (code) {
       case RESP_SUCCESS:
       case RESP_ERROR_ALREADY_CONNECTED:
@@ -414,6 +415,10 @@ class Hub {
         } else {
           killAndShowMsg(list[2]);
         }
+        break;
+      case RESP_ERROR_WIFI_NEEDS_UPDATE:
+        println("Error in processConnect: RESP_ERROR_WIFI_NEEDS_UPDATE");
+        killAndShowMsg("WiFi Shield Firmware is out of date. Learn to update: docs.openbci.com/Hardware/12-Wifi_Programming_Tutorial");
         break;
       default:
         println("Error in processConnect");
@@ -453,7 +458,7 @@ class Hub {
     systemMode = SYSTEMMODE_POSTINIT;
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
-    output("The GUI is done intializing. Press \"Start Data Stream\" to start streaming!");
+    outputSuccess("The GUI is done intializing. Press \"Start Data Stream\" to start streaming!");
     portIsOpen = true;
     controlPanel.hideAllBoxes();
   }
@@ -462,7 +467,7 @@ class Hub {
     abandonInit = true;
     initSystemButton.setString("START SYSTEM");
     controlPanel.open();
-    output(msg);
+    outputError(msg);
     portIsOpen = false;
     haltSystem();
   }
