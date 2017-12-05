@@ -1217,7 +1217,7 @@ class ControlPanel {
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLE);
       } else {
-        output("Please wait till hub is fully initalized");
+        outputWarn("Please wait till hub is fully initalized");
       }
     }
 
