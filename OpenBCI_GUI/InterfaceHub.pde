@@ -710,9 +710,13 @@ class Hub {
       case RESP_SUCCESS:
         output("Transfer Protocol set to " + list[2]);
         println("Transfer Protocol set to " + list[2]);
+        if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
+          hub.searchDeviceStart();
+          outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
+        }
         break;
       case RESP_ERROR_PROTOCOL_BLE_START:
-        output("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+        outputError("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
         println("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
         break;
       default:

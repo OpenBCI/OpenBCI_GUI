@@ -195,7 +195,7 @@ class Ganglion {
     if (isBLE()) {
       setSampleRate((int)fsHzBLE);
       hub.setProtocol(PROTOCOL_BLE);
-      hub.searchDeviceStart();
+      // hub.searchDeviceStart();
     } else if (isWifi()) {
       setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);

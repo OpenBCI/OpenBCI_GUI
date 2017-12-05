@@ -1,6 +1,6 @@
 # v3.2.0
 
-Use OpenBCIHub v1.3.7 please.
+Use OpenBCIHub v1.3.8 please.
 
 ### New Features
 
@@ -15,17 +15,23 @@ Use OpenBCIHub v1.3.7 please.
 * Did not write to the SD card #277
 * Add button to accelerometer widget to turn accel mode on if the user was just using digital, analog, or marker mode.
 
-### rc1
+## rc2
 
-Update the hub to 1.3.7 to catch more wifi errors
-Finished the udp/tcp
-Add colors to help widget.
+### Bug Fixes
 
-### Beta 3
+* Added stability for ganglion bluetooth #270
+
+## rc1
+
+* Update the hub to 1.3.7 to catch more wifi errors
+* Finished the udp/tcp
+* Add colors to help widget.
+
+## Beta 3
 
 Finished Analog and Digital read widgets.
 
-### Beta 2
+## Beta 2
 
 Initial release
 
