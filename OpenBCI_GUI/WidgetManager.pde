@@ -44,25 +44,22 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   addWidget(w_fft, w);
   // println("  setupWidgets fft -- " + millis());
 
-
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
-  addWidget(w_accelerometer, w);
-  // println("  setupWidgets Accelerometer -- " + millis());
-
+  w_networking = new W_networking(_this);
+  w_networking.setTitle("Networking");
 
   //only instantiate this widget if you are using a Ganglion board for live streaming
   if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
     w_ganglionImpedance = new W_ganglionImpedance(_this);
     w_ganglionImpedance.setTitle("Ganglion Signal");
     addWidget(w_ganglionImpedance, w);
+    addWidget(w_networking, w);
+    addWidget(w_accelerometer, w);
+  } else {
+    addWidget(w_accelerometer, w);
+    addWidget(w_networking, w);
   }
-
-  w_networking = new W_networking(_this);
-  w_networking.setTitle("Networking");
-  addWidget(w_networking, w);
-  // println("  setupWidgets networking -- " + millis());
-
 
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
