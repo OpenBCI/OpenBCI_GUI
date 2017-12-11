@@ -371,7 +371,7 @@ class ControlPanel {
     dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
     sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
-    wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w + x + w - 3, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
+    wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w, (latencyGanglionBox.y + latencyGanglionBox.h), w, h, globalPadding);
   }
 
   public void resetListItems(){
