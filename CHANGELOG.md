@@ -1,3 +1,44 @@
+# v3.2.0
+
+Use OpenBCIHub v1.3.9 please.
+
+### New Features
+
+* Add the Digital Read widget
+* Add the Analog Read widget
+* Add the Marker Mode widget
+* Add info, warn, success, and error types to output function to alert user in help widget.
+
+### Bug Fixes
+
+* Did not write aux values for Cyton with Daisy #272
+* Did not write to the SD card #277
+* Add button to accelerometer widget to turn accel mode on if the user was just using digital, analog, or marker mode.
+* Fixes #192 with drop down of different color themes.
+* Fixes #285 by moving the wifi options to the right of the drop down pane. 
+* Fixes #270 where macOS 10.13 could not connect to Ganglion
+* Fixes #247 where the timer series graph looked strange with 7 seconds.
+
+## rc2
+
+### Bug Fixes
+
+* Added stability for ganglion bluetooth #270
+
+## rc1
+
+* Update the hub to 1.3.7 to catch more wifi errors
+* Finished the udp/tcp
+* Add colors to help widget.
+
+## Beta 3
+
+Finished Analog and Digital read widgets.
+
+## Beta 2
+
+Initial release
+
 # v3.1.0
 
 Use hub v1.3.4 please.

@@ -98,28 +98,13 @@ class W_accelerometer extends Widget {
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
     }
 
-    if(eegDataSource == DATASOURCE_GANGLION){
-      // accelModeButton = new Button((int)(x + w/2), (int)(y +80), 120, navHeight - 6, "Turn Accel. On", 12);
-      accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
-      accelModeButton.setCornerRoundess((int)(navHeight-6));
-      accelModeButton.setFont(p6,10);
-      // accelModeButton.setStrokeColor((int)(color(150)));
-      // accelModeButton.setColorNotPressed(openbciBlue);
-      accelModeButton.setColorNotPressed(color(57,128,204));
-      accelModeButton.textColorNotActive = color(255);
-      // accelModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
-      accelModeButton.hasStroke(false);
-      // accelModeButton.setColorNotPressed((int)(color(138, 182, 229)));
-      accelModeButton.setHelpText("Click this button to activate/deactivate the accelerometer of your Ganglion board!");
-    }
-
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    // addDropdown("Thisdrop", "Drop 1", Arrays.asList("A", "B"), 0);
-    // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-    // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
-
+    accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
+    accelModeButton.setCornerRoundess((int)(navHeight-6));
+    accelModeButton.setFont(p6,10);
+    accelModeButton.setColorNotPressed(color(57,128,204));
+    accelModeButton.textColorNotActive = color(255);
+    accelModeButton.hasStroke(false);
+    accelModeButton.setHelpText("Click this button to activate/deactivate the accelerometer!");
   }
 
   public void initPlayground(Cyton _OBCI) {
@@ -194,86 +179,69 @@ class W_accelerometer extends Widget {
     pushStyle();
     //put your code here...
     //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-    if (true) {
-      // fill(graphBG);
-      // stroke(strokeColor);
-      // rect(x, y, w, h);
-      // textFont(f4, 24);
-      // textAlign(LEFT, TOP);
-      // fill(textColor);
-      // text("Acellerometer Gs", x + 10, y + 10);
 
-      fill(50);
-      textFont(p4, 14);
-      textAlign(CENTER,CENTER);
-      text("z", PolarWindowX, (PolarWindowY-PolarWindowHeight/2)-12);
-      text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
-      text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
+    fill(50);
+    textFont(p4, 14);
+    textAlign(CENTER,CENTER);
+    text("z", PolarWindowX, (PolarWindowY-PolarWindowHeight/2)-12);
+    text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
+    text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
 
-      fill(graphBG);
-      stroke(graphStroke);
-      rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
-      line(AccelWindowX, AccelWindowY + AccelWindowHeight/2, AccelWindowX+AccelWindowWidth, AccelWindowY + AccelWindowHeight/2); //midline
+    fill(graphBG);
+    stroke(graphStroke);
+    rect(AccelWindowX, AccelWindowY, AccelWindowWidth, AccelWindowHeight);
+    line(AccelWindowX, AccelWindowY + AccelWindowHeight/2, AccelWindowX+AccelWindowWidth, AccelWindowY + AccelWindowHeight/2); //midline
 
-      fill(50);
-      textFont(p5, 12);
-      textAlign(CENTER,CENTER);
-      text("+"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
-      text("0g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight/2);
-      text("-"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
+    fill(50);
+    textFont(p5, 12);
+    textAlign(CENTER,CENTER);
+    text("+"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY);
+    text("0g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight/2);
+    text("-"+(int)yMaxMin+"g", AccelWindowX+AccelWindowWidth + 12, AccelWindowY + AccelWindowHeight);
 
 
-      fill(graphBG);  // pulse window background
-      stroke(graphStroke);
-      ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
+    fill(graphBG);  // pulse window background
+    stroke(graphStroke);
+    ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
 
-      stroke(180);
-      line(PolarWindowX-PolarWindowWidth/2, PolarWindowY, PolarWindowX+PolarWindowWidth/2, PolarWindowY);
-      line(PolarWindowX, PolarWindowY-PolarWindowHeight/2, PolarWindowX, PolarWindowY+PolarWindowHeight/2);
-      line(PolarWindowX-PolarCorner, PolarWindowY+PolarCorner, PolarWindowX+PolarCorner, PolarWindowY-PolarCorner);
+    stroke(180);
+    line(PolarWindowX-PolarWindowWidth/2, PolarWindowY, PolarWindowX+PolarWindowWidth/2, PolarWindowY);
+    line(PolarWindowX, PolarWindowY-PolarWindowHeight/2, PolarWindowX, PolarWindowY+PolarWindowHeight/2);
+    line(PolarWindowX-PolarCorner, PolarWindowY+PolarCorner, PolarWindowX+PolarCorner, PolarWindowY-PolarCorner);
 
-      fill(50);
-      textFont(p3, 16);
+    fill(50);
+    textFont(p3, 16);
 
-      if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
-        // fill(Xcolor);
-        // text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
-        // fill(Ycolor);
-        // text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
-        // fill(Zcolor);
-        // text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
-        drawAccValues();
-        draw3DGraph();
-        drawAccWave();
-      } else if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion.isBLE()) accelModeButton.draw();
-        drawAccValues();
-        draw3DGraph();
-        drawAccWave();
-      } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-        // fill(Xcolor);
-        // text("X "+nf(currentXvalue, 1, 3), x+10, y+40);
-        // fill(Ycolor);
-        // text("Y "+nf(currentYvalue, 1, 3), x+10, y+80);
-        // fill(Zcolor);
-        // text("Z "+nf(currentZvalue, 1, 3), x+10, y+120);
-        drawAccValues();
-        draw3DGraph();
-        drawAccWave();
+    if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
+      // fill(Xcolor);
+      // text("X " + nf(currentXvalue, 1, 3), x+10, y+40);
+      // fill(Ycolor);
+      // text("Y " + nf(currentYvalue, 1, 3), x+10, y+80);
+      // fill(Zcolor);
+      // text("Z " + nf(currentZvalue, 1, 3), x+10, y+120);
+      drawAccValues();
+      draw3DGraph();
+      drawAccWave();
+      if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
+        accelModeButton.setString("Turn Accel On");
+        accelModeButton.draw();
       }
-      else {  // PLAYBACK
-        drawAccValues();
-        draw3DGraph();
-        drawAccWave2();
-      }
+    } else if (eegDataSource == DATASOURCE_GANGLION) {
+      if (ganglion.isBLE()) accelModeButton.draw();
+      drawAccValues();
+      draw3DGraph();
+      drawAccWave();
+    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
+      drawAccValues();
+      draw3DGraph();
+      drawAccWave();
+    }
+    else {  // PLAYBACK
+      drawAccValues();
+      draw3DGraph();
+      drawAccWave2();
     }
 
-    // pushStyle();
-    // textFont(h1,24);
-    // fill(bgColor);
-    // textAlign(CENTER,CENTER);
-    // text(widgetTitle, x + w/2, y + h/2);
-    // popStyle();
     popStyle();
   }
 
@@ -305,18 +273,6 @@ class W_accelerometer extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     int dy = y - prevY;
-    println("dy = " + dy);
-
-    //put your code here...
-    // AccelWindowWidth = int(w) - 10;
-    // AccelWindowX = int(x)+5;
-    // AccelWindowY = int(y)-10+int(h)/2;
-    //
-    // PolarWindowX = x+AccelWindowWidth-90;
-    // PolarWindowY = y+83;
-    // PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
-    println("Acc Widget -- Screen Resized.");
-
     setGraphDimensions();
 
     //empty arrays to start redrawing from scratch
@@ -324,15 +280,9 @@ class W_accelerometer extends Widget {
       X[i] = AccelWindowY + AccelWindowHeight/4; // X at 1/4
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
-      // X[i] = X[i] + dy;
-      // Y[i] = Y[i] + dy;
-      // Z[i] = Z[i] + dy;
     }
 
-    if(eegDataSource == DATASOURCE_GANGLION){
-      // accelModeButton.setPos((int)(x + w/2 - accelModeButton.but_dx/2), (int)(y + 80));
-      accelModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
-    }
+    accelModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
   void mousePressed(){
@@ -346,6 +296,10 @@ class W_accelerometer extends Widget {
           accelModeButton.setIsActive(true);
         }
       }
+    } else if (eegDataSource == DATASOURCE_CYTON) {
+      if (accelModeButton.isMouseHere()) {
+        accelModeButton.setIsActive(true);
+      }
     }
   }
 
@@ -356,7 +310,6 @@ class W_accelerometer extends Widget {
     if(eegDataSource == DATASOURCE_GANGLION){
       //put your code here...
       if(accelModeButton.isActive && accelModeButton.isMouseHere()){
-        println("toggle...");
         if(ganglion.isAccelModeActive()){
           ganglion.accelStop();
 
@@ -365,6 +318,12 @@ class W_accelerometer extends Widget {
           ganglion.accelStart();
           accelModeButton.setString("Turn Accel Off");
         }
+      }
+      accelModeButton.setIsActive(false);
+    } else if (eegDataSource == DATASOURCE_CYTON) {
+      if(accelModeButton.isActive && accelModeButton.isMouseHere()){
+        cyton.setBoardMode(BOARD_MODE_DEFAULT);
+        output("Starting to read accelerometer");
       }
       accelModeButton.setIsActive(false);
     }

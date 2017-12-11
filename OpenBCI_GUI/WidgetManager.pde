@@ -24,6 +24,9 @@ W_emg w_emg;
 W_openBionics w_openbionics;
 W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
+W_AnalogRead w_analogRead;
+W_DigitalRead w_digitalRead;
+W_MarkerMode w_markermode;
 
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -41,30 +44,27 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   addWidget(w_fft, w);
   // println("  setupWidgets fft -- " + millis());
 
+  w_accelerometer = new W_accelerometer(_this);
+  w_accelerometer.setTitle("Accelerometer");
+  w_networking = new W_networking(_this);
+  w_networking.setTitle("Networking");
 
   //only instantiate this widget if you are using a Ganglion board for live streaming
   if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
     w_ganglionImpedance = new W_ganglionImpedance(_this);
     w_ganglionImpedance.setTitle("Ganglion Signal");
     addWidget(w_ganglionImpedance, w);
+    addWidget(w_networking, w);
+    addWidget(w_accelerometer, w);
+  } else {
+    addWidget(w_accelerometer, w);
+    addWidget(w_networking, w);
   }
-
-  w_networking = new W_networking(_this);
-  w_networking.setTitle("Networking");
-  addWidget(w_networking, w);
-  // println("  setupWidgets networking -- " + millis());
-
 
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
   // println("  setupWidgets band power -- " + millis());
-
-
-  w_accelerometer = new W_accelerometer(_this);
-  w_accelerometer.setTitle("Accelerometer");
-  addWidget(w_accelerometer, w);
-  // println("  setupWidgets Accelerometer -- " + millis());
 
 
   w_headPlot = new W_headPlot(_this);
@@ -90,6 +90,18 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_pulsesensor.setTitle("Pulse Sensor");
     addWidget(w_pulsesensor, w);
     // println("  setupWidgets pulse sensor -- " + millis());
+
+    w_digitalRead = new W_DigitalRead(_this);
+    w_digitalRead.setTitle("Digital Read");
+    addWidget(w_digitalRead, w);
+
+    w_analogRead = new W_AnalogRead(_this);
+    w_analogRead.setTitle("Analog Read");
+    addWidget(w_analogRead, w);
+
+    w_markermode = new W_MarkerMode(_this);
+    w_markermode.setTitle("Marker Mode");
+    addWidget(w_markermode, w);
 
   }
 

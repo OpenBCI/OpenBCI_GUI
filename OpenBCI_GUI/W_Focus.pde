@@ -15,6 +15,10 @@ import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
 
+// color enums
+public enum FocusColors {
+  GREEN, CYAN, ORANGE
+}
 
 class W_Focus extends Widget {
   //to see all core variables/methods of the Widget class, refer to Widget.pde
@@ -27,27 +31,17 @@ class W_Focus extends Widget {
   float alpha_avg = 0, beta_avg = 0;
   boolean isFocused;
 
-  // threshold parameters
+  // alpha, beta threshold default values
   float alpha_thresh = 0.7, beta_thresh = 0.7, alpha_upper = 2, beta_upper = 2;
 
   // drawing parameters
   boolean showAbout = false;
   PFont myfont = createFont("fonts/Raleway-SemiBold.otf", 12);
-  PFont f = createFont("Arial Bold", 24); //for "FFT Plot" Widget Title
+  PFont f = createFont("Arial Bold", 24); //for widget title
 
-  // original colors
-  // color cBack = #020916;       //darker blue
-  // color cDark = #032e61;   //medium/dark blue
-  // color cMark = #306aaf;    //lighter blue
-  // color cFocus = #fefaea;   //peach
-  // color cWave = #ffdd3a;    //yellow
+  FocusColors focusColors = FocusColors.GREEN;
 
-  //new colors (to match GUI)
-  color cBack = #ffffff;   //white
-  color cDark = #032e61;   //medium/dark blue
-  color cMark = #306aaf;    //lighter blue
-  color cFocus = #020916;   //peach
-  color cWave = #ffdd3a;    //yellow
+  color cBack, cDark, cMark, cFocus, cWave, cPanel;
 
   // float x, y, w, h;  //widget topleft xy, width and height
   float xc, yc, wc, hc; // crystal ball center xy, width and height
@@ -66,19 +60,8 @@ class W_Focus extends Widget {
   W_Focus(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), 0);
-    addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0);
-
-    // focus Viz
-    try {
-      robot = new Robot();
-    } catch (AWTException e) {
-      e.printStackTrace();
-      exit();
-    }
+    // initialize graphics parameters
+    onColorChange();
     update_graphic_parameters();
 
     // sliders
@@ -86,6 +69,48 @@ class W_Focus extends Widget {
     sliderAlphaTop = new FocusSlider_Static(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
     sliderBetaMid = new FocusSlider(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2, beta_thresh / beta_upper);
 
+    //Dropdowns.
+    addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), 0);
+    addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), 0);
+    addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0);
+
+    // prepare simulate keystroking
+    try {
+      robot = new Robot();
+    } catch (AWTException e) {
+      e.printStackTrace();
+      exit();
+    }
+
+  }
+
+  void onColorChange() {
+    switch(focusColors) {
+      case GREEN:
+        cBack = #ffffff;   //white
+        cDark = #3068a6;   //medium/dark blue
+        cMark = #4d91d9;    //lighter blue
+        cFocus = #b8dc69;   //theme green
+        cWave = #ffdd3a;    //yellow
+        cPanel = #f5f5f5;   //little grey
+        break;
+      case ORANGE:
+        cBack = #ffffff;   //white
+        cDark = #377bc4;   //medium/dark blue
+        cMark = #5e9ee2;    //lighter blue
+        cFocus = #fcce51;   //orange
+        cWave = #ffdd3a;    //yellow
+        cPanel = #f5f5f5;   //little grey
+        break;
+      case CYAN:
+        cBack = #ffffff;   //white
+        cDark = #377bc4;   //medium/dark blue
+        cMark = #5e9ee2;    //lighter blue
+        cFocus = #91f4fc;   //cyan
+        cWave = #ffdd3a;    //yellow
+        cPanel = #f5f5f5;   //little grey
+        break;
+    }
   }
 
   void update(){
@@ -146,7 +171,6 @@ class W_Focus extends Widget {
     }
 
     //alpha_avg = beta_avg = 0;
-    alpha_count = beta_count = 0;
 
   }
 
@@ -196,15 +220,19 @@ class W_Focus extends Widget {
     textAlign(CENTER, CENTER);
     textFont(myfont);
 
-    //----------------- draw background rectangle -----------------
+    //----------------- draw background rectangle and panel -----------------
     fill(cBack);
     noStroke();
     rect(0, 0, w, h);
 
+    fill(cPanel);
+    noStroke();
+    rect(rp, rp, w-rp*2, h-rp*2);
+
     //----------------- draw focus crystalball -----------------
     noStroke();
     if (isFocused) {
-      fill(#FFFFFF);
+      fill(cFocus);
       stroke(cFocus);
     } else {
       fill(cDark);
@@ -242,7 +270,7 @@ class W_Focus extends Widget {
     text("alpha", xg1, yg1 + hg/2 + 16);
 
     // draw connection between two sliders
-    stroke(cFocus);
+    stroke(cMark);
     line(xg1 + wg * 0.8, yg1 - hg/2 + 10, xg1 + wg * 0.8, yg1 + hg/2 - hat - 10);
 
     noStroke();
@@ -280,7 +308,7 @@ class W_Focus extends Widget {
     text("beta", xg2, yg2 + hg/2 + 16);
 
     // draw connection between slider and bottom
-    stroke(cFocus);
+    stroke(cMark);
     float yt = yg2 + hg/2 - hbt + 10;   // y threshold
     yt = constrain(yt, yg2 - hg/2 + 10, yg2 + hg/2);
     line(xg2 + wg * 0.8, yg2 + hg/2, xg2 + wg * 0.8, yt);
@@ -308,13 +336,12 @@ class W_Focus extends Widget {
     //----------------- draw about button -----------------
     translate(x, y);
     if (showAbout) {
-      stroke(255);
-      // fill(cBack);
-      fill(#dddddd);
+      stroke(cDark);
+      fill(cBack);
 
       rect(rp, rp, w-rp*2, h-rp*2);
       textAlign(LEFT, TOP);
-      fill(cFocus);
+      fill(cDark);
       text("This widget recognizes a focused mental state by looking at alpha and beta wave levels on channel 1 & 2. For better result, try setting the smooth at 0.98 in FFT plot.\n\nThe algorithm thinks you are focused when the alpha level is between 0.7~2uV and the beta level is between 0~0.7 uV, otherwise it thinks you are not focused. It is designed based on Jordan Frand’s brainwave and tested on other subjects, and you can playback Jordan's file in W_Focus folder.\n\nYou can turn on KeyPress and use your focus play a game, so whenever you are focused, the specified UP arrow or SPACE key will be pressed down, otherwise it will be released. You can also try out the Arduino output feature, example and instructions are included in W_Focus folder. For more information, contact wangshu.sun@hotmail.com.", rp*1.5, rp*1.5, w-rp*3, h-rp*3);
     }
     // draw the button that toggles information
@@ -355,7 +382,7 @@ class W_Focus extends Widget {
     wc = w/4;
     hc = w/4;
     wg = 0.07*w;
-    hg = 0.75*h;
+    hg = 0.64*h;
     wl = 0.11*w;
     xg1 = 0.6*w;
     yg1 = 0.5*h;
@@ -547,6 +574,20 @@ void SerialSendFocused(int n){
     println("Serial write on, writing character 1 (int 49) when focused, and character 0 (int 48) when losing focus.");
     println("Current output port name: " + serial_output_portName + ". Current baud rate: " + serial_output_baud + ".");
     println("You can change serial settings in OpenBCI_GUI.pde by searching serial_output.");
+  }
+  closeAllDropdowns();
+}
+
+void ChooseFocusColor(int n){
+  if(n==0){
+    w_focus.focusColors = FocusColors.GREEN;
+    w_focus.onColorChange();
+  } else if(n==1){
+    w_focus.focusColors = FocusColors.ORANGE;
+    w_focus.onColorChange();
+  } else if(n==2){
+    w_focus.focusColors = FocusColors.CYAN;
+    w_focus.onColorChange();
   }
   closeAllDropdowns();
 }

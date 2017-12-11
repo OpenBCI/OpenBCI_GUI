@@ -28,7 +28,7 @@ class W_timeSeries extends Widget {
 
   ChannelBar[] channelBars;
 
-  int[] xLimOptions = {3, 5, 8}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   int xLim = xLimOptions[1];  //start at 5s
@@ -251,7 +251,6 @@ class W_timeSeries extends Widget {
       }
     }
   }
-
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
