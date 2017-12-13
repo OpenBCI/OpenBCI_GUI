@@ -1,11 +1,24 @@
 ## Problem
 
+Explain the problem
+
 ## Expected 
 
-## Operating System
+In a perfect world, what do you expect to happen.
+
+## Operating System and Version
+
+macOS/Windows/Linux
 
 ## GUI Version
 
+The version is displayed on startup.
+
 ## Running standalone app
 
-## Type of OpenBCI board
+Are you running the downloaded app or are you running from Processing 3
+
+## Type of OpenBCI Board
+
+Cyton/Cyton+Daisy/Ganglion
+Are you using a WiFi Shield?
