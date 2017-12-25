@@ -228,13 +228,13 @@ void LogLin(int n) {
   closeAllDropdowns();
 }
 
-//triggered when there is an event in the LogLin Dropdown
+//triggered when there is an event in the Smoothing Dropdown
 void Smoothing(int n) {
   smoothFac_ind = n;
   closeAllDropdowns();
 }
 
-//triggered when there is an event in the LogLin Dropdown
+//triggered when there is an event in the UnfiltFilt Dropdown
 void UnfiltFilt(int n) {
   if (n==0) {
     //have FFT use filtered data -- default
