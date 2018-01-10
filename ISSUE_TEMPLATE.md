@@ -21,4 +21,7 @@ Are you running the downloaded app or are you running from Processing 3
 ## Type of OpenBCI Board
 
 Cyton/Cyton+Daisy/Ganglion
-Are you using a WiFi Shield?
+
+## Are you using a WiFi Shield?
+
+Yes/No
