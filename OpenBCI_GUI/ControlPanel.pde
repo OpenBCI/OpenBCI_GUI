@@ -101,6 +101,8 @@ Button autoscan;
 // Button autoconnectNoStartHigh;
 Button systemStatus;
 
+Button bleBuiltIn;
+Button bleD112;
 Button eraseCredentials;
 Button getIpAddress;
 Button getFirmwareVersion;
@@ -1439,6 +1441,10 @@ class ControlPanel {
     outputODF.wasPressed = false;
     autoFileNameGanglion.setIsActive(false);
     autoFileNameGanglion.wasPressed = false;
+    bleD112.setIsActive(false);
+    bleD112.wasPressed = false;
+    bleBuiltIn.setIsActive(false);
+    bleBuiltIn.wasPressed = false;
     outputBDFGanglion.setIsActive(false);
     outputBDFGanglion.wasPressed = false;
     outputODFGanglion.setIsActive(false);
@@ -2860,6 +2866,53 @@ class InitBox {
   }
 };
 
+
+class BLEHardwareBox {
+  int x, y, w, h, padding; //size and position
+
+  boolean isSystemInitialized;
+  // button for init/halt system
+
+  BLEHardwareBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 73;
+    padding = _padding;
+
+    bleBuiltIn = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "BUILT IN", fontInfo.buttonLabel_size);
+    if (hub.getCurBLEHardware() == BLE_HARDWARE_BUILT_IN) bleBuiltIn.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    bleD112 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "BLED112", fontInfo.buttonLabel_size);
+    if (hub.getCurBLEHardware() == BLE_HARDWARE_BLED112) bleD112.color_notPressed = isSelected_color; //make it appear like this one is already selected
+  }
+
+  public void update() {
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("BLE Hardware ", x + padding, y + padding);
+    fill(bgColor); //set color to green
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    if (hub.getCurBLEHardware() == BLE_HARDWARE_BUILT_IN) {
+      text("Built In", x + padding + 142, y + padding);
+    } else {
+      text("BLED112", x + padding + 142, y + padding);
+    }
+    popStyle();
+
+    bleD112.draw();
+    bleBuiltIn.draw();
+  }
+};
 
 
 //===================== MENU LIST CLASS =============================//
