@@ -972,7 +972,6 @@ class Hub {
   public void connectWifi(String id) {
     write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + "," + curInternetProtocol + TCP_STOP);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
-
   }
 
   public void examineWifi(String id) {
