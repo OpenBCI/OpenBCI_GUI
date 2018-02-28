@@ -517,6 +517,14 @@ private boolean isWindows() {
 }
 
 /**
+ * @description Helper function to determine if the system is macOS or not.
+ * @return {boolean} true if os is windows, false otherwise.
+ */
+private boolean isMac() {
+  return !isWindows() && !isLinux();
+}
+
+/**
  * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
  *  function dubbed "death dealer"
  */
@@ -673,7 +681,7 @@ void initSystem() {
   controlPanel.close();
   topNav.controlPanelCollapser.setIsActive(false);
   verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
-  hub.changeState(hub.STATE_COMINIT);
+  hub.changeState(STATE_COMINIT);
   // hub.searchDeviceStop();
 
   //prepare the source of the input data
@@ -906,7 +914,7 @@ void haltSystem() {
     ganglion.closePort();
   }
   systemMode = SYSTEMMODE_PREINIT;
-  hub.changeState(hub.STATE_NOCOM);
+  hub.changeState(STATE_NOCOM);
   abandonInit = false;
 
   bleList.items.clear();
@@ -936,7 +944,7 @@ void systemUpdate() { // for updating data values and variables
   //   iSerial.updateSyncState(sdSetting);
   // }
 
-  // if (hub.get_state() == hub.STATE_NOCOM || hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) {
+  // if (hub.get_state() == STATE_NOCOM || hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) {
   //   hub.updateSyncState(sdSetting);
   // }
 
@@ -1150,7 +1158,7 @@ void systemDraw() { //for drawing to the screen
     }
   }
 
-  if ((hub.get_state() == hub.STATE_COMINIT || hub.get_state() == hub.STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+  if ((hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
     //make out blink the text "Initalizing GUI..."
     pushStyle();
     imageMode(CENTER);
@@ -1211,7 +1219,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.2.0\nDecember 2017", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.3.0\nMarch 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

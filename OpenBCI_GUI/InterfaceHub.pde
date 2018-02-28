@@ -27,7 +27,7 @@ void clientEvent(Client someClient) {
 
   if(p > 2) {
     String posMatch  = new String(hub.tcpBuffer, p - 2, 3);
-    if (posMatch.equals(hub.TCP_STOP)) {
+    if (posMatch.equals(TCP_STOP)) {
       if (!hub.nodeProcessHandshakeComplete) {
         hub.nodeProcessHandshakeComplete = true;
         hub.setHubIsRunning(true);
@@ -234,8 +234,8 @@ class Hub {
   }
   public void setCurBLEHardware(String bleHardware) {
     curBLEHardware = bleHardware;
-    output("Setting BLE Hardware to " + latency);
-    println("Setting BLE Hardware to " + latency);
+    output("Setting BLE Hardware to " + bleHardware);
+    println("Setting BLE Hardware to " + bleHardware);
   }
   public void setWifiInternetProtocol(String internetProtocol) {
     curInternetProtocol = internetProtocol;

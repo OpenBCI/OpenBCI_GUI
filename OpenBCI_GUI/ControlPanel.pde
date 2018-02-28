@@ -184,11 +184,11 @@ public void controlEvent(ControlEvent theEvent) {
       latencyCyton5ms.color_notPressed = autoFileName.color_notPressed;
       latencyCyton10ms.color_notPressed = isSelected_color;
       latencyCyton20ms.color_notPressed = autoFileName.color_notPressed;
-      hub.setLatency(hub.LATENCY_10_MS);
+      hub.setLatency(LATENCY_10_MS);
       wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color;
       wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed;
       wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed;
-      hub.setWifiInternetProtocol(hub.TCP);
+      hub.setWifiInternetProtocol(TCP);
     } else if(newDataSource == DATASOURCE_GANGLION){
       updateToNChan(4);
       if (isWindows() && isHubInitialized == false) {
@@ -198,11 +198,11 @@ public void controlEvent(ControlEvent theEvent) {
       latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed;
       latencyGanglion10ms.color_notPressed = isSelected_color;
       latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed;
-      hub.setLatency(hub.LATENCY_10_MS);
+      hub.setLatency(LATENCY_10_MS);
       wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color;
       wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed;
       wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed;
-      hub.setWifiInternetProtocol(hub.TCP);
+      hub.setWifiInternetProtocol(TCP);
     } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
       updateToNChan(8);
       playbackChanButton4.color_notPressed = autoFileName.color_notPressed;
@@ -292,6 +292,8 @@ class ControlPanel {
   BLEBox bleBox;
   DataLogBoxGanglion dataLogBoxGanglion;
 
+  BLEHardwareBox bleHardwareBox;
+
   WifiBox wifiBox;
   InterfaceBoxCyton interfaceBoxCyton;
   InterfaceBoxGanglion interfaceBoxGanglion;
@@ -374,6 +376,7 @@ class ControlPanel {
     sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
     wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w, (latencyGanglionBox.y + latencyGanglionBox.h), w, h, globalPadding);
+    bleHardwareBox = new BLEHardwareBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
   }
 
   public void resetListItems(){
@@ -1141,32 +1144,32 @@ class ControlPanel {
 
     if (wcBox.isShowing) {
       if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
-        hub.getWifiInfo(hub.TCP_WIFI_GET_IP_ADDRESS);
+        hub.getWifiInfo(TCP_WIFI_GET_IP_ADDRESS);
         getIpAddress.wasPressed = false;
         getIpAddress.setIsActive(false);
       }
 
       if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
-        hub.getWifiInfo(hub.TCP_WIFI_GET_FIRMWARE_VERSION);
+        hub.getWifiInfo(TCP_WIFI_GET_FIRMWARE_VERSION);
         getFirmwareVersion.wasPressed = false;
         getFirmwareVersion.setIsActive(false);
       }
 
       if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
-        hub.getWifiInfo(hub.TCP_WIFI_GET_MAC_ADDRESS);
+        hub.getWifiInfo(TCP_WIFI_GET_MAC_ADDRESS);
         getMacAddress.wasPressed = false;
         getMacAddress.setIsActive(false);
       }
 
       if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
-        hub.getWifiInfo(hub.TCP_WIFI_ERASE_CREDENTIALS);
+        hub.getWifiInfo(TCP_WIFI_ERASE_CREDENTIALS);
         eraseCredentials.wasPressed=false;
         eraseCredentials.setIsActive(false);
       }
 
       if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
         // Wifi_Config will handle creating the connection
-        hub.getWifiInfo(hub.TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
+        hub.getWifiInfo(TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
         getTypeOfAttachedBoard.wasPressed=false;
         getTypeOfAttachedBoard.setIsActive(false);
       }
@@ -1358,51 +1361,51 @@ class ControlPanel {
     }
 
     if (latencyCyton5ms.isMouseHere() && latencyCyton5ms.wasPressed) {
-      hub.setLatency(hub.LATENCY_5_MS);
+      hub.setLatency(LATENCY_5_MS);
     }
 
     if (latencyCyton10ms.isMouseHere() && latencyCyton10ms.wasPressed) {
-      hub.setLatency(hub.LATENCY_10_MS);
+      hub.setLatency(LATENCY_10_MS);
     }
 
     if (latencyCyton20ms.isMouseHere() && latencyCyton20ms.wasPressed) {
-      hub.setLatency(hub.LATENCY_20_MS);
+      hub.setLatency(LATENCY_20_MS);
     }
 
     if (latencyGanglion5ms.isMouseHere() && latencyGanglion5ms.wasPressed) {
-      hub.setLatency(hub.LATENCY_5_MS);
+      hub.setLatency(LATENCY_5_MS);
     }
 
     if (latencyGanglion10ms.isMouseHere() && latencyGanglion10ms.wasPressed) {
-      hub.setLatency(hub.LATENCY_10_MS);
+      hub.setLatency(LATENCY_10_MS);
     }
 
     if (latencyGanglion20ms.isMouseHere() && latencyGanglion20ms.wasPressed) {
-      hub.setLatency(hub.LATENCY_20_MS);
+      hub.setLatency(LATENCY_20_MS);
     }
 
     if (wifiInternetProtocolCytonTCP.isMouseHere() && wifiInternetProtocolCytonTCP.wasPressed) {
-      hub.setWifiInternetProtocol(hub.TCP);
+      hub.setWifiInternetProtocol(TCP);
     }
 
     if (wifiInternetProtocolCytonUDP.isMouseHere() && wifiInternetProtocolCytonUDP.wasPressed) {
-      hub.setWifiInternetProtocol(hub.UDP);
+      hub.setWifiInternetProtocol(UDP);
     }
 
     if (wifiInternetProtocolCytonUDPBurst.isMouseHere() && wifiInternetProtocolCytonUDPBurst.wasPressed) {
-      hub.setWifiInternetProtocol(hub.UDP_BURST);
+      hub.setWifiInternetProtocol(UDP_BURST);
     }
 
     if (wifiInternetProtocolGanglionTCP.isMouseHere() && wifiInternetProtocolGanglionTCP.wasPressed) {
-      hub.setWifiInternetProtocol(hub.TCP);
+      hub.setWifiInternetProtocol(TCP);
     }
 
     if (wifiInternetProtocolGanglionUDP.isMouseHere() && wifiInternetProtocolGanglionUDP.wasPressed) {
-      hub.setWifiInternetProtocol(hub.UDP);
+      hub.setWifiInternetProtocol(UDP);
     }
 
     if (wifiInternetProtocolGanglionUDPBurst.isMouseHere() && wifiInternetProtocolGanglionUDPBurst.wasPressed) {
-      hub.setWifiInternetProtocol(hub.UDP_BURST);
+      hub.setWifiInternetProtocol(UDP_BURST);
     }
 
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
@@ -2194,11 +2197,11 @@ class LatencyGanglionBox {
     padding = _padding;
 
     latencyGanglion5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-    if (hub.getLatency() == hub.LATENCY_5_MS) latencyGanglion5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getLatency() == LATENCY_5_MS) latencyGanglion5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
     latencyGanglion10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-    if (hub.getLatency() == hub.LATENCY_10_MS) latencyGanglion10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getLatency() == LATENCY_10_MS) latencyGanglion10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
     latencyGanglion20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-    if (hub.getLatency() == hub.LATENCY_20_MS) latencyGanglion20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getLatency() == LATENCY_20_MS) latencyGanglion20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2237,11 +2240,11 @@ class LatencyCytonBox {
     padding = _padding;
 
     latencyCyton5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-    if (hub.getLatency() == hub.LATENCY_5_MS) latencyCyton5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getLatency() == LATENCY_5_MS) latencyCyton5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
     latencyCyton10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-    if (hub.getLatency() == hub.LATENCY_10_MS) latencyCyton10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getLatency() == LATENCY_10_MS) latencyCyton10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
     latencyCyton20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-    if (hub.getLatency() == hub.LATENCY_20_MS) latencyCyton20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getLatency() == LATENCY_20_MS) latencyCyton20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2280,11 +2283,11 @@ class WifiTransferProtcolGanglionBox {
     padding = _padding;
 
     wifiInternetProtocolGanglionTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol().equals(hub.TCP)) wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolGanglionUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol().equals(hub.UDP)) wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolGanglionUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol().equals(hub.UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2304,9 +2307,9 @@ class WifiTransferProtcolGanglionBox {
     textFont(h3, 16);
     textAlign(LEFT, TOP);
     String dispText;
-    if (hub.getWifiInternetProtocol().equals(hub.TCP)) {
+    if (hub.getWifiInternetProtocol().equals(TCP)) {
       dispText = "TCP";
-    } else if (hub.getWifiInternetProtocol().equals(hub.UDP)) {
+    } else if (hub.getWifiInternetProtocol().equals(UDP)) {
       dispText = "UDP";
     } else {
       dispText = "UDPx3";
@@ -2331,11 +2334,11 @@ class WifiTransferProtcolCytonBox {
     padding = _padding;
 
     wifiInternetProtocolCytonTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol().equals(hub.TCP)) wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolCytonUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol().equals(hub.UDP)) wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
     wifiInternetProtocolCytonUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-    if (hub.getWifiInternetProtocol().equals(hub.UDP_BURST)) wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
 
   public void update() {
@@ -2355,9 +2358,9 @@ class WifiTransferProtcolCytonBox {
     textFont(h3, 16);
     textAlign(LEFT, TOP);
     String dispText;
-    if (hub.getWifiInternetProtocol().equals(hub.TCP)) {
+    if (hub.getWifiInternetProtocol().equals(TCP)) {
       dispText = "TCP";
-    } else if (hub.getWifiInternetProtocol().equals(hub.UDP)) {
+    } else if (hub.getWifiInternetProtocol().equals(UDP)) {
       dispText = "UDP";
     } else {
       dispText = "UDPx3";
@@ -2880,8 +2883,12 @@ class BLEHardwareBox {
     h = 73;
     padding = _padding;
 
-    bleBuiltIn = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "BUILT IN", fontInfo.buttonLabel_size);
-    if (hub.getCurBLEHardware() == BLE_HARDWARE_BUILT_IN) bleBuiltIn.color_notPressed = isSelected_color; //make it appear like this one is already selected
+    if (isMac()) {
+      bleBuiltIn = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "Native", fontInfo.buttonLabel_size);
+    } else {
+      bleBuiltIn = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "CSR Dongle", fontInfo.buttonLabel_size);
+    }
+    if (hub.getCurBLEHardware() == BLE_HARDWARE_NOBLE) bleBuiltIn.color_notPressed = isSelected_color; //make it appear like this one is already selected
     bleD112 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "BLED112", fontInfo.buttonLabel_size);
     if (hub.getCurBLEHardware() == BLE_HARDWARE_BLED112) bleD112.color_notPressed = isSelected_color; //make it appear like this one is already selected
   }
@@ -2902,8 +2909,13 @@ class BLEHardwareBox {
     fill(bgColor); //set color to green
     textFont(h3, 16);
     textAlign(LEFT, TOP);
-    if (hub.getCurBLEHardware() == BLE_HARDWARE_BUILT_IN) {
-      text("Built In", x + padding + 142, y + padding);
+    if (hub.getCurBLEHardware() == BLE_HARDWARE_NOBLE) {
+      if (isWindows()) {
+        text("CSR Dongle", x + padding + 142, y + padding);
+      } else {
+        text("Native", x + padding + 142, y + padding);
+      }
+
     } else {
       text("BLED112", x + padding + 142, y + padding);
     }
