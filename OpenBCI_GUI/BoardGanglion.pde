@@ -128,7 +128,7 @@ class Ganglion {
     return curInterface;
   }
   public boolean isBLE () {
-    return curInterface == INTERFACE_HUB_BLE;
+    return curInterface == INTERFACE_HUB_BLE || curInterface == INTERFACE_HUB_BLED112;
   }
 
   public boolean isWifi () {
@@ -194,7 +194,11 @@ class Ganglion {
     curInterface = _interface;
     if (isBLE()) {
       setSampleRate((int)fsHzBLE);
-      hub.setProtocol(PROTOCOL_BLE);
+      if (_interface == INTERFACE_HUB_BLE) {
+        hub.setProtocol(PROTOCOL_BLE);
+      } else {
+        hub.setProtocol(PROTOCOL_BLED112);        
+      }
       // hub.searchDeviceStart();
     } else if (isWifi()) {
       setSampleRate((int)fsHzWifi);

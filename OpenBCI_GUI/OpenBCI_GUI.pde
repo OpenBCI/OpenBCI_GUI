@@ -85,6 +85,7 @@ final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interfa
 final int INTERFACE_SERIAL = 0; // Used only by cyton
 final int INTERFACE_HUB_BLE = 1; // used only by ganglion
 final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
+final int INTERFACE_HUB_BLED112 = 1; // used only by ganglion with bled dongle
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
@@ -109,6 +110,7 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 
 final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_BLED112 = "bled112";
 final static String PROTOCOL_SERIAL = "serial";
 final static String PROTOCOL_WIFI = "wifi";
 
@@ -701,7 +703,7 @@ void initSystem() {
     case DATASOURCE_PLAYBACKFILE:
       break;
     case DATASOURCE_GANGLION:
-      if (ganglion.getInterface() == INTERFACE_HUB_BLE) {
+      if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
         hub.connectBLE(ganglion_portName);
       } else {
         hub.connectWifi(wifi_portName);
