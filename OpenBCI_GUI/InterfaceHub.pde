@@ -181,6 +181,8 @@ class Hub {
   private boolean tcpClientActive = false;
   private int tcpTimeout = 1000;
 
+  private String firmwareVersion = "";
+
   private DataPacket_ADS1299 dataPacket;
 
   public Client tcpClient;
@@ -392,6 +394,7 @@ class Hub {
     switch (code) {
       case RESP_SUCCESS:
       case RESP_ERROR_ALREADY_CONNECTED:
+        firmwareVersion = list[2];
         changeState(STATE_SYNCWITHHARDWARE);
         if (eegDataSource == DATASOURCE_CYTON) {
           if (nchan == 8) {
@@ -458,7 +461,13 @@ class Hub {
     systemMode = SYSTEMMODE_POSTINIT;
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
-    outputSuccess("The GUI is done intializing. Press \"Start Data Stream\" to start streaming!");
+    String firmwareString = " Cyton firmware ";
+    if (eegDataSource == DATASOURCE_CYTON) {
+      firmwareString += firmwareVersion;
+    } else {
+      firmwareString = "";
+    }
+    outputSuccess("The GUI is done intializing." + firmwareString + " Press \"Start Data Stream\" to start streaming!");
     portIsOpen = true;
     controlPanel.hideAllBoxes();
   }
