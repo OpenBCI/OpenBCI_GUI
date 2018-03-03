@@ -85,7 +85,7 @@ final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interfa
 final int INTERFACE_SERIAL = 0; // Used only by cyton
 final int INTERFACE_HUB_BLE = 1; // used only by ganglion
 final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
-final int INTERFACE_HUB_BLED112 = 1; // used only by ganglion with bled dongle
+final int INTERFACE_HUB_BLED112 = 3; // used only by ganglion with bled dongle
 
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
@@ -922,9 +922,10 @@ void haltSystem() {
   bleList.items.clear();
   wifiList.items.clear();
 
-  if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
-    hub.searchDeviceStart();
-  }
+  // TODO: Comment this back in
+  // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
+  //   hub.searchDeviceStart();
+  // }
 }
 
 void delayedInit() {

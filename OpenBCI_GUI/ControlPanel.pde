@@ -102,8 +102,6 @@ Button autoscan;
 // Button autoconnectNoStartHigh;
 Button systemStatus;
 
-Button bleBuiltIn;
-Button bleD112;
 Button eraseCredentials;
 Button getIpAddress;
 Button getFirmwareVersion;
@@ -455,7 +453,7 @@ class ControlPanel {
           calledForBLEList = true;
           if (hub.isHubRunning()) {
             // Commented out because noble will auto scan
-            hub.searchDeviceStart();
+            // hub.searchDeviceStart();
           }
         }
       }
@@ -1239,11 +1237,14 @@ class ControlPanel {
     }
 
     if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
+      println("protocolBLED112Ganglion");
+
       wifiList.items.clear();
       bleList.items.clear();
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
         output("Protocol BLED112 Selected for Ganglion");
+        println("Protocol BLED112 Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLED112);
       } else {
@@ -1291,16 +1292,6 @@ class ControlPanel {
         output("Please wait till hub is fully initalized");
       }
     }
-
-    // if (protocolBLEGanglion.isMouseHere()) {
-    //   protocolBLEGanglion.setIsActive(true);
-    //   protocolBLEGanglion.wasPressed = true;
-    // }
-    //
-    // if (protocolWifiGanglion.isMouseHere()) {
-    //   protocolWifiGanglion.setIsActive(true);
-    //   protocolWifiGanglion.wasPressed = true;
-    // }
 
     //open or close serial port if serial port button is pressed (left button in serial widget)
     if (autoFileName.isMouseHere() && autoFileName.wasPressed) {
@@ -1444,24 +1435,6 @@ class ControlPanel {
       selectInput("Select an SD file to convert for playback:", "sdFileSelected");
     }
 
-    if (bleBuiltIn.isMouseHere() && bleBuiltIn.wasPressed) {
-      if (isHubObjectInitialized) {
-        ganglion.setDriver(BLE_HARDWARE_BLED112);
-        output("Now using BLED112 Driver for BLE!");
-      } else {
-        outputWarn("Please wait till hub is fully initalized");
-      }
-    }
-
-    if (bleD112.isMouseHere() && bleD112.wasPressed) {
-      if (isHubObjectInitialized) {
-        ganglion.setDriver(BLE_HARDWARE_BLED112);
-        output("Now using BLED112 Driver for BLE!");
-      } else {
-        outputWarn("Please wait till hub is fully initalized");
-      }
-    }
-
     //reset all buttons to false
     refreshPort.setIsActive(false);
     refreshPort.wasPressed = false;
@@ -1471,6 +1444,8 @@ class ControlPanel {
     refreshWifi.wasPressed = false;
     protocolBLEGanglion.setIsActive(false);
     protocolBLEGanglion.wasPressed = false;
+    protocolBLED112Ganglion.setIsActive(false);
+    protocolBLED112Ganglion.wasPressed = false;
     protocolWifiGanglion.setIsActive(false);
     protocolWifiGanglion.wasPressed = false;
     protocolSerialCyton.setIsActive(false);
@@ -1487,10 +1462,6 @@ class ControlPanel {
     outputODF.wasPressed = false;
     autoFileNameGanglion.setIsActive(false);
     autoFileNameGanglion.wasPressed = false;
-    bleD112.setIsActive(false);
-    bleD112.wasPressed = false;
-    bleBuiltIn.setIsActive(false);
-    bleBuiltIn.wasPressed = false;
     outputBDFGanglion.setIsActive(false);
     outputBDFGanglion.wasPressed = false;
     outputODFGanglion.setIsActive(false);
@@ -1929,8 +1900,15 @@ class InterfaceBoxGanglion {
     h = (24 + _padding) * 3;
     padding = _padding;
 
-    protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "BLE (on Win from Dongle)", fontInfo.buttonLabel_size);
-    protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+    if (isMac()) {
+      h = (24 + _padding) * 4; // Fix height for extra button for BLED112
+      protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
+      protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+      protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+    } else {
+      protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (CSR Dongle)", fontInfo.buttonLabel_size);
+      protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+    }
   }
 
   public void update() {}
@@ -1949,6 +1927,9 @@ class InterfaceBoxGanglion {
 
     protocolBLEGanglion.draw();
     protocolWifiGanglion.draw();
+    if (isMac()) {
+      protocolBLED112Ganglion.draw();
+    }
   }
 };
 
@@ -2911,64 +2892,6 @@ class InitBox {
     initSystemButton.draw();
   }
 };
-
-
-// class BLEHardwareBox {
-//   int x, y, w, h, padding; //size and position
-//
-//   boolean isSystemInitialized;
-//   // button for init/halt system
-//
-//   BLEHardwareBox(int _x, int _y, int _w, int _h, int _padding) {
-//     x = _x;
-//     y = _y;
-//     w = _w;
-//     h = 73;
-//     padding = _padding;
-//
-//     if (isMac()) {
-//       bleBuiltIn = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "Native", fontInfo.buttonLabel_size);
-//     } else {
-//       bleBuiltIn = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "CSR Dongle", fontInfo.buttonLabel_size);
-//     }
-//     if (hub.getCurBLEHardware() == BLE_HARDWARE_NOBLE) bleBuiltIn.color_notPressed = isSelected_color; //make it appear like this one is already selected
-//     bleD112 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "BLED112", fontInfo.buttonLabel_size);
-//     if (hub.getCurBLEHardware() == BLE_HARDWARE_BLED112) bleD112.color_notPressed = isSelected_color; //make it appear like this one is already selected
-//   }
-//
-//   public void update() {
-//   }
-//
-//   public void draw() {
-//     pushStyle();
-//     fill(boxColor);
-//     stroke(boxStrokeColor);
-//     strokeWeight(1);
-//     rect(x, y, w, h);
-//     fill(bgColor);
-//     textFont(h3, 16);
-//     textAlign(LEFT, TOP);
-//     text("BLE Hardware ", x + padding, y + padding);
-//     fill(bgColor); //set color to green
-//     textFont(h3, 16);
-//     textAlign(LEFT, TOP);
-//     if (hub.getCurBLEHardware() == BLE_HARDWARE_NOBLE) {
-//       if (isWindows()) {
-//         text("CSR Dongle", x + padding + 142, y + padding);
-//       } else {
-//         text("Native", x + padding + 142, y + padding);
-//       }
-//
-//     } else {
-//       text("BLED112", x + padding + 142, y + padding);
-//     }
-//     popStyle();
-//
-//     bleD112.draw();
-//     bleBuiltIn.draw();
-//   }
-// };
-
 
 //===================== MENU LIST CLASS =============================//
 //================== EXTENSION OF CONTROLP5 =========================//

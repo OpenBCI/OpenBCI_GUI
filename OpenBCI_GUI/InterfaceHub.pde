@@ -723,7 +723,7 @@ class Hub {
         output("Transfer Protocol set to " + list[2]);
         println("Transfer Protocol set to " + list[2]);
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
-          hub.searchDeviceStart();
+          // hub.searchDeviceStart();
           outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
         }
         break;
