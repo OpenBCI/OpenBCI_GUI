@@ -1,3 +1,11 @@
+# v3.3.0
+
+Use OpenBCIHub v1.4.0 please.
+
+### New Features
+
+* Add support for BLED112
+
 # v3.2.0
 
 Use OpenBCIHub v1.3.9 please.
@@ -15,7 +23,7 @@ Use OpenBCIHub v1.3.9 please.
 * Did not write to the SD card #277
 * Add button to accelerometer widget to turn accel mode on if the user was just using digital, analog, or marker mode.
 * Fixes #192 with drop down of different color themes.
-* Fixes #285 by moving the wifi options to the right of the drop down pane. 
+* Fixes #285 by moving the wifi options to the right of the drop down pane.
 * Fixes #270 where macOS 10.13 could not connect to Ganglion
 * Fixes #247 where the timer series graph looked strange with 7 seconds.
 
