@@ -27,7 +27,7 @@ void clientEvent(Client someClient) {
 
   if(p > 2) {
     String posMatch  = new String(hub.tcpBuffer, p - 2, 3);
-    if (posMatch.equals(hub.TCP_STOP)) {
+    if (posMatch.equals(TCP_STOP)) {
       if (!hub.nodeProcessHandshakeComplete) {
         hub.nodeProcessHandshakeComplete = true;
         hub.setHubIsRunning(true);
@@ -64,99 +64,103 @@ void clientEvent(Client someClient) {
   }
 }
 
+final static String BLE_HARDWARE_NOBLE = "noble";
+final static String BLE_HARDWARE_BLED112 = "bled112";
+
+final static String TCP_CMD_ACCEL = "a";
+final static String TCP_CMD_BOARD_TYPE = "b";
+final static String TCP_CMD_CONNECT = "c";
+final static String TCP_CMD_COMMAND = "k";
+final static String TCP_CMD_DISCONNECT = "d";
+final static String TCP_CMD_DATA = "t";
+final static String TCP_CMD_ERROR = "e"; //<>// //<>//
+final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
+final static String TCP_CMD_IMPEDANCE = "i";
+final static String TCP_CMD_LOG = "l";
+final static String TCP_CMD_PROTOCOL = "p";
+final static String TCP_CMD_SCAN = "s";
+final static String TCP_CMD_SD = "m";
+final static String TCP_CMD_STATUS = "q";
+final static String TCP_CMD_WIFI = "w";
+final static String TCP_STOP = ",;\n";
+
+final static String TCP_ACTION_START = "start";
+final static String TCP_ACTION_STATUS = "status";
+final static String TCP_ACTION_STOP = "stop";
+
+final static String TCP_WIFI_ERASE_CREDENTIALS = "eraseCredentials";
+final static String TCP_WIFI_GET_FIRMWARE_VERSION = "getFirmwareVersion";
+final static String TCP_WIFI_GET_IP_ADDRESS = "getIpAddress";
+final static String TCP_WIFI_GET_MAC_ADDRESS = "getMacAddress";
+final static String TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD = "getTypeOfAttachedBoard";
+
+final static byte BYTE_START = (byte)0xA0;
+final static byte BYTE_END = (byte)0xC0;
+
+// States For Syncing with the hardware
+final static int STATE_NOCOM = 0;
+final static int STATE_COMINIT = 1;
+final static int STATE_SYNCWITHHARDWARE = 2;
+final static int STATE_NORMAL = 3;
+final static int STATE_STOPPED = 4;
+final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
+
+final static int NUM_ACCEL_DIMS = 3;
+
+final static int RESP_ERROR_UNKNOWN = 499;
+final static int RESP_ERROR_ALREADY_CONNECTED = 408;
+final static int RESP_ERROR_BAD_PACKET = 500;
+final static int RESP_ERROR_BAD_NOBLE_START = 501;
+final static int RESP_ERROR_CHANNEL_SETTINGS = 423;
+final static int RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS = 422;
+final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL = 424;
+final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE = 425;
+final static int RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT = 406;
+final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 434;
+final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
+final static int RESP_ERROR_IMPEDANCE_COULD_NOT_START = 414;
+final static int RESP_ERROR_IMPEDANCE_COULD_NOT_STOP = 415;
+final static int RESP_ERROR_IMPEDANCE_FAILED_TO_SET_IMPEDANCE = 430;
+final static int RESP_ERROR_IMPEDANCE_FAILED_TO_PARSE = 431;
+final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
+final static int RESP_ERROR_UNABLE_TO_CONNECT = 402;
+final static int RESP_ERROR_UNABLE_TO_DISCONNECT = 401;
+final static int RESP_ERROR_PROTOCOL_UNKNOWN = 418;
+final static int RESP_ERROR_PROTOCOL_BLE_START = 419;
+final static int RESP_ERROR_PROTOCOL_NOT_STARTED = 420;
+final static int RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE = 421;
+final static int RESP_ERROR_SCAN_ALREADY_SCANNING = 409;
+final static int RESP_ERROR_SCAN_NONE_FOUND = 407;
+final static int RESP_ERROR_SCAN_NO_SCAN_TO_STOP = 410;
+final static int RESP_ERROR_SCAN_COULD_NOT_START = 412;
+final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
+final static int RESP_ERROR_TIMEOUT_SCAN_STOPPED = 432;
+final static int RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED = 427;
+final static int RESP_ERROR_WIFI_COULD_NOT_ERASE_CREDENTIALS = 428;
+final static int RESP_ERROR_WIFI_COULD_NOT_SET_LATENCY = 429;
+final static int RESP_ERROR_WIFI_NEEDS_UPDATE = 435;
+final static int RESP_ERROR_WIFI_NOT_CONNECTED = 426;
+final static int RESP_GANGLION_FOUND = 201;
+final static int RESP_SUCCESS = 200;
+final static int RESP_SUCCESS_DATA_ACCEL = 202;
+final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
+final static int RESP_SUCCESS_DATA_SAMPLE = 204;
+final static int RESP_WIFI_FOUND = 205;
+final static int RESP_SUCCESS_CHANNEL_SETTING = 207;
+final static int RESP_STATUS_CONNECTED = 300;
+final static int RESP_STATUS_DISCONNECTED = 301;
+final static int RESP_STATUS_SCANNING = 302;
+final static int RESP_STATUS_NOT_SCANNING = 303;
+
+final static int LATENCY_5_MS = 5000;
+final static int LATENCY_10_MS = 10000;
+final static int LATENCY_20_MS = 20000;
+
+final static String TCP = "tcp";
+final static String UDP = "udp";
+final static String UDP_BURST = "udpBurst";
+
 class Hub {
-  final static String TCP_CMD_ACCEL = "a";
-  final static String TCP_CMD_BOARD_TYPE = "b";
-  final static String TCP_CMD_CONNECT = "c";
-  final static String TCP_CMD_COMMAND = "k";
-  final static String TCP_CMD_DISCONNECT = "d";
-  final static String TCP_CMD_DATA = "t";
-  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
-  final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
-  final static String TCP_CMD_IMPEDANCE = "i";
-  final static String TCP_CMD_LOG = "l";
-  final static String TCP_CMD_PROTOCOL = "p";
-  final static String TCP_CMD_SCAN = "s";
-  final static String TCP_CMD_SD = "m";
-  final static String TCP_CMD_STATUS = "q";
-  final static String TCP_CMD_WIFI = "w";
-  final static String TCP_STOP = ",;\n";
-
-  final static String TCP_ACTION_START = "start";
-  final static String TCP_ACTION_STATUS = "status";
-  final static String TCP_ACTION_STOP = "stop";
-
-  final static String TCP_WIFI_ERASE_CREDENTIALS = "eraseCredentials";
-  final static String TCP_WIFI_GET_FIRMWARE_VERSION = "getFirmwareVersion";
-  final static String TCP_WIFI_GET_IP_ADDRESS = "getIpAddress";
-  final static String TCP_WIFI_GET_MAC_ADDRESS = "getMacAddress";
-  final static String TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD = "getTypeOfAttachedBoard";
-
-  final static byte BYTE_START = (byte)0xA0;
-  final static byte BYTE_END = (byte)0xC0;
-
-  // States For Syncing with the hardware
-  final static int STATE_NOCOM = 0;
-  final static int STATE_COMINIT = 1;
-  final static int STATE_SYNCWITHHARDWARE = 2;
-  final static int STATE_NORMAL = 3;
-  final static int STATE_STOPPED = 4;
-  final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
-
-  final static int NUM_ACCEL_DIMS = 3;
-
-  final static int RESP_ERROR_UNKNOWN = 499;
-  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
-  final static int RESP_ERROR_BAD_PACKET = 500;
-  final static int RESP_ERROR_BAD_NOBLE_START = 501;
-  final static int RESP_ERROR_CHANNEL_SETTINGS = 423;
-  final static int RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS = 422;
-  final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL = 424;
-  final static int RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE = 425;
-  final static int RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT = 406;
-  final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 434;
-  final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
-  final static int RESP_ERROR_IMPEDANCE_COULD_NOT_START = 414;
-  final static int RESP_ERROR_IMPEDANCE_COULD_NOT_STOP = 415;
-  final static int RESP_ERROR_IMPEDANCE_FAILED_TO_SET_IMPEDANCE = 430;
-  final static int RESP_ERROR_IMPEDANCE_FAILED_TO_PARSE = 431;
-  final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
-  final static int RESP_ERROR_UNABLE_TO_CONNECT = 402;
-  final static int RESP_ERROR_UNABLE_TO_DISCONNECT = 401;
-  final static int RESP_ERROR_PROTOCOL_UNKNOWN = 418;
-  final static int RESP_ERROR_PROTOCOL_BLE_START = 419;
-  final static int RESP_ERROR_PROTOCOL_NOT_STARTED = 420;
-  final static int RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE = 421;
-  final static int RESP_ERROR_SCAN_ALREADY_SCANNING = 409;
-  final static int RESP_ERROR_SCAN_NONE_FOUND = 407;
-  final static int RESP_ERROR_SCAN_NO_SCAN_TO_STOP = 410;
-  final static int RESP_ERROR_SCAN_COULD_NOT_START = 412;
-  final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
-  final static int RESP_ERROR_TIMEOUT_SCAN_STOPPED = 432;
-  final static int RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED = 427;
-  final static int RESP_ERROR_WIFI_COULD_NOT_ERASE_CREDENTIALS = 428;
-  final static int RESP_ERROR_WIFI_COULD_NOT_SET_LATENCY = 429;
-  final static int RESP_ERROR_WIFI_NEEDS_UPDATE = 435;
-  final static int RESP_ERROR_WIFI_NOT_CONNECTED = 426;
-  final static int RESP_GANGLION_FOUND = 201;
-  final static int RESP_SUCCESS = 200;
-  final static int RESP_SUCCESS_DATA_ACCEL = 202;
-  final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
-  final static int RESP_SUCCESS_DATA_SAMPLE = 204;
-  final static int RESP_WIFI_FOUND = 205;
-  final static int RESP_SUCCESS_CHANNEL_SETTING = 207;
-  final static int RESP_STATUS_CONNECTED = 300;
-  final static int RESP_STATUS_DISCONNECTED = 301;
-  final static int RESP_STATUS_SCANNING = 302;
-  final static int RESP_STATUS_NOT_SCANNING = 303;
-
-  final static int LATENCY_5_MS = 5000;
-  final static int LATENCY_10_MS = 10000;
-  final static int LATENCY_20_MS = 20000;
-
-  final static String TCP = "tcp";
-  final static String UDP = "udp";
-  final static String UDP_BURST = "udpBurst";
 
   public int curLatency = LATENCY_10_MS;
 
@@ -211,9 +215,12 @@ class Hub {
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
+  private String curBLEHardware = BLE_HARDWARE_NOBLE;
+
   // Getters
   public int get_state() { return state; }
   public int getLatency() { return curLatency; }
+  public String getCurBLEHardware() { return curBLEHardware; }
   public String getWifiInternetProtocol() { return curInternetProtocol; }
   public boolean isPortOpen() { return portIsOpen; }
   public boolean isHubRunning() { return hubRunning; }
@@ -223,7 +230,12 @@ class Hub {
   public void setLatency(int latency) {
     curLatency = latency;
     output("Setting Latency to " + latency);
-    println("Setting Latency Protocol to " + latency);
+    println("Setting Latency to " + latency);
+  }
+  public void setCurBLEHardware(String bleHardware) {
+    curBLEHardware = bleHardware;
+    output("Setting BLE Hardware to " + bleHardware);
+    println("Setting BLE Hardware to " + bleHardware);
   }
   public void setWifiInternetProtocol(String internetProtocol) {
     curInternetProtocol = internetProtocol;
@@ -711,7 +723,7 @@ class Hub {
         output("Transfer Protocol set to " + list[2]);
         println("Transfer Protocol set to " + list[2]);
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
-          hub.searchDeviceStart();
+          // hub.searchDeviceStart();
           outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
         }
         break;
@@ -972,7 +984,6 @@ class Hub {
   public void connectWifi(String id) {
     write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + "," + curInternetProtocol + TCP_STOP);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
-
   }
 
   public void examineWifi(String id) {

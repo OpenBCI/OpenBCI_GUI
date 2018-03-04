@@ -128,7 +128,7 @@ class Ganglion {
     return curInterface;
   }
   public boolean isBLE () {
-    return curInterface == INTERFACE_HUB_BLE;
+    return curInterface == INTERFACE_HUB_BLE || curInterface == INTERFACE_HUB_BLED112;
   }
 
   public boolean isWifi () {
@@ -194,7 +194,11 @@ class Ganglion {
     curInterface = _interface;
     if (isBLE()) {
       setSampleRate((int)fsHzBLE);
-      hub.setProtocol(PROTOCOL_BLE);
+      if (_interface == INTERFACE_HUB_BLE) {
+        hub.setProtocol(PROTOCOL_BLE);
+      } else {
+        hub.setProtocol(PROTOCOL_BLED112);        
+      }
       // hub.searchDeviceStart();
     } else if (isWifi()) {
       setSampleRate((int)fsHzWifi);
@@ -221,7 +225,7 @@ class Ganglion {
    * @description Sends a start streaming command to the Ganglion Node module.
    */
   void startDataTransfer(){
-    hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
+    hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
     println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
     if (checkingImpedance) {
       impedanceStop();
@@ -236,7 +240,7 @@ class Ganglion {
    * @description Sends a stop streaming command to the Ganglion Node module.
    */
   public void stopDataTransfer() {
-    hub.changeState(hub.STATE_STOPPED);  // make sure it's now interpretting as binary
+    hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
     println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
     hub.sendCommand('s');
   }
