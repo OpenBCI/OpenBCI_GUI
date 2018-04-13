@@ -1,10 +1,18 @@
 # v3.3.0
 
-Use OpenBCIHub v1.4.0 please.
+Use OpenBCIHub v1.4.1 please.
 
 ### New Features
 
 * Add support for BLED112
+
+## Beta 2
+
+* Fix bug with Hub, bump hub to v1.4.1
+
+## Beta 1
+
+* Initial release
 
 # v3.2.0
 
