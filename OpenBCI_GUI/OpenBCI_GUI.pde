@@ -108,6 +108,7 @@ int openBCI_baud = 115200; //baud rate from the Arduino
 String ganglion_portName = "N/A";
 
 String wifi_portName = "N/A";
+String wifi_ipAddress = "192.168.4.1";
 
 final static String PROTOCOL_BLE = "ble";
 final static String PROTOCOL_BLED112 = "bled112";
@@ -694,7 +695,11 @@ void initSystem() {
       if (cyton.getInterface() == INTERFACE_SERIAL) {
         cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
       } else {
-        cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+        if (hub.getWiFiStyle == WIFI_DYNAMIC) {
+          cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+        } else {
+          cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+        }
       }
       break;
     case DATASOURCE_SYNTHETIC:
@@ -706,7 +711,11 @@ void initSystem() {
       if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
         hub.connectBLE(ganglion_portName);
       } else {
-        hub.connectWifi(wifi_portName);
+        if (hub.getWiFiStyle == WIFI_DYNAMIC) {
+          hub.connectWifi(wifi_portName);
+        } else {
+          hub.connectWifi(wifi_ipAddress);
+        }
       }
       break;
     default:

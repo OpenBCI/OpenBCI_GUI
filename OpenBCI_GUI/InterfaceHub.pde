@@ -160,6 +160,9 @@ final static String TCP = "tcp";
 final static String UDP = "udp";
 final static String UDP_BURST = "udpBurst";
 
+final static String WIFI_DYNAMIC = "dynamic";
+final static String WIFI_STATIC = "static";
+
 class Hub {
 
   public int curLatency = LATENCY_10_MS;
@@ -200,6 +203,7 @@ class Hub {
   public int tcpBufferPositon = 0;
   private String curProtocol = PROTOCOL_WIFI;
   private String curInternetProtocol = TCP;
+  private String cutWiFiStyle = WIFI_DYNAMIC;
 
   private boolean waitingForResponse = false;
   private boolean nodeProcessHandshakeComplete = false;
@@ -224,6 +228,7 @@ class Hub {
   public int getLatency() { return curLatency; }
   public String getCurBLEHardware() { return curBLEHardware; }
   public String getWifiInternetProtocol() { return curInternetProtocol; }
+  public String getWiFiStyle() { return curWiFiStyle; }
   public boolean isPortOpen() { return portIsOpen; }
   public boolean isHubRunning() { return hubRunning; }
   public boolean isSearching() { return searching; }
@@ -243,6 +248,11 @@ class Hub {
     curInternetProtocol = internetProtocol;
     output("Setting WiFi Internet Protocol to " + internetProtocol);
     println("Setting WiFi Internet Protocol to " + internetProtocol);
+  }
+  public void setWiFiStyle(String wifiStyle) {
+    curWiFiStyle = wifiStyle;
+    output("Setting WiFi style to " + wifiStyle);
+    println("Setting WiFi style to " + wifiStyle);
   }
 
   private PApplet mainApplet;

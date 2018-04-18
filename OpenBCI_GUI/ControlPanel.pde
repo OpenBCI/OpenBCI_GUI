@@ -102,6 +102,8 @@ Button autoscan;
 // Button autoconnectNoStartHigh;
 Button systemStatus;
 
+Button bleBuiltIn;
+Button bleD112;
 Button eraseCredentials;
 Button getIpAddress;
 Button getFirmwareVersion;
@@ -124,6 +126,8 @@ Button wifiInternetProtocolCytonUDPBurst;
 Button wifiInternetProtocolGanglionTCP;
 Button wifiInternetProtocolGanglionUDP;
 Button wifiInternetProtocolGanglionUDPBurst;
+Button wifiIPAddressDynamic;
+Button wifiIPAddressStatic;
 
 Button synthChanButton4;
 Button synthChanButton8;
@@ -453,7 +457,7 @@ class ControlPanel {
           calledForBLEList = true;
           if (hub.isHubRunning()) {
             // Commented out because noble will auto scan
-            // hub.searchDeviceStart();
+            hub.searchDeviceStart();
           }
         }
       }
@@ -1435,6 +1439,24 @@ class ControlPanel {
       selectInput("Select an SD file to convert for playback:", "sdFileSelected");
     }
 
+    if (bleBuiltIn.isMouseHere() && bleBuiltIn.wasPressed) {
+      if (isHubObjectInitialized) {
+        ganglion.setDriver(BLE_HARDWARE_BLED112);
+        output("Now using BLED112 Driver for BLE!");
+      } else {
+        outputWarn("Please wait till hub is fully initalized");
+      }
+    }
+
+    if (bleD112.isMouseHere() && bleD112.wasPressed) {
+      if (isHubObjectInitialized) {
+        ganglion.setDriver(BLE_HARDWARE_BLED112);
+        output("Now using BLED112 Driver for BLE!");
+      } else {
+        outputWarn("Please wait till hub is fully initalized");
+      }
+    }
+
     //reset all buttons to false
     refreshPort.setIsActive(false);
     refreshPort.wasPressed = false;
@@ -1462,6 +1484,10 @@ class ControlPanel {
     outputODF.wasPressed = false;
     autoFileNameGanglion.setIsActive(false);
     autoFileNameGanglion.wasPressed = false;
+    bleD112.setIsActive(false);
+    bleD112.wasPressed = false;
+    bleBuiltIn.setIsActive(false);
+    bleBuiltIn.wasPressed = false;
     outputBDFGanglion.setIsActive(false);
     outputBDFGanglion.wasPressed = false;
     outputODFGanglion.setIsActive(false);
@@ -1805,6 +1831,25 @@ class WifiBox {
     wifiList.setPosition(x + padding, y + padding*3 + 8);
     // Call to update the list
     // ganglion.getBLEDevices();
+    wifiIPAddressDynamic = new Button (x + padding, y + padding*4 + 72 + 32, w - padding*5, 24, "DYNAMIC", fontInfo.buttonLabel_size);
+    wifiIPAddressStatic = new Button (x + padding, y + padding*4 + 72 + 32, w - padding*5, 24, "STATIC", fontInfo.buttonLabel_size);
+
+    cp5.addTextfield("staticIPAddress")
+      .setPosition(x + 90, y + 32)
+      .setCaptionLabel("192.168.4.1")
+      .setSize(157, 26)
+      .setFont(f2)
+      .setFocus(false)
+      .setColor(color(26, 26, 26))
+      .setColorBackground(color(255, 255, 255)) // text field bg color
+      .setColorValueLabel(color(0, 0, 0))  // text color
+      .setColorForeground(isSelected_color)  // border color when not selected
+      .setColorActive(isSelected_color)  // border color when selected
+      .setColorCursor(color(26, 26, 26))
+      .setText(getDateString())
+      .align(5, 10, 20, 40)
+      .onDoublePress(cb)
+      .setAutoClear(true);
   }
 
   public void update() {
@@ -1826,6 +1871,8 @@ class WifiBox {
     textFont(h3, 16);
     textAlign(LEFT, TOP);
     text("WIFI SHIELDS", x + padding, y + padding);
+    cp5.get(Textfield.class, "staticIPAddress").setPosition(x + 90, y + 32);
+
     popStyle();
 
     refreshWifi.draw();
@@ -1836,6 +1883,13 @@ class WifiBox {
       refreshWifi.setString("SEARCHING...");
     } else {
       refreshWifi.setString("START SEARCH");
+      if (hub.getWiFiStyle == WIFI_STATIC) {
+        wifiIPAddressStatic.but_y = y + 66;
+        wifiIPAddressStatic.draw();
+      } else {
+        wifiIPAddressDynamic.but_y = y + 66;
+        wifiIPAddressDynamic.draw();
+      }
       pushStyle();
       fill(#999999);
       ellipseMode(CENTER);
