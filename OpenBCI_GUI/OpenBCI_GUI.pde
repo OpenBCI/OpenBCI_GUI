@@ -695,7 +695,7 @@ void initSystem() {
       if (cyton.getInterface() == INTERFACE_SERIAL) {
         cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
       } else {
-        if (hub.getWiFiStyle == WIFI_DYNAMIC) {
+        if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
           cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
         } else {
           cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
@@ -711,7 +711,7 @@ void initSystem() {
       if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
         hub.connectBLE(ganglion_portName);
       } else {
-        if (hub.getWiFiStyle == WIFI_DYNAMIC) {
+        if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
           hub.connectWifi(wifi_portName);
         } else {
           hub.connectWifi(wifi_ipAddress);

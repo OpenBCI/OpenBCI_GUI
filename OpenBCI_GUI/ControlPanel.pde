@@ -727,6 +727,16 @@ class ControlPanel {
           popOutWifiConfigButton.setIsActive(true);
           popOutWifiConfigButton.wasPressed = true;
         }
+
+        if(wifiIPAddressStatic.isMouseHere()) {
+          wifiIPAddressStatic.setIsActive(true);
+          wifiIPAddressStatic.wasPressed = true;
+        }
+
+        if(wifiIPAddressDynamic.isMouseHere()) {
+          wifiIPAddressDynamic.setIsActive(true);
+          wifiIPAddressDynamic.wasPressed = true;
+        }
       }
 
       //active buttons during DATASOURCE_CYTON
@@ -1227,6 +1237,16 @@ class ControlPanel {
       }
     }
 
+    if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
+      output("Enter static IP address of the WiFi Shield!");
+      hub.setWiFiStyle(WIFI_STATIC);
+    }
+
+    if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
+      output("Enter dynamic IP address of the WiFi Shield!");
+      hub.setWiFiStyle(WIFI_DYNAMIC);
+    }
+
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
       wifiList.items.clear();
       bleList.items.clear();
@@ -1484,6 +1504,10 @@ class ControlPanel {
     outputODF.wasPressed = false;
     autoFileNameGanglion.setIsActive(false);
     autoFileNameGanglion.wasPressed = false;
+    wifiIPAddressDynamic.setIsActive(false);
+    wifiIPAddressDynamic.wasPressed = false;
+    wifiIPAddressStatic.setIsActive(false);
+    wifiIPAddressStatic.wasPressed = false;
     bleD112.setIsActive(false);
     bleD112.wasPressed = false;
     bleBuiltIn.setIsActive(false);
@@ -1561,7 +1585,7 @@ public void initButtonPressed(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+      } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
         output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
@@ -1576,7 +1600,7 @@ public void initButtonPressed(){
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
         return;
-      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A") {
+      } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
         output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
         initSystemButton.wasPressed = false;
         initSystemButton.setIsActive(false);
