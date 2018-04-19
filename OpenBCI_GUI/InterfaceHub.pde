@@ -203,7 +203,7 @@ class Hub {
   public int tcpBufferPositon = 0;
   private String curProtocol = PROTOCOL_WIFI;
   private String curInternetProtocol = TCP;
-  private String cutWiFiStyle = WIFI_DYNAMIC;
+  private String curWiFiStyle = WIFI_DYNAMIC;
 
   private boolean waitingForResponse = false;
   private boolean nodeProcessHandshakeComplete = false;
