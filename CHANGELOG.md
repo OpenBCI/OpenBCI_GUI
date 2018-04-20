@@ -1,6 +1,6 @@
 # v3.3.0
 
-Use OpenBCIHub v1.4.1 please.
+Use OpenBCIHub v1.4.2 please.
 
 ### New Features
 
