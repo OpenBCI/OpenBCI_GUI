@@ -1189,13 +1189,22 @@ class ControlPanel {
         if(wcBox.isShowing){
           hideWifiPopoutBox();
         } else {
-          if (wifi_portName == "N/A") {
-            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
-          } else {
-            output("Attempting to connect to WiFi Shield named " + wifi_portName);
-            hub.examineWifi(wifi_portName);
+          if (hub.getWiFiStyle() == WIFI_STATIC) {
+            wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
+            println("Static IP address of " + wifi_ipAddress);
+            output("Static IP address of " + wifi_ipAddress);
+            hub.examineWifi(wifi_ipAddress);
             wcBox.isShowing = true;
             popOutWifiConfigButton.setString("<");
+          } else {
+            if (wifi_portName == "N/A") {
+              output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
+            } else {
+              output("Attempting to connect to WiFi Shield named " + wifi_portName);
+              hub.examineWifi(wifi_portName);
+              wcBox.isShowing = true;
+              popOutWifiConfigButton.setString("<");
+            }
           }
         }
       }
@@ -1282,7 +1291,7 @@ class ControlPanel {
 
     if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
       hub.setWiFiStyle(WIFI_STATIC);
-      wifiBox.h = 130;
+      wifiBox.h = 120;
       String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
       outputInfo(output);
       println(output);
@@ -1924,22 +1933,21 @@ class WifiBox {
     // wifiIPAddress.setString("STATIC");
     wifiIPAddressDyanmic.draw();
     wifiIPAddressStatic.draw();
-    wifiIPAddressDyanmic.but_y = y + padding*2 + 18;
+    wifiIPAddressDyanmic.but_y = y + padding*2 + 16;
     wifiIPAddressStatic.but_y = wifiIPAddressDyanmic.but_y;
-
 
     popStyle();
 
     popOutWifiConfigButton.draw();
 
     if (hub.getWiFiStyle() == WIFI_STATIC) {
-      cp5.get(Textfield.class, "staticIPAddress").setPosition(x + padding, y + 100);
       pushStyle();
       fill(bgColor);
       textFont(h3, 16);
       textAlign(LEFT, TOP);
-      text("ENTER IP ADDRESS", x + padding, y + padding*3 + 48);
+      text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
       popStyle();
+      cp5.get(Textfield.class, "staticIPAddress").setPosition(x + padding, y + h - 24 - padding);
     } else {
       refreshWifi.draw();
       refreshWifi.but_y = y + h - padding - 24;

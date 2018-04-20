@@ -6,6 +6,11 @@ Use OpenBCIHub v1.4.1 please.
 
 * Add support for BLED112
 
+## Beta 3
+
+* Add support for static IP for wifi
+* Bump Hub to v1.4.2
+
 ## Beta 2
 
 * Fix bug with Hub, bump hub to v1.4.1
