@@ -1231,7 +1231,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.3.0-beta3\nApril 2018", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.3.0-beta4\nApril 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
