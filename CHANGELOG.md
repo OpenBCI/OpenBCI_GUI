@@ -1,10 +1,15 @@
 # v3.3.0
 
-Use OpenBCIHub v1.4.1 please.
+Use OpenBCIHub v1.4.2 please.
 
 ### New Features
 
 * Add support for BLED112
+
+## Beta 3
+
+* Add support for static IP for wifi
+* Bump Hub to v1.4.2
 
 ## Beta 2
 
