@@ -6,6 +6,10 @@ Use OpenBCIHub v1.4.2 please.
 
 * Add support for BLED112
 
+## Beta 5
+
+* Fixes a bunch of spacing and layout issues found when switching between the different interfaces
+
 ## Beta 4
 
 * There was a problem with the release

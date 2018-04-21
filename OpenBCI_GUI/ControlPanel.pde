@@ -536,6 +536,7 @@ class ControlPanel {
         } else {
           interfaceBoxCyton.draw();
           if (cyton.getInterface() == INTERFACE_SERIAL) {
+            serialBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
             serialBox.draw();
             dataLogBox.y = serialBox.y + serialBox.h;
             cp5.get(MenuList.class, "serialList").setVisible(true);
@@ -559,6 +560,8 @@ class ControlPanel {
               }
             }
           } else if (cyton.getInterface() == INTERFACE_HUB_WIFI) {
+            wifiBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
+
             wifiBox.draw();
             dataLogBox.y = wifiBox.y + wifiBox.h;
 
@@ -613,10 +616,14 @@ class ControlPanel {
         } else {
           interfaceBoxGanglion.draw();
           if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+            bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
+            dataLogBoxGanglion.y = bleBox.y + bleBox.h;
             bleBox.draw();
             cp5.get(MenuList.class, "bleList").setVisible(true);
             cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
           } else if (ganglion.getInterface() == INTERFACE_HUB_WIFI) {
+            wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
+            dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
             wifiBox.draw();
             if (hub.getWiFiStyle() == WIFI_STATIC) {
               cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
@@ -628,6 +635,9 @@ class ControlPanel {
             if(wcBox.isShowing){
               wcBox.draw();
             }
+            latencyGanglionBox.y = dataLogBoxGanglion.y + dataLogBoxGanglion.h;
+            sampleRateGanglionBox.y = latencyGanglionBox.y + latencyGanglionBox.h;
+            wifiTransferProtcolGanglionBox.y = wifiTransferProtcolGanglionBox.y + wifiTransferProtcolGanglionBox.h;
             latencyGanglionBox.draw();
             sampleRateGanglionBox.draw();
             wifiTransferProtcolGanglionBox.draw();
@@ -1938,6 +1948,7 @@ class WifiBox {
 
     popStyle();
 
+    popOutWifiConfigButton.but_y = y + padding;
     popOutWifiConfigButton.draw();
 
     if (hub.getWiFiStyle() == WIFI_STATIC) {
@@ -1949,6 +1960,8 @@ class WifiBox {
       popStyle();
       cp5.get(Textfield.class, "staticIPAddress").setPosition(x + padding, y + h - 24 - padding);
     } else {
+      wifiList.setPosition(x + padding, wifiIPAddressDyanmic.but_y + 24 + padding);
+
       refreshWifi.draw();
       refreshWifi.but_y = y + h - padding - 24;
       if(isHubInitialized && isHubObjectInitialized && (ganglion.isWifi() || cyton.isWifi()) && hub.isSearching()){
