@@ -5,6 +5,7 @@ Use OpenBCIHub v1.4.2 please.
 ### New Features
 
 * Add support for BLED112
+* Add support for static IP for wifi
 
 ## Beta 5
 
