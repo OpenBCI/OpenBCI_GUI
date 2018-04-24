@@ -325,7 +325,7 @@ class Cyton {
         break;
       case 6:
         output("Cyton: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
-        hub.changeState(hub.STATE_STOPPED);
+        hub.changeState(STATE_STOPPED);
         systemMode = 10;
         controlPanel.close();
         topNav.controlPanelCollapser.setIsActive(false);
@@ -383,7 +383,7 @@ class Cyton {
     if (isPortOpen()) {
       // Now give the command to start binary data transmission
       if (isSerial()) {
-        hub.changeState(hub.STATE_NORMAL);  // make sure it's now interpretting as binary
+        hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
         println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
         // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
         write(command_startBinary);
@@ -399,7 +399,7 @@ class Cyton {
 
   public void stopDataTransfer() {
     if (isPortOpen()) {
-      hub.changeState(hub.STATE_STOPPED);  // make sure it's now interpretting as binary
+      hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
       println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
       write(command_stop);// + "\n");
     }
@@ -482,7 +482,7 @@ class Cyton {
 
   //return the state
   public boolean isStateNormal() {
-    if (hub.get_state() == hub.STATE_NORMAL) {
+    if (hub.get_state() == STATE_NORMAL) {
       return true;
     } else {
       return false;
@@ -531,7 +531,7 @@ class Cyton {
   }
 
   public void syncChannelSettings() {
-    write("r,start" + hub.TCP_STOP);
+    write("r,start" + TCP_STOP);
   }
 
   /**
@@ -667,7 +667,7 @@ class Cyton {
     output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
     output += channelSettingValues[_numChannel][3] + ",";
     output += channelSettingValues[_numChannel][4] + ",";
-    output += channelSettingValues[_numChannel][5] + hub.TCP_STOP;
+    output += channelSettingValues[_numChannel][5] + TCP_STOP;
     write(output);
     // verbosePrint("done writing channel.");
     isWritingChannel = false;
@@ -694,7 +694,7 @@ class Cyton {
       output += command_activate_channel[_numChannel] + ",";
     }
     output += impedanceCheckValues[_numChannel][0] + ",";
-    output += impedanceCheckValues[_numChannel][1] + hub.TCP_STOP;
+    output += impedanceCheckValues[_numChannel][1] + TCP_STOP;
     write(output);
     isWritingImp = false;
   }
