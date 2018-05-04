@@ -1,3 +1,13 @@
+# v3.3.1
+
+Use OpenBCIHub v1.4.2 please.
+
+### Bug Fixes
+
+* Fixed bug where SD files were called csv
+* Fixed bug where SD files could not be played back in gui
+* Fixed bug where SD files could freeze the GUI
+
 # v3.3.0
 
 Use OpenBCIHub v1.4.2 please.
