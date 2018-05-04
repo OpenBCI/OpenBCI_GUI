@@ -1498,7 +1498,7 @@ public void convertSDFile() {
     controlPanel.convertingSD = false;
     println("nothing left in file");
     println("SD file conversion took "+thisTime+" mS");
-    output("SD file converted to " + logFileName);
+    outputSuccess("SD file converted to " + logFileName);
     dataWriter.flush();
     dataWriter.close();
   }
