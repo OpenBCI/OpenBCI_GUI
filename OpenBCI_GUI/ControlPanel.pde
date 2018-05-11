@@ -2042,7 +2042,8 @@ class InterfaceBoxGanglion {
       protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     } else {
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (CSR Dongle)", fontInfo.buttonLabel_size);
-      protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+      protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+      protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
   }
 
