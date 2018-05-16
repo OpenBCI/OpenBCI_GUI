@@ -8,8 +8,9 @@ Use OpenBCIHub v1.4.2 please.
 * Fixed bug where SD files could not be played back in gui
 * Fixed bug where SD files could freeze the GUI
 * Fixed bug where GUI crashed on windows and linux (thanks @chrisjz)
+* Added a bunch of checking to avoid exception errors when not running as mac to prevent BLED112
 
-### Beta 1
+## Beta 1
 
 Initial release with bug fixes!
 
