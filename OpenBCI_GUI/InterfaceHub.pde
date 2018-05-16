@@ -20,47 +20,53 @@ boolean werePacketsDroppedHub = false;
 int numPacketsDroppedHub = 0;
 
 void clientEvent(Client someClient) {
-  // print("Server Says:  ");
-  int p = hub.tcpBufferPositon;
-  hub.tcpBuffer[p] = hub.tcpClient.readChar();
-  hub.tcpBufferPositon++;
+  int p;
+  char newChar;
 
-  if(p > 2) {
-    String posMatch  = new String(hub.tcpBuffer, p - 2, 3);
-    if (posMatch.equals(TCP_STOP)) {
-      if (!hub.nodeProcessHandshakeComplete) {
-        hub.nodeProcessHandshakeComplete = true;
-        hub.setHubIsRunning(true);
-        println("Hub: clientEvent: handshake complete");
-      }
-      // Get a string from the tcp buffer
-      String msg = new String(hub.tcpBuffer, 0, p);
-      // Send the new string message to be processed
+  newChar = hub.tcpClient.readChar();
+  while(newChar != (char)-1) {
+    p = hub.tcpBufferPositon;
+    hub.tcpBuffer[p] = newChar;
+    hub.tcpBufferPositon++;
 
-      if (eegDataSource == DATASOURCE_GANGLION) {
-        hub.parseMessage(msg);
-        // Check to see if the ganglion ble list needs to be updated
-        if (hub.deviceListUpdated) {
-          hub.deviceListUpdated = false;
-          if (ganglion.isBLE()) {
-            controlPanel.bleBox.refreshBLEList();
-          } else {
+    if(p > 2) {
+      String posMatch  = new String(hub.tcpBuffer, p - 2, 3);
+      if (posMatch.equals(TCP_STOP)) {
+        if (!hub.nodeProcessHandshakeComplete) {
+          hub.nodeProcessHandshakeComplete = true;
+          hub.setHubIsRunning(true);
+          println("Hub: clientEvent: handshake complete");
+        }
+        // Get a string from the tcp buffer
+        String msg = new String(hub.tcpBuffer, 0, p);
+        // Send the new string message to be processed
+
+        if (eegDataSource == DATASOURCE_GANGLION) {
+          hub.parseMessage(msg);
+          // Check to see if the ganglion ble list needs to be updated
+          if (hub.deviceListUpdated) {
+            hub.deviceListUpdated = false;
+            if (ganglion.isBLE()) {
+              controlPanel.bleBox.refreshBLEList();
+            } else {
+              controlPanel.wifiBox.refreshWifiList();
+            }
+          }
+        } else if (eegDataSource == DATASOURCE_CYTON) {
+          // Do stuff for cyton
+          hub.parseMessage(msg);
+          // Check to see if the ganglion ble list needs to be updated
+          if (hub.deviceListUpdated) {
+            hub.deviceListUpdated = false;
             controlPanel.wifiBox.refreshWifiList();
           }
         }
-      } else if (eegDataSource == DATASOURCE_CYTON) {
-        // Do stuff for cyton
-        hub.parseMessage(msg);
-        // Check to see if the ganglion ble list needs to be updated
-        if (hub.deviceListUpdated) {
-          hub.deviceListUpdated = false;
-          controlPanel.wifiBox.refreshWifiList();
-        }
-      }
 
-      // Reset the buffer position
-      hub.tcpBufferPositon = 0;
+        // Reset the buffer position
+        hub.tcpBufferPositon = 0;
+      }
     }
+    newChar = hub.tcpClient.readChar();
   }
 }
 

@@ -1,3 +1,20 @@
+# v3.3.1
+
+Use OpenBCIHub v1.4.2 please.
+
+### Bug Fixes
+
+* Fixed bug where SD files were called csv
+* Fixed bug where SD files could not be played back in gui
+* Fixed bug where SD files could freeze the GUI
+* Fixed bug where GUI crashed on windows and linux (thanks @chrisjz) #331
+* Added a bunch of checking to avoid exception errors when not running as mac to prevent BLED112
+* Fixed a bug where the GUI did not work with processing 3.3.7 #316
+
+## Beta 1
+
+Initial release with bug fixes!
+
 # v3.3.0
 
 Use OpenBCIHub v1.4.2 please.

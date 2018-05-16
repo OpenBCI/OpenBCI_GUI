@@ -154,7 +154,13 @@ String getDateString() {
 void createPlaybackFileFromSD() {
   logFileName = "SavedData/SDconverted-"+getDateString()+".csv";
   dataWriter = createWriter(logFileName);
-  dataWriter.println("%OBCI Data Log - " + getDateString());
+  dataWriter.println("%OBCI SD Convert - " + getDateString());
+  dataWriter.println("%");
+  dataWriter.println("%Sample Rate = 250.0 Hz");
+  dataWriter.println("%First Column = SampleIndex");
+  dataWriter.println("%Last Column = Timestamp");
+  dataWriter.println("%Other Columns = EEG data in microvolts followed by Accel Data (in G) interleaved with Aux Data");
+
 }
 
 void sdFileSelected(File selection) {
@@ -201,7 +207,7 @@ public class OutputFile_rawtxt {
     fname = fname + second();
 
     //add the extension
-    fname = fname + ".csv";
+    fname = fname + ".txt";
 
     //open the file
     output = createWriter(fname);
@@ -300,7 +306,7 @@ public class OutputFile_rawtxt {
         if ( data.auxValues[0] > 0) {
           hub.validLastMarker = data.auxValues[0];
         }
-          
+
       } else {
         for (int Ival = 0; Ival < 3; Ival++) {
           output.print(", " + data.auxValues[Ival]);
@@ -312,7 +318,7 @@ public class OutputFile_rawtxt {
         output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
       }
     }
-    
+
 
   }
 
@@ -1492,7 +1498,7 @@ public void convertSDFile() {
     controlPanel.convertingSD = false;
     println("nothing left in file");
     println("SD file conversion took "+thisTime+" mS");
-    output("SD file converted to " + logFileName);
+    outputSuccess("SD file converted to " + logFileName);
     dataWriter.flush();
     dataWriter.close();
   }
@@ -1502,7 +1508,7 @@ public void convertSDFile() {
 
     if (hexNums[0].charAt(0) == '%') {
       //          println(dataLine);
-      dataWriter.println(dataLine);
+      // dataWriter.println(dataLine);
       println(dataLine);
       printNextLine = true;
     } else {
@@ -1615,7 +1621,10 @@ void convert8channelLine() {
         }
       }
     }
-    // println(h); // use for debugging
+    // println(h + " " + h.length()); // use for debugging
+    if (h.length() > 8) {
+      break;
+    }
     if (h.length()%2 == 0) {  // make sure this is a real number
       floatData[i] = unhex(h);
     } else {
