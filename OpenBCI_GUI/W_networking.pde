@@ -151,14 +151,14 @@ class W_networking extends Widget {
       }
       if(!cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").isOpen()){
         if(cp5_networking_dropdowns.getController("dataType3").isMouseOver()){
-          // println("2");
+           println("2");
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").open();
         }
       }
      
       if(cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").isOpen()){
         if(!cp5_networking_dropdowns.getController("dataType4").isMouseOver()){
-          // println("2");
+           println("2");
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").close();
         }
       }
@@ -1599,7 +1599,7 @@ class Stream extends Thread{
         msg.clearArguments();
         //ADD Focus Data
         msg.add(w_focus.isFocused);
-        println(w_pulsesensor.BPM);  ////test something 
+        println(w_focus.isFocused);  ////test something 
         try{
           this.osc.send(msg,this.netaddress);
         }catch (Exception e){
