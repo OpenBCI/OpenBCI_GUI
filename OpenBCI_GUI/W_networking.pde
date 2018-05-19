@@ -38,8 +38,9 @@ class W_networking extends Widget {
   int column1;
   int column2;
   int column3;
+  int column4;
   int fullColumnWidth;
-  int twoThirdsWidth;
+  int halfWidth;
   int row0;
   int row1;
   int row2;
@@ -62,6 +63,7 @@ class W_networking extends Widget {
   Stream stream1;
   Stream stream2;
   Stream stream3;
+  Stream stream4;
 
   List<String> baudRates;
   List<String> comPorts;
@@ -75,8 +77,9 @@ class W_networking extends Widget {
     stream1 = null;
     stream2 = null;
     stream3 = null;
+    stream4 = null;
 
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Widget");
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget");
     defaultBaud = "115200";
     // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
     baudRates = Arrays.asList("57600", "115200", "250000", "500000");
@@ -152,7 +155,20 @@ class W_networking extends Widget {
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").open();
         }
       }
-
+     
+      if(cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").isOpen()){
+        if(!cp5_networking_dropdowns.getController("dataType4").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").close();
+        }
+      }
+      if(!cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").isOpen()){
+        if(cp5_networking_dropdowns.getController("dataType4").isMouseOver()){
+          // println("2");
+          cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").open();
+        }
+      }
+      
       if(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()){
         if(!cp5_networking_baudRate.getController("baud_rate").isMouseOver()){
           // println("2");
@@ -224,12 +240,13 @@ class W_networking extends Widget {
       text(" Stream 1",column1,row0);
       text(" Stream 2",column2,row0);
       text(" Stream 3",column3,row0);
-    } else{
+    } else {
       // text("Data Type", column0,row0+15);
     }
-
+    if (protocolMode.equals("OSC")){
+      text(" Stream 4",column4,row0);
+    }
     text("Data Type", column0,row1);
-
 
     startButton.draw();
 
@@ -286,6 +303,9 @@ class W_networking extends Widget {
     createTextFields("osc_ip3","127.0.0.1");
     createTextFields("osc_port3","12347");
     createTextFields("osc_address3","/openbci");
+    createTextFields("osc_ip4","127.0.0.1");
+    createTextFields("osc_port4","12348");
+    createTextFields("osc_address4","/openbci");
     // UDP
     createTextFields("udp_ip1","127.0.0.1");
     createTextFields("udp_port1","12345");
@@ -316,10 +336,13 @@ class W_networking extends Widget {
     createRadioButtons("filter1");
     createRadioButtons("filter2");
     createRadioButtons("filter3");
+    createRadioButtons("filter4");
 
     createDropdown("dataType1", dataTypes);
     createDropdown("dataType2", dataTypes);
     createDropdown("dataType3", dataTypes);
+    
+    createDropdown("dataType4", dataTypes);
 
     // Start Button
     startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
@@ -355,6 +378,9 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "osc_ip3").setVisible(osc_visible);
     cp5_networking.get(Textfield.class, "osc_port3").setVisible(osc_visible);
     cp5_networking.get(Textfield.class, "osc_address3").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_ip4").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_port4").setVisible(osc_visible);
+    cp5_networking.get(Textfield.class, "osc_address4").setVisible(osc_visible);
     cp5_networking.get(Textfield.class, "udp_ip1").setVisible(udp_visible);
     cp5_networking.get(Textfield.class, "udp_port1").setVisible(udp_visible);
     cp5_networking.get(Textfield.class, "udp_ip2").setVisible(udp_visible);
@@ -383,7 +409,14 @@ class W_networking extends Widget {
       cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(false);
       cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(false);
     }
-
+    
+    //Draw a 4th Data Type dropdown menu if we are using OSC! 
+    if (protocolMode.equals("OSC")){                  
+      cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(true);
+    } else {
+      cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(false);
+    }
+    
     cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
 
     if(!serial_visible){
@@ -393,7 +426,12 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
       cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
     }
-
+        //Draw a 4th Filter button option if we are using OSC! 
+    if (protocolMode.equals("OSC")){                  
+      cp5_networking.get(RadioButton.class, "filter4").setVisible(true);
+    } else {
+      cp5_networking.get(RadioButton.class, "filter4").setVisible(false);
+    }
   }
 
   /* Create textfields for network parameters */
@@ -561,13 +599,16 @@ class W_networking extends Widget {
     // column1 = x+3*w/10;
     // column2 = x+5*w/10;
     // column3 = x+7*w/10;
+    
+    int widthq = 50;
+    
+    column1 = x+12*w/widthq;
+    column2 = x+21*w/widthq;
+    column3 = x+30*w/widthq;
+    column4 = x+39*w/widthq;
 
-    column1 = x+12*w/40;
-    column2 = x+21*w/40;
-    column3 = x+30*w/40;
-
-    twoThirdsWidth = (column2+100) - column1;
-    fullColumnWidth = (column3+100) - column1;
+    halfWidth = (column2+100) - column1;
+    fullColumnWidth = (column4+100) - column1;
 
     row0 = y+h/4+10;
     row1 = y+4*h/10;
@@ -576,6 +617,7 @@ class W_networking extends Widget {
     row4 = y+7*h/10;
     row5 = y+8*h/10;
     int offset = 17;
+
 
     startButton.setPos(x + w/2 - 70, y + h - 40 );
     cp5_networking.get(Textfield.class, "osc_ip1").setPosition(column1, row2 - offset);
@@ -587,6 +629,9 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "osc_ip3").setPosition(column3, row2 - offset);
     cp5_networking.get(Textfield.class, "osc_port3").setPosition(column3, row3 - offset);
     cp5_networking.get(Textfield.class, "osc_address3").setPosition(column3, row4 - offset);
+    cp5_networking.get(Textfield.class, "osc_ip4").setPosition(column4, row2 - offset);
+    cp5_networking.get(Textfield.class, "osc_port4").setPosition(column4, row3 - offset);
+    cp5_networking.get(Textfield.class, "osc_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
     cp5_networking.get(Textfield.class, "udp_ip1").setPosition(column1, row2 - offset);
     cp5_networking.get(Textfield.class, "udp_port1").setPosition(column1, row3 - offset);
     cp5_networking.get(Textfield.class, "udp_ip2").setPosition(column2, row2 - offset);
@@ -604,10 +649,15 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "lsl_numchan3").setPosition(column3,row4 - offset);
 
 
-    if (protocolMode.equals("OSC") || protocolMode.equals("LSL")){
+    if (protocolMode.equals("OSC")){
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
+      cp5_networking.get(RadioButton.class, "filter4").setPosition(column4, row5 - 10);
+    } else if (protocolMode.equals("LSL")){
+      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
     } else if (protocolMode.equals("UDP")){
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
@@ -625,11 +675,12 @@ class W_networking extends Widget {
     cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setSize(100, (baudRates.size()+1)*(navH-4));
     // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
     // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
-    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(twoThirdsWidth, (5)*(navH-4)); //twoThirdsWidth
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //twoThirdsWidth
 
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setPosition(column3, row1-offset);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setPosition(column4, row1-offset);
   }
 
   void mousePressed(){
@@ -669,6 +720,9 @@ class W_networking extends Widget {
     cp5_networking.get(Textfield.class, "osc_ip3").setVisible(false);
     cp5_networking.get(Textfield.class, "osc_port3").setVisible(false);
     cp5_networking.get(Textfield.class, "osc_address3").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_ip4").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_port4").setVisible(false);
+    cp5_networking.get(Textfield.class, "osc_address4").setVisible(false);
     cp5_networking.get(Textfield.class, "udp_ip1").setVisible(false);
     cp5_networking.get(Textfield.class, "udp_port1").setVisible(false);
     cp5_networking.get(Textfield.class, "udp_ip2").setVisible(false);
@@ -688,12 +742,14 @@ class W_networking extends Widget {
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setVisible(false);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(false);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(false);
+    cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(false);
     cp5_networking_portName.get(ScrollableList.class, "port_name").setVisible(false);
     cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setVisible(false);
 
     cp5_networking.get(RadioButton.class, "filter1").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
     cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
+    cp5_networking.get(RadioButton.class, "filter4").setVisible(false);
     //%%%%%
 
   }
@@ -727,6 +783,7 @@ class W_networking extends Widget {
     String dt1="None";
     String dt2="None";
     String dt3="None";
+    String dt4="None";
     networkActive = true;
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()){
       case 0 : dt1 = "None";
@@ -741,7 +798,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt1 = "Focus";
         break;
-      case 6 : dt1 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()){
@@ -757,7 +816,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt2 = "Focus";
         break;
-      case 6 : dt2 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()){
@@ -773,7 +834,27 @@ class W_networking extends Widget {
         break;
       case 5 : dt3 = "Focus";
         break;
-      case 6 : dt3 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
+        break;
+    }
+        switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()){
+      case 0 : dt4 = "None";
+        break;
+      case 1 : dt4 = "TimeSeries";
+        break;
+      case 2 : dt4 = "FFT";
+        break;
+      case 3 : dt4 = "EMG";
+        break;
+      case 4 : dt4 = "BandPower";
+        break;
+      case 5 : dt4 = "Focus";
+        break;
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
 
@@ -805,6 +886,15 @@ class W_networking extends Widget {
         stream3 = new Stream(dt3, ip, port, address, filt_pos, nchan);
       }else{
         stream3 = null;
+      }
+      if(!dt4.equals("None")){
+        ip = cp5_networking.get(Textfield.class, "osc_ip4").getText();
+        port = Integer.parseInt(cp5_networking.get(Textfield.class, "osc_port4").getText());
+        address = cp5_networking.get(Textfield.class, "osc_address4").getText();
+        filt_pos = (int)cp5_networking.get(RadioButton.class, "filter4").getValue();
+        stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan);
+      }else{
+        stream4 = null;
       }
 
       // Establish UDP Streams
@@ -891,6 +981,9 @@ class W_networking extends Widget {
     if(stream3!=null){
       stream3.start();
     }
+    if(stream4!=null){
+      stream4.start();
+    }
   }
 
   /* Stop networking */
@@ -909,6 +1002,10 @@ class W_networking extends Widget {
       stream3.quit();
       stream3=null;
     }
+    if (stream4!=null){
+      stream4.quit();
+      stream4=null;
+    }
   }
 
   void clearCP5(){
@@ -923,6 +1020,7 @@ class W_networking extends Widget {
     w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").close();
     w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").close();
     w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").close();
+    w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").close();
     w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
     w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").close();
   }
@@ -1083,8 +1181,10 @@ class Stream extends Thread{
                 sendPowerBandData();
               }else if (this.dataType.equals("Focus")){
                 sendFocusData();
+              }else if (this.dataType.equals("Pulse")){
+                sendPulseData();
               }else if (this.dataType.equals("WIDGET")){
-                sendWidgetData();
+                sendWidgetData();                
               }
               setDataFalse();
             }else{
@@ -1115,6 +1215,8 @@ class Stream extends Thread{
             sendPowerBandData();
           }else if (this.dataType.equals("Focus")){
             sendFocusData();
+          }else if (this.dataType.equals("Pulse")){
+            sendPulseData();
           }else if (this.dataType.equals("WIDGET")){
             sendWidgetData();
           }
@@ -1136,6 +1238,8 @@ class Stream extends Thread{
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("Focus")){
       return dataProcessing.newDataToSend;
+    }else if (this.dataType.equals("Pulse")){
+      return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
     }
@@ -1152,6 +1256,8 @@ class Stream extends Thread{
     }else if (this.dataType.equals("BandPower")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("Focus")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("Pulse")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
@@ -1493,7 +1599,7 @@ class Stream extends Thread{
         msg.clearArguments();
         //ADD Focus Data
         msg.add(w_focus.isFocused);
-        println(w_focus.isFocused);
+        println(w_pulsesensor.BPM);  ////test something 
         try{
           this.osc.send(msg,this.netaddress);
         }catch (Exception e){
@@ -1531,11 +1637,59 @@ class Stream extends Thread{
       }
     }
   }
-
-  void sendWidgetData(){
-    /* INSERT YOUR CODE HERE */
+//////////////////////////////////////
+  void sendPulseData(){
+     if(this.filter==0 || this.filter==1){
+      // OSC
+      if (this.protocol.equals("OSC")){
+        msg.clearArguments();
+        //ADD BPM Data
+        msg.add(w_pulsesensor.BPM);
+        println(w_pulsesensor.BPM);
+        try{
+          this.osc.send(msg,this.netaddress);
+        }catch (Exception e){
+          println(e);
+        }
+      /*
+      // UDP
+      }else if (this.protocol.equals("UDP")){
+        String outputter = "{\"type\":\"focus\",\"data\":";
+        outputter += str(w_pulsesensor.BPM);
+        outputter += "]}\r\n";
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
+          println(e);
+        }
+      // LSL
+      }else if (this.protocol.equals("LSL")){
+        // convert boolean to float and only sends the first data
+        int temp = w_pulsesensor.BPM;
+        dataToSend[0] = temp;
+        outlet_data.push_chunk(dataToSend);
+      // Serial
+      }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+        for (int i=0;i<numChan;i++){
+          serialMessage = ""; //clear message
+          int BPM = (w_pulsesensor.BPM);
+          serialMessage += BPM;
+          try{
+            println(serialMessage);
+            this.serial_networking.write(serialMessage);
+          }catch (Exception e){
+            println(e);
+          }
+        }
+        */
+      }
+    }
   }
 
+  void sendWidgetData(){
+       /* INSERT YOUR CODE HERE */
+    }
+  
   void quit(){
     this.isStreaming=false;
     closeNetwork();
@@ -1661,6 +1815,9 @@ void dataType2(int n){
   w_networking.closeAllDropdowns();
 }
 void dataType3(int n){
+  w_networking.closeAllDropdowns();
+}
+void dataType4(int n){
   w_networking.closeAllDropdowns();
 }
 void port_name(int n){
