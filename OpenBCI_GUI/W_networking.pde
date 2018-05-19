@@ -79,7 +79,7 @@ class W_networking extends Widget {
     stream3 = null;
     stream4 = null;
 
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Widget");
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget");
     defaultBaud = "115200";
     // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
     baudRates = Arrays.asList("57600", "115200", "250000", "500000");
@@ -799,7 +799,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt1 = "Focus";
         break;
-      case 6 : dt1 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()){
@@ -815,7 +817,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt2 = "Focus";
         break;
-      case 6 : dt2 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()){
@@ -831,7 +835,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt3 = "Focus";
         break;
-      case 6 : dt3 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
         switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()){
@@ -847,7 +853,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt4 = "Focus";
         break;
-      case 6 : dt4 = "Widget";
+      case 6 : dt1 = "Pulse";
+        break;
+      case 7 : dt1 = "Widget";
         break;
     }
 
@@ -1174,8 +1182,10 @@ class Stream extends Thread{
                 sendPowerBandData();
               }else if (this.dataType.equals("Focus")){
                 sendFocusData();
+              }else if (this.dataType.equals("Pulse")){
+                sendPulseData();
               }else if (this.dataType.equals("WIDGET")){
-                sendWidgetData();
+                sendWidgetData();                
               }
               setDataFalse();
             }else{
@@ -1206,6 +1216,8 @@ class Stream extends Thread{
             sendPowerBandData();
           }else if (this.dataType.equals("Focus")){
             sendFocusData();
+          }else if (this.dataType.equals("Pulse")){
+            sendPulseData();
           }else if (this.dataType.equals("WIDGET")){
             sendWidgetData();
           }
@@ -1227,6 +1239,8 @@ class Stream extends Thread{
       return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("Focus")){
       return dataProcessing.newDataToSend;
+    }else if (this.dataType.equals("Pulse")){
+      return dataProcessing.newDataToSend;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
     }
@@ -1243,6 +1257,8 @@ class Stream extends Thread{
     }else if (this.dataType.equals("BandPower")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("Focus")){
+      dataProcessing.newDataToSend = false;
+    }else if (this.dataType.equals("Pulse")){
       dataProcessing.newDataToSend = false;
     }else if (this.dataType.equals("WIDGET")){
       /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
@@ -1584,7 +1600,7 @@ class Stream extends Thread{
         msg.clearArguments();
         //ADD Focus Data
         msg.add(w_focus.isFocused);
-        println(w_focus.isFocused);
+        println(w_pulsesensor.BPM);  ////test something 
         try{
           this.osc.send(msg,this.netaddress);
         }catch (Exception e){
@@ -1622,11 +1638,59 @@ class Stream extends Thread{
       }
     }
   }
-
-  void sendWidgetData(){
-    /* INSERT YOUR CODE HERE */
+//////////////////////////////////////
+  void sendPulseData(){
+     if(this.filter==0 || this.filter==1){
+      // OSC
+      if (this.protocol.equals("OSC")){
+        msg.clearArguments();
+        //ADD BPM Data
+        msg.add(w_pulsesensor.BPM);
+        println(w_pulsesensor.BPM);
+        try{
+          this.osc.send(msg,this.netaddress);
+        }catch (Exception e){
+          println(e);
+        }
+      /*
+      // UDP
+      }else if (this.protocol.equals("UDP")){
+        String outputter = "{\"type\":\"focus\",\"data\":";
+        outputter += str(w_pulsesensor.BPM);
+        outputter += "]}\r\n";
+        try {
+          this.udp.send(outputter, this.ip, this.port);
+        } catch (Exception e) {
+          println(e);
+        }
+      // LSL
+      }else if (this.protocol.equals("LSL")){
+        // convert boolean to float and only sends the first data
+        int temp = w_pulsesensor.BPM;
+        dataToSend[0] = temp;
+        outlet_data.push_chunk(dataToSend);
+      // Serial
+      }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+        for (int i=0;i<numChan;i++){
+          serialMessage = ""; //clear message
+          int BPM = (w_pulsesensor.BPM);
+          serialMessage += BPM;
+          try{
+            println(serialMessage);
+            this.serial_networking.write(serialMessage);
+          }catch (Exception e){
+            println(e);
+          }
+        }
+        */
+      }
+    }
   }
 
+  void sendWidgetData(){
+       /* INSERT YOUR CODE HERE */
+    }
+  
   void quit(){
     this.isStreaming=false;
     closeNetwork();
