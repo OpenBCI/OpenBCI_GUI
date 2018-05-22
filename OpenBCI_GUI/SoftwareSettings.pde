@@ -15,14 +15,13 @@ w_analogread.startingVertScaleIndex //default vert scale for analog read widget
 w_timeseries.startingVertScaleIndex //default vert scale for time series widget
  
         
-Activate/Deactivating channels
+Activate/Deactivating channels:
 
-
+deactivateChannel(Channel-1)
+activateChannel(Channel-1)
 
 Changing hardware settings (especially BIAS, SRB 2, and SRB 1) FOUND HERE:
-
-
-    for (int i = 0; i < nchan; i++) { //for every channel
+ for (int i = 0; i < nchan; i++) { //for every channel
       //update buttons based on channelSettingValues[i][j]
       for (int j = 0; j < numSettingsPerChannel; j++) {
         switch(j) {  //what setting are we looking at
@@ -130,7 +129,7 @@ void setup() {
     int rsrb2 = (int) random(0,2); //random srb2 in time series    
     int rsrb1 = (int) random(0,2); //random srb1 in time series
     
-    SaveTimeSeriesSettings.setString("Channel", "Ch " + (i+1));
+    SaveTimeSeriesSettings.setInt("Channel", (i+1));
     SaveTimeSeriesSettings.setString("Active", channelsActivearray[ra]);
     SaveTimeSeriesSettings.setString("PGA Gain",gainSettingsarray[rg]);
     SaveTimeSeriesSettings.setString("Input Type",inputTypearray[rit]);
@@ -149,7 +148,7 @@ void setup() {
     
     JSONObject LoadTimeSeriesSettings = LoadSettingsJSONData.getJSONObject(i); 
 
-    String Channel = LoadTimeSeriesSettings.getString("Channel");
+    int Channel = LoadTimeSeriesSettings.getInt("Channel");
     String Active = LoadTimeSeriesSettings.getString("Active");
     String GainSettings = LoadTimeSeriesSettings.getString("PGA Gain");
     String inputType = LoadTimeSeriesSettings.getString("Input Type");
@@ -158,7 +157,9 @@ void setup() {
     String SRB1setting = LoadTimeSeriesSettings.getString("SRB1");
     
 
-    println(Channel + ", " + Active + ", " + GainSettings + ", " + inputType + ", " + BiasSetting + ", " + SRB2setting + ", " + SRB1setting);
+    println("Ch " + Channel + ", " + Active + ", " + GainSettings + ", " + inputType + ", " + BiasSetting + ", " + SRB2setting + ", " + SRB1setting);
+    
+    
   }
 }
 */
