@@ -283,10 +283,6 @@ Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  /
 int layoutSelected;
 int currentLayout;
 
-int TimeSeriesStartingVertScaleIndex = 3;
-int AnalogReadStartingVertScaleIndex = 5;
-int AnalogReadStartingHoriztonalScaleIndex = 2;
-
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

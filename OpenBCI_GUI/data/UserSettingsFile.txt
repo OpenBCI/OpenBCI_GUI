@@ -1,6 +1,2 @@
 Using Layout Number: 0
 Started Using Layout Number: 4
-Default Notch: 0
-Default Time Series Vert Scale: 3
-Analog Series Vert Scale: 5
-Analog Series Horiz Scale: 2
