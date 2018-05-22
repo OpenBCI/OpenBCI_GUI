@@ -274,6 +274,37 @@ void parseKey(char val) {
       }
       break;
       
+      
+      //////      ////// Save settings capital S      //////      //////      //////
+    case 'S':      
+      
+    //Write the following to the text file:
+      //default layout --almost done
+      //default notch
+      //default vert scale for analog read widget
+      //default vert scale for time series widget
+      //int CCL = widgetmanager.currentContainerLayout;
+      println("Save key pressed!");
+      
+      final String[] SaveSettingsData = {"Using Layout Number: " + currentLayout,"\n", "Started Using Layout Number: " + wm.currentContainerLayout};
+      final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
+      saveStrings(SaveSettingsPath, SaveSettingsData);
+      
+      println("Settings Succesfully Saved!");
+      
+      break;
+      
+      //////      ////// Load settings capital L      //////      //////      //////     
+     case 'L':      
+       final String[] LoadSettingsData = loadStrings("UserSettingsFile.txt"); ;
+       println("Settings Succesfully Loaded!");
+       println("Here is the magic:");
+       println(LoadSettingsData);
+       
+      break;     
+      
+      //////      //////      //////      //////      //////  
+
     case 'n':
       println("cyton: " + cyton);
       break;

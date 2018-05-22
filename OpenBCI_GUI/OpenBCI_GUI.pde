@@ -275,6 +275,14 @@ char[][] impedanceCheckValues = new char [nchan][2];
 // [Number of Channels] x 6 array of buttons for channel settings
 Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
 
+
+  Button stopButton;
+  public final static String stopButton_pressToStop_txt = "Stop Data Stream";
+  public final static String stopButton_pressToStart_txt = "Start Data Stream";
+
+int layoutSelected;
+int currentLayout;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -861,8 +869,8 @@ void stopButtonWasPressed() {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
     wm.setUpdating(false);
     stopRunning();
-    topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
-    topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+    stopButton.setString(stopButton_pressToStart_txt);
+    stopButton.setColorNotPressed(color(184, 220, 105));
     if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();
       w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
@@ -871,8 +879,8 @@ void stopButtonWasPressed() {
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     wm.setUpdating(true);
     startRunning();
-    topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
-    topNav.stopButton.setColorNotPressed(color(224, 56, 45));
+    stopButton.setString(stopButton_pressToStop_txt);
+    stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
     if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();

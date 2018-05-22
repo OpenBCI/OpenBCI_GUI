@@ -148,8 +148,8 @@ class W_ganglionImpedance extends Widget {
 
           // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
           stopRunning();
-          topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
-          topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+          stopButton.setString(stopButton_pressToStart_txt);
+          stopButton.setColorNotPressed(color(184, 220, 105));
 
         }
       }
