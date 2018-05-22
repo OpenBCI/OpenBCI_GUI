@@ -53,7 +53,7 @@ void parseKey(char val) {
       else if(drawAccel){
         drawAccel = false;
         drawPulse = true;
-        drawHead = false;
+        drawHead = false; 
         drawEMG = false;
       }
       else if(drawPulse){
@@ -237,17 +237,43 @@ void parseKey(char val) {
       break;
 
     //other controls
+    /* The spacebar is being used now so these old shortcuts are no longer needed
     case 's':
       println("case s...");
       stopRunning();
 
       // stopButtonWasPressed();
       break;
+    
     case 'b':
       println("case b...");
       startRunning();
       // stopButtonWasPressed();
       break;
+     */
+     
+     //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
+    case 'b':
+      for (int i = 0; i < nchan; i++) { //for every channel
+      //update buttons based on channelSettingValues[i][j]
+      //BIAS ??
+      //String includeAll = "Include"; 
+      channelSettingValues[i][3] = '0';
+      channelSettingButtons[i][3].setString("Don't Include");
+      println ("chan " + i + " bias don't include");
+      }
+      break;
+    case 'B':
+      for (int i = 0; i < nchan; i++) { //for every channel
+      //update buttons based on channelSettingValues[i][j]
+      //BIAS ??
+      //String includeAll = "Include"; 
+      channelSettingValues[i][3] = '1';
+      channelSettingButtons[i][3].setString("Include");
+      println ("chan " + i + " bias include");
+      }
+      break;
+      
     case 'n':
       println("cyton: " + cyton);
       break;
@@ -263,6 +289,8 @@ void parseKey(char val) {
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
       break;
+  
+
 
     // //change the state of the impedance measurements...activate the N-channels
     // case 'A':

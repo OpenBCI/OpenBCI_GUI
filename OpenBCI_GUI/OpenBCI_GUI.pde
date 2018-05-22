@@ -268,6 +268,13 @@ Robot rob3115;
 
 PApplet ourApplet;
 
+//variables from HardwareSettingsController
+int numSettingsPerChannel = 6; //each channel has 6 different settings
+char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+char[][] impedanceCheckValues = new char [nchan][2];
+// [Number of Channels] x 6 array of buttons for channel settings
+Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

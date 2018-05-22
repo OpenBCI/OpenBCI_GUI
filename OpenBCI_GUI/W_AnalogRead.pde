@@ -424,7 +424,7 @@ class AnalogReadBar{
 
       int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
 
-      analogReadData[analogReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
+      analogReadData[analogReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>// //<>//
 
       samplesProcessed++;
     }

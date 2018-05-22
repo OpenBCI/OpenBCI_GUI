@@ -151,14 +151,14 @@ class W_networking extends Widget {
       }
       if(!cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").isOpen()){
         if(cp5_networking_dropdowns.getController("dataType3").isMouseOver()){
-           println("2");
+           //println("2");
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").open();
         }
       }
      
       if(cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").isOpen()){
         if(!cp5_networking_dropdowns.getController("dataType4").isMouseOver()){
-           println("2");
+           //println("2");
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").close();
         }
       }
@@ -217,6 +217,10 @@ class W_networking extends Widget {
       rect(cp5_networking_dropdowns.getController("dataType1").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType1").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType1").getHeight()+2);
       rect(cp5_networking_dropdowns.getController("dataType2").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType2").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType2").getHeight()+2);
       rect(cp5_networking_dropdowns.getController("dataType3").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType3").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType3").getHeight()+2);
+      
+      if(protocolMode.equals("OSC")){
+         rect(cp5_networking_dropdowns.getController("dataType4").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType4").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType4").getHeight()+2);
+      }
       cp5_networking_dropdowns.draw();
     }
     if(protocolMode.equals("Serial")){
@@ -1265,6 +1269,7 @@ class Stream extends Thread{
   }
   /* This method contains all of the policies for sending data types */
   void sendTimeSeriesData(){
+
     // TIME SERIES UNFILTERED
     if(filter==0){
       // OSC
