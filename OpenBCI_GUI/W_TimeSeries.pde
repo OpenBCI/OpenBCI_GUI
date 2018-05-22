@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////
 //
-// This class creates an Time Sereis Plot separate from the old Gui_Manager
+// This class creates an Time Series Plot separate from the old Gui_Manager
 // It extends the Widget class
 //
 // Conor Russomanno, November 2016
@@ -46,7 +46,7 @@ class W_timeSeries extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  int startingVertScaleIndex = 3;
+  //public int TimeSeriesStartingVertScaleIndex = 3;
 
   private boolean hasScrollbar = false;
 
@@ -57,7 +57,7 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), TimeSeriesStartingVertScaleIndex);
     addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 

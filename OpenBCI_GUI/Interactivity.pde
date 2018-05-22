@@ -283,12 +283,19 @@ void parseKey(char val) {
       //default notch
       //default vert scale for analog read widget
       //default vert scale for time series widget
-      //int CCL = widgetmanager.currentContainerLayout;
+
+//w_analogread.startingVertScaleIndex //default vert scale for analog read widget
+//w_timeseries.startingVertScaleIndex //default vert scale for time series widget
+
       println("Save key pressed!");
       
       final String[] SaveSettingsData = {
         "Using Layout Number: " + currentLayout, 
-        "Started Using Layout Number: " + wm.currentContainerLayout
+        "Started Using Layout Number: " + wm.currentContainerLayout,
+        "Default Notch: " + dataProcessing.currentNotch_ind, //default notch
+        "Default Time Series Vert Scale: " + TimeSeriesStartingVertScaleIndex,
+        "Analog Series Vert Scale: " + AnalogReadStartingVertScaleIndex,
+        "Analog Series Horiz Scale: " + AnalogReadStartingHoriztonalScaleIndex,
         };
       final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
       saveStrings(SaveSettingsPath, SaveSettingsData);

@@ -34,8 +34,9 @@ class W_AnalogRead extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  int startingVertScaleIndex = 5;
-  int startingHoriztonalScaleIndex = 2;
+ // these variables added to first tab to allow global access
+ // int AnalogReadStartingVertScaleIndex = 5;
+ // int AnalogReadStartingHoriztonalScaleIndex = 2;
 
   private boolean hasScrollbar = false;
 
@@ -48,8 +49,8 @@ class W_AnalogRead extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), startingVertScaleIndex);
-    addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), startingHoriztonalScaleIndex);
+    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), AnalogReadStartingVertScaleIndex);
+    addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), AnalogReadStartingHoriztonalScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //set number of anaolg reads
@@ -80,8 +81,8 @@ class W_AnalogRead extends Widget {
       int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
       AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
-      analogReadBars[i].adjustVertScale(yLimOptions[startingVertScaleIndex]);
-      analogReadBars[i].adjustTimeAxis(xLimOptions[startingHoriztonalScaleIndex]);
+      analogReadBars[i].adjustVertScale(yLimOptions[AnalogReadStartingVertScaleIndex]);
+      analogReadBars[i].adjustTimeAxis(xLimOptions[AnalogReadStartingHoriztonalScaleIndex]);
     }
 
     analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
