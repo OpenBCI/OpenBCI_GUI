@@ -295,7 +295,7 @@ void parseKey(char val) {
         "Default Notch: " + dataProcessing.currentNotch_ind, //default notch
         "Default Time Series Vert Scale: " + TimeSeriesStartingVertScaleIndex,
         "Analog Series Vert Scale: " + AnalogReadStartingVertScaleIndex,
-        "Analog Series Horiz Scale: " + AnalogReadStartingHoriztonalScaleIndex,
+        "Analog Series Horiz Scale: " + AnalogReadStartingHorizontalScaleIndex,
         };
       final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
       saveStrings(SaveSettingsPath, SaveSettingsData);

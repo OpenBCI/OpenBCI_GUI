@@ -285,7 +285,7 @@ int currentLayout;
 
 int TimeSeriesStartingVertScaleIndex = 3;
 int AnalogReadStartingVertScaleIndex = 5;
-int AnalogReadStartingHoriztonalScaleIndex = 2;
+int AnalogReadStartingHorizontalScaleIndex = 2;
 
 //------------------------------------------------------------------------
 //                       Global Functions
