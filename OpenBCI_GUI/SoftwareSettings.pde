@@ -3,20 +3,19 @@
     Was going to add these functions to WidgetManager, then just decided to make a new tab
     
           Basics: 
-          -- Add a drop down button somewhere near the top that says "Settings" or "Config", expands to show "Load" and "Save"
-          --
+          -- Add a drop down button somewhere near the top that says "Settings" or "Config", expands to show "Load" and "Save" -- no good place to do this!
+          -- Better idea already put into place: use Capital 'S' for Save and Capital 'L' for Load
+          -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load
 
 Requested User Settings to save so far:
 
-widgetmanager.currentContainerLayout //default layout
+wm.currentContainerLayout //default layout
 dataprocessing.currentNotch_ind //default notch
 w_analogread.startingVertScaleIndex //default vert scale for analog read widget
 w_timeseries.startingVertScaleIndex //default vert scale for time series widget
  
         
 Activate/Deactivating channels
-
-
 
 
 
@@ -80,52 +79,88 @@ Changing hardware settings (especially BIAS, SRB 2, and SRB 1) FOUND HERE:
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                      //
+//                            This sketch saves channel settings in the time series widget                              //
+//                                                                                                                      //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /*
-void keyPressed() {
-  //note that the Processing variable "key" is the keypress as an ASCII character
-  //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
-  //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
+final int NCHAN_CYTON = 8;
+final int NCHAN_CYTON_DAISY = 16;
+final int NCHAN_GANGLION = 4;
 
-  if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-    if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
-      parseKey(key);
-    } else {
-      parseKeycode(keyCode);
-    }
+//Define number of channels from cyton...first EEG channels, then aux channels
+int nchan = NCHAN_CYTON_DAISY; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
+int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
+
+//variables from HardwareSettingsController
+int numSettingsPerChannel = 6; //each channel has 6 different settings
+char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+
+String[] channelsActivearray = {"Active", "Not Active"};
+String[] gainSettingsarray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
+String[] inputTypearray = { "Normal", "Shorted", "BIAS_MEAS", "MVDD", "Temp.", "Test", "BIAS_DRP", "BIAS_DRN"};
+String[] BiasIncludearray = {"Don't Include", "Include"};
+String[] SRB2settingarray = {"Off", "On"};
+String[] SRB1settingarray = {"Off", "On"};
+
+//OpenBCI SD Card setting (if eegDataSource == 0)
+int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
+String sdSettingString = "Do not write to SD";
+
+
+JSONArray SaveSettingsJSONData;
+JSONArray LoadSettingsJSONData;
+
+void setup() {
+
+  SaveSettingsJSONData = new JSONArray();
+  
+
+  for (int i = 0; i < nchan; i++) {
+    
+    JSONObject SaveTimeSeriesSettings = new JSONObject();
+    
+    int ra = (int) random(0,2); //random active/not active channels in time series
+    int rg = (int) random(0,7); //random gain setting active channels in time series
+    int rit = (int) random(0,8); //random input type in time series
+    int rb = (int) random(0,2); //random bias in time series
+    int rsrb2 = (int) random(0,2); //random srb2 in time series    
+    int rsrb1 = (int) random(0,2); //random srb1 in time series
+    
+    SaveTimeSeriesSettings.setString("Channel", "Ch " + (i+1));
+    SaveTimeSeriesSettings.setString("Active", channelsActivearray[ra]);
+    SaveTimeSeriesSettings.setString("PGA Gain",gainSettingsarray[rg]);
+    SaveTimeSeriesSettings.setString("Input Type",inputTypearray[rit]);
+    SaveTimeSeriesSettings.setString("Bias",BiasIncludearray[rb]);
+    SaveTimeSeriesSettings.setString("SRB2",SRB2settingarray[rsrb2]);
+    SaveTimeSeriesSettings.setString("SRB1",SRB2settingarray[rsrb1]);
+    
+    SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
   }
 
-  //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
-  switch (val) {
-         //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
-    case 'S':
-      /*
-      for (int i = 0; i < nchan; i++) { //for every channel
-      //update buttons based on channelSettingValues[i][j]
-      //BIAS ??
-      //String includeAll = "Include"; 
-      channelSettingValues[i][3] = '0';
-      channelSettingButtons[i][3].setString("Don't Include");
-      println ("chan " + i + " bias don't include");
-      }
-      
-      
-      final String[] data = { "These strings should save to a new file.", "Yay!" };
-      final String   path  = dataPath("FirstSettingsFileEvar.txt");
-      
-      saveStrings(path, data);
-      println("Settings Succesfully Saved!");
-      
-      break;
-    case 'L':
+  saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
+  
+  LoadSettingsJSONData = loadJSONArray("UserSettingsFile-Dev.json");
 
-      for (int i = 0; i < nchan; i++) { //for every channel
-      //update buttons based on channelSettingValues[i][j]
-      //BIAS ??
-      //String includeAll = "Include"; 
-      channelSettingValues[i][3] = '1';
-      channelSettingButtons[i][3].setString("Include");
-      println ("chan " + i + " bias include");
-      }
-      break;
+  for (int i = 0; i < LoadSettingsJSONData.size(); i++) {
+    
+    JSONObject LoadTimeSeriesSettings = LoadSettingsJSONData.getJSONObject(i); 
+
+    String Channel = LoadTimeSeriesSettings.getString("Channel");
+    String Active = LoadTimeSeriesSettings.getString("Active");
+    String GainSettings = LoadTimeSeriesSettings.getString("PGA Gain");
+    String inputType = LoadTimeSeriesSettings.getString("Input Type");
+    String BiasSetting = LoadTimeSeriesSettings.getString("Bias");
+    String SRB2setting = LoadTimeSeriesSettings.getString("SRB2");
+    String SRB1setting = LoadTimeSeriesSettings.getString("SRB1");
+    
+
+    println(Channel + ", " + Active + ", " + GainSettings + ", " + inputType + ", " + BiasSetting + ", " + SRB2setting + ", " + SRB1setting);
   }
+}
 */
+
+/////////////////////Use channelSettingValues variable to activate these settings once they are loaded from JSON file
