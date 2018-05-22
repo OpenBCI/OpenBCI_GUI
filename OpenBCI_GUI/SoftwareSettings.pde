@@ -20,57 +20,7 @@ Activate/Deactivating channels:
 deactivateChannel(Channel-1)
 activateChannel(Channel-1)
 
-Changing hardware settings (especially BIAS, SRB 2, and SRB 1) FOUND HERE:
- for (int i = 0; i < nchan; i++) { //for every channel
-      //update buttons based on channelSettingValues[i][j]
-      for (int j = 0; j < numSettingsPerChannel; j++) {
-        switch(j) {  //what setting are we looking at
-          case 0: //on/off ??
-            // if (channelSettingValues[i][j] == '0') channelSettingButtons[i][0].setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
-            if (channelSettingValues[i][j] == '0') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
-            if (channelSettingValues[i][j] == '1') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
-            break;
-
-          case 1: //GAIN ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][1].setString("x1");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][1].setString("x2");
-            if (channelSettingValues[i][j] == '2') channelSettingButtons[i][1].setString("x4");
-            if (channelSettingValues[i][j] == '3') channelSettingButtons[i][1].setString("x6");
-            if (channelSettingValues[i][j] == '4') channelSettingButtons[i][1].setString("x8");
-            if (channelSettingValues[i][j] == '5') channelSettingButtons[i][1].setString("x12");
-            if (channelSettingValues[i][j] == '6') channelSettingButtons[i][1].setString("x24");
-            break;
-          case 2: //input type ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][2].setString("Normal");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][2].setString("Shorted");
-            if (channelSettingValues[i][j] == '2') channelSettingButtons[i][2].setString("BIAS_MEAS");
-            if (channelSettingValues[i][j] == '3') channelSettingButtons[i][2].setString("MVDD");
-            if (channelSettingValues[i][j] == '4') channelSettingButtons[i][2].setString("Temp.");
-            if (channelSettingValues[i][j] == '5') channelSettingButtons[i][2].setString("Test");
-            if (channelSettingValues[i][j] == '6') channelSettingButtons[i][2].setString("BIAS_DRP");
-            if (channelSettingValues[i][j] == '7') channelSettingButtons[i][2].setString("BIAS_DRN");
-            break;
-          case 3: //BIAS ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][3].setString("Don't Include");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][3].setString("Include");
-            break;
-          case 4: // SRB2 ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][4].setString("Off");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][4].setString("On");
-            break;
-          case 5: // SRB1 ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][5].setString("No");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][5].setString("Yes");
-            break;
-        }
-      }
-    }
-
-    Capital 'S' to Save
-    
-    Capital 'L' to Load
-    
-    Created: RGW, May 2018
+Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using ChangeSettingValues
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
