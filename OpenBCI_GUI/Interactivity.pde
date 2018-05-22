@@ -286,7 +286,10 @@ void parseKey(char val) {
       //int CCL = widgetmanager.currentContainerLayout;
       println("Save key pressed!");
       
-      final String[] SaveSettingsData = {"Using Layout Number: " + currentLayout,"\n", "Started Using Layout Number: " + wm.currentContainerLayout};
+      final String[] SaveSettingsData = {
+        "Using Layout Number: " + currentLayout, 
+        "Started Using Layout Number: " + wm.currentContainerLayout
+        };
       final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
       saveStrings(SaveSettingsPath, SaveSettingsData);
       
@@ -299,8 +302,12 @@ void parseKey(char val) {
        final String[] LoadSettingsData = loadStrings("UserSettingsFile.txt"); ;
        println("Settings Succesfully Loaded!");
        println("Here is the magic:");
-       println(LoadSettingsData);
        
+       println("There are " + LoadSettingsData.length + " lines in the settings file");
+        
+        for (int i = 0 ; i < LoadSettingsData.length; i++) {
+          println(LoadSettingsData[i]);
+        }       
       break;     
       
       //////      //////      //////      //////      //////  
