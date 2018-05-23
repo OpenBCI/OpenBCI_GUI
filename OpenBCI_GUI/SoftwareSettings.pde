@@ -24,7 +24,6 @@ Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                      //
@@ -33,22 +32,12 @@ Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using
 //                                         Created: RGW - May 2018                                                      //
 //    -- Capital 'S' to Save                                                                                            //
 //    -- Capital 'L' to Load                                                                                            //
+//    -- Functions are called in Interactivty.pde with the rest of the keyboard shortcuts                               //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////
-//        Global Variables Used    //
-/////////////////////////////////////
-final int NCHAN_CYTON = 8;
-final int NCHAN_CYTON_DAISY = 16;
-final int NCHAN_GANGLION = 4;
 
-//Define number of channels from cyton...first EEG channels, then aux channels
-int nchan = NCHAN_CYTON_DAISY; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
-int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
-
-//variables from HardwareSettingsController
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+JSONArray SaveSettingsJSONData;
+JSONArray LoadSettingsJSONData;
 
 String[] channelsActivearray = {"Active", "Not Active"};
 String[] gainSettingsarray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
@@ -56,33 +45,6 @@ String[] inputTypearray = { "Normal", "Shorted", "BIAS_MEAS", "MVDD", "Temp.", "
 String[] BiasIncludearray = {"Don't Include", "Include"};
 String[] SRB2settingarray = {"Off", "On"};
 String[] SRB1settingarray = {"Off", "On"};
-
-//set to 4 for now, leave blank later
-int currentLayout = 4;
-
-//leave this in dataprocessing.currentNotch_ind
- private int currentNotch_ind = 0;  // set to 0 to default to 60Hz, set to 1 to default to 50Hz
-
-//declared globally on the first tab
-int TimeSeriesStartingVertScaleIndex = 3;
-int AnalogReadStartingVertScaleIndex = 5;
-int AnalogReadStartingHorizontalScaleIndex = 2;
-
-
-//OpenBCI SD Card setting (if eegDataSource == 0)
-int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
-String sdSettingString = "Do not write to SD";
-
-JSONArray SaveSettingsJSONData;
-JSONArray LoadSettingsJSONData;
-
-/////////////////////////////////////
-//        Simple Setup Loop        //
-/////////////////////////////////////
-void setup() {
-  SaveGUIsettings();
-  LoadGUIsettings();  
-}  
 
 ///////////////////////////////  
 //      Save GUI Settings    //
@@ -121,7 +83,7 @@ void SaveGUIsettings() {
   JSONObject SaveGlobalSettings = new JSONObject();
   
   SaveGlobalSettings.setInt("Current Layout", currentLayout-1);
-  SaveGlobalSettings.setInt("Notch", currentNotch_ind);
+  SaveGlobalSettings.setInt("Notch", dataProcessing.currentNotch_ind);
   SaveGlobalSettings.setInt("Time Series Vert Scale", TimeSeriesStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
@@ -182,7 +144,6 @@ void LoadGUIsettings() {
   }  
 }
 
-*/
 
 //Use channelSettingValues variable to activate these settings once they are loaded from JSON file
 /*

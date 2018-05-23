@@ -289,6 +289,7 @@ void parseKey(char val) {
 
       println("Save key pressed!");
       
+      /*
       final String[] SaveSettingsData = {
         "Using Layout Number: " + currentLayout, 
         "Started Using Layout Number: " + wm.currentContainerLayout,
@@ -299,22 +300,30 @@ void parseKey(char val) {
         };
       final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
       saveStrings(SaveSettingsPath, SaveSettingsData);
+      */
       
-      println("Settings Succesfully Saved!");
+      SaveGUIsettings();
+      output("Settings Succesfully Saved!");
       
       break;
       
       //////      ////// Load settings capital L      //////      //////      //////     
      case 'L':      
+       /*
        final String[] LoadSettingsData = loadStrings("UserSettingsFile.txt"); ;
-       println("Settings Succesfully Loaded!");
+       output("Settings Succesfully Loaded!");
        println("Here is the magic:");
        
        println("There are " + LoadSettingsData.length + " lines in the settings file");
         
         for (int i = 0 ; i < LoadSettingsData.length; i++) {
           println(LoadSettingsData[i]);
-        }       
+        }  
+        */
+        
+        LoadGUIsettings();
+        output("Settings Succesfully Saved!");
+        
       break;     
       
       //////      //////      //////      //////      //////  
