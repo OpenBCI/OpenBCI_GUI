@@ -46,6 +46,15 @@ String[] BiasIncludearray = {"Don't Include", "Include"};
 String[] SRB2settingarray = {"Off", "On"};
 String[] SRB1settingarray = {"Off", "On"};
 
+int slnchan = nchan;
+
+int TSactivesetting = 1;
+int TSgainsetting;
+int TSinputtypesetting;
+int TSbiassetting;
+int TSsrb2setting;
+int TSsrb1setting;
+
 ///////////////////////////////  
 //      Save GUI Settings    //
 ///////////////////////////////  
@@ -53,9 +62,10 @@ void SaveGUIsettings() {
 
   //Set up a JSON array
   SaveSettingsJSONData = new JSONArray();
-
+  
+ if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
   //Save all of the channel settings for number of Time Series channels being used
-  for (int i = 0; i < nchan; i++) {
+  for (int i = 0; i < slnchan; i++) {
     
     //Make a JSON Object for each of the Time Series Channels
     JSONObject SaveTimeSeriesSettings = new JSONObject();
@@ -67,16 +77,56 @@ void SaveGUIsettings() {
     int rb = (int) random(0,2); //random bias in time series
     int rsrb2 = (int) random(0,2); //random srb2 in time series    
     int rsrb1 = (int) random(0,2); //random srb1 in time series
-
-    SaveTimeSeriesSettings.setInt("Channel Number", (i+1));
-    SaveTimeSeriesSettings.setInt("Active", ra);
-    SaveTimeSeriesSettings.setInt("PGA Gain",rg);
-    SaveTimeSeriesSettings.setInt("Input Type",rit);
-    SaveTimeSeriesSettings.setInt("Bias",rb);
-    SaveTimeSeriesSettings.setInt("SRB2",rsrb2);
-    SaveTimeSeriesSettings.setInt("SRB1",rsrb1);
-    
-    SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
+       
+    for (int j = 0; j < numSettingsPerChannel; j++) {
+      switch(j) {  //what setting are we looking at
+        case 0: //on/off ??
+          if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
+          if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
+          break;
+        case 1: //GAIN ??
+          if (channelSettingValues[i][j] == '0') TSgainsetting = 0;
+          if (channelSettingValues[i][j] == '1') TSgainsetting = 1;
+          if (channelSettingValues[i][j] == '2') TSgainsetting = 2;
+          if (channelSettingValues[i][j] == '3') TSgainsetting = 3;
+          if (channelSettingValues[i][j] == '4') TSgainsetting = 4;
+          if (channelSettingValues[i][j] == '5') TSgainsetting = 5;
+          if (channelSettingValues[i][j] == '6') TSgainsetting = 6;
+          break;
+        case 2: //input type ??
+          if (channelSettingValues[i][j] == '0') TSinputtypesetting = 0;
+          if (channelSettingValues[i][j] == '1') TSinputtypesetting = 1;
+          if (channelSettingValues[i][j] == '2') TSinputtypesetting = 2;
+          if (channelSettingValues[i][j] == '3') TSinputtypesetting = 3;
+          if (channelSettingValues[i][j] == '4') TSinputtypesetting = 4;
+          if (channelSettingValues[i][j] == '5') TSinputtypesetting = 5;
+          if (channelSettingValues[i][j] == '6') TSinputtypesetting = 6;
+          if (channelSettingValues[i][j] == '7') TSinputtypesetting = 7;
+          break;
+        case 3: //BIAS ??
+          if (channelSettingValues[i][j] == '0') TSbiassetting = 0;
+          if (channelSettingValues[i][j] == '1') TSbiassetting = 1;
+          break;
+        case 4: // SRB2 ??
+          if (channelSettingValues[i][j] == '0') TSsrb2setting = 0;
+          if (channelSettingValues[i][j] == '1') TSsrb2setting = 1;
+          break;
+        case 5: // SRB1 ??
+          if (channelSettingValues[i][j] == '0') TSsrb1setting = 0;
+          if (channelSettingValues[i][j] == '1') TSsrb1setting = 1;
+          break;
+        }
+      }  
+  
+      SaveTimeSeriesSettings.setInt("Channel Number", (i+1));
+      SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
+      SaveTimeSeriesSettings.setInt("PGA Gain", TSgainsetting);
+      SaveTimeSeriesSettings.setInt("Input Type", TSinputtypesetting);
+      SaveTimeSeriesSettings.setInt("Bias", TSbiassetting);
+      SaveTimeSeriesSettings.setInt("SRB2", TSsrb2setting);
+      SaveTimeSeriesSettings.setInt("SRB1", TSsrb1setting);
+      SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
+    }
   }
     
   //Make a second JSON object within our JSONArray to store Global settings for the GUI
@@ -87,7 +137,7 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Time Series Vert Scale", TimeSeriesStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
-  SaveSettingsJSONData.setJSONObject(nchan, SaveGlobalSettings);
+  SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
   
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
@@ -106,40 +156,43 @@ void LoadGUIsettings() {
     //Make a JSON object, we only need one to load data, and call it LoadAllSettings
     JSONObject LoadAllSettings = LoadSettingsJSONData.getJSONObject(i); 
     
-    //parse the channel settings first for only the number of channels being used
-    if (i < nchan) {
-      int Channel = LoadAllSettings.getInt("Channel Number"); //when using with channelSettingsValues, will need to subtract 1
-      int Active = LoadAllSettings.getInt("Active");
-      int GainSettings = LoadAllSettings.getInt("PGA Gain");
-      int inputType = LoadAllSettings.getInt("Input Type");
-      int BiasSetting = LoadAllSettings.getInt("Bias");
-      int SRB2setting = LoadAllSettings.getInt("SRB2");
-      int SRB1setting = LoadAllSettings.getInt("SRB1");
-      println("Ch " + Channel + ", " + 
-        channelsActivearray[Active] + ", " + 
-        gainSettingsarray[GainSettings] + ", " + 
-        inputTypearray[inputType] + ", " + 
-        BiasIncludearray[BiasSetting] + ", " + 
-        SRB2settingarray[SRB2setting] + ", " + 
-        SRB1settingarray[SRB1setting]);
-    }
-    
-    //parse the global settings that appear after the channel settings 
-    if (i >= nchan) {
-      int loadlayoutsetting = LoadAllSettings.getInt("Current Layout");
-      int loadnotchsetting = LoadAllSettings.getInt("Notch");
-      int loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
-      int loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
-      int loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
+   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
+      //parse the channel settings first for only the number of channels being used
+      if (i < slnchan) {
+        int Channel = LoadAllSettings.getInt("Channel Number"); //when using with channelSettingsValues, will need to subtract 1
+        int Active = LoadAllSettings.getInt("Active");
+        int GainSettings = LoadAllSettings.getInt("PGA Gain");
+        int inputType = LoadAllSettings.getInt("Input Type");
+        int BiasSetting = LoadAllSettings.getInt("Bias");
+        int SRB2setting = LoadAllSettings.getInt("SRB2");
+        int SRB1setting = LoadAllSettings.getInt("SRB1");
+        println("Ch " + Channel + ", " + 
+          channelsActivearray[Active] + ", " + 
+          gainSettingsarray[GainSettings] + ", " + 
+          inputTypearray[inputType] + ", " + 
+          BiasIncludearray[BiasSetting] + ", " + 
+          SRB2settingarray[SRB2setting] + ", " + 
+          SRB1settingarray[SRB1setting]);
+      }
       
-      final String[] LoadedGlobalSettings = {
-        "Using Layout Number: " + loadlayoutsetting, 
-        "Default Notch: " + loadnotchsetting, //default notch
-        "Default Time Series Vert Scale: " + loadTimeSeriesVertScale,
-        "Analog Series Vert Scale: " + loadAnalogReadVertScale,
-        "Analog Series Horiz Scale: " + loadAnalogReadHorizScale,
-        };
-      printArray(LoadedGlobalSettings);
+      //parse the global settings that appear after the channel settings 
+      if (i >= slnchan) {
+        int loadlayoutsetting = LoadAllSettings.getInt("Current Layout");
+        int loadnotchsetting = LoadAllSettings.getInt("Notch");
+        int loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
+        int loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
+        int loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
+        
+        final String[] LoadedGlobalSettings = {
+          "Using Layout Number: " + loadlayoutsetting, 
+          "Default Notch: " + loadnotchsetting, //default notch
+          "Default Time Series Vert Scale: " + loadTimeSeriesVertScale,
+          "Analog Series Vert Scale: " + loadAnalogReadVertScale,
+          "Analog Series Horiz Scale: " + loadAnalogReadHorizScale,
+          };
+          
+        printArray(LoadedGlobalSettings);
+      }   
     }
   }  
 }

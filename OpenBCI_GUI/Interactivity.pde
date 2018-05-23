@@ -251,25 +251,20 @@ void parseKey(char val) {
       // stopButtonWasPressed();
       break;
      */
-     
+
      //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
     case 'b':
       for (int i = 0; i < nchan; i++) { //for every channel
-      //update buttons based on channelSettingValues[i][j]
-      //BIAS ??
-      //String includeAll = "Include"; 
+      //BIAS off all channels
       channelSettingValues[i][3] = '0';
-      channelSettingButtons[i][3].setString("Don't Include");
       println ("chan " + i + " bias don't include");
       }
       break;
     case 'B':
       for (int i = 0; i < nchan; i++) { //for every channel
-      //update buttons based on channelSettingValues[i][j]
-      //BIAS ??
-      //String includeAll = "Include"; 
+      //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
+      //BIAS on all channells
       channelSettingValues[i][3] = '1';
-      channelSettingButtons[i][3].setString("Include");
       println ("chan " + i + " bias include");
       }
       break;

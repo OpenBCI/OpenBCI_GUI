@@ -1,42 +1,78 @@
 [
   {
     "Active": 0,
-    "Input Type": 4,
-    "Bias": 1,
-    "SRB1": 1,
-    "SRB2": 1,
-    "Channel Number": 1,
-    "PGA Gain": 2
-  },
-  {
-    "Active": 0,
-    "Input Type": 5,
+    "Input Type": 0,
     "Bias": 1,
     "SRB1": 0,
-    "SRB2": 0,
-    "Channel Number": 2,
-    "PGA Gain": 1
+    "SRB2": 1,
+    "Channel Number": 1,
+    "PGA Gain": 6
   },
   {
     "Active": 0,
-    "Input Type": 2,
-    "Bias": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "Channel Number": 2,
+    "PGA Gain": 6
+  },
+  {
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
     "SRB1": 0,
     "SRB2": 1,
     "Channel Number": 3,
-    "PGA Gain": 0
+    "PGA Gain": 6
   },
   {
     "Active": 0,
-    "Input Type": 7,
-    "Bias": 0,
-    "SRB1": 1,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
     "SRB2": 1,
     "Channel Number": 4,
-    "PGA Gain": 4
+    "PGA Gain": 6
   },
   {
-    "Current Layout": 10,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "Channel Number": 5,
+    "PGA Gain": 6
+  },
+  {
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "Channel Number": 6,
+    "PGA Gain": 6
+  },
+  {
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "Channel Number": 7,
+    "PGA Gain": 6
+  },
+  {
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "Channel Number": 8,
+    "PGA Gain": 6
+  },
+  {
+    "Current Layout": 3,
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,

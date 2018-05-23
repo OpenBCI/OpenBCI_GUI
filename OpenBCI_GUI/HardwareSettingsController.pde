@@ -11,11 +11,12 @@
 
 //Old - these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
 //May 2018 - Starting to add some of these values to global 
-/* These variables have been added to the first tab to make them global, 
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-char[][] impedanceCheckValues = new char [nchan][2];
-*/
+//These variables have been added to the first tab to make them global, 
+//int numSettingsPerChannel = 6; //each channel has 6 different settings
+//char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+//char[][] impedanceCheckValues = new char [nchan][2];
+
+HardwareSettingsController hwSettingsController;
 
 public void updateChannelArrays(int _nchan) {
   channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
@@ -77,10 +78,9 @@ class HardwareSettingsController{
 
   int spaceBetweenButtons = 5; //space between buttons
 
-  /*
+  
   // [Number of Channels] x 6 array of buttons for channel settings
   Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
-  */
 
   // Array for storing SRB2 history settings of channels prior to shutting off .. so you can return to previous state when reactivating channel
   char[] previousSRB2 = new char [nchan];

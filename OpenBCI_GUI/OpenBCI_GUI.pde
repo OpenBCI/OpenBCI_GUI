@@ -273,7 +273,7 @@ int numSettingsPerChannel = 6; //each channel has 6 different settings
 char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 char[][] impedanceCheckValues = new char [nchan][2];
 // [Number of Channels] x 6 array of buttons for channel settings
-Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
+//Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
 
 
   Button stopButton;
@@ -281,7 +281,8 @@ Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  /
   public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
 int layoutSelected;
-int currentLayout;
+int currentLayout = 4;
+int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
 int TimeSeriesStartingVertScaleIndex = 3;
 int AnalogReadStartingVertScaleIndex = 5;
