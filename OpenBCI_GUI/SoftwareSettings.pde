@@ -55,6 +55,12 @@ int TSbiassetting;
 int TSsrb2setting;
 int TSsrb1setting;
 
+int loadLayoutsetting;
+int loadNotchsetting;
+int loadTimeSeriesVertScale;
+int loadAnalogReadVertScale;
+int loadAnalogReadHorizScale;
+
 ///////////////////////////////  
 //      Save GUI Settings    //
 ///////////////////////////////  
@@ -177,15 +183,15 @@ void LoadGUIsettings() {
       
       //parse the global settings that appear after the channel settings 
       if (i >= slnchan) {
-        int loadlayoutsetting = LoadAllSettings.getInt("Current Layout");
-        int loadnotchsetting = LoadAllSettings.getInt("Notch");
-        int loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
-        int loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
-        int loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
+        loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
+        loadNotchsetting = LoadAllSettings.getInt("Notch");
+        loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
+        loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
+        loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
         
         final String[] LoadedGlobalSettings = {
-          "Using Layout Number: " + loadlayoutsetting, 
-          "Default Notch: " + loadnotchsetting, //default notch
+          "Using Layout Number: " + loadLayoutsetting, 
+          "Default Notch: " + loadNotchsetting, //default notch
           "Default Time Series Vert Scale: " + loadTimeSeriesVertScale,
           "Analog Series Vert Scale: " + loadAnalogReadVertScale,
           "Analog Series Horiz Scale: " + loadAnalogReadHorizScale,
@@ -194,7 +200,19 @@ void LoadGUIsettings() {
         printArray(LoadedGlobalSettings);
       }   
     }
-  }  
+  }
+  
+  //Apply the loaded settings to the GUI
+  println("Loading Settings...");
+  
+  //Apply layout
+  currentLayout = loadLayoutsetting;
+  
+  
+  wm.setNewContainerLayout(currentLayout);
+  println("Layout Loaded!");
+  
+
 }
 
 

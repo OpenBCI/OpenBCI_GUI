@@ -317,7 +317,8 @@ void parseKey(char val) {
         */
         
         LoadGUIsettings();
-        output("Settings Succesfully Saved!");
+        //Output message when Loading settings is complete
+        output("Settings Succesfully Loaded");
         
       break;     
       

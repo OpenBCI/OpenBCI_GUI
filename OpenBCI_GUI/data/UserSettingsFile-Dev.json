@@ -6,7 +6,7 @@
     "SRB1": 0,
     "SRB2": 1,
     "Channel Number": 1,
-    "PGA Gain": 6
+    "PGA Gain": 0
   },
   {
     "Active": 0,
@@ -15,7 +15,7 @@
     "SRB1": 0,
     "SRB2": 1,
     "Channel Number": 2,
-    "PGA Gain": 6
+    "PGA Gain": 0
   },
   {
     "Active": 0,
@@ -24,7 +24,7 @@
     "SRB1": 0,
     "SRB2": 1,
     "Channel Number": 3,
-    "PGA Gain": 6
+    "PGA Gain": 0
   },
   {
     "Active": 0,
@@ -42,14 +42,14 @@
     "SRB1": 0,
     "SRB2": 1,
     "Channel Number": 5,
-    "PGA Gain": 6
+    "PGA Gain": 0
   },
   {
-    "Active": 0,
+    "Active": 1,
     "Input Type": 0,
-    "Bias": 1,
+    "Bias": 0,
     "SRB1": 0,
-    "SRB2": 1,
+    "SRB2": 0,
     "Channel Number": 6,
     "PGA Gain": 6
   },
@@ -72,7 +72,7 @@
     "PGA Gain": 6
   },
   {
-    "Current Layout": 3,
+    "Current Layout": 2,
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,
