@@ -76,6 +76,7 @@ void SaveGUIsettings() {
     //Make a JSON Object for each of the Time Series Channels
     JSONObject SaveTimeSeriesSettings = new JSONObject();
     
+    /*
     //Let's set some random variables to show 
     int ra = (int) random(0,2); //random active/not active channels in time series
     int rg = (int) random(0,7); //random gain setting active channels in time series
@@ -83,6 +84,7 @@ void SaveGUIsettings() {
     int rb = (int) random(0,2); //random bias in time series
     int rsrb2 = (int) random(0,2); //random srb2 in time series    
     int rsrb1 = (int) random(0,2); //random srb1 in time series
+    */
        
     for (int j = 0; j < numSettingsPerChannel; j++) {
       switch(j) {  //what setting are we looking at
@@ -124,7 +126,7 @@ void SaveGUIsettings() {
         }
       }  
   
-      SaveTimeSeriesSettings.setInt("Channel Number", (i+1));
+      SaveTimeSeriesSettings.setInt("Channel_Number", (i+1));
       SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
       SaveTimeSeriesSettings.setInt("PGA Gain", TSgainsetting);
       SaveTimeSeriesSettings.setInt("Input Type", TSinputtypesetting);
@@ -144,7 +146,7 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
   SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
-  
+
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
 }  
@@ -162,23 +164,63 @@ void LoadGUIsettings() {
     //Make a JSON object, we only need one to load data, and call it LoadAllSettings
     JSONObject LoadAllSettings = LoadSettingsJSONData.getJSONObject(i); 
     
-   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
+   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { //Need help adding a case for DATASOURCE_SYNTHETIC to skip writing time series settings, without writing Null to the JSON array. Also need to add a case for Playback settings.
+      
       //parse the channel settings first for only the number of channels being used
       if (i < slnchan) {
-        int Channel = LoadAllSettings.getInt("Channel Number"); //when using with channelSettingsValues, will need to subtract 1
+      //for (int I = 0; I < slnchan; I++) {      
+        int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
         int Active = LoadAllSettings.getInt("Active");
         int GainSettings = LoadAllSettings.getInt("PGA Gain");
         int inputType = LoadAllSettings.getInt("Input Type");
         int BiasSetting = LoadAllSettings.getInt("Bias");
-        int SRB2setting = LoadAllSettings.getInt("SRB2");
-        int SRB1setting = LoadAllSettings.getInt("SRB1");
+        int SRB2Setting = LoadAllSettings.getInt("SRB2");
+        int SRB1Setting = LoadAllSettings.getInt("SRB1");
         println("Ch " + Channel + ", " + 
           channelsActivearray[Active] + ", " + 
           gainSettingsarray[GainSettings] + ", " + 
           inputTypearray[inputType] + ", " + 
           BiasIncludearray[BiasSetting] + ", " + 
-          SRB2settingarray[SRB2setting] + ", " + 
-          SRB1settingarray[SRB1setting]);
+          SRB2settingarray[SRB2Setting] + ", " + 
+          SRB1settingarray[SRB1Setting]);
+          
+        //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
+        if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
+        if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down
+        
+        if (GainSettings == 0) channelSettingValues[i][1] = 0;
+        if (GainSettings == 1) channelSettingValues[i][1] = 1;
+        if (GainSettings == 2) channelSettingValues[i][1] = 2;
+        if (GainSettings == 3) channelSettingValues[i][1] = 3;        
+        if (GainSettings == 4) channelSettingValues[i][1] = 4;
+        if (GainSettings == 5) channelSettingValues[i][1] = 5;
+        if (GainSettings == 6) channelSettingValues[i][1] = 6;
+        
+        if (inputType == 0) channelSettingValues[i][2] = 0;
+        if (inputType == 1) channelSettingValues[i][2] = 1;
+        if (inputType == 2) channelSettingValues[i][2] = 2;
+        if (inputType == 3) channelSettingValues[i][2] = 3;        
+        if (inputType == 4) channelSettingValues[i][2] = 4;
+        if (inputType == 5) channelSettingValues[i][2] = 5;        
+        if (inputType == 6) channelSettingValues[i][2] = 6;
+        if (inputType == 7) channelSettingValues[i][2] = 7;
+        
+        if (BiasSetting == 0) channelSettingValues[i][3] = 0;
+        if (BiasSetting == 1) channelSettingValues[i][3] = 1;
+        
+        if (SRB2Setting == 0) channelSettingValues[i][4] = 0;
+        if (SRB2Setting == 1) channelSettingValues[i][4] = 1;
+
+        if (SRB1Setting == 0) channelSettingValues[i][5] = 0;
+        if (SRB1Setting == 1) channelSettingValues[i][5] = 1;        
+
+
+        }    
+      
+      if(eegDataSource == DATASOURCE_SYNTHETIC) {
+        //do something else
+        }
+        
       }
       
       //parse the global settings that appear after the channel settings 
@@ -196,72 +238,24 @@ void LoadGUIsettings() {
           "Analog Series Vert Scale: " + loadAnalogReadVertScale,
           "Analog Series Horiz Scale: " + loadAnalogReadHorizScale,
           };
-          
+        //Print the global settings that have been loaded to the console  
         printArray(LoadedGlobalSettings);
       }   
     }
-  }
   
   //Apply the loaded settings to the GUI
   println("Loading Settings...");
-  
   //Apply layout
-  currentLayout = loadLayoutsetting;
-  
-  
-  wm.setNewContainerLayout(currentLayout);
+  currentLayout = loadLayoutsetting + 1;
+  wm.setNewContainerLayout(currentLayout-1);
   println("Layout Loaded!");
-  
+  //Apply notch
+  loadNotchsetting = dataProcessing.currentNotch_ind;
+  println("Notch Loaded!");
+  //Apply vert/horz scales
+  TimeSeriesStartingVertScaleIndex  = loadTimeSeriesVertScale;
+  AnalogReadStartingVertScaleIndex = loadAnalogReadVertScale;
+  AnalogReadStartingHorizontalScaleIndex = loadAnalogReadHorizScale;
+  println("Vert/Horiz Scales Loaded!");  
 
 }
-
-
-//Use channelSettingValues variable to activate these settings once they are loaded from JSON file
-/*
-    for (int i = 0; i < nchan; i++) { //for every channel
-      //update buttons based on channelSettingValues[i][j]
-      for (int j = 0; j < numSettingsPerChannel; j++) {
-        switch(j) {  //what setting are we looking at
-          case 0: //on/off ??
-            // if (channelSettingValues[i][j] == '0') channelSettingButtons[i][0].setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
-            if (channelSettingValues[i][j] == '0') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
-            if (channelSettingValues[i][j] == '1') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
-            break;
-
-          case 1: //GAIN ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][1].setString("x1");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][1].setString("x2");
-            if (channelSettingValues[i][j] == '2') channelSettingButtons[i][1].setString("x4");
-            if (channelSettingValues[i][j] == '3') channelSettingButtons[i][1].setString("x6");
-            if (channelSettingValues[i][j] == '4') channelSettingButtons[i][1].setString("x8");
-            if (channelSettingValues[i][j] == '5') channelSettingButtons[i][1].setString("x12");
-            if (channelSettingValues[i][j] == '6') channelSettingButtons[i][1].setString("x24");
-            break;
-          case 2: //input type ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][2].setString("Normal");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][2].setString("Shorted");
-            if (channelSettingValues[i][j] == '2') channelSettingButtons[i][2].setString("BIAS_MEAS");
-            if (channelSettingValues[i][j] == '3') channelSettingButtons[i][2].setString("MVDD");
-            if (channelSettingValues[i][j] == '4') channelSettingButtons[i][2].setString("Temp.");
-            if (channelSettingValues[i][j] == '5') channelSettingButtons[i][2].setString("Test");
-            if (channelSettingValues[i][j] == '6') channelSettingButtons[i][2].setString("BIAS_DRP");
-            if (channelSettingValues[i][j] == '7') channelSettingButtons[i][2].setString("BIAS_DRN");
-            break;
-          case 3: //BIAS ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][3].setString("Don't Include");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][3].setString("Include");
-            break;
-          case 4: // SRB2 ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][4].setString("Off");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][4].setString("On");
-            break;
-          case 5: // SRB1 ??
-            if (channelSettingValues[i][j] == '0') channelSettingButtons[i][5].setString("No");
-            if (channelSettingValues[i][j] == '1') channelSettingButtons[i][5].setString("Yes");
-            break;
-        }
-      }
-    }
-*/
-
-/////////////////////Use channelSettingValues variable to activate these settings once they are loaded from JSON file
