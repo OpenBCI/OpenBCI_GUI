@@ -18,6 +18,65 @@ deactivateChannel(Channel-1)
 activateChannel(Channel-1)
 
 Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using ChangeSettingValues
+
+
+
+
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+    addDropdown("MaxFreq", "Max Freq", Arrays.asList("20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"), 2);
+    addDropdown("VertScale", "Max uV", Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV"), 2);
+    addDropdown("LogLin", "Log/Lin", Arrays.asList("Log", "Linear"), 0);
+    addDropdown("Smoothing", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
+    addDropdown("UnfiltFilt", "Filters?", Arrays.asList("Filtered", "Unfilt."), 0);
+    
+      int[] xLimOptions = {20, 40, 60, 100, 120, 250, 500, 800};
+  int[] yLimOptions = {10, 50, 100, 1000};
+  
+//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+//triggered when there is an event in the MaxFreq. Dropdown
+void MaxFreq(int n) {
+  // request the selected item based on index n
+  w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
+  closeAllDropdowns();
+}
+
+//triggered when there is an event in the VertScale Dropdown
+void VertScale(int n) {
+
+  w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
+  closeAllDropdowns();
+}
+
+//triggered when there is an event in the LogLin Dropdown
+void LogLin(int n) {
+  if (n==0) {
+    w_fft.fft_plot.setLogScale("y");
+  } else {
+    w_fft.fft_plot.setLogScale("");
+  }
+  closeAllDropdowns();
+}
+
+//triggered when there is an event in the Smoothing Dropdown
+void Smoothing(int n) {
+  smoothFac_ind = n;
+  closeAllDropdowns();
+}
+
+//triggered when there is an event in the UnfiltFilt Dropdown
+void UnfiltFilt(int n) {
+  if (n==0) {
+    //have FFT use filtered data -- default
+    isFFTFiltered = true;
+  } else {
+    //have FFT use unfiltered data
+    isFFTFiltered = false;
+  }
+  closeAllDropdowns();
+}
+
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,6 +92,7 @@ Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
 JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
 
@@ -44,8 +104,7 @@ String[] BiasIncludearray = {"Don't Include", "Include"};
 String[] SRB2settingarray = {"Off", "On"};
 String[] SRB1settingarray = {"Off", "On"};
 
-//used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
-int slnchan; 
+
 
 //Save Time Series settings variables
 int TSactivesetting = 1;
@@ -55,18 +114,37 @@ int TSbiassetting;
 int TSsrb2setting;
 int TSsrb1setting;
 
+
 //Load global settings variables
-int loadLayoutsetting;
+int loadLayoutsetting = 4;   
 int loadNotchsetting;
 int loadTimeSeriesVertScale;
 int loadAnalogReadVertScale;
 int loadAnalogReadHorizScale;
 
+
+//used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
+int slnchan; 
+
+/* moved to first tab to make global accessible
+//FFT plot settings
+int FFTmaxfrqsave;
+int FFTmaxfrqload;
+int FFTmaxuVsave;
+int FFTmaxuVload;
+int FFTloglinsave;
+int FFTloglinload;
+int FFTsmoothingsave;
+int FFTsmoothingload;
+int FFTfiltersave;
+int FFTfilterload;
+*/
+
 ///////////////////////////////  
 //      Save GUI Settings    //
 ///////////////////////////////  
 void SaveGUIsettings() {
-
+  
   //Set up a JSON array
   SaveSettingsJSONData = new JSONArray();
   
@@ -142,8 +220,11 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Time Series Vert Scale", TimeSeriesStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
+  ////////////////////////////////////////////////////////////////////////////////
+  //ADD more global settings below this line in the same format as above//////////
+
+
   SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
-  //println("This shouldn't be printed in Synthetic Mode...");
 
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
@@ -178,6 +259,51 @@ void SaveGUIsettings() {
     SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
     SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
     SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
+  
+    ////////////////////////////////////////////////////////////////////////////////
+  //ADD more global settings below this line in the same format as above//////////
+  JSONObject SaveFFTSettings = new JSONObject();
+    //int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
+  //int xMax = xLimOptions[xLimOptions.length-1];   //maximum possible frequency in FFT
+  //int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/getSampleRateSafe()));   // maxim value of FFT index
+  //int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
+  
+      //addDropdown("MaxFreq", "Max Freq", Arrays.asList("20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"), 2);
+    //addDropdown("VertScale", "Max uV", Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV"), 2);
+    //addDropdown("LogLin", "Log/Lin", Arrays.asList("Log", "Linear"), 0);
+    //addDropdown("Smoothing", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
+   // addDropdown("UnfiltFilt", "Filters?", Arrays.asList("Filtered", "Unfilt."), 0);
+   
+  //Save FFT Max Freq Setting
+  if (w_fft.xLim == 20) FFTmaxfrqsave = 0;
+  if (w_fft.xLim == 40) FFTmaxfrqsave = 1;  
+  if (w_fft.xLim == 60) FFTmaxfrqsave = 2;
+  if (w_fft.xLim == 100) FFTmaxfrqsave = 3;    
+  if (w_fft.xLim == 120) FFTmaxfrqsave = 4;
+  if (w_fft.xLim == 250) FFTmaxfrqsave = 5;  
+  if (w_fft.xLim == 500) FFTmaxfrqsave = 6;
+  if (w_fft.xLim == 800) FFTmaxfrqsave = 7;  
+  SaveFFTSettings.setInt("FFT Max Freq", FFTmaxfrqsave);
+  
+  //Save FFT max uV Setting
+  if (w_fft.yLim == 10) FFTmaxuVsave = 0;
+  if (w_fft.yLim == 50) FFTmaxuVsave = 1;  
+  if (w_fft.yLim == 100) FFTmaxuVsave = 2;
+  if (w_fft.yLim == 1000) FFTmaxuVsave = 3;    
+  SaveFFTSettings.setInt("FFT Max uV", w_fft.yLim);
+  
+  //Save FFT LogLin Setting
+  SaveFFTSettings.setInt("LogLin", FFTloglinsave);
+  
+  //Save FFT Smoothing Setting
+  SaveFFTSettings.setInt("FFT Smoothing", smoothFac_ind);
+  
+  //Save FFT Filter Setting
+  if (isFFTFiltered == true)  FFTfiltersave = 1;
+  if (isFFTFiltered == false)  FFTfiltersave = 0;  
+  SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
+  
+  SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings);
     
     //Let's save the JSON array to a file!
     saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
@@ -202,8 +328,7 @@ void LoadGUIsettings() {
    if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { //Need help adding a case for DATASOURCE_SYNTHETIC to skip writing time series settings, without writing Null to the JSON array. Also need to add a case for Playback settings.
       
       //parse the channel settings first for only the number of channels being used
-      if (i < slnchan) {
-      //for (int I = 0; I < slnchan; I++) {      
+      if (i < slnchan) {    
         int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
         int Active = LoadAllSettings.getInt("Active");
         int GainSettings = LoadAllSettings.getInt("PGA Gain");
@@ -254,8 +379,7 @@ void LoadGUIsettings() {
       //Case for loading settings when in Synthetic or Playback data modes
       if(eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
         //parse the channel settings first for only the number of channels being used
-        if (i < slnchan) {
-          //for (int I = 0; I < slnchan; I++) {      
+        if (i < slnchan) {   
           int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
           int Active = LoadAllSettings.getInt("Active");
           println("Ch " + Channel + ", " + channelsActivearray[Active]);
@@ -266,7 +390,7 @@ void LoadGUIsettings() {
       }
       
       //parse the global settings that appear after the channel settings 
-      if (i >= slnchan) {
+      if (i == slnchan) {
         loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
         loadNotchsetting = LoadAllSettings.getInt("Notch");
         loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
@@ -282,7 +406,20 @@ void LoadGUIsettings() {
           };
         //Print the global settings that have been loaded to the console  
         printArray(LoadedGlobalSettings);
-      }   
+      }
+      ////////working here 
+      //parse the FFT settings that appear after the channel settings 
+      if (i > slnchan) {
+        FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
+        FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
+        
+        final String[] LoadedFFTSettings = {
+          "FFT Max Frequency: " + FFTmaxfrqload, 
+          "FFT Max uV: " + FFTmaxuVload, 
+          };
+        //Print the global settings that have been loaded to the console  
+        printArray(LoadedFFTSettings);
+      }      
     }
   
   //Apply the loaded settings to the GUI
@@ -299,5 +436,8 @@ void LoadGUIsettings() {
   AnalogReadStartingVertScaleIndex = loadAnalogReadVertScale;
   AnalogReadStartingHorizontalScaleIndex = loadAnalogReadHorizScale;
   println("Vert/Horiz Scales Loaded!");  
+  
+  //Apply FFT settings
+  MaxFreq(FFTmaxfrqload);
 
 }

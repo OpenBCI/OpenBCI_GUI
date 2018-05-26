@@ -9,33 +9,40 @@
   },
   {
     "Channel_Number": 3,
-    "Active": 1
+    "Active": 0
   },
   {
     "Channel_Number": 4,
-    "Active": 1
+    "Active": 0
   },
   {
     "Channel_Number": 5,
-    "Active": 1
+    "Active": 0
   },
   {
     "Channel_Number": 6,
-    "Active": 1
+    "Active": 0
   },
   {
     "Channel_Number": 7,
-    "Active": 1
+    "Active": 0
   },
   {
     "Channel_Number": 8,
     "Active": 0
   },
   {
-    "Current Layout": 4,
+    "Current Layout": 3,
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,
     "Time Series Vert Scale": 3
+  },
+  {
+    "FFT Max uV": 100,
+    "LogLin": 1,
+    "FFT Max Freq": 2,
+    "FFT Filter": 0,
+    "FFT Smoothing": 2
   }
 ]

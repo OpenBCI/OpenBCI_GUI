@@ -283,13 +283,30 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
 //default layout variables
 int layoutSelected;
-int currentLayout = 4;
+int currentLayout = 3;
 int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
 //default vert/horiz scales for a few widgets
 int TimeSeriesStartingVertScaleIndex = 3;
 int AnalogReadStartingVertScaleIndex = 5;
 int AnalogReadStartingHorizontalScaleIndex = 2;
+
+//FFT plot settings
+int FFTmaxfrqsave;
+int FFTmaxfrqload;
+int FFTmaxuVsave;
+int FFTmaxuVload;
+int FFTloglinsave;
+int FFTloglinload;
+int FFTsmoothingsave;
+int FFTsmoothingload;
+int FFTfiltersave;
+int FFTfilterload;
+
+//copied from headPlot to help use these across multiple tabs, include saving these settings
+float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
+int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
+int intensityFac_ind = 2;
 
 //------------------------------------------------------------------------
 //                       Global Functions

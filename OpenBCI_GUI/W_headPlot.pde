@@ -11,9 +11,11 @@
 //
 ///////////////////////////////////////////////////,
 
+/* moved to first tab to help with saving these settings
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 int intensityFac_ind = 2;
+*/
 
 class W_headPlot extends Widget {
 

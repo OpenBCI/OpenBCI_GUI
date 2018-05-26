@@ -49,6 +49,9 @@ class W_fft extends Widget {
   int xMax = xLimOptions[xLimOptions.length-1];   //maximum possible frequency in FFT
   int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/getSampleRateSafe()));   // maxim value of FFT index
   int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
+  
+  //added to save settings
+  int FFTmaxfrqsave = xLim;
 
   W_fft(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -222,8 +225,14 @@ void VertScale(int n) {
 void LogLin(int n) {
   if (n==0) {
     w_fft.fft_plot.setLogScale("y");
+    //store the current setting to save
+    FFTloglinsave = 0;
+    println("Logggy");
   } else {
     w_fft.fft_plot.setLogScale("");
+    //store the current setting to save
+    FFTloglinsave = 1;
+    println("linny");
   }
   closeAllDropdowns();
 }
