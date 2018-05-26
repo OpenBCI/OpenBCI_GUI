@@ -227,12 +227,10 @@ void LogLin(int n) {
     w_fft.fft_plot.setLogScale("y");
     //store the current setting to save
     FFTloglinsave = 0;
-    println("Logggy");
   } else {
     w_fft.fft_plot.setLogScale("");
     //store the current setting to save
     FFTloglinsave = 1;
-    println("linny");
   }
   closeAllDropdowns();
 }

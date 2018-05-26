@@ -32,7 +32,7 @@
     "Active": 0
   },
   {
-    "Current Layout": 3,
+    "Current Layout": 5,
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,
@@ -40,9 +40,9 @@
   },
   {
     "FFT Max uV": 100,
-    "LogLin": 1,
+    "LogLin": 0,
     "FFT Max Freq": 2,
-    "FFT Filter": 0,
-    "FFT Smoothing": 2
+    "FFT Filter": 1,
+    "FFT Smoothing": 3
   }
 ]
