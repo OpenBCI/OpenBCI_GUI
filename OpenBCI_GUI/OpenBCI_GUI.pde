@@ -293,7 +293,7 @@ int AnalogReadStartingHorizontalScaleIndex = 2;
 
 //FFT plot settings
 int FFTmaxfrqsave;
-int FFTmaxfrqload;
+int FFTmaxfrqload = 2;
 int FFTmaxuVsave;
 int FFTmaxuVload;
 int FFTloglinsave;
@@ -302,6 +302,7 @@ int FFTsmoothingsave;
 int FFTsmoothingload;
 int FFTfiltersave;
 int FFTfilterload;
+
 
 //copied from headPlot to help use these across multiple tabs, include saving these settings
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot

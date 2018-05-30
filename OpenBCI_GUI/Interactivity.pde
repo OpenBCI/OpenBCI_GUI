@@ -237,14 +237,14 @@ void parseKey(char val) {
       break;
 
     //other controls
-    /* The spacebar is being used now so these old shortcuts are no longer needed
+     //The spacebar is being used now so these old shortcuts are no longer needed
     case 's':
       println("case s...");
-      stopRunning();
-
+      //stopRunning();
+      Dropdown1(1);
       // stopButtonWasPressed();
       break;
-    
+    /*
     case 'b':
       println("case b...");
       startRunning();

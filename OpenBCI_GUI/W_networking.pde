@@ -843,7 +843,7 @@ class W_networking extends Widget {
       case 7 : dt1 = "Widget";
         break;
     }
-        switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()){
+    switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()){
       case 0 : dt4 = "None";
         break;
       case 1 : dt4 = "TimeSeries";
@@ -897,6 +897,7 @@ class W_networking extends Widget {
         address = cp5_networking.get(Textfield.class, "osc_address4").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter4").getValue();
         stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan);
+        println(port + "stream 4 port");
       }else{
         stream4 = null;
       }
@@ -1650,7 +1651,8 @@ class Stream extends Thread{
         msg.clearArguments();
         //ADD BPM Data
         msg.add(w_pulsesensor.BPM);
-        println(w_pulsesensor.BPM);
+        println(this.port + " this is the port you are looking for"); //FOUND THE ERROR, THIS PRINT STREAM 1 PORT INSTEAD OF STREAM SELECTED!!!!
+        
         try{
           this.osc.send(msg,this.netaddress);
         }catch (Exception e){

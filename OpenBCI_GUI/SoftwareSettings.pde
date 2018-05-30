@@ -93,6 +93,7 @@ void SaveGUIsettings() {
   
   ///////Case for Live Data Modes
   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
+    
     //Save all of the channel settings for number of Time Series channels being used
     for (int i = 0; i < slnchan; i++) {
       
@@ -110,30 +111,53 @@ void SaveGUIsettings() {
       for (int j = 0; j < numSettingsPerChannel; j++) {
         switch(j) {  //what setting are we looking at
           case 0: //on/off
-            //if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
-            //if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
-            TSactivesetting = channelSettingValues[i][j];
+            if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
+            if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
+            // TSactivesetting = int(channelSettingValues[i][j]));  // For some reason this approach doesn't work, still returns 48 and 49 '0' and '1'
+
             break;
           case 1: //GAIN
-            TSgainsetting = channelSettingValues[i][j];
+            //TSgainsetting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') TSgainsetting = 0;
+            if (channelSettingValues[i][j] == '1') TSgainsetting = 1;
+            if (channelSettingValues[i][j] == '2') TSgainsetting = 2;
+            if (channelSettingValues[i][j] == '3') TSgainsetting = 3;
+            if (channelSettingValues[i][j] == '4') TSgainsetting = 4;
+            if (channelSettingValues[i][j] == '5') TSgainsetting = 5;
+            if (channelSettingValues[i][j] == '6') TSgainsetting = 6;            
             break;
           case 2: //input type
-            TSinputtypesetting = channelSettingValues[i][j];
+            //TSinputtypesetting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') TSinputtypesetting = 0;
+            if (channelSettingValues[i][j] == '1') TSinputtypesetting = 1;
+            if (channelSettingValues[i][j] == '2') TSinputtypesetting = 2;
+            if (channelSettingValues[i][j] == '3') TSinputtypesetting = 3;
+            if (channelSettingValues[i][j] == '4') TSinputtypesetting = 4;
+            if (channelSettingValues[i][j] == '5') TSinputtypesetting = 5;
+            if (channelSettingValues[i][j] == '6') TSinputtypesetting = 6;
+            if (channelSettingValues[i][j] == '7') TSinputtypesetting = 7;
             break;
           case 3: //BIAS
-            TSbiassetting = channelSettingValues[i][j];
+            //TSbiassetting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') TSbiassetting = 0;
+            if (channelSettingValues[i][j] == '1') TSbiassetting = 1;     
             break;
           case 4: // SRB2
-            TSsrb2setting = channelSettingValues[i][j];
+            //TSsrb2setting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') TSsrb2setting = 0;
+            if (channelSettingValues[i][j] == '1') TSsrb2setting = 1;
             break;
           case 5: // SRB1
-            TSsrb1setting = channelSettingValues[i][j];
+            //TSsrb1setting = channelSettingValues[i][j];
+            if (channelSettingValues[i][j] == '0') TSsrb1setting = 0;
+            if (channelSettingValues[i][j] == '1') TSsrb1setting = 1;
             break;
           }
       }  
+      //Store all channel settings in Time Series JSON object, one channel at a time
       SaveTimeSeriesSettings.setInt("Channel_Number", (i+1));
       SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
-      SaveTimeSeriesSettings.setInt("PGA Gain", TSgainsetting);
+      SaveTimeSeriesSettings.setInt("PGA Gain", int(TSgainsetting));
       SaveTimeSeriesSettings.setInt("Input Type", TSinputtypesetting);
       SaveTimeSeriesSettings.setInt("Bias", TSbiassetting);
       SaveTimeSeriesSettings.setInt("SRB2", TSsrb2setting);
@@ -262,6 +286,9 @@ void LoadGUIsettings() {
         if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
         if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down
         
+        
+        //Hopefully This can be shortened into somthing more efficient like with above, there is a datatype conversion involved. Simple if-then works for now.
+        //channelSettingValues[i][1] = char(GainSettings);
         if (GainSettings == 0) channelSettingValues[i][1] = 0;
         if (GainSettings == 1) channelSettingValues[i][1] = 1;
         if (GainSettings == 2) channelSettingValues[i][1] = 2;
@@ -354,6 +381,7 @@ void LoadGUIsettings() {
   //////////////WORK HERE 
   //Apply FFT settings
   MaxFreq(FFTmaxfrqload);
+  
 
 }
 
