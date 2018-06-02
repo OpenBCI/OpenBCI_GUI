@@ -1658,10 +1658,9 @@ class Stream extends Thread{
         }catch (Exception e){
           println(e);
         }
-      /*
       // UDP
       }else if (this.protocol.equals("UDP")){
-        String outputter = "{\"type\":\"focus\",\"data\":";
+        String outputter = "{\"type\":\"pulse\",\"data\":";
         outputter += str(w_pulsesensor.BPM);
         outputter += "]}\r\n";
         try {
@@ -1676,7 +1675,7 @@ class Stream extends Thread{
         dataToSend[0] = temp;
         outlet_data.push_chunk(dataToSend);
       // Serial
-      }else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+      }else if (this.protocol.equals("Serial")){     // Send Pulse Data (BPM) over Serial ... %%%%%
         for (int i=0;i<numChan;i++){
           serialMessage = ""; //clear message
           int BPM = (w_pulsesensor.BPM);
@@ -1688,7 +1687,6 @@ class Stream extends Thread{
             println(e);
           }
         }
-        */
       }
     }
   }

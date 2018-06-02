@@ -238,19 +238,22 @@ void parseKey(char val) {
 
     //other controls
      //The spacebar is being used now so these old shortcuts are no longer needed
+     //Lowercase 's' can also be used now for development testing purporses
+    /*
     case 's':
       println("case s...");
       //stopRunning();
-      Dropdown1(1);
+      //Dropdown1(1);
       // stopButtonWasPressed();
       break;
+    */
     /*
     case 'b':
       println("case b...");
       startRunning();
       // stopButtonWasPressed();
       break;
-     */
+    */
 
      //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
     case 'b':
