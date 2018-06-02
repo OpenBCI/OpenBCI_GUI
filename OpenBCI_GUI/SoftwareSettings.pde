@@ -213,24 +213,13 @@ void SaveGUIsettings() {
   
     ///////////////////////////////////////////////Setup new JSON object to save FFT settings
     JSONObject SaveFFTSettings = new JSONObject();
-    //Save FFT Max Freq Setting
-    if (w_fft.xLim == 20) FFTmaxfrqsave = 0;
-    if (w_fft.xLim == 40) FFTmaxfrqsave = 1;  
-    if (w_fft.xLim == 60) FFTmaxfrqsave = 2;
-    if (w_fft.xLim == 100) FFTmaxfrqsave = 3;    
-    if (w_fft.xLim == 120) FFTmaxfrqsave = 4;
-    if (w_fft.xLim == 250) FFTmaxfrqsave = 5;  
-    if (w_fft.xLim == 500) FFTmaxfrqsave = 6;
-    if (w_fft.xLim == 800) FFTmaxfrqsave = 7;  
+
+    //Save FFT Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
     SaveFFTSettings.setInt("FFT Max Freq", FFTmaxfrqsave);
-    //Save FFT max uV Setting
-    if (w_fft.yLim == 10) FFTmaxuVsave = 0;
-    if (w_fft.yLim == 50) FFTmaxuVsave = 1;  
-    if (w_fft.yLim == 100) FFTmaxuVsave = 2;
-    if (w_fft.yLim == 1000) FFTmaxuVsave = 3;    
-    SaveFFTSettings.setInt("FFT Max uV", w_fft.yLim);
-    //Save FFT LogLin Setting
-    SaveFFTSettings.setInt("LogLin", FFTloglinsave);
+    //Save FFT max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
+    SaveFFTSettings.setInt("FFT Max uV", FFTmaxuVsave);
+    //Save FFT LogLin Setting. Same thing happens for LogLin
+    SaveFFTSettings.setInt("FFT LogLin", FFTloglinsave);
     //Save FFT Smoothing Setting
     SaveFFTSettings.setInt("FFT Smoothing", smoothFac_ind);
     //Save FFT Filter Setting
@@ -238,10 +227,10 @@ void SaveGUIsettings() {
     if (isFFTFiltered == false)  FFTfiltersave = 0;  
     SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
     //Set the FFT JSON Object
-    SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings);
+    SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings); //next object will be set to slnchan+2, etc.
     
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////ADD more global settings below this line in the same format as above//////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////  ADD more save widget settings below this line in the same format as above  ///////
     
     //Let's save the JSON array to a file!
     saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
@@ -337,30 +326,43 @@ void LoadGUIsettings() {
         loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
         loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
+        //Load more global settings after this line, if needed
         
+        //Create a string array to print global settings to console
         final String[] LoadedGlobalSettings = {
           "Using Layout Number: " + loadLayoutsetting, 
           "Default Notch: " + loadNotchsetting, //default notch
           "Default Time Series Vert Scale: " + loadTimeSeriesVertScale,
           "Analog Series Vert Scale: " + loadAnalogReadVertScale,
           "Analog Series Horiz Scale: " + loadAnalogReadHorizScale,
+          //Add new global settings after this line to print to console
           };
         //Print the global settings that have been loaded to the console  
         printArray(LoadedGlobalSettings);
       }
-      ////////working here 
       //parse the FFT settings that appear after the channel settings 
       if (i > slnchan) {
         FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
         FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
+        FFTloglinload = LoadAllSettings.getInt("FFT LogLin");
+        FFTsmoothingload = LoadAllSettings.getInt("FFT Smoothing");
+        FFTfilterload = LoadAllSettings.getInt("FFT Filter");
         
+        //Create a string array to print to console
         final String[] LoadedFFTSettings = {
-          "FFT Max Frequency: " + FFTmaxfrqload, 
-          "FFT Max uV: " + FFTmaxuVload, 
+          "FFT_Max Frequency: " + FFTmaxfrqload, 
+          "FFT_Max uV: " + FFTmaxuVload,
+          "FFT_Log/Lin: " + FFTloglinload,
+          "FFT_Smoothing: " + FFTsmoothingload,
+          "FFT_Filter: " + FFTfilterload,
           };
         //Print the global settings that have been loaded to the console  
         printArray(LoadedFFTSettings);
-      }      
+      }
+      
+      /////////////////////////////////////////////////////////////
+      //    Load more widget settings below this line as above   //
+      
     }
   
   //Apply the loaded settings to the GUI
@@ -377,68 +379,17 @@ void LoadGUIsettings() {
   AnalogReadStartingVertScaleIndex = loadAnalogReadVertScale;
   AnalogReadStartingHorizontalScaleIndex = loadAnalogReadHorizScale;
   println("Vert/Horiz Scales Loaded!");  
-  
-  //////////////WORK HERE 
-  //Apply FFT settings
+   
+  //////Apply FFT settings
   MaxFreq(FFTmaxfrqload);
+  VertScale(FFTmaxuVload);
+  LogLin(FFTloglinload);
+  Smoothing(FFTsmoothingload);
+  UnfiltFilt(FFTfilterload);
+  ///^^^^^^^^^^^^^^^^^^^^^^^^For some reason, this approach updates the backend of the FFT widget, but does not update the value displayed in the dropdowns. Needs a fix. Once fixed, should be able to save, load, and apply ALL dropdowns for all widgets
   
-
-}
-
-/* USE THIS TO HELP APPLY FFT SETTINGS
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("MaxFreq", "Max Freq", Arrays.asList("20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"), 2);
-    addDropdown("VertScale", "Max uV", Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV"), 2);
-    addDropdown("LogLin", "Log/Lin", Arrays.asList("Log", "Linear"), 0);
-    addDropdown("Smoothing", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
-    addDropdown("UnfiltFilt", "Filters?", Arrays.asList("Filtered", "Unfilt."), 0);
-    
-      int[] xLimOptions = {20, 40, 60, 100, 120, 250, 500, 800};
-  int[] yLimOptions = {10, 50, 100, 1000};
   
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-//triggered when there is an event in the MaxFreq. Dropdown
-void MaxFreq(int n) {
-  // request the selected item based on index n
-  w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
-  closeAllDropdowns();
+  ////////////////////////////////////////////////////////////
+  //    Apply more loaded widget settings below this line   // 
+
 }
-
-//triggered when there is an event in the VertScale Dropdown
-void VertScale(int n) {
-
-  w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
-  closeAllDropdowns();
-}
-
-//triggered when there is an event in the LogLin Dropdown
-void LogLin(int n) {
-  if (n==0) {
-    w_fft.fft_plot.setLogScale("y");
-  } else {
-    w_fft.fft_plot.setLogScale("");
-  }
-  closeAllDropdowns();
-}
-
-//triggered when there is an event in the Smoothing Dropdown
-void Smoothing(int n) {
-  smoothFac_ind = n;
-  closeAllDropdowns();
-}
-
-//triggered when there is an event in the UnfiltFilt Dropdown
-void UnfiltFilt(int n) {
-  if (n==0) {
-    //have FFT use filtered data -- default
-    isFFTFiltered = true;
-  } else {
-    //have FFT use unfiltered data
-    isFFTFiltered = false;
-  }
-  closeAllDropdowns();
-}
-
-*/

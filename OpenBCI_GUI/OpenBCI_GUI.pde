@@ -292,9 +292,9 @@ int AnalogReadStartingVertScaleIndex = 5;
 int AnalogReadStartingHorizontalScaleIndex = 2;
 
 //FFT plot settings
-int FFTmaxfrqsave;
-int FFTmaxfrqload = 2;
-int FFTmaxuVsave;
+int FFTmaxfrqsave = 2;
+int FFTmaxfrqload;
+int FFTmaxuVsave = 2;
 int FFTmaxuVload;
 int FFTloglinsave;
 int FFTloglinload;

@@ -211,6 +211,7 @@ class W_fft extends Widget {
 void MaxFreq(int n) {
   /* request the selected item based on index n */
   w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
+  FFTmaxfrqsave = n; //save the xLim to variable for save/load settings
   closeAllDropdowns();
 }
 
@@ -218,6 +219,7 @@ void MaxFreq(int n) {
 void VertScale(int n) {
 
   w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
+  FFTmaxuVsave = n; //save the yLim to variable for save/load settings
   closeAllDropdowns();
 }
 
