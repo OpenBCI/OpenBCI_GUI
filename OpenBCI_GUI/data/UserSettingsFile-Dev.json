@@ -44,5 +44,11 @@
     "FFT Filter": 1,
     "FFT LogLin": 0,
     "FFT Smoothing": 3
+  },
+  {
+    "Data Type 3": "None",
+    "Data Type 2": "None",
+    "Data Type 1": "None",
+    "Data Type 4": "None"
   }
 ]

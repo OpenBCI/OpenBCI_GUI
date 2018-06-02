@@ -173,7 +173,8 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
   ////////////////////////////////////////////////////////////////////////////////
-  //ADD more global settings below this line in the same format as above//////////
+  ////////////////////////////////////////////////////////////////////////////ADD more global settings below this line in the same format as above//////////
+  ///FFT settings have not been added yet to Live mode. Add it here once the dropdowns can be updated from loaded settings
 
 
   SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
@@ -229,11 +230,26 @@ void SaveGUIsettings() {
     //Set the FFT JSON Object
     SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings); //next object will be set to slnchan+2, etc.
     
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////  ADD more save widget settings below this line in the same format as above  ///////
+    ///////////////////////////////////////////////Setup new JSON object to save Networking settings
+    JSONObject SaveNetworkingSettings = new JSONObject();
+    
+    //***Save User networking protocol mode
+    
+    //Save Data Types
+    SaveNetworkingSettings.setString("Data Type 1", nwdatatype1);
+    SaveNetworkingSettings.setString("Data Type 2", nwdatatype2);
+    SaveNetworkingSettings.setString("Data Type 3", nwdatatype3);
+    SaveNetworkingSettings.setString("Data Type 4", nwdatatype4);
+    
+    //Set Networking Settings JSON Object
+    SaveSettingsJSONData.setJSONObject(slnchan+2, SaveNetworkingSettings);
     
     //Let's save the JSON array to a file!
     saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////  ADD more save widget settings below this line in the same format as above  ///////
+    
   }
 }  //End of Save GUI Settings function
   
@@ -341,7 +357,7 @@ void LoadGUIsettings() {
         printArray(LoadedGlobalSettings);
       }
       //parse the FFT settings that appear after the channel settings 
-      if (i > slnchan) {
+      if (i == slnchan + 1) {
         FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
         FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
         FFTloglinload = LoadAllSettings.getInt("FFT LogLin");

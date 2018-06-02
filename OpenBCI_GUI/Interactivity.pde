@@ -301,7 +301,7 @@ void parseKey(char val) {
       */
       
       SaveGUIsettings();
-      output("Settings Succesfully Saved!");
+      output("Settings Saved!");
       
       break;
       
@@ -321,7 +321,7 @@ void parseKey(char val) {
         
         LoadGUIsettings();
         //Output message when Loading settings is complete
-        output("Settings Succesfully Loaded");
+        output("Settings Loaded!");
         
       break;     
       
@@ -1112,7 +1112,7 @@ boolean isNetworkingTextActive(){
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
 
   //isFocus(); returns true if active for textField...
-  println(isAFieldActive);
+  println(isAFieldActive + " bananas");
   return isAFieldActive; //if not, return false
 }
 

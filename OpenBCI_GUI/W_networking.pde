@@ -820,9 +820,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt2 = "Focus";
         break;
-      case 6 : dt1 = "Pulse";
+      case 6 : dt2 = "Pulse";
         break;
-      case 7 : dt1 = "Widget";
+      case 7 : dt2 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()){
@@ -838,9 +838,9 @@ class W_networking extends Widget {
         break;
       case 5 : dt3 = "Focus";
         break;
-      case 6 : dt1 = "Pulse";
+      case 6 : dt3 = "Pulse";
         break;
-      case 7 : dt1 = "Widget";
+      case 7 : dt3 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()){
@@ -856,12 +856,18 @@ class W_networking extends Widget {
         break;
       case 5 : dt4 = "Focus";
         break;
-      case 6 : dt1 = "Pulse";
+      case 6 : dt4 = "Pulse";
         break;
-      case 7 : dt1 = "Widget";
+      case 7 : dt4 = "Widget";
         break;
     }
-
+    
+    nwdatatype1 = dt1;
+    nwdatatype2 = dt2;
+    nwdatatype3 = dt3;
+    nwdatatype4 = dt4;
+    println(dt4);
+    
     // Establish OSC Streams
     if (protocolMode.equals("OSC")){
       if(!dt1.equals("None")){

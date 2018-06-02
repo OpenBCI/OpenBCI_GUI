@@ -309,6 +309,12 @@ float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT 
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 int intensityFac_ind = 2;
 
+//default data types for streams 1-4 in Networking widget, declared here for use with save/load
+String nwdatatype1="None";
+String nwdatatype2="None";
+String nwdatatype3="None";
+String nwdatatype4="None";
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
