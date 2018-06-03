@@ -36,14 +36,15 @@
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,
-    "Time Series Vert Scale": 3
+    "Time Series Vert Scale": 1,
+    "Time Series Horiz Scale": 0
   },
   {
     "FFT Max uV": 2,
     "FFT Max Freq": 2,
-    "FFT Filter": 1,
-    "FFT LogLin": 1,
-    "FFT Smoothing": 2
+    "FFT Filter": 0,
+    "FFT LogLin": 0,
+    "FFT Smoothing": 3
   },
   {
     "Data Type 3": 0,

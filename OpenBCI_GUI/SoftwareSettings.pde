@@ -19,25 +19,34 @@ activateChannel(Channel-1)
 
 Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using ChangeSettingValues
 
-FFT info is at the bottom for working purposes currently. See commented out section for help with applying FFT settings once loaded.
+Loading and applying settings contained in dropdown menus are at the bottomw in LoadApplyWidgetDropdowns()
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                                      //
-//                            This sketch saves Time Series & Global User Settings                                      //
-//                                                                                                                      //
-//                                         Created: RGW - May 2018                                                      //
-//    -- Capital 'S' to Save                                                                                            //
-//    -- Capital 'L' to Load                                                                                            //
-//    -- Functions are called in Interactivty.pde with the rest of the keyboard shortcuts                               //
+/*
+                       This sketch saves and loads the following User Settings:    
+                       -- All Time Series widget settings
+                       -- All FFT widget settings
+                       -- Default Layout, Notch, 
+                       
+
+                                         Created: RGW - May 2018                                                      
+    -- Capital 'S' to Save                                                                                            
+    -- Capital 'L' to Load                                                                                           
+    -- Functions are called in Interactivty.pde with the rest of the keyboard shortcuts                               
+*/
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
+
+// Used to set text in Time Series dropdown settings
+String[] TSvertscalearray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
+String[] TShorizscalearray = {"1 sec", "3 sec", "5 sec", "7 sec"};
 
 //Used to print the status of each channel in the console when loading settings
 String[] channelsActivearray = {"Active", "Not Active"};
@@ -65,11 +74,11 @@ int TSbiassetting;
 int TSsrb2setting;
 int TSsrb1setting;
 
-
 //Load global settings variables
 int loadLayoutsetting = 4;   
 int loadNotchsetting;
 int loadTimeSeriesVertScale;
+int loadTimeSeriesHorizScale;
 int loadAnalogReadVertScale;
 int loadAnalogReadHorizScale;
 
@@ -177,7 +186,8 @@ void SaveGUIsettings() {
   
   SaveGlobalSettings.setInt("Current Layout", currentLayout);
   SaveGlobalSettings.setInt("Notch", dataProcessing.currentNotch_ind);
-  SaveGlobalSettings.setInt("Time Series Vert Scale", TimeSeriesStartingVertScaleIndex);
+  SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
+  SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
   SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
@@ -200,6 +210,20 @@ void SaveGUIsettings() {
   //Set the FFT JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings); //next object will be set to slnchan+2, etc.  
   
+  ///////////////////////////////////////////////Setup new JSON object to save Networking settings
+  JSONObject SaveNetworkingSettings = new JSONObject();
+  
+  //***Save User networking protocol mode
+  
+  //Save Data Types
+  SaveNetworkingSettings.setInt("Data Type 1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
+  SaveNetworkingSettings.setInt("Data Type 2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
+  SaveNetworkingSettings.setInt("Data Type 3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
+  SaveNetworkingSettings.setInt("Data Type 4", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));
+  
+  //Set Networking Settings JSON Object
+  SaveSettingsJSONData.setJSONObject(slnchan+2, SaveNetworkingSettings);  
+
   ////////////////////////////////////////////////////////////////////////////////
   ///ADD more global settings below this line in the same format as above/////////
 
@@ -232,7 +256,8 @@ void SaveGUIsettings() {
     JSONObject SaveGlobalSettings = new JSONObject();
     SaveGlobalSettings.setInt("Current Layout", currentLayout);
     SaveGlobalSettings.setInt("Notch", dataProcessing.currentNotch_ind);
-    SaveGlobalSettings.setInt("Time Series Vert Scale", TimeSeriesStartingVertScaleIndex);
+    SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
+    SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
     SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
     SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
     SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
@@ -261,10 +286,6 @@ void SaveGUIsettings() {
     //***Save User networking protocol mode
     
     //Save Data Types
-    //nwdatatype1 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
-    //nwdatatype2 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue());    
-    //nwdatatype3 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue());    
-    //nwdatatype4 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue());    
     SaveNetworkingSettings.setInt("Data Type 1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
     SaveNetworkingSettings.setInt("Data Type 2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
     SaveNetworkingSettings.setInt("Data Type 3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
@@ -370,6 +391,7 @@ void LoadGUIsettings() {
         loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
         loadNotchsetting = LoadAllSettings.getInt("Notch");
         loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
+        loadTimeSeriesHorizScale = LoadAllSettings.getInt("Time Series Horiz Scale");
         loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
         //Load more global settings after this line, if needed
@@ -378,9 +400,10 @@ void LoadGUIsettings() {
         final String[] LoadedGlobalSettings = {
           "Using Layout Number: " + loadLayoutsetting, 
           "Default Notch: " + loadNotchsetting, //default notch
-          "Default Time Series Vert Scale: " + loadTimeSeriesVertScale,
-          "Analog Series Vert Scale: " + loadAnalogReadVertScale,
-          "Analog Series Horiz Scale: " + loadAnalogReadHorizScale,
+          "TS Vert Scale: " + loadTimeSeriesVertScale,
+          "TS Horiz Scale: " + loadTimeSeriesHorizScale,
+          "Analog Vert Scale: " + loadAnalogReadVertScale,
+          "Analog Horiz Scale: " + loadAnalogReadHorizScale,
           //Add new global settings after this line to print to console
           };
         //Print the global settings that have been loaded to the console  
@@ -410,6 +433,9 @@ void LoadGUIsettings() {
       //    Load more widget settings below this line as above   //
       if (i == slnchan + 2) {
         nwdatatype1 = LoadAllSettings.getInt("Data Type 1");
+        nwdatatype2 = LoadAllSettings.getInt("Data Type 2");
+        nwdatatype3 = LoadAllSettings.getInt("Data Type 3");        
+        nwdatatype4 = LoadAllSettings.getInt("Data Type 4");        
       }
       
     }
@@ -423,12 +449,44 @@ void LoadGUIsettings() {
   //Apply notch
   loadNotchsetting = dataProcessing.currentNotch_ind;
   println("Notch Loaded!");
-  //Apply vert/horz scales
-  TimeSeriesStartingVertScaleIndex  = loadTimeSeriesVertScale;
+  
+  //follow example of applying time series dropdowns to this
   AnalogReadStartingVertScaleIndex = loadAnalogReadVertScale;
   AnalogReadStartingHorizontalScaleIndex = loadAnalogReadHorizScale;
-  println("Vert/Horiz Scales Loaded!");  
+  //println("Vert/Horiz Scales Loaded!");  
    
+  //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
+  LoadApplyWidgetDropdowns(); 
+
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LoadApplyWidgetDropdowns() {
+  
+  ////////Apply Time Series widget settings
+  VertScale_TS(loadTimeSeriesVertScale);// changes backend
+  w_timeSeries.cp5_widget.getController("VertScale_TS") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(TSvertscalearray[loadTimeSeriesVertScale]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;
+  Duration(loadTimeSeriesHorizScale);
+  w_timeSeries.cp5_widget.getController("Duration") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(TShorizscalearray[loadTimeSeriesHorizScale]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;  
+    
   //////Apply FFT settings
   MaxFreq(FFTmaxfrqload); //This changes the backend
     w_fft.cp5_widget.getController("MaxFreq") //Reference the dropdown from the appropriate widget
@@ -491,8 +549,33 @@ void LoadGUIsettings() {
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
       ;  
-  
+  w_networking.cp5_networking_dropdowns.getController("dataType2") //THIS WORKS!!!
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText(NWdatatypesarray[nwdatatype1])
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;  
+  w_networking.cp5_networking_dropdowns.getController("dataType3") //THIS WORKS!!!
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText(NWdatatypesarray[nwdatatype1])
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;  
+  w_networking.cp5_networking_dropdowns.getController("dataType4") //THIS WORKS!!!
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText(NWdatatypesarray[nwdatatype1])
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;        
   ////////////////////////////////////////////////////////////
   //    Apply more loaded widget settings below this line   // 
-
 }

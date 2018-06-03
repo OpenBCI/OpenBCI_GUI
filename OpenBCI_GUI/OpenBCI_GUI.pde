@@ -287,9 +287,13 @@ int currentLayout = 3;
 int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
 //default vert/horiz scales for a few widgets
-int TimeSeriesStartingVertScaleIndex = 3;
+//int TimeSeriesStartingVertScaleIndex = 3;
 int AnalogReadStartingVertScaleIndex = 5;
 int AnalogReadStartingHorizontalScaleIndex = 2;
+
+//Time Series settings
+int TSvertscalesave = 3;
+int TShorizscalesave = 2;
 
 //FFT plot settings
 int FFTmaxfrqsave = 2;
