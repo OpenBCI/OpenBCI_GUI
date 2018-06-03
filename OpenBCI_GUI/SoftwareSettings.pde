@@ -55,7 +55,7 @@ String[] FFTsmoothingarray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 String[] FFTfilterarray = {"Filtered", "Unfilt."};
 
 //Used to set text in dropdown menus when loading Networking settings
-
+String[] NWdatatypesarray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget"};
 
 //Save Time Series settings variables
 int TSactivesetting = 1;
@@ -180,18 +180,35 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Time Series Vert Scale", TimeSeriesStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
-  ////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////////////////////////////////////////ADD more global settings below this line in the same format as above//////////
-  ///FFT settings have not been added yet to Live mode. Add it here once the dropdowns can be updated from loaded settings
-
-
   SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
+  
+  ///////////////////////////////////////////////Setup new JSON object to save FFT settings
+  JSONObject SaveFFTSettings = new JSONObject();
+
+  //Save FFT Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
+  SaveFFTSettings.setInt("FFT Max Freq", FFTmaxfrqsave);
+  //Save FFT max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
+  SaveFFTSettings.setInt("FFT Max uV", FFTmaxuVsave);
+  //Save FFT LogLin Setting. Same thing happens for LogLin
+  SaveFFTSettings.setInt("FFT LogLin", FFTloglinsave);
+  //Save FFT Smoothing Setting
+  SaveFFTSettings.setInt("FFT Smoothing", smoothFac_ind);
+  //Save FFT Filter Setting
+  if (isFFTFiltered == true)  FFTfiltersave = 0;
+  if (isFFTFiltered == false)  FFTfiltersave = 1;  
+  SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
+  //Set the FFT JSON Object
+  SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings); //next object will be set to slnchan+2, etc.  
+  
+  ////////////////////////////////////////////////////////////////////////////////
+  ///ADD more global settings below this line in the same format as above/////////
 
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
-  }
+  } //end of playback mode case
   
-  ////////////Case for Playback and Synthetic Data Modes
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //              Case for saving settings when in Synthetic or Playback data modes                          //
   if(eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC) {
     for (int i = 0; i < slnchan; i++) {
       
@@ -232,8 +249,8 @@ void SaveGUIsettings() {
     //Save FFT Smoothing Setting
     SaveFFTSettings.setInt("FFT Smoothing", smoothFac_ind);
     //Save FFT Filter Setting
-    if (isFFTFiltered == true)  FFTfiltersave = 1;
-    if (isFFTFiltered == false)  FFTfiltersave = 0;  
+    if (isFFTFiltered == true)  FFTfiltersave = 0;
+    if (isFFTFiltered == false)  FFTfiltersave = 1;  
     SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
     //Set the FFT JSON Object
     SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings); //next object will be set to slnchan+2, etc.
@@ -413,27 +430,67 @@ void LoadGUIsettings() {
   println("Vert/Horiz Scales Loaded!");  
    
   //////Apply FFT settings
-  MaxFreq(FFTmaxfrqload); 
- 
-      w_fft.cp5_widget.getController("MaxFreq")
+  MaxFreq(FFTmaxfrqload); //This changes the backend
+    w_fft.cp5_widget.getController("MaxFreq") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FFTmaxfrqarray[FFTmaxfrqload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;
+  VertScale(FFTmaxuVload);
+    w_fft.cp5_widget.getController("VertScale") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FFTvertscalearray[FFTmaxuVload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;  
+  LogLin(FFTloglinload);
+     w_fft.cp5_widget.getController("LogLin") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FFTloglinarray[FFTloglinload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;   
+  Smoothing(FFTsmoothingload);
+     w_fft.cp5_widget.getController("Smoothing") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FFTsmoothingarray[FFTsmoothingload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;       
+  UnfiltFilt(FFTfilterload);
+     w_fft.cp5_widget.getController("UnfiltFilt") //Reference the dropdown from the appropriate widget
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FFTfilterarray[FFTfilterload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;     
+  
+  ///////////Apply Networking Settings
+  w_networking.cp5_networking_dropdowns.getController("dataType1") //THIS WORKS!!!
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(FFTmaxfrqarray[FFTmaxfrqload])
-      .setFont(h5)
-      .setSize(12)
+      .setText(NWdatatypesarray[nwdatatype1])
+      .setFont(h4)
+      .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
-      ;
-
-  VertScale(FFTmaxuVload);
-  
-  LogLin(FFTloglinload);
-  
-  Smoothing(FFTsmoothingload);
-  
-  UnfiltFilt(FFTfilterload);
-  ///^^^^^^^^^^^^^^^^^^^^^^^^For some reason, this approach updates the backend of the FFT widget, but does not update the value displayed in the dropdowns. Needs a fix. Once fixed, should be able to save, load, and apply ALL dropdowns for all widgets
-  
+      ;  
   
   ////////////////////////////////////////////////////////////
   //    Apply more loaded widget settings below this line   // 

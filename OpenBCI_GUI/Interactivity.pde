@@ -240,12 +240,13 @@ void parseKey(char val) {
      //The spacebar is being used now so these old shortcuts are no longer needed
      //Lowercase 's' can also be used now for development testing purporses
     
-    
+    /*  
     case 's':
       println("case s...");
       //stopRunning();
       //Dropdown1(1);
       // stopButtonWasPressed();
+
     w_networking.cp5_networking_dropdowns.getController("dataType1") //THIS WORKS!!!
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
@@ -255,11 +256,9 @@ void parseKey(char val) {
       .getStyle() //need to grab style before affecting the paddingTop
       .setPaddingTop(4)
       ;
-      
-      //cp5_widget.get(ScrollableList.class, dropdowns.get(i).id)
-      
       break;
-    
+     */
+      
     /*
     case 'b':
       println("case b...");
@@ -288,18 +287,7 @@ void parseKey(char val) {
       
       //////      ////// Save settings capital S      //////      //////      //////
     case 'S':      
-      
-    //Write the following to the text file:
-      //default layout --almost done
-      //default notch
-      //default vert scale for analog read widget
-      //default vert scale for time series widget
-
-//w_analogread.startingVertScaleIndex //default vert scale for analog read widget
-//w_timeseries.startingVertScaleIndex //default vert scale for time series widget
-
       println("Save key pressed!");
-      
       /*
       final String[] SaveSettingsData = {
         "Using Layout Number: " + currentLayout, 
@@ -311,8 +299,7 @@ void parseKey(char val) {
         };
       final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
       saveStrings(SaveSettingsPath, SaveSettingsData);
-      */
-      
+      */    
       SaveGUIsettings();
       output("Settings Saved!");
       

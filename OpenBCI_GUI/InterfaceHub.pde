@@ -79,8 +79,8 @@ final static String TCP_CMD_CONNECT = "c";
 final static String TCP_CMD_COMMAND = "k";
 final static String TCP_CMD_DISCONNECT = "d";
 final static String TCP_CMD_DATA = "t";
-final static String TCP_CMD_ERROR = "e"; //<>// //<>// //<>//
-final static String TCP_CMD_EXAMINE = "x"; //<>// //<>// //<>//
+final static String TCP_CMD_ERROR = "e"; //<>// //<>// //<>// //<>// //<>// //<>//
+final static String TCP_CMD_EXAMINE = "x"; //<>// //<>// //<>// //<>// //<>// //<>//
 final static String TCP_CMD_IMPEDANCE = "i";
 final static String TCP_CMD_LOG = "l";
 final static String TCP_CMD_PROTOCOL = "p";
@@ -563,8 +563,8 @@ class Hub {
       // println(msg);
       String[] list = split(msg, ',');
       int code = Integer.parseInt(list[1]);
-      int stopByte = 0xC0; //<>// //<>//
-      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>// //<>//
+      int stopByte = 0xC0; //<>// //<>// //<>// //<>// //<>//
+      if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>// //<>// //<>// //<>// //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) {
           // Sample number stuff
           dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
@@ -635,7 +635,7 @@ class Hub {
             }
           }
           getRawValues(dataPacket);
-          // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>// //<>//
+          // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>// //<>// //<>// //<>// //<>//
           // println(dataPacket.values[7]);
           curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
           copyDataPacketTo(dataPacketBuff[curDataPacketInd]);

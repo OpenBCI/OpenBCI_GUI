@@ -40,10 +40,10 @@
   },
   {
     "FFT Max uV": 2,
-    "FFT Max Freq": 6,
-    "FFT Filter": 0,
-    "FFT LogLin": 0,
-    "FFT Smoothing": 3
+    "FFT Max Freq": 2,
+    "FFT Filter": 1,
+    "FFT LogLin": 1,
+    "FFT Smoothing": 2
   },
   {
     "Data Type 3": 0,
