@@ -24,7 +24,7 @@ Loading and applying settings contained in dropdown menus are at the bottomw in 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////S
 /*
                        This sketch saves and loads the following User Settings:    
                        -- All Time Series widget settings
@@ -181,6 +181,27 @@ void SaveGUIsettings() {
       SaveTimeSeriesSettings.setInt("SRB1", TSsrb1setting);
       SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
     }
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //              Case for saving settings when in Synthetic or Playback data modes                          //
+  if(eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC) {
+    for (int i = 0; i < slnchan; i++) {
+      
+      //Make a JSON Object for each of the Time Series Channels
+      JSONObject SaveTimeSeriesSettings = new JSONObject();
+     
+      for (int j = 0; j < 1; j++) {
+        switch(j) { 
+          case 0: //Just save what channels are active
+            if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
+            if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
+            break;
+          }
+      }  
+      SaveTimeSeriesSettings.setInt("Channel_Number", (i+1));
+      SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
+      SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
+    }      
+  }    
   //Make a second JSON object within our JSONArray to store Global settings for the GUI
   JSONObject SaveGlobalSettings = new JSONObject();
   
@@ -229,77 +250,7 @@ void SaveGUIsettings() {
 
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
-  } //end of playback mode case
   
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //              Case for saving settings when in Synthetic or Playback data modes                          //
-  if(eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC) {
-    for (int i = 0; i < slnchan; i++) {
-      
-      //Make a JSON Object for each of the Time Series Channels
-      JSONObject SaveTimeSeriesSettings = new JSONObject();
-     
-      for (int j = 0; j < 1; j++) {
-        switch(j) { 
-          case 0: //Just save what channels are active
-            if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
-            if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
-            break;
-          }
-      }  
-      SaveTimeSeriesSettings.setInt("Channel_Number", (i+1));
-      SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
-      SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
-    }    
-    
-    ////////////////////////////////////////////////Make a JSON object within our JSONArray to store Global settings for the GUI
-    JSONObject SaveGlobalSettings = new JSONObject();
-    SaveGlobalSettings.setInt("Current Layout", currentLayout);
-    SaveGlobalSettings.setInt("Notch", dataProcessing.currentNotch_ind);
-    SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
-    SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
-    SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
-    SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
-    SaveSettingsJSONData.setJSONObject(slnchan, SaveGlobalSettings);
-  
-    ///////////////////////////////////////////////Setup new JSON object to save FFT settings
-    JSONObject SaveFFTSettings = new JSONObject();
-
-    //Save FFT Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
-    SaveFFTSettings.setInt("FFT Max Freq", FFTmaxfrqsave);
-    //Save FFT max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
-    SaveFFTSettings.setInt("FFT Max uV", FFTmaxuVsave);
-    //Save FFT LogLin Setting. Same thing happens for LogLin
-    SaveFFTSettings.setInt("FFT LogLin", FFTloglinsave);
-    //Save FFT Smoothing Setting
-    SaveFFTSettings.setInt("FFT Smoothing", smoothFac_ind);
-    //Save FFT Filter Setting
-    if (isFFTFiltered == true)  FFTfiltersave = 0;
-    if (isFFTFiltered == false)  FFTfiltersave = 1;  
-    SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
-    //Set the FFT JSON Object
-    SaveSettingsJSONData.setJSONObject(slnchan+1, SaveFFTSettings); //next object will be set to slnchan+2, etc.
-    
-    ///////////////////////////////////////////////Setup new JSON object to save Networking settings
-    JSONObject SaveNetworkingSettings = new JSONObject();
-    
-    //***Save User networking protocol mode
-    
-    //Save Data Types
-    SaveNetworkingSettings.setInt("Data Type 1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-    SaveNetworkingSettings.setInt("Data Type 2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-    SaveNetworkingSettings.setInt("Data Type 3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-    SaveNetworkingSettings.setInt("Data Type 4", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));
-    
-    //Set Networking Settings JSON Object
-    SaveSettingsJSONData.setJSONObject(slnchan+2, SaveNetworkingSettings);
-    
-    //Let's save the JSON array to a file!
-    saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
-    
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////  ADD more save widget settings below this line in the same format as above  ///////
-    
   }
 }  //End of Save GUI Settings function
   
