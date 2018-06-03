@@ -397,11 +397,11 @@ void LoadGUIsettings() {
       /////////////////////////////////////////////////////////////
       //    Load more widget settings below this line as above   //
       if (i == slnchan + 2) {
+        NWprotocolload = LoadAllSettings.getInt("Protocol");
         nwdatatype1 = LoadAllSettings.getInt("Data Type 1");
         nwdatatype2 = LoadAllSettings.getInt("Data Type 2");
         nwdatatype3 = LoadAllSettings.getInt("Data Type 3");        
         nwdatatype4 = LoadAllSettings.getInt("Data Type 4"); 
-        NWprotocolload = LoadAllSettings.getInt("Protocol");
         NWoscip1load = LoadAllSettings.getString("OSC_ip1");
         NWoscip2load = LoadAllSettings.getString("OSC_ip2");        
         NWoscip3load = LoadAllSettings.getString("OSC_ip3");        
@@ -438,14 +438,14 @@ void LoadGUIsettings() {
   //println("Vert/Horiz Scales Loaded!");  
    
   //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
-  LoadApplyWidgetDropdowns(); 
+  LoadApplyWidgetDropdownText(); 
 
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void LoadApplyWidgetDropdowns() {
+void LoadApplyWidgetDropdownText() {
   
   ////////Apply Time Series widget settings
   VertScale_TS(loadTimeSeriesVertScale);// changes backend
@@ -523,15 +523,28 @@ void LoadApplyWidgetDropdowns() {
   
   ///////////Apply Networking Settings
   Protocol(NWprotocolload);
-  
+  //Update dropdowns and textfields in the Networking widget with loaded values
   w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(NWprotocolarray[NWprotocolload]); //Reference the dropdown from the appropriate widget
-
   w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(NWdatatypesarray[nwdatatype1]); //THIS WORKS!!!
   w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(NWdatatypesarray[nwdatatype2]); //THIS WORKS!!!
   w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(NWdatatypesarray[nwdatatype3]); //THIS WORKS!!!
   w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(NWdatatypesarray[nwdatatype4]); //THIS WORKS!!!
-  
-  w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas");
+  w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(NWoscip1load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(NWoscip2load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_ip3").setText(NWoscip3load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_ip4").setText(NWoscip4load);  
+  w_networking.cp5_networking.get(Textfield.class, "osc_port1").setText(NWoscport1load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_port2").setText(NWoscport2load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_port3").setText(NWoscport3load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_port4").setText(NWoscport4load);    
+  w_networking.cp5_networking.get(Textfield.class, "osc_address1").setText(NWoscaddress1load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_address2").setText(NWoscaddress2load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_address3").setText(NWoscaddress3load);
+  w_networking.cp5_networking.get(Textfield.class, "osc_address4").setText(NWoscaddress4load);      
+  w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(NWoscfilter1load);
+  w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(NWoscfilter2load);  
+  w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(NWoscfilter3load);
+  w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(NWoscfilter4load);  
   ////////////////////////////////////////////////////////////
   //    Apply more loaded widget settings below this line   // 
 
