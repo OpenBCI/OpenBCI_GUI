@@ -75,7 +75,7 @@ int TSsrb2setting;
 int TSsrb1setting;
 
 //Load global settings variables
-int loadLayoutsetting = 4;   
+int loadLayoutsetting;   
 int loadNotchsetting;
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
@@ -181,6 +181,7 @@ void SaveGUIsettings() {
       SaveTimeSeriesSettings.setInt("SRB1", TSsrb1setting);
       SaveSettingsJSONData.setJSONObject(i, SaveTimeSeriesSettings);
     }
+  }
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //              Case for saving settings when in Synthetic or Playback data modes                          //
   if(eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC) {
@@ -204,6 +205,7 @@ void SaveGUIsettings() {
   }    
   //Make a second JSON object within our JSONArray to store Global settings for the GUI
   JSONObject SaveGlobalSettings = new JSONObject();
+  
   
   SaveGlobalSettings.setInt("Current Layout", currentLayout);
   SaveGlobalSettings.setInt("Notch", dataProcessing.currentNotch_ind);
@@ -250,8 +252,7 @@ void SaveGUIsettings() {
 
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
-  
-  }
+
 }  //End of Save GUI Settings function
   
 ///////////////////////////////  
@@ -394,8 +395,7 @@ void LoadGUIsettings() {
   //Apply the loaded settings to the GUI
   println("Loading Settings...");
   //Apply layout
-  currentLayout = loadLayoutsetting;
-  wm.setNewContainerLayout(currentLayout-1);
+  wm.setNewContainerLayout(loadLayoutsetting);
   println("Layout Loaded!");
   //Apply notch
   loadNotchsetting = dataProcessing.currentNotch_ind;
@@ -503,7 +503,7 @@ void LoadApplyWidgetDropdowns() {
   w_networking.cp5_networking_dropdowns.getController("dataType2") //THIS WORKS!!!
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype1])
+      .setText(NWdatatypesarray[nwdatatype2])
       .setFont(h4)
       .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop
@@ -512,7 +512,7 @@ void LoadApplyWidgetDropdowns() {
   w_networking.cp5_networking_dropdowns.getController("dataType3") //THIS WORKS!!!
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype1])
+      .setText(NWdatatypesarray[nwdatatype3])
       .setFont(h4)
       .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop
@@ -521,7 +521,7 @@ void LoadApplyWidgetDropdowns() {
   w_networking.cp5_networking_dropdowns.getController("dataType4") //THIS WORKS!!!
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype1])
+      .setText(NWdatatypesarray[nwdatatype4])
       .setFont(h4)
       .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop

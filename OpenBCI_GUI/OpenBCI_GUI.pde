@@ -283,7 +283,7 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
 //default layout variables
 int layoutSelected;
-int currentLayout = 3;
+int currentLayout;
 int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
 //default vert/horiz scales for a few widgets

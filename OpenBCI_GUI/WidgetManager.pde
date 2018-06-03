@@ -170,9 +170,11 @@ class WidgetManager{
 
     if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
       currentContainerLayout = 1;
+      currentLayout = 1; // used for save/load settings
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
     } else {
       currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
+      currentLayout = 4; // used for save/load settings
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
     }
 
