@@ -310,10 +310,10 @@ int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to sta
 int intensityFac_ind = 2;
 
 //default data types for streams 1-4 in Networking widget, declared here for use with save/load
-String nwdatatype1="None";
-String nwdatatype2="None";
-String nwdatatype3="None";
-String nwdatatype4="None";
+int nwdatatype1=0;
+int nwdatatype2=0;
+int nwdatatype3=0;
+int nwdatatype4=0;
 
 //------------------------------------------------------------------------
 //                       Global Functions

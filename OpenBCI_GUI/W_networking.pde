@@ -861,13 +861,6 @@ class W_networking extends Widget {
       case 7 : dt4 = "Widget";
         break;
     }
-    
-    nwdatatype1 = dt1;
-    nwdatatype2 = dt2;
-    nwdatatype3 = dt3;
-    nwdatatype4 = dt4;
-    println(dt4);
-    
     // Establish OSC Streams
     if (protocolMode.equals("OSC")){
       if(!dt1.equals("None")){
@@ -903,7 +896,6 @@ class W_networking extends Widget {
         address = cp5_networking.get(Textfield.class, "osc_address4").getText();
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter4").getValue();
         stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan);
-        println(port + "stream 4 port");
       }else{
         stream4 = null;
       }

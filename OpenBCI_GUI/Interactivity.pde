@@ -1112,7 +1112,7 @@ boolean isNetworkingTextActive(){
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
 
   //isFocus(); returns true if active for textField...
-  println(isAFieldActive + " bananas");
+  println(isAFieldActive);
   return isAFieldActive; //if not, return false
 }
 

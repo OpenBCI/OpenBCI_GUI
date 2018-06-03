@@ -236,10 +236,14 @@ void SaveGUIsettings() {
     //***Save User networking protocol mode
     
     //Save Data Types
-    SaveNetworkingSettings.setString("Data Type 1", nwdatatype1);
-    SaveNetworkingSettings.setString("Data Type 2", nwdatatype2);
-    SaveNetworkingSettings.setString("Data Type 3", nwdatatype3);
-    SaveNetworkingSettings.setString("Data Type 4", nwdatatype4);
+    nwdatatype1 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
+    nwdatatype2 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));    
+    nwdatatype3 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));    
+    nwdatatype4 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));    
+    SaveNetworkingSettings.setInt("Data Type 1", nwdatatype1);
+    SaveNetworkingSettings.setInt("Data Type 2", nwdatatype2);
+    SaveNetworkingSettings.setInt("Data Type 3", nwdatatype3);
+    SaveNetworkingSettings.setInt("Data Type 4", nwdatatype4);
     
     //Set Networking Settings JSON Object
     SaveSettingsJSONData.setJSONObject(slnchan+2, SaveNetworkingSettings);
