@@ -8,8 +8,8 @@
           -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load -- THIS WORKS 
 
 Requested User Settings to save so far:
-wm.currentContainerLayout //default layout
-dataprocessing.currentNotch_ind //default notch
+wm.currentContainerLayout //default layout --done
+dataprocessing.currentNotch_ind //default notch --is save/load, but not applied on load yet
 w_analogread.startingVertScaleIndex //default vert scale for analog read widget
 w_timeseries.startingVertScaleIndex //default vert scale for time series widget
       
@@ -64,6 +64,7 @@ String[] FFTsmoothingarray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 String[] FFTfilterarray = {"Filtered", "Unfilt."};
 
 //Used to set text in dropdown menus when loading Networking settings
+String[] NWprotocolarray = {"OSC", "UDP", "LSL", "Serial"};
 String[] NWdatatypesarray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget"};
 
 //Save Time Series settings variables
@@ -82,23 +83,15 @@ int loadTimeSeriesHorizScale;
 int loadAnalogReadVertScale;
 int loadAnalogReadHorizScale;
 
-
+//Networking Settings save/load variables
+int NWprotocolload;
+String NWoscip1load;  String NWoscip2load;  String NWoscip3load;  String NWoscip4load;
+String NWoscport1load;  String NWoscport2load;  String NWoscport3load;  String NWoscport4load;
+String NWoscaddress1load;  String NWoscaddress2load; String NWoscaddress3load; String NWoscaddress4load;
+int NWoscfilter1load;  int NWoscfilter2load;  int NWoscfilter3load;  int NWoscfilter4load;
 //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
 int slnchan; 
 
-/* moved to first tab to make global accessible
-//FFT plot settings
-int FFTmaxfrqsave;
-int FFTmaxfrqload;
-int FFTmaxuVsave;
-int FFTmaxuVload;
-int FFTloglinsave;
-int FFTloglinload;
-int FFTsmoothingsave;
-int FFTsmoothingload;
-int FFTfiltersave;
-int FFTfilterload;
-*/
 
 ///////////////////////////////  
 //      Save GUI Settings    //
@@ -235,15 +228,33 @@ void SaveGUIsettings() {
   
   ///////////////////////////////////////////////Setup new JSON object to save Networking settings
   JSONObject SaveNetworkingSettings = new JSONObject();
-  
-  //***Save User networking protocol mode
-  
+  //Save Protocol
+  SaveNetworkingSettings.setInt("Protocol", NWprotocolsave);//***Save User networking protocol mode
   //Save Data Types
   SaveNetworkingSettings.setInt("Data Type 1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
   SaveNetworkingSettings.setInt("Data Type 2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
   SaveNetworkingSettings.setInt("Data Type 3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
   SaveNetworkingSettings.setInt("Data Type 4", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));
-  
+  //Save IP addresses for OSC
+  SaveNetworkingSettings.setString("OSC_ip1", w_networking.cp5_networking.get(Textfield.class, "osc_ip1").getText());
+  SaveNetworkingSettings.setString("OSC_ip2", w_networking.cp5_networking.get(Textfield.class, "osc_ip2").getText());
+  SaveNetworkingSettings.setString("OSC_ip3", w_networking.cp5_networking.get(Textfield.class, "osc_ip3").getText());  
+  SaveNetworkingSettings.setString("OSC_ip4", w_networking.cp5_networking.get(Textfield.class, "osc_ip4").getText());
+  //Save Ports for OSC
+  SaveNetworkingSettings.setString("OSC_port1", w_networking.cp5_networking.get(Textfield.class, "osc_port1").getText());
+  SaveNetworkingSettings.setString("OSC_port2", w_networking.cp5_networking.get(Textfield.class, "osc_port2").getText());
+  SaveNetworkingSettings.setString("OSC_port3", w_networking.cp5_networking.get(Textfield.class, "osc_port3").getText());  
+  SaveNetworkingSettings.setString("OSC_port4", w_networking.cp5_networking.get(Textfield.class, "osc_port4").getText());
+  //Save addresses for OSC
+  SaveNetworkingSettings.setString("OSC_address1", w_networking.cp5_networking.get(Textfield.class, "osc_address1").getText());
+  SaveNetworkingSettings.setString("OSC_address2", w_networking.cp5_networking.get(Textfield.class, "osc_address2").getText());
+  SaveNetworkingSettings.setString("OSC_address3", w_networking.cp5_networking.get(Textfield.class, "osc_address3").getText());  
+  SaveNetworkingSettings.setString("OSC_address4", w_networking.cp5_networking.get(Textfield.class, "osc_address4").getText());
+  //Save filters for OSC
+  SaveNetworkingSettings.setInt("OSC_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
+  SaveNetworkingSettings.setInt("OSC_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
+  SaveNetworkingSettings.setInt("OSC_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
+  SaveNetworkingSettings.setInt("OSC_filter4", int(w_networking.cp5_networking.get(RadioButton.class, "filter4").getValue()));  
   //Set Networking Settings JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+2, SaveNetworkingSettings);  
 
@@ -254,6 +265,8 @@ void SaveGUIsettings() {
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
 
 }  //End of Save GUI Settings function
+  
+  
   
 ///////////////////////////////  
 //      Load GUI Settings    //
@@ -387,7 +400,25 @@ void LoadGUIsettings() {
         nwdatatype1 = LoadAllSettings.getInt("Data Type 1");
         nwdatatype2 = LoadAllSettings.getInt("Data Type 2");
         nwdatatype3 = LoadAllSettings.getInt("Data Type 3");        
-        nwdatatype4 = LoadAllSettings.getInt("Data Type 4");        
+        nwdatatype4 = LoadAllSettings.getInt("Data Type 4"); 
+        NWprotocolload = LoadAllSettings.getInt("Protocol");
+        NWoscip1load = LoadAllSettings.getString("OSC_ip1");
+        NWoscip2load = LoadAllSettings.getString("OSC_ip2");        
+        NWoscip3load = LoadAllSettings.getString("OSC_ip3");        
+        NWoscip4load = LoadAllSettings.getString("OSC_ip4");        
+        NWoscport1load = LoadAllSettings.getString("OSC_port1");
+        NWoscport2load = LoadAllSettings.getString("OSC_port2");        
+        NWoscport3load = LoadAllSettings.getString("OSC_port3");        
+        NWoscport4load = LoadAllSettings.getString("OSC_port4");                
+        NWoscaddress1load = LoadAllSettings.getString("OSC_address1");
+        NWoscaddress2load = LoadAllSettings.getString("OSC_address2");        
+        NWoscaddress3load = LoadAllSettings.getString("OSC_address3");        
+        NWoscaddress4load = LoadAllSettings.getString("OSC_address4");                
+        NWoscfilter1load = LoadAllSettings.getInt("OSC_filter1");
+        NWoscfilter2load = LoadAllSettings.getInt("OSC_filter2");        
+        NWoscfilter3load = LoadAllSettings.getInt("OSC_filter3");        
+        NWoscfilter4load = LoadAllSettings.getInt("OSC_filter4");         
+        
       }
       
     }
@@ -491,42 +522,18 @@ void LoadApplyWidgetDropdowns() {
     ;     
   
   ///////////Apply Networking Settings
-  w_networking.cp5_networking_dropdowns.getController("dataType1") //THIS WORKS!!!
-      .getCaptionLabel() //the caption label is the text object in the primary bar
-      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype1])
-      .setFont(h4)
-      .setSize(14)
-      .getStyle() //need to grab style before affecting the paddingTop
-      .setPaddingTop(4)
-      ;  
-  w_networking.cp5_networking_dropdowns.getController("dataType2") //THIS WORKS!!!
-      .getCaptionLabel() //the caption label is the text object in the primary bar
-      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype2])
-      .setFont(h4)
-      .setSize(14)
-      .getStyle() //need to grab style before affecting the paddingTop
-      .setPaddingTop(4)
-      ;  
-  w_networking.cp5_networking_dropdowns.getController("dataType3") //THIS WORKS!!!
-      .getCaptionLabel() //the caption label is the text object in the primary bar
-      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype3])
-      .setFont(h4)
-      .setSize(14)
-      .getStyle() //need to grab style before affecting the paddingTop
-      .setPaddingTop(4)
-      ;  
-  w_networking.cp5_networking_dropdowns.getController("dataType4") //THIS WORKS!!!
-      .getCaptionLabel() //the caption label is the text object in the primary bar
-      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText(NWdatatypesarray[nwdatatype4])
-      .setFont(h4)
-      .setSize(14)
-      .getStyle() //need to grab style before affecting the paddingTop
-      .setPaddingTop(4)
-      ;        
+  Protocol(NWprotocolload);
+  
+  w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(NWprotocolarray[NWprotocolload]); //Reference the dropdown from the appropriate widget
+
+  w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(NWdatatypesarray[nwdatatype1]); //THIS WORKS!!!
+  w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(NWdatatypesarray[nwdatatype2]); //THIS WORKS!!!
+  w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(NWdatatypesarray[nwdatatype3]); //THIS WORKS!!!
+  w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(NWdatatypesarray[nwdatatype4]); //THIS WORKS!!!
+  
+  w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas");
   ////////////////////////////////////////////////////////////
   //    Apply more loaded widget settings below this line   // 
+
+    //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
 }

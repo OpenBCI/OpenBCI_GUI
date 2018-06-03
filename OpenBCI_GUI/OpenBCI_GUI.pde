@@ -318,6 +318,7 @@ int nwdatatype1=0;
 int nwdatatype2=0;
 int nwdatatype3=0;
 int nwdatatype4=0;
+int NWprotocolsave;
 
 //------------------------------------------------------------------------
 //                       Global Functions

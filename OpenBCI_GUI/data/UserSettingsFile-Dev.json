@@ -36,20 +36,37 @@
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,
-    "Time Series Vert Scale": 6,
-    "Time Series Horiz Scale": 0
+    "Time Series Vert Scale": 3,
+    "Time Series Horiz Scale": 2
   },
   {
-    "FFT Max uV": 0,
-    "FFT Max Freq": 7,
-    "FFT Filter": 1,
-    "FFT LogLin": 1,
-    "FFT Smoothing": 0
+    "FFT Max uV": 2,
+    "FFT Max Freq": 2,
+    "FFT Filter": 0,
+    "FFT LogLin": 0,
+    "FFT Smoothing": 3
   },
   {
-    "Data Type 3": 4,
-    "Data Type 2": 2,
-    "Data Type 1": 1,
-    "Data Type 4": 6
+    "Data Type 3": 0,
+    "OSC_ip2": "127.0.0.1",
+    "Data Type 2": 0,
+    "OSC_ip1": "127.0.0.1",
+    "Data Type 1": 0,
+    "OSC_ip4": "127.0.0.1",
+    "Data Type 4": 0,
+    "OSC_ip3": "127.0.0.1",
+    "OSC_port1": "12345",
+    "OSC_address1": "/openbci",
+    "OSC_port2": "12346",
+    "OSC_port3": "12347",
+    "OSC_address3": "/openbci",
+    "OSC_port4": "12348",
+    "OSC_address2": "/openbci",
+    "OSC_filter4": 0,
+    "OSC_address4": "/openbci",
+    "OSC_filter1": 0,
+    "OSC_filter2": 0,
+    "OSC_filter3": 0,
+    "Protocol": 0
   }
 ]
