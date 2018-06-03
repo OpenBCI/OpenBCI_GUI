@@ -157,7 +157,7 @@ class Widget{
     // println("Setting up dropdowns...");
     for(int i = 0; i < dropdowns.size(); i++){
       int dropdownPos = dropdowns.size() - i;
-      // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
+       println("dropdowns.get(i).id = " + dropdowns.get(i).id);
       cp5_widget.addScrollableList(dropdowns.get(i).id)
         .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
         .setFont(h5)

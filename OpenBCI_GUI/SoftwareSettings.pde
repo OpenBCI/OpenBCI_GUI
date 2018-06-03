@@ -39,7 +39,7 @@ FFT info is at the bottom for working purposes currently. See commented out sect
 JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
 
-//these string arrays are used to print the status of each channel in the console when loading settings
+//Used to print the status of each channel in the console when loading settings
 String[] channelsActivearray = {"Active", "Not Active"};
 String[] gainSettingsarray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
 String[] inputTypearray = { "Normal", "Shorted", "BIAS_MEAS", "MVDD", "Temp.", "Test", "BIAS_DRP", "BIAS_DRN"};
@@ -47,6 +47,14 @@ String[] BiasIncludearray = {"Don't Include", "Include"};
 String[] SRB2settingarray = {"Off", "On"};
 String[] SRB1settingarray = {"Off", "On"};
 
+//Used to set text in dropdown menus when loading FFT settings
+String[] FFTmaxfrqarray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
+String[] FFTvertscalearray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
+String[] FFTloglinarray = {"Log", "Linear"};
+String[] FFTsmoothingarray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
+String[] FFTfilterarray = {"Filtered", "Unfilt."};
+
+//Used to set text in dropdown menus when loading Networking settings
 
 
 //Save Time Series settings variables
@@ -236,14 +244,14 @@ void SaveGUIsettings() {
     //***Save User networking protocol mode
     
     //Save Data Types
-    nwdatatype1 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-    nwdatatype2 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));    
-    nwdatatype3 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));    
-    nwdatatype4 = int((w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));    
-    SaveNetworkingSettings.setInt("Data Type 1", nwdatatype1);
-    SaveNetworkingSettings.setInt("Data Type 2", nwdatatype2);
-    SaveNetworkingSettings.setInt("Data Type 3", nwdatatype3);
-    SaveNetworkingSettings.setInt("Data Type 4", nwdatatype4);
+    //nwdatatype1 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
+    //nwdatatype2 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue());    
+    //nwdatatype3 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue());    
+    //nwdatatype4 = int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue());    
+    SaveNetworkingSettings.setInt("Data Type 1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
+    SaveNetworkingSettings.setInt("Data Type 2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
+    SaveNetworkingSettings.setInt("Data Type 3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
+    SaveNetworkingSettings.setInt("Data Type 4", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));
     
     //Set Networking Settings JSON Object
     SaveSettingsJSONData.setJSONObject(slnchan+2, SaveNetworkingSettings);
@@ -270,8 +278,8 @@ void LoadGUIsettings() {
     //Make a JSON object, we only need one to load data, and call it LoadAllSettings
     JSONObject LoadAllSettings = LoadSettingsJSONData.getJSONObject(i); 
     
-    
-   //Case for loading settings in Live Data move
+   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+   //                        Case for loading settings in Live Data move                                       //
    if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { //Need help adding a case for DATASOURCE_SYNTHETIC to skip writing time series settings, without writing Null to the JSON array. Also need to add a case for Playback settings.
       
       //parse the channel settings first for only the number of channels being used
@@ -326,7 +334,8 @@ void LoadGUIsettings() {
         }  
       }
       
-      //Case for loading settings when in Synthetic or Playback data modes
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //              Case for loading settings when in Synthetic or Playback data modes                          //
       if(eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
         //parse the channel settings first for only the number of channels being used
         if (i < slnchan) {   
@@ -382,6 +391,9 @@ void LoadGUIsettings() {
       
       /////////////////////////////////////////////////////////////
       //    Load more widget settings below this line as above   //
+      if (i == slnchan + 2) {
+        nwdatatype1 = LoadAllSettings.getInt("Data Type 1");
+      }
       
     }
   
@@ -401,10 +413,24 @@ void LoadGUIsettings() {
   println("Vert/Horiz Scales Loaded!");  
    
   //////Apply FFT settings
-  MaxFreq(FFTmaxfrqload);
+  MaxFreq(FFTmaxfrqload); 
+ 
+      w_fft.cp5_widget.getController("MaxFreq")
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText(FFTmaxfrqarray[FFTmaxfrqload])
+      .setFont(h5)
+      .setSize(12)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;
+
   VertScale(FFTmaxuVload);
+  
   LogLin(FFTloglinload);
+  
   Smoothing(FFTsmoothingload);
+  
   UnfiltFilt(FFTfilterload);
   ///^^^^^^^^^^^^^^^^^^^^^^^^For some reason, this approach updates the backend of the FFT widget, but does not update the value displayed in the dropdowns. Needs a fix. Once fixed, should be able to save, load, and apply ALL dropdowns for all widgets
   
