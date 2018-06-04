@@ -286,6 +286,10 @@ int layoutSelected;
 int currentLayout;
 int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
+//default notch and bandpass filter variables for save
+int dataProcessingNotchSave;
+int dataProcessingBandpassSave;
+
 //default vert/horiz scales for a few widgets
 //int TimeSeriesStartingVertScaleIndex = 3;
 int AnalogReadStartingVertScaleIndex = 5;

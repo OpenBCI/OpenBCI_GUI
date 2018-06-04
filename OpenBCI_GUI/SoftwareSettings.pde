@@ -10,8 +10,9 @@
 Requested User Settings to save so far:
 wm.currentContainerLayout //default layout --done
 dataprocessing.currentNotch_ind //default notch --is save/load, but not applied on load yet
-w_analogread.startingVertScaleIndex //default vert scale for analog read widget
-w_timeseries.startingVertScaleIndex //default vert scale for time series widget
+
+w_analogread.startingVertScaleIndex //default vert scale for analog read widget, not applied
+w_timeseries.startingVertScaleIndex //default vert scale for time series widget, not applied
       
 Activate/Deactivating channels:
 deactivateChannel(Channel-1)
@@ -43,6 +44,10 @@ Loading and applying settings contained in dropdown menus are at the bottomw in 
 
 JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
+
+//Used to set text for Notch and BP filter settings
+String [] DataProcessingNotcharray = {"60Hz", "50Hz", "None"};
+String [] DataProcessingBParray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", "No Filter"};
 
 // Used to set text in Time Series dropdown settings
 String[] TSvertscalearray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
@@ -78,6 +83,7 @@ int TSsrb1setting;
 //Load global settings variables
 int loadLayoutsetting;   
 int loadNotchsetting;
+int loadBandpasssetting;
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
 int loadAnalogReadVertScale;
@@ -201,7 +207,8 @@ void SaveGUIsettings() {
   
   
   SaveGlobalSettings.setInt("Current Layout", currentLayout);
-  SaveGlobalSettings.setInt("Notch", dataProcessing.currentNotch_ind);
+  SaveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
+  SaveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
   SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
   SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
@@ -355,6 +362,7 @@ void LoadGUIsettings() {
       if (i == slnchan) {
         loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
         loadNotchsetting = LoadAllSettings.getInt("Notch");
+        loadBandpasssetting = LoadAllSettings.getInt("Bandpass Filter");
         loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
         loadTimeSeriesHorizScale = LoadAllSettings.getInt("Time Series Horiz Scale");
         loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
@@ -365,6 +373,7 @@ void LoadGUIsettings() {
         final String[] LoadedGlobalSettings = {
           "Using Layout Number: " + loadLayoutsetting, 
           "Default Notch: " + loadNotchsetting, //default notch
+          "Default BP: " + loadBandpasssetting, //default bp
           "TS Vert Scale: " + loadTimeSeriesVertScale,
           "TS Horiz Scale: " + loadTimeSeriesHorizScale,
           "Analog Vert Scale: " + loadAnalogReadVertScale,
@@ -424,13 +433,17 @@ void LoadGUIsettings() {
     }
   
   //Apply the loaded settings to the GUI
-  println("Loading Settings...");
   //Apply layout
   wm.setNewContainerLayout(loadLayoutsetting);
   println("Layout Loaded!");
+  
   //Apply notch
-  loadNotchsetting = dataProcessing.currentNotch_ind;
-  println("Notch Loaded!");
+  dataProcessing.currentNotch_ind = loadNotchsetting;
+  topNav.filtNotchButton.but_txt = "Notch\n" + DataProcessingNotcharray[loadNotchsetting];
+  //Apply Bandpass filter
+  dataProcessing.currentFilt_ind = loadBandpasssetting;
+  topNav.filtBPButton.but_txt = "BP Filt\n" + DataProcessingBParray[loadBandpasssetting]; //this works
+  println(DataProcessingBParray[loadBandpasssetting]);
   
   //follow example of applying time series dropdowns to this
   AnalogReadStartingVertScaleIndex = loadAnalogReadVertScale;
@@ -522,6 +535,7 @@ void LoadApplyWidgetDropdownText() {
     ;     
   
   ///////////Apply Networking Settings
+  //Update protocol with loaded value
   Protocol(NWprotocolload);
   //Update dropdowns and textfields in the Networking widget with loaded values
   w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(NWprotocolarray[NWprotocolload]); //Reference the dropdown from the appropriate widget
