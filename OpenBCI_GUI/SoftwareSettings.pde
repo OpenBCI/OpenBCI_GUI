@@ -339,12 +339,12 @@ void LoadGUIsettings() {
 
         if (SRB1Setting == 0) channelSettingValues[i][5] = '0';
         if (SRB1Setting == 1) channelSettingValues[i][5] = '1';     
+          
+        //neither of these seems to update
         
-        
-        //neither of these seems to update 
-        cyton.syncChannelSettings();
+        //cyton.syncChannelSettings();
         /*
-        cyton.isWritingChannel = true;
+        //cyton.isWritingChannel = true;
         String output = "r,set,";
         output += Integer.toString(i) + ","; // 0 indexed channel number
         output += channelSettingValues[i][0] + ","; // power down
@@ -354,122 +354,103 @@ void LoadGUIsettings() {
         output += channelSettingValues[i][4] + ",";
         output += channelSettingValues[i][5] + TCP_STOP;
         cyton.write(output);
-        // verbosePrint("done writing channel.");
-        cyton.isWritingChannel = false;
+        verbosePrint("done writing channel " + Channel);
+        println(output);
+        //cyton.isWritingChannel = false;
         */
+       
       }
-   }//end Cyton/Ganglion case
+    }//end Cyton/Ganglion case
       
-      //              Case for loading Time Series settings when in Synthetic or Playback data modes
-      if(eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        //parse the channel settings first for only the number of channels being used
-        if (i < slnchan) {   
-          int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-          int Active = LoadAllSettings.getInt("Active");
-          println("Ch " + Channel + ", " + channelsActivearray[Active]);
-          //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
-          if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
-          if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down         
-        }      
-      }
+    //              Case for loading Time Series settings when in Synthetic or Playback data modes
+    if(eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
+      //parse the channel settings first for only the number of channels being used
+      if (i < slnchan) {   
+        int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
+        int Active = LoadAllSettings.getInt("Active");
+        println("Ch " + Channel + ", " + channelsActivearray[Active]);
+        //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
+        if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
+        if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down         
+      }      
+    } //end of Playback/Synthetic case
+    
 
- // LoadApplyTimeSeriesSettings();
-  /*
-    // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
-  public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
-    String output = "r,set,";
-    output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
-    output += channelSettingValues[_numChannel][0] + ","; // power down
-    output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
-    output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
-    output += channelSettingValues[_numChannel][3] + ",";
-    output += channelSettingValues[_numChannel][4] + ",";
-    output += channelSettingValues[_numChannel][5] + TCP_STOP;
-    write(output);
-    // verbosePrint("done writing channel.");
-    isWritingChannel = false;
-  }
   
-    public void initChannelWrite(int _numChannel) {  //numChannel counts from zero
-    timeOfLastChannelWrite = millis();
-    isWritingChannel = true;
-  }
-  */
-
+    //parse the global settings that appear after the channel settings 
+    if (i == slnchan) {
+      loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
+      loadNotchsetting = LoadAllSettings.getInt("Notch");
+      loadBandpasssetting = LoadAllSettings.getInt("Bandpass Filter");
+      loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
+      loadTimeSeriesHorizScale = LoadAllSettings.getInt("Time Series Horiz Scale");
+      loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
+      loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
+      //Load more global settings after this line, if needed
       
-      //parse the global settings that appear after the channel settings 
-      if (i == slnchan) {
-        loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
-        loadNotchsetting = LoadAllSettings.getInt("Notch");
-        loadBandpasssetting = LoadAllSettings.getInt("Bandpass Filter");
-        loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
-        loadTimeSeriesHorizScale = LoadAllSettings.getInt("Time Series Horiz Scale");
-        loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
-        loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
-        //Load more global settings after this line, if needed
-        
-        //Create a string array to print global settings to console
-        final String[] LoadedGlobalSettings = {
-          "Using Layout Number: " + loadLayoutsetting, 
-          "Default Notch: " + loadNotchsetting, //default notch
-          "Default BP: " + loadBandpasssetting, //default bp
-          "TS Vert Scale: " + loadTimeSeriesVertScale,
-          "TS Horiz Scale: " + loadTimeSeriesHorizScale,
-          "Analog Vert Scale: " + loadAnalogReadVertScale,
-          "Analog Horiz Scale: " + loadAnalogReadHorizScale,
-          //Add new global settings after this line to print to console
-          };
-        //Print the global settings that have been loaded to the console  
-        printArray(LoadedGlobalSettings);
-      }
-      //parse the FFT settings that appear after the channel settings 
-      if (i == slnchan + 1) {
-        FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
-        FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
-        FFTloglinload = LoadAllSettings.getInt("FFT LogLin");
-        FFTsmoothingload = LoadAllSettings.getInt("FFT Smoothing");
-        FFTfilterload = LoadAllSettings.getInt("FFT Filter");
-        
-        //Create a string array to print to console
-        final String[] LoadedFFTSettings = {
-          "FFT_Max Frequency: " + FFTmaxfrqload, 
-          "FFT_Max uV: " + FFTmaxuVload,
-          "FFT_Log/Lin: " + FFTloglinload,
-          "FFT_Smoothing: " + FFTsmoothingload,
-          "FFT_Filter: " + FFTfilterload,
-          };
-        //Print the global settings that have been loaded to the console  
-        printArray(LoadedFFTSettings);
-      }
-      
-      /////////////////////////////////////////////////////////////
-      //    Load more widget settings below this line as above   //
-      if (i == slnchan + 2) {
-        NWprotocolload = LoadAllSettings.getInt("Protocol");
-        nwdatatype1 = LoadAllSettings.getInt("Data Type 1");
-        nwdatatype2 = LoadAllSettings.getInt("Data Type 2");
-        nwdatatype3 = LoadAllSettings.getInt("Data Type 3");        
-        nwdatatype4 = LoadAllSettings.getInt("Data Type 4"); 
-        NWoscip1load = LoadAllSettings.getString("OSC_ip1");
-        NWoscip2load = LoadAllSettings.getString("OSC_ip2");        
-        NWoscip3load = LoadAllSettings.getString("OSC_ip3");        
-        NWoscip4load = LoadAllSettings.getString("OSC_ip4");        
-        NWoscport1load = LoadAllSettings.getString("OSC_port1");
-        NWoscport2load = LoadAllSettings.getString("OSC_port2");        
-        NWoscport3load = LoadAllSettings.getString("OSC_port3");        
-        NWoscport4load = LoadAllSettings.getString("OSC_port4");                
-        NWoscaddress1load = LoadAllSettings.getString("OSC_address1");
-        NWoscaddress2load = LoadAllSettings.getString("OSC_address2");        
-        NWoscaddress3load = LoadAllSettings.getString("OSC_address3");        
-        NWoscaddress4load = LoadAllSettings.getString("OSC_address4");                
-        NWoscfilter1load = LoadAllSettings.getInt("OSC_filter1");
-        NWoscfilter2load = LoadAllSettings.getInt("OSC_filter2");        
-        NWoscfilter3load = LoadAllSettings.getInt("OSC_filter3");        
-        NWoscfilter4load = LoadAllSettings.getInt("OSC_filter4");         
-        
-      }
-      
+      //Create a string array to print global settings to console
+      final String[] LoadedGlobalSettings = {
+        "Using Layout Number: " + loadLayoutsetting, 
+        "Default Notch: " + loadNotchsetting, //default notch
+        "Default BP: " + loadBandpasssetting, //default bp
+        "TS Vert Scale: " + loadTimeSeriesVertScale,
+        "TS Horiz Scale: " + loadTimeSeriesHorizScale,
+        "Analog Vert Scale: " + loadAnalogReadVertScale,
+        "Analog Horiz Scale: " + loadAnalogReadHorizScale,
+        //Add new global settings after this line to print to console
+        };
+      //Print the global settings that have been loaded to the console  
+      printArray(LoadedGlobalSettings);
     }
+    //parse the FFT settings that appear after the channel settings 
+    if (i == slnchan + 1) {
+      FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
+      FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
+      FFTloglinload = LoadAllSettings.getInt("FFT LogLin");
+      FFTsmoothingload = LoadAllSettings.getInt("FFT Smoothing");
+      FFTfilterload = LoadAllSettings.getInt("FFT Filter");
+      
+      //Create a string array to print to console
+      final String[] LoadedFFTSettings = {
+        "FFT_Max Frequency: " + FFTmaxfrqload, 
+        "FFT_Max uV: " + FFTmaxuVload,
+        "FFT_Log/Lin: " + FFTloglinload,
+        "FFT_Smoothing: " + FFTsmoothingload,
+        "FFT_Filter: " + FFTfilterload,
+        };
+      //Print the global settings that have been loaded to the console  
+      printArray(LoadedFFTSettings);
+    }
+    
+    /////////////////////////////////////////////////////////////
+    //    Load more widget settings below this line as above   //
+    if (i == slnchan + 2) {
+      NWprotocolload = LoadAllSettings.getInt("Protocol");
+      nwdatatype1 = LoadAllSettings.getInt("Data Type 1");
+      nwdatatype2 = LoadAllSettings.getInt("Data Type 2");
+      nwdatatype3 = LoadAllSettings.getInt("Data Type 3");        
+      nwdatatype4 = LoadAllSettings.getInt("Data Type 4"); 
+      NWoscip1load = LoadAllSettings.getString("OSC_ip1");
+      NWoscip2load = LoadAllSettings.getString("OSC_ip2");        
+      NWoscip3load = LoadAllSettings.getString("OSC_ip3");        
+      NWoscip4load = LoadAllSettings.getString("OSC_ip4");        
+      NWoscport1load = LoadAllSettings.getString("OSC_port1");
+      NWoscport2load = LoadAllSettings.getString("OSC_port2");        
+      NWoscport3load = LoadAllSettings.getString("OSC_port3");        
+      NWoscport4load = LoadAllSettings.getString("OSC_port4");                
+      NWoscaddress1load = LoadAllSettings.getString("OSC_address1");
+      NWoscaddress2load = LoadAllSettings.getString("OSC_address2");        
+      NWoscaddress3load = LoadAllSettings.getString("OSC_address3");        
+      NWoscaddress4load = LoadAllSettings.getString("OSC_address4");                
+      NWoscfilter1load = LoadAllSettings.getInt("OSC_filter1");
+      NWoscfilter2load = LoadAllSettings.getInt("OSC_filter2");        
+      NWoscfilter3load = LoadAllSettings.getInt("OSC_filter3");        
+      NWoscfilter4load = LoadAllSettings.getInt("OSC_filter4");               
+    }
+  }//end case for all objects in JSON
+  
+  //trying to apply time series settings with this function
+  LoadApplyTimeSeriesSettings();
   
   //Apply the loaded settings to the GUI
   //Apply layout
@@ -497,17 +478,10 @@ void LoadGUIsettings() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void LoadApplyTimeSeriesSettings() {
-  for (int x = 0; x < slnchan; x++) { //When [i][j] button is clicked
-    for (int j = 1; j < numSettingsPerChannel; j++) {
-        if (channelSettingValues[x][j] < maxValuesPerSetting[j]) {
-          channelSettingValues[x][j]++;  //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-        } else {
-          channelSettingValues[x][j] = '0';
-        }
-        cyton.writeChannelSettings(x, channelSettingValues);
-      }
+  for (int x = 0; x < slnchan; x++) { //For all time series channels...
+        cyton.writeChannelSettings(x, channelSettingValues); //Write the channel settings to the board!
     }
-}
+} //Easy Breeezy McSneezy Deluxe 9000
 
 void LoadApplyWidgetDropdownText() {
   

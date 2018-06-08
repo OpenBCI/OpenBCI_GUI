@@ -669,7 +669,7 @@ class Cyton {
     output += channelSettingValues[_numChannel][4] + ",";
     output += channelSettingValues[_numChannel][5] + TCP_STOP;
     write(output);
-    // verbosePrint("done writing channel.");
+    verbosePrint("done writing channel." + output); //debugging
     isWritingChannel = false;
   }
 
