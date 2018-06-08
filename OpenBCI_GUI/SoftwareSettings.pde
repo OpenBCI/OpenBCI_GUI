@@ -9,14 +9,14 @@
 
 Requested User Settings to save so far:
 wm.currentContainerLayout //default layout --done
-dataprocessing.currentNotch_ind //default notch --is save/load, but not applied on load yet
-
+dataprocessing.currentNotch_ind //default notch --done
+dataprocessing.currentFilter_ind //default BP filter --done
 w_analogread.startingVertScaleIndex //default vert scale for analog read widget, not applied
 w_timeseries.startingVertScaleIndex //default vert scale for time series widget, not applied
       
 Activate/Deactivating channels:
-deactivateChannel(Channel-1)
-activateChannel(Channel-1)
+deactivateChannel(Channel-1) --done
+activateChannel(Channel-1) --done
 
 Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using ChangeSettingValues
 
@@ -25,15 +25,16 @@ Loading and applying settings contained in dropdown menus are at the bottomw in 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////S
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
                        This sketch saves and loads the following User Settings:    
                        -- All Time Series widget settings
                        -- All FFT widget settings
-                       -- Default Layout, Notch, 
+                       -- Default Layout, Notch, Bandpass Filter
+                       -- Networking Protocol and All OSC settings
                        
-
-                                         Created: RGW - May 2018                                                      
+                       Created: Richard Waltman - May/June 2018  
+                       
     -- Capital 'S' to Save                                                                                            
     -- Capital 'L' to Load                                                                                           
     -- Functions are called in Interactivty.pde with the rest of the keyboard shortcuts                               
@@ -288,10 +289,8 @@ void LoadGUIsettings() {
     //Make a JSON object, we only need one to load data, and call it LoadAllSettings
     JSONObject LoadAllSettings = LoadSettingsJSONData.getJSONObject(i); 
     
-   //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-   //                        Case for loading settings in Live Data move                                       //
-   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { //Need help adding a case for DATASOURCE_SYNTHETIC to skip writing time series settings, without writing Null to the JSON array. Also need to add a case for Playback settings.
-      
+   //Case for loading time series settings in Live Data mode
+   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { 
       //parse the channel settings first for only the number of channels being used
       if (i < slnchan) {    
         int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
@@ -312,40 +311,56 @@ void LoadGUIsettings() {
         //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
         if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
         if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down
-        
-        
-        //Hopefully This can be shortened into somthing more efficient like with above, there is a datatype conversion involved. Simple if-then works for now.
+             
+        //Hopefully This can be shortened into somthing more efficient, there is a datatype conversion involved. Simple if-then works for now.
         //channelSettingValues[i][1] = char(GainSettings);
-        if (GainSettings == 0) channelSettingValues[i][1] = 0;
-        if (GainSettings == 1) channelSettingValues[i][1] = 1;
-        if (GainSettings == 2) channelSettingValues[i][1] = 2;
-        if (GainSettings == 3) channelSettingValues[i][1] = 3;        
-        if (GainSettings == 4) channelSettingValues[i][1] = 4;
-        if (GainSettings == 5) channelSettingValues[i][1] = 5;
-        if (GainSettings == 6) channelSettingValues[i][1] = 6;
+        if (GainSettings == 0) channelSettingValues[i][1] = '0';
+        if (GainSettings == 1) channelSettingValues[i][1] = '1';
+        if (GainSettings == 2) channelSettingValues[i][1] = '2';
+        if (GainSettings == 3) channelSettingValues[i][1] = '3';        
+        if (GainSettings == 4) channelSettingValues[i][1] = '4';
+        if (GainSettings == 5) channelSettingValues[i][1] = '5';
+        if (GainSettings == 6) channelSettingValues[i][1] = '6';   
+            
+        if (inputType == 0) channelSettingValues[i][2] = '0';
+        if (inputType == 1) channelSettingValues[i][2] = '1';
+        if (inputType == 2) channelSettingValues[i][2] = '2';
+        if (inputType == 3) channelSettingValues[i][2] = '3';        
+        if (inputType == 4) channelSettingValues[i][2] = '4';
+        if (inputType == 5) channelSettingValues[i][2] = '5';        
+        if (inputType == 6) channelSettingValues[i][2] = '6';
+        if (inputType == 7) channelSettingValues[i][2] = '7';
         
-        if (inputType == 0) channelSettingValues[i][2] = 0;
-        if (inputType == 1) channelSettingValues[i][2] = 1;
-        if (inputType == 2) channelSettingValues[i][2] = 2;
-        if (inputType == 3) channelSettingValues[i][2] = 3;        
-        if (inputType == 4) channelSettingValues[i][2] = 4;
-        if (inputType == 5) channelSettingValues[i][2] = 5;        
-        if (inputType == 6) channelSettingValues[i][2] = 6;
-        if (inputType == 7) channelSettingValues[i][2] = 7;
+        if (BiasSetting == 0) channelSettingValues[i][3] = '0';
+        if (BiasSetting == 1) channelSettingValues[i][3] = '1';
         
-        if (BiasSetting == 0) channelSettingValues[i][3] = 0;
-        if (BiasSetting == 1) channelSettingValues[i][3] = 1;
-        
-        if (SRB2Setting == 0) channelSettingValues[i][4] = 0;
-        if (SRB2Setting == 1) channelSettingValues[i][4] = 1;
+        if (SRB2Setting == 0) channelSettingValues[i][4] = '0';
+        if (SRB2Setting == 1) channelSettingValues[i][4] = '1';
 
-        if (SRB1Setting == 0) channelSettingValues[i][5] = 0;
-        if (SRB1Setting == 1) channelSettingValues[i][5] = 1;        
-        }  
+        if (SRB1Setting == 0) channelSettingValues[i][5] = '0';
+        if (SRB1Setting == 1) channelSettingValues[i][5] = '1';     
+        
+        
+        //neither of these seems to update 
+        cyton.syncChannelSettings();
+        /*
+        cyton.isWritingChannel = true;
+        String output = "r,set,";
+        output += Integer.toString(i) + ","; // 0 indexed channel number
+        output += channelSettingValues[i][0] + ","; // power down
+        output += cyton.getGainForCommand(channelSettingValues[i][1]) + ","; // gain
+        output += cyton.getInputTypeForCommand(channelSettingValues[i][2]) + ",";
+        output += channelSettingValues[i][3] + ",";
+        output += channelSettingValues[i][4] + ",";
+        output += channelSettingValues[i][5] + TCP_STOP;
+        cyton.write(output);
+        // verbosePrint("done writing channel.");
+        cyton.isWritingChannel = false;
+        */
       }
+   }//end Cyton/Ganglion case
       
-      //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      //              Case for loading settings when in Synthetic or Playback data modes                          //
+      //              Case for loading Time Series settings when in Synthetic or Playback data modes
       if(eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
         //parse the channel settings first for only the number of channels being used
         if (i < slnchan) {   
@@ -355,8 +370,32 @@ void LoadGUIsettings() {
           //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
           if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
           if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down         
-        }
+        }      
       }
+
+ // LoadApplyTimeSeriesSettings();
+  /*
+    // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
+  public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
+    String output = "r,set,";
+    output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
+    output += channelSettingValues[_numChannel][0] + ","; // power down
+    output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
+    output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
+    output += channelSettingValues[_numChannel][3] + ",";
+    output += channelSettingValues[_numChannel][4] + ",";
+    output += channelSettingValues[_numChannel][5] + TCP_STOP;
+    write(output);
+    // verbosePrint("done writing channel.");
+    isWritingChannel = false;
+  }
+  
+    public void initChannelWrite(int _numChannel) {  //numChannel counts from zero
+    timeOfLastChannelWrite = millis();
+    isWritingChannel = true;
+  }
+  */
+
       
       //parse the global settings that appear after the channel settings 
       if (i == slnchan) {
@@ -457,6 +496,18 @@ void LoadGUIsettings() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void LoadApplyTimeSeriesSettings() {
+  for (int x = 0; x < slnchan; x++) { //When [i][j] button is clicked
+    for (int j = 1; j < numSettingsPerChannel; j++) {
+        if (channelSettingValues[x][j] < maxValuesPerSetting[j]) {
+          channelSettingValues[x][j]++;  //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
+        } else {
+          channelSettingValues[x][j] = '0';
+        }
+        cyton.writeChannelSettings(x, channelSettingValues);
+      }
+    }
+}
 
 void LoadApplyWidgetDropdownText() {
   

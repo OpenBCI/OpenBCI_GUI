@@ -86,7 +86,8 @@ class HardwareSettingsController{
   char[] previousSRB2 = new char [nchan];
   // Array for storing SRB2 history settings of channels prior to shutting off .. so you can return to previous state when reactivating channel
   char[] previousBIAS = new char [nchan];
-
+  
+  /*
   //maximum different values for the different settings (Power Down, Gain, Input Type, BIAS, SRB2, SRB1) of
   //refer to page 44 of ADS1299 Datasheet: http://www.ti.com/lit/ds/symlink/ads1299.pdf
   char[] maxValuesPerSetting = {
@@ -97,7 +98,8 @@ class HardwareSettingsController{
     '1', // SRB2 :: (0) Open, (1) Closed
     '1'
   }; // SRB1 :: (0) Yes, (1) No ... this setting affects all channels ... either all on or all off
-
+    */
+    
   //variables used for channel write timing in writeChannelSettings()
   int channelToWrite = -1;
 

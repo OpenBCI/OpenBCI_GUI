@@ -1,35 +1,75 @@
 [
   {
     "Channel_Number": 1,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 2,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 3,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 4,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 5,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 6,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 7,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Channel_Number": 8,
-    "Active": 0
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
   },
   {
     "Current Layout": 4,

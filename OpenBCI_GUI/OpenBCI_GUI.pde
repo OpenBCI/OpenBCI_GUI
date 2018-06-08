@@ -275,6 +275,18 @@ char[][] impedanceCheckValues = new char [nchan][2];
 // [Number of Channels] x 6 array of buttons for channel settings
 //Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
 
+//maximum different values for the different settings (Power Down, Gain, Input Type, BIAS, SRB2, SRB1) of
+//refer to page 44 of ADS1299 Datasheet: http://www.ti.com/lit/ds/symlink/ads1299.pdf
+char[] maxValuesPerSetting = {
+  '1', // Power Down :: (0)ON, (1)OFF
+  '6', // Gain :: (0) x1, (1) x2, (2) x4, (3) x6, (4) x8, (5) x12, (6) x24 ... default
+  '7', // Channel Input :: (0)Normal Electrode Input, (1)Input Shorted, (2)Used in conjunction with BIAS_MEAS, (3)MVDD for supply measurement, (4)Temperature Sensor, (5)Test Signal, (6)BIAS_DRP ... positive electrode is driver, (7)BIAS_DRN ... negative electrode is driver
+  '1', // BIAS :: (0) Yes, (1) No
+  '1', // SRB2 :: (0) Open, (1) Closed
+  '1'
+}; // SRB1 :: (0) Yes, (1) No ... this setting affects all channels ... either all on or all off
+
+
 //Start/Stop button
 Button stopButton;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
