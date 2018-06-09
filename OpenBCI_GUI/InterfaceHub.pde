@@ -368,6 +368,7 @@ class Hub {
         break;
       case 'r':
         processRegisterQuery(msg);
+        CheckForSuccessTS = msg;
         break;
       case 'm':
         processSDCard(msg);

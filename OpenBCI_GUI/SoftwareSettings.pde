@@ -5,7 +5,8 @@
           Thoughts: 
           -- Add a drop down button somewhere near the top that says "Settings" or "Config", expands to show "Load" and "Save" -- no good place to do this, currently
           -- Better idea already put into place: use Capital 'S' for Save and Capital 'L' for Load -- THIS WORKS
-          -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load -- THIS WORKS 
+          -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load -- THIS WORKS
+          -- Need to apply Time Series settings after they are loaded by sending a message for each channel to the Cyton/Ganglion boards
 
 Requested User Settings to save so far:
 wm.currentContainerLayout //default layout --done
@@ -96,8 +97,10 @@ String NWoscip1load;  String NWoscip2load;  String NWoscip3load;  String NWoscip
 String NWoscport1load;  String NWoscport2load;  String NWoscport3load;  String NWoscport4load;
 String NWoscaddress1load;  String NWoscaddress2load; String NWoscaddress3load; String NWoscaddress4load;
 int NWoscfilter1load;  int NWoscfilter2load;  int NWoscfilter3load;  int NWoscfilter4load;
+
 //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
 int slnchan; 
+
 
 
 ///////////////////////////////  
@@ -478,10 +481,17 @@ void LoadGUIsettings() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void LoadApplyTimeSeriesSettings() {
-  for (int x = 0; x < slnchan; x++) { //For all time series channels...
-        cyton.writeChannelSettings(x, channelSettingValues); //Write the channel settings to the board!
+  for (int i = 0; i < slnchan;) { //For all time series channels...
+    cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+    if (CheckForSuccessTS != null) {
+      println("Return code:" + CheckForSuccessTS);
+      String[] list = split(CheckForSuccessTS, ',');
+      int successcode = Integer.parseInt(list[1]);
+      if (successcode == RESP_SUCCESS) i++;
+      }
     }
-} //Easy Breeezy McSneezy Deluxe 9000
+        //delay(100)
+} 
 
 void LoadApplyWidgetDropdownText() {
   
@@ -589,3 +599,50 @@ void LoadApplyWidgetDropdownText() {
 
     //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
 }
+/*
+  private void processRegisterQuery(String msg) {
+    String[] list = split(msg, ',');
+    int code = Integer.parseInt(list[1]);
+
+    switch (code) {
+      case RESP_ERROR_CHANNEL_SETTINGS:
+        killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
+        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + list[2]);
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
+        println("tried to sync channel settings but there was already one in progress");
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
+        println("an error was thrown trying to set the channels | error: " + list[2]);
+        break;
+      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
+        println("an error was thrown trying to call the function to set the channels | error: " + list[2]);
+        break;
+      case RESP_SUCCESS:
+        // Sent when either a scan was stopped or started Successfully
+        String action = list[2];
+        switch (action) {
+          case TCP_ACTION_START:
+            println("Query registers for cyton channel settings");
+            break;
+        }
+        break;
+      case RESP_SUCCESS_CHANNEL_SETTING:
+        int channelNumber = Integer.parseInt(list[2]);
+        // power down comes in as either 'true' or 'false', 'true' is a '1' and false is a '0'
+        channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
+        // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
+        //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
+        channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
+        // input type comes in as a string version and must get converted to char
+        channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
+        // bias is like power down
+        channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
+        // srb2 is like power down
+        channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
+        // srb1 is like power down
+        channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
+        break;
+    }
+  }
+  */

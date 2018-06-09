@@ -309,6 +309,7 @@ int AnalogReadStartingHorizontalScaleIndex = 2;
 //Time Series settings
 int TSvertscalesave = 3;
 int TShorizscalesave = 2;
+String CheckForSuccessTS;
 
 //FFT plot settings
 int FFTmaxfrqsave = 2;
