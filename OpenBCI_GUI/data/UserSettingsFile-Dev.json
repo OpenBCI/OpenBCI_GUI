@@ -72,6 +72,78 @@
     "PGA Gain": 6
   },
   {
+    "Channel_Number": 9,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 10,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 11,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 12,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 13,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 14,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 15,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
+    "Channel_Number": 16,
+    "Active": 0,
+    "Input Type": 0,
+    "Bias": 1,
+    "SRB1": 0,
+    "SRB2": 1,
+    "PGA Gain": 6
+  },
+  {
     "Current Layout": 4,
     "Notch": 0,
     "Bandpass Filter": 0,
