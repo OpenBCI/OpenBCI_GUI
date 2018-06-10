@@ -487,10 +487,11 @@ void LoadApplyTimeSeriesSettings() {
       println("Return code:" + CheckForSuccessTS);
       String[] list = split(CheckForSuccessTS, ',');
       int successcode = Integer.parseInt(list[1]);
-      if (successcode == RESP_SUCCESS) i++;
-      }
+      if (successcode == RESP_SUCCESS) {i++; CheckForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
     }
-        //delay(100)
+    //delay(10);// works on 8 chan sometimes
+    delay(100); //works on 8 channels 3/3 trials applying settings to all channels
+  }    
 } 
 
 void LoadApplyWidgetDropdownText() {

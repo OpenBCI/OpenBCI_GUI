@@ -804,6 +804,7 @@ class Hub {
             println("Query registers for cyton channel settings");
             break;
         }
+        println("regular success no banana");
         break;
       case RESP_SUCCESS_CHANNEL_SETTING:
         int channelNumber = Integer.parseInt(list[2]);
@@ -820,6 +821,7 @@ class Hub {
         channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
         // srb1 is like power down
         channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
+        println("chan setting success with bananas");
         break;
     }
   }
