@@ -660,9 +660,9 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter4").setPosition(column4, row5 - 10);
     } else if (protocolMode.equals("LSL")){
-      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
-      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
-      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
+      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
+      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
+      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
     } else if (protocolMode.equals("UDP")){
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);

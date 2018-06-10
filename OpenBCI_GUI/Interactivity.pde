@@ -301,8 +301,7 @@ void parseKey(char val) {
       saveStrings(SaveSettingsPath, SaveSettingsData);
       */    
       SaveGUIsettings();
-      output("Settings Saved!");
-      
+      output("Settings Saved!");    
       break;
       
       //////      ////// Load settings capital L      //////      //////      //////     
@@ -318,11 +317,9 @@ void parseKey(char val) {
           println(LoadSettingsData[i]);
         }  
         */
-        
         LoadGUIsettings();
         //Output message when Loading settings is complete
-        output("Settings Loaded!");
-        
+        if (chanNumError == false) output("Settings Loaded!");      
       break;     
       
       //////      //////      //////      //////      //////  

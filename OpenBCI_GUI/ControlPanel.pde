@@ -1705,7 +1705,7 @@ public void initButtonPressed(){
 
 void updateToNChan(int _nchan) {
   nchan = _nchan;
-  slnchan = _nchan;
+  slnchan = _nchan; //used in SoftwareSettings.pde only
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
   output("Channel count set to " + str(nchan));

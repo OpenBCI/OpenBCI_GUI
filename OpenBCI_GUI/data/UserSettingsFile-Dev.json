@@ -1,150 +1,23 @@
 [
+  {"Channels": 4},
   {
     "Channel_Number": 1,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
+    "Active": 0
   },
   {
     "Channel_Number": 2,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
+    "Active": 0
   },
   {
     "Channel_Number": 3,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
+    "Active": 0
   },
   {
     "Channel_Number": 4,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
+    "Active": 0
   },
   {
-    "Channel_Number": 5,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 6,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 7,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 8,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 9,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 10,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 11,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 12,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 13,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 14,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 15,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Channel_Number": 16,
-    "Active": 0,
-    "Input Type": 0,
-    "Bias": 1,
-    "SRB1": 0,
-    "SRB2": 1,
-    "PGA Gain": 6
-  },
-  {
-    "Current Layout": 4,
+    "Current Layout": 5,
     "Notch": 0,
     "Bandpass Filter": 0,
     "Analog Read Vert Scale": 5,
@@ -160,13 +33,10 @@
     "FFT Smoothing": 3
   },
   {
-    "Data Type 3": 0,
     "OSC_ip2": "127.0.0.1",
-    "Data Type 2": 0,
     "OSC_ip1": "127.0.0.1",
-    "Data Type 1": 0,
+    "OSC_DataType4": 0,
     "OSC_ip4": "127.0.0.1",
-    "Data Type 4": 0,
     "OSC_ip3": "127.0.0.1",
     "OSC_port1": "12345",
     "OSC_address1": "/openbci",
@@ -180,6 +50,9 @@
     "OSC_filter1": 0,
     "OSC_filter2": 0,
     "OSC_filter3": 0,
+    "OSC_DataType1": 0,
+    "OSC_DataType2": 0,
+    "OSC_DataType3": 0,
     "Protocol": 0
   }
 ]
