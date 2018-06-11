@@ -11,11 +11,11 @@
 //
 ///////////////////////////////////////////////////,
 
-/* moved to first tab to help with saving these settings
+
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 int intensityFac_ind = 2;
-*/
+
 
 class W_headPlot extends Widget {
 
@@ -135,6 +135,7 @@ void Polarity(int n) {
   } else {
     w_headPlot.headPlot.use_polarity = false;
   }
+  HPpolaritysave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -146,12 +147,14 @@ void ShowContours(int n){
     //turn headplot contours off
     w_headPlot.headPlot.drawHeadAsContours = false;
   }
+  HPcontourssave = n;
   closeAllDropdowns();
 }
 
 //triggered when there is an event in the SmoothingHeadPlot Dropdown
 void SmoothingHeadPlot(int n) {
   w_headPlot.setSmoothFac(smoothFac[n]);
+  HPsmoothingsave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -164,6 +167,7 @@ void UnfiltFiltHeadPlot(int n) {
 void Intensity(int n){
   vertScaleFactor_ind = n;
   updateVertScale();
+  HPintensitysave = n;
   closeAllDropdowns();
 }
 

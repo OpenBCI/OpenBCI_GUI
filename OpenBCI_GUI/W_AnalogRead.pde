@@ -34,9 +34,8 @@ class W_AnalogRead extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
- // these variables added to first tab to allow global access
- // int AnalogReadStartingVertScaleIndex = 5;
- // int AnalogReadStartingHorizontalScaleIndex = 2;
+ int AnalogReadStartingVertScaleIndex = 5;
+ int AnalogReadStartingHorizontalScaleIndex = 2;
 
   private boolean hasScrollbar = false;
 
@@ -234,6 +233,7 @@ void VertScale_AR(int n) {
       w_analogRead.analogReadBars[i].adjustVertScale(10000);
     }
   }
+  ARvertscalesave = n;
   closeAllDropdowns();
 }
 
@@ -257,6 +257,7 @@ void Duration_AR(int n) {
       w_analogRead.analogReadBars[i].adjustTimeAxis(7);
     }
   }
+  ARhorizscalesave = n;
   closeAllDropdowns();
 }
 

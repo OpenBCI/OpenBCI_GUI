@@ -559,7 +559,7 @@ void StrokeKeyWhenFocused(int n){
     w_focus.keyNum = 1;
     println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
   }
-
+  Focuskeysave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -589,5 +589,6 @@ void ChooseFocusColor(int n){
     w_focus.focusColors = FocusColors.CYAN;
     w_focus.onColorChange();
   }
+  Focusthemesave = n;
   closeAllDropdowns();
 }

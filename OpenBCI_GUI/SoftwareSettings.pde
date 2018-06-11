@@ -6,14 +6,14 @@
           -- Add a drop down button somewhere near the top that says "Settings" or "Config", expands to show "Load" and "Save" -- no good place to do this, currently
           -- Better idea already put into place: use Capital 'S' for Save and Capital 'L' for Load -- THIS WORKS
           -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load -- THIS WORKS
-          -- Need to apply Time Series settings after they are loaded by sending a message for each channel to the Cyton/Ganglion boards
+          -- Need to apply Time Series settings after they are loaded by sending a message for each channel to the Cyton/Ganglion boards -- DONE
 
 Requested User Settings to save so far:
 wm.currentContainerLayout //default layout --done
 dataprocessing.currentNotch_ind //default notch --done
 dataprocessing.currentFilter_ind //default BP filter --done
-w_analogread.startingVertScaleIndex //default vert scale for analog read widget, not applied
-w_timeseries.startingVertScaleIndex //default vert scale for time series widget, not applied
+w_analogread.startingVertScaleIndex //default vert scale for analog read widget --done
+w_timeseries.startingVertScaleIndex //default vert scale for time series widget, --done
       
 Activate/Deactivating channels:
 deactivateChannel(Channel-1) --done
@@ -26,7 +26,7 @@ Loading and applying settings contained in dropdown menus are at the bottomw in 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
                        This sketch saves and loads the following User Settings:    
                        -- All Time Series widget settings
@@ -38,11 +38,9 @@ Loading and applying settings contained in dropdown menus are at the bottomw in 
                        
     -- Capital 'S' to Save                                                                                            
     -- Capital 'L' to Load                                                                                           
-    -- Functions are called in Interactivty.pde with the rest of the keyboard shortcuts                               
+    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts                               
 */
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
@@ -75,6 +73,26 @@ String[] NWprotocolarray = {"OSC", "UDP", "LSL", "Serial"};
 String[] NWdatatypesarray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget"};
 String[] NWbaudratesarray = {"57600", "115200", "250000", "500000"};
 
+//Used to set text in dropdown menus when loading Analog Read settings
+String[] ARvertscaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
+String[] ARhorizscaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+
+//Used to set text in dropdown menus when loading Head Plot settings
+String[] HPintensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};
+String[] HPpolarityArray = {"+/-", " + "};
+String[] HPcontoursArray = {"ON", "OFF"};
+String[] HPsmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
+
+//Used to set text in dropdown menus when loading EMG settings
+String[] EMGsmoothingArray = {"0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"};
+String[] EMGuVlimArray = {"50 uV", "100 uV", "200 uV", "400 uV"};
+String[] EMGcreepArray = {"0.9", "0.95", "0.98", "0.99", "0.999"};
+String[] EMGmindeltauVArray = {"10 uV", "20 uV", "40 uV", "80 uV"};
+
+//Used to set text in dropdown menus when loading Focus Setings
+String[] FocusthemeArray = {"Green", "Orange", "Cyan"};
+String[] FocuskeyArray = {"OFF", "UP", "SPACE"};
+
 //Save Time Series settings variables
 int TSactivesetting = 1;
 int TSgainsetting;
@@ -87,28 +105,55 @@ int TSsrb1setting;
 int loadLayoutsetting;   
 int loadNotchsetting;
 int loadBandpasssetting;
+
+//Load TS dropdown variables
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
+
+//Load Analog Read dropdown variables
 int loadAnalogReadVertScale;
 int loadAnalogReadHorizScale;
 
+//Load FFT dropdown variables
+int FFTmaxfrqload;
+int FFTmaxuVload;
+int FFTloglinload;
+int FFTsmoothingload;
+int FFTfilterload;
+
+//Load Headplot dropdown variables
+int HPintensityload;
+int HPpolarityload;
+int HPcontoursload;
+int HPsmoothingload;
+
+//EMG settings
+int EMGsmoothingload;
+int EMGuVlimload;
+int EMGcreepload;
+int EMGmindeltauVload;
+
+//Focus widget settings
+int FocusThemeload;
+int FocusKeyload;
+
 //Networking Settings save/load variables
 int NWprotocolload;
-//osc load variables
+//OSC load variables
 String NWoscip1load;  String NWoscip2load;  String NWoscip3load;  String NWoscip4load;
 String NWoscport1load;  String NWoscport2load;  String NWoscport3load;  String NWoscport4load;
 String NWoscaddress1load;  String NWoscaddress2load; String NWoscaddress3load; String NWoscaddress4load;
 int NWoscfilter1load;  int NWoscfilter2load;  int NWoscfilter3load;  int NWoscfilter4load;
-//udp load variables
+//UDP load variables
 String NWudpip1load;  String NWudpip2load;  String NWudpip3load;
 String NWudpport1load;  String NWudpport2load;  String NWudpport3load;
 int NWudpfilter1load;  int NWudpfilter2load;  int NWudpfilter3load;
-//lsl load variables
+//LSL load variables
 String NWlslname1load;  String NWlslname2load;  String NWlslname3load;
 String NWlsltype1load;  String NWlsltype2load;  String NWlsltype3load;
 String NWlslnumchan1load;  String NWlslnumchan2load; String NWlslnumchan3load;
 int NWlslfilter1load;  int NWlslfilter2load;  int NWlslfilter3load;
-//serial load variables
+//Serial load variables
 int NWserialbaudrateload;
 int NWserialfilter1load;
 
@@ -129,33 +174,23 @@ void SaveGUIsettings() {
   //Save the number of channels being used in the first object
   JSONObject SaveNumChannels = new JSONObject();
   SaveNumChannels.setInt("Channels", slnchan);
-  println(slnchan);
+  //println(slnchan);
   SaveSettingsJSONData.setJSONObject(0, SaveNumChannels);
   
   ///////Case for Live Data Modes
   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
     
     //Save all of the channel settings for number of Time Series channels being used
-    for (int i = 0; i < slnchan; i++) {
-      
+    for (int i = 0; i < slnchan; i++) {     
       //Make a JSON Object for each of the Time Series Channels
       JSONObject SaveTimeSeriesSettings = new JSONObject();
-      
-      //Let's set some random variables to test for fun
-      //int ra = (int) random(0,2); //random active/not active channels in time series
-      //int rg = (int) random(0,7); //random gain setting active channels in time series
-      //int rit = (int) random(0,8); //random input type in time series
-      //int rb = (int) random(0,2); //random bias in time series
-      //int rsrb2 = (int) random(0,2); //random srb2 in time series    
-      //int rsrb1 = (int) random(0,2); //random srb1 in time series
-        
+      //Copy channel settings from channelSettingValues  
       for (int j = 0; j < numSettingsPerChannel; j++) {
         switch(j) {  //what setting are we looking at
           case 0: //on/off
             if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
             if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
             // TSactivesetting = int(channelSettingValues[i][j]));  // For some reason this approach doesn't work, still returns 48 and 49 '0' and '1'
-
             break;
           case 1: //GAIN
             //TSgainsetting = int(channelSettingValues[i][j]);
@@ -236,8 +271,8 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
   SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
   SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
-  SaveGlobalSettings.setInt("Analog Read Vert Scale", AnalogReadStartingVertScaleIndex);
-  SaveGlobalSettings.setInt("Analog Read Horiz Scale", AnalogReadStartingHorizontalScaleIndex);
+  SaveGlobalSettings.setInt("Analog Read Vert Scale", ARvertscalesave);
+  SaveGlobalSettings.setInt("Analog Read Horiz Scale", ARhorizscalesave);
   SaveSettingsJSONData.setJSONObject(slnchan + 1, SaveGlobalSettings);
   
   ///////////////////////////////////////////////Setup new JSON object to save FFT settings
@@ -250,13 +285,13 @@ void SaveGUIsettings() {
   //Save FFT LogLin Setting. Same thing happens for LogLin
   SaveFFTSettings.setInt("FFT LogLin", FFTloglinsave);
   //Save FFT Smoothing Setting
-  SaveFFTSettings.setInt("FFT Smoothing", smoothFac_ind);
+  SaveFFTSettings.setInt("FFT Smoothing", FFTsmoothingsave);
   //Save FFT Filter Setting
   if (isFFTFiltered == true)  FFTfiltersave = 0;
   if (isFFTFiltered == false)  FFTfiltersave = 1;  
   SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
   //Set the FFT JSON Object
-  SaveSettingsJSONData.setJSONObject(slnchan+2, SaveFFTSettings); //next object will be set to slnchan+2, etc.  
+  SaveSettingsJSONData.setJSONObject(slnchan+2, SaveFFTSettings); //next object will be set to slnchan+3, etc.  
   
   ///////////////////////////////////////////////Setup new JSON object to save Networking settings
   JSONObject SaveNetworkingSettings = new JSONObject();
@@ -343,8 +378,46 @@ void SaveGUIsettings() {
   //Set Networking Settings JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+3, SaveNetworkingSettings);  
 
-  ////////////////////////////////////////////////////////////////////////////////
-  ///ADD more global settings below this line in the same format as above/////////
+  ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
+  JSONObject SaveHeadplotSettings = new JSONObject();
+
+  //Save Headplot Intesity
+  SaveHeadplotSettings.setInt("HP_intensity", HPintensitysave);
+  //Save Headplot Polarity
+  SaveHeadplotSettings.setInt("HP_polarity", HPpolaritysave);
+  //Save Headplot contours
+  SaveHeadplotSettings.setInt("HP_contours", HPcontourssave);
+  //Save Headplot Smoothing Setting
+  SaveHeadplotSettings.setInt("HP_smoothing", HPsmoothingsave);
+  //Set the Headplot JSON Object
+  SaveSettingsJSONData.setJSONObject(slnchan+4, SaveHeadplotSettings);
+
+  ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
+  JSONObject SaveEMGSettings = new JSONObject();
+
+  //Save EMG Smoothing
+  SaveEMGSettings.setInt("EMG_smoothing", EMGsmoothingsave);
+  //Save EMG uV limit
+  SaveEMGSettings.setInt("EMG_uVlimit", EMGuVlimsave);
+  //Save EMG creep speed
+  SaveEMGSettings.setInt("EMG_creepspeed", EMGcreepsave);
+  //Save EMG min delta uV
+  SaveEMGSettings.setInt("EMG_minuV", EMGmindeltauVsave);
+  //Set the EMG JSON Object
+  SaveSettingsJSONData.setJSONObject(slnchan+5, SaveEMGSettings);
+  
+  ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
+  JSONObject SaveFocusSettings = new JSONObject();
+
+  //Save Focus theme
+  SaveFocusSettings.setInt("Focus_theme", Focusthemesave);
+  //Save Focus keypress
+  SaveFocusSettings.setInt("Focus_keypress", Focuskeysave);
+  //Set the Focus JSON Object
+  SaveSettingsJSONData.setJSONObject(slnchan+6, SaveFocusSettings);
+  
+  /////////////////////////////////////////////////////////////////////////////////
+  ///ADD more global settings above this line in the same formats as above/////////
 
   //Let's save the JSON array to a file!
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
@@ -470,7 +543,8 @@ void LoadGUIsettings() {
       //Print the global settings that have been loaded to the console  
       printArray(LoadedGlobalSettings);
     }
-    //parse the FFT settings that appear after the channel settings 
+    
+    //parse the FFT settings that appear after the global settings 
     if (i == slnchan + 1) {
       FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
       FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
@@ -486,12 +560,11 @@ void LoadGUIsettings() {
         "FFT_Smoothing: " + FFTsmoothingload,
         "FFT_Filter: " + FFTfilterload,
         };
-      //Print the global settings that have been loaded to the console  
+      //Print the FFT settings that have been loaded to the console  
       printArray(LoadedFFTSettings);
     }
     
-    /////////////////////////////////////////////////////////////
-    //    Load more widget settings below this line as above   //
+    //parse Networking settings that appear after FFT settings
     if (i == slnchan + 2) {
       NWprotocolload = LoadAllSettings.getInt("Protocol");
       switch (NWprotocolload)  {
@@ -555,18 +628,66 @@ void LoadGUIsettings() {
           break;
       }
     }
+    
+    //parse the Headplot settings that appear after networking settings 
+    if (i == slnchan + 3) {
+      HPintensityload = LoadAllSettings.getInt("HP_intensity");
+      HPpolarityload = LoadAllSettings.getInt("HP_polarity");
+      HPcontoursload = LoadAllSettings.getInt("HP_contours");
+      HPsmoothingload = LoadAllSettings.getInt("HP_smoothing");
+      
+      //Create a string array to print to console
+      final String[] LoadedHPSettings = {
+        "HP_intensity: " + HPintensityload, 
+        "HP_polarity: " + HPpolarityload,
+        "HP_contours: " + HPcontoursload,
+        "HP_smoothing: " + HPsmoothingload,
+        };
+      //Print the Headplot settings 
+      printArray(LoadedHPSettings);
+    } 
+    
+    //parse the EMG settings that appear after Headplot settings
+    if (i == slnchan + 4) {
+      EMGsmoothingload = LoadAllSettings.getInt("EMG_smoothing");
+      EMGuVlimload = LoadAllSettings.getInt("EMG_uVlimit");
+      EMGcreepload = LoadAllSettings.getInt("EMG_creepspeed");
+      EMGmindeltauVload = LoadAllSettings.getInt("EMG_minuV");
+      
+      //Create a string array to print to console
+      final String[] LoadedEMGSettings = {
+        "EMG_smoothing: " + EMGsmoothingload, 
+        "EMG_uVlimit: " + EMGuVlimload,
+        "EMG_creepspeed: " + EMGcreepload,
+        "EMG_minuV: " + EMGmindeltauVload,
+        };
+      //Print the EMG settings 
+      printArray(LoadedEMGSettings);
+    }
+    
+    //parse the Focus settings that appear after EMG settings
+      if (i == slnchan + 5) {
+      FocusThemeload = LoadAllSettings.getInt("Focus_theme");
+      FocusKeyload = LoadAllSettings.getInt("Focus_keypress");
+      
+      //Create a string array to print to console
+      final String[] LoadedFocusSettings = {
+        "Focus_theme: " + FocusThemeload, 
+        "Focus_keypress: " + FocusKeyload,
+        };
+      //Print the EMG settings 
+      printArray(LoadedFocusSettings);
+    }
+    
+    /////////////////////////////////////////////////////////////
+    //    Load more widget settings above this line as above   //   
+    
   }//end case for all objects in JSON
-  
-  //Case for loading time series settings in Live Data mode
-  if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { 
-    //trying to apply time series settings with this function
-    LoadApplyTimeSeriesSettings();
-  }
   
   //Apply the loaded settings to the GUI
   //Apply layout
   wm.setNewContainerLayout(loadLayoutsetting - 1);
-  println("Layout Loaded!" + loadLayoutsetting);
+  println("Layout " + loadLayoutsetting + " Loaded!");
   
   //Apply notch
   dataProcessing.currentNotch_ind = loadNotchsetting;
@@ -575,15 +696,14 @@ void LoadGUIsettings() {
   dataProcessing.currentFilt_ind = loadBandpasssetting;
   topNav.filtBPButton.but_txt = "BP Filt\n" + DataProcessingBParray[loadBandpasssetting]; //this works
   println(DataProcessingBParray[loadBandpasssetting]);
-  
-  //follow example of applying time series dropdowns to this
-  AnalogReadStartingVertScaleIndex = loadAnalogReadVertScale;
-  AnalogReadStartingHorizontalScaleIndex = loadAnalogReadHorizScale;
-  //println("Vert/Horiz Scales Loaded!");  
    
   //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
   LoadApplyWidgetDropdownText(); 
-
+  
+  //Apply Time Series Settings Last!!!
+  //Case for loading time series settings in Live Data mode last. Takes 100-105 ms per channel to ensure success.
+  if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {LoadApplyTimeSeriesSettings();}
+  
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -591,14 +711,14 @@ void LoadGUIsettings() {
 void LoadApplyTimeSeriesSettings() {
   for (int i = 0; i < slnchan;) { //For all time series channels...
     cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-    if (CheckForSuccessTS != null) {
+    if (CheckForSuccessTS != null) { // If we receive a return code...
       println("Return code:" + CheckForSuccessTS);
       String[] list = split(CheckForSuccessTS, ',');
       int successcode = Integer.parseInt(list[1]);
       if (successcode == RESP_SUCCESS) {i++; CheckForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
     }
-    //delay(10);// works on 8 chan sometimes
-    delay(100); //works on 8 and 16 channels 3/3 trials applying settings to all channels
+    //delay(10);// Works on 8 chan sometimes
+    delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
   }    
 } 
 
@@ -678,6 +798,134 @@ void LoadApplyWidgetDropdownText() {
     .setPaddingTop(4)
     ;     
   
+  //Apply Analog Read settings
+  VertScale_AR(loadAnalogReadVertScale);
+    w_analogRead.cp5_widget.getController("VertScale_AR")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(ARvertscaleArray[loadAnalogReadVertScale]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;     
+  Duration_AR(loadAnalogReadHorizScale);
+    w_analogRead.cp5_widget.getController("Duration_AR")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(ARhorizscaleArray[loadAnalogReadHorizScale]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;     
+  
+  ////////////////////////////Apply Headplot settings
+  Intensity(HPintensityload);
+    w_headPlot.cp5_widget.getController("Intensity")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(HPintensityArray[HPintensityload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;       
+  Polarity(HPpolarityload);
+    w_headPlot.cp5_widget.getController("Polarity")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(HPpolarityArray[HPpolarityload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;  
+  ShowContours(HPcontoursload);
+    w_headPlot.cp5_widget.getController("ShowContours")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(HPcontoursArray[HPcontoursload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;    
+  SmoothingHeadPlot(HPsmoothingload);
+    w_headPlot.cp5_widget.getController("SmoothingHeadPlot")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(HPsmoothingArray[HPsmoothingload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;
+    
+  ////////////////////////////Apply EMG settings
+  SmoothEMG(EMGsmoothingload);
+    w_emg.cp5_widget.getController("SmoothEMG")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(EMGsmoothingArray[EMGsmoothingload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;       
+  uVLimit(EMGuVlimload);
+    w_emg.cp5_widget.getController("uVLimit")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(EMGuVlimArray[EMGuVlimload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;  
+  CreepSpeed(EMGcreepload);
+    w_emg.cp5_widget.getController("CreepSpeed")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(EMGcreepArray[EMGcreepload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;    
+  minUVRange(EMGmindeltauVload);
+    w_emg.cp5_widget.getController("minUVRange")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(EMGmindeltauVArray[EMGmindeltauVload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;
+    
+   ////////////////////////////Apply Focus settings
+  ChooseFocusColor(FocusThemeload);
+    w_focus.cp5_widget.getController("ChooseFocusColor")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FocusthemeArray[FocusThemeload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;       
+  StrokeKeyWhenFocused(FocusKeyload);
+    w_focus.cp5_widget.getController("StrokeKeyWhenFocused")
+    .getCaptionLabel() //the caption label is the text object in the primary bar
+    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+    .setText(FocuskeyArray[FocusKeyload]) //This updates the text of the dropdown!
+    .setFont(h5)
+    .setSize(12)
+    .getStyle() //need to grab style before affecting the paddingTop
+    .setPaddingTop(4)
+    ;   
+    
   ///////////Apply Networking Settings
   //Update protocol with loaded value
   Protocol(NWprotocolload);
@@ -745,15 +993,17 @@ void LoadApplyWidgetDropdownText() {
       w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(NWbaudratesarray[NWserialbaudrateload]); //THIS WORKS!!! 
       w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(NWserialfilter1load);      
       break;    
-  }
+  }  
   ////////////////////////////////////////////////////////////
-  //    Apply more loaded widget settings below this line   // 
+  //    Apply more loaded widget settings above this line   // 
+  
+  //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
+  
+} //end of LoadApplyWidgetDropdownText()
 
-    //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
-}
 
-/*
-          
+
+/*      
   private void processRegisterQuery(String msg) {
     String[] list = split(msg, ',');
     int code = Integer.parseInt(list[1]);

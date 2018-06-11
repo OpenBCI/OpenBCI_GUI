@@ -240,6 +240,7 @@ void LogLin(int n) {
 //triggered when there is an event in the Smoothing Dropdown
 void Smoothing(int n) {
   smoothFac_ind = n;
+  FFTsmoothingsave = n;
   closeAllDropdowns();
 }
 

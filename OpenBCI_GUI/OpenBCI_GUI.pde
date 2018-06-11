@@ -297,44 +297,49 @@ int layoutSelected;
 int currentLayout;
 int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
-//default notch and bandpass filter variables for save
+////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
+//Notch and Bandpass filter variables for save
 int dataProcessingNotchSave;
 int dataProcessingBandpassSave;
-
-//default vert/horiz scales for a few widgets
-//int TimeSeriesStartingVertScaleIndex = 3;
-int AnalogReadStartingVertScaleIndex = 5;
-int AnalogReadStartingHorizontalScaleIndex = 2;
 
 //Time Series settings
 int TSvertscalesave = 3;
 int TShorizscalesave = 2;
 String CheckForSuccessTS;
 
-//FFT plot settings
+//FFT plot settings, 
 int FFTmaxfrqsave = 2;
-int FFTmaxfrqload;
 int FFTmaxuVsave = 2;
-int FFTmaxuVload;
-int FFTloglinsave;
-int FFTloglinload;
-int FFTsmoothingsave;
-int FFTsmoothingload;
-int FFTfiltersave;
-int FFTfilterload;
+int FFTloglinsave = 0;
+int FFTsmoothingsave = 3;
+int FFTfiltersave = 0;
 
+//Analog Read settings
+int ARvertscalesave = 5; //updates in VertScale_AR()
+int ARhorizscalesave = 2; //updates in Duration_AR()
 
-//copied from headPlot to help use these across multiple tabs, include saving these settings
-float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
-int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
-int intensityFac_ind = 2;
+//Headplot settings
+int HPintensitysave = 2;
+int HPpolaritysave = 0;
+int HPcontourssave = 0;
+int HPsmoothingsave = 3;
+
+//EMG settings
+int EMGsmoothingsave = 4;
+int EMGuVlimsave = 2;
+int EMGcreepsave = 3;
+int EMGmindeltauVsave = 1;
+
+//Focus widget settings
+int Focusthemesave = 0;
+int Focuskeysave = 0;
 
 //default data types for streams 1-4 in Networking widget, declared here for use with save/load
 int nwdatatype1=0;
 int nwdatatype2=0;
 int nwdatatype3=0;
 int nwdatatype4=0;
-int NWprotocolsave;
+int NWprotocolsave = 0;
 
 //------------------------------------------------------------------------
 //                       Global Functions
