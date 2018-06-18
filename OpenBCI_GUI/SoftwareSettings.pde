@@ -412,14 +412,17 @@ void SaveGUIsettings() {
   
   int numActiveWidgets = 0;
   //Save what Widgets are active and respective Container number (see Containers.pde)
-  for(int i = 0; i < wm.widgets.size(); i++){
-    if(wm.widgets.get(i).isActive){
+  for(int i = 0; i < wm.widgets.size(); i++){ //increment through all widgets
+    if(wm.widgets.get(i).isActive){ //If a widget is active...
       numActiveWidgets++; //increment numActiveWidgets
       //println("Widget" + i + " is active");
       // activeWidgets.add(i); //keep track of the active widget
       int containerCountsave = wm.widgets.get(i).currentContainer;
       //println("Widget " + i + " is in Container " + containerCountsave);
       SaveWidgetSettings.setInt("Widget_"+i, containerCountsave); 
+    } else if (!wm.widgets.get(i).isActive) { //If a widget is not active...
+      SaveWidgetSettings.remove("Widget_"+i); //remove non-active widget from JSON
+      //println("widget"+i+" is not active");
     }
   } 
   println(numActiveWidgets + " active widgets saved!");
