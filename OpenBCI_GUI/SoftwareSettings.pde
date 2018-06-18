@@ -1,18 +1,20 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
                        This sketch saves and loads the following User Settings:    
-                       -- All Time Series widget settings
+                       -- All Time Series widget settings in Live, Playback, and Synthetic modes
                        -- All FFT widget settings
                        -- Default Layout, Notch, Bandpass Filter
-                       -- Networking Protocol and All OSC settings
+                       -- Networking Mode and All settings for active networking protocol 
                        -- Analog Read, Head Plot, EMG, and Focus
                        -- Widget/Container Pairs
                        
                        Created: Richard Waltman - May/June 2018  
                        
+    -- Start System first!                   
     -- Capital 'S' to Save                                                                                            
     -- Capital 'L' to Load                                                                                           
-    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts                               
+    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts 
+    -- After loading, only a few actions are required: start/stop the data stream and/or networking streams, open/close serial port,  Turn on/off Analog Read
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -768,206 +770,67 @@ void LoadApplyTimeSeriesSettings() {
 void LoadApplyWidgetDropdownText() {
   
   ////////Apply Time Series widget settings
-  VertScale_TS(loadTimeSeriesVertScale);// changes backend
-  w_timeSeries.cp5_widget.getController("VertScale_TS") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(TSvertscalearray[loadTimeSeriesVertScale]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;
+  VertScale_TS(loadTimeSeriesVertScale);// changes back-end
+    w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(TSvertscalearray[loadTimeSeriesVertScale]); //changes front-end
+
   Duration(loadTimeSeriesHorizScale);
-  w_timeSeries.cp5_widget.getController("Duration") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(TShorizscalearray[loadTimeSeriesHorizScale]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;  
-    
-  //////Apply FFT settings
-  MaxFreq(FFTmaxfrqload); //This changes the backend
-    w_fft.cp5_widget.getController("MaxFreq") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FFTmaxfrqarray[FFTmaxfrqload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;
-  VertScale(FFTmaxuVload);
-    w_fft.cp5_widget.getController("VertScale") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FFTvertscalearray[FFTmaxuVload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;  
-  LogLin(FFTloglinload);
-     w_fft.cp5_widget.getController("LogLin") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FFTloglinarray[FFTloglinload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;   
-  Smoothing(FFTsmoothingload);
-     w_fft.cp5_widget.getController("Smoothing") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FFTsmoothingarray[FFTsmoothingload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;       
-  UnfiltFilt(FFTfilterload);
-     w_fft.cp5_widget.getController("UnfiltFilt") //Reference the dropdown from the appropriate widget
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FFTfilterarray[FFTfilterload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;     
+    w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(TShorizscalearray[loadTimeSeriesHorizScale]); 
   
-  //Apply Analog Read settings
+  //////Apply FFT settings
+  MaxFreq(FFTmaxfrqload); //This changes the back-end
+    w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(FFTmaxfrqarray[FFTmaxfrqload]); //This changes front-end... etc.
+
+  VertScale(FFTmaxuVload);
+    w_fft.cp5_widget.getController("VertScale").getCaptionLabel().setText(FFTvertscalearray[FFTmaxuVload]);
+
+  LogLin(FFTloglinload);
+     w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(FFTloglinarray[FFTloglinload]); 
+  
+  Smoothing(FFTsmoothingload);
+     w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(FFTsmoothingarray[FFTsmoothingload]); 
+    
+  UnfiltFilt(FFTfilterload);
+     w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(FFTfilterarray[FFTfilterload]);
+  
+  ////////Apply Analog Read settings
   VertScale_AR(loadAnalogReadVertScale);
-    w_analogRead.cp5_widget.getController("VertScale_AR")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(ARvertscaleArray[loadAnalogReadVertScale]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;     
+    w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(ARvertscaleArray[loadAnalogReadVertScale]);
+
   Duration_AR(loadAnalogReadHorizScale);
-    w_analogRead.cp5_widget.getController("Duration_AR")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(ARhorizscaleArray[loadAnalogReadHorizScale]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;     
+    w_analogRead.cp5_widget.getController("Duration_AR").getCaptionLabel().setText(ARhorizscaleArray[loadAnalogReadHorizScale]);
   
   ////////////////////////////Apply Headplot settings
   Intensity(HPintensityload);
-    w_headPlot.cp5_widget.getController("Intensity")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(HPintensityArray[HPintensityload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;       
+    w_headPlot.cp5_widget.getController("Intensity").getCaptionLabel().setText(HPintensityArray[HPintensityload]);
+
   Polarity(HPpolarityload);
-    w_headPlot.cp5_widget.getController("Polarity")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(HPpolarityArray[HPpolarityload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;  
+    w_headPlot.cp5_widget.getController("Polarity").getCaptionLabel().setText(HPpolarityArray[HPpolarityload]);
+
   ShowContours(HPcontoursload);
-    w_headPlot.cp5_widget.getController("ShowContours")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(HPcontoursArray[HPcontoursload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;    
+    w_headPlot.cp5_widget.getController("ShowContours").getCaptionLabel().setText(HPcontoursArray[HPcontoursload]);
+   
   SmoothingHeadPlot(HPsmoothingload);
-    w_headPlot.cp5_widget.getController("SmoothingHeadPlot")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(HPsmoothingArray[HPsmoothingload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;
+    w_headPlot.cp5_widget.getController("SmoothingHeadPlot").getCaptionLabel().setText(HPsmoothingArray[HPsmoothingload]);
     
   ////////////////////////////Apply EMG settings
   SmoothEMG(EMGsmoothingload);
-    w_emg.cp5_widget.getController("SmoothEMG")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(EMGsmoothingArray[EMGsmoothingload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;       
+    w_emg.cp5_widget.getController("SmoothEMG").getCaptionLabel().setText(EMGsmoothingArray[EMGsmoothingload]);
+
   uVLimit(EMGuVlimload);
-    w_emg.cp5_widget.getController("uVLimit")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(EMGuVlimArray[EMGuVlimload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;  
+    w_emg.cp5_widget.getController("uVLimit").getCaptionLabel().setText(EMGuVlimArray[EMGuVlimload]);
+
   CreepSpeed(EMGcreepload);
-    w_emg.cp5_widget.getController("CreepSpeed")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(EMGcreepArray[EMGcreepload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;    
+    w_emg.cp5_widget.getController("CreepSpeed").getCaptionLabel().setText(EMGcreepArray[EMGcreepload]);
+
   minUVRange(EMGmindeltauVload);
-    w_emg.cp5_widget.getController("minUVRange")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(EMGmindeltauVArray[EMGmindeltauVload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;
+    w_emg.cp5_widget.getController("minUVRange").getCaptionLabel().setText(EMGmindeltauVArray[EMGmindeltauVload]);
     
    ////////////////////////////Apply Focus settings
   ChooseFocusColor(FocusThemeload);
-    w_focus.cp5_widget.getController("ChooseFocusColor")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FocusthemeArray[FocusThemeload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;       
+    w_focus.cp5_widget.getController("ChooseFocusColor").getCaptionLabel().setText(FocusthemeArray[FocusThemeload]);
+
   StrokeKeyWhenFocused(FocusKeyload);
-    w_focus.cp5_widget.getController("StrokeKeyWhenFocused")
-    .getCaptionLabel() //the caption label is the text object in the primary bar
-    .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-    .setText(FocuskeyArray[FocusKeyload]) //This updates the text of the dropdown!
-    .setFont(h5)
-    .setSize(12)
-    .getStyle() //need to grab style before affecting the paddingTop
-    .setPaddingTop(4)
-    ;   
+    w_focus.cp5_widget.getController("StrokeKeyWhenFocused").getCaptionLabel().setText(FocuskeyArray[FocusKeyload]);  
     
   ///////////Apply Networking Settings
   //Update protocol with loaded value
