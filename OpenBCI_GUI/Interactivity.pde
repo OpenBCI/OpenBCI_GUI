@@ -238,27 +238,40 @@ void parseKey(char val) {
 
     //other controls
      //The spacebar is being used now so these old shortcuts are no longer needed
-     //Lowercase 's' can also be used now for development testing purporses
+     //Lowercase 's' can be used now for development testing purporses
     
-    /*  
     case 's':
       println("case s...");
       //stopRunning();
       //Dropdown1(1);
       // stopButtonWasPressed();
-
-    w_networking.cp5_networking_dropdowns.getController("dataType1") //THIS WORKS!!!
-      .getCaptionLabel() //the caption label is the text object in the primary bar
-      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText("Bananas")
-      .setFont(h4)
-      .setSize(14)
-      .getStyle() //need to grab style before affecting the paddingTop
-      .setPaddingTop(4)
-      ;
-      break;
-     */
       
+      //This is simple and works!
+      //wm.widgets.get(12).isActive = true;//activate the new widget
+      //wm.widgets.get(12).setContainer(wm.widgets.get(0).currentContainer);//map it to container ...
+
+      /*
+      int numActiveWidgets = 0;
+      
+      for(int i = 0; i < wm.widgets.size(); i++){
+        if(wm.widgets.get(i).isActive){
+          numActiveWidgets++; //increment numActiveWidgets
+          //println("Widget" + i + " is active");
+          // activeWidgets.add(i); //keep track of the active widget
+          int containerCount = wm.widgets.get(i).currentContainer;
+          println("Widget " + i + " is in Container " + containerCount);
+        }
+      } 
+      println(numActiveWidgets + " active widgets");
+      //Print what widgets are in the containers used by current layout for only the number of active widgets
+      for(int i = 0; i < numActiveWidgets; i++){
+            int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
+            //println("Container " + containerCounter + " is available");          
+      }
+      println("debugging: try to change active widgets");
+      */
+      break;
+     
     /*
     case 'b':
       println("case b...");

@@ -161,7 +161,8 @@ int NWserialfilter1load;
 int slnchan; 
 int numChanloaded;
 Boolean chanNumError = false;
-
+int numLoadedWidgets;
+String [] LoadedWidgetsArray;
 
 ///////////////////////////////  
 //      Save GUI Settings    //
@@ -415,6 +416,38 @@ void SaveGUIsettings() {
   SaveFocusSettings.setInt("Focus_keypress", Focuskeysave);
   //Set the Focus JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+6, SaveFocusSettings);
+  
+  ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
+  JSONObject SaveWidgetSettings = new JSONObject();
+  
+  //for(int i = 0; i < wm.widgets.size(); i++){
+      //if(wm.widgets.get(i).isActive){
+        //int containerIntSave = wm.layouts.get(currentLayout-1).containerInts[i];
+        //println("Widget " + i + " is active in Container " + containerCounter);     
+        //SaveWidgetSettings.setInt("Widget "+i, containerIntSave);    
+     // }
+  //}
+  
+  int numActiveWidgets = 0;
+  //Save what Widgets are active and respective Container number (see Containers.pde)
+  for(int i = 0; i < wm.widgets.size(); i++){
+    if(wm.widgets.get(i).isActive){
+      numActiveWidgets++; //increment numActiveWidgets
+      //println("Widget" + i + " is active");
+      // activeWidgets.add(i); //keep track of the active widget
+      int containerCountsave = wm.widgets.get(i).currentContainer;
+      //println("Widget " + i + " is in Container " + containerCountsave);
+      SaveWidgetSettings.setInt("Widget_"+i, containerCountsave); 
+    }
+  } 
+  println(numActiveWidgets + " active widgets saved!");
+  //Print what widgets are in the containers used by current layout for only the number of active widgets
+  for(int i = 0; i < numActiveWidgets; i++){
+        //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
+        //println("Container " + containerCounter + " is available");          
+  }  
+  
+  SaveSettingsJSONData.setJSONObject(slnchan+7, SaveWidgetSettings);
   
   /////////////////////////////////////////////////////////////////////////////////
   ///ADD more global settings above this line in the same formats as above/////////
@@ -678,17 +711,49 @@ void LoadGUIsettings() {
       //Print the EMG settings 
       printArray(LoadedFocusSettings);
     }
+
+    //parse the Widget/Container settings that appear after Focus settings
+    if (i == slnchan + 6) {
+      //Apply Layout directly before loading and applying widgets to containers
+      wm.setNewContainerLayout(loadLayoutsetting - 1);
+      println("Layout " + loadLayoutsetting + " Loaded!");
+      numLoadedWidgets = LoadAllSettings.size();
+      //println(LoadAllSettings.keys());
+      //Store the Widget number keys from JSON to a string array
+      LoadedWidgetsArray = (String[]) LoadAllSettings.keys().toArray(new String[LoadAllSettings.size()]);
+      //printArray(LoadedWidgetsArray);
+      int widgetToActivate = 0;
+      for (int w = 0; w < numLoadedWidgets; w++) {
+          String [] loadWidgetNameNumber = split(LoadedWidgetsArray[w], '_');
+          //This prints the widget numbers only to be used when applying widgets to containers       
+          if (loadWidgetNameNumber[1].equals("0")) {widgetToActivate = 0;}
+          if (loadWidgetNameNumber[1].equals("1")) {widgetToActivate = 1;}          
+          if (loadWidgetNameNumber[1].equals("2")) {widgetToActivate = 2;}          
+          if (loadWidgetNameNumber[1].equals("3")) {widgetToActivate = 3;}
+          if (loadWidgetNameNumber[1].equals("4")) {widgetToActivate = 4;}
+          if (loadWidgetNameNumber[1].equals("5")) {widgetToActivate = 5;}          
+          if (loadWidgetNameNumber[1].equals("6")) {widgetToActivate = 6;}          
+          if (loadWidgetNameNumber[1].equals("7")) {widgetToActivate = 7;}          
+          if (loadWidgetNameNumber[1].equals("8")) {widgetToActivate = 8;}
+          if (loadWidgetNameNumber[1].equals("9")) {widgetToActivate = 9;}          
+          if (loadWidgetNameNumber[1].equals("10")) {widgetToActivate = 10;}          
+          if (loadWidgetNameNumber[1].equals("11")) {widgetToActivate = 11;}
+          if (loadWidgetNameNumber[1].equals("12")) {widgetToActivate = 12;} 
+          
+          //Load the container for the current widget[w]
+          int ContainerToApply = LoadAllSettings.getInt(LoadedWidgetsArray[w]);
+          
+          wm.widgets.get(widgetToActivate).isActive = true;//activate the new widget
+          wm.widgets.get(widgetToActivate).setContainer(ContainerToApply);//map it to the container that was loaded! 
+          println("Applied Widget " + widgetToActivate + " to Container " + ContainerToApply);
+      }      
+    }//end case for widget/container settings
     
     /////////////////////////////////////////////////////////////
     //    Load more widget settings above this line as above   //   
     
   }//end case for all objects in JSON
-  
-  //Apply the loaded settings to the GUI
-  //Apply layout
-  wm.setNewContainerLayout(loadLayoutsetting - 1);
-  println("Layout " + loadLayoutsetting + " Loaded!");
-  
+
   //Apply notch
   dataProcessing.currentNotch_ind = loadNotchsetting;
   topNav.filtNotchButton.but_txt = "Notch\n" + DataProcessingNotcharray[loadNotchsetting];
@@ -1003,50 +1068,43 @@ void LoadApplyWidgetDropdownText() {
 
 
 
-/*      
-  private void processRegisterQuery(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+/*  
+widget.cp5_widget.getController("WidgetSelector").getCaptionLabel().setText("Widget Template X");
 
-    switch (code) {
-      case RESP_ERROR_CHANNEL_SETTINGS:
-        killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
-        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + list[2]);
-        break;
-      case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
-        println("tried to sync channel settings but there was already one in progress");
-        break;
-      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
-        println("an error was thrown trying to set the channels | error: " + list[2]);
-        break;
-      case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
-        println("an error was thrown trying to call the function to set the channels | error: " + list[2]);
-        break;
-      case RESP_SUCCESS:
-        // Sent when either a scan was stopped or started Successfully
-        String action = list[2];
-        switch (action) {
-          case TCP_ACTION_START:
-            println("Query registers for cyton channel settings");
-            break;
-        }
-        break;
-      case RESP_SUCCESS_CHANNEL_SETTING:
-        int channelNumber = Integer.parseInt(list[2]);
-        // power down comes in as either 'true' or 'false', 'true' is a '1' and false is a '0'
-        channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
-        // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
-        //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
-        channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
-        // input type comes in as a string version and must get converted to char
-        channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
-        // bias is like power down
-        channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
-        // srb2 is like power down
-        channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
-        // srb1 is like power down
-        channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
-        break;
+wm.widgets.get(1).setContainer(layouts.get(_newLayout).containerInts[counter])
+
+      for(int i = 0; i < widgets.size(); i++){
+        if(widgets.get(i).isActive){
+          widgets.get(i).setContainer(layouts.get(loadLayoutsetting - 1).containerInts[11]);
+
+void WidgetSelector(int n){
+  println("New widget [" + n + "] selected for container...");
+  //find out if the widget you selected is already active
+  boolean isSelectedWidgetActive = wm.widgets.get(n).isActive;
+
+  //find out which widget & container you are currently in...
+  int theContainer = -1;
+  for(int i = 0; i < wm.widgets.size(); i++){
+    if(wm.widgets.get(i).isMouseHere()){
+      theContainer = wm.widgets.get(i).currentContainer; //keep track of current container (where mouse is...)
+      if(isSelectedWidgetActive){ //if the selected widget was already active
+        wm.widgets.get(i).setContainer(wm.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
+      } else{
+        wm.widgets.get(i).isActive = false;   //deactivate the current widget (if it is different than the one selected)
+      }
     }
   }
+
+  wm.widgets.get(n).isActive = true;//activate the new widget
+  wm.widgets.get(n).setContainer(theContainer);//map it to the current container
+  //set the text of the widgetSelector to the newly selected widget
+
+  closeAllDropdowns();
+}
+
+    //make sure that the widgetSelector CaptionLabel always corresponds to its widget
+    cp5_widget.getController("WidgetSelector")
+      .getCaptionLabel()
+      .setText(widgetTitle)
+      ;
   */

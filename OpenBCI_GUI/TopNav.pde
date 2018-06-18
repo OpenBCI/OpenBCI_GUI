@@ -495,7 +495,7 @@ class LayoutSelector{
           layoutOptions.get(i).setIsActive(false);
           toggleVisibility(); //shut layoutSelector if something is selected
           wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
-          currentLayout = layoutSelected;
+          currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
         }
       }
     }

@@ -370,7 +370,7 @@ class WidgetManager{
         }
       }
 
-    } else{ //if there are the same mount
+    } else{ //if there are the same amount
       //simply remap active widgets
       println("Remapping widgets.");
       int counter = 0;
