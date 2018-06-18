@@ -8,7 +8,7 @@
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //
-//   Requires gwoptics graphing library for processing.  Built on V0.5.0
+//   Requires gwoptics graphing library for processing.  Bui1lt on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
 //
 //   Requires ControlP5 library, but an older one.  This will only work
@@ -299,8 +299,8 @@ int currentContainerLayout; //this is the Layout structure for the main body of 
 
 ////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
 //Notch and Bandpass filter variables for save
-int dataProcessingNotchSave;
-int dataProcessingBandpassSave;
+int dataProcessingNotchSave = 0;
+int dataProcessingBandpassSave = 3;
 
 //Time Series settings
 int TSvertscalesave = 3;
@@ -441,9 +441,9 @@ void setup() {
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
-
+  
   // UDPMarker functionality
-  // Setup the UDP receiver
+  // Setup the UDP receiver // This needs to be done only when marker mode is enabled 
   int portRX = 51000;  // this is the UDP port the application will be listening on
   String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 

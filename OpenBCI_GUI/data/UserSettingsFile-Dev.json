@@ -34,11 +34,12 @@
   },
   {
     "Current Layout": 5,
+    "Framerate": 1,
     "Notch": 0,
-    "Bandpass Filter": 0,
+    "Bandpass Filter": 3,
     "Analog Read Vert Scale": 5,
     "Analog Read Horiz Scale": 2,
-    "Time Series Vert Scale": 5,
+    "Time Series Vert Scale": 3,
     "Time Series Horiz Scale": 2
   },
   {

@@ -3,7 +3,7 @@
                        This sketch saves and loads the following User Settings:    
                        -- All Time Series widget settings in Live, Playback, and Synthetic modes
                        -- All FFT widget settings
-                       -- Default Layout, Notch, Bandpass Filter
+                       -- Default Layout, Notch, Bandpass Filter, Framerate
                        -- Networking Mode and All settings for active networking protocol 
                        -- Analog Read, Head Plot, EMG, and Focus
                        -- Widget/Container Pairs
@@ -150,6 +150,7 @@ int numChanloaded;
 Boolean chanNumError = false;
 int numLoadedWidgets;
 String [] LoadedWidgetsArray;
+int loadFramerate;
 
 ///////////////////////////////  
 //      Save GUI Settings    //
@@ -258,6 +259,7 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Current Layout", currentLayout);
   SaveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
   SaveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
+  SaveGlobalSettings.setInt("Framerate", frameRateCounter);
   SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
   SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", ARvertscalesave);
@@ -536,6 +538,7 @@ void LoadGUIsettings() {
       loadLayoutsetting = LoadAllSettings.getInt("Current Layout");
       loadNotchsetting = LoadAllSettings.getInt("Notch");
       loadBandpasssetting = LoadAllSettings.getInt("Bandpass Filter");
+      loadFramerate = LoadAllSettings.getInt("Framerate");
       loadTimeSeriesVertScale = LoadAllSettings.getInt("Time Series Vert Scale");
       loadTimeSeriesHorizScale = LoadAllSettings.getInt("Time Series Horiz Scale");
       loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
@@ -547,11 +550,12 @@ void LoadGUIsettings() {
         "Using Layout Number: " + loadLayoutsetting, 
         "Default Notch: " + loadNotchsetting, //default notch
         "Default BP: " + loadBandpasssetting, //default bp
+        "Default Framerate: " + loadFramerate, //default framerate
         "TS Vert Scale: " + loadTimeSeriesVertScale,
         "TS Horiz Scale: " + loadTimeSeriesHorizScale,
         "Analog Vert Scale: " + loadAnalogReadVertScale,
         "Analog Horiz Scale: " + loadAnalogReadHorizScale,
-        //Add new global settings after this line to print to console
+        //Add new global settings above this line to print to console
         };
       //Print the global settings that have been loaded to the console  
       printArray(LoadedGlobalSettings);
@@ -741,7 +745,28 @@ void LoadGUIsettings() {
   dataProcessing.currentFilt_ind = loadBandpasssetting;
   topNav.filtBPButton.but_txt = "BP Filt\n" + DataProcessingBParray[loadBandpasssetting]; //this works
   println(DataProcessingBParray[loadBandpasssetting]);
-   
+  
+  //Apply Framerate
+  frameRateCounter = loadFramerate;
+  switch (frameRateCounter){
+    case 0:
+      topNav.fpsButton.setString("24 fps");
+      frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+      break;
+    case 1:
+      topNav.fpsButton.setString("30 fps");
+      frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+      break;
+    case 2:
+      topNav.fpsButton.setString("45 fps");
+      frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+      break;
+    case 3:
+      topNav.fpsButton.setString("60 fps");
+      frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+      break;
+  }
+  
   //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
   LoadApplyWidgetDropdownText(); 
   
