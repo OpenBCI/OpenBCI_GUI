@@ -1,5 +1,8 @@
 [
-  {"Channels": 8},
+  {
+    "Data Source": 3,
+    "Channels": 8
+  },
   {
     "Channel_Number": 1,
     "Active": 0
@@ -90,7 +93,7 @@
   },
   {
     "Widget_0": 4,
-    "Widget_8": 9,
-    "Widget_6": 3
+    "Widget_1": 3,
+    "Widget_2": 9
   }
 ]

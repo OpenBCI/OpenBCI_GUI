@@ -332,7 +332,7 @@ void parseKey(char val) {
         */
         LoadGUIsettings();
         //Output message when Loading settings is complete
-        if (chanNumError == false) output("Settings Loaded!");      
+        if (chanNumError == false && DataSourceError == false) output("Settings Loaded!");      
       break;     
       
       //////      //////      //////      //////      //////  

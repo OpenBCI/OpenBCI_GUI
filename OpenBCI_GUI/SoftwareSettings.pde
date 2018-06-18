@@ -151,6 +151,8 @@ Boolean chanNumError = false;
 int numLoadedWidgets;
 String [] LoadedWidgetsArray;
 int loadFramerate;
+int loadDatasource;
+Boolean DataSourceError = false;
 
 ///////////////////////////////  
 //      Save GUI Settings    //
@@ -160,9 +162,10 @@ void SaveGUIsettings() {
   //Set up a JSON array
   SaveSettingsJSONData = new JSONArray();
   
-  //Save the number of channels being used in the first object
+  //Save the number of channels being used and eegDataSource in the first object
   JSONObject SaveNumChannels = new JSONObject();
   SaveNumChannels.setInt("Channels", slnchan);
+  SaveNumChannels.setInt("Data Source", eegDataSource);
   //println(slnchan);
   SaveSettingsJSONData.setJSONObject(0, SaveNumChannels);
   
@@ -462,6 +465,17 @@ void LoadGUIsettings() {
     return;
   } else {
     chanNumError = false;
+  }
+  loadDatasource = LoadChanSettings.getInt("Data Source");
+  println("Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
+  //Print error if trying to load a different data source (ex. Live != Synthetic)
+  if (loadDatasource != eegDataSource) {
+    output("Data Source Error..."); 
+    println("Data source being loaded doesn't match current data source.");
+    DataSourceError = true; 
+    return;
+  } else {
+    DataSourceError = false;
   }
   
   //We want to read the rest of the JSON Array!
