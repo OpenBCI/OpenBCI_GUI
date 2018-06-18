@@ -1,4 +1,21 @@
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+                       This sketch saves and loads the following User Settings:    
+                       -- All Time Series widget settings
+                       -- All FFT widget settings
+                       -- Default Layout, Notch, Bandpass Filter
+                       -- Networking Protocol and All OSC settings
+                       -- Analog Read, Head Plot, EMG, and Focus
+                       -- Widget/Container Pairs
+                       
+                       Created: Richard Waltman - May/June 2018  
+                       
+    -- Capital 'S' to Save                                                                                            
+    -- Capital 'L' to Load                                                                                           
+    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts                               
+*/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
     Was going to add these functions to WidgetManager, then just decided to make a new tab
     
@@ -7,40 +24,8 @@
           -- Better idea already put into place: use Capital 'S' for Save and Capital 'L' for Load -- THIS WORKS
           -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load -- THIS WORKS
           -- Need to apply Time Series settings after they are loaded by sending a message for each channel to the Cyton/Ganglion boards -- DONE
-
-Requested User Settings to save so far:
-wm.currentContainerLayout //default layout --done
-dataprocessing.currentNotch_ind //default notch --done
-dataprocessing.currentFilter_ind //default BP filter --done
-w_analogread.startingVertScaleIndex //default vert scale for analog read widget --done
-w_timeseries.startingVertScaleIndex //default vert scale for time series widget, --done
-      
-Activate/Deactivating channels:
-deactivateChannel(Channel-1) --done
-activateChannel(Channel-1) --done
-
-Changing hardware settings (especially BIAS, SRB 2, and SRB 1) found below using ChangeSettingValues
-
-Loading and applying settings contained in dropdown menus are at the bottomw in LoadApplyWidgetDropdowns()
 */
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-                       This sketch saves and loads the following User Settings:    
-                       -- All Time Series widget settings
-                       -- All FFT widget settings
-                       -- Default Layout, Notch, Bandpass Filter
-                       -- Networking Protocol and All OSC settings
-                       
-                       Created: Richard Waltman - May/June 2018  
-                       
-    -- Capital 'S' to Save                                                                                            
-    -- Capital 'L' to Load                                                                                           
-    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts                               
-*/
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
@@ -178,7 +163,8 @@ void SaveGUIsettings() {
   //println(slnchan);
   SaveSettingsJSONData.setJSONObject(0, SaveNumChannels);
   
-  ///////Case for Live Data Modes
+  ////////////////////////////////////////////////////////////////////////////////////
+  //                 Case for saving TS settings in Live Data Modes                 //
   if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
     
     //Save all of the channel settings for number of Time Series channels being used
@@ -242,8 +228,8 @@ void SaveGUIsettings() {
       SaveSettingsJSONData.setJSONObject(i + 1, SaveTimeSeriesSettings);
     }
   }
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //              Case for saving settings when in Synthetic or Playback data modes                          //
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //              Case for saving TS settings when in Synthetic or Playback data modes                       //
   if(eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC) {
     for (int i = 0; i < slnchan; i++) {
       
@@ -419,14 +405,6 @@ void SaveGUIsettings() {
   
   ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
   JSONObject SaveWidgetSettings = new JSONObject();
-  
-  //for(int i = 0; i < wm.widgets.size(); i++){
-      //if(wm.widgets.get(i).isActive){
-        //int containerIntSave = wm.layouts.get(currentLayout-1).containerInts[i];
-        //println("Widget " + i + " is active in Container " + containerCounter);     
-        //SaveWidgetSettings.setInt("Widget "+i, containerIntSave);    
-     // }
-  //}
   
   int numActiveWidgets = 0;
   //Save what Widgets are active and respective Container number (see Containers.pde)
@@ -1065,46 +1043,3 @@ void LoadApplyWidgetDropdownText() {
   //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
   
 } //end of LoadApplyWidgetDropdownText()
-
-
-
-/*  
-widget.cp5_widget.getController("WidgetSelector").getCaptionLabel().setText("Widget Template X");
-
-wm.widgets.get(1).setContainer(layouts.get(_newLayout).containerInts[counter])
-
-      for(int i = 0; i < widgets.size(); i++){
-        if(widgets.get(i).isActive){
-          widgets.get(i).setContainer(layouts.get(loadLayoutsetting - 1).containerInts[11]);
-
-void WidgetSelector(int n){
-  println("New widget [" + n + "] selected for container...");
-  //find out if the widget you selected is already active
-  boolean isSelectedWidgetActive = wm.widgets.get(n).isActive;
-
-  //find out which widget & container you are currently in...
-  int theContainer = -1;
-  for(int i = 0; i < wm.widgets.size(); i++){
-    if(wm.widgets.get(i).isMouseHere()){
-      theContainer = wm.widgets.get(i).currentContainer; //keep track of current container (where mouse is...)
-      if(isSelectedWidgetActive){ //if the selected widget was already active
-        wm.widgets.get(i).setContainer(wm.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
-      } else{
-        wm.widgets.get(i).isActive = false;   //deactivate the current widget (if it is different than the one selected)
-      }
-    }
-  }
-
-  wm.widgets.get(n).isActive = true;//activate the new widget
-  wm.widgets.get(n).setContainer(theContainer);//map it to the current container
-  //set the text of the widgetSelector to the newly selected widget
-
-  closeAllDropdowns();
-}
-
-    //make sure that the widgetSelector CaptionLabel always corresponds to its widget
-    cp5_widget.getController("WidgetSelector")
-      .getCaptionLabel()
-      .setText(widgetTitle)
-      ;
-  */
