@@ -33,7 +33,7 @@
     "Active": 0
   },
   {
-    "Current Layout": 12,
+    "Current Layout": 5,
     "Notch": 0,
     "Bandpass Filter": 0,
     "Analog Read Vert Scale": 5,
@@ -88,11 +88,8 @@
     "Focus_theme": 0
   },
   {
-    "Widget_0": 1,
-    "Widget_1": 7,
-    "Widget_2": 15,
-    "Widget_3": 16,
-    "Widget_4": 17,
-    "Widget_5": 18
+    "Widget_0": 4,
+    "Widget_1": 3,
+    "Widget_2": 9
   }
 ]

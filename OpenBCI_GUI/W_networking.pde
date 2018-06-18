@@ -605,7 +605,7 @@ class W_networking extends Widget {
     // column2 = x+5*w/10;
     // column3 = x+7*w/10;
     
-    int widthq = 50;
+    int widthq = 49;//This quotient value has been fine-tuned to look proper in small-windowed mode and fullscreen on 1920x1080
     
     column1 = x+12*w/widthq;
     column2 = x+21*w/widthq;
@@ -621,7 +621,7 @@ class W_networking extends Widget {
     row3 = y+6*h/10;
     row4 = y+7*h/10;
     row5 = y+8*h/10;
-    int offset = 17;
+    int offset = 15;//This offset value has been fine-tuned to look proper in small-windowed mode and fullscreen on 1920x1080
 
 
     startButton.setPos(x + w/2 - 70, y + h - 40 );
@@ -680,7 +680,7 @@ class W_networking extends Widget {
     cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setSize(100, (baudRates.size()+1)*(navH-4));
     // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
     // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
-    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //twoThirdsWidth
+    cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //halfWidth
 
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
     cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);
