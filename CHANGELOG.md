@@ -1,3 +1,11 @@
+# v3.3.2
+
+Use OpenBCIHub v1.4.4 please.
+
+### Bug Fixes
+
+* Fixed bug where ganglion accel did not work
+
 # v3.3.1
 
 Use OpenBCIHub v1.4.2 please.
