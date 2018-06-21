@@ -605,12 +605,12 @@ class W_networking extends Widget {
     // column2 = x+5*w/10;
     // column3 = x+7*w/10;
     
-    int widthq = 49;//This quotient value has been fine-tuned to look proper in small-windowed mode and fullscreen on 1920x1080
+    int widthd = 49;//This divisor value has been fine-tuned to look proper in small-windowed mode and fullscreen on 1920x1080
     
-    column1 = x+12*w/widthq;
-    column2 = x+21*w/widthq;
-    column3 = x+30*w/widthq;
-    column4 = x+39*w/widthq;
+    column1 = x+12*w/widthd;
+    column2 = x+21*w/widthd;
+    column3 = x+30*w/widthd;
+    column4 = x+39*w/widthd;
 
     halfWidth = (column2+100) - column1;
     fullColumnWidth = (column4+100) - column1;
