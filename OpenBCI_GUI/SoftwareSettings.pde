@@ -22,7 +22,7 @@
     Was going to add these functions to WidgetManager, then just decided to make a new tab
     
           Thoughts: 
-          -- Add a drop down button somewhere near the top that says "Settings" or "Config", expands to show "Load" and "Save" -- no good place to do this, currently
+          -- Add a drop down button somewhere near the top that says "Settings" or "Config", expands to show "Load" and "Save" -- Found a place and it looks ok!
           -- Better idea already put into place: use Capital 'S' for Save and Capital 'L' for Load -- THIS WORKS
           -- It might be best set up the text file as a JSON Array to accomodate a larger amount of settings and to help with parsing on Load -- THIS WORKS
           -- Need to apply Time Series settings after they are loaded by sending a message for each channel to the Cyton/Ganglion boards -- DONE
