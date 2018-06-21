@@ -236,33 +236,29 @@ void parseKey(char val) {
       }
       break;
 
-    //other controls
-    //The spacebar is being used now so these old shortcuts 's' and 'b' are no longer needed
-    
+    //other controls   
     case 's':
       println("case s...");
       stopRunning();
-      Dropdown1(1);
-      stopButtonWasPressed();
+      //stopButtonWasPressed();
       break;
      
-    /*
     case 'b':
-        println("case b...");
-        startRunning();
-        // stopButtonWasPressed();
+      println("case b...");
+      startRunning();
+      //stopButtonWasPressed();
       break;
-      */
 
-    //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
-    case 'b':
+    //Uppercase B sets Bias Don't Include all channels
+    case 'B':
       for (int i = 0; i < nchan; i++) { //for every channel
         //BIAS off all channels
         channelSettingValues[i][3] = '0';
         println ("chan " + i + " bias don't include");
       }
       break;
-    case 'B':
+    //Uppercase N sets Bias Include all channels
+    case 'N':
       for (int i = 0; i < nchan; i++) { //for every channel
         //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
         //BIAS on all channells
