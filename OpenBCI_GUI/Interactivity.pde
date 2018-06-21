@@ -237,105 +237,53 @@ void parseKey(char val) {
       break;
 
     //other controls
-     //The spacebar is being used now so these old shortcuts are no longer needed
-     //Lowercase 's' can be used now for development testing purporses
+    //The spacebar is being used now so these old shortcuts 's' and 'b' are no longer needed
     
     case 's':
       println("case s...");
-      //stopRunning();
-      //Dropdown1(1);
-      // stopButtonWasPressed();
-      
-      //This is simple and works!
-      //wm.widgets.get(12).isActive = true;//activate the new widget
-      //wm.widgets.get(12).setContainer(wm.widgets.get(0).currentContainer);//map it to container ...
-
-      /*
-      int numActiveWidgets = 0;
-      
-      for(int i = 0; i < wm.widgets.size(); i++){
-        if(wm.widgets.get(i).isActive){
-          numActiveWidgets++; //increment numActiveWidgets
-          //println("Widget" + i + " is active");
-          // activeWidgets.add(i); //keep track of the active widget
-          int containerCount = wm.widgets.get(i).currentContainer;
-          println("Widget " + i + " is in Container " + containerCount);
-        }
-      } 
-      println(numActiveWidgets + " active widgets");
-      //Print what widgets are in the containers used by current layout for only the number of active widgets
-      for(int i = 0; i < numActiveWidgets; i++){
-            int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
-            //println("Container " + containerCounter + " is available");          
-      }
-      println("debugging: try to change active widgets");
-      */
+      stopRunning();
+      Dropdown1(1);
+      stopButtonWasPressed();
       break;
      
     /*
     case 'b':
-      println("case b...");
-      startRunning();
-      // stopButtonWasPressed();
+        println("case b...");
+        startRunning();
+        // stopButtonWasPressed();
       break;
-    */
+      */
 
-     //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
+    //Uppercase B Includes Bias on all channels, lowercase b tells all channels Don't Include Bias
     case 'b':
       for (int i = 0; i < nchan; i++) { //for every channel
-      //BIAS off all channels
-      channelSettingValues[i][3] = '0';
-      println ("chan " + i + " bias don't include");
+        //BIAS off all channels
+        channelSettingValues[i][3] = '0';
+        println ("chan " + i + " bias don't include");
       }
       break;
     case 'B':
       for (int i = 0; i < nchan; i++) { //for every channel
-      //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
-      //BIAS on all channells
-      channelSettingValues[i][3] = '1';
-      println ("chan " + i + " bias include");
+        //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
+        //BIAS on all channells
+        channelSettingValues[i][3] = '1';
+        println ("chan " + i + " bias include");
       }
       break;
-      
-      
-      //////      ////// Save settings capital S      //////      //////      //////
+         
+    ///////////////////// Save settings capital S
     case 'S':      
-      println("Save key pressed!");
-      /*
-      final String[] SaveSettingsData = {
-        "Using Layout Number: " + currentLayout, 
-        "Started Using Layout Number: " + wm.currentContainerLayout,
-        "Default Notch: " + dataProcessing.currentNotch_ind, //default notch
-        "Default Time Series Vert Scale: " + TimeSeriesStartingVertScaleIndex,
-        "Analog Series Vert Scale: " + AnalogReadStartingVertScaleIndex,
-        "Analog Series Horiz Scale: " + AnalogReadStartingHorizontalScaleIndex,
-        };
-      final String   SaveSettingsPath  = dataPath("UserSettingsFile.txt"); 
-      saveStrings(SaveSettingsPath, SaveSettingsData);
-      */    
+      println("Save key pressed!"); 
       SaveGUIsettings();
       output("Settings Saved!");    
       break;
       
-      //////      ////// Load settings capital L      //////      //////      //////     
-     case 'L':      
-       /*
-       final String[] LoadSettingsData = loadStrings("UserSettingsFile.txt"); ;
-       output("Settings Succesfully Loaded!");
-       println("Here is the magic:");
-       
-       println("There are " + LoadSettingsData.length + " lines in the settings file");
-        
-        for (int i = 0 ; i < LoadSettingsData.length; i++) {
-          println(LoadSettingsData[i]);
-        }  
-        */
-        LoadGUIsettings();
-        //Output message when Loading settings is complete
-        if (chanNumError == false && DataSourceError == false) output("Settings Loaded!");      
+    ///////////////////// Save settings capital L     
+    case 'L':      
+      loadGUISettings();
+      //Output message when Loading settings is complete
+      if (chanNumError == false && dataSourceError == false) output("Settings Loaded!");      
       break;     
-      
-      //////      //////      //////      //////      //////  
 
     case 'n':
       println("cyton: " + cyton);
@@ -352,9 +300,7 @@ void parseKey(char val) {
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
       break;
-  
-
-
+ 
     // //change the state of the impedance measurements...activate the N-channels
     // case 'A':
     //   Ichan = 1; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -406,7 +352,6 @@ void parseKey(char val) {
     // case '<':
     //   Ichan = 8; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
     //   break;
-
 
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";

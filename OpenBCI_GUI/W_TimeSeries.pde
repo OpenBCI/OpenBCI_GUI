@@ -55,8 +55,8 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), TSvertscalesave);
-    addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), TShorizscalesave);
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
+    addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), tsHorizScaleSave);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
@@ -253,7 +253,7 @@ class W_timeSeries extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
-  TSvertscalesave = n;
+  tsVertScaleSave = n;
   if (n==0) { //autoscale
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
       w_timeSeries.channelBars[i].adjustVertScale(0);
@@ -287,7 +287,7 @@ void VertScale_TS(int n) {
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration(int n) {
-  TShorizscalesave = n;
+  tsHorizScaleSave = n;
   // println("adjust duration to: ");
   if(n==0){ //set time series x axis to 1 secconds
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){

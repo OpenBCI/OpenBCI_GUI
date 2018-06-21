@@ -51,7 +51,7 @@ class W_fft extends Widget {
   int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
   
   //added to save settings
-  int FFTmaxfrqsave = xLim;
+  int fftMaxFrqSave = xLim;
 
   W_fft(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -211,7 +211,7 @@ class W_fft extends Widget {
 void MaxFreq(int n) {
   /* request the selected item based on index n */
   w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
-  FFTmaxfrqsave = n; //save the xLim to variable for save/load settings
+  fftMaxFrqSave = n; //save the xLim to variable for save/load settings
   closeAllDropdowns();
 }
 
@@ -219,7 +219,7 @@ void MaxFreq(int n) {
 void VertScale(int n) {
 
   w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
-  FFTmaxuVsave = n; //save the yLim to variable for save/load settings
+  fftMaxuVSave = n; //save the yLim to variable for save/load settings
   closeAllDropdowns();
 }
 
@@ -228,11 +228,11 @@ void LogLin(int n) {
   if (n==0) {
     w_fft.fft_plot.setLogScale("y");
     //store the current setting to save
-    FFTloglinsave = 0;
+    fftLogLinSave = 0;
   } else {
     w_fft.fft_plot.setLogScale("");
     //store the current setting to save
-    FFTloglinsave = 1;
+    fftLogLinSave = 1;
   }
   closeAllDropdowns();
 }
@@ -240,7 +240,7 @@ void LogLin(int n) {
 //triggered when there is an event in the Smoothing Dropdown
 void Smoothing(int n) {
   smoothFac_ind = n;
-  FFTsmoothingsave = n;
+  fftSmoothingSave = n;
   closeAllDropdowns();
 }
 

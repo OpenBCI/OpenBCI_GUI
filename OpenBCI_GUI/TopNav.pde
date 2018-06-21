@@ -39,7 +39,7 @@ class TopNav {
 
   LayoutSelector layoutSelector;
   TutorialSelector tutorialSelector;
-  ConfigSelector ConfigSelector;
+  configSelector configSelector;
 
   boolean finishedInit = false;
 
@@ -93,7 +93,7 @@ class TopNav {
 
     layoutSelector = new LayoutSelector();
     tutorialSelector = new TutorialSelector();
-    ConfigSelector = new ConfigSelector();
+    configSelector = new configSelector();
 
     updateNavButtonsBasedOnColorScheme();
 
@@ -264,7 +264,7 @@ class TopNav {
 
     layoutSelector.draw();
     tutorialSelector.draw();
-    ConfigSelector.draw();
+    configSelector.draw();
 
   }
 
@@ -278,7 +278,7 @@ class TopNav {
       configButton.but_x = width - (3*2) - (layoutButton.but_dx*2);
       layoutSelector.screenResized();     //pass screenResized along to layoutSelector
       tutorialSelector.screenResized();
-      ConfigSelector.screenResized();
+      configSelector.screenResized();
     }
   }
 
@@ -352,7 +352,7 @@ class TopNav {
 
     layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
     tutorialSelector.mousePressed();
-    ConfigSelector.mousePressed();
+    configSelector.mousePressed();
   }
 
   void mouseReleased(){
@@ -393,7 +393,7 @@ class TopNav {
         }
         if (configButton.isMouseHere() && configButton.isActive()) {
           //layoutSelector.toggleVisibility();
-          ConfigSelector.toggleVisibility();         
+          configSelector.toggleVisibility();         
           configButton.setIsActive(true);
 
           //wm.printLayouts();
@@ -416,7 +416,7 @@ class TopNav {
 
     layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
     tutorialSelector.mouseReleased();
-    ConfigSelector.mouseReleased();
+    configSelector.mouseReleased();
 
   }
 
@@ -648,13 +648,13 @@ class LayoutSelector{
 
 }
 
-class ConfigSelector{
+class configSelector{
   int x, y, w, h, margin, b_w, b_h;
   boolean isVisible;
 
-  ArrayList<Button> ConfigOptions; //
+  ArrayList<Button> configOptions; //
 
-  ConfigSelector(){
+  configSelector(){
     w = 120;
     x = width- 3*2 - 60*3 - margin*3;
     y = (navBarHeight * 2) - 3;
@@ -662,16 +662,10 @@ class ConfigSelector{
     b_w = w - margin*2;
     b_h = 22;
     h = margin*3 + b_h*2;
-   // y = (navBarHeight * 2) - 3;
-    //margin = 6;
-    //b_w = (w - 5*margin)/4;
-    //b_h = b_w;
-    //h = margin*3 + b_h*2;
-
 
     isVisible = false;
 
-    ConfigOptions = new ArrayList<Button>();
+    configOptions = new ArrayList<Button>();
     addConfigButtons();
   }
 
@@ -694,8 +688,8 @@ class ConfigSelector{
       fill(57,128,204); //bg
       rect(x, y, w, h);
 
-      for(int i = 0; i < ConfigOptions.size(); i++){
-        ConfigOptions.get(i).draw();
+      for(int i = 0; i < configOptions.size(); i++){
+        configOptions.get(i).draw();
       }
 
       fill(57,128,204);
@@ -714,9 +708,9 @@ class ConfigSelector{
   void mousePressed(){
     //only allow button interactivity if isVisible==true
     if(isVisible){
-      for(int i = 0; i < ConfigOptions.size(); i++){
-        if(ConfigOptions.get(i).isMouseHere()){
-          ConfigOptions.get(i).setIsActive(true);
+      for(int i = 0; i < configOptions.size(); i++){
+        if(configOptions.get(i).isMouseHere()){
+          configOptions.get(i).setIsActive(true);
           println("config pressed");
         }
       }
@@ -729,19 +723,19 @@ class ConfigSelector{
       if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.configButton.isMouseHere()){
         toggleVisibility();
       }
-      for(int i = 0; i < ConfigOptions.size(); i++){
-        if(ConfigOptions.get(i).isMouseHere() && ConfigOptions.get(i).isActive()){
+      for(int i = 0; i < configOptions.size(); i++){
+        if(configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()){
           int ConfigSelected = i;
-          ConfigOptions.get(i).setIsActive(false);
+          configOptions.get(i).setIsActive(false);
           if (ConfigSelected == 0) { //If save button is pressed..
              SaveGUIsettings(); //save current settings to JSON file in /data/
              output("Settings Saved!"); //print success message to screen
           } else if (ConfigSelected == 1) {
-             LoadGUIsettings(); //load settings from JSON file in /data/
+             loadGUISettings(); //load settings from JSON file in /data/
             //Output success message when Loading settings is complete without errors
-            if (chanNumError == false && DataSourceError == false) output("Settings Loaded!");
+            if (chanNumError == false && dataSourceError == false) output("Settings Loaded!");
           }
-          toggleVisibility(); //shut ConfigSelector if something is selected
+          toggleVisibility(); //shut configSelector if something is selected
           //open corresponding link
         }
       }
@@ -753,8 +747,8 @@ class ConfigSelector{
     int oldX = x;
     x = width - w - 3;
     int dx = oldX - x;
-    for(int i = 0; i < ConfigOptions.size(); i++){
-      ConfigOptions.get(i).setX(ConfigOptions.get(i).but_x - dx);
+    for(int i = 0; i < configOptions.size(); i++){
+      configOptions.get(i).setX(configOptions.get(i).but_x - dx);
     }
 
   }
@@ -785,22 +779,23 @@ class ConfigSelector{
 
     //FIRST ROW
 
-    //setup button 1 -- full screen
+    //setup button 1 -- Save Settings
     int buttonNumber = 0;
     Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save Settings");
     tempConfigButton.setFont(p5, 12);
-    ConfigOptions.add(tempConfigButton);
-
+    configOptions.add(tempConfigButton);
+    
+    //setup button 2 -- Load Settings
     buttonNumber = 1;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
     tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load Settings");
     tempConfigButton.setFont(p5, 12);
-    ConfigOptions.add(tempConfigButton);
+    configOptions.add(tempConfigButton);
 
   }
 
   void updateConfigOptionButtons(){
-
+  //dropdown is static, so no need to update
   }
 
 }  

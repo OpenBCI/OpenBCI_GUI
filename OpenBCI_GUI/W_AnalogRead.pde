@@ -233,7 +233,7 @@ void VertScale_AR(int n) {
       w_analogRead.analogReadBars[i].adjustVertScale(10000);
     }
   }
-  ARvertscalesave = n;
+  arVertScaleSave = n;
   closeAllDropdowns();
 }
 
@@ -257,7 +257,7 @@ void Duration_AR(int n) {
       w_analogRead.analogReadBars[i].adjustTimeAxis(7);
     }
   }
-  ARhorizscalesave = n;
+  arHorizScaleSave = n;
   closeAllDropdowns();
 }
 

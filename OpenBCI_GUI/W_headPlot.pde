@@ -135,7 +135,7 @@ void Polarity(int n) {
   } else {
     w_headPlot.headPlot.use_polarity = false;
   }
-  HPpolaritysave = n;
+  hpPolaritySave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -147,14 +147,14 @@ void ShowContours(int n){
     //turn headplot contours off
     w_headPlot.headPlot.drawHeadAsContours = false;
   }
-  HPcontourssave = n;
+  hpContoursSave = n;
   closeAllDropdowns();
 }
 
 //triggered when there is an event in the SmoothingHeadPlot Dropdown
 void SmoothingHeadPlot(int n) {
   w_headPlot.setSmoothFac(smoothFac[n]);
-  HPsmoothingsave = n;
+  hpSmoothingSave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -167,7 +167,7 @@ void UnfiltFiltHeadPlot(int n) {
 void Intensity(int n){
   vertScaleFactor_ind = n;
   updateVertScale();
-  HPintensitysave = n;
+  hpIntensitySave = n;
   closeAllDropdowns();
 }
 

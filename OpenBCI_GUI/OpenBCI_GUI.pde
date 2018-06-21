@@ -8,7 +8,7 @@
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //
-//   Requires gwoptics graphing library for processing.  Bui1lt on V0.5.0
+//   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
 //
 //   Requires ControlP5 library, but an older one.  This will only work
@@ -303,43 +303,43 @@ int dataProcessingNotchSave = 0;
 int dataProcessingBandpassSave = 3;
 
 //Time Series settings
-int TSvertscalesave = 3;
-int TShorizscalesave = 2;
-String CheckForSuccessTS;
+int tsVertScaleSave = 3;
+int tsHorizScaleSave = 2;
+String checkForSuccessTS;
 
 //FFT plot settings, 
-int FFTmaxfrqsave = 2;
-int FFTmaxuVsave = 2;
-int FFTloglinsave = 0;
-int FFTsmoothingsave = 3;
-int FFTfiltersave = 0;
+int fftMaxFrqSave = 2;
+int fftMaxuVSave = 2;
+int fftLogLinSave = 0;
+int fftSmoothingSave = 3;
+int fftFilterSave = 0;
 
 //Analog Read settings
-int ARvertscalesave = 5; //updates in VertScale_AR()
-int ARhorizscalesave = 2; //updates in Duration_AR()
+int arVertScaleSave = 5; //updates in VertScale_AR()
+int arHorizScaleSave = 2; //updates in Duration_AR()
 
 //Headplot settings
-int HPintensitysave = 2;
-int HPpolaritysave = 0;
-int HPcontourssave = 0;
-int HPsmoothingsave = 3;
+int hpIntensitySave = 2;
+int hpPolaritySave = 0;
+int hpContoursSave = 0;
+int hpSmoothingSave = 3;
 
 //EMG settings
-int EMGsmoothingsave = 4;
-int EMGuVlimsave = 2;
-int EMGcreepsave = 3;
-int EMGmindeltauVsave = 1;
+int emgSmoothingSave = 4;
+int emguVLimSave = 2;
+int emgCreepSave = 3;
+int emgMinDeltauVSave = 1;
 
 //Focus widget settings
-int Focusthemesave = 0;
-int Focuskeysave = 0;
+int focusThemeSave = 0;
+int focusKeySave = 0;
 
 //default data types for streams 1-4 in Networking widget, declared here for use with save/load
-int nwdatatype1=0;
-int nwdatatype2=0;
-int nwdatatype3=0;
-int nwdatatype4=0;
-int NWprotocolsave = 0;
+int nwDataType1 = 0;
+int nwDataType2 = 0;
+int nwDataType3 = 0;
+int nwDataType4 = 0;
+int nwProtocolSave = 0;
 
 //------------------------------------------------------------------------
 //                       Global Functions

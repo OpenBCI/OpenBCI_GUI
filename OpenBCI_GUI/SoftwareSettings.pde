@@ -13,7 +13,7 @@
     -- Start System first!                   
     -- Capital 'S' to Save                                                                                            
     -- Capital 'L' to Load                                                                                           
-    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
+    -- Functions SaveGUIsettings() and loadGUISettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
     -- Functions are also called in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
     -- After loading, only a few actions are required: start/stop the data stream and/or networking streams, open/close serial port,  Turn on/off Analog Read
 */
@@ -34,60 +34,60 @@ JSONArray SaveSettingsJSONData;
 JSONArray LoadSettingsJSONData;
 
 //Used to set text for Notch and BP filter settings
-String [] DataProcessingNotcharray = {"60Hz", "50Hz", "None"};
-String [] DataProcessingBParray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", "No Filter"};
+String [] dataProcessingNotcharray = {"60Hz", "50Hz", "None"};
+String [] dataProcessingBParray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", "No Filter"};
 
 // Used to set text in Time Series dropdown settings
-String[] TSvertscalearray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
-String[] TShorizscalearray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+String[] tsVertScaleArray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
+String[] tsHorizScaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
 
 //Used to print the status of each channel in the console when loading settings
-String[] channelsActivearray = {"Active", "Not Active"};
-String[] gainSettingsarray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
-String[] inputTypearray = { "Normal", "Shorted", "BIAS_MEAS", "MVDD", "Temp.", "Test", "BIAS_DRP", "BIAS_DRN"};
-String[] BiasIncludearray = {"Don't Include", "Include"};
-String[] SRB2settingarray = {"Off", "On"};
-String[] SRB1settingarray = {"Off", "On"};
+String[] channelsActiveArray = {"Active", "Not Active"};
+String[] gainSettingsArray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
+String[] inputTypeArray = { "Normal", "Shorted", "BIAS_MEAS", "MVDD", "Temp.", "Test", "BIAS_DRP", "BIAS_DRN"};
+String[] biasIncludeArray = {"Don't Include", "Include"};
+String[] srb2SettingArray = {"Off", "On"};
+String[] srb1SettingArray = {"Off", "On"};
 
 //Used to set text in dropdown menus when loading FFT settings
-String[] FFTmaxfrqarray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
-String[] FFTvertscalearray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
-String[] FFTloglinarray = {"Log", "Linear"};
-String[] FFTsmoothingarray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
-String[] FFTfilterarray = {"Filtered", "Unfilt."};
+String[] fftMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
+String[] fftVertScaleArray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
+String[] fftLogLinArray = {"Log", "Linear"};
+String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
+String[] fftFilterArray = {"Filtered", "Unfilt."};
 
 //Used to set text in dropdown menus when loading Networking settings
-String[] NWprotocolarray = {"OSC", "UDP", "LSL", "Serial"};
-String[] NWdatatypesarray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget"};
-String[] NWbaudratesarray = {"57600", "115200", "250000", "500000"};
+String[] nwProtocolArray = {"OSC", "UDP", "LSL", "Serial"};
+String[] nwDataTypesArray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget"};
+String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
 //Used to set text in dropdown menus when loading Analog Read settings
-String[] ARvertscaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
-String[] ARhorizscaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
+String[] arHorizScaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
 
 //Used to set text in dropdown menus when loading Head Plot settings
-String[] HPintensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};
-String[] HPpolarityArray = {"+/-", " + "};
-String[] HPcontoursArray = {"ON", "OFF"};
-String[] HPsmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
+String[] hpIntensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};
+String[] hpPolarityArray = {"+/-", " + "};
+String[] hpContoursArray = {"ON", "OFF"};
+String[] hpSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 
 //Used to set text in dropdown menus when loading EMG settings
-String[] EMGsmoothingArray = {"0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"};
-String[] EMGuVlimArray = {"50 uV", "100 uV", "200 uV", "400 uV"};
-String[] EMGcreepArray = {"0.9", "0.95", "0.98", "0.99", "0.999"};
-String[] EMGmindeltauVArray = {"10 uV", "20 uV", "40 uV", "80 uV"};
+String[] emgSmoothingArray = {"0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"};
+String[] emguVLimArray = {"50 uV", "100 uV", "200 uV", "400 uV"};
+String[] emgCreepArray = {"0.9", "0.95", "0.98", "0.99", "0.999"};
+String[] emgMinDeltauVArray = {"10 uV", "20 uV", "40 uV", "80 uV"};
 
 //Used to set text in dropdown menus when loading Focus Setings
-String[] FocusthemeArray = {"Green", "Orange", "Cyan"};
-String[] FocuskeyArray = {"OFF", "UP", "SPACE"};
+String[] focusThemeArray = {"Green", "Orange", "Cyan"};
+String[] focusKeyArray = {"OFF", "UP", "SPACE"};
 
 //Save Time Series settings variables
-int TSactivesetting = 1;
-int TSgainsetting;
-int TSinputtypesetting;
-int TSbiassetting;
-int TSsrb2setting;
-int TSsrb1setting;
+int tsActiveSetting = 1;
+int tsGainSetting;
+int tsInputTypeSetting;
+int tsBiasSetting;
+int tsSrb2Setting;
+int tsSrb1Setting;
 
 //Load global settings variables
 int loadLayoutsetting;   
@@ -103,47 +103,47 @@ int loadAnalogReadVertScale;
 int loadAnalogReadHorizScale;
 
 //Load FFT dropdown variables
-int FFTmaxfrqload;
-int FFTmaxuVload;
-int FFTloglinload;
-int FFTsmoothingload;
-int FFTfilterload;
+int fftMaxFrqLoad;
+int fftMaxuVLoad;
+int fftLogLinLoad;
+int fftSmoothingLoad;
+int fftFilterLoad;
 
 //Load Headplot dropdown variables
-int HPintensityload;
-int HPpolarityload;
-int HPcontoursload;
-int HPsmoothingload;
+int hpIntensityLoad;
+int hpPolarityLoad;
+int hpContoursLoad;
+int hpSmoothingLoad;
 
 //EMG settings
-int EMGsmoothingload;
-int EMGuVlimload;
-int EMGcreepload;
-int EMGmindeltauVload;
+int emgSmoothingLoad;
+int emguVLimLoad;
+int emgCreepLoad;
+int emgMinDeltauVLoad;
 
 //Focus widget settings
-int FocusThemeload;
-int FocusKeyload;
+int focusThemeLoad;
+int focusKeyLoad;
 
 //Networking Settings save/load variables
-int NWprotocolload;
+int nwProtocolLoad;
 //OSC load variables
-String NWoscip1load;  String NWoscip2load;  String NWoscip3load;  String NWoscip4load;
-String NWoscport1load;  String NWoscport2load;  String NWoscport3load;  String NWoscport4load;
-String NWoscaddress1load;  String NWoscaddress2load; String NWoscaddress3load; String NWoscaddress4load;
-int NWoscfilter1load;  int NWoscfilter2load;  int NWoscfilter3load;  int NWoscfilter4load;
+String nwOscIp1Load;  String nwOscIp2Load;  String nwOscIp3Load;  String nwOscIp4Load;
+String nwOscPort1Load;  String nwOscPort2Load;  String nwOscPort3Load;  String nwOscPort4Load;
+String nwOscAddress1Load;  String nwOscAddress2Load; String nwOscAddress3Load; String nwOscAddress4Load;
+int nwOscFilter1Load;  int nwOscFilter2Load;  int nwOscFilter3Load;  int nwOscFilter4Load;
 //UDP load variables
-String NWudpip1load;  String NWudpip2load;  String NWudpip3load;
-String NWudpport1load;  String NWudpport2load;  String NWudpport3load;
-int NWudpfilter1load;  int NWudpfilter2load;  int NWudpfilter3load;
+String nwUdpIp1Load;  String nwUdpIp2Load;  String nwUdpIp3Load;
+String nwUdpPort1Load;  String nwUdpPort2Load;  String nwUdpPort3Load;
+int nwUdpFilter1Load;  int nwUdpFilter2Load;  int nwUdpFilter3Load;
 //LSL load variables
-String NWlslname1load;  String NWlslname2load;  String NWlslname3load;
-String NWlsltype1load;  String NWlsltype2load;  String NWlsltype3load;
-String NWlslnumchan1load;  String NWlslnumchan2load; String NWlslnumchan3load;
-int NWlslfilter1load;  int NWlslfilter2load;  int NWlslfilter3load;
+String nwLSLName1Load;  String nwLSLName2Load;  String nwLSLName3Load;
+String nwLSLType1Load;  String nwLSLType2Load;  String nwLSLType3Load;
+String nwLSLNumChan1Load;  String nwLSLNumChan2Load; String nwLSLNumChan3Load;
+int nwLSLFilter1Load;  int nwLSLFilter2Load;  int nwLSLFilter3Load;
 //Serial load variables
-int NWserialbaudrateload;
-int NWserialfilter1load;
+int nwSerialBaudRateLoad;
+int nwSerialFilter1Load;
 
 //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
 int slnchan; 
@@ -153,7 +153,7 @@ int numLoadedWidgets;
 String [] LoadedWidgetsArray;
 int loadFramerate;
 int loadDatasource;
-Boolean DataSourceError = false;
+Boolean dataSourceError = false;
 
 ///////////////////////////////  
 //      Save GUI Settings    //
@@ -182,56 +182,56 @@ void SaveGUIsettings() {
       for (int j = 0; j < numSettingsPerChannel; j++) {
         switch(j) {  //what setting are we looking at
           case 0: //on/off
-            if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
-            if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
-            // TSactivesetting = int(channelSettingValues[i][j]));  // For some reason this approach doesn't work, still returns 48 and 49 '0' and '1'
+            if (channelSettingValues[i][j] == '0')  tsActiveSetting = 0;
+            if (channelSettingValues[i][j] == '1')  tsActiveSetting = 1;
+            // tsActiveSetting = int(channelSettingValues[i][j]));  // For some reason this approach doesn't work, still returns 48 and 49 '0' and '1'
             break;
           case 1: //GAIN
-            //TSgainsetting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') TSgainsetting = 0;
-            if (channelSettingValues[i][j] == '1') TSgainsetting = 1;
-            if (channelSettingValues[i][j] == '2') TSgainsetting = 2;
-            if (channelSettingValues[i][j] == '3') TSgainsetting = 3;
-            if (channelSettingValues[i][j] == '4') TSgainsetting = 4;
-            if (channelSettingValues[i][j] == '5') TSgainsetting = 5;
-            if (channelSettingValues[i][j] == '6') TSgainsetting = 6;            
+            //tsGainSetting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') tsGainSetting = 0;
+            if (channelSettingValues[i][j] == '1') tsGainSetting = 1;
+            if (channelSettingValues[i][j] == '2') tsGainSetting = 2;
+            if (channelSettingValues[i][j] == '3') tsGainSetting = 3;
+            if (channelSettingValues[i][j] == '4') tsGainSetting = 4;
+            if (channelSettingValues[i][j] == '5') tsGainSetting = 5;
+            if (channelSettingValues[i][j] == '6') tsGainSetting = 6;            
             break;
           case 2: //input type
-            //TSinputtypesetting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') TSinputtypesetting = 0;
-            if (channelSettingValues[i][j] == '1') TSinputtypesetting = 1;
-            if (channelSettingValues[i][j] == '2') TSinputtypesetting = 2;
-            if (channelSettingValues[i][j] == '3') TSinputtypesetting = 3;
-            if (channelSettingValues[i][j] == '4') TSinputtypesetting = 4;
-            if (channelSettingValues[i][j] == '5') TSinputtypesetting = 5;
-            if (channelSettingValues[i][j] == '6') TSinputtypesetting = 6;
-            if (channelSettingValues[i][j] == '7') TSinputtypesetting = 7;
+            //tsInputTypeSetting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') tsInputTypeSetting = 0;
+            if (channelSettingValues[i][j] == '1') tsInputTypeSetting = 1;
+            if (channelSettingValues[i][j] == '2') tsInputTypeSetting = 2;
+            if (channelSettingValues[i][j] == '3') tsInputTypeSetting = 3;
+            if (channelSettingValues[i][j] == '4') tsInputTypeSetting = 4;
+            if (channelSettingValues[i][j] == '5') tsInputTypeSetting = 5;
+            if (channelSettingValues[i][j] == '6') tsInputTypeSetting = 6;
+            if (channelSettingValues[i][j] == '7') tsInputTypeSetting = 7;
             break;
           case 3: //BIAS
-            //TSbiassetting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') TSbiassetting = 0;
-            if (channelSettingValues[i][j] == '1') TSbiassetting = 1;     
+            //tsBiasSetting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') tsBiasSetting = 0;
+            if (channelSettingValues[i][j] == '1') tsBiasSetting = 1;     
             break;
           case 4: // SRB2
-            //TSsrb2setting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') TSsrb2setting = 0;
-            if (channelSettingValues[i][j] == '1') TSsrb2setting = 1;
+            //tsSrb2Setting = int(channelSettingValues[i][j]);
+            if (channelSettingValues[i][j] == '0') tsSrb2Setting = 0;
+            if (channelSettingValues[i][j] == '1') tsSrb2Setting = 1;
             break;
           case 5: // SRB1
-            //TSsrb1setting = channelSettingValues[i][j];
-            if (channelSettingValues[i][j] == '0') TSsrb1setting = 0;
-            if (channelSettingValues[i][j] == '1') TSsrb1setting = 1;
+            //tsSrb1Setting = channelSettingValues[i][j];
+            if (channelSettingValues[i][j] == '0') tsSrb1Setting = 0;
+            if (channelSettingValues[i][j] == '1') tsSrb1Setting = 1;
             break;
           }
       }  
       //Store all channel settings in Time Series JSON object, one channel at a time
       SaveTimeSeriesSettings.setInt("Channel_Number", (i+1));
-      SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
-      SaveTimeSeriesSettings.setInt("PGA Gain", int(TSgainsetting));
-      SaveTimeSeriesSettings.setInt("Input Type", TSinputtypesetting);
-      SaveTimeSeriesSettings.setInt("Bias", TSbiassetting);
-      SaveTimeSeriesSettings.setInt("SRB2", TSsrb2setting);
-      SaveTimeSeriesSettings.setInt("SRB1", TSsrb1setting);
+      SaveTimeSeriesSettings.setInt("Active", tsActiveSetting);
+      SaveTimeSeriesSettings.setInt("PGA Gain", int(tsGainSetting));
+      SaveTimeSeriesSettings.setInt("Input Type", tsInputTypeSetting);
+      SaveTimeSeriesSettings.setInt("Bias", tsBiasSetting);
+      SaveTimeSeriesSettings.setInt("SRB2", tsSrb2Setting);
+      SaveTimeSeriesSettings.setInt("SRB1", tsSrb1Setting);
       SaveSettingsJSONData.setJSONObject(i + 1, SaveTimeSeriesSettings);
     }
   }
@@ -246,13 +246,13 @@ void SaveGUIsettings() {
       for (int j = 0; j < 1; j++) {
         switch(j) { 
           case 0: //Just save what channels are active
-            if (channelSettingValues[i][j] == '0')  TSactivesetting = 0;
-            if (channelSettingValues[i][j] == '1')  TSactivesetting = 1;
+            if (channelSettingValues[i][j] == '0')  tsActiveSetting = 0;
+            if (channelSettingValues[i][j] == '1')  tsActiveSetting = 1;
             break;
           }
       }  
       SaveTimeSeriesSettings.setInt("Channel_Number", (i+1));
-      SaveTimeSeriesSettings.setInt("Active", TSactivesetting);
+      SaveTimeSeriesSettings.setInt("Active", tsActiveSetting);
       SaveSettingsJSONData.setJSONObject(i + 1, SaveTimeSeriesSettings);
     }      
   }    
@@ -264,36 +264,36 @@ void SaveGUIsettings() {
   SaveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
   SaveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
   SaveGlobalSettings.setInt("Framerate", frameRateCounter);
-  SaveGlobalSettings.setInt("Time Series Vert Scale", TSvertscalesave);
-  SaveGlobalSettings.setInt("Time Series Horiz Scale", TShorizscalesave);
-  SaveGlobalSettings.setInt("Analog Read Vert Scale", ARvertscalesave);
-  SaveGlobalSettings.setInt("Analog Read Horiz Scale", ARhorizscalesave);
+  SaveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
+  SaveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
+  SaveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
+  SaveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
   SaveSettingsJSONData.setJSONObject(slnchan + 1, SaveGlobalSettings);
   
   ///////////////////////////////////////////////Setup new JSON object to save FFT settings
   JSONObject SaveFFTSettings = new JSONObject();
 
   //Save FFT Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
-  SaveFFTSettings.setInt("FFT Max Freq", FFTmaxfrqsave);
+  SaveFFTSettings.setInt("FFT Max Freq", fftMaxFrqSave);
   //Save FFT max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
-  SaveFFTSettings.setInt("FFT Max uV", FFTmaxuVsave);
+  SaveFFTSettings.setInt("FFT Max uV", fftMaxuVSave);
   //Save FFT LogLin Setting. Same thing happens for LogLin
-  SaveFFTSettings.setInt("FFT LogLin", FFTloglinsave);
+  SaveFFTSettings.setInt("FFT LogLin", fftLogLinSave);
   //Save FFT Smoothing Setting
-  SaveFFTSettings.setInt("FFT Smoothing", FFTsmoothingsave);
+  SaveFFTSettings.setInt("FFT Smoothing", fftSmoothingSave);
   //Save FFT Filter Setting
-  if (isFFTFiltered == true)  FFTfiltersave = 0;
-  if (isFFTFiltered == false)  FFTfiltersave = 1;  
-  SaveFFTSettings.setInt("FFT Filter",  FFTfiltersave);
+  if (isFFTFiltered == true)  fftFilterSave = 0;
+  if (isFFTFiltered == false)  fftFilterSave = 1;  
+  SaveFFTSettings.setInt("FFT Filter",  fftFilterSave);
   //Set the FFT JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+2, SaveFFTSettings); //next object will be set to slnchan+3, etc.  
   
   ///////////////////////////////////////////////Setup new JSON object to save Networking settings
   JSONObject SaveNetworkingSettings = new JSONObject();
   //Save Protocol
-  SaveNetworkingSettings.setInt("Protocol", NWprotocolsave);//***Save User networking protocol mode
+  SaveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
   
-  switch(NWprotocolsave){
+  switch(nwProtocolSave){
     case 0:
       //Save Data Types for OSC
       SaveNetworkingSettings.setInt("OSC_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
@@ -377,13 +377,13 @@ void SaveGUIsettings() {
   JSONObject SaveHeadplotSettings = new JSONObject();
 
   //Save Headplot Intesity
-  SaveHeadplotSettings.setInt("HP_intensity", HPintensitysave);
+  SaveHeadplotSettings.setInt("HP_intensity", hpIntensitySave);
   //Save Headplot Polarity
-  SaveHeadplotSettings.setInt("HP_polarity", HPpolaritysave);
+  SaveHeadplotSettings.setInt("HP_polarity", hpPolaritySave);
   //Save Headplot contours
-  SaveHeadplotSettings.setInt("HP_contours", HPcontourssave);
+  SaveHeadplotSettings.setInt("HP_contours", hpContoursSave);
   //Save Headplot Smoothing Setting
-  SaveHeadplotSettings.setInt("HP_smoothing", HPsmoothingsave);
+  SaveHeadplotSettings.setInt("HP_smoothing", hpSmoothingSave);
   //Set the Headplot JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+4, SaveHeadplotSettings);
 
@@ -391,13 +391,13 @@ void SaveGUIsettings() {
   JSONObject SaveEMGSettings = new JSONObject();
 
   //Save EMG Smoothing
-  SaveEMGSettings.setInt("EMG_smoothing", EMGsmoothingsave);
+  SaveEMGSettings.setInt("EMG_smoothing", emgSmoothingSave);
   //Save EMG uV limit
-  SaveEMGSettings.setInt("EMG_uVlimit", EMGuVlimsave);
+  SaveEMGSettings.setInt("EMG_uVlimit", emguVLimSave);
   //Save EMG creep speed
-  SaveEMGSettings.setInt("EMG_creepspeed", EMGcreepsave);
+  SaveEMGSettings.setInt("EMG_creepspeed", emgCreepSave);
   //Save EMG min delta uV
-  SaveEMGSettings.setInt("EMG_minuV", EMGmindeltauVsave);
+  SaveEMGSettings.setInt("EMG_minuV", emgMinDeltauVSave);
   //Set the EMG JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+5, SaveEMGSettings);
   
@@ -405,9 +405,9 @@ void SaveGUIsettings() {
   JSONObject SaveFocusSettings = new JSONObject();
 
   //Save Focus theme
-  SaveFocusSettings.setInt("Focus_theme", Focusthemesave);
+  SaveFocusSettings.setInt("Focus_theme", focusThemeSave);
   //Save Focus keypress
-  SaveFocusSettings.setInt("Focus_keypress", Focuskeysave);
+  SaveFocusSettings.setInt("Focus_keypress", focusKeySave);
   //Set the Focus JSON Object
   SaveSettingsJSONData.setJSONObject(slnchan+6, SaveFocusSettings);
   
@@ -442,7 +442,7 @@ void SaveGUIsettings() {
   ///ADD more global settings above this line in the same formats as above/////////
 
   //Let's save the JSON array to a file!
-  saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile-Dev.json");
+  saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile.json");
 
 }  //End of Save GUI Settings function
   
@@ -451,9 +451,9 @@ void SaveGUIsettings() {
 ///////////////////////////////  
 //      Load GUI Settings    //
 ///////////////////////////////  
-void LoadGUIsettings() {  
+void loadGUISettings() {  
   //Load all saved User Settings from a JSON file
-  LoadSettingsJSONData = loadJSONArray("UserSettingsFile-Dev.json");
+  LoadSettingsJSONData = loadJSONArray("UserSettingsFile.json");
 
   //Check the number of channels saved to json first!
   JSONObject LoadChanSettings = LoadSettingsJSONData.getJSONObject(0); 
@@ -473,10 +473,10 @@ void LoadGUIsettings() {
   if (loadDatasource != eegDataSource) {
     output("Data Source Error..."); 
     println("Data source being loaded doesn't match current data source.");
-    DataSourceError = true; 
+    dataSourceError = true; 
     return;
   } else {
-    DataSourceError = false;
+    dataSourceError = false;
   }
   
   //We want to read the rest of the JSON Array!
@@ -497,12 +497,12 @@ void LoadGUIsettings() {
         int SRB2Setting = LoadAllSettings.getInt("SRB2");
         int SRB1Setting = LoadAllSettings.getInt("SRB1");
         println("Ch " + Channel + ", " + 
-          channelsActivearray[Active] + ", " + 
-          gainSettingsarray[GainSettings] + ", " + 
-          inputTypearray[inputType] + ", " + 
-          BiasIncludearray[BiasSetting] + ", " + 
-          SRB2settingarray[SRB2Setting] + ", " + 
-          SRB1settingarray[SRB1Setting]);
+          channelsActiveArray[Active] + ", " + 
+          gainSettingsArray[GainSettings] + ", " + 
+          inputTypeArray[inputType] + ", " + 
+          biasIncludeArray[BiasSetting] + ", " + 
+          srb2SettingArray[SRB2Setting] + ", " + 
+          srb1SettingArray[SRB1Setting]);
           
         //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
         if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
@@ -544,7 +544,7 @@ void LoadGUIsettings() {
       if (i < slnchan) {   
         int Channel = LoadAllSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
         int Active = LoadAllSettings.getInt("Active");
-        println("Ch " + Channel + ", " + channelsActivearray[Active]);
+        println("Ch " + Channel + ", " + channelsActiveArray[Active]);
         //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
         if (Active == 0) {channelSettingValues[i][0] = '0'; activateChannel(Channel);}// power down == false, set color to vibrant
         if (Active == 1) {channelSettingValues[i][0] = '1'; deactivateChannel(Channel);} // power down == true, set color to dark gray, indicating power down         
@@ -581,19 +581,19 @@ void LoadGUIsettings() {
     
     //parse the FFT settings that appear after the global settings 
     if (i == slnchan + 1) {
-      FFTmaxfrqload = LoadAllSettings.getInt("FFT Max Freq");
-      FFTmaxuVload = LoadAllSettings.getInt("FFT Max uV");
-      FFTloglinload = LoadAllSettings.getInt("FFT LogLin");
-      FFTsmoothingload = LoadAllSettings.getInt("FFT Smoothing");
-      FFTfilterload = LoadAllSettings.getInt("FFT Filter");
+      fftMaxFrqLoad = LoadAllSettings.getInt("FFT Max Freq");
+      fftMaxuVLoad = LoadAllSettings.getInt("FFT Max uV");
+      fftLogLinLoad = LoadAllSettings.getInt("FFT LogLin");
+      fftSmoothingLoad = LoadAllSettings.getInt("FFT Smoothing");
+      fftFilterLoad = LoadAllSettings.getInt("FFT Filter");
       
       //Create a string array to print to console
       final String[] LoadedFFTSettings = {
-        "FFT_Max Frequency: " + FFTmaxfrqload, 
-        "FFT_Max uV: " + FFTmaxuVload,
-        "FFT_Log/Lin: " + FFTloglinload,
-        "FFT_Smoothing: " + FFTsmoothingload,
-        "FFT_Filter: " + FFTfilterload,
+        "FFT_Max Frequency: " + fftMaxFrqLoad, 
+        "FFT_Max uV: " + fftMaxuVLoad,
+        "FFT_Log/Lin: " + fftLogLinLoad,
+        "FFT_Smoothing: " + fftSmoothingLoad,
+        "FFT_Filter: " + fftFilterLoad,
         };
       //Print the FFT settings that have been loaded to the console  
       printArray(LoadedFFTSettings);
@@ -601,82 +601,82 @@ void LoadGUIsettings() {
     
     //parse Networking settings that appear after FFT settings
     if (i == slnchan + 2) {
-      NWprotocolload = LoadAllSettings.getInt("Protocol");
-      switch (NWprotocolload)  {
+      nwProtocolLoad = LoadAllSettings.getInt("Protocol");
+      switch (nwProtocolLoad)  {
         case 0:
-          nwdatatype1 = LoadAllSettings.getInt("OSC_DataType1");
-          nwdatatype2 = LoadAllSettings.getInt("OSC_DataType2");
-          nwdatatype3 = LoadAllSettings.getInt("OSC_DataType3");        
-          nwdatatype4 = LoadAllSettings.getInt("OSC_DataType4"); 
-          NWoscip1load = LoadAllSettings.getString("OSC_ip1");
-          NWoscip2load = LoadAllSettings.getString("OSC_ip2");        
-          NWoscip3load = LoadAllSettings.getString("OSC_ip3");        
-          NWoscip4load = LoadAllSettings.getString("OSC_ip4");        
-          NWoscport1load = LoadAllSettings.getString("OSC_port1");
-          NWoscport2load = LoadAllSettings.getString("OSC_port2");        
-          NWoscport3load = LoadAllSettings.getString("OSC_port3");        
-          NWoscport4load = LoadAllSettings.getString("OSC_port4");                
-          NWoscaddress1load = LoadAllSettings.getString("OSC_address1");
-          NWoscaddress2load = LoadAllSettings.getString("OSC_address2");        
-          NWoscaddress3load = LoadAllSettings.getString("OSC_address3");        
-          NWoscaddress4load = LoadAllSettings.getString("OSC_address4");                
-          NWoscfilter1load = LoadAllSettings.getInt("OSC_filter1");
-          NWoscfilter2load = LoadAllSettings.getInt("OSC_filter2");        
-          NWoscfilter3load = LoadAllSettings.getInt("OSC_filter3");        
-          NWoscfilter4load = LoadAllSettings.getInt("OSC_filter4");  
+          nwDataType1 = LoadAllSettings.getInt("OSC_DataType1");
+          nwDataType2 = LoadAllSettings.getInt("OSC_DataType2");
+          nwDataType3 = LoadAllSettings.getInt("OSC_DataType3");        
+          nwDataType4 = LoadAllSettings.getInt("OSC_DataType4"); 
+          nwOscIp1Load = LoadAllSettings.getString("OSC_ip1");
+          nwOscIp2Load = LoadAllSettings.getString("OSC_ip2");        
+          nwOscIp3Load = LoadAllSettings.getString("OSC_ip3");        
+          nwOscIp4Load = LoadAllSettings.getString("OSC_ip4");        
+          nwOscPort1Load = LoadAllSettings.getString("OSC_port1");
+          nwOscPort2Load = LoadAllSettings.getString("OSC_port2");        
+          nwOscPort3Load = LoadAllSettings.getString("OSC_port3");        
+          nwOscPort4Load = LoadAllSettings.getString("OSC_port4");                
+          nwOscAddress1Load = LoadAllSettings.getString("OSC_address1");
+          nwOscAddress2Load = LoadAllSettings.getString("OSC_address2");        
+          nwOscAddress3Load = LoadAllSettings.getString("OSC_address3");        
+          nwOscAddress4Load = LoadAllSettings.getString("OSC_address4");                
+          nwOscFilter1Load = LoadAllSettings.getInt("OSC_filter1");
+          nwOscFilter2Load = LoadAllSettings.getInt("OSC_filter2");        
+          nwOscFilter3Load = LoadAllSettings.getInt("OSC_filter3");        
+          nwOscFilter4Load = LoadAllSettings.getInt("OSC_filter4");  
           break;
         case 1:
-          nwdatatype1 = LoadAllSettings.getInt("UDP_DataType1");
-          nwdatatype2 = LoadAllSettings.getInt("UDP_DataType2");
-          nwdatatype3 = LoadAllSettings.getInt("UDP_DataType3");        
-          NWudpip1load = LoadAllSettings.getString("UDP_ip1");
-          NWudpip2load = LoadAllSettings.getString("UDP_ip2");        
-          NWudpip3load = LoadAllSettings.getString("UDP_ip3");            
-          NWudpport1load = LoadAllSettings.getString("UDP_port1");
-          NWudpport2load = LoadAllSettings.getString("UDP_port2");        
-          NWudpport3load = LoadAllSettings.getString("UDP_port3");                                            
-          NWudpfilter1load = LoadAllSettings.getInt("UDP_filter1");
-          NWudpfilter2load = LoadAllSettings.getInt("UDP_filter2");        
-          NWudpfilter3load = LoadAllSettings.getInt("UDP_filter3");
+          nwDataType1 = LoadAllSettings.getInt("UDP_DataType1");
+          nwDataType2 = LoadAllSettings.getInt("UDP_DataType2");
+          nwDataType3 = LoadAllSettings.getInt("UDP_DataType3");        
+          nwUdpIp1Load = LoadAllSettings.getString("UDP_ip1");
+          nwUdpIp2Load = LoadAllSettings.getString("UDP_ip2");        
+          nwUdpIp3Load = LoadAllSettings.getString("UDP_ip3");            
+          nwUdpPort1Load = LoadAllSettings.getString("UDP_port1");
+          nwUdpPort2Load = LoadAllSettings.getString("UDP_port2");        
+          nwUdpPort3Load = LoadAllSettings.getString("UDP_port3");                                            
+          nwUdpFilter1Load = LoadAllSettings.getInt("UDP_filter1");
+          nwUdpFilter2Load = LoadAllSettings.getInt("UDP_filter2");        
+          nwUdpFilter3Load = LoadAllSettings.getInt("UDP_filter3");
           break;
         case 2:
-          nwdatatype1 = LoadAllSettings.getInt("LSL_DataType1");
-          nwdatatype2 = LoadAllSettings.getInt("LSL_DataType2");
-          nwdatatype3 = LoadAllSettings.getInt("LSL_DataType3");        
-          NWlslname1load = LoadAllSettings.getString("LSL_name1");
-          NWlslname2load = LoadAllSettings.getString("LSL_name2");        
-          NWlslname3load = LoadAllSettings.getString("LSL_name3");            
-          NWlsltype1load = LoadAllSettings.getString("LSL_type1");
-          NWlsltype2load = LoadAllSettings.getString("LSL_type2");        
-          NWlsltype3load = LoadAllSettings.getString("LSL_type3");                       
-          NWlslnumchan1load = LoadAllSettings.getString("LSL_numchan1");
-          NWlslnumchan2load = LoadAllSettings.getString("LSL_numchan2");        
-          NWlslnumchan3load = LoadAllSettings.getString("LSL_numchan3");                       
-          NWlslfilter1load = LoadAllSettings.getInt("LSL_filter1");
-          NWlslfilter2load = LoadAllSettings.getInt("LSL_filter2");        
-          NWlslfilter3load = LoadAllSettings.getInt("LSL_filter3");             
+          nwDataType1 = LoadAllSettings.getInt("LSL_DataType1");
+          nwDataType2 = LoadAllSettings.getInt("LSL_DataType2");
+          nwDataType3 = LoadAllSettings.getInt("LSL_DataType3");        
+          nwLSLName1Load = LoadAllSettings.getString("LSL_name1");
+          nwLSLName2Load = LoadAllSettings.getString("LSL_name2");        
+          nwLSLName3Load = LoadAllSettings.getString("LSL_name3");            
+          nwLSLType1Load = LoadAllSettings.getString("LSL_type1");
+          nwLSLType2Load = LoadAllSettings.getString("LSL_type2");        
+          nwLSLType3Load = LoadAllSettings.getString("LSL_type3");                       
+          nwLSLNumChan1Load = LoadAllSettings.getString("LSL_numchan1");
+          nwLSLNumChan2Load = LoadAllSettings.getString("LSL_numchan2");        
+          nwLSLNumChan3Load = LoadAllSettings.getString("LSL_numchan3");                       
+          nwLSLFilter1Load = LoadAllSettings.getInt("LSL_filter1");
+          nwLSLFilter2Load = LoadAllSettings.getInt("LSL_filter2");        
+          nwLSLFilter3Load = LoadAllSettings.getInt("LSL_filter3");             
           break;
         case 3:
-          nwdatatype1 = LoadAllSettings.getInt("Serial_DataType1");   
-          NWserialbaudrateload = LoadAllSettings.getInt("Serial_baudrate");   
-          NWserialfilter1load = LoadAllSettings.getInt("Serial_filter1");
+          nwDataType1 = LoadAllSettings.getInt("Serial_DataType1");   
+          nwSerialBaudRateLoad = LoadAllSettings.getInt("Serial_baudrate");   
+          nwSerialFilter1Load = LoadAllSettings.getInt("Serial_filter1");
           break;
       }
     }
     
     //parse the Headplot settings that appear after networking settings 
     if (i == slnchan + 3) {
-      HPintensityload = LoadAllSettings.getInt("HP_intensity");
-      HPpolarityload = LoadAllSettings.getInt("HP_polarity");
-      HPcontoursload = LoadAllSettings.getInt("HP_contours");
-      HPsmoothingload = LoadAllSettings.getInt("HP_smoothing");
+      hpIntensityLoad = LoadAllSettings.getInt("HP_intensity");
+      hpPolarityLoad = LoadAllSettings.getInt("HP_polarity");
+      hpContoursLoad = LoadAllSettings.getInt("HP_contours");
+      hpSmoothingLoad = LoadAllSettings.getInt("HP_smoothing");
       
       //Create a string array to print to console
       final String[] LoadedHPSettings = {
-        "HP_intensity: " + HPintensityload, 
-        "HP_polarity: " + HPpolarityload,
-        "HP_contours: " + HPcontoursload,
-        "HP_smoothing: " + HPsmoothingload,
+        "HP_intensity: " + hpIntensityLoad, 
+        "HP_polarity: " + hpPolarityLoad,
+        "HP_contours: " + hpContoursLoad,
+        "HP_smoothing: " + hpSmoothingLoad,
         };
       //Print the Headplot settings 
       printArray(LoadedHPSettings);
@@ -684,17 +684,17 @@ void LoadGUIsettings() {
     
     //parse the EMG settings that appear after Headplot settings
     if (i == slnchan + 4) {
-      EMGsmoothingload = LoadAllSettings.getInt("EMG_smoothing");
-      EMGuVlimload = LoadAllSettings.getInt("EMG_uVlimit");
-      EMGcreepload = LoadAllSettings.getInt("EMG_creepspeed");
-      EMGmindeltauVload = LoadAllSettings.getInt("EMG_minuV");
+      emgSmoothingLoad = LoadAllSettings.getInt("EMG_smoothing");
+      emguVLimLoad = LoadAllSettings.getInt("EMG_uVlimit");
+      emgCreepLoad = LoadAllSettings.getInt("EMG_creepspeed");
+      emgMinDeltauVLoad = LoadAllSettings.getInt("EMG_minuV");
       
       //Create a string array to print to console
       final String[] LoadedEMGSettings = {
-        "EMG_smoothing: " + EMGsmoothingload, 
-        "EMG_uVlimit: " + EMGuVlimload,
-        "EMG_creepspeed: " + EMGcreepload,
-        "EMG_minuV: " + EMGmindeltauVload,
+        "EMG_smoothing: " + emgSmoothingLoad, 
+        "EMG_uVlimit: " + emguVLimLoad,
+        "EMG_creepspeed: " + emgCreepLoad,
+        "EMG_minuV: " + emgMinDeltauVLoad,
         };
       //Print the EMG settings 
       printArray(LoadedEMGSettings);
@@ -702,13 +702,13 @@ void LoadGUIsettings() {
     
     //parse the Focus settings that appear after EMG settings
       if (i == slnchan + 5) {
-      FocusThemeload = LoadAllSettings.getInt("Focus_theme");
-      FocusKeyload = LoadAllSettings.getInt("Focus_keypress");
+      focusThemeLoad = LoadAllSettings.getInt("Focus_theme");
+      focusKeyLoad = LoadAllSettings.getInt("Focus_keypress");
       
       //Create a string array to print to console
       final String[] LoadedFocusSettings = {
-        "Focus_theme: " + FocusThemeload, 
-        "Focus_keypress: " + FocusKeyload,
+        "Focus_theme: " + focusThemeLoad, 
+        "Focus_keypress: " + focusKeyLoad,
         };
       //Print the EMG settings 
       printArray(LoadedFocusSettings);
@@ -758,11 +758,11 @@ void LoadGUIsettings() {
 
   //Apply notch
   dataProcessing.currentNotch_ind = loadNotchsetting;
-  topNav.filtNotchButton.but_txt = "Notch\n" + DataProcessingNotcharray[loadNotchsetting];
+  topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessingNotcharray[loadNotchsetting];
   //Apply Bandpass filter
   dataProcessing.currentFilt_ind = loadBandpasssetting;
-  topNav.filtBPButton.but_txt = "BP Filt\n" + DataProcessingBParray[loadBandpasssetting]; //this works
-  println(DataProcessingBParray[loadBandpasssetting]);
+  topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBParray[loadBandpasssetting]; //this works
+  println(dataProcessingBParray[loadBandpasssetting]);
   
   //Apply Framerate
   frameRateCounter = loadFramerate;
@@ -799,11 +799,11 @@ void LoadGUIsettings() {
 void LoadApplyTimeSeriesSettings() {
   for (int i = 0; i < slnchan;) { //For all time series channels...
     cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-    if (CheckForSuccessTS != null) { // If we receive a return code...
-      println("Return code:" + CheckForSuccessTS);
-      String[] list = split(CheckForSuccessTS, ',');
+    if (checkForSuccessTS != null) { // If we receive a return code...
+      println("Return code:" + checkForSuccessTS);
+      String[] list = split(checkForSuccessTS, ',');
       int successcode = Integer.parseInt(list[1]);
-      if (successcode == RESP_SUCCESS) {i++; CheckForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+      if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
     }
     //delay(10);// Works on 8 chan sometimes
     delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
@@ -814,133 +814,133 @@ void LoadApplyWidgetDropdownText() {
   
   ////////Apply Time Series widget settings
   VertScale_TS(loadTimeSeriesVertScale);// changes back-end
-    w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(TSvertscalearray[loadTimeSeriesVertScale]); //changes front-end
+    w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
 
   Duration(loadTimeSeriesHorizScale);
-    w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(TShorizscalearray[loadTimeSeriesHorizScale]); 
+    w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]); 
   
   //////Apply FFT settings
-  MaxFreq(FFTmaxfrqload); //This changes the back-end
-    w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(FFTmaxfrqarray[FFTmaxfrqload]); //This changes front-end... etc.
+  MaxFreq(fftMaxFrqLoad); //This changes the back-end
+    w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(fftMaxFrqArray[fftMaxFrqLoad]); //This changes front-end... etc.
 
-  VertScale(FFTmaxuVload);
-    w_fft.cp5_widget.getController("VertScale").getCaptionLabel().setText(FFTvertscalearray[FFTmaxuVload]);
+  VertScale(fftMaxuVLoad);
+    w_fft.cp5_widget.getController("VertScale").getCaptionLabel().setText(fftVertScaleArray[fftMaxuVLoad]);
 
-  LogLin(FFTloglinload);
-     w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(FFTloglinarray[FFTloglinload]); 
+  LogLin(fftLogLinLoad);
+     w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(fftLogLinArray[fftLogLinLoad]); 
   
-  Smoothing(FFTsmoothingload);
-     w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(FFTsmoothingarray[FFTsmoothingload]); 
+  Smoothing(fftSmoothingLoad);
+     w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(fftSmoothingArray[fftSmoothingLoad]); 
     
-  UnfiltFilt(FFTfilterload);
-     w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(FFTfilterarray[FFTfilterload]);
+  UnfiltFilt(fftFilterLoad);
+     w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
   
   ////////Apply Analog Read settings
   VertScale_AR(loadAnalogReadVertScale);
-    w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(ARvertscaleArray[loadAnalogReadVertScale]);
+    w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);
 
   Duration_AR(loadAnalogReadHorizScale);
-    w_analogRead.cp5_widget.getController("Duration_AR").getCaptionLabel().setText(ARhorizscaleArray[loadAnalogReadHorizScale]);
+    w_analogRead.cp5_widget.getController("Duration_AR").getCaptionLabel().setText(arHorizScaleArray[loadAnalogReadHorizScale]);
   
   ////////////////////////////Apply Headplot settings
-  Intensity(HPintensityload);
-    w_headPlot.cp5_widget.getController("Intensity").getCaptionLabel().setText(HPintensityArray[HPintensityload]);
+  Intensity(hpIntensityLoad);
+    w_headPlot.cp5_widget.getController("Intensity").getCaptionLabel().setText(hpIntensityArray[hpIntensityLoad]);
 
-  Polarity(HPpolarityload);
-    w_headPlot.cp5_widget.getController("Polarity").getCaptionLabel().setText(HPpolarityArray[HPpolarityload]);
+  Polarity(hpPolarityLoad);
+    w_headPlot.cp5_widget.getController("Polarity").getCaptionLabel().setText(hpPolarityArray[hpPolarityLoad]);
 
-  ShowContours(HPcontoursload);
-    w_headPlot.cp5_widget.getController("ShowContours").getCaptionLabel().setText(HPcontoursArray[HPcontoursload]);
+  ShowContours(hpContoursLoad);
+    w_headPlot.cp5_widget.getController("ShowContours").getCaptionLabel().setText(hpContoursArray[hpContoursLoad]);
    
-  SmoothingHeadPlot(HPsmoothingload);
-    w_headPlot.cp5_widget.getController("SmoothingHeadPlot").getCaptionLabel().setText(HPsmoothingArray[HPsmoothingload]);
+  SmoothingHeadPlot(hpSmoothingLoad);
+    w_headPlot.cp5_widget.getController("SmoothingHeadPlot").getCaptionLabel().setText(hpSmoothingArray[hpSmoothingLoad]);
     
   ////////////////////////////Apply EMG settings
-  SmoothEMG(EMGsmoothingload);
-    w_emg.cp5_widget.getController("SmoothEMG").getCaptionLabel().setText(EMGsmoothingArray[EMGsmoothingload]);
+  SmoothEMG(emgSmoothingLoad);
+    w_emg.cp5_widget.getController("SmoothEMG").getCaptionLabel().setText(emgSmoothingArray[emgSmoothingLoad]);
 
-  uVLimit(EMGuVlimload);
-    w_emg.cp5_widget.getController("uVLimit").getCaptionLabel().setText(EMGuVlimArray[EMGuVlimload]);
+  uVLimit(emguVLimLoad);
+    w_emg.cp5_widget.getController("uVLimit").getCaptionLabel().setText(emguVLimArray[emguVLimLoad]);
 
-  CreepSpeed(EMGcreepload);
-    w_emg.cp5_widget.getController("CreepSpeed").getCaptionLabel().setText(EMGcreepArray[EMGcreepload]);
+  CreepSpeed(emgCreepLoad);
+    w_emg.cp5_widget.getController("CreepSpeed").getCaptionLabel().setText(emgCreepArray[emgCreepLoad]);
 
-  minUVRange(EMGmindeltauVload);
-    w_emg.cp5_widget.getController("minUVRange").getCaptionLabel().setText(EMGmindeltauVArray[EMGmindeltauVload]);
+  minUVRange(emgMinDeltauVLoad);
+    w_emg.cp5_widget.getController("minUVRange").getCaptionLabel().setText(emgMinDeltauVArray[emgMinDeltauVLoad]);
     
    ////////////////////////////Apply Focus settings
-  ChooseFocusColor(FocusThemeload);
-    w_focus.cp5_widget.getController("ChooseFocusColor").getCaptionLabel().setText(FocusthemeArray[FocusThemeload]);
+  ChooseFocusColor(focusThemeLoad);
+    w_focus.cp5_widget.getController("ChooseFocusColor").getCaptionLabel().setText(focusThemeArray[focusThemeLoad]);
 
-  StrokeKeyWhenFocused(FocusKeyload);
-    w_focus.cp5_widget.getController("StrokeKeyWhenFocused").getCaptionLabel().setText(FocuskeyArray[FocusKeyload]);  
+  StrokeKeyWhenFocused(focusKeyLoad);
+    w_focus.cp5_widget.getController("StrokeKeyWhenFocused").getCaptionLabel().setText(focusKeyArray[focusKeyLoad]);  
     
   ///////////Apply Networking Settings
   //Update protocol with loaded value
-  Protocol(NWprotocolload);
+  Protocol(nwProtocolLoad);
   //Update dropdowns and textfields in the Networking widget with loaded values
-  w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(NWprotocolarray[NWprotocolload]); //Reference the dropdown from the appropriate widget
-  switch (NWprotocolload) {
+  w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
+  switch (nwProtocolLoad) {
     case 0:  //Apply OSC if loaded
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(NWdatatypesarray[nwdatatype1]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(NWdatatypesarray[nwdatatype2]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(NWdatatypesarray[nwdatatype3]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(NWdatatypesarray[nwdatatype4]); //THIS WORKS!!!
-      w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(NWoscip1load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(NWoscip2load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_ip3").setText(NWoscip3load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_ip4").setText(NWoscip4load);  
-      w_networking.cp5_networking.get(Textfield.class, "osc_port1").setText(NWoscport1load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_port2").setText(NWoscport2load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_port3").setText(NWoscport3load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_port4").setText(NWoscport4load);    
-      w_networking.cp5_networking.get(Textfield.class, "osc_address1").setText(NWoscaddress1load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_address2").setText(NWoscaddress2load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_address3").setText(NWoscaddress3load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_address4").setText(NWoscaddress4load);      
-      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(NWoscfilter1load);
-      w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(NWoscfilter2load);  
-      w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(NWoscfilter3load);
-      w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(NWoscfilter4load); 
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(nwDataTypesArray[nwDataType4]); //THIS WORKS!!!
+      w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(nwOscIp1Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(nwOscIp2Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_ip3").setText(nwOscIp3Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_ip4").setText(nwOscIp4Load);  
+      w_networking.cp5_networking.get(Textfield.class, "osc_port1").setText(nwOscPort1Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_port2").setText(nwOscPort2Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_port3").setText(nwOscPort3Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_port4").setText(nwOscPort4Load);    
+      w_networking.cp5_networking.get(Textfield.class, "osc_address1").setText(nwOscAddress1Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_address2").setText(nwOscAddress2Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_address3").setText(nwOscAddress3Load);
+      w_networking.cp5_networking.get(Textfield.class, "osc_address4").setText(nwOscAddress4Load);      
+      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwOscFilter1Load);
+      w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwOscFilter2Load);  
+      w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwOscFilter3Load);
+      w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(nwOscFilter4Load); 
       break;
     case 1:  //Apply UDP if loaded
       println("apply UDP nw mode");
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(NWdatatypesarray[nwdatatype1]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(NWdatatypesarray[nwdatatype2]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(NWdatatypesarray[nwdatatype3]); //THIS WORKS!!!
-      w_networking.cp5_networking.get(Textfield.class, "udp_ip1").setText(NWudpip1load);
-      w_networking.cp5_networking.get(Textfield.class, "udp_ip2").setText(NWudpip2load);
-      w_networking.cp5_networking.get(Textfield.class, "udp_ip3").setText(NWudpip3load);  
-      w_networking.cp5_networking.get(Textfield.class, "udp_port1").setText(NWudpport1load);
-      w_networking.cp5_networking.get(Textfield.class, "udp_port2").setText(NWudpport2load);
-      w_networking.cp5_networking.get(Textfield.class, "udp_port3").setText(NWudpport3load);     
-      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(NWudpfilter1load);
-      w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(NWudpfilter2load);  
-      w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(NWudpfilter3load);    
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]); //THIS WORKS!!!
+      w_networking.cp5_networking.get(Textfield.class, "udp_ip1").setText(nwUdpIp1Load);
+      w_networking.cp5_networking.get(Textfield.class, "udp_ip2").setText(nwUdpIp2Load);
+      w_networking.cp5_networking.get(Textfield.class, "udp_ip3").setText(nwUdpIp3Load);  
+      w_networking.cp5_networking.get(Textfield.class, "udp_port1").setText(nwUdpPort1Load);
+      w_networking.cp5_networking.get(Textfield.class, "udp_port2").setText(nwUdpPort2Load);
+      w_networking.cp5_networking.get(Textfield.class, "udp_port3").setText(nwUdpPort3Load);     
+      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwUdpFilter1Load);
+      w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwUdpFilter2Load);  
+      w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwUdpFilter3Load);    
       break;
     case 2:  //Apply LSL if loaded 
       println("apply LSL nw mode");
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(NWdatatypesarray[nwdatatype1]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(NWdatatypesarray[nwdatatype2]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(NWdatatypesarray[nwdatatype3]); //THIS WORKS!!!
-      w_networking.cp5_networking.get(Textfield.class, "lsl_name1").setText(NWlslname1load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_name2").setText(NWlslname2load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_name3").setText(NWlslname3load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_type1").setText(NWlsltype1load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_type2").setText(NWlsltype2load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_type3").setText(NWlsltype3load);  
-      w_networking.cp5_networking.get(Textfield.class, "lsl_numchan1").setText(NWlslnumchan1load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_numchan2").setText(NWlslnumchan2load);
-      w_networking.cp5_networking.get(Textfield.class, "lsl_numchan3").setText(NWlslnumchan3load);     
-      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(NWlslfilter1load);
-      w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(NWlslfilter2load);  
-      w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(NWlslfilter3load);       
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]); //THIS WORKS!!!
+      w_networking.cp5_networking.get(Textfield.class, "lsl_name1").setText(nwLSLName1Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_name2").setText(nwLSLName2Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_name3").setText(nwLSLName3Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_type1").setText(nwLSLType1Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_type2").setText(nwLSLType2Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_type3").setText(nwLSLType3Load);  
+      w_networking.cp5_networking.get(Textfield.class, "lsl_numchan1").setText(nwLSLNumChan1Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_numchan2").setText(nwLSLNumChan2Load);
+      w_networking.cp5_networking.get(Textfield.class, "lsl_numchan3").setText(nwLSLNumChan3Load);     
+      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwLSLFilter1Load);
+      w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwLSLFilter2Load);  
+      w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwLSLFilter3Load);       
       break;  
     case 3:  //Apply Serial if loaded
       println("apply Serial nw mode");
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(NWdatatypesarray[nwdatatype1]); //THIS WORKS!!!
-      w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(NWbaudratesarray[NWserialbaudrateload]); //THIS WORKS!!! 
-      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(NWserialfilter1load);      
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
+      w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //THIS WORKS!!! 
+      w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwSerialFilter1Load);      
       break;    
   }  
   ////////////////////////////////////////////////////////////
