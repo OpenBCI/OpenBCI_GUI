@@ -13,7 +13,8 @@
     -- Start System first!                   
     -- Capital 'S' to Save                                                                                            
     -- Capital 'L' to Load                                                                                           
-    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts 
+    -- Functions SaveGUIsettings() and LoadGUIsettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
+    -- Functions are also called in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
     -- After loading, only a few actions are required: start/stop the data stream and/or networking streams, open/close serial port,  Turn on/off Analog Read
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
