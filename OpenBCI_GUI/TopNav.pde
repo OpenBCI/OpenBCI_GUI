@@ -655,8 +655,8 @@ class ConfigSelector{
   ArrayList<Button> ConfigOptions; //
 
   ConfigSelector(){
-    w = 180;
-    x = width- 3*2 - 60*4 - margin*3;
+    w = 120;
+    x = width- 3*2 - 60*3 - margin*3;
     y = (navBarHeight * 2) - 3;
     margin = 6;
     b_w = w - margin*2;
