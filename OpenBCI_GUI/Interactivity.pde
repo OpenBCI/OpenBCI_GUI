@@ -270,7 +270,7 @@ void parseKey(char val) {
     ///////////////////// Save settings capital S
     case 'S':      
       println("Save key pressed!"); 
-      SaveGUIsettings();
+      saveGUISettings();
       output("Settings Saved!");    
       break;
       

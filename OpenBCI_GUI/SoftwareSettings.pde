@@ -148,7 +148,7 @@ Boolean dataSourceError = false;
 ///////////////////////////////  
 //      Save GUI Settings    //
 ///////////////////////////////  
-void SaveGUIsettings() {
+void saveGUISettings() {
   
   //Set up a JSON array
   SaveSettingsJSONData = new JSONArray();
