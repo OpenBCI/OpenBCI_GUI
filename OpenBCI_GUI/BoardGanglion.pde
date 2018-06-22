@@ -171,7 +171,7 @@ class Ganglion {
     String[] list = split(msg, ',');
     if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
       int channel = Integer.parseInt(list[2]);
-      if (channel < 5) { //<>// //<>// //<>// //<>//
+      if (channel < 5) { //<>//
         int value = Integer.parseInt(list[3]);
         impedanceArray[channel] = value;
         if (channel == 0) {

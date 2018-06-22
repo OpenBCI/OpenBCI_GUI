@@ -41,7 +41,6 @@ class W_PulseSensor extends Widget {
   int[] PulseWaveY;      // HOLDS HEARTBEAT WAVEFORM DATA
   int[] BPMwaveY;        // HOLDS BPM WAVEFORM DATA
   boolean rising;
-  int nwPulseSignalSend; // used to stream pulse signal
 
   // Synthetic Wave Generator Stuff
   float theta;  // Start angle at 0
@@ -143,7 +142,7 @@ class W_PulseSensor extends Widget {
       
       processSignal(signal);
       PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>//
-      //nwPulseSignalSend = signal;
+      //println("BPM, Signal, IBI ~~~~ " + BPM + "," +  signal + "," + IBI);
       
       samplesProcessed++;
     }

@@ -100,10 +100,6 @@ class Widget{
     // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
     dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
 
-
-    print("wm.widgetOptions.size() = ");
-    println(_widgetOptions.size());
-
     cp5_widget.setColor(dropdownColors);
     cp5_widget.addScrollableList("WidgetSelector")
       .setPosition(x0+2, y0+2) //upper left corner

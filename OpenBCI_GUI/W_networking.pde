@@ -1643,22 +1643,23 @@ class Stream extends Thread{
   }
 ////////////////////////////////////// Stream pulse data from W_PulseSensor 
   void sendPulseData(){
-     if(this.filter==0 || this.filter==1){
+    if(this.filter==0 || this.filter==1){
       // OSC
-      if (this.protocol.equals("OSC")){
-        msg.clearArguments();
+      if (this.protocol.equals("OSC")){       
         //ADD BPM Data (BPM, Signal, IBI)
-        for(int i = 0; i < w_pulsesensor.PulseWaveY.length; i++){        
-          msg.add(w_pulsesensor.BPM);
-          msg.add(w_pulsesensor.PulseWaveY[i]); //This works surpisingly well, going to have to test in Max!!!!
-          msg.add(w_pulsesensor.IBI);
-          println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +  w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI); //You can see the Signal Values Fluctuating!!!  
-        }
-        try{
-          this.osc.send(msg,this.netaddress);
-        }catch (Exception e){
-          println(e);
-        }
+        for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){//This is not the right type of loop, it works, but then we are stuck inside this for loop I think. pulsewavey.length is 750 
+          msg.clearArguments(); //This belongs here
+          msg.add(w_pulsesensor.BPM); //Add BPM first
+          msg.add(w_pulsesensor.PulseWaveY[i]); //Add Raw Signal second
+          msg.add(w_pulsesensor.IBI); //Add IBI third
+          //Message received in Max via OSC is a list of three integers without commas: 75 512 600 : BPM Signal IBI
+          //println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +  w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI); 
+          try{
+            this.osc.send(msg,this.netaddress);
+          }catch (Exception e){
+            println(e);
+          }
+        }        
       // UDP
       }else if (this.protocol.equals("UDP")){
         String outputter = "{\"type\":\"pulse\",\"data\":";
@@ -1690,8 +1691,44 @@ class Stream extends Thread{
         }
       }
     }
-  }
+  }//end sendPulseData
+  /*
+  void pulseSignalUpdate(){
+    if (curDataPacketInd < 0) return;
 
+    
+    int numSamplesToProcess = curDataPacketInd - w_pulsesensor.lastProcessedDataPacketInd;
+    if (numSamplesToProcess < 0) {
+      numSamplesToProcess += dataPacketBuff.length;
+    }
+    // Shift internal ring buffer numSamplesToProcess
+    if (numSamplesToProcess > 0) {
+      for(int i=0; i < w_pulsesensor.PulseWaveY.length - numSamplesToProcess; i++){
+        w_pulsesensor.PulseWaveY[i] = w_pulsesensor.PulseWaveY[i+numSamplesToProcess];
+      }
+    }
+
+    // for each new sample
+    int samplesProcessed = 0;
+    if (samplesProcessed < numSamplesToProcess) {
+      w_pulsesensor.lastProcessedDataPacketInd++;
+
+      // Watch for wrap around
+      if (w_pulsesensor.lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
+        w_pulsesensor.lastProcessedDataPacketInd = 0;
+      }
+
+      int signal = dataPacketBuff[w_pulsesensor.lastProcessedDataPacketInd].auxValues[0];
+      
+      
+      //processSignal(signal);
+      //PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal;
+      w_pulsesensor.nwPulseSignalSend = signal;
+      
+      samplesProcessed++;
+    }
+  }*/
+  
   void sendWidgetData(){
        /* INSERT YOUR CODE HERE */
     }
