@@ -1647,7 +1647,7 @@ class Stream extends Thread{
       // OSC
       if (this.protocol.equals("OSC")){       
         //ADD BPM Data (BPM, Signal, IBI)
-        for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){//This is not the right type of loop, it works, but then we are stuck inside this for loop I think. pulsewavey.length is 750 
+        for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){//This works 
           msg.clearArguments(); //This belongs here
           msg.add(w_pulsesensor.BPM); //Add BPM first
           msg.add(w_pulsesensor.PulseWaveY[i]); //Add Raw Signal second
@@ -1661,27 +1661,39 @@ class Stream extends Thread{
           }
         }        
       // UDP
-      }else if (this.protocol.equals("UDP")){
+      }else if (this.protocol.equals("UDP")){ //////////////////This needs to be checked
         String outputter = "{\"type\":\"pulse\",\"data\":";
-        outputter += str(w_pulsesensor.BPM);
-        outputter += "]}\r\n";
-        try {
-          this.udp.send(outputter, this.ip, this.port);
-        } catch (Exception e) {
-          println(e);
+        for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){ 
+          outputter += str(w_pulsesensor.BPM) + ",";  //Comma separated string output (BPM,Raw Signal,IBI)
+          outputter += str(w_pulsesensor.PulseWaveY[i]) + ",";
+          outputter += str(w_pulsesensor.IBI);
+          outputter += "]}\r\n";
+          try {
+            this.udp.send(outputter, this.ip, this.port);
+          } catch (Exception e) {
+            println(e);
+          }
         }
       // LSL
-      }else if (this.protocol.equals("LSL")){
+      }else if (this.protocol.equals("LSL")){ ///////////////////This needs to be checked
         // convert boolean to float and only sends the first data
-        int temp = w_pulsesensor.BPM;
-        dataToSend[0] = temp;
+        //int temp = w_pulsesensor.BPM;
+        for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){
+          dataToSend[0] = w_pulsesensor.BPM; //Array output
+          dataToSend[1] = w_pulsesensor.PulseWaveY[i];
+          dataToSend[2] = w_pulsesensor.IBI;
+        }
         outlet_data.push_chunk(dataToSend);
       // Serial
-      }else if (this.protocol.equals("Serial")){     // Send Pulse Data (BPM) over Serial ... %%%%%
-        for (int i=0;i<numChan;i++){
+      }else if (this.protocol.equals("Serial")){     // Send Pulse Data (BPM,Signal,IBI) over Serial
+        for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){
           serialMessage = ""; //clear message
           int BPM = (w_pulsesensor.BPM);
-          serialMessage += BPM;
+          int Signal = (w_pulsesensor.PulseWaveY[i]);
+          int IBI = (w_pulsesensor.IBI);
+          serialMessage += BPM + ","; //Comma separated string output (BPM,Raw Signal,IBI)
+          serialMessage += Signal + ",";
+          serialMessage += IBI;
           try{
             println(serialMessage);
             this.serial_networking.write(serialMessage);
