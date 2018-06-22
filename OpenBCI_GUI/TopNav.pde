@@ -20,11 +20,9 @@ class TopNav {
   Button fpsButton;
   Button highRezButton;
 
-/* going to add these to first tab to try and fix them not being accessed in a static way
   Button stopButton;
   public final static String stopButton_pressToStop_txt = "Stop Data Stream";
   public final static String stopButton_pressToStart_txt = "Start Data Stream";
-*/
 
   Button filtBPButton;
   Button filtNotchButton;
