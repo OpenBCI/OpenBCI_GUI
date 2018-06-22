@@ -22,7 +22,7 @@ class Ganglion {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA= "t";
-  final static String TCP_CMD_ERROR = "e"; //<>// //<>// //<>// //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";

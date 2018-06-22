@@ -345,8 +345,7 @@ class W_networking extends Widget {
 
     createDropdown("dataType1", dataTypes);
     createDropdown("dataType2", dataTypes);
-    createDropdown("dataType3", dataTypes);
-    
+    createDropdown("dataType3", dataTypes);    
     createDropdown("dataType4", dataTypes);
 
     // Start Button
@@ -785,10 +784,10 @@ class W_networking extends Widget {
     int nChanLSL;
     int baudRate;
     String type;
-    String dt1="None";
-    String dt2="None";
-    String dt3="None";
-    String dt4="None";
+    String dt1 = nwDataTypesArray[nwDataType1];
+    String dt2 = nwDataTypesArray[nwDataType1];
+    String dt3 = nwDataTypesArray[nwDataType1];
+    String dt4 = nwDataTypesArray[nwDataType1];
     networkActive = true;
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()){
       case 0 : dt1 = "None";
@@ -1642,16 +1641,19 @@ class Stream extends Thread{
       }
     }
   }
-//////////////////////////////////////
+////////////////////////////////////// Stream pulse data from W_PulseSensor 
   void sendPulseData(){
      if(this.filter==0 || this.filter==1){
       // OSC
       if (this.protocol.equals("OSC")){
         msg.clearArguments();
-        //ADD BPM Data
-        msg.add(w_pulsesensor.BPM);
-        println(this.port + " this is the port you are looking for"); //FOUND THE ERROR, THIS PRINT STREAM 1 PORT INSTEAD OF STREAM SELECTED!!!!
-        
+        //ADD BPM Data (BPM, Signal, IBI)
+        for(int i = 0; i < w_pulsesensor.PulseWaveY.length; i++){        
+          msg.add(w_pulsesensor.BPM);
+          msg.add(w_pulsesensor.PulseWaveY[i]); //This works surpisingly well, going to have to test in Max!!!!
+          msg.add(w_pulsesensor.IBI);
+          println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +  w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI); //You can see the Signal Values Fluctuating!!!  
+        }
         try{
           this.osc.send(msg,this.netaddress);
         }catch (Exception e){

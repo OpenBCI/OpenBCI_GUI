@@ -317,7 +317,7 @@ int emgMinDeltauVSave = 1;
 int focusThemeSave = 0;
 int focusKeySave = 0;
 
-//default data types for streams 1-4 in Networking widget, declared here for use with save/load
+//default data types for streams 1-4 in Networking widget
 int nwDataType1 = 0;
 int nwDataType2 = 0;
 int nwDataType3 = 0;

@@ -41,6 +41,7 @@ class W_PulseSensor extends Widget {
   int[] PulseWaveY;      // HOLDS HEARTBEAT WAVEFORM DATA
   int[] BPMwaveY;        // HOLDS BPM WAVEFORM DATA
   boolean rising;
+  int nwPulseSignalSend; // used to stream pulse signal
 
   // Synthetic Wave Generator Stuff
   float theta;  // Start angle at 0
@@ -118,12 +119,12 @@ class W_PulseSensor extends Widget {
 
     int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
     if (numSamplesToProcess < 0) {
-      numSamplesToProcess += dataPacketBuff.length; //<>// //<>// //<>// //<>//
+      numSamplesToProcess += dataPacketBuff.length; //<>//
     }
     // Shift internal ring buffer numSamplesToProcess
     if (numSamplesToProcess > 0) {
       for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
-        PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>// //<>// //<>// //<>//
+        PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>//
       }
     }
 
@@ -138,10 +139,12 @@ class W_PulseSensor extends Widget {
       }
 
       int signal = dataPacketBuff[lastProcessedDataPacketInd].auxValues[0];
-
+      
+      
       processSignal(signal);
-      PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>// //<>// //<>// //<>//
-
+      PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>//
+      //nwPulseSignalSend = signal;
+      
       samplesProcessed++;
     }
 

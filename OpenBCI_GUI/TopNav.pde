@@ -726,7 +726,7 @@ class configSelector{
           int ConfigSelected = i;
           configOptions.get(i).setIsActive(false);
           if (ConfigSelected == 0) { //If save button is pressed..
-             SaveGUIsettings(); //save current settings to JSON file in /data/
+             saveGUISettings(); //save current settings to JSON file in /data/
              output("Settings Saved!"); //print success message to screen
           } else if (ConfigSelected == 1) {
              loadGUISettings(); //load settings from JSON file in /data/

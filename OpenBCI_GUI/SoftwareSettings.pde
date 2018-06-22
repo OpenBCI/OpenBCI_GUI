@@ -651,8 +651,8 @@ void loadGUISettings() {
           nwSerialBaudRateLoad = LoadAllSettings.getInt("Serial_baudrate");   
           nwSerialFilter1Load = LoadAllSettings.getInt("Serial_filter1");
           break;
-      }
-    }
+      } //end switch case for all networking types
+    }// end parse loaded networking settings
     
     //parse the Headplot settings that appear after networking settings 
     if (i == slnchan + 3) {
@@ -872,12 +872,16 @@ void LoadApplyWidgetDropdownText() {
   w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
   switch (nwProtocolLoad) {
     case 0:  //Apply OSC if loaded
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(nwDataTypesArray[nwDataType4]); //THIS WORKS!!!
-      w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(nwOscIp1Load);
-      w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(nwOscIp2Load);
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
+      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);      
+      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);     
+      w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(nwDataTypesArray[nwDataType4]);
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setValue(nwDataType4);
+      w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
+      w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(nwOscIp2Load); //The strings are referenced on command
       w_networking.cp5_networking.get(Textfield.class, "osc_ip3").setText(nwOscIp3Load);
       w_networking.cp5_networking.get(Textfield.class, "osc_ip4").setText(nwOscIp4Load);  
       w_networking.cp5_networking.get(Textfield.class, "osc_port1").setText(nwOscPort1Load);
@@ -895,9 +899,12 @@ void LoadApplyWidgetDropdownText() {
       break;
     case 1:  //Apply UDP if loaded
       println("apply UDP nw mode");
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
+      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);   
+      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);     
       w_networking.cp5_networking.get(Textfield.class, "udp_ip1").setText(nwUdpIp1Load);
       w_networking.cp5_networking.get(Textfield.class, "udp_ip2").setText(nwUdpIp2Load);
       w_networking.cp5_networking.get(Textfield.class, "udp_ip3").setText(nwUdpIp3Load);  
@@ -910,9 +917,12 @@ void LoadApplyWidgetDropdownText() {
       break;
     case 2:  //Apply LSL if loaded 
       println("apply LSL nw mode");
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //THIS WORKS!!!
-      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]); //THIS WORKS!!!
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
+      w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);     
+      w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);      
       w_networking.cp5_networking.get(Textfield.class, "lsl_name1").setText(nwLSLName1Load);
       w_networking.cp5_networking.get(Textfield.class, "lsl_name2").setText(nwLSLName2Load);
       w_networking.cp5_networking.get(Textfield.class, "lsl_name3").setText(nwLSLName3Load);
@@ -928,11 +938,14 @@ void LoadApplyWidgetDropdownText() {
       break;  
     case 3:  //Apply Serial if loaded
       println("apply Serial nw mode");
-      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //THIS WORKS!!!
-      w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //THIS WORKS!!! 
+      w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+      w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
+      w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //Set text 
+      w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
       w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwSerialFilter1Load);      
       break;    
-  }  
+  }//end switch-case for networking settings for all networking protocols
+  
   ////////////////////////////////////////////////////////////
   //    Apply more loaded widget settings above this line   // 
   
