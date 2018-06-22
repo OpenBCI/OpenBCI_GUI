@@ -1676,10 +1676,8 @@ class Stream extends Thread{
         }
       // LSL
       }else if (this.protocol.equals("LSL")){ ///////////////////This needs to be checked
-        // convert boolean to float and only sends the first data
-        //int temp = w_pulsesensor.BPM;
         for(int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){
-          dataToSend[0] = w_pulsesensor.BPM; //Array output
+          dataToSend[0] = w_pulsesensor.BPM;  //Array output
           dataToSend[1] = w_pulsesensor.PulseWaveY[i];
           dataToSend[2] = w_pulsesensor.IBI;
         }
@@ -1704,43 +1702,7 @@ class Stream extends Thread{
       }
     }
   }//end sendPulseData
-  /*
-  void pulseSignalUpdate(){
-    if (curDataPacketInd < 0) return;
-
-    
-    int numSamplesToProcess = curDataPacketInd - w_pulsesensor.lastProcessedDataPacketInd;
-    if (numSamplesToProcess < 0) {
-      numSamplesToProcess += dataPacketBuff.length;
-    }
-    // Shift internal ring buffer numSamplesToProcess
-    if (numSamplesToProcess > 0) {
-      for(int i=0; i < w_pulsesensor.PulseWaveY.length - numSamplesToProcess; i++){
-        w_pulsesensor.PulseWaveY[i] = w_pulsesensor.PulseWaveY[i+numSamplesToProcess];
-      }
-    }
-
-    // for each new sample
-    int samplesProcessed = 0;
-    if (samplesProcessed < numSamplesToProcess) {
-      w_pulsesensor.lastProcessedDataPacketInd++;
-
-      // Watch for wrap around
-      if (w_pulsesensor.lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-        w_pulsesensor.lastProcessedDataPacketInd = 0;
-      }
-
-      int signal = dataPacketBuff[w_pulsesensor.lastProcessedDataPacketInd].auxValues[0];
-      
-      
-      //processSignal(signal);
-      //PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal;
-      w_pulsesensor.nwPulseSignalSend = signal;
-      
-      samplesProcessed++;
-    }
-  }*/
-  
+ 
   void sendWidgetData(){
        /* INSERT YOUR CODE HERE */
     }
