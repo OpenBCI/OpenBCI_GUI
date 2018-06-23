@@ -941,11 +941,13 @@ void haltSystem() {
   stopRunning();  //stop data transfer
 
   if(cyton.isPortOpen()) {
-    if (w_pulsesensor.analogReadOn) {
+    if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
       hub.sendCommand("/0");
       println("Stopping Analog Read to read accelerometer");
       w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
       w_pulsesensor.analogReadOn = false;
+      w_analogRead.analogModeButton.setString("Turn Analog Read On");
+      w_analogRead.analogReadOn = false;
     }
   }
 

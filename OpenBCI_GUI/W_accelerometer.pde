@@ -62,6 +62,7 @@ class W_accelerometer extends Widget {
   boolean Yrising;
   boolean Zrising;
   boolean OBCI_inited= true;
+  boolean accelerometerModeOn = true;
 
   Button accelModeButton;
 
@@ -314,16 +315,27 @@ class W_accelerometer extends Widget {
           ganglion.accelStop();
 
           accelModeButton.setString("Turn Accel On");
+          accelerometerModeOn = false;
         } else{
           ganglion.accelStart();
           accelModeButton.setString("Turn Accel Off");
+          accelerometerModeOn = true;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_digitalRead.digitalReadOn = false;
+          w_markermode.markerModeOn = false;
         }
+        accelerometerModeOn = !accelerometerModeOn;
       }
       accelModeButton.setIsActive(false);
     } else if (eegDataSource == DATASOURCE_CYTON) {
       if(accelModeButton.isActive && accelModeButton.isMouseHere()){
         cyton.setBoardMode(BOARD_MODE_DEFAULT);
         output("Starting to read accelerometer");
+        accelerometerModeOn = true;
+        w_analogRead.analogReadOn = false;
+        w_pulsesensor.analogReadOn = false;
+        w_digitalRead.digitalReadOn = false;
       }
       accelModeButton.setIsActive(false);
     }

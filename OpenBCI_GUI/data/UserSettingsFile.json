@@ -10,7 +10,7 @@
     "Bias": 1,
     "SRB1": 0,
     "SRB2": 1,
-    "PGA Gain": 6
+    "PGA Gain": 0
   },
   {
     "Channel_Number": 2,
@@ -77,12 +77,17 @@
   },
   {
     "Current Layout": 5,
-    "Framerate": 1,
     "Notch": 0,
-    "Bandpass Filter": 3,
     "Analog Read Vert Scale": 5,
+    "Analog Read": false,
+    "Digital Read": false,
     "Analog Read Horiz Scale": 2,
     "Time Series Vert Scale": 3,
+    "Framerate": 1,
+    "Marker Mode": true,
+    "Accelerometer": false,
+    "Bandpass Filter": 3,
+    "Pulse Analog Read": false,
     "Time Series Horiz Scale": 2
   },
   {
@@ -110,7 +115,7 @@
     "OSC_filter1": 0,
     "OSC_filter2": 0,
     "OSC_filter3": 0,
-    "OSC_DataType1": 6,
+    "OSC_DataType1": 0,
     "OSC_DataType2": 0,
     "OSC_DataType3": 0,
     "Protocol": 0
@@ -132,8 +137,10 @@
     "Focus_theme": 0
   },
   {
-    "Widget_1": 9,
+    "Widget_2": 15,
     "Widget_8": 4,
-    "Widget_3": 3
+    "Widget_9": 16,
+    "Widget_10": 17,
+    "Widget_11": 18
   }
 ]

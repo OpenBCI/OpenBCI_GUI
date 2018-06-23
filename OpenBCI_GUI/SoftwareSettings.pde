@@ -258,6 +258,11 @@ void saveGUISettings() {
   SaveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
   SaveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
   SaveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
+  SaveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
+  SaveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
+  SaveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
+  SaveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
+  SaveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
   SaveSettingsJSONData.setJSONObject(slnchan + 1, SaveGlobalSettings);
   
   ///////////////////////////////////////////////Setup new JSON object to save FFT settings
@@ -710,6 +715,17 @@ void loadGUISettings() {
       wm.setNewContainerLayout(loadLayoutsetting - 1);
       println("Layout " + loadLayoutsetting + " Loaded!");
       numLoadedWidgets = LoadAllSettings.size();
+      
+      //int numActiveWidgets = 0; //reset the counter
+      for(int w = 0; w < wm.widgets.size(); w++){ //increment through all widgets
+        if(wm.widgets.get(w).isActive){ //If a widget is active...
+          println("Deactivating widget [" + w + "]");
+          wm.widgets.get(w).isActive = false;
+          //numActiveWidgets++; //counter the number of de-activated widgets
+        }
+      }
+      //println(numActiveWidgets
+    
       //println(LoadAllSettings.keys());
       //Store the Widget number keys from JSON to a string array
       LoadedWidgetsArray = (String[]) LoadAllSettings.keys().toArray(new String[LoadAllSettings.size()]);

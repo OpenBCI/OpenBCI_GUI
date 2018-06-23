@@ -28,6 +28,7 @@ class W_DigitalRead extends Widget {
 
   private boolean visible = true;
   private boolean updating = true;
+  boolean digitalReadOn = false;
 
   Button digitalModeButton;
 
@@ -198,10 +199,15 @@ class W_DigitalRead extends Widget {
           } else {
             output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
           }
+          w_accelerometer.accelerometerModeOn = false;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
         } else {
           cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");
+          w_accelerometer.accelerometerModeOn = true;
         }
+        digitalReadOn = !digitalReadOn;
       }
     }
     digitalModeButton.setIsActive(false);
