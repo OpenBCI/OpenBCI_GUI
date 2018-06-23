@@ -151,7 +151,7 @@ class WidgetManager{
   ArrayList<String> widgetOptions; //List of Widget Titles, used to populate cp5 widgetSelector dropdown of all widgets
 
   //Variables for
-  //int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
+  int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
   ArrayList<Layout> layouts = new ArrayList<Layout>();  //this holds all of the different layouts ...
 
   public boolean isWMInitialized = false;

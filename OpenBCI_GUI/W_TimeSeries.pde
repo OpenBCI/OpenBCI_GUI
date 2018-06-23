@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////
 //
-// This class creates an Time Series Plot separate from the old Gui_Manager
+// This class creates a Time Series Plot separate from the old Gui_Manager
 // It extends the Widget class
 //
 // Conor Russomanno, November 2016
