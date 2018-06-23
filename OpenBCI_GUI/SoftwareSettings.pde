@@ -3,7 +3,7 @@
                        This sketch saves and loads the following User Settings:    
                        -- All Time Series widget settings in Live, Playback, and Synthetic modes
                        -- All FFT widget settings
-                       -- Default Layout, Notch, Bandpass Filter, Framerate
+                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode
                        -- Networking Mode and All settings for active networking protocol 
                        -- Analog Read, Head Plot, EMG, and Focus
                        -- Widget/Container Pairs
