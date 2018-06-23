@@ -195,6 +195,8 @@ class W_AnalogRead extends Widget {
           }
           w_accelerometer.accelerometerModeOn = false;
           w_digitalRead.digitalReadOn = false;
+          w_markermode.markerModeOn = false;
+          w_pulsesensor.analogReadOn = true;
         } else {
           cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");
