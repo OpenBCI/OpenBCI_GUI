@@ -442,9 +442,7 @@ void saveGUISettings() {
   saveJSONArray(SaveSettingsJSONData, "data/UserSettingsFile.json");
 
 }  //End of Save GUI Settings function
-  
-  
-  
+
 ///////////////////////////////  
 //      Load GUI Settings    //
 ///////////////////////////////  
@@ -1068,7 +1066,5 @@ void loadApplyWidgetDropdownText() {
   
   ////////////////////////////////////////////////////////////
   //    Apply more loaded widget settings above this line   // 
-  
-  //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
   
 } //end of loadApplyWidgetDropdownText()
