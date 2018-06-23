@@ -264,7 +264,7 @@ void saveGUISettings() {
   SaveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
   SaveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
   SaveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
-  SaveGlobalSettings.setInt("Board Mode", cyton.getBoardMode());
+  SaveGlobalSettings.setInt("Board Mode", cyton.curBoardMode);
   SaveSettingsJSONData.setJSONObject(slnchan + 1, SaveGlobalSettings);
   
   ///////////////////////////////////////////////Setup new JSON object to save FFT settings
@@ -811,7 +811,6 @@ void loadGUISettings() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void applyBoardMode()  {
   //Apply Board Mode
-  //cyton.setBoardMode(loadBoardMode) //Set board mode first
   switch(loadBoardMode){  //Then apply 
     case BOARD_MODE_DEFAULT:
       if(eegDataSource == DATASOURCE_GANGLION){ //This code has been copied from Accelerometer
