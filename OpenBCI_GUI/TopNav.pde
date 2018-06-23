@@ -743,7 +743,7 @@ class configSelector{
   void screenResized(){
     //update position of outer box and buttons
     int oldX = x;
-    x = width - w - 3;
+    x = width - 3*2 - 60*3;
     int dx = oldX - x;
     for(int i = 0; i < configOptions.size(); i++){
       configOptions.get(i).setX(configOptions.get(i).but_x - dx);
