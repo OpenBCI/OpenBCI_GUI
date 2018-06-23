@@ -69,7 +69,6 @@ class HardwareSettingsController{
   //char[][] impedanceCheckValues = new char [nchan][2];
 
   int spaceBetweenButtons = 5; //space between buttons
-
   
   // [Number of Channels] x 6 array of buttons for channel settings
   Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]

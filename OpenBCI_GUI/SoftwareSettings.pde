@@ -83,6 +83,7 @@ int tsSrb1Setting;
 int loadLayoutsetting;   
 int loadNotchsetting;
 int loadBandpasssetting;
+int loadBoardMode;
 
 //Load TS dropdown variables
 int loadTimeSeriesVertScale;
@@ -557,6 +558,7 @@ void loadGUISettings() {
       loadTimeSeriesHorizScale = LoadAllSettings.getInt("Time Series Horiz Scale");
       loadAnalogReadVertScale = LoadAllSettings.getInt("Analog Read Vert Scale");
       loadAnalogReadHorizScale = LoadAllSettings.getInt("Analog Read Horiz Scale");
+      loadBoardMode = LoadAllSettings.getInt("Board Mode");
       //Load more global settings after this line, if needed
       
       //Create a string array to print global settings to console
@@ -569,6 +571,7 @@ void loadGUISettings() {
         "TS Horiz Scale: " + loadTimeSeriesHorizScale,
         "Analog Vert Scale: " + loadAnalogReadVertScale,
         "Analog Horiz Scale: " + loadAnalogReadHorizScale,
+        "Board Mode: " + loadBoardMode,
         //Add new global settings above this line to print to console
         };
       //Print the global settings that have been loaded to the console  
@@ -771,6 +774,9 @@ void loadGUISettings() {
   topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBParray[loadBandpasssetting]; //this works
   println(dataProcessingBParray[loadBandpasssetting]);
   
+  //Apply Board Mode
+  applyBoardMode();
+  
   //Apply Framerate
   frameRateCounter = loadFramerate;
   switch (frameRateCounter){
@@ -793,17 +799,115 @@ void loadGUISettings() {
   }
   
   //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
-  LoadApplyWidgetDropdownText(); 
+  loadApplyWidgetDropdownText(); 
   
   //Apply Time Series Settings Last!!!
   //Case for loading time series settings in Live Data mode last. Takes 100-105 ms per channel to ensure success.
-  if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {LoadApplyTimeSeriesSettings();}
+  if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
   
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void LoadApplyTimeSeriesSettings() {
+void applyBoardMode()  {
+  //Apply Board Mode
+  //cyton.setBoardMode(loadBoardMode) //Set board mode first
+  switch(loadBoardMode){  //Then apply 
+    case BOARD_MODE_DEFAULT:
+      if(eegDataSource == DATASOURCE_GANGLION){ //This code has been copied from Accelerometer
+        if(ganglion.isAccelModeActive()){
+          ganglion.accelStop();
+
+          w_accelerometer.accelModeButton.setString("Turn Accel On");
+          w_accelerometer.accelerometerModeOn = false;
+        } else{
+          ganglion.accelStart();
+          w_accelerometer.accelModeButton.setString("Turn Accel Off");
+          w_accelerometer.accelerometerModeOn = true;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_digitalRead.digitalReadOn = false;
+          w_markermode.markerModeOn = false;
+        }
+      } else if (eegDataSource == DATASOURCE_CYTON) {
+        cyton.setBoardMode(BOARD_MODE_DEFAULT);
+        output("Starting to read accelerometer");
+        w_accelerometer.accelerometerModeOn = true;
+        w_analogRead.analogReadOn = false;
+        w_pulsesensor.analogReadOn = false;
+        w_digitalRead.digitalReadOn = false;
+        w_markermode.markerModeOn = false;
+      }
+      break;
+    case BOARD_MODE_DEBUG: //Not being used currently
+      break;
+    case BOARD_MODE_ANALOG:
+      if(cyton.isPortOpen()) { //This code has been copied from AnalogRead
+        if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
+          cyton.setBoardMode(BOARD_MODE_ANALOG);
+          if (cyton.isWifi()) {
+            output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
+          } else {
+            output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+          }
+          w_accelerometer.accelerometerModeOn = false;
+          w_digitalRead.digitalReadOn = false;
+          w_markermode.markerModeOn = false;
+          w_pulsesensor.analogReadOn = true;
+          w_analogRead.analogReadOn = true;
+        } else {
+          cyton.setBoardMode(BOARD_MODE_DEFAULT);
+          output("Starting to read accelerometer");
+          w_accelerometer.accelerometerModeOn = true;
+        }
+      }
+      break;
+    case BOARD_MODE_DIGITAL:
+      if(cyton.isPortOpen()) { //This code has been copied from DigitalRead
+        if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
+          cyton.setBoardMode(BOARD_MODE_DIGITAL);
+          if (cyton.isWifi()) {
+            output("Starting to read digital inputs on pin marked D11, D12 and D17");
+          } else {
+            output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
+          }
+          w_accelerometer.accelerometerModeOn = false;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_markermode.markerModeOn = false;
+        } else {
+          cyton.setBoardMode(BOARD_MODE_DEFAULT);
+          output("Starting to read accelerometer");
+          w_accelerometer.accelerometerModeOn = true;
+        }
+      }
+      break;
+    case BOARD_MODE_MARKER:
+      if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
+        if (cyton.getBoardMode() != BOARD_MODE_MARKER) {
+          cyton.setBoardMode(BOARD_MODE_MARKER);
+          output("Starting to read markers");
+          w_markermode.markerModeButton.setString("Turn Marker Off");
+          w_accelerometer.accelerometerModeOn = false;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_digitalRead.digitalReadOn = false;
+        } else {
+          cyton.setBoardMode(BOARD_MODE_DEFAULT);
+          output("Starting to read accelerometer");
+          w_markermode.markerModeButton.setString("Turn Marker On");
+          w_accelerometer.accelerometerModeOn = true;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_digitalRead.digitalReadOn = false;
+        }
+      }
+      break;
+  }//end switch/case
+}
+
+//Apply Time Series Settings to the Board
+void loadApplyTimeSeriesSettings() {
   for (int i = 0; i < slnchan;) { //For all time series channels...
     cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
     if (checkForSuccessTS != null) { // If we receive a return code...
@@ -817,7 +921,7 @@ void LoadApplyTimeSeriesSettings() {
   }    
 } 
 
-void LoadApplyWidgetDropdownText() {
+void loadApplyWidgetDropdownText() {
   
   ////////Apply Time Series widget settings
   VertScale_TS(loadTimeSeriesVertScale);// changes back-end
@@ -968,4 +1072,4 @@ void LoadApplyWidgetDropdownText() {
   
   //w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText("Bananas"); //this works
   
-} //end of LoadApplyWidgetDropdownText()
+} //end of loadApplyWidgetDropdownText()

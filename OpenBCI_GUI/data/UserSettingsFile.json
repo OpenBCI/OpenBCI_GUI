@@ -77,7 +77,7 @@
   },
   {
     "Current Layout": 5,
-    "Board Mode": 4,
+    "Board Mode": 0,
     "Notch": 0,
     "Analog Read Vert Scale": 5,
     "Analog Read": false,
@@ -85,8 +85,8 @@
     "Analog Read Horiz Scale": 2,
     "Time Series Vert Scale": 3,
     "Framerate": 1,
-    "Marker Mode": true,
-    "Accelerometer": false,
+    "Marker Mode": false,
+    "Accelerometer": true,
     "Bandpass Filter": 3,
     "Pulse Analog Read": false,
     "Time Series Horiz Scale": 2
@@ -138,8 +138,8 @@
     "Focus_theme": 0
   },
   {
-    "Widget_0": 4,
     "Widget_1": 3,
-    "Widget_11": 9
+    "Widget_2": 9,
+    "Widget_8": 4
   }
 ]

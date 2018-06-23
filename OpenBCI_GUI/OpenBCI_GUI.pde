@@ -278,7 +278,6 @@ char[][] impedanceCheckValues = new char [nchan][2];
 //default layout variables
 int layoutSelected;
 int currentLayout;
-//int currentContainerLayout; //this is the Layout structure for the main body of the GUI ... refer to [PUT_LINK_HERE] for layouts/numbers image
 
 ////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
 //Notch and Bandpass filter variables for save
