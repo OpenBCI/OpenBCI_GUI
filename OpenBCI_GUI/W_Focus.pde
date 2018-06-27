@@ -72,7 +72,7 @@ class W_Focus extends Widget {
     //Dropdowns.
     addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), 0);
     addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), 0);
-    addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0);
+    //addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0); //Users can stream Focus state using Networking Widget
 
     // prepare simulate keystroking
     try {
@@ -563,6 +563,7 @@ void StrokeKeyWhenFocused(int n){
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
+/*
 void SerialSendFocused(int n){
   if(n==0){
     //do this
@@ -577,6 +578,7 @@ void SerialSendFocused(int n){
   }
   closeAllDropdowns();
 }
+*/
 
 void ChooseFocusColor(int n){
   if(n==0){

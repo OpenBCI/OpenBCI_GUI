@@ -723,12 +723,12 @@ class configSelector{
       }
       for(int i = 0; i < configOptions.size(); i++){
         if(configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()){
-          int ConfigSelected = i;
+          int configSelected = i;
           configOptions.get(i).setIsActive(false);
-          if (ConfigSelected == 0) { //If save button is pressed..
+          if (configSelected == 0) { //If save button is pressed..
              saveGUISettings(); //save current settings to JSON file in /data/
              output("Settings Saved!"); //print success message to screen
-          } else if (ConfigSelected == 1) {
+          } else if (configSelected == 1) {
              loadGUISettings(); //load settings from JSON file in /data/
             //Output success message when Loading settings is complete without errors
             if (chanNumError == false && dataSourceError == false) output("Settings Loaded!");
