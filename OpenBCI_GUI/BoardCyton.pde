@@ -290,25 +290,25 @@ class Cyton {
           case 1: //"5 min max"
             write('A', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 2: //"5 min max"
+          case 2: //"15 min max"
             write('S', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 3: //"5 min max"
+          case 3: //"30 min max"
             write('F', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 4: //"5 min max"
+          case 4: //"1 hr max"
             write('G', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 5: //"5 min max"
+          case 5: //"2 hr max"
             write('H', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 6: //"5 min max"
+          case 6: //"4 hr max"
             write('J', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 7: //"5 min max"
+          case 7: //"12 hr max"
             write('K', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
-          case 8: //"5 min max"
+          case 8: //"24 hr max"
             write('L', false); //wait for $$$ to iterate... applies to commands expecting a response
             break;
           default:

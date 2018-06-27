@@ -249,16 +249,16 @@ void parseKey(char val) {
       //stopButtonWasPressed();
       break;
 
-    //Uppercase B sets Bias Don't Include all channels
-    case 'B':
+    //Lowercase k sets Bias Don't Include all channels
+    case 'k':
       for (int i = 0; i < nchan; i++) { //for every channel
         //BIAS off all channels
         channelSettingValues[i][3] = '0';
         println ("chan " + i + " bias don't include");
       }
       break;
-    //Uppercase N sets Bias Include all channels
-    case 'N':
+    //Lowercase l sets Bias Include all channels
+    case 'l':
       for (int i = 0; i < nchan; i++) { //for every channel
         //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
         //BIAS on all channells
@@ -267,19 +267,19 @@ void parseKey(char val) {
       }
       break;
          
-    ///////////////////// Save settings capital S
-    case 'S':      
+    ///////////////////// Save settings lowercase n
+    case 'n':      
       println("Save key pressed!"); 
       saveGUISettings();
       output("Settings Saved!");    
       break;
       
-    ///////////////////// Save settings capital L     
-    case 'L':      
+    ///////////////////// Load settings uppercase N     
+    case 'N':      
       loadGUISettings();
       //Output message when Loading settings is complete
       if (chanNumError == false && dataSourceError == false) output("Settings Loaded!");      
-      break;     
+      break;  
 
     case 'n':
       println("cyton: " + cyton);
