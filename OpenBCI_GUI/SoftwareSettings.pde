@@ -460,9 +460,6 @@ void loadGUISettings() {
   } else {
     dataSourceError = false;
   }
-  
-  //We want to read the rest of the JSON Array!
-  //for (int i = 0; i < loadSettingsJSONData.size() - 1; i++) {
     
  //Make a JSON object to load channel setting array
  JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings"); 
@@ -487,8 +484,8 @@ void loadGUISettings() {
         srb2SettingArray[srb2Setting] + ", " + 
         srb1SettingArray[srb1Setting]);
         
-      //Use channelSettingValues variable to activate these settings once they are loaded from JSON file 
-      //channelSettingValues[i][0] = (char)Integer.parseInt(String.valueOf(active)); 
+      //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
+      channelSettingValues[i][0] = (char)(active + '0'); 
       if (active == 0) {
         activateChannel(channel);// power down == false, set color to vibrant
         w_timeSeries.channelBars[i].isOn = true;
@@ -497,36 +494,17 @@ void loadGUISettings() {
         deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-      }
-           
-      //Hopefully This can be shortened into something more efficient, there is a datatype conversion involved. Simple if-then works for now.      
-      //channelSettingValues[i][1] = (char)Integer.parseInt(String.valueOf(gainSettings));           
-      if (gainSettings == 0) channelSettingValues[i][1] = '0';
-      if (gainSettings == 1) channelSettingValues[i][1] = '1';
-      if (gainSettings == 2) channelSettingValues[i][1] = '2';
-      if (gainSettings == 3) channelSettingValues[i][1] = '3';        
-      if (gainSettings == 4) channelSettingValues[i][1] = '4';
-      if (gainSettings == 5) channelSettingValues[i][1] = '5';
-      if (gainSettings == 6) channelSettingValues[i][1] = '6';  
-      
-          
-      if (inputType == 0) channelSettingValues[i][2] = '0';
-      if (inputType == 1) channelSettingValues[i][2] = '1';
-      if (inputType == 2) channelSettingValues[i][2] = '2';
-      if (inputType == 3) channelSettingValues[i][2] = '3';        
-      if (inputType == 4) channelSettingValues[i][2] = '4';
-      if (inputType == 5) channelSettingValues[i][2] = '5';        
-      if (inputType == 6) channelSettingValues[i][2] = '6';
-      if (inputType == 7) channelSettingValues[i][2] = '7';
-      
-      if (biasSetting == 0) channelSettingValues[i][3] = '0';
-      if (biasSetting == 1) channelSettingValues[i][3] = '1';
-      
-      if (srb2Setting == 0) channelSettingValues[i][4] = '0';
-      if (srb2Setting == 1) channelSettingValues[i][4] = '1';
-
-      if (srb1Setting == 0) channelSettingValues[i][5] = '0';
-      if (srb1Setting == 1) channelSettingValues[i][5] = '1';     
+      }           
+      //Set gain
+      channelSettingValues[i][1] = (char)(gainSettings + '0');      //Convert int to char by adding the gainSettings to ASCII char '0'
+      //Set inputType
+      channelSettingValues[i][2] = (char)(inputType + '0');    
+      //Set Bias
+      channelSettingValues[i][3] = (char)(biasSetting + '0');
+      //Set SRB2
+      channelSettingValues[i][4] = (char)(srb2Setting + '0');
+      //Set SRB1
+      channelSettingValues[i][5] = (char)(srb1Setting + '0');    
     } //end case for all channels
   } //end Cyton/Ganglion case
     
