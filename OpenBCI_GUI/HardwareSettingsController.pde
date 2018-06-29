@@ -129,7 +129,6 @@ class HardwareSettingsController{
             if (channelSettingValues[i][j] == '0') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
             if (channelSettingValues[i][j] == '1') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
             break;
-
           case 1: //GAIN ??
             if (channelSettingValues[i][j] == '0') channelSettingButtons[i][1].setString("x1");
             if (channelSettingValues[i][j] == '1') channelSettingButtons[i][1].setString("x2");

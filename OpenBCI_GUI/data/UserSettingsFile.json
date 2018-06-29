@@ -1,41 +1,5 @@
-[
-  {
-    "Data Source": 3,
-    "Channels": 8
-  },
-  {
-    "Channel_Number": 1,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 2,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 3,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 4,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 5,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 6,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 7,
-    "Active": 0
-  },
-  {
-    "Channel_Number": 8,
-    "Active": 0
-  },
-  {
+{
+  "settings": {
     "Current Layout": 5,
     "Board Mode": 0,
     "Notch": 0,
@@ -51,14 +15,27 @@
     "Pulse Analog Read": false,
     "Time Series Horiz Scale": 2
   },
-  {
-    "FFT Max uV": 2,
-    "FFT Max Freq": 2,
-    "FFT Filter": 0,
-    "FFT LogLin": 0,
-    "FFT Smoothing": 3
+  "widget": {
+    "Widget_0": 4,
+    "Widget_1": 3,
+    "Widget_2": 9
   },
-  {
+  "dataInfo": {
+    "Data Source": 0,
+    "Channels": 8
+  },
+  "fft": {
+    "FFT_LogLin": 0,
+    "FFT_Max Freq": 2,
+    "FFT_Filter": 0,
+    "FFT_Max uV": 2,
+    "FFT_Smoothing": 3
+  },
+  "focus": {
+    "Focus_keypress": 0,
+    "Focus_theme": 0
+  },
+  "networking": {
     "OSC_ip2": "127.0.0.1",
     "OSC_ip1": "127.0.0.1",
     "OSC_DataType4": 0,
@@ -81,25 +58,90 @@
     "OSC_DataType3": 0,
     "Protocol": 0
   },
-  {
+  "headplot": {
     "HP_smoothing": 3,
     "HP_intensity": 2,
     "HP_polarity": 0,
     "HP_contours": 0
   },
-  {
+  "channelSettings": [
+    {
+      "Channel_Number": 1,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 2,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 3,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 4,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 5,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 6,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 7,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    },
+    {
+      "Channel_Number": 8,
+      "Active": 0,
+      "Input Type": 0,
+      "Bias": 1,
+      "SRB1": 0,
+      "SRB2": 1,
+      "PGA Gain": 6
+    }
+  ],
+  "emg": {
     "EMG_creepspeed": 3,
     "EMG_minuV": 1,
     "EMG_uVlimit": 2,
     "EMG_smoothing": 4
-  },
-  {
-    "Focus_keypress": 0,
-    "Focus_theme": 0
-  },
-  {
-    "Widget_0": 4,
-    "Widget_1": 3,
-    "Widget_2": 9
   }
-]
+}
