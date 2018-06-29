@@ -471,14 +471,14 @@ void loadGUISettings() {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
       int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
       int active = loadTSChannelSettings.getInt("Active");
-      int gainSettings = loadTSChannelSettings.getInt("PGA Gain");
+      int gainSetting = loadTSChannelSettings.getInt("PGA Gain");
       int inputType = loadTSChannelSettings.getInt("Input Type");
       int biasSetting = loadTSChannelSettings.getInt("Bias");
       int srb2Setting = loadTSChannelSettings.getInt("SRB2");
       int srb1Setting = loadTSChannelSettings.getInt("SRB1");
       println("Ch " + channel + ", " + 
         channelsActiveArray[active] + ", " + 
-        gainSettingsArray[gainSettings] + ", " + 
+        gainSettingsArray[gainSetting] + ", " + 
         inputTypeArray[inputType] + ", " + 
         biasIncludeArray[biasSetting] + ", " + 
         srb2SettingArray[srb2Setting] + ", " + 
@@ -496,7 +496,7 @@ void loadGUISettings() {
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }           
       //Set gain
-      channelSettingValues[i][1] = (char)(gainSettings + '0');      //Convert int to char by adding the gainSettings to ASCII char '0'
+      channelSettingValues[i][1] = (char)(gainSetting + '0');  //Convert int to char by adding the gainSetting to ASCII char '0'
       //Set inputType
       channelSettingValues[i][2] = (char)(inputType + '0');    
       //Set Bias
