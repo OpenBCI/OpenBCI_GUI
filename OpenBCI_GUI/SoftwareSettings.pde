@@ -499,7 +499,7 @@ void loadGUISettings() {
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
            
-      //Hopefully This can be shortened into somthing more efficient, there is a datatype conversion involved. Simple if-then works for now.      
+      //Hopefully This can be shortened into something more efficient, there is a datatype conversion involved. Simple if-then works for now.      
       //channelSettingValues[i][1] = (char)Integer.parseInt(String.valueOf(gainSettings));           
       if (gainSettings == 0) channelSettingValues[i][1] = '0';
       if (gainSettings == 1) channelSettingValues[i][1] = '1';
@@ -725,8 +725,6 @@ void loadGUISettings() {
       //numActiveWidgets++; //counter the number of de-activated widgets
     }
   }    
-  //println(numActiveWidgets);
-  //println(loadAllSettings.keys());
   
   //Store the Widget number keys from JSON to a string array
   loadedWidgetsArray = (String[]) loadWidgetSettings.keys().toArray(new String[loadWidgetSettings.size()]);
