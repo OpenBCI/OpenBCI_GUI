@@ -393,8 +393,6 @@ class TopNav {
           //layoutSelector.toggleVisibility();
           configSelector.toggleVisibility();         
           configButton.setIsActive(true);
-
-          //wm.printLayouts();
         }
       }
 
@@ -536,7 +534,6 @@ class LayoutSelector{
     for(int i = 0; i < layoutOptions.size(); i++){
       layoutOptions.get(i).setX(layoutOptions.get(i).but_x - dx);
     }
-
   }
 
   void toggleVisibility(){
@@ -641,9 +638,6 @@ class LayoutSelector{
     layoutOptions.add(tempLayoutButton);
 
   }
-
-  //void updateLayoutOptionButtons(){}
-
 }
 
 class configSelector{
@@ -667,14 +661,7 @@ class configSelector{
     addConfigButtons();
   }
 
-  void update(){
-    if(isVisible){ //only update if visible
-      // //close dropdown when mouse leaves
-      // if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.ConfigsButton.isMouseHere()){
-      //   toggleVisibility();
-      // }
-    }
-  }
+  void update() {}
 
   void draw(){
     if(isVisible == true){ //only draw if visible
@@ -699,9 +686,7 @@ class configSelector{
     }
   }
 
-  void isMouseHere(){
-
-  }
+  void isMouseHere(){}
 
   void mousePressed(){
     //only allow button interactivity if isVisible==true
@@ -727,14 +712,19 @@ class configSelector{
           configOptions.get(i).setIsActive(false);
           if (configSelected == 0) { //If save button is pressed..
              saveGUISettings(); //save current settings to JSON file in /data/
-             output("Settings Saved!"); //print success message to screen
+             outputSuccess("Settings Saved!"); //print success message to screen
           } else if (configSelected == 1) {
              loadGUISettings(); //load settings from JSON file in /data/
             //Output success message when Loading settings is complete without errors
-            if (chanNumError == false && dataSourceError == false) output("Settings Loaded!");
+            if (chanNumError == false && dataSourceError == false) {
+              outputSuccess("Settings Loaded!");
+            } else if (chanNumError == true) {
+              outputError("Load settings error: Invalid number of channels in JSON");
+            } else {
+              outputError("Load settings error: invalid data source");
+            }
           }
           toggleVisibility(); //shut configSelector if something is selected
-          //open corresponding link
         }
       }
     }
@@ -952,10 +942,6 @@ class TutorialSelector{
     tempTutorialButton.setFont(p5, 12);
     tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
     tutorialOptions.add(tempTutorialButton);
-
-  }
-
-  void updateLayoutOptionButtons(){
 
   }
 

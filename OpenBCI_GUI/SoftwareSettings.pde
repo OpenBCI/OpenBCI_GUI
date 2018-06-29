@@ -173,45 +173,22 @@ void saveGUISettings() {
       for (int j = 0; j < numSettingsPerChannel; j++) {
         switch(j) {  //what setting are we looking at
           case 0: //on/off
-            if (channelSettingValues[i][j] == '0')  tsActiveSetting = 0;
-            if (channelSettingValues[i][j] == '1')  tsActiveSetting = 1;
-            // tsActiveSetting = int(channelSettingValues[i][j]));  // For some reason this approach doesn't work, still returns 48 and 49 '0' and '1'
+            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for active channel (0 or 1) from char array channelSettingValues
             break;
           case 1: //GAIN
-            //tsGainSetting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') tsGainSetting = 0;
-            if (channelSettingValues[i][j] == '1') tsGainSetting = 1;
-            if (channelSettingValues[i][j] == '2') tsGainSetting = 2;
-            if (channelSettingValues[i][j] == '3') tsGainSetting = 3;
-            if (channelSettingValues[i][j] == '4') tsGainSetting = 4;
-            if (channelSettingValues[i][j] == '5') tsGainSetting = 5;
-            if (channelSettingValues[i][j] == '6') tsGainSetting = 6;            
+            tsGainSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for gain
             break;
           case 2: //input type
-            //tsInputTypeSetting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') tsInputTypeSetting = 0;
-            if (channelSettingValues[i][j] == '1') tsInputTypeSetting = 1;
-            if (channelSettingValues[i][j] == '2') tsInputTypeSetting = 2;
-            if (channelSettingValues[i][j] == '3') tsInputTypeSetting = 3;
-            if (channelSettingValues[i][j] == '4') tsInputTypeSetting = 4;
-            if (channelSettingValues[i][j] == '5') tsInputTypeSetting = 5;
-            if (channelSettingValues[i][j] == '6') tsInputTypeSetting = 6;
-            if (channelSettingValues[i][j] == '7') tsInputTypeSetting = 7;
+            tsInputTypeSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for input type
             break;
           case 3: //BIAS
-            //tsBiasSetting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') tsBiasSetting = 0;
-            if (channelSettingValues[i][j] == '1') tsBiasSetting = 1;     
+          tsBiasSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for bias        
             break;
           case 4: // SRB2
-            //tsSrb2Setting = int(channelSettingValues[i][j]);
-            if (channelSettingValues[i][j] == '0') tsSrb2Setting = 0;
-            if (channelSettingValues[i][j] == '1') tsSrb2Setting = 1;
+            tsSrb2Setting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for srb2
             break;
           case 5: // SRB1
-            //tsSrb1Setting = channelSettingValues[i][j];
-            if (channelSettingValues[i][j] == '0') tsSrb1Setting = 0;
-            if (channelSettingValues[i][j] == '1') tsSrb1Setting = 1;
+            tsSrb1Setting = Character.getNumericValue(channelSettingValues[i][j]); //Store integer value for srb1
             break;
           }
       }  
@@ -237,8 +214,9 @@ void saveGUISettings() {
       for (int j = 0; j < 1; j++) {
         switch(j) { 
           case 0: //Just save what channels are active
-            if (channelSettingValues[i][j] == '0')  tsActiveSetting = 0;
-            if (channelSettingValues[i][j] == '1')  tsActiveSetting = 1;
+            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Get integer value from char array channelSettingValues
+            //if (channelSettingValues[i][j] == '0')  tsActiveSetting = 0;
+            //if (channelSettingValues[i][j] == '1')  tsActiveSetting = 1;
             break;
           }
       }  
@@ -249,8 +227,6 @@ void saveGUISettings() {
   }    
   //Make a second JSON object within our JSONArray to store Global settings for the GUI
   JSONObject saveGlobalSettings = new JSONObject();
-  
-  
   saveGlobalSettings.setInt("Current Layout", currentLayout);
   saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
   saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
@@ -428,10 +404,10 @@ void saveGUISettings() {
   } 
   println(numActiveWidgets + " active widgets saved!");
   //Print what widgets are in the containers used by current layout for only the number of active widgets
-  for(int i = 0; i < numActiveWidgets; i++){
-        //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
-        //println("Container " + containerCounter + " is available");          
-  }  
+  //for(int i = 0; i < numActiveWidgets; i++){
+    //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
+    //println("Container " + containerCounter + " is available"); //For debugging          
+  //}  
   
   saveSettingsJSONData.setJSONObject(slnchan+7, saveWidgetSettings);
   
@@ -462,6 +438,7 @@ void loadGUISettings() {
   } else {
     chanNumError = false;
   }
+  //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
   loadDatasource = loadChanSettings.getInt("Data Source");
   println("Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
   //Print error if trying to load a different data source (ex. Live != Synthetic)
@@ -828,7 +805,7 @@ void applyBoardMode()  {
         }
       } else if (eegDataSource == DATASOURCE_CYTON) {
         cyton.setBoardMode(BOARD_MODE_DEFAULT);
-        output("Starting to read accelerometer");
+        outputSuccess("Starting to read accelerometer");
         w_accelerometer.accelerometerModeOn = true;
         w_analogRead.analogReadOn = false;
         w_pulsesensor.analogReadOn = false;

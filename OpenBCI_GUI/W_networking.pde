@@ -79,7 +79,7 @@ class W_networking extends Widget {
     stream3 = null;
     stream4 = null;
 
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget");
+    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"); //Add any new widgets capable of streaming here
     defaultBaud = "115200";
     // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
     baudRates = Arrays.asList("57600", "115200", "250000", "500000");
@@ -804,8 +804,6 @@ class W_networking extends Widget {
         break;
       case 6 : dt1 = "Pulse";
         break;
-      case 7 : dt1 = "Widget";
-        break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()){
       case 0 : dt2 = "None";
@@ -821,8 +819,6 @@ class W_networking extends Widget {
       case 5 : dt2 = "Focus";
         break;
       case 6 : dt2 = "Pulse";
-        break;
-      case 7 : dt2 = "Widget";
         break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()){
@@ -840,8 +836,6 @@ class W_networking extends Widget {
         break;
       case 6 : dt3 = "Pulse";
         break;
-      case 7 : dt3 = "Widget";
-        break;
     }
     switch ((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()){
       case 0 : dt4 = "None";
@@ -857,8 +851,6 @@ class W_networking extends Widget {
       case 5 : dt4 = "Focus";
         break;
       case 6 : dt4 = "Pulse";
-        break;
-      case 7 : dt4 = "Widget";
         break;
     }
     // Establish OSC Streams
@@ -1186,8 +1178,6 @@ class Stream extends Thread{
                 sendFocusData();
               } else if (this.dataType.equals("Pulse")){
                 sendPulseData();
-              } else if (this.dataType.equals("WIDGET")){
-                sendWidgetData();                
               }
               setDataFalse();
             } else {
@@ -1220,8 +1210,6 @@ class Stream extends Thread{
             sendFocusData();
           } else if (this.dataType.equals("Pulse")){
             sendPulseData();
-          } else if (this.dataType.equals("WIDGET")){
-            sendWidgetData();
           }
           setDataFalse();
           // newData = false;
@@ -1243,8 +1231,6 @@ class Stream extends Thread{
       return dataProcessing.newDataToSend;
     } else if (this.dataType.equals("Pulse")){
       return dataProcessing.newDataToSend;
-    } else if (this.dataType.equals("WIDGET")){
-      /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
     }
     return false;
   }
@@ -1262,8 +1248,6 @@ class Stream extends Thread{
       dataProcessing.newDataToSend = false;
     } else if (this.dataType.equals("Pulse")){
       dataProcessing.newDataToSend = false;
-    } else if (this.dataType.equals("WIDGET")){
-      /* ENTER YOUR WIDGET "NEW DATA" RETURN FUNCTION */
     }
   }
   /* This method contains all of the policies for sending data types */
@@ -1593,7 +1577,6 @@ class Stream extends Thread{
      }
   }
 
-
   void sendFocusData(){
     // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
 
@@ -1700,11 +1683,9 @@ class Stream extends Thread{
         }
       }
     }
-  }//end sendPulseData
- 
-  void sendWidgetData(){
-       /* INSERT YOUR CODE HERE */
-    }
+  }//End sendPulseData
+   
+  //// Add new stream function here (ex. sendWidgetData) in the same format as above
   
   void quit(){
     this.isStreaming=false;

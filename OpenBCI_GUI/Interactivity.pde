@@ -271,19 +271,22 @@ void parseKey(char val) {
     case 'n':      
       println("Save key pressed!"); 
       saveGUISettings();
-      output("Settings Saved!");    
+      outputSuccess("Settings Saved!");    
       break;
       
     ///////////////////// Load settings uppercase N     
-    case 'N':      
+    case 'N':
+      println("Load key pressed!");
       loadGUISettings();
       //Output message when Loading settings is complete
-      if (chanNumError == false && dataSourceError == false) output("Settings Loaded!");      
+      if (chanNumError == false && dataSourceError == false) {
+        outputSuccess("Settings Loaded!");
+      } else if (chanNumError == true) {
+        outputError("Load settings error: Invalid number of channels in JSON");
+      } else {
+        outputError("Load settings error: invalid data source");
+      }   
       break;  
-
-    case 'n':
-      println("cyton: " + cyton);
-      break;
 
     case '?':
       cyton.printRegisters();
