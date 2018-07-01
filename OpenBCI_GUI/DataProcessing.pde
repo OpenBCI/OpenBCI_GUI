@@ -290,7 +290,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
     //get the row
     TableRow row = datatable.getRow(currentTableRowIndex);
     currentTableRowIndex++; //increment to the next row
-
+    
     //get each value
     for (int Ichan=0; Ichan < nchan; Ichan++) {
       if (isChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
@@ -299,35 +299,34 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         //use zeros for the missing channels
         val_uV = 0.0f;
       }
-
+    
       //put into data structure
       curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
     }
 
-   // get accelerometer data
-   try{
-     for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
+    // get accelerometer data
+    try{
+      for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
+
         if (Iacc < datatable.getColumnCount()) {
           acc_G[Iacc] = row.getFloat(Iacc + nchan);
         } else {
           //use zeros for bad data :)
           acc_G[Iacc] = 0.0f;
         }
-
+  
         //put into data structure
         curDataPacket.auxValues[Iacc] = (int) (0.5f+ acc_G[Iacc] / scale_fac_accel_G_per_count); //convert to counts, the 0.5 is to ensure rounding
-
+  
         // Wangshu Dec.6 2016
         // as long as xyz are not zero at the same time, it should be fine...otherwise it will ignore it.
         if (acc_G[Iacc]!= 0) {
           acc_newData = true;
         }
       }
-   } catch (ArrayIndexOutOfBoundsException e){
-      // println("Data does not exist... possibly an old file.");
-   }
-
-
+    } catch (ArrayIndexOutOfBoundsException e){
+    // println("Data does not exist... possibly an old file.");
+    }
     if (acc_newData) {
       for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
         appendAndShift(accelerometerBuff[Iacc], acc_G[Iacc]);
@@ -351,7 +350,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       }
     }
 
-  }
+  } //end else
   return currentTableRowIndex;
 }
 

@@ -167,9 +167,9 @@ class W_accelerometer extends Widget {
 
         shiftWave();
       } else {  // playback data
-        currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1] * cyton.get_scale_fac_accel_G_per_count(); //added the acceleration scale factor just like DATASOURCE_CYTON above
-        currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1] * cyton.get_scale_fac_accel_G_per_count(); // this prevents issue were lines were being drawn outside of the w_acceleration
-        currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1] * cyton.get_scale_fac_accel_G_per_count();
+        currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1]; // * cyton.get_scale_fac_accel_G_per_count(); //added the acceleration scale factor just like DATASOURCE_CYTON above
+        currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1]; // * cyton.get_scale_fac_accel_G_per_count(); // this prevents issue were lines were being drawn outside of the w_acceleration
+        currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1]; // * cyton.get_scale_fac_accel_G_per_count();
       }
     }
   }
