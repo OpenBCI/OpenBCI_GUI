@@ -357,8 +357,6 @@ class W_networking extends Widget {
   /* Shows and Hides appropriate CP5 elements within widget */
   void showCP5(){
 
-
-
     osc_visible=false;
     udp_visible=false;
     lsl_visible=false;
@@ -599,17 +597,17 @@ class W_networking extends Widget {
     cp5_networking_baudRate.setGraphics(pApplet, 0,0);
     cp5_networking_portName.setGraphics(pApplet, 0,0);
 
-    column0 = x+w/20;
+    column0 = x+w/22-20;
     // column1 = x+3*w/10;
     // column2 = x+5*w/10;
     // column3 = x+7*w/10;
     
-    int widthd = 49;//This value has been fine-tuned to look proper in small-windowed mode and fullscreen on 1920x1080
+    int widthd = 45;//This value has been fine-tuned to look proper in small-windowed mode 1024*768 and fullscreen on 1920x1080
     
-    column1 = x+12*w/widthd;
-    column2 = x+21*w/widthd;
-    column3 = x+30*w/widthd;
-    column4 = x+39*w/widthd;
+    column1 = x+12*w/widthd-20;
+    column2 = x+(12+9*1)*w/widthd-20;
+    column3 = x+(12+9*2)*w/widthd-20;
+    column4 = x+(12+9*3)*w/widthd-20;
 
     halfWidth = (column2+100) - column1;
     fullColumnWidth = (column4+100) - column1;
