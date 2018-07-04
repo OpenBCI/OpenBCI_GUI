@@ -602,12 +602,12 @@ class W_networking extends Widget {
     // column2 = x+5*w/10;
     // column3 = x+7*w/10;
     
-    int widthd = 45;//This value has been fine-tuned to look proper in small-windowed mode 1024*768 and fullscreen on 1920x1080
+    int widthd = 46;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
     
-    column1 = x+12*w/widthd-20;
-    column2 = x+(12+9*1)*w/widthd-20;
-    column3 = x+(12+9*2)*w/widthd-20;
-    column4 = x+(12+9*3)*w/widthd-20;
+    column1 = x+12*w/widthd-25;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
+    column2 = x+(12+9*1)*w/widthd-25;
+    column3 = x+(12+9*2)*w/widthd-25;
+    column4 = x+(12+9*3)*w/widthd-25;
 
     halfWidth = (column2+100) - column1;
     fullColumnWidth = (column4+100) - column1;
@@ -618,7 +618,7 @@ class W_networking extends Widget {
     row3 = y+6*h/10;
     row4 = y+7*h/10;
     row5 = y+8*h/10;
-    int offset = 15;//This value has been fine-tuned to look proper in small-windowed mode and fullscreen on 1920x1080
+    int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
 
 
     startButton.setPos(x + w/2 - 70, y + h - 40 );
