@@ -289,7 +289,7 @@ int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
 String checkForSuccessTS;
 
-//FFT plot settings, 
+//FFT plot settings,
 int fftMaxFrqSave = 2;
 int fftMaxuVSave = 2;
 int fftLogLinSave = 0;
@@ -423,9 +423,9 @@ void setup() {
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
-  
+
   // UDPMarker functionality
-  // Setup the UDP receiver // This needs to be done only when marker mode is enabled 
+  // Setup the UDP receiver // This needs to be done only when marker mode is enabled
   int portRX = 51000;  // this is the UDP port the application will be listening on
   String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
@@ -957,7 +957,7 @@ void haltSystem() {
     } else if (w_markermode.markerModeOn) {
       cyton.setBoardMode(BOARD_MODE_DEFAULT);
       output("Starting to read accelerometer");
-      w_accelerometer.accelerometerModeOn = true;      
+      w_accelerometer.accelerometerModeOn = true;
       w_markermode.markerModeButton.setString("Turn Marker On");
       w_markermode.markerModeOn = false;
     }
@@ -1301,7 +1301,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.3.1\nMay 2018", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.4.0\nJuly 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
