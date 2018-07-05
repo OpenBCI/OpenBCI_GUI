@@ -8,11 +8,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-
-//these arrays of channel values need to be global so that they don't reset on screen resize, when GUI reinitializes (there's definitely a more efficient way to do this...)
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-char[][] impedanceCheckValues = new char [nchan][2];
+HardwareSettingsController hwSettingsController;
 
 public void updateChannelArrays(int _nchan) {
   channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
@@ -68,12 +64,12 @@ class HardwareSettingsController{
 
   int x, y, w, h;
 
-  // int numSettingsPerChannel = 6; //each channel has 6 different settings
-  // char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-  // char[][] impedanceCheckValues = new char [nchan][2];
+  //int numSettingsPerChannel = 6; //each channel has 6 different settings
+  //char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+  //char[][] impedanceCheckValues = new char [nchan][2];
 
   int spaceBetweenButtons = 5; //space between buttons
-
+  
   // [Number of Channels] x 6 array of buttons for channel settings
   Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
 
@@ -81,7 +77,7 @@ class HardwareSettingsController{
   char[] previousSRB2 = new char [nchan];
   // Array for storing SRB2 history settings of channels prior to shutting off .. so you can return to previous state when reactivating channel
   char[] previousBIAS = new char [nchan];
-
+  
   //maximum different values for the different settings (Power Down, Gain, Input Type, BIAS, SRB2, SRB1) of
   //refer to page 44 of ADS1299 Datasheet: http://www.ti.com/lit/ds/symlink/ads1299.pdf
   char[] maxValuesPerSetting = {
@@ -92,7 +88,8 @@ class HardwareSettingsController{
     '1', // SRB2 :: (0) Open, (1) Closed
     '1'
   }; // SRB1 :: (0) Yes, (1) No ... this setting affects all channels ... either all on or all off
-
+  //
+  
   //variables used for channel write timing in writeChannelSettings()
   int channelToWrite = -1;
 
@@ -132,7 +129,6 @@ class HardwareSettingsController{
             if (channelSettingValues[i][j] == '0') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[i%8]);// power down == false, set color to vibrant
             if (channelSettingValues[i][j] == '1') w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(75); // power down == true, set color to dark gray, indicating power down
             break;
-
           case 1: //GAIN ??
             if (channelSettingValues[i][j] == '0') channelSettingButtons[i][1].setString("x1");
             if (channelSettingValues[i][j] == '1') channelSettingButtons[i][1].setString("x2");
