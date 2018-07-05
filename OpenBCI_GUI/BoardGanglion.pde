@@ -211,7 +211,7 @@ class Ganglion {
     return dataPacket.copyTo(target);
   }
 
-  // SCANNING/SEARHING FOR DEVICES
+  // SCANNING/SEARCHING FOR DEVICES
   public int closePort() {
     if (isBLE()) {
       hub.disconnectBLE();

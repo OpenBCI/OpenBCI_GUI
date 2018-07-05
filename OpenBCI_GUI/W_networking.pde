@@ -700,12 +700,24 @@ class W_networking extends Widget {
     /* If start button was pressed */
     if (startButton.isActive && startButton.isMouseHere()){
       if (!networkActive){
-        turnOnButton();         // Change appearance of button
-        initializeStreams();    // Establish stream
-        startNetwork();         // Begin streaming
+        try {
+          turnOnButton();         // Change appearance of button
+          initializeStreams();    // Establish stream
+          startNetwork();         // Begin streaming
+          output("Network Stream Started");
+        } catch (Exception e) {
+          //e.printStackTrace();
+          String exception = e.toString();
+          String [] nwError = split(exception, ':');          
+          outputError("Networking Error - Port: " + nwError[2]);
+          shutDown();
+          networkActive = false;
+          return;
+        }
       } else {
         turnOffButton();        // Change apppearance of button
         stopNetwork();          // Stop streams
+        output("Network Stream Stopped");
       }
     }
     startButton.setIsActive(false);
@@ -1718,9 +1730,12 @@ class Stream extends Thread{
     println(getAttributes());
     if (this.protocol.equals("OSC")){
       //Possibly enter a nice custom exception here
-      this.osc = new OscP5(this,this.port + 1000);
-      this.netaddress = new NetAddress(this.ip,this.port);
-      this.msg = new OscMessage(this.address);
+      //try {
+        this.osc = new OscP5(this,this.port + 1000);
+        this.netaddress = new NetAddress(this.ip,this.port);
+        this.msg = new OscMessage(this.address);
+      //} catch (Exception e) {
+      //}
     } else if (this.protocol.equals("UDP")){
       this.udp = new UDP(this);
       this.udp.setBuffer(20000);
