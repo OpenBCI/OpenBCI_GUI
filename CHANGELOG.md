@@ -1,3 +1,11 @@
+# v3.4.0
+
+Use OpenBCIHub v1.4.4 please.
+
+### New Features
+
+* Save and load your favorite GUI settings (thanks @retiutut)
+
 # v3.3.2
 
 Use OpenBCIHub v1.4.4 please.
