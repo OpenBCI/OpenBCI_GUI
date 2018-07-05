@@ -72,7 +72,7 @@ class W_Focus extends Widget {
     //Dropdowns.
     addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), 0);
     addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), 0);
-    addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0);
+    //addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0); //Users can stream Focus state using Networking Widget
 
     // prepare simulate keystroking
     try {
@@ -559,10 +559,11 @@ void StrokeKeyWhenFocused(int n){
     w_focus.keyNum = 1;
     println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
   }
-
+  focusKeySave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
+/*
 void SerialSendFocused(int n){
   if(n==0){
     //do this
@@ -577,6 +578,7 @@ void SerialSendFocused(int n){
   }
   closeAllDropdowns();
 }
+*/
 
 void ChooseFocusColor(int n){
   if(n==0){
@@ -589,5 +591,6 @@ void ChooseFocusColor(int n){
     w_focus.focusColors = FocusColors.CYAN;
     w_focus.onColorChange();
   }
+  focusThemeSave = n;
   closeAllDropdowns();
 }

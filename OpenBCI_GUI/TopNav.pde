@@ -33,9 +33,11 @@ class TopNav {
 
 
   Button layoutButton;
+  Button configButton;
 
   LayoutSelector layoutSelector;
   TutorialSelector tutorialSelector;
+  configSelector configSelector;
 
   boolean finishedInit = false;
 
@@ -89,6 +91,7 @@ class TopNav {
 
     layoutSelector = new LayoutSelector();
     tutorialSelector = new TutorialSelector();
+    configSelector = new configSelector();
 
     updateNavButtonsBasedOnColorScheme();
 
@@ -112,7 +115,10 @@ class TopNav {
     layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
     layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
     layoutButton.setFont(h4, 14);
-
+    configButton = new Button(width - 3 - 60 - 3 - 60, 35, 60, 26, "Config", fontInfo.buttonLabel_size);
+    configButton.setHelpText("Save and Load your GUI configuration!");
+    configButton.setFont(h4, 14);
+    
     updateSecondaryNavButtonsColor();
   }
 
@@ -179,19 +185,23 @@ class TopNav {
       filtBPButton.setColorNotPressed(color(255));
       filtNotchButton.setColorNotPressed(color(255));
       layoutButton.setColorNotPressed(color(255));
+      configButton.setColorNotPressed(color(255));
 
       filtBPButton.textColorNotActive = color(bgColor);
       filtNotchButton.textColorNotActive = color(bgColor);
       layoutButton.textColorNotActive = color(bgColor);
+      configButton.textColorNotActive = color(bgColor);
     }
     else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
       filtBPButton.setColorNotPressed(color(57,128,204));
       filtNotchButton.setColorNotPressed(color(57,128,204));
       layoutButton.setColorNotPressed(color(57,128,204));
+      configButton.setColorNotPressed(color(57,128,204));
 
       filtBPButton.textColorNotActive = color(255);
       filtNotchButton.textColorNotActive = color(255);
       layoutButton.textColorNotActive = color(255);
+      configButton.textColorNotActive = color(255);
     }
 
   }
@@ -238,6 +248,7 @@ class TopNav {
       filtBPButton.draw();
       filtNotchButton.draw();
       layoutButton.draw();
+      configButton.draw();
     }
 
     controlPanelCollapser.draw();
@@ -249,9 +260,9 @@ class TopNav {
 
     // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
 
-
     layoutSelector.draw();
     tutorialSelector.draw();
+    configSelector.draw();
 
   }
 
@@ -262,8 +273,10 @@ class TopNav {
 
     if(systemMode == SYSTEMMODE_POSTINIT){
       layoutButton.but_x = width - 3 - layoutButton.but_dx;
+      configButton.but_x = width - (3*2) - (layoutButton.but_dx*2);
       layoutSelector.screenResized();     //pass screenResized along to layoutSelector
       tutorialSelector.screenResized();
+      configSelector.screenResized();
     }
   }
 
@@ -284,6 +297,10 @@ class TopNav {
       if (layoutButton.isMouseHere()) {
         layoutButton.setIsActive(true);
         //toggle layout window to enable the selection of your container layoutButton...
+      }
+      if (configButton.isMouseHere()) {
+        configButton.setIsActive(true);
+        //toggle save/load window 
       }
     }
 
@@ -333,6 +350,7 @@ class TopNav {
 
     layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
     tutorialSelector.mousePressed();
+    configSelector.mousePressed();
   }
 
   void mouseReleased(){
@@ -371,12 +389,18 @@ class TopNav {
           layoutButton.setIsActive(true);
           wm.printLayouts();
         }
+        if (configButton.isMouseHere() && configButton.isActive()) {
+          //layoutSelector.toggleVisibility();
+          configSelector.toggleVisibility();         
+          configButton.setIsActive(true);
+        }
       }
 
       stopButton.setIsActive(false);
       filtBPButton.setIsActive(false);
       filtNotchButton.setIsActive(false);
       layoutButton.setIsActive(false);
+      configButton.setIsActive(false);
     }
 
     fpsButton.setIsActive(false);
@@ -385,8 +409,11 @@ class TopNav {
     issuesButton.setIsActive(false);
     shopButton.setIsActive(false);
 
+
     layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
     tutorialSelector.mouseReleased();
+    configSelector.mouseReleased();
+
   }
 
 }
@@ -493,6 +520,7 @@ class LayoutSelector{
           layoutOptions.get(i).setIsActive(false);
           toggleVisibility(); //shut layoutSelector if something is selected
           wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
+          currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
         }
       }
     }
@@ -506,7 +534,6 @@ class LayoutSelector{
     for(int i = 0; i < layoutOptions.size(); i++){
       layoutOptions.get(i).setX(layoutOptions.get(i).but_x - dx);
     }
-
   }
 
   void toggleVisibility(){
@@ -611,12 +638,155 @@ class LayoutSelector{
     layoutOptions.add(tempLayoutButton);
 
   }
+}
 
-  void updateLayoutOptionButtons(){
+class configSelector{
+  int x, y, w, h, margin, b_w, b_h;
+  boolean isVisible;
+
+  ArrayList<Button> configOptions; //
+
+  configSelector(){
+    w = 120;
+    x = width- 3*2 - 60*3 - margin*3;
+    y = (navBarHeight * 2) - 3;
+    margin = 6;
+    b_w = w - margin*2;
+    b_h = 22;
+    h = margin*3 + b_h*2;
+
+    isVisible = false;
+
+    configOptions = new ArrayList<Button>();
+    addConfigButtons();
+  }
+
+  void update() {}
+
+  void draw(){
+    if(isVisible == true){ //only draw if visible
+      pushStyle();
+
+      //println("it's happening");
+      stroke(bgColor);
+      // fill(229); //bg
+      fill(57,128,204); //bg
+      rect(x, y, w, h);
+
+      for(int i = 0; i < configOptions.size(); i++){
+        configOptions.get(i).draw();
+      }
+
+      fill(57,128,204);
+      // fill(177, 184, 193);
+      noStroke();
+      rect(x+w-(topNav.configButton.but_dx-1), y, (topNav.configButton.but_dx-1), 1);
+
+      popStyle();
+    }
+  }
+
+  void isMouseHere(){}
+
+  void mousePressed(){
+    //only allow button interactivity if isVisible==true
+    if(isVisible){
+      for(int i = 0; i < configOptions.size(); i++){
+        if(configOptions.get(i).isMouseHere()){
+          configOptions.get(i).setIsActive(true);
+          println("config pressed");
+        }
+      }
+    }
+  }
+
+  void mouseReleased(){
+    //only allow button interactivity if isVisible==true
+    if(isVisible){
+      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.configButton.isMouseHere()){
+        toggleVisibility();
+      }
+      for(int i = 0; i < configOptions.size(); i++){
+        if(configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()){
+          int configSelected = i;
+          configOptions.get(i).setIsActive(false);
+          if (configSelected == 0) { //If save button is pressed..
+             saveGUISettings(); //save current settings to JSON file in /data/
+             outputSuccess("Settings Saved!"); //print success message to screen
+          } else if (configSelected == 1) {
+             loadGUISettings(); //load settings from JSON file in /data/
+            //Output success message when Loading settings is complete without errors
+            if (chanNumError == false && dataSourceError == false) {
+              outputSuccess("Settings Loaded!");
+            } else if (chanNumError == true) {
+              outputError("Load settings error: Invalid number of channels in JSON");
+            } else {
+              outputError("Load settings error: invalid data source");
+            }
+          }
+          toggleVisibility(); //shut configSelector if something is selected
+        }
+      }
+    }
+  }
+
+  void screenResized(){
+    //update position of outer box and buttons
+    int oldX = x;
+    x = width - 3*2 - 60*3;
+    int dx = oldX - x;
+    for(int i = 0; i < configOptions.size(); i++){
+      configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+    }
 
   }
 
-}
+  void toggleVisibility(){
+    isVisible = !isVisible;
+    if(systemMode >= SYSTEMMODE_POSTINIT){
+      if(isVisible) {
+        //the very convoluted way of locking all controllers of a single controlP5 instance...
+        for(int i = 0; i < wm.widgets.size(); i++){
+          for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+            wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+          }
+        }
+
+      } else {
+        //the very convoluted way of unlocking all controllers of a single controlP5 instance...
+        for(int i = 0; i < wm.widgets.size(); i++) {
+          for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
+            wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+          }
+        }
+      }
+    }
+  }
+
+  void addConfigButtons(){
+
+    //FIRST ROW
+
+    //setup button 1 -- Save Settings
+    int buttonNumber = 0;
+    Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save Settings");
+    tempConfigButton.setFont(p5, 12);
+    configOptions.add(tempConfigButton);
+    
+    //setup button 2 -- Load Settings
+    buttonNumber = 1;
+    h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+    tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load Settings");
+    tempConfigButton.setFont(p5, 12);
+    configOptions.add(tempConfigButton);
+
+  }
+
+  void updateConfigOptionButtons(){
+  //dropdown is static, so no need to update
+  }
+
+}  
 
 class TutorialSelector{
 
@@ -772,10 +942,6 @@ class TutorialSelector{
     tempTutorialButton.setFont(p5, 12);
     tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
     tutorialOptions.add(tempTutorialButton);
-
-  }
-
-  void updateLayoutOptionButtons(){
 
   }
 

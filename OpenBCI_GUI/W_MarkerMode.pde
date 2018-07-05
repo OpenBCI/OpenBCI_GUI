@@ -51,6 +51,7 @@ class W_MarkerMode extends Widget {
   int synthCount;
 
   boolean OBCI_inited= true;
+  boolean markerModeOn = false;
 
   Button markerModeButton;
 
@@ -146,15 +147,22 @@ class W_MarkerMode extends Widget {
 
       fill(50);
       textFont(p3, 16);
-
-      if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {  // LIVE
+    
+      if (eegDataSource == DATASOURCE_CYTON && cyton.getBoardMode() != BOARD_MODE_MARKER) {
+        markerModeButton.setString("Turn Marker On"); 
+        markerModeButton.draw();
+      } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
         markerModeButton.draw();
         drawMarkerValues();
         drawMarkerWave();
-      }
-      else {  // PLAYBACK
+      } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {  // PLAYBACK
         drawMarkerValues();
         drawMarkerWave2();
+      } else {    
+        markerModeButton.setString("Turn Marker Off");
+        markerModeButton.draw();
+        drawMarkerValues();
+        drawMarkerWave();
       }
     }
     popStyle();
@@ -211,11 +219,20 @@ class W_MarkerMode extends Widget {
           cyton.setBoardMode(BOARD_MODE_MARKER);
           output("Starting to read markers");
           markerModeButton.setString("Turn Marker Off");
+          w_accelerometer.accelerometerModeOn = false;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_digitalRead.digitalReadOn = false;
         } else {
           cyton.setBoardMode(BOARD_MODE_DEFAULT);
           output("Starting to read accelerometer");
           markerModeButton.setString("Turn Marker On");
+          w_accelerometer.accelerometerModeOn = true;
+          w_analogRead.analogReadOn = false;
+          w_pulsesensor.analogReadOn = false;
+          w_digitalRead.digitalReadOn = false;
         }
+        markerModeOn = !markerModeOn;
       } 
     }
     markerModeButton.setIsActive(false);

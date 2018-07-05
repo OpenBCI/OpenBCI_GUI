@@ -79,8 +79,8 @@ final static String TCP_CMD_CONNECT = "c";
 final static String TCP_CMD_COMMAND = "k";
 final static String TCP_CMD_DISCONNECT = "d";
 final static String TCP_CMD_DATA = "t";
-final static String TCP_CMD_ERROR = "e"; //<>// //<>//
-final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
+final static String TCP_CMD_ERROR = "e"; //<>//
+final static String TCP_CMD_EXAMINE = "x"; //<>//
 final static String TCP_CMD_IMPEDANCE = "i";
 final static String TCP_CMD_LOG = "l";
 final static String TCP_CMD_PROTOCOL = "p";
@@ -368,6 +368,7 @@ class Hub {
         break;
       case 'r':
         processRegisterQuery(msg);
+        checkForSuccessTS = msg;
         break;
       case 'm':
         processSDCard(msg);

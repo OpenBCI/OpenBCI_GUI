@@ -268,6 +268,61 @@ Robot rob3115;
 
 PApplet ourApplet;
 
+///////////Variables from HardwareSettingsController. This fixes a number of issues.
+int numSettingsPerChannel = 6; //each channel has 6 different settings
+char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+char[][] impedanceCheckValues = new char [nchan][2];
+//[Number of Channels] x 6 array of buttons for channel settings
+//Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
+
+//default layout variables
+int layoutSelected;
+int currentLayout;
+
+////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
+//Notch and Bandpass filter variables for save
+int dataProcessingNotchSave = 0;
+int dataProcessingBandpassSave = 3;
+
+//Time Series settings
+int tsVertScaleSave = 3;
+int tsHorizScaleSave = 2;
+String checkForSuccessTS;
+
+//FFT plot settings, 
+int fftMaxFrqSave = 2;
+int fftMaxuVSave = 2;
+int fftLogLinSave = 0;
+int fftSmoothingSave = 3;
+int fftFilterSave = 0;
+
+//Analog Read settings
+int arVertScaleSave = 5; //updates in VertScale_AR()
+int arHorizScaleSave = 2; //updates in Duration_AR()
+
+//Headplot settings
+int hpIntensitySave = 2;
+int hpPolaritySave = 0;
+int hpContoursSave = 0;
+int hpSmoothingSave = 3;
+
+//EMG settings
+int emgSmoothingSave = 4;
+int emguVLimSave = 2;
+int emgCreepSave = 3;
+int emgMinDeltauVSave = 1;
+
+//Focus widget settings
+int focusThemeSave = 0;
+int focusKeySave = 0;
+
+//default data types for streams 1-4 in Networking widget
+int nwDataType1 = 0;
+int nwDataType2 = 0;
+int nwDataType3 = 0;
+int nwDataType4 = 0;
+int nwProtocolSave = 0;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -368,9 +423,9 @@ void setup() {
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
-
+  
   // UDPMarker functionality
-  // Setup the UDP receiver
+  // Setup the UDP receiver // This needs to be done only when marker mode is enabled 
   int portRX = 51000;  // this is the UDP port the application will be listening on
   String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
@@ -884,12 +939,27 @@ void haltSystem() {
 
   stopRunning();  //stop data transfer
 
-  if(cyton.isPortOpen()) {
-    if (w_pulsesensor.analogReadOn) {
-      hub.sendCommand("/0");
-      println("Stopping Analog Read to read accelerometer");
+  if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
+    if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      output("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;
       w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
       w_pulsesensor.analogReadOn = false;
+      w_analogRead.analogModeButton.setString("Turn Analog Read On");
+      w_analogRead.analogReadOn = false;
+    } else if (w_digitalRead.digitalReadOn) {
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      output("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;
+      w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
+      w_digitalRead.digitalReadOn = false;
+    } else if (w_markermode.markerModeOn) {
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      output("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;      
+      w_markermode.markerModeButton.setString("Turn Marker On");
+      w_markermode.markerModeOn = false;
     }
   }
 

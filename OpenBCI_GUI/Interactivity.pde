@@ -53,7 +53,7 @@ void parseKey(char val) {
       else if(drawAccel){
         drawAccel = false;
         drawPulse = true;
-        drawHead = false;
+        drawHead = false; 
         drawEMG = false;
       }
       else if(drawPulse){
@@ -236,21 +236,57 @@ void parseKey(char val) {
       }
       break;
 
-    //other controls
+    //other controls   
     case 's':
       println("case s...");
       stopRunning();
-
-      // stopButtonWasPressed();
+      //stopButtonWasPressed();
       break;
+     
     case 'b':
       println("case b...");
       startRunning();
-      // stopButtonWasPressed();
+      //stopButtonWasPressed();
       break;
-    case 'n':
-      println("cyton: " + cyton);
+
+    //Lowercase k sets Bias Don't Include all channels
+    case 'k':
+      for (int i = 0; i < nchan; i++) { //for every channel
+        //BIAS off all channels
+        channelSettingValues[i][3] = '0';
+        println ("chan " + i + " bias don't include");
+      }
       break;
+    //Lowercase l sets Bias Include all channels
+    case 'l':
+      for (int i = 0; i < nchan; i++) { //for every channel
+        //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
+        //BIAS on all channells
+        channelSettingValues[i][3] = '1';
+        println ("chan " + i + " bias include");
+      }
+      break;
+         
+    ///////////////////// Save settings lowercase n
+    case 'n':      
+      println("Save key pressed!"); 
+      saveGUISettings();
+      outputSuccess("Settings Saved!");    
+      break;
+      
+    ///////////////////// Load settings uppercase N     
+    case 'N':
+      println("Load key pressed!");
+      loadGUISettings();
+      //Output message when Loading settings is complete
+      if (chanNumError == false && dataSourceError == false) {
+        outputSuccess("Settings Loaded!");
+      } else if (chanNumError == true) {
+        outputError("Load settings error: Invalid number of channels in JSON");
+      } else {
+        outputError("Load settings error: invalid data source");
+      }   
+      break;  
 
     case '?':
       cyton.printRegisters();
@@ -263,7 +299,7 @@ void parseKey(char val) {
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
       break;
-
+ 
     // //change the state of the impedance measurements...activate the N-channels
     // case 'A':
     //   Ichan = 1; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -315,7 +351,6 @@ void parseKey(char val) {
     // case '<':
     //   Ichan = 8; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
     //   break;
-
 
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";
