@@ -962,7 +962,7 @@ void haltSystem() {
 
   stopRunning();  //stop data transfer
   
-  //Save a snapshot of User's GUI settings the system is stopped. This will be loaded on next Start System.
+  //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
   if (systemMode == SYSTEMMODE_POSTINIT) saveGUISettings(userSettingsFileLocation);
   
   if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
