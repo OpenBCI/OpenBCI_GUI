@@ -1,3 +1,24 @@
+# v3.4.0
+
+Use OpenBCIHub v1.4.4 please.
+
+### New Features
+
+* Save/Load your favorite GUI settings via dropdown menu or keyboard shortcut (thanks @retiutut)
+* Auto-Load settings when system starts
+* Auto-Save settings when system stops
+* Default settings option added to Settings dropdown
+* Pulse streaming added to Networking
+* Added fourth stream to OSC mode
+
+# v3.3.2
+
+Use OpenBCIHub v1.4.4 please.
+
+### Bug Fixes
+
+* Fixed bug where ganglion accel did not work
+
 # v3.3.1
 
 Use OpenBCIHub v1.4.2 please.

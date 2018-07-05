@@ -289,7 +289,7 @@ int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
 String checkForSuccessTS;
 
-//FFT plot settings, 
+//FFT plot settings,
 int fftMaxFrqSave = 2;
 int fftMaxuVSave = 2;
 int fftLogLinSave = 0;
@@ -322,6 +322,12 @@ int nwDataType2 = 0;
 int nwDataType3 = 0;
 int nwDataType4 = 0;
 int nwProtocolSave = 0;
+
+//default configuration settings file location and file name variables
+final String userSettingsFileLocation = "data/UserSettingsFile.json";
+final String defaultSettingsFileLocation = "data/DefaultSettingsFile.json";
+String saveSettingsFileName;
+String loadSettingsFileName;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -423,9 +429,9 @@ void setup() {
   buttonHelpText = new ButtonHelpText();
 
   myPresentation = new Presentation();
-  
+
   // UDPMarker functionality
-  // Setup the UDP receiver // This needs to be done only when marker mode is enabled 
+  // Setup the UDP receiver // This needs to be done only when marker mode is enabled
   int portRX = 51000;  // this is the UDP port the application will be listening on
   String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
@@ -502,8 +508,7 @@ private void prepareExitHandler () {
         } else {
           System.out.println("FAILED TO SHUTDOWN HUB");
         }
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         ex.printStackTrace(); // not much else to do at this point
       }
     }
@@ -822,7 +827,25 @@ void initSystem() {
   }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-
+  
+  //Take a snapshot of the default GUI settings before loading User settings!
+  saveGUISettings(defaultSettingsFileLocation);
+  
+  //Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization
+  loadGUISettings(userSettingsFileLocation);
+  
+  //Output messages when Loading settings is complete  
+  if (chanNumError == false && dataSourceError == false) {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
+    outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
+  } else if (chanNumError == true) {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
+    outputSuccess("Default Settings Loaded!"); //Show a success message for loading Default Settings
+  } else {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
+    outputSuccess("Default Settings Loaded!"); //Show a success message for loading Default Settings
+  }
+  
   //reset init variables
   midInit = false;
   abandonInit = false;
@@ -938,7 +961,10 @@ void haltSystem() {
   }
 
   stopRunning();  //stop data transfer
-
+  
+  //Save a snapshot of User's GUI settings the system is stopped. This will be loaded on next Start System.
+  if (systemMode == SYSTEMMODE_POSTINIT) saveGUISettings(userSettingsFileLocation);
+  
   if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
     if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
       cyton.setBoardMode(BOARD_MODE_DEFAULT);
@@ -957,7 +983,7 @@ void haltSystem() {
     } else if (w_markermode.markerModeOn) {
       cyton.setBoardMode(BOARD_MODE_DEFAULT);
       output("Starting to read accelerometer");
-      w_accelerometer.accelerometerModeOn = true;      
+      w_accelerometer.accelerometerModeOn = true;
       w_markermode.markerModeButton.setString("Turn Marker On");
       w_markermode.markerModeOn = false;
     }
@@ -1301,7 +1327,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.3.1\nMay 2018", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.4.0\nJuly 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
@@ -1362,3 +1388,37 @@ PVector getWindowLocation(String renderer) {
   return l;
 }
 //END OF CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
+
+// Select file to save custom settings using dropdown in TopNav.pde
+void saveConfigFile(File selection) {
+  if (selection == null) {
+    println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
+  } else {
+    println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
+    output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
+    saveSettingsFileName = selection.getAbsolutePath(); 
+    saveGUISettings(saveSettingsFileName); //save current settings to JSON file in SavedData
+    outputSuccess("Settings Saved!"); //print success message to screen
+    saveSettingsFileName = null; //reset this variable for future use
+  }
+}
+// Select file to load custom settings using dropdown in TopNav.pde
+void loadConfigFile(File selection) {
+  if (selection == null) {
+    println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
+  } else {
+    println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
+    output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
+    loadSettingsFileName = selection.getAbsolutePath();
+    loadGUISettings(loadSettingsFileName); //load settings from JSON file in /data/
+    //Output success message when Loading settings is complete without errors
+    if (chanNumError == false && dataSourceError == false) {
+      outputSuccess("Settings Loaded!");
+    } else if (chanNumError == true) {
+      outputError("Channel Number Error:  Loading Default Settings");
+    } else {
+      outputError("Data Source Error: Loading Default Settings");
+    }
+    loadSettingsFileName = null; //reset this variable for future use
+  }
+}

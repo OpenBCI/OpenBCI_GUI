@@ -159,7 +159,7 @@ Boolean dataSourceError = false;
 ///////////////////////////////  
 //      Save GUI Settings    //
 ///////////////////////////////  
-void saveGUISettings() {
+void saveGUISettings(String saveGUISettingsFileLocation) {
   
   //Set up a JSON array
   saveSettingsJSONData = new JSONObject();
@@ -172,8 +172,8 @@ void saveGUISettings() {
   saveSettingsJSONData.setJSONObject(kJSONKeyDataInfo, saveNumChannelsData);
   
   ////////////////////////////////////////////////////////////////////////////////////
-  //                 Case for saving TS settings in Live Data Modes                 //
-  if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  {
+  //                 Case for saving TS settings in Cyton Data Modes                //
+  if (eegDataSource == DATASOURCE_CYTON)  {
     //Set up an array to store channel settings
     JSONArray saveTSSettingsJSONArray = new JSONArray();
     //Save all of the channel settings for number of Time Series channels being used
@@ -215,9 +215,9 @@ void saveGUISettings() {
     } //end all channels for loop
     saveSettingsJSONData.setJSONArray(kJSONKeyChannelSettings, saveTSSettingsJSONArray); //Set the JSON array for all channels
   }
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //              Case for saving TS settings when in Synthetic or Playback data modes                       //
-  if(eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC) {
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
+  if (eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_GANGLION) {
     //Set up an array to store channel settings
     JSONArray saveTSSettingsJSONArray = new JSONArray();
     for (int i = 0; i < slnchan; i++) { //For all channels... 
@@ -246,12 +246,14 @@ void saveGUISettings() {
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
   saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
   saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
-  saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
-  saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
-  saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
-  saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
-  saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
-  saveGlobalSettings.setInt("Board Mode", cyton.curBoardMode);
+  saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);    
+  if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+    saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
+    saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
+    saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
+    saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
+    saveGlobalSettings.setInt("Board Mode", cyton.curBoardMode);
+  }
   saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
   
   ///////////////////////////////////////////////Setup new JSON object to save FFT settings
@@ -400,8 +402,8 @@ void saveGUISettings() {
   
   int numActiveWidgets = 0;
   //Save what Widgets are active and respective Container number (see Containers.pde)
-  for(int i = 0; i < wm.widgets.size(); i++){ //increment through all widgets
-    if(wm.widgets.get(i).isActive){ //If a widget is active...
+  for (int i = 0; i < wm.widgets.size(); i++){ //increment through all widgets
+    if (wm.widgets.get(i).isActive){ //If a widget is active...
       numActiveWidgets++; //increment numActiveWidgets
       //println("Widget" + i + " is active");
       // activeWidgets.add(i); //keep track of the active widget
@@ -415,7 +417,7 @@ void saveGUISettings() {
   } 
   println(numActiveWidgets + " active widgets saved!");
   //Print what widgets are in the containers used by current layout for only the number of active widgets
-  //for(int i = 0; i < numActiveWidgets; i++){
+  //for (int i = 0; i < numActiveWidgets; i++){
     //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
     //println("Container " + containerCounter + " is available"); //For debugging          
   //}    
@@ -425,24 +427,24 @@ void saveGUISettings() {
   ///ADD more global settings above this line in the same formats as above/////////
 
   //Let's save the JSON array to a file!
-  saveJSONObject(saveSettingsJSONData, "data/UserSettingsFile.json");
+  saveJSONObject(saveSettingsJSONData, saveGUISettingsFileLocation);
 
 }  //End of Save GUI Settings function
 
-///////////////////////////////  
-//      Load GUI Settings    //
-///////////////////////////////  
-void loadGUISettings() {  
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+//                                                Load GUI Settings                                                       //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+void loadGUISettings (String loadGUISettingsFileLocation) {  
   //Load all saved User Settings from a JSON file
-  loadSettingsJSONData = loadJSONObject("UserSettingsFile.json");
+  loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
   //Check the number of channels saved to json first!
   JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject("dataInfo"); 
   numChanloaded = loadDataSettings.getInt("Channels");
   //Print error if trying to load a different number of channels
   if (numChanloaded != slnchan) {
-    output("Channel Number Error..."); 
-    println("Channels being loaded don't match channels being used!");
+    output("Channel Number Error:  Loading Default Settings"); 
+    println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
     chanNumError = true; 
     return;
   } else {
@@ -453,8 +455,8 @@ void loadGUISettings() {
   println("Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
   //Print error if trying to load a different data source (ex. Live != Synthetic)
   if (loadDatasource != eegDataSource) {
-    output("Data Source Error..."); 
-    println("Data source being loaded doesn't match current data source.");
+    output("Data Source Error: Loading Default Settings");
+    println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
     dataSourceError = true; 
     return;
   } else {
@@ -465,7 +467,7 @@ void loadGUISettings() {
  JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings"); 
  
  //Case for loading time series settings in Live Data mode
- if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON)  { 
+ if (eegDataSource == DATASOURCE_CYTON)  { 
     //parse the channel settings first for only the number of channels being used
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
@@ -508,8 +510,8 @@ void loadGUISettings() {
     } //end case for all channels
   } //end Cyton/Ganglion case
     
-  //////////Case for loading Time Series settings when in Synthetic or Playback data modes
-  if(eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
+  //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
+  if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
     //parse the channel settings first for only the number of channels being used
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
@@ -538,7 +540,9 @@ void loadGUISettings() {
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
   loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
   loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
-  loadBoardMode = loadGlobalSettings.getInt("Board Mode");
+  if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+    loadBoardMode = loadGlobalSettings.getInt("Board Mode");
+  }
   //Load more global settings after this line, if needed
   
   //Create a string array to print global settings to console
@@ -696,8 +700,8 @@ void loadGUISettings() {
   
 
   //int numActiveWidgets = 0; //reset the counter
-  for(int w = 0; w < wm.widgets.size(); w++){ //increment through all widgets
-    if(wm.widgets.get(w).isActive){ //If a widget is active...
+  for (int w = 0; w < wm.widgets.size(); w++){ //increment through all widgets
+    if (wm.widgets.get(w).isActive){ //If a widget is active...
       println("Deactivating widget [" + w + "]");
       wm.widgets.get(w).isActive = false;
       //numActiveWidgets++; //counter the number of de-activated widgets
@@ -734,7 +738,9 @@ void loadGUISettings() {
   //println(dataProcessingBPArray[loadBandpasssetting]);
   
   //Apply Board Mode
-  applyBoardMode();
+  if (eegDataSource == DATASOURCE_CYTON){ //Apply Board Mode to Cyton Only
+    applyBoardMode();
+  }
   
   //Apply Framerate
   frameRateCounter = loadFramerate;
@@ -762,45 +768,28 @@ void loadGUISettings() {
   
   //Apply Time Series Settings Last!!!
   //Case for loading time series settings in Live Data mode last. Takes 100-105 ms per channel to ensure success.
-  if(eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
+  if (eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
   
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void applyBoardMode()  {
+void applyBoardMode() {
   //Apply Board Mode
-  switch(loadBoardMode){  //Then apply 
+  switch(loadBoardMode) { //Switch-case for loaded board mode
     case BOARD_MODE_DEFAULT:
-      if(eegDataSource == DATASOURCE_GANGLION){ //This code has been copied from Accelerometer
-        if(ganglion.isAccelModeActive()){
-          ganglion.accelStop();
-
-          w_accelerometer.accelModeButton.setString("Turn Accel On");
-          w_accelerometer.accelerometerModeOn = false;
-        } else{
-          ganglion.accelStart();
-          w_accelerometer.accelModeButton.setString("Turn Accel Off");
-          w_accelerometer.accelerometerModeOn = true;
-          w_analogRead.analogReadOn = false;
-          w_pulsesensor.analogReadOn = false;
-          w_digitalRead.digitalReadOn = false;
-          w_markermode.markerModeOn = false;
-        }
-      } else if (eegDataSource == DATASOURCE_CYTON) {
-        cyton.setBoardMode(BOARD_MODE_DEFAULT);
-        outputSuccess("Starting to read accelerometer");
-        w_accelerometer.accelerometerModeOn = true;
-        w_analogRead.analogReadOn = false;
-        w_pulsesensor.analogReadOn = false;
-        w_digitalRead.digitalReadOn = false;
-        w_markermode.markerModeOn = false;
-      }
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      //outputSuccess("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;
+      w_analogRead.analogReadOn = false;
+      w_pulsesensor.analogReadOn = false;
+      w_digitalRead.digitalReadOn = false;
+      w_markermode.markerModeOn = false;
       break;
     case BOARD_MODE_DEBUG: //Not being used currently
       break;
     case BOARD_MODE_ANALOG:
-      if(cyton.isPortOpen()) { //This code has been copied from AnalogRead
+      if (cyton.isPortOpen()) { //This code has been copied from AnalogRead
         if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
           cyton.setBoardMode(BOARD_MODE_ANALOG);
           if (cyton.isWifi()) {
@@ -821,7 +810,7 @@ void applyBoardMode()  {
       }
       break;
     case BOARD_MODE_DIGITAL:
-      if(cyton.isPortOpen()) { //This code has been copied from DigitalRead
+      if (cyton.isPortOpen()) { //This code has been copied from DigitalRead
         if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
           cyton.setBoardMode(BOARD_MODE_DIGITAL);
           if (cyton.isWifi()) {
@@ -841,7 +830,7 @@ void applyBoardMode()  {
       }
       break;
     case BOARD_MODE_MARKER:
-      if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
+      if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
         if (cyton.getBoardMode() != BOARD_MODE_MARKER) {
           cyton.setBoardMode(BOARD_MODE_MARKER);
           output("Starting to read markers");

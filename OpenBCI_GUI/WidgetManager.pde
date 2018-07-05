@@ -84,7 +84,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   addWidget(w_focus, w);
   // println("  setupWidgets focus widget -- " + millis());
 
-  //only instantiate this widget if you are using a Cyton board for live streaming
+  //only instantiate these widgets if you are using a Cyton board for live streaming
   if(eegDataSource != DATASOURCE_GANGLION){
     w_pulsesensor = new W_PulseSensor(_this);
     w_pulsesensor.setTitle("Pulse Sensor");
@@ -102,7 +102,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_markermode = new W_MarkerMode(_this);
     w_markermode.setTitle("Marker Mode");
     addWidget(w_markermode, w);
-
   }
 
   w_template1 = new W_template(_this);
