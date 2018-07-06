@@ -270,21 +270,21 @@ void parseKey(char val) {
     ///////////////////// Save settings lowercase n
     case 'n':      
       println("Save key pressed!"); 
-      saveGUISettings();
+      saveGUISettings(userSettingsFileLocation); //save settings to default settings file in /data/
       outputSuccess("Settings Saved!");    
       break;
       
     ///////////////////// Load settings uppercase N     
     case 'N':
       println("Load key pressed!");
-      loadGUISettings();
+      loadGUISettings(userSettingsFileLocation); //load settings from default settings file in /data/
       //Output message when Loading settings is complete
       if (chanNumError == false && dataSourceError == false) {
         outputSuccess("Settings Loaded!");
       } else if (chanNumError == true) {
-        outputError("Load settings error: Invalid number of channels in JSON");
+        outputError("Channel Number Error:  Loading Default Settings");
       } else {
-        outputError("Load settings error: invalid data source");
+        outputError("Data Source Error: Loading Default Settings");
       }   
       break;  
 

@@ -4,7 +4,12 @@ Use OpenBCIHub v1.4.4 please.
 
 ### New Features
 
-* Save and load your favorite GUI settings (thanks @retiutut)
+* Save/Load your favorite GUI settings via dropdown menu or keyboard shortcut (thanks @retiutut)
+* Auto-Load settings when system starts
+* Auto-Save settings when system stops
+* Default settings option added to Settings dropdown
+* Pulse streaming added to Networking
+* Added fourth stream to OSC mode
 
 # v3.3.2
 
