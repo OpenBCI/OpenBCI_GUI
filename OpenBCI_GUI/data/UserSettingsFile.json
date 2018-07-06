@@ -17,7 +17,7 @@
   },
   "dataInfo": {
     "Data Source": 3,
-    "Channels": 8
+    "Channels": 16
   },
   "fft": {
     "FFT_LogLin": 0,
@@ -90,6 +90,38 @@
     },
     {
       "Channel_Number": 8,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 9,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 10,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 11,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 12,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 13,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 14,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 15,
+      "Active": 0
+    },
+    {
+      "Channel_Number": 16,
       "Active": 0
     }
   ],

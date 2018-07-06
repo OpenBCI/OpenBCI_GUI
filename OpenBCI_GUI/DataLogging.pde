@@ -52,8 +52,8 @@ void openNewLogFileBDF(String _fileName) {
   fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
 
   output_fname = fileoutput_bdf.fname;
-  println("cyton: openNewLogFile: opened BDF output file: " + output_fname);
-  output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console 
+  //output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
 /**
@@ -70,8 +70,8 @@ void openNewLogFileODF(String _fileName) {
   fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
 
   output_fname = fileoutput_odf.fname;
-  println("cyton: openNewLogFile: opened ODF output file: " + output_fname);
-  output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
+  println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
+  //output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
 }
 
 /**

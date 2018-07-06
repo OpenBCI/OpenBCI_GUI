@@ -443,7 +443,6 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   numChanloaded = loadDataSettings.getInt("Channels");
   //Print error if trying to load a different number of channels
   if (numChanloaded != slnchan) {
-    output("Channel Number Error:  Loading Default Settings"); 
     println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
     chanNumError = true; 
     return;
@@ -455,7 +454,6 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   println("Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
   //Print error if trying to load a different data source (ex. Live != Synthetic)
   if (loadDatasource != eegDataSource) {
-    output("Data Source Error: Loading Default Settings");
     println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
     dataSourceError = true; 
     return;
