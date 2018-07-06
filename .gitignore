@@ -9,9 +9,8 @@ OpenBCI_GUI/build/source/*.java
 OpenBCI_GUI/SavedData
 OpenBCI_GUI/SavedData/EEG_Data/SDconverted-*
 OpenBCI_GUI/data/EEG_Data/*
-OpenBCI_GUI/data/DefaultSettingsFile.json
-OpenBCI_GUI/data/UserSettingsFile.json
+OpenBCI_GUI/data/*.json
 OpenBCI_GUI/application.*.zip
 OpenBCI_GUI/application.*
 *.autosave
-*.json
+
