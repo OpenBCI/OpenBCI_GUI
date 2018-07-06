@@ -14,3 +14,5 @@ OpenBCI_GUI/data/UserSettingsFile.json
 OpenBCI_GUI/application.*.zip
 OpenBCI_GUI/application.*
 *.autosave
+OpenBCI_GUI/data/UserSettingsFile.json
+OpenBCI_GUI/data/DefaultSettingsFile.json
