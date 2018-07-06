@@ -767,8 +767,8 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadApplyWidgetDropdownText(); 
   
   //Apply Time Series Settings Last!!!
-  //Case for loading time series settings in Live Data mode last. Takes 100-105 ms per channel to ensure success.
-  if (eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
+  //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
+  if (eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
   
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -893,12 +893,14 @@ void loadApplyWidgetDropdownText() {
   UnfiltFilt(fftFilterLoad);
      w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
   
-  ////////Apply Analog Read settings
-  VertScale_AR(loadAnalogReadVertScale);
-    w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);
-
-  Duration_AR(loadAnalogReadHorizScale);
-    w_analogRead.cp5_widget.getController("Duration_AR").getCaptionLabel().setText(arHorizScaleArray[loadAnalogReadHorizScale]);
+  if (eegDataSource == DATASOURCE_CYTON){ //Apply Anolog Read dropdowns to Live Cyton Only
+    ////////Apply Analog Read settings
+    VertScale_AR(loadAnalogReadVertScale);
+      w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);
+  
+    Duration_AR(loadAnalogReadHorizScale);
+      w_analogRead.cp5_widget.getController("Duration_AR").getCaptionLabel().setText(arHorizScaleArray[loadAnalogReadHorizScale]);
+  }
   
   ////////////////////////////Apply Headplot settings
   Intensity(hpIntensityLoad);
