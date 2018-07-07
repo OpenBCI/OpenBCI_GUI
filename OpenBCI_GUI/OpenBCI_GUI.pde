@@ -329,6 +329,7 @@ final String defaultSettingsFileLocation = "data/DefaultSettingsFile.json";
 String saveSettingsFileName;
 String loadSettingsFileName;
 String controlEventDataSource; //Used for output message on system start
+Boolean errorUserSettingsNotFound = false; //For error catching
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -832,8 +833,6 @@ void initSystem() {
   //Take a snapshot of the default GUI settings before loading User settings!
   saveGUISettings(defaultSettingsFileLocation);
   
-  //For error catching
-  Boolean errorUserSettingsNotFound = false;
   //Try Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization. Otherwise, load default settings.
   try {  
     loadGUISettings(userSettingsFileLocation);
@@ -848,10 +847,10 @@ void initSystem() {
   if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
     outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
-  } else if (chanNumError == true) {
+  } else if (chanNumError) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
     output("The new data source is " + controlEventDataSource + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-  } else if (dataSourceError == true) {
+  } else if (dataSourceError) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
     output("The new data source is " + controlEventDataSource + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
   } else {

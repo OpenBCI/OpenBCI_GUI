@@ -50,8 +50,9 @@ class W_fft extends Widget {
   int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/getSampleRateSafe()));   // maxim value of FFT index
   int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
   
-  //added to save settings
+  //Used to save settings
   int fftMaxFrqSave = xLim;
+  int fftMaxuVSave = yLim;
 
   W_fft(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)

@@ -435,8 +435,13 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
 //                                                Load GUI Settings                                                       //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
 void loadGUISettings (String loadGUISettingsFileLocation) {  
-  //Load all saved User Settings from a JSON file
-  loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
+  //Load all saved User Settings from a JSON file if it exists
+  if (!errorUserSettingsNotFound) {
+    loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
+  } else {
+    outputError("Load settings error: " + userSettingsFileLocation + " not found. ");
+    return;
+  }
 
   //Check the number of channels saved to json first!
   JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject("dataInfo"); 
