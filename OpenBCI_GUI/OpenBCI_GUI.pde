@@ -324,8 +324,8 @@ int nwDataType4 = 0;
 int nwProtocolSave = 0;
 
 //default configuration settings file location and file name variables
-final String userSettingsFileLocation = "data/UserSettingsFile.json";
-final String defaultSettingsFileLocation = "data/DefaultSettingsFile.json";
+final String userSettingsFileLocation = "SavedData/Settings/UserSettingsFile.json";
+final String defaultSettingsFileLocation = "SavedData/Settings/DefaultSettingsFile.json";
 String saveSettingsFileName;
 String loadSettingsFileName;
 String controlEventDataSource; //Used for output message on system start

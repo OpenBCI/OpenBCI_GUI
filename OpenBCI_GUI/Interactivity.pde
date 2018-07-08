@@ -272,7 +272,6 @@ void parseKey(char val) {
       println("Save key pressed!"); 
       saveGUISettings(userSettingsFileLocation); //save settings to default settings file in /data/
       outputSuccess("Settings Saved!");
-      println("DEBUG++" + getNfftSafe());
       break;
       
     ///////////////////// Load settings uppercase N     
@@ -358,7 +357,7 @@ void parseKey(char val) {
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";
      println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-     saveFrame("./SavedData/" + picfname);    // take a shot of that!
+     saveFrame("./SavedData/Screenshots/" + picfname);    // take a shot of that!
      break;
 
     default:
