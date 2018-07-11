@@ -829,12 +829,12 @@ void initSystem() {
   }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-   
+
   //Take a snapshot of the default GUI settings before loading User settings!
   saveGUISettings(defaultSettingsFileLocation);
-  
+
   //Try Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization. Otherwise, load default settings.
-  try {  
+  try {
     loadGUISettings(userSettingsFileLocation);
     errorUserSettingsNotFound = false;
   } catch (Exception e) {
@@ -842,8 +842,8 @@ void initSystem() {
     println(userSettingsFileLocation + " not found. Save settings with keyboard 'n' or using dropdown menu.");
     errorUserSettingsNotFound = true;
   }
-  
-  //Output messages when Loading settings is complete  
+
+  //Output messages when Loading settings is complete
   if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
     outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
@@ -857,7 +857,7 @@ void initSystem() {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileLocation + " not found. " + millis()); //Print the error to console
     output("The new data source is " + controlEventDataSource + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
   }
-  
+
   //reset init variables
   midInit = false;
   abandonInit = false;
@@ -973,10 +973,10 @@ void haltSystem() {
   }
 
   stopRunning();  //stop data transfer
-  
+
   //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
   if (systemMode == SYSTEMMODE_POSTINIT) saveGUISettings(userSettingsFileLocation);
-  
+
   if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
     if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
       cyton.setBoardMode(BOARD_MODE_DEFAULT);
@@ -1408,7 +1408,7 @@ void saveConfigFile(File selection) {
   } else {
     println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
     output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
-    saveSettingsFileName = selection.getAbsolutePath(); 
+    saveSettingsFileName = selection.getAbsolutePath();
     saveGUISettings(saveSettingsFileName); //save current settings to JSON file in SavedData
     outputSuccess("Settings Saved!"); //print success message to screen
     saveSettingsFileName = null; //reset this variable for future use
