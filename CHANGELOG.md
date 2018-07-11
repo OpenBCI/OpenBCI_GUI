@@ -10,6 +10,22 @@ Use OpenBCIHub v1.4.4 please.
 * Default settings option added to Settings dropdown
 * Pulse streaming added to Networking
 * Added fourth stream to OSC mode
+* Added plist file to add settings for information when app is built (thanks @retiutut)
+
+## Alpha 1
+
+### Improvements
+
+* Moved the JSON user settings to SavedData
+* Added Info.plist
+
+### Bug Fixes
+
+* Fixed bug where app crashed on Ganglion load
+
+## Alpha 0
+
+Initial Release
 
 # v3.3.2
 
