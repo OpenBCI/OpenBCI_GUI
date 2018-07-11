@@ -324,10 +324,12 @@ int nwDataType4 = 0;
 int nwProtocolSave = 0;
 
 //default configuration settings file location and file name variables
-final String userSettingsFileLocation = "data/UserSettingsFile.json";
-final String defaultSettingsFileLocation = "data/DefaultSettingsFile.json";
+final String userSettingsFileLocation = "SavedData/Settings/UserSettingsFile.json";
+final String defaultSettingsFileLocation = "SavedData/Settings/DefaultSettingsFile.json";
 String saveSettingsFileName;
 String loadSettingsFileName;
+String controlEventDataSource; //Used for output message on system start
+Boolean errorUserSettingsNotFound = false; //For error catching
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -827,23 +829,33 @@ void initSystem() {
   }
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-  
+   
   //Take a snapshot of the default GUI settings before loading User settings!
   saveGUISettings(defaultSettingsFileLocation);
   
-  //Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization
-  loadGUISettings(userSettingsFileLocation);
+  //Try Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization. Otherwise, load default settings.
+  try {  
+    loadGUISettings(userSettingsFileLocation);
+    errorUserSettingsNotFound = false;
+  } catch (Exception e) {
+    println(e.getMessage());
+    println(userSettingsFileLocation + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+    errorUserSettingsNotFound = true;
+  }
   
   //Output messages when Loading settings is complete  
-  if (chanNumError == false && dataSourceError == false) {
+  if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
     outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
-  } else if (chanNumError == true) {
+  } else if (chanNumError) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
-    outputSuccess("Default Settings Loaded!"); //Show a success message for loading Default Settings
-  } else {
+    output("The new data source is " + controlEventDataSource + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
+  } else if (dataSourceError) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
-    outputSuccess("Default Settings Loaded!"); //Show a success message for loading Default Settings
+    output("The new data source is " + controlEventDataSource + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
+  } else {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileLocation + " not found. " + millis()); //Print the error to console
+    output("The new data source is " + controlEventDataSource + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
   }
   
   //reset init variables

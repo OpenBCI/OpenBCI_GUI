@@ -271,7 +271,7 @@ void parseKey(char val) {
     case 'n':      
       println("Save key pressed!"); 
       saveGUISettings(userSettingsFileLocation); //save settings to default settings file in /data/
-      outputSuccess("Settings Saved!");    
+      outputSuccess("Settings Saved!");
       break;
       
     ///////////////////// Load settings uppercase N     
@@ -279,13 +279,15 @@ void parseKey(char val) {
       println("Load key pressed!");
       loadGUISettings(userSettingsFileLocation); //load settings from default settings file in /data/
       //Output message when Loading settings is complete
-      if (chanNumError == false && dataSourceError == false) {
+      if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false) {
         outputSuccess("Settings Loaded!");
-      } else if (chanNumError == true) {
-        outputError("Channel Number Error:  Loading Default Settings");
+      } else if (chanNumError) {
+        outputError("Load Settings Error: Invalid number of channels");
+      } else if (dataSourceError) {
+        outputError("Load Settings Error: Invalid data source");
       } else {
-        outputError("Data Source Error: Loading Default Settings");
-      }   
+        outputError("Load settings error: " + userSettingsFileLocation + " not found. ");
+      }
       break;  
 
     case '?':
@@ -355,7 +357,7 @@ void parseKey(char val) {
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";
      println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-     saveFrame("./SavedData/" + picfname);    // take a shot of that!
+     saveFrame("./SavedData/Screenshots/" + picfname);    // take a shot of that!
      break;
 
     default:

@@ -159,6 +159,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
+    controlEventDataSource = str; //Used for output message on system start
     int newDataSource = int(theEvent.getValue());
 
     if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
@@ -229,7 +230,7 @@ public void controlEvent(ControlEvent theEvent) {
       synthChanButton16.color_notPressed = autoFileName.color_notPressed;
     }
 
-    output("The new data source is " + str + " and NCHAN = [" + nchan + "]");
+    //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
   }
 
   if (theEvent.isFrom("serialList")) {
