@@ -174,9 +174,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-    if (isMac()) {
-      protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-    }
+    protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
     protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
 
@@ -993,9 +991,7 @@ class ControlPanel {
         if (protocolBLEGanglion.isMouseHere()) {
           protocolBLEGanglion.setIsActive(true);
           protocolBLEGanglion.wasPressed = true;
-          if (isMac()) {
-            protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-          }
+          protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
           protocolBLEGanglion.color_notPressed = isSelected_color;
           protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         }
@@ -1003,23 +999,18 @@ class ControlPanel {
         if (protocolWifiGanglion.isMouseHere()) {
           protocolWifiGanglion.setIsActive(true);
           protocolWifiGanglion.wasPressed = true;
-          if (isMac()) {
-            protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-          }
+          protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
           protocolWifiGanglion.color_notPressed = isSelected_color;
           protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
         }
-        if (isMac()) {
-          if (protocolBLED112Ganglion.isMouseHere()) {
-            protocolBLED112Ganglion.setIsActive(true);
-            protocolBLED112Ganglion.wasPressed = true;
-            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
-            protocolBLED112Ganglion.color_notPressed = isSelected_color;
-            protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-          }
+
+        if (protocolBLED112Ganglion.isMouseHere()) {
+          protocolBLED112Ganglion.setIsActive(true);
+          protocolBLED112Ganglion.wasPressed = true;
+          protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+          protocolBLED112Ganglion.color_notPressed = isSelected_color;
+          protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         }
-
-
 
         if (sampleRate200.isMouseHere()) {
           sampleRate200.setIsActive(true);
@@ -1329,24 +1320,22 @@ class ControlPanel {
         outputWarn("Please wait till hub is fully initalized");
       }
     }
-    if (isMac()) {
-      if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-        println("protocolBLED112Ganglion");
 
-        wifiList.items.clear();
-        bleList.items.clear();
-        controlPanel.hideAllBoxes();
-        if (isHubObjectInitialized) {
-          output("Protocol BLED112 Selected for Ganglion");
-          println("Protocol BLED112 Selected for Ganglion");
-          if (hub.isPortOpen()) hub.closePort();
-          ganglion.setInterface(INTERFACE_HUB_BLED112);
-        } else {
-          outputWarn("Please wait till hub is fully initalized");
-        }
+    if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
+      println("protocolBLED112Ganglion");
+
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      if (isHubObjectInitialized) {
+        output("Protocol BLED112 Selected for Ganglion");
+        println("Protocol BLED112 Selected for Ganglion");
+        if (hub.isPortOpen()) hub.closePort();
+        ganglion.setInterface(INTERFACE_HUB_BLED112);
+      } else {
+        outputWarn("Please wait till hub is fully initalized");
       }
     }
-
 
     if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
       println("protocolWifiGanglion");
@@ -1540,10 +1529,8 @@ class ControlPanel {
     refreshWifi.wasPressed = false;
     protocolBLEGanglion.setIsActive(false);
     protocolBLEGanglion.wasPressed = false;
-    if (isMac()) {
-      protocolBLED112Ganglion.setIsActive(false);
-      protocolBLED112Ganglion.wasPressed = false;
-    }
+    protocolBLED112Ganglion.setIsActive(false);
+    protocolBLED112Ganglion.wasPressed = false;
     protocolWifiGanglion.setIsActive(false);
     protocolWifiGanglion.wasPressed = false;
     protocolSerialCyton.setIsActive(false);
@@ -2047,18 +2034,17 @@ class InterfaceBoxGanglion {
     x = _x;
     y = _y;
     w = _w;
-    h = (24 + _padding) * 3;
+    h = (24 + _padding) * 4; // Fix height for extra button for BLED112
     padding = _padding;
 
     if (isMac()) {
-      h = (24 + _padding) * 4; // Fix height for extra button for BLED112
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
       protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
       protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     } else {
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (CSR Dongle)", fontInfo.buttonLabel_size);
-      // protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-      protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+      protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+      protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
   }
 
@@ -2078,9 +2064,7 @@ class InterfaceBoxGanglion {
 
     protocolBLEGanglion.draw();
     protocolWifiGanglion.draw();
-    if (isMac()) {
-      protocolBLED112Ganglion.draw();
-    }
+    protocolBLED112Ganglion.draw();
   }
 };
 
