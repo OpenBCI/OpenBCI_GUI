@@ -25,6 +25,10 @@ Use OpenBCIHub v1.4.5 please.
 
 * Fixed bug where app crashed on Ganglion load
 
+### Known Issues
+
+* Ganglion channels stay activated after load from settings.
+
 ## Alpha 0
 
 Initial Release
