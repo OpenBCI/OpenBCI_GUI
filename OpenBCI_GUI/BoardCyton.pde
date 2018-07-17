@@ -443,7 +443,6 @@ class Cyton {
     }
   }
 
-
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {
     if (isPortOpen()) {
