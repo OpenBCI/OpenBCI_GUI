@@ -52,7 +52,7 @@ void openNewLogFileBDF(String _fileName) {
   fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
 
   output_fname = fileoutput_bdf.fname;
-  println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console 
+  println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
   //output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
@@ -1528,7 +1528,7 @@ void convert16channelLine() {
   if(printNextLine){
     for(int i=0; i<hexNums.length; i++){
       h = hexNums[i];
-      if (h.length()%2 == 0) {  // make sure this is a real number
+      if (h.length()%2 == 0 && h.length() <= 10) {  // make sure this is a real number
         intData[i] = unhex(h);
       } else {
         intData[i] = 0;
@@ -1561,7 +1561,7 @@ void convert16channelLine() {
       }
     }
     // println(h); // use for debugging
-    if (h.length()%2 == 0) {  // make sure this is a real number
+    if (h.length()%2 == 0 && h.length() <= 10) {  // make sure this is a real number
       floatData[i] = unhex(h);
     } else {
       floatData[i] = 0;
