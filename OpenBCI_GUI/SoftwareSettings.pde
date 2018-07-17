@@ -244,10 +244,10 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   saveGlobalSettings.setInt("Framerate", frameRateCounter);
   saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-  saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
-  saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
   saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);    
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+    saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
+    saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
     saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
     saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
     saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
@@ -541,9 +541,9 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
-  loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
-  loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+    loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
+    loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
     loadBoardMode = loadGlobalSettings.getInt("Board Mode");
   }
   //Load more global settings after this line, if needed
