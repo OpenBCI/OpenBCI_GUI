@@ -1,6 +1,6 @@
 # v3.4.0
 
-Use OpenBCIHub v1.4.4 please.
+Use OpenBCIHub v1.4.5 please.
 
 ### New Features
 
@@ -11,6 +11,19 @@ Use OpenBCIHub v1.4.4 please.
 * Pulse streaming added to Networking
 * Added fourth stream to OSC mode
 * Added plist file to add settings for information when app is built (thanks @retiutut)
+* Add BLED112 support for windows and linux
+
+
+## Alpha 2
+
+### Improvements
+
+* Fixed issue where convert from SD card could cause crash #351
+* Fixed issue with accel and playback file.
+
+### Bug Fixes
+
+* Fixed bug where app crashed on Ganglion load
 
 ## Alpha 1
 
@@ -18,10 +31,15 @@ Use OpenBCIHub v1.4.4 please.
 
 * Moved the JSON user settings to SavedData
 * Added Info.plist
+* Add BLED112 support for windows and linux
 
 ### Bug Fixes
 
 * Fixed bug where app crashed on Ganglion load
+
+### Known Issues
+
+* Ganglion channels stay activated after load from settings.
 
 ## Alpha 0
 

@@ -170,6 +170,17 @@ class W_accelerometer extends Widget {
         currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1];
         currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
         currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
+        // X[X.length-1] =
+        //   int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        // X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        // Y[Y.length-1] =
+        //   int(map(currentYvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        // Y[Y.length-1] = constrain(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        // Z[Z.length-1] =
+        //   int(map(currentZvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        // Z[Z.length-1] = constrain(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        //
+        // shiftWave();
       }
     }
   }
