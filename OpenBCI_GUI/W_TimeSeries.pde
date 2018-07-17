@@ -383,7 +383,8 @@ class ChannelBar{
     onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
     onOffButton.setFont(h2, 16);
     onOffButton.setCircleButton(true);
-    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
+    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]); //Set channel button background colors
+    onOffButton.textColorNotActive = color(255); //Set channel button text to white
     onOffButton.hasStroke(false);
 
     if(eegDataSource == DATASOURCE_CYTON){
