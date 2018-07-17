@@ -1004,7 +1004,7 @@ void loadApplyChannelSettings() {
       //println("Ch " + channel + ", " + channelsActiveArray[active]);
       if (active == 0) {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
+          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[channel]);
           hub.sendCommand(command_activate_channel[channel]);
           w_timeSeries.hsc.powerUpChannel(channel);
         }
@@ -1012,9 +1012,9 @@ void loadApplyChannelSettings() {
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
       } else {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
-          hub.sendCommand(command_deactivate_channel[Ichan]);
-          w_timeSeries.hsc.powerDownChannel(Ichan);
+          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[channel]);
+          hub.sendCommand(command_deactivate_channel[channel]);
+          w_timeSeries.hsc.powerDownChannel(channel);
         }
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
