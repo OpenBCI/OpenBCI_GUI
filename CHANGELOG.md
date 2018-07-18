@@ -13,7 +13,6 @@ Use OpenBCIHub v1.4.5 please.
 * Added plist file to add settings for information when app is built (thanks @retiutut)
 * Add BLED112 support for windows and linux
 
-
 ## Alpha 2
 
 ### Improvements
@@ -24,7 +23,6 @@ Use OpenBCIHub v1.4.5 please.
 * Further cleanup of error messages on system start
 * Make Channel On/Off buttons more readable with white text #361
 * Remove a bunch of outputs
-* Fixed issue where headplot is drawn outside of the widget when loading settings
 
 ### Bug Fixes
 

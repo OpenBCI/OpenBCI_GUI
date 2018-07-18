@@ -187,7 +187,7 @@ class Ganglion {
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
     hub.setSampleRate(sampleRate);
-    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
+    println("Setting sample rate for Ganglion to " + sampleRate + "Hz");
   }
 
   public void setInterface(int _interface) {
@@ -197,7 +197,7 @@ class Ganglion {
       if (_interface == INTERFACE_HUB_BLE) {
         hub.setProtocol(PROTOCOL_BLE);
       } else {
-        hub.setProtocol(PROTOCOL_BLED112);        
+        hub.setProtocol(PROTOCOL_BLED112);
       }
       // hub.searchDeviceStart();
     } else if (isWifi()) {

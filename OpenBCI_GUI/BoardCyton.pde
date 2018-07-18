@@ -181,7 +181,7 @@ class Cyton {
 
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
-    output("Setting sample rate for Cyton to " + sampleRate + "Hz");
+    // output("Setting sample rate for Cyton to " + sampleRate + "Hz");
     println("Setting sample rate for Cyton to " + sampleRate + "Hz");
     hub.setSampleRate(sampleRate);
   }

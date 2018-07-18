@@ -242,22 +242,18 @@ class Hub {
   public boolean isAccelModeActive() { return accelModeActive; }
   public void setLatency(int latency) {
     curLatency = latency;
-    output("Setting Latency to " + latency);
     println("Setting Latency to " + latency);
   }
   public void setCurBLEHardware(String bleHardware) {
     curBLEHardware = bleHardware;
-    output("Setting BLE Hardware to " + bleHardware);
     println("Setting BLE Hardware to " + bleHardware);
   }
   public void setWifiInternetProtocol(String internetProtocol) {
     curInternetProtocol = internetProtocol;
-    output("Setting WiFi Internet Protocol to " + internetProtocol);
     println("Setting WiFi Internet Protocol to " + internetProtocol);
   }
   public void setWiFiStyle(String wifiStyle) {
     curWiFiStyle = wifiStyle;
-    output("Setting WiFi style to " + wifiStyle);
     println("Setting WiFi style to " + wifiStyle);
   }
 
@@ -499,6 +495,7 @@ class Hub {
     outputSuccess("The GUI is done intializing. Settings Loaded! Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
     portIsOpen = true;
     controlPanel.hideAllBoxes();
+    if (eegDataSource == DATASOURCE_GANGLION) loadApplyChannelSettings();
   }
 
   private void killAndShowMsg(String msg) {
