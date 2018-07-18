@@ -997,11 +997,12 @@ void loadApplyChannelSettings() {
       //Set SRB1
       channelSettingValues[i][5] = (char)(srb1Setting + '0');    
     } //end case for all channels
-  } //end Cyton/Ganglion case
+  } //end Cyton case
     
   //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
   if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
     //parse the channel settings first for only the number of channels being used
+    if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
       int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
@@ -1029,7 +1030,7 @@ void loadApplyChannelSettings() {
 }
 
 //Apply Time Series Settings to the Board
-void loadApplyTimeSeriesSettings() {
+void loadApplyTimeSeriesSettingsToCyton() {
   for (int i = 0; i < slnchan;) { //For all time series channels...
     cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
     if (checkForSuccessTS != null) { // If we receive a return code...
