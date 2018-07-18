@@ -460,26 +460,26 @@ class ControlPanel {
       convertSDFile();
     }
 
-    if (isHubInitialized && isHubObjectInitialized) {
-      if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-        if (!calledForBLEList) {
-          calledForBLEList = true;
-          if (hub.isHubRunning()) {
-            // Commented out because noble will auto scan
-            hub.searchDeviceStart();
-          }
-        }
-      }
-
-      if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
-        if (!calledForWifiList) {
-          calledForWifiList = true;
-          if (hub.isHubRunning()) {
-            hub.searchDeviceStart();
-          }
-        }
-      }
-    }
+    // if (isHubInitialized && isHubObjectInitialized) {
+    //   if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+    //     if (!calledForBLEList) {
+    //       calledForBLEList = true;
+    //       if (hub.isHubRunning()) {
+    //         // Commented out because noble will auto scan
+    //         hub.searchDeviceStart();
+    //       }
+    //     }
+    //   }
+    //
+    //   if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
+    //     if (!calledForWifiList) {
+    //       calledForWifiList = true;
+    //       if (hub.isHubRunning()) {
+    //         hub.searchDeviceStart();
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   public void draw() {
@@ -1309,20 +1309,26 @@ class ControlPanel {
     }
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
+      println("protocolBLEGanglion");
+
       wifiList.items.clear();
       bleList.items.clear();
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
-        output("Protocol BLE Selected for Ganglion");
+        if (isWindows()) {
+          outputSuccess("Using CSR Dongle for Ganglion");
+        } else {
+          outputSuccess("Using built in BLE for Ganglion");
+        }
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLE);
+        hub.searchDeviceStart();
       } else {
         outputWarn("Please wait till hub is fully initalized");
       }
     }
 
     if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-      println("protocolBLED112Ganglion");
 
       wifiList.items.clear();
       bleList.items.clear();
@@ -1332,6 +1338,7 @@ class ControlPanel {
         println("Protocol BLED112 Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLED112);
+        hub.searchDeviceStart();
       } else {
         outputWarn("Please wait till hub is fully initalized");
       }
@@ -1347,6 +1354,7 @@ class ControlPanel {
         output("Protocol Wifi Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_WIFI);
+        hub.searchDeviceStart();
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1373,6 +1381,7 @@ class ControlPanel {
         output("Protocol Wifi Selected for Cyton");
         if (hub.isPortOpen()) hub.closePort();
         cyton.setInterface(INTERFACE_HUB_WIFI);
+        hub.searchDeviceStart();
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1682,7 +1691,7 @@ public void initButtonPressed(){
 
     //if system is already active ... stop system and flip button state back
     else {
-      output("Learn how to use this application and more at docs.openbci.com");
+      outputInfo("Learn how to use this application and more at docs.openbci.com");
       initSystemButton.setString("START SYSTEM");
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
@@ -1696,7 +1705,6 @@ void updateToNChan(int _nchan) {
   slnchan = _nchan; //used in SoftwareSettings.pde only
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-  output("Channel count set to " + str(nchan));
   println("channel count set to " + str(nchan));
   hub.initDataPackets(_nchan, 3);
   ganglion.initDataPackets(_nchan, 3);
