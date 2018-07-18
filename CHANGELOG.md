@@ -13,13 +13,16 @@ Use OpenBCIHub v1.4.5 please.
 * Added plist file to add settings for information when app is built (thanks @retiutut)
 * Add BLED112 support for windows and linux
 
-
 ## Alpha 2
 
 ### Improvements
 
 * Fixed issue where convert from SD card could cause crash #351
 * Fixed issue with accel and playback file.
+* Fix activate/deactivate channels for Ganglion when loading settings
+* Further cleanup of error messages on system start
+* Make Channel On/Off buttons more readable with white text #361
+* Remove a bunch of outputs
 
 ### Bug Fixes
 

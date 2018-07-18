@@ -842,7 +842,7 @@ void initSystem() {
     println(userSettingsFileLocation + " not found. Save settings with keyboard 'n' or using dropdown menu.");
     errorUserSettingsNotFound = true;
   }
-  
+
   //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
   String firmwareToPrint = "";
   String dataModeVersionToPrint = controlEventDataSource;
@@ -1047,13 +1047,13 @@ void haltSystem() {
   hub.changeState(STATE_NOCOM);
   abandonInit = false;
 
-  bleList.items.clear();
-  wifiList.items.clear();
+  // bleList.items.clear();
+  // wifiList.items.clear();
 
-  // TODO: Comment this back in
   // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
   //   hub.searchDeviceStart();
   // }
+
 }
 
 void delayedInit() {
