@@ -240,9 +240,11 @@ class W_accelerometer extends Widget {
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       if (ganglion.isBLE()) accelModeButton.draw();
-      drawAccValues();
-      draw3DGraph();
-      drawAccWave();
+      if (accelerometerModeOn) {
+        drawAccValues();
+        draw3DGraph();
+        drawAccWave();
+      }
     } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
       drawAccValues();
       draw3DGraph();

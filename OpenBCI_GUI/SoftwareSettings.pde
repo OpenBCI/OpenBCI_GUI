@@ -709,7 +709,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
   if (eegDataSource == DATASOURCE_CYTON) {
     loadApplyChannelSettings();
-    loadApplyTimeSeriesSettings();
+    loadApplyTimeSeriesSettingsToCyton();
   }
 
   w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
