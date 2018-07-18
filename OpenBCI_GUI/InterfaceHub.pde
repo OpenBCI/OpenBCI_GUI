@@ -495,7 +495,6 @@ class Hub {
     outputSuccess("The GUI is done intializing. Settings Loaded! Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
     portIsOpen = true;
     controlPanel.hideAllBoxes();
-    //Apply Time Series Settings Last!!!
     if (eegDataSource == DATASOURCE_GANGLION) loadApplyChannelSettings();
   }
 
