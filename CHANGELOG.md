@@ -20,6 +20,11 @@ Use OpenBCIHub v1.4.5 please.
 
 * Fixed issue where convert from SD card could cause crash #351
 * Fixed issue with accel and playback file.
+* Fix activate/deactivate channels for Ganglion when loading settings
+* Further cleanup of error messages on system start
+* Make Channel On/Off buttons more readable with white text #361
+* Remove a bunch of outputs
+* Fixed issue where headplot is drawn outside of the widget when loading settings
 
 ### Bug Fixes
 
