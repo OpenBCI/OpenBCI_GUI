@@ -33,52 +33,47 @@ W_MarkerMode w_markermode;
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
   // println("  setupWidgets start -- " + millis());
 
+  //Widget_0
   w_timeSeries = new W_timeSeries(_this);
   w_timeSeries.setTitle("Time Series");
   addWidget(w_timeSeries, w);
   // println("  setupWidgets time series -- " + millis());
 
-
+  //Widget_1
   w_fft = new W_fft(_this);
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
   // println("  setupWidgets fft -- " + millis());
-
+  
+  //Widget_2
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
+  addWidget(w_accelerometer, w);
+  
+  //Widget_3
   w_networking = new W_networking(_this);
   w_networking.setTitle("Networking");
+  addWidget(w_networking, w);
 
-  //only instantiate this widget if you are using a Ganglion board for live streaming
-  if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
-    w_ganglionImpedance = new W_ganglionImpedance(_this);
-    w_ganglionImpedance.setTitle("Ganglion Signal");
-    addWidget(w_ganglionImpedance, w);
-    addWidget(w_networking, w);
-    addWidget(w_accelerometer, w);
-  } else {
-    addWidget(w_accelerometer, w);
-    addWidget(w_networking, w);
-  }
-
+  //Widget_4
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
   // println("  setupWidgets band power -- " + millis());
 
-
+  //Widget_5
   w_headPlot = new W_headPlot(_this);
   w_headPlot.setTitle("Head Plot");
   addWidget(w_headPlot, w);
   // println("  setupWidgets head plot -- " + millis());
 
-
+  //Widget_6
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
   // println("  setupWidgets emg -- " + millis());
 
-
+  //Widget_7
   w_focus = new W_Focus(_this);
   w_focus.setTitle("Focus Widget");
   addWidget(w_focus, w);
@@ -86,24 +81,37 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
 
   //only instantiate these widgets if you are using a Cyton board for live streaming
   if(eegDataSource != DATASOURCE_GANGLION){
+    //Widget_8
     w_pulsesensor = new W_PulseSensor(_this);
     w_pulsesensor.setTitle("Pulse Sensor");
     addWidget(w_pulsesensor, w);
     // println("  setupWidgets pulse sensor -- " + millis());
-
+    
+    //Widget_9
     w_digitalRead = new W_DigitalRead(_this);
     w_digitalRead.setTitle("Digital Read");
     addWidget(w_digitalRead, w);
-
+    
+    //Widget_10
     w_analogRead = new W_AnalogRead(_this);
     w_analogRead.setTitle("Analog Read");
     addWidget(w_analogRead, w);
-
+    
+    //Widget_11
     w_markermode = new W_MarkerMode(_this);
     w_markermode.setTitle("Marker Mode");
     addWidget(w_markermode, w);
   }
+  
+  //only instantiate this widget if you are using a Ganglion board for live streaming
+  if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    //If using Ganglion, this is Widget_8
+    w_ganglionImpedance = new W_ganglionImpedance(_this);
+    w_ganglionImpedance.setTitle("Ganglion Signal");
+    addWidget(w_ganglionImpedance, w);
+  }
 
+  //If using Ganglion, template is Widget_9, otherwise it is Widget_12.
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
   addWidget(w_template1, w);
@@ -169,11 +177,11 @@ class WidgetManager{
 
     if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
       currentContainerLayout = 1;
-      currentLayout = 2; // used for save/load settings
+      currentLayout = 1; // used for save/load settings
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
     } else {
       currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-      currentLayout = 5; // used for save/load settings
+      currentLayout = 4; // used for save/load settings
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
     }
 
