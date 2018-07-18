@@ -90,9 +90,9 @@ int tsSrb2Setting;
 int tsSrb1Setting;
 
 //Load global settings variables
-int loadLayoutsetting;
-int loadNotchsetting;
-int loadBandpasssetting;
+int loadLayoutSetting;
+int loadNotchSetting;
+int loadBandpassSetting;
 int loadBoardMode;
 
 //Load TS dropdown variables
@@ -466,13 +466,11 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     dataSourceError = false;
   }
 
-
-
   //parse the global settings
   JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject("settings");
-  loadLayoutsetting = loadGlobalSettings.getInt("Current Layout");
-  loadNotchsetting = loadGlobalSettings.getInt("Notch");
-  loadBandpasssetting = loadGlobalSettings.getInt("Bandpass Filter");
+  loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
+  loadNotchSetting = loadGlobalSettings.getInt("Notch");
+  loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
@@ -481,13 +479,15 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
     loadBoardMode = loadGlobalSettings.getInt("Board Mode");
   }
+  //Store loaded layout to current layout variable
+  currentLayout = loadLayoutSetting;
   //Load more global settings after this line, if needed
 
   //Create a string array to print global settings to console
   final String[] loadedGlobalSettings = {
-    "Using Layout Number: " + loadLayoutsetting,
-    "Default Notch: " + loadNotchsetting, //default notch
-    "Default BP: " + loadBandpasssetting, //default bp
+    "Using Layout Number: " + loadLayoutSetting,
+    "Default Notch: " + loadNotchSetting, //default notch
+    "Default BP: " + loadBandpassSetting, //default bp
     "Default Framerate: " + loadFramerate, //default framerate
     "TS Vert Scale: " + loadTimeSeriesVertScale,
     "TS Horiz Scale: " + loadTimeSeriesHorizScale,
@@ -632,8 +632,8 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //parse the Widget/Container settings
   JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
   //Apply Layout directly before loading and applying widgets to containers
-  wm.setNewContainerLayout(loadLayoutsetting - 1);
-  println("Layout " + loadLayoutsetting + " Loaded!");
+  wm.setNewContainerLayout(loadLayoutSetting);
+  println("Layout " + loadLayoutSetting + " Loaded!");
   numLoadedWidgets = loadWidgetSettings.size();
 
 
@@ -668,12 +668,12 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //}//end case for all objects in JSON
 
   //Apply notch
-  dataProcessing.currentNotch_ind = loadNotchsetting;
-  topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessingNotchArray[loadNotchsetting];
+  dataProcessing.currentNotch_ind = loadNotchSetting;
+  topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessingNotchArray[loadNotchSetting];
   //Apply Bandpass filter
-  dataProcessing.currentFilt_ind = loadBandpasssetting;
-  topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpasssetting]; //this works
-  //println(dataProcessingBPArray[loadBandpasssetting]);
+  dataProcessing.currentFilt_ind = loadBandpassSetting;
+  topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
+  //println(dataProcessingBPArray[loadBandpassSetting]);
 
   //Apply Board Mode
   if (eegDataSource == DATASOURCE_CYTON){ //Apply Board Mode to Cyton Only
@@ -701,17 +701,18 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
       break;
   }
 
-  //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
+  //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.
   loadApplyWidgetDropdownText();
 
   //Apply Time Series Settings Last!!!
 
   //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
   if (eegDataSource == DATASOURCE_CYTON) {
-    //Load chan settings from json and activate/deactivate channels before applying more channel settings
     loadApplyChannelSettings();
     loadApplyTimeSeriesSettings();
   }
+
+  w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
 
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -842,6 +843,9 @@ void loadApplyWidgetDropdownText() {
 
   SmoothingHeadPlot(hpSmoothingLoad);
     w_headPlot.cp5_widget.getController("SmoothingHeadPlot").getCaptionLabel().setText(hpSmoothingArray[hpSmoothingLoad]);
+
+  //Force redraw headplot on load. Fixes issue where heaplot draws outside of the widget.
+  w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
 
   ////////////////////////////Apply EMG settings
   SmoothEMG(emgSmoothingLoad);
@@ -995,11 +999,12 @@ void loadApplyChannelSettings() {
       //Set SRB1
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
-  } //end Cyton/Ganglion case
+  } //end Cyton case
 
   //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
   if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
     //parse the channel settings first for only the number of channels being used
+    if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
       int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
@@ -1027,7 +1032,7 @@ void loadApplyChannelSettings() {
 }
 
 //Apply Time Series Settings to the Board
-void loadApplyTimeSeriesSettings() {
+void loadApplyTimeSeriesSettingsToCyton() {
   for (int i = 0; i < slnchan;) { //For all time series channels...
     cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
     if (checkForSuccessTS != null) { // If we receive a return code...
