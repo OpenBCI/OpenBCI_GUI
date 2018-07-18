@@ -496,7 +496,7 @@ class Hub {
     } else {
       firmwareString = "";
     }
-    outputSuccess("The GUI is done intializing." + firmwareString + " Press \"Start Data Stream\" to start streaming!");
+    outputSuccess("The GUI is done intializing. Settings Loaded! Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
     portIsOpen = true;
     controlPanel.hideAllBoxes();
   }

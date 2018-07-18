@@ -324,7 +324,7 @@ class Cyton {
         }
         break;
       case 6:
-        output("Cyton: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
+        println("Cyton: syncWithHardware: The GUI is done intializing. Click outside of the control panel to interact with the GUI.");
         hub.changeState(STATE_STOPPED);
         systemMode = 10;
         controlPanel.close();
@@ -442,7 +442,6 @@ class Cyton {
       return false;
     }
   }
-
 
   //activate or deactivate an EEG channel...channel counting is zero through nchan-1
   public void changeChannelState(int Ichan, boolean activate) {

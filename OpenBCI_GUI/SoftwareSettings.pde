@@ -244,10 +244,10 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   saveGlobalSettings.setInt("Framerate", frameRateCounter);
   saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-  saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
-  saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
   saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);    
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+    saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
+    saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
     saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
     saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
     saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
@@ -466,72 +466,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     dataSourceError = false;
   }
     
- //Make a JSON object to load channel setting array
- JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings"); 
- 
- //Case for loading time series settings in Live Data mode
- if (eegDataSource == DATASOURCE_CYTON)  { 
-    //parse the channel settings first for only the number of channels being used
-    for (int i = 0; i < numChanloaded; i++) {
-      JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-      int active = loadTSChannelSettings.getInt("Active");
-      int gainSetting = loadTSChannelSettings.getInt("PGA Gain");
-      int inputType = loadTSChannelSettings.getInt("Input Type");
-      int biasSetting = loadTSChannelSettings.getInt("Bias");
-      int srb2Setting = loadTSChannelSettings.getInt("SRB2");
-      int srb1Setting = loadTSChannelSettings.getInt("SRB1");
-      println("Ch " + channel + ", " + 
-        channelsActiveArray[active] + ", " + 
-        gainSettingsArray[gainSetting] + ", " + 
-        inputTypeArray[inputType] + ", " + 
-        biasIncludeArray[biasSetting] + ", " + 
-        srb2SettingArray[srb2Setting] + ", " + 
-        srb1SettingArray[srb1Setting]);
-        
-      //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
-      channelSettingValues[i][0] = (char)(active + '0'); 
-      if (active == 0) {
-        activateChannel(channel);// power down == false, set color to vibrant
-        w_timeSeries.channelBars[i].isOn = true;
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
-      } else {
-        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
-        w_timeSeries.channelBars[i].isOn = false; // deactivate it
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-      }           
-      //Set gain
-      channelSettingValues[i][1] = (char)(gainSetting + '0');  //Convert int to char by adding the gainSetting to ASCII char '0'
-      //Set inputType
-      channelSettingValues[i][2] = (char)(inputType + '0');    
-      //Set Bias
-      channelSettingValues[i][3] = (char)(biasSetting + '0');
-      //Set SRB2
-      channelSettingValues[i][4] = (char)(srb2Setting + '0');
-      //Set SRB1
-      channelSettingValues[i][5] = (char)(srb1Setting + '0');    
-    } //end case for all channels
-  } //end Cyton/Ganglion case
-    
-  //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
-  if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
-    //parse the channel settings first for only the number of channels being used
-    for (int i = 0; i < numChanloaded; i++) {
-      JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-      int active = loadTSChannelSettings.getInt("Active");
-      //println("Ch " + channel + ", " + channelsActiveArray[active]);
-      if (active == 0) {
-        activateChannel(channel);// power down == false, set color to vibrant
-        w_timeSeries.channelBars[i].isOn = true;
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
-      } else {
-        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
-        w_timeSeries.channelBars[i].isOn = false; // deactivate it
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-      }
-    }      
-  } //end of Playback/Synthetic case
+
   
   //parse the global settings
   JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject("settings");
@@ -541,9 +476,9 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
-  loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
-  loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+    loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
+    loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
     loadBoardMode = loadGlobalSettings.getInt("Board Mode");
   }
   //Load more global settings after this line, if needed
@@ -770,6 +705,8 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadApplyWidgetDropdownText(); 
   
   //Apply Time Series Settings Last!!!
+  //Load chan settings from json and activate/deactivate channels before applying more channel settings
+  loadApplyChannelSettings();
   //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
   if (eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
   
@@ -855,21 +792,6 @@ void applyBoardMode() {
       break;
   }//end switch/case
 }
-
-//Apply Time Series Settings to the Board
-void loadApplyTimeSeriesSettings() {
-  for (int i = 0; i < slnchan;) { //For all time series channels...
-    cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-    if (checkForSuccessTS != null) { // If we receive a return code...
-      println("Return code:" + checkForSuccessTS);
-      String[] list = split(checkForSuccessTS, ',');
-      int successcode = Integer.parseInt(list[1]);
-      if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
-    }
-    //delay(10);// Works on 8 chan sometimes
-    delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
-  }    
-} 
 
 void loadApplyWidgetDropdownText() {
   
@@ -1023,3 +945,95 @@ void loadApplyWidgetDropdownText() {
   //    Apply more loaded widget settings above this line   // 
   
 } //end of loadApplyWidgetDropdownText()
+
+void loadApplyChannelSettings() {
+ //Make a JSON object to load channel setting array
+ JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings"); 
+ 
+ //Case for loading time series settings in Live Data mode
+ if (eegDataSource == DATASOURCE_CYTON)  { 
+    //parse the channel settings first for only the number of channels being used
+    for (int i = 0; i < numChanloaded; i++) {
+      JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
+      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
+      int active = loadTSChannelSettings.getInt("Active");
+      int gainSetting = loadTSChannelSettings.getInt("PGA Gain");
+      int inputType = loadTSChannelSettings.getInt("Input Type");
+      int biasSetting = loadTSChannelSettings.getInt("Bias");
+      int srb2Setting = loadTSChannelSettings.getInt("SRB2");
+      int srb1Setting = loadTSChannelSettings.getInt("SRB1");
+      println("Ch " + channel + ", " + 
+        channelsActiveArray[active] + ", " + 
+        gainSettingsArray[gainSetting] + ", " + 
+        inputTypeArray[inputType] + ", " + 
+        biasIncludeArray[biasSetting] + ", " + 
+        srb2SettingArray[srb2Setting] + ", " + 
+        srb1SettingArray[srb1Setting]);
+        
+      //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
+      channelSettingValues[i][0] = (char)(active + '0'); 
+      if (active == 0) {
+        activateChannel(channel);// power down == false, set color to vibrant
+        w_timeSeries.channelBars[i].isOn = true;
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
+      } else {
+        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
+        w_timeSeries.channelBars[i].isOn = false; // deactivate it
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
+      }           
+      //Set gain
+      channelSettingValues[i][1] = (char)(gainSetting + '0');  //Convert int to char by adding the gainSetting to ASCII char '0'
+      //Set inputType
+      channelSettingValues[i][2] = (char)(inputType + '0');    
+      //Set Bias
+      channelSettingValues[i][3] = (char)(biasSetting + '0');
+      //Set SRB2
+      channelSettingValues[i][4] = (char)(srb2Setting + '0');
+      //Set SRB1
+      channelSettingValues[i][5] = (char)(srb1Setting + '0');    
+    } //end case for all channels
+  } //end Cyton/Ganglion case
+    
+  //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
+  if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
+    //parse the channel settings first for only the number of channels being used
+    for (int i = 0; i < numChanloaded; i++) {
+      JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
+      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
+      int active = loadTSChannelSettings.getInt("Active");
+      //println("Ch " + channel + ", " + channelsActiveArray[active]);
+      if (active == 0) {
+        if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
+          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[channel]);
+          hub.sendCommand(command_activate_channel[channel]);
+          w_timeSeries.hsc.powerUpChannel(channel);
+        }
+        w_timeSeries.channelBars[i].isOn = true;
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
+      } else {
+        if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
+          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[channel]);
+          hub.sendCommand(command_deactivate_channel[channel]);
+          w_timeSeries.hsc.powerDownChannel(channel);
+        }
+        w_timeSeries.channelBars[i].isOn = false; // deactivate it
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
+      }
+    }      
+  } //end of Playback/Synthetic case
+}
+
+//Apply Time Series Settings to the Board
+void loadApplyTimeSeriesSettings() {
+  for (int i = 0; i < slnchan;) { //For all time series channels...
+    cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+    if (checkForSuccessTS != null) { // If we receive a return code...
+      println("Return code:" + checkForSuccessTS);
+      String[] list = split(checkForSuccessTS, ',');
+      int successcode = Integer.parseInt(list[1]);
+      if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+    }
+    //delay(10);// Works on 8 chan sometimes
+    delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
+  }    
+} 
