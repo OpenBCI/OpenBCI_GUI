@@ -702,7 +702,17 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   }
 
   //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function at the bottom of this tab.
-  loadApplyWidgetDropdownText(); 
+  loadApplyWidgetDropdownText();
+
+  //Apply Time Series Settings Last!!!
+
+  //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
+  if (eegDataSource == DATASOURCE_CYTON) {
+    //Load chan settings from json and activate/deactivate channels before applying more channel settings
+    loadApplyChannelSettings();
+    loadApplyTimeSeriesSettings();
+  }
+
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

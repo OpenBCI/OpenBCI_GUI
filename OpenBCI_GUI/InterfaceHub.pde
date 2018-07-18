@@ -496,10 +496,7 @@ class Hub {
     portIsOpen = true;
     controlPanel.hideAllBoxes();
     //Apply Time Series Settings Last!!!
-    //Load chan settings from json and activate/deactivate channels before applying more channel settings
-    loadApplyChannelSettings();
-    //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
-    if (eegDataSource == DATASOURCE_CYTON) loadApplyTimeSeriesSettings();
+    if (eegDataSource == DATASOURCE_GANGLION) loadApplyChannelSettings();
   }
 
   private void killAndShowMsg(String msg) {
