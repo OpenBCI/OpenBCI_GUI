@@ -675,18 +675,6 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Apply Bandpass filter
   dataProcessing.currentFilt_ind = loadBandpassSetting;
   topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
-  
-  //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
-  if (eegDataSource == DATASOURCE_GANGLION) {
-    w_accelerometer.accelerometerModeOn = loadAccelerometer;
-    if (loadAccelerometer) {
-      ganglion.accelStart();
-      w_accelerometer.accelModeButton.setString("Turn Accel. Off");
-    } else {
-      ganglion.accelStop();
-      w_accelerometer.accelModeButton.setString("Turn Accel. On");    
-    }
-  }
 
   //Apply Board Mode to Cyton Only
   if (eegDataSource == DATASOURCE_CYTON){ 
@@ -720,10 +708,26 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Apply Time Series Settings Last!!!
   loadApplyTimeSeriesSettings();
   
-  //Force headplot to redraw
-  w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+  //Force headplot to redraw if it is active
+  if (wm.widgets.get(6).isActive) { 
+    w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+    println("Haadplot is active: Redrawing");
+  }
+  
+  //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    w_accelerometer.accelerometerModeOn = loadAccelerometer;
+    //ganglion.accelModeActive = loadAccelerometer;
+    if (loadAccelerometer) {
+      ganglion.accelStart();
+      w_accelerometer.accelModeButton.setString("Turn Accel. Off");
+    } else {
+      ganglion.accelStop();
+      w_accelerometer.accelModeButton.setString("Turn Accel. On");    
+    }
+  }
 
-}
+} //end of loadGUISettings
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
