@@ -21,8 +21,6 @@ class TopNav {
   Button highRezButton;
 
   Button stopButton;
-  public final static String stopButton_pressToStop_txt = "Stop Data Stream";
-  public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
   Button filtBPButton;
   Button filtNotchButton;

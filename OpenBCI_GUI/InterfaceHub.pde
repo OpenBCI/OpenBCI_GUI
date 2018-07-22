@@ -489,13 +489,14 @@ class Hub {
     String firmwareString = " Cyton firmware ";
     if (eegDataSource == DATASOURCE_CYTON) {
       firmwareString += firmwareVersion;
+    } else if (eegDataSource == DATASOURCE_GANGLION) {
+      firmwareString = ganglion_portName;
     } else {
       firmwareString = "";
     }
     outputSuccess("The GUI is done intializing. Settings Loaded! Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
     portIsOpen = true;
     controlPanel.hideAllBoxes();
-    if (eegDataSource == DATASOURCE_GANGLION) loadApplyChannelSettings();
   }
 
   private void killAndShowMsg(String msg) {
