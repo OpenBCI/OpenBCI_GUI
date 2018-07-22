@@ -702,16 +702,16 @@ class configSelector {
             String userSettingsFileToSave = null;
             switch(eegDataSource) {
               case DATASOURCE_CYTON:
-                userSettingsFileToSave = cytonDefaultSettingsFile;
+                userSettingsFileToSave = cytonUserSettingsFile;
                 break;
               case DATASOURCE_GANGLION:
-                userSettingsFileToSave = ganglionDefaultSettingsFile;
+                userSettingsFileToSave = ganglionUserSettingsFile;
                 break;
               case DATASOURCE_PLAYBACKFILE:
-                userSettingsFileToSave = playbackDefaultSettingsFile;
+                userSettingsFileToSave = playbackUserSettingsFile;
                 break;
               case DATASOURCE_SYNTHETIC:
-                userSettingsFileToSave = syntheticDefaultSettingsFile;
+                userSettingsFileToSave = syntheticUserSettingsFile;
                 break;
             }     
             if (saveSettingsDialogName == null) {
