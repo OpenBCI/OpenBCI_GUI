@@ -699,23 +699,53 @@ class configSelector {
           int configSelected = i;
           configOptions.get(i).setIsActive(false);
           if (configSelected == 0) { //If save button is pressed..
-            if (saveSettingsFileName == null) {
-              selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileLocation)); //open dialog box to save settings as json
+            String userSettingsFileToSave = null;
+            switch(eegDataSource) {
+              case DATASOURCE_CYTON:
+                userSettingsFileToSave = cytonDefaultSettingsFile;
+                break;
+              case DATASOURCE_GANGLION:
+                userSettingsFileToSave = ganglionDefaultSettingsFile;
+                break;
+              case DATASOURCE_PLAYBACKFILE:
+                userSettingsFileToSave = playbackDefaultSettingsFile;
+                break;
+              case DATASOURCE_SYNTHETIC:
+                userSettingsFileToSave = syntheticDefaultSettingsFile;
+                break;
+            }     
+            if (saveSettingsDialogName == null) {
+              selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileToSave)); //open dialog box to save settings as json
             } else {
-              println(saveSettingsFileName); 
-              saveSettingsFileName = null;
+              println(saveSettingsDialogName); 
+              saveSettingsDialogName = null;
             }
           } else if (configSelected == 1) {
             //Select file to load from dialog box
-            if (loadSettingsFileName == null) {
+            if (loadSettingsDialogName == null) {
               selectInput("Load a custom settings file from JSON:", "loadConfigFile");
-              saveSettingsFileName = null;
+              saveSettingsDialogName = null;
             } else {
-              println(loadSettingsFileName); 
+              println(loadSettingsDialogName); 
             }         
           } else if (configSelected == 2) {           
             //Revert GUI to default settings that were flashed on system start!
-            loadGUISettings(defaultSettingsFileLocation);            
+            String defaultSettingsFileToLoad = null;
+            switch(eegDataSource) {
+              case DATASOURCE_CYTON:
+                defaultSettingsFileToLoad = cytonDefaultSettingsFile;
+                break;
+              case DATASOURCE_GANGLION:
+                defaultSettingsFileToLoad = ganglionDefaultSettingsFile;
+                break;
+              case DATASOURCE_PLAYBACKFILE:
+                defaultSettingsFileToLoad = playbackDefaultSettingsFile;
+                break;
+              case DATASOURCE_SYNTHETIC:
+                defaultSettingsFileToLoad = syntheticDefaultSettingsFile;
+                break;
+            }
+            loadGUISettings(defaultSettingsFileToLoad);            
             outputSuccess("Default Settings Loaded!");
           }                  
           toggleVisibility(); //shut configSelector if something is selected

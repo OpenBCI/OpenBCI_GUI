@@ -487,14 +487,20 @@ class Hub {
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
     String firmwareString = " Cyton firmware ";
+    String settingsString = "Settings Loaded! ";
     if (eegDataSource == DATASOURCE_CYTON) {
-      firmwareString += firmwareVersion;
+      firmwareString += firmwareVersion; 
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       firmwareString = ganglion_portName;
     } else {
       firmwareString = "";
     }
-    outputSuccess("The GUI is done intializing. Settings Loaded! Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
+    //This success message appears in Ganglion mode
+    if (loadErrorCytonEvent == true) {
+      outputError("Connection Error: Failed to apply channel settings to Cyton.");
+    } else {
+      outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);    
+    }
     portIsOpen = true;
     controlPanel.hideAllBoxes();
   }
@@ -634,7 +640,7 @@ class Hub {
             }
           }
           getRawValues(dataPacket);
-          // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+          // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>// //<>//
           // println(dataPacket.values[7]);
           curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
           copyDataPacketTo(dataPacketBuff[curDataPacketInd]);

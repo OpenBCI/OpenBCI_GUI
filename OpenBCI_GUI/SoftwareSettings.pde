@@ -439,7 +439,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   if (!errorUserSettingsNotFound) {
     loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
   } else {
-    outputError("Load settings error: " + userSettingsFileLocation + " not found. ");
+    outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
     return;
   }
 
@@ -1016,6 +1016,14 @@ void loadApplyTimeSeriesSettings() {
         String[] list = split(checkForSuccessTS, ',');
         int successcode = Integer.parseInt(list[1]);
         if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+        
+        //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
+        int timeElapsed = millis() - loadErrorTimerStart;    
+        if (timeElapsed >= loadErrorTimeWindow) {
+          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON"); 
+          loadErrorCytonEvent = true;
+          haltSystem();
+          return;}
       }
       //delay(10);// Works on 8 chan sometimes
       delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
