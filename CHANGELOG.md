@@ -13,6 +13,16 @@ Use OpenBCIHub v1.4.5 please.
 * Added plist file to add settings for information when app is built (thanks @retiutut)
 * Add BLED112 support for windows and linux
 
+## Beta 0
+
+### Improvements
+
+* Save/Load default and user settings for all data modes independently
+
+### Bug Fixes
+* Fixed Ganglion-GUI experience on startup when loading settings
+* Error catch: allow ~ 4 seconds to apply channel settings to Cyton when loading
+
 ## Alpha 2
 
 ### Improvements
