@@ -1023,11 +1023,13 @@ void loadApplyTimeSeriesSettings() {
           println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON"); 
           loadErrorCytonEvent = true;
           haltSystem();
-          return;}
+          return;
+        }
       }
       //delay(10);// Works on 8 chan sometimes
       delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
     }
+    loadErrorCytonEvent = false;
   } //end Cyton case
 
   //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode

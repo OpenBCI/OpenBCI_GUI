@@ -343,7 +343,7 @@ String loadSettingsDialogName; //Used when Load button is pressed
 String controlEventDataSource; //Used for output message on system start
 Boolean errorUserSettingsNotFound = false; //For error catching
 int loadErrorTimerStart;
-int loadErrorTimeWindow = 4000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at 4500-5000 milliseconds.
+int loadErrorTimeWindow = 3800; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
 Boolean loadErrorCytonEvent = false;
 
 //------------------------------------------------------------------------
@@ -892,7 +892,11 @@ void initSystem() {
   String firmwareToPrint = "";
   String dataModeVersionToPrint = controlEventDataSource;
   if (eegDataSource == DATASOURCE_CYTON) {
-    firmwareToPrint = " " + hub.firmwareVersion + ")";
+    if (!loadErrorCytonEvent) {
+      firmwareToPrint = " " + hub.firmwareVersion + ")";
+    } else {
+      firmwareToPrint = "v.?)";
+    }
     dataModeVersionToPrint = controlEventDataSource.replace(")", " ");
     dataModeVersionToPrint += firmwareToPrint;
   }
