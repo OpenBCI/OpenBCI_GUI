@@ -393,7 +393,6 @@ class ChannelBar{
       impCheckButton.setFont(h2, 16);
       impCheckButton.setCircleButton(true);
       impCheckButton.setColorNotPressed(color(255));
-      impCheckButton.textColorNotActive = color(0);
       impCheckButton.hasStroke(false);
     } else {
       impButton_diameter = 0;
@@ -668,12 +667,10 @@ class ChannelBar{
         w_timeSeries.hsc.toggleImpedanceCheck(channelNumber-1);  // 'n' indicates the N inputs and '1' indicates test impedance
         if(drawImpValue){
           drawImpValue = false;
-          impCheckButton.setColorNotPressed(color(255)); //White background
-          impCheckButton.textColorNotActive = color(0); //Black text
+          impCheckButton.setColorNotPressed(color(255));
         } else {
           drawImpValue = true;
           impCheckButton.setColorNotPressed(color(50));
-          impCheckButton.textColorNotActive = color(255); //Black text
         }
       }
       impCheckButton.setIsActive(false);
