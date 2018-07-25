@@ -87,7 +87,7 @@ class Ganglion {
   public int maxNumberOfDevices = 10;
 
   private boolean checkingImpedance = false;
-  private boolean accelModeActive = false;
+  private boolean accelModeActive = true;
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];

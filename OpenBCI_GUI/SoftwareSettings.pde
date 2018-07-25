@@ -439,7 +439,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   if (!errorUserSettingsNotFound) {
     loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
   } else {
-    outputError("Load settings error: " + userSettingsFileLocation + " not found. ");
+    outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
     return;
   }
 
@@ -474,6 +474,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
+  Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer"); 
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
     loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
@@ -493,6 +494,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "TS Horiz Scale: " + loadTimeSeriesHorizScale,
     "Analog Vert Scale: " + loadAnalogReadVertScale,
     "Analog Horiz Scale: " + loadAnalogReadHorizScale,
+    "Accelerometer: " + loadAccelerometer,
     "Board Mode: " + loadBoardMode,
     //Add new global settings above this line to print to console
     };
@@ -673,10 +675,9 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Apply Bandpass filter
   dataProcessing.currentFilt_ind = loadBandpassSetting;
   topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
-  //println(dataProcessingBPArray[loadBandpassSetting]);
 
-  //Apply Board Mode
-  if (eegDataSource == DATASOURCE_CYTON){ //Apply Board Mode to Cyton Only
+  //Apply Board Mode to Cyton Only
+  if (eegDataSource == DATASOURCE_CYTON){ 
     applyBoardMode();
   }
 
@@ -705,16 +706,28 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadApplyWidgetDropdownText();
 
   //Apply Time Series Settings Last!!!
-
-  //Case for load/apply time series settings when using Cyton. Do this last. Takes 100-105 ms per channel to ensure success.
-  if (eegDataSource == DATASOURCE_CYTON) {
-    loadApplyChannelSettings();
-    loadApplyTimeSeriesSettingsToCyton();
+  loadApplyTimeSeriesSettings();
+  
+  //Force headplot to redraw if it is active
+  if (wm.widgets.get(6).isActive) { 
+    w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+    println("Haadplot is active: Redrawing");
+  }
+  
+  //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
+  if (eegDataSource == DATASOURCE_GANGLION) {
+    w_accelerometer.accelerometerModeOn = loadAccelerometer;
+    //ganglion.accelModeActive = loadAccelerometer;
+    if (loadAccelerometer) {
+      ganglion.accelStart();
+      w_accelerometer.accelModeButton.setString("Turn Accel. Off");
+    } else {
+      ganglion.accelStop();
+      w_accelerometer.accelModeButton.setString("Turn Accel. On");    
+    }
   }
 
-  w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-
-}
+} //end of loadGUISettings
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -953,7 +966,7 @@ void loadApplyWidgetDropdownText() {
 
 } //end of loadApplyWidgetDropdownText()
 
-void loadApplyChannelSettings() {
+void loadApplyTimeSeriesSettings() {
  //Make a JSON object to load channel setting array
  JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings");
 
@@ -999,6 +1012,28 @@ void loadApplyChannelSettings() {
       //Set SRB1
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
+    
+    for (int i = 0; i < slnchan;) { //For all time series channels...
+      cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      if (checkForSuccessTS != null) { // If we receive a return code...
+        println("Return code:" + checkForSuccessTS);
+        String[] list = split(checkForSuccessTS, ',');
+        int successcode = Integer.parseInt(list[1]);
+        if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+        
+        //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
+        int timeElapsed = millis() - loadErrorTimerStart;    
+        if (timeElapsed >= loadErrorTimeWindow) {
+          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON"); 
+          loadErrorCytonEvent = true;
+          haltSystem();
+          return;
+        }
+      }
+      //delay(10);// Works on 8 chan sometimes
+      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
+    }
+    loadErrorCytonEvent = false;
   } //end Cyton case
 
   //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
@@ -1028,20 +1063,5 @@ void loadApplyChannelSettings() {
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
     }
-  } //end of Playback/Synthetic case
-}
-
-//Apply Time Series Settings to the Board
-void loadApplyTimeSeriesSettingsToCyton() {
-  for (int i = 0; i < slnchan;) { //For all time series channels...
-    cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-    if (checkForSuccessTS != null) { // If we receive a return code...
-      println("Return code:" + checkForSuccessTS);
-      String[] list = split(checkForSuccessTS, ',');
-      int successcode = Integer.parseInt(list[1]);
-      if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
-    }
-    //delay(10);// Works on 8 chan sometimes
-    delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
-  }
-}
+  } //end of Ganglion/Playback/Synthetic case
+} //end loadApplyTimeSeriesSettings

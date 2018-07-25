@@ -98,8 +98,14 @@ class W_accelerometer extends Widget {
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
     }
-
-    accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
+    
+    String defaultAccelModeButtonString;
+    if (eegDataSource == DATASOURCE_GANGLION) {
+      defaultAccelModeButtonString = "Turn Accel. Off";
+    } else {
+      defaultAccelModeButtonString = "Turn Accel. On";
+    }
+    accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, defaultAccelModeButtonString, 12);
     accelModeButton.setCornerRoundess((int)(navHeight-6));
     accelModeButton.setFont(p6,10);
     accelModeButton.setColorNotPressed(color(57,128,204));
@@ -235,7 +241,7 @@ class W_accelerometer extends Widget {
       draw3DGraph();
       drawAccWave();
       if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
-        accelModeButton.setString("Turn Accel On");
+        accelModeButton.setString("Turn Accel. On");
         accelModeButton.draw();
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -326,19 +332,14 @@ class W_accelerometer extends Widget {
       if(accelModeButton.isActive && accelModeButton.isMouseHere()){
         if(ganglion.isAccelModeActive()){
           ganglion.accelStop();
-
-          accelModeButton.setString("Turn Accel On");
+          accelModeButton.setString("Turn Accel. On");
           accelerometerModeOn = false;
         } else{
           ganglion.accelStart();
-          accelModeButton.setString("Turn Accel Off");
+          accelModeButton.setString("Turn Accel. Off");
           accelerometerModeOn = true;
-          w_analogRead.analogReadOn = false;
-          w_pulsesensor.analogReadOn = false;
-          w_digitalRead.digitalReadOn = false;
-          w_markermode.markerModeOn = false;
         }
-        accelerometerModeOn = !accelerometerModeOn;
+        //accelerometerModeOn = !accelerometerModeOn;
       }
       accelModeButton.setIsActive(false);
     } else if (eegDataSource == DATASOURCE_CYTON) {

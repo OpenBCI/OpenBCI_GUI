@@ -270,23 +270,59 @@ void parseKey(char val) {
     ///////////////////// Save settings lowercase n
     case 'n':      
       println("Save key pressed!"); 
-      saveGUISettings(userSettingsFileLocation); //save settings to default settings file in /data/
+      switch(eegDataSource) {
+        case DATASOURCE_CYTON:
+          userSettingsFileToSave = cytonDefaultSettingsFile;
+          break;
+        case DATASOURCE_GANGLION:
+          userSettingsFileToSave = ganglionDefaultSettingsFile;
+          break;
+        case DATASOURCE_PLAYBACKFILE:
+          userSettingsFileToSave = playbackDefaultSettingsFile;
+          break;
+        case DATASOURCE_SYNTHETIC:
+          userSettingsFileToSave = syntheticDefaultSettingsFile;
+          break;
+      }
+      saveGUISettings(userSettingsFileToSave);
       outputSuccess("Settings Saved!");
       break;
       
     ///////////////////// Load settings uppercase N     
     case 'N':
       println("Load key pressed!");
-      loadGUISettings(userSettingsFileLocation); //load settings from default settings file in /data/
+      loadErrorTimerStart = millis();
+      try {
+        switch(eegDataSource) {
+          case DATASOURCE_CYTON:
+            userSettingsFileToLoad = cytonUserSettingsFile;
+            break;
+          case DATASOURCE_GANGLION:
+            userSettingsFileToLoad = ganglionUserSettingsFile;
+            break;
+          case DATASOURCE_PLAYBACKFILE:
+            userSettingsFileToLoad = playbackUserSettingsFile;
+            break;
+          case DATASOURCE_SYNTHETIC:
+            userSettingsFileToLoad = syntheticUserSettingsFile;
+            break;
+        }
+        loadGUISettings(userSettingsFileToLoad);
+        errorUserSettingsNotFound = false;
+      } catch (Exception e) {
+        println(e.getMessage());
+        println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+        errorUserSettingsNotFound = true;
+      }
       //Output message when Loading settings is complete
-      if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false) {
+      if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
         outputSuccess("Settings Loaded!");
       } else if (chanNumError) {
         outputError("Load Settings Error: Invalid number of channels");
       } else if (dataSourceError) {
         outputError("Load Settings Error: Invalid data source");
       } else {
-        outputError("Load settings error: " + userSettingsFileLocation + " not found. ");
+        outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
       }
       break;  
 

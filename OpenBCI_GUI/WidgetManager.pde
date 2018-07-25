@@ -50,30 +50,38 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
   
-  //Widget_3
+  //only instantiate this widget if you are using a Ganglion board for live streaming
+  if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    //If using Ganglion, this is Widget_3
+    w_ganglionImpedance = new W_ganglionImpedance(_this);
+    w_ganglionImpedance.setTitle("Ganglion Signal");
+    addWidget(w_ganglionImpedance, w);
+  }
+  
+  //Cyton - Widget_3, Ganglion - Widget_4
   w_networking = new W_networking(_this);
   w_networking.setTitle("Networking");
   addWidget(w_networking, w);
 
-  //Widget_4
+  //Cyton - Widget_4, Ganglion - Widget_5
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
   // println("  setupWidgets band power -- " + millis());
 
-  //Widget_5
+  //Cyton - Widget_5, Ganglion - Widget_6
   w_headPlot = new W_headPlot(_this);
   w_headPlot.setTitle("Head Plot");
   addWidget(w_headPlot, w);
   // println("  setupWidgets head plot -- " + millis());
 
-  //Widget_6
+  //Cyton - Widget_6, Ganglion - Widget_7
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
   // println("  setupWidgets emg -- " + millis());
 
-  //Widget_7
+  //Cyton - Widget_7, Ganglion - Widget_8
   w_focus = new W_Focus(_this);
   w_focus.setTitle("Focus Widget");
   addWidget(w_focus, w);
@@ -101,14 +109,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_markermode = new W_MarkerMode(_this);
     w_markermode.setTitle("Marker Mode");
     addWidget(w_markermode, w);
-  }
-  
-  //only instantiate this widget if you are using a Ganglion board for live streaming
-  if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
-    //If using Ganglion, this is Widget_8
-    w_ganglionImpedance = new W_ganglionImpedance(_this);
-    w_ganglionImpedance.setTitle("Ganglion Signal");
-    addWidget(w_ganglionImpedance, w);
   }
 
   //If using Ganglion, template is Widget_9, otherwise it is Widget_12.

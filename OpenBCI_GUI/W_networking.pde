@@ -1530,7 +1530,6 @@ class Stream extends Thread{
 
   void sendEMGData(){
     // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
-
     if (this.filter==0 || this.filter==1){
       // OSC
       if (this.protocol.equals("OSC")){
@@ -1589,7 +1588,6 @@ class Stream extends Thread{
 
   void sendFocusData(){
     // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
-
     if (this.filter==0 || this.filter==1){
       // OSC
       if (this.protocol.equals("OSC")){
