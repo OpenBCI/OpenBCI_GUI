@@ -710,7 +710,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   
   //Force headplot to redraw if it is active
   int hpWidgetNumber;
-  if (eegDataSource == DATATSOURCE_GANGLION) {
+  if (eegDataSource == DATASOURCE_GANGLION) {
     hpWidgetNumber = 6;
   } else {
     hpWidgetNumber = 5;
