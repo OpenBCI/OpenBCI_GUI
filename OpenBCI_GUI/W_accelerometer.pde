@@ -62,7 +62,7 @@ class W_accelerometer extends Widget {
   boolean Yrising;
   boolean Zrising;
   boolean OBCI_inited= true;
-  boolean accelerometerModeOn = true;
+  boolean accelerometerModeOn = false;
 
   Button accelModeButton;
 
@@ -98,7 +98,7 @@ class W_accelerometer extends Widget {
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
     }
-    
+
     String defaultAccelModeButtonString;
     if (eegDataSource == DATASOURCE_GANGLION) {
       defaultAccelModeButtonString = "Turn Accel. Off";
