@@ -709,9 +709,15 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadApplyTimeSeriesSettings();
   
   //Force headplot to redraw if it is active
-  if (wm.widgets.get(6).isActive) { 
+  int hpWidgetNumber;
+  if (eegDataSource == DATATSOURCE_GANGLION) {
+    hpWidgetNumber = 6;
+  } else {
+    hpWidgetNumber = 5;
+  }
+  if (wm.widgets.get(hpWidgetNumber).isActive) { 
     w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-    println("Haadplot is active: Redrawing");
+    println("Headplot is active: Redrawing");
   }
   
   //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
