@@ -724,12 +724,15 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   if (eegDataSource == DATASOURCE_GANGLION) {
     w_accelerometer.accelerometerModeOn = loadAccelerometer;
     //ganglion.accelModeActive = loadAccelerometer;
-    if (loadAccelerometer) {
-      ganglion.accelStart();
-      w_accelerometer.accelModeButton.setString("Turn Accel. Off");
+    if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
+      ganglion.accelStart(); //send message to hub
+      w_accelerometer.accelModeButton.setString("Turn Accel. Off"); //update button text
+      w_accelerometer.drawAccValues(); //draw accelerometer
+      w_accelerometer.draw3DGraph();
+      w_accelerometer.drawAccWave();
     } else {
-      ganglion.accelStop();
-      w_accelerometer.accelModeButton.setString("Turn Accel. On");
+      ganglion.accelStop(); //send message to hub
+      w_accelerometer.accelModeButton.setString("Turn Accel. On"); //update button text
     }
   }
 
