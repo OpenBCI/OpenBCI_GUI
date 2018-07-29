@@ -1480,37 +1480,3 @@ PVector getWindowLocation(String renderer) {
   return l;
 }
 //END OF CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
-
-// Select file to save custom settings using dropdown in TopNav.pde
-void saveConfigFile(File selection) {
-  if (selection == null) {
-    println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
-  } else {
-    println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
-    output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
-    saveSettingsDialogName = selection.getAbsolutePath();
-    saveGUISettings(saveSettingsDialogName); //save current settings to JSON file in SavedData
-    outputSuccess("Settings Saved!"); //print success message to screen
-    saveSettingsDialogName = null; //reset this variable for future use
-  }
-}
-// Select file to load custom settings using dropdown in TopNav.pde
-void loadConfigFile(File selection) {
-  if (selection == null) {
-    println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
-  } else {
-    println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
-    output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
-    loadSettingsDialogName = selection.getAbsolutePath();
-    loadGUISettings(loadSettingsDialogName); //load settings from JSON file in /data/
-    //Output success message when Loading settings is complete without errors
-    if (chanNumError == false && dataSourceError == false && loadErrorCytonEvent == false) {
-      outputSuccess("Settings Loaded!");
-    } else if (chanNumError == true) {
-      outputError("Channel Number Error:  Loading Default Settings");
-    } else {
-      outputError("Data Source Error: Loading Default Settings");
-    }
-    loadSettingsDialogName = null; //reset this variable for future use
-  }
-}
