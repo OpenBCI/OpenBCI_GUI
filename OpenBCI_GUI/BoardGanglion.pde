@@ -22,7 +22,7 @@ class Ganglion {
   final static String TCP_CMD_COMMAND = "k";
   final static String TCP_CMD_DISCONNECT = "d";
   final static String TCP_CMD_DATA= "t";
-  final static String TCP_CMD_ERROR = "e"; //<>//
+  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
   final static String TCP_CMD_IMPEDANCE = "i";
   final static String TCP_CMD_LOG = "l";
   final static String TCP_CMD_SCAN = "s";
@@ -87,7 +87,7 @@ class Ganglion {
   public int maxNumberOfDevices = 10;
 
   private boolean checkingImpedance = false;
-  private boolean accelModeActive = false;
+  private boolean accelModeActive = true;
 
   public boolean impedanceUpdated = false;
   public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
@@ -171,7 +171,7 @@ class Ganglion {
     String[] list = split(msg, ',');
     if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
       int channel = Integer.parseInt(list[2]);
-      if (channel < 5) { //<>//
+      if (channel < 5) { //<>// //<>//
         int value = Integer.parseInt(list[3]);
         impedanceArray[channel] = value;
         if (channel == 0) {
@@ -187,7 +187,7 @@ class Ganglion {
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
     hub.setSampleRate(sampleRate);
-    output("Setting sample rate for Ganglion to " + sampleRate + "Hz");
+    println("Setting sample rate for Ganglion to " + sampleRate + "Hz");
   }
 
   public void setInterface(int _interface) {
@@ -197,7 +197,7 @@ class Ganglion {
       if (_interface == INTERFACE_HUB_BLE) {
         hub.setProtocol(PROTOCOL_BLE);
       } else {
-        hub.setProtocol(PROTOCOL_BLED112);        
+        hub.setProtocol(PROTOCOL_BLED112);
       }
       // hub.searchDeviceStart();
     } else if (isWifi()) {
@@ -211,7 +211,7 @@ class Ganglion {
     return dataPacket.copyTo(target);
   }
 
-  // SCANNING/SEARHING FOR DEVICES
+  // SCANNING/SEARCHING FOR DEVICES
   public int closePort() {
     if (isBLE()) {
       hub.disconnectBLE();

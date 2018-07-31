@@ -62,6 +62,7 @@ class W_accelerometer extends Widget {
   boolean Yrising;
   boolean Zrising;
   boolean OBCI_inited= true;
+  boolean accelerometerModeOn = true;
 
   Button accelModeButton;
 
@@ -97,8 +98,14 @@ class W_accelerometer extends Widget {
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
     }
-
-    accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
+    
+    String defaultAccelModeButtonString;
+    if (eegDataSource == DATASOURCE_GANGLION) {
+      defaultAccelModeButtonString = "Turn Accel. Off";
+    } else {
+      defaultAccelModeButtonString = "Turn Accel. On";
+    }
+    accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, defaultAccelModeButtonString, 12);
     accelModeButton.setCornerRoundess((int)(navHeight-6));
     accelModeButton.setFont(p6,10);
     accelModeButton.setColorNotPressed(color(57,128,204));
@@ -169,6 +176,17 @@ class W_accelerometer extends Widget {
         currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1];
         currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
         currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
+        // X[X.length-1] =
+        //   int(map(currentXvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        // X[X.length-1] = constrain(X[X.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        // Y[Y.length-1] =
+        //   int(map(currentYvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        // Y[Y.length-1] = constrain(Y[Y.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        // Z[Z.length-1] =
+        //   int(map(currentZvalue, -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));
+        // Z[Z.length-1] = constrain(Z[Z.length-1], AccelWindowY, AccelWindowY+AccelWindowHeight);
+        //
+        // shiftWave();
       }
     }
   }
@@ -223,14 +241,16 @@ class W_accelerometer extends Widget {
       draw3DGraph();
       drawAccWave();
       if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
-        accelModeButton.setString("Turn Accel On");
+        accelModeButton.setString("Turn Accel. On");
         accelModeButton.draw();
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       if (ganglion.isBLE()) accelModeButton.draw();
-      drawAccValues();
-      draw3DGraph();
-      drawAccWave();
+      if (accelerometerModeOn) {
+        drawAccValues();
+        draw3DGraph();
+        drawAccWave();
+      }
     } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
       drawAccValues();
       draw3DGraph();
@@ -312,18 +332,25 @@ class W_accelerometer extends Widget {
       if(accelModeButton.isActive && accelModeButton.isMouseHere()){
         if(ganglion.isAccelModeActive()){
           ganglion.accelStop();
-
-          accelModeButton.setString("Turn Accel On");
+          accelModeButton.setString("Turn Accel. On");
+          accelerometerModeOn = false;
         } else{
           ganglion.accelStart();
-          accelModeButton.setString("Turn Accel Off");
+          accelModeButton.setString("Turn Accel. Off");
+          accelerometerModeOn = true;
         }
+        //accelerometerModeOn = !accelerometerModeOn;
       }
       accelModeButton.setIsActive(false);
     } else if (eegDataSource == DATASOURCE_CYTON) {
       if(accelModeButton.isActive && accelModeButton.isMouseHere()){
         cyton.setBoardMode(BOARD_MODE_DEFAULT);
         output("Starting to read accelerometer");
+        accelerometerModeOn = true;
+        w_analogRead.analogReadOn = false;
+        w_pulsesensor.analogReadOn = false;
+        w_digitalRead.digitalReadOn = false;
+        w_markermode.markerModeOn = false;
       }
       accelModeButton.setIsActive(false);
     }

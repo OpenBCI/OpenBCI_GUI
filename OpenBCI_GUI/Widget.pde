@@ -1,4 +1,4 @@
- ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //    Widget
 //      the idea here is that the widget class takes care of all of the responsiveness/structural stuff in the bg so that it is very easy to create a new custom widget to add to the GUI
@@ -99,10 +99,6 @@ class Widget{
     dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
     // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
     dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
-
-
-    print("wm.widgetOptions.size() = ");
-    println(_widgetOptions.size());
 
     cp5_widget.setColor(dropdownColors);
     cp5_widget.addScrollableList("WidgetSelector")
