@@ -73,7 +73,7 @@ class W_timeSeries extends Widget {
     ts_y = yF + (ts_padding);
     ts_w = wF - ts_padding*2;
     ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-    
+
     //Instantiate scrollbar if using playback mode
     if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
       playbackWidgetHeight = 50.0;
@@ -82,7 +82,7 @@ class W_timeSeries extends Widget {
     } else{
       playbackWidgetHeight = 0.0;
     }
-    
+
     channelBarHeight = int(ts_h/numChannelBars);
 
     channelBars = new ChannelBar[numChannelBars];
@@ -135,7 +135,7 @@ class W_timeSeries extends Widget {
 
       //put your code here...
       hsc.update(); //update channel controller
-      
+
       if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
         //scrub playback file
         scrollbar.update();
@@ -746,9 +746,13 @@ class PlaybackScrollbar {
     }
     if (abs(newspos - spos) > 1) { //if the slider has been moved
       spos = spos + (newspos-spos); //update position
-      playbackScrubbing(); //perform scrubbing
+      try {
+        playbackScrubbing(); //perform scrubbing
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
-    
+
   }
 
   float constrain(float val, float minv, float maxv) {
@@ -791,9 +795,9 @@ class PlaybackScrollbar {
     }
     rect(spos, ypos, sheight/2, sheight);
   }
-  
+
   void screenResized(int _x, int _y, int _w, int _h){
-    
+
     //x = _x;
     //y = _y;
     //w = _w;
@@ -805,10 +809,10 @@ class PlaybackScrollbar {
     // 0 and the total width of the scrollbar
     return spos * ratio;
   }
-  
+
   void playbackScrubbing() {
     num_indices = indices;
-    
+
     //WORK WITH COLIN ON IMPLEMENTING THIS ABOVE
     if(has_processed){
       //w_timeSeries.scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices);
@@ -816,28 +820,30 @@ class PlaybackScrollbar {
         float val_uV = 0.0f;
         boolean foundIndex =true;
         int startIndex = 0;
-    
+
         //w_timeSeries.scrollbar.update();
         //w_timeSeries.scrollbar.draw();
         //println("index" + index_of_times.get(w_timeSeries.scrollbar.get_index()));
         SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
         ArrayList<Date> keys_to_plot = new ArrayList();
-        
-        println("INDEXES"+num_indices);
-        
+
+        //println("INDEXES"+num_indices);
+        String timeToFind = "";
+
         try{
           Date timeIndex = format.parse(index_of_times.get(get_index()));
           Date fiveBefore = new Date(timeIndex.getTime());
           fiveBefore.setTime(fiveBefore.getTime() - 5000);
           Date fiveBeforeCopy = new Date(fiveBefore.getTime());
-    
+
           //START HERE TOMORROW
-          
+
           int i = 0;
           int timeToBreak = 0;
           while(true){
             //println("in while i:" + i);
-            if(index_of_times.get(i).contains(format.format(fiveBeforeCopy).toString())){
+            timeToFind = format.format(fiveBeforeCopy).toString();
+            if(index_of_times.get(i).contains(timeToFind)){
               println("found");
               startIndex = i;
               break;
@@ -845,16 +851,17 @@ class PlaybackScrollbar {
             if(i == index_of_times.size() -1){
               i = 0;
               fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
+              timeToFind = format.format(fiveBeforeCopy).toString();
               timeToBreak++;
             }
             if(timeToBreak > 3){
               break;
             }
             i++;
-    
+
           }
           //println("after first while");
-    
+
           while(fiveBefore.before(timeIndex)){
            //println("in while :" + fiveBefore);
             if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
@@ -867,43 +874,40 @@ class PlaybackScrollbar {
           println("keys_to_plot size: " + keys_to_plot.size());
         }
         catch(Exception e){}
-    
+
         float[][] data = new float[keys_to_plot.size()][nchan];
         int i = 0;
-    
+
         for(Date elm : keys_to_plot){
-    
+
           for(int Ichan=0; Ichan < nchan; Ichan++){
             val_uV = processed_file.get(elm)[Ichan][startIndex];
-    
-    
             data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
           }
           i++;
         }
-        
-        
-        //println("keys "+keys_to_plot.size());
-        
+
+        println(timeToFind);
+
         //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
-        
+
         if(keys_to_plot.size() > 100){
           for(int Ichan=0; Ichan<nchan; Ichan++){
             //update(data[Ichan],data_elec_imp_ohm); //used to be just update(float[], float[])
-            
+
           }
         }
-        
+
         //for(int index = 0; index <= scrollbar.get_index(); index++){
         //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
-    
+
         //}
-    
+
         //cc.update();
         //w_timeSeries.hsc.update()
         //cc.draw();
       }
     }
   }//end playback scrubbing
-  
+
 };
