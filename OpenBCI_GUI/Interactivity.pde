@@ -53,7 +53,7 @@ void parseKey(char val) {
       else if(drawAccel){
         drawAccel = false;
         drawPulse = true;
-        drawHead = false;
+        drawHead = false; 
         drawEMG = false;
       }
       else if(drawPulse){
@@ -236,21 +236,95 @@ void parseKey(char val) {
       }
       break;
 
-    //other controls
+    //other controls   
     case 's':
       println("case s...");
       stopRunning();
-
-      // stopButtonWasPressed();
+      //stopButtonWasPressed();
       break;
+     
     case 'b':
       println("case b...");
       startRunning();
-      // stopButtonWasPressed();
+      //stopButtonWasPressed();
       break;
-    case 'n':
-      println("cyton: " + cyton);
+
+    //Lowercase k sets Bias Don't Include all channels
+    case 'k':
+      for (int i = 0; i < nchan; i++) { //for every channel
+        //BIAS off all channels
+        channelSettingValues[i][3] = '0';
+        println ("chan " + i + " bias don't include");
+      }
       break;
+    //Lowercase l sets Bias Include all channels
+    case 'l':
+      for (int i = 0; i < nchan; i++) { //for every channel
+        //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
+        //BIAS on all channells
+        channelSettingValues[i][3] = '1';
+        println ("chan " + i + " bias include");
+      }
+      break;
+         
+    ///////////////////// Save settings lowercase n
+    case 'n':      
+      println("Save key pressed!"); 
+      switch(eegDataSource) {
+        case DATASOURCE_CYTON:
+          userSettingsFileToSave = cytonDefaultSettingsFile;
+          break;
+        case DATASOURCE_GANGLION:
+          userSettingsFileToSave = ganglionDefaultSettingsFile;
+          break;
+        case DATASOURCE_PLAYBACKFILE:
+          userSettingsFileToSave = playbackDefaultSettingsFile;
+          break;
+        case DATASOURCE_SYNTHETIC:
+          userSettingsFileToSave = syntheticDefaultSettingsFile;
+          break;
+      }
+      saveGUISettings(userSettingsFileToSave);
+      outputSuccess("Settings Saved!");
+      break;
+      
+    ///////////////////// Load settings uppercase N     
+    case 'N':
+      println("Load key pressed!");
+      loadErrorTimerStart = millis();
+      try {
+        switch(eegDataSource) {
+          case DATASOURCE_CYTON:
+            userSettingsFileToLoad = cytonUserSettingsFile;
+            break;
+          case DATASOURCE_GANGLION:
+            userSettingsFileToLoad = ganglionUserSettingsFile;
+            break;
+          case DATASOURCE_PLAYBACKFILE:
+            userSettingsFileToLoad = playbackUserSettingsFile;
+            break;
+          case DATASOURCE_SYNTHETIC:
+            userSettingsFileToLoad = syntheticUserSettingsFile;
+            break;
+        }
+        loadGUISettings(userSettingsFileToLoad);
+        errorUserSettingsNotFound = false;
+      } catch (Exception e) {
+        println(e.getMessage());
+        println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+        errorUserSettingsNotFound = true;
+      }
+      //Output message when Loading settings is complete
+      if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
+        outputSuccess("Settings Loaded!");
+      } else if (chanNumError) {
+        outputError("Load Settings Error: Invalid number of channels");
+      } else if (dataSourceError) {
+        outputError("Load Settings Error: Invalid data source");
+      } else {
+        outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
+      }
+      break;  
 
     case '?':
       cyton.printRegisters();
@@ -263,7 +337,7 @@ void parseKey(char val) {
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
       break;
-
+ 
     // //change the state of the impedance measurements...activate the N-channels
     // case 'A':
     //   Ichan = 1; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -316,11 +390,10 @@ void parseKey(char val) {
     //   Ichan = 8; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
     //   break;
 
-
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";
      println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-     saveFrame("./SavedData/" + picfname);    // take a shot of that!
+     saveFrame("./SavedData/Screenshots/" + picfname);    // take a shot of that!
      break;
 
     default:

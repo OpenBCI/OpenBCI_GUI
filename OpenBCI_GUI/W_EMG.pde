@@ -57,6 +57,7 @@ void SmoothEMG(int n){
       w_emg.motorWidgets[i].averagePeriod = samplesPerSecond * 2.0;
     }
   }
+  emgSmoothingSave = n;
   closeAllDropdowns();
 }
 
@@ -75,6 +76,7 @@ void uVLimit(int n){
       w_emg.motorWidgets[i].acceptableLimitUV = 400.0;
     }
   }
+  emguVLimSave = n;
   closeAllDropdowns();
 }
 
@@ -96,6 +98,7 @@ void CreepSpeed(int n){
       w_emg.motorWidgets[i].creepSpeed = 0.999;
     }
   }
+  emgCreepSave = n;
   closeAllDropdowns();
 }
 
@@ -114,6 +117,7 @@ void minUVRange(int n){
       w_emg.motorWidgets[i].minRange = 80.0;
     }
   }
+  emgMinDeltauVSave = n;
   closeAllDropdowns();
 }
 

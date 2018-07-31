@@ -304,11 +304,15 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
     }
 
-   // get accelerometer data
-   try{
-     for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
+    // get accelerometer data
+    try{
+      for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
+
         if (Iacc < datatable.getColumnCount()) {
           acc_G[Iacc] = row.getFloat(Iacc + nchan);
+          if (Float.isNaN(acc_G[Iacc])) {
+            acc_G[Iacc] = 0.0f;
+          }
         } else {
           //use zeros for bad data :)
           acc_G[Iacc] = 0.0f;
@@ -319,15 +323,13 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
 
         // Wangshu Dec.6 2016
         // as long as xyz are not zero at the same time, it should be fine...otherwise it will ignore it.
-        if (acc_G[Iacc]!= 0) {
+        if (acc_G[Iacc] > 0.000001) {
           acc_newData = true;
         }
       }
-   } catch (ArrayIndexOutOfBoundsException e){
-      // println("Data does not exist... possibly an old file.");
-   }
-
-
+    } catch (ArrayIndexOutOfBoundsException e){
+    // println("Data does not exist... possibly an old file.");
+    }
     if (acc_newData) {
       for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
         appendAndShift(accelerometerBuff[Iacc], acc_G[Iacc]);
@@ -335,7 +337,11 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
     }
 
     // get time stamp
-    if (!isOldData) curTimestamp = row.getString(nchan+3);
+    // try{
+    //   if (!isOldData) curTimestamp = row.getString(nchan+3);
+    // } catch (ArrayIndexOutOfBoundsException e){
+    // // println("Data does not exist... possibly an old file.");
+    // }
 
     //int localnchan = nchan;
 
@@ -351,7 +357,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       }
     }
 
-  }
+  } //end else
   return currentTableRowIndex;
 }
 
@@ -656,12 +662,14 @@ class DataProcessing {
     //increment the index
     currentFilt_ind++;
     if (currentFilt_ind >= N_FILT_CONFIGS) currentFilt_ind = 0;
+    dataProcessingBandpassSave = currentFilt_ind;//store the value to save bandpass setting
   }
 
   public void incrementNotchConfiguration() {
     //increment the index
     currentNotch_ind++;
     if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
+    dataProcessingNotchSave = currentNotch_ind;
   }
 
   public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call

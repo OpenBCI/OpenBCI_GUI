@@ -21,8 +21,6 @@ class TopNav {
   Button highRezButton;
 
   Button stopButton;
-  public final static String stopButton_pressToStop_txt = "Stop Data Stream";
-  public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
   Button filtBPButton;
   Button filtNotchButton;
@@ -33,14 +31,16 @@ class TopNav {
 
 
   Button layoutButton;
+  Button configButton;
 
   LayoutSelector layoutSelector;
   TutorialSelector tutorialSelector;
+  configSelector configSelector;
 
   boolean finishedInit = false;
 
   //constructor
-  TopNav(){
+  TopNav() {
 
     controlPanelCollapser = new Button(3, 3, 256, 26, "System Control Panel", fontInfo.buttonLabel_size);
     controlPanelCollapser.setFont(h3, 16);
@@ -48,16 +48,16 @@ class TopNav {
     controlPanelCollapser.isDropdownButton = true;
 
     fpsButton = new Button(3+3+256, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
-    if(frameRateCounter==0){
+    if (frameRateCounter==0) {
       fpsButton.setString("24 fps");
     }
-    if(frameRateCounter==1){
+    if (frameRateCounter==1) {
       fpsButton.setString("30 fps");
     }
-    if(frameRateCounter==2){
+    if (frameRateCounter==2) {
       fpsButton.setString("45 fps");
     }
-    if(frameRateCounter==3){
+    if (frameRateCounter==3) {
       fpsButton.setString("60 fps");
     }
 
@@ -89,12 +89,12 @@ class TopNav {
 
     layoutSelector = new LayoutSelector();
     tutorialSelector = new TutorialSelector();
+    configSelector = new configSelector();
 
     updateNavButtonsBasedOnColorScheme();
-
   }
 
-  void initSecondaryNav(){
+  void initSecondaryNav() {
     stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
     stopButton.setFont(h4, 14);
     stopButton.setColorNotPressed(color(184, 220, 105));
@@ -112,12 +112,15 @@ class TopNav {
     layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
     layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
     layoutButton.setFont(h4, 14);
+    configButton = new Button(width - 3 - 60 - 3 - 60 - 10, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
+    configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
+    configButton.setFont(h4, 14);
 
     updateSecondaryNavButtonsColor();
   }
 
-  void updateNavButtonsBasedOnColorScheme(){
-    if(colorScheme == COLOR_SCHEME_DEFAULT){
+  void updateNavButtonsBasedOnColorScheme() {
+    if (colorScheme == COLOR_SCHEME_DEFAULT) {
       controlPanelCollapser.setColorNotPressed(color(255));
       fpsButton.setColorNotPressed(color(255));
       highRezButton.setColorNotPressed(color(255));
@@ -131,9 +134,7 @@ class TopNav {
       issuesButton.textColorNotActive = color(bgColor);
       shopButton.textColorNotActive = color(bgColor);
       tutorialsButton.textColorNotActive = color(bgColor);
-
-
-    } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
       // controlPanelCollapser.setColorNotPressed(color(150));
       // issuesButton.setColorNotPressed(color(150));
       // shopButton.setColorNotPressed(color(150));
@@ -169,44 +170,46 @@ class TopNav {
       // tutorialsButton.textColorNotActive = color(bgColor);
     }
 
-    if(systemMode >= SYSTEMMODE_POSTINIT){
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
       updateSecondaryNavButtonsColor();
     }
   }
 
-  void updateSecondaryNavButtonsColor(){
-    if(colorScheme == COLOR_SCHEME_DEFAULT){
+  void updateSecondaryNavButtonsColor() {
+    if (colorScheme == COLOR_SCHEME_DEFAULT) {
       filtBPButton.setColorNotPressed(color(255));
       filtNotchButton.setColorNotPressed(color(255));
       layoutButton.setColorNotPressed(color(255));
+      configButton.setColorNotPressed(color(255));
 
       filtBPButton.textColorNotActive = color(bgColor);
       filtNotchButton.textColorNotActive = color(bgColor);
       layoutButton.textColorNotActive = color(bgColor);
-    }
-    else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
-      filtBPButton.setColorNotPressed(color(57,128,204));
-      filtNotchButton.setColorNotPressed(color(57,128,204));
-      layoutButton.setColorNotPressed(color(57,128,204));
+      configButton.textColorNotActive = color(bgColor);
+    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+      filtBPButton.setColorNotPressed(color(57, 128, 204));
+      filtNotchButton.setColorNotPressed(color(57, 128, 204));
+      layoutButton.setColorNotPressed(color(57, 128, 204));
+      configButton.setColorNotPressed(color(57, 128, 204));
 
       filtBPButton.textColorNotActive = color(255);
       filtNotchButton.textColorNotActive = color(255);
       layoutButton.textColorNotActive = color(255);
+      configButton.textColorNotActive = color(255);
     }
-
   }
 
-  void update(){
-    if(systemMode >= SYSTEMMODE_POSTINIT){
+  void update() {
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
       layoutSelector.update();
       tutorialSelector.update();
     }
   }
 
-  void draw(){
+  void draw() {
     pushStyle();
 
-    if(colorScheme == COLOR_SCHEME_DEFAULT){
+    if (colorScheme == COLOR_SCHEME_DEFAULT) {
       noStroke();
       fill(229);
       rect(0, 0, width, topNav_h);
@@ -214,18 +217,18 @@ class TopNav {
       fill(255);
       rect(-1, 0, width+2, navBarHeight);
       image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
-    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+    } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
       noStroke();
       fill(100);
-      fill(57,128,204);
+      fill(57, 128, 204);
       rect(0, 0, width, topNav_h);
       stroke(bgColor);
-      fill(31,69,110);
+      fill(31, 69, 110);
       rect(-1, 0, width+2, navBarHeight);
       image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
     }
 
-    // if(colorScheme == COLOR_SCHEME_DEFAULT){
+    // if (colorScheme == COLOR_SCHEME_DEFAULT){
     //
     // } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
     //
@@ -233,11 +236,12 @@ class TopNav {
 
     popStyle();
 
-    if(systemMode == SYSTEMMODE_POSTINIT){
+    if (systemMode == SYSTEMMODE_POSTINIT) {
       stopButton.draw();
       filtBPButton.draw();
       filtNotchButton.draw();
       layoutButton.draw();
+      configButton.draw();
     }
 
     controlPanelCollapser.draw();
@@ -249,26 +253,27 @@ class TopNav {
 
     // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
 
-
     layoutSelector.draw();
     tutorialSelector.draw();
-
+    configSelector.draw();
   }
 
-  void screenHasBeenResized(int _x, int _y){
+  void screenHasBeenResized(int _x, int _y) {
     tutorialsButton.but_x = width - 3 - tutorialsButton.but_dx;
     issuesButton.but_x = width - 3*2 - issuesButton.but_dx - tutorialsButton.but_dx;
     shopButton.but_x = width - 3*3 - shopButton.but_dx - issuesButton.but_dx - tutorialsButton.but_dx;
 
-    if(systemMode == SYSTEMMODE_POSTINIT){
+    if (systemMode == SYSTEMMODE_POSTINIT) {
       layoutButton.but_x = width - 3 - layoutButton.but_dx;
+      configButton.but_x = width - (3*2) - (layoutButton.but_dx*2) - 10;
       layoutSelector.screenResized();     //pass screenResized along to layoutSelector
       tutorialSelector.screenResized();
+      configSelector.screenResized();
     }
   }
 
-  void mousePressed(){
-    if(systemMode >= SYSTEMMODE_POSTINIT){
+  void mousePressed() {
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
       if (stopButton.isMouseHere()) {
         stopButton.setIsActive(true);
         stopButtonWasPressed();
@@ -285,6 +290,10 @@ class TopNav {
         layoutButton.setIsActive(true);
         //toggle layout window to enable the selection of your container layoutButton...
       }
+      if (configButton.isMouseHere()) {
+        configButton.setIsActive(true);
+        //toggle save/load window
+      }
     }
 
     //was control panel button pushed
@@ -297,24 +306,23 @@ class TopNav {
         // controlPanelCollapser.setIsActive(false);
         controlPanel.open();
       }
-    }
-    else {
+    } else {
       if (controlPanel.isOpen) {
         controlPanel.CPmousePressed();
       }
     }
 
     //this is super hacky... but needs to be done otherwise... the controlPanelCollapser doesn't match the open control panel
-    if(controlPanel.isOpen){
+    if (controlPanel.isOpen) {
       controlPanelCollapser.setIsActive(true);
     }
 
-    if(fpsButton.isMouseHere()){
+    if (fpsButton.isMouseHere()) {
       fpsButton.setIsActive(true);
     }
 
     // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-    // if(highRezButton.isMouseHere()){
+    // if (highRezButton.isMouseHere()){
     //   highRezButton.setIsActive(true);
     // }
 
@@ -333,9 +341,10 @@ class TopNav {
 
     layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
     tutorialSelector.mousePressed();
+    configSelector.mousePressed();
   }
 
-  void mouseReleased(){
+  void mouseReleased() {
 
     if (fpsButton.isMouseHere() && fpsButton.isActive()) {
       toggleFrameRate();
@@ -363,13 +372,18 @@ class TopNav {
 
 
 
-    if(systemMode == SYSTEMMODE_POSTINIT){
+    if (systemMode == SYSTEMMODE_POSTINIT) {
 
-      if(!tutorialSelector.isVisible){ //make sure that you can't open the layout selector accidentally
+      if (!tutorialSelector.isVisible) { //make sure that you can't open the layout selector accidentally
         if (layoutButton.isMouseHere() && layoutButton.isActive()) {
           layoutSelector.toggleVisibility();
           layoutButton.setIsActive(true);
           wm.printLayouts();
+        }
+        if (configButton.isMouseHere() && configButton.isActive()) {
+          //layoutSelector.toggleVisibility();
+          configSelector.toggleVisibility();         
+          configButton.setIsActive(true);
         }
       }
 
@@ -377,6 +391,7 @@ class TopNav {
       filtBPButton.setIsActive(false);
       filtNotchButton.setIsActive(false);
       layoutButton.setIsActive(false);
+      configButton.setIsActive(false);
     }
 
     fpsButton.setIsActive(false);
@@ -385,10 +400,11 @@ class TopNav {
     issuesButton.setIsActive(false);
     shopButton.setIsActive(false);
 
+
     layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
     tutorialSelector.mouseReleased();
+    configSelector.mouseReleased();
   }
-
 }
 
 //=============== OLD STUFF FROM Gui_Manger.pde ===============//
@@ -409,14 +425,14 @@ void incrementNotchConfiguration() {
   // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
 }
 
-class LayoutSelector{
+class LayoutSelector {
 
   int x, y, w, h, margin, b_w, b_h;
   boolean isVisible;
 
   ArrayList<Button> layoutOptions; //
 
-  LayoutSelector(){
+  LayoutSelector() {
     w = 180;
     x = width - w - 3;
     y = (navBarHeight * 2) - 3;
@@ -432,30 +448,30 @@ class LayoutSelector{
     addLayoutOptionButton();
   }
 
-  void update(){
-    if(isVisible){ //only update if visible
+  void update() {
+    if (isVisible) { //only update if visible
       // //close dropdown when mouse leaves
-      // if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
+      // if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
       //   toggleVisibility();
       // }
     }
   }
 
-  void draw(){
-    if(isVisible){ //only draw if visible
+  void draw() {
+    if (isVisible) { //only draw if visible
       pushStyle();
 
       // println("it's happening");
       stroke(bgColor);
       // fill(229); //bg
-      fill(57,128,204); //bg
+      fill(57, 128, 204); //bg
       rect(x, y, w, h);
 
-      for(int i = 0; i < layoutOptions.size(); i++){
+      for (int i = 0; i < layoutOptions.size(); i++) {
         layoutOptions.get(i).draw();
       }
 
-      fill(57,128,204);
+      fill(57, 128, 204);
       // fill(177, 184, 193);
       noStroke();
       rect(x+w-(topNav.layoutButton.but_dx-1), y, (topNav.layoutButton.but_dx-1), 1);
@@ -464,72 +480,70 @@ class LayoutSelector{
     }
   }
 
-  void isMouseHere(){
-
+  void isMouseHere() {
   }
 
-  void mousePressed(){
+  void mousePressed() {
     //only allow button interactivity if isVisible==true
-    if(isVisible){
-      for(int i = 0; i < layoutOptions.size(); i++){
-        if(layoutOptions.get(i).isMouseHere()){
+    if (isVisible) {
+      for (int i = 0; i < layoutOptions.size(); i++) {
+        if (layoutOptions.get(i).isMouseHere()) {
           layoutOptions.get(i).setIsActive(true);
         }
       }
     }
   }
 
-  void mouseReleased(){
+  void mouseReleased() {
     //only allow button interactivity if isVisible==true
-    if(isVisible){
-      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
+    if (isVisible) {
+      if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()) {
         toggleVisibility();
       }
-      for(int i = 0; i < layoutOptions.size(); i++){
-        if(layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()){
+      for (int i = 0; i < layoutOptions.size(); i++) {
+        if (layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()) {
           int layoutSelected = i+1;
           println("Layout [" + layoutSelected + "] selected.");
           output("Layout [" + layoutSelected + "] selected.");
           layoutOptions.get(i).setIsActive(false);
           toggleVisibility(); //shut layoutSelector if something is selected
           wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
+          currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
         }
       }
     }
   }
 
-  void screenResized(){
+  void screenResized() {
     //update position of outer box and buttons
     int oldX = x;
     x = width - w - 3;
     int dx = oldX - x;
-    for(int i = 0; i < layoutOptions.size(); i++){
+    for (int i = 0; i < layoutOptions.size(); i++) {
       layoutOptions.get(i).setX(layoutOptions.get(i).but_x - dx);
     }
-
   }
 
-  void toggleVisibility(){
+  void toggleVisibility() {
     isVisible = !isVisible;
-    if(isVisible){
+    if (isVisible) {
       //the very convoluted way of locking all controllers of a single controlP5 instance...
-      for(int i = 0; i < wm.widgets.size(); i++){
-        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+      for (int i = 0; i < wm.widgets.size(); i++) {
+        for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
           wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
         }
       }
-
-    }else{
+    } else {
       //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-      for(int i = 0; i < wm.widgets.size(); i++){
-        for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+      for (int i = 0; i < wm.widgets.size(); i++) {
+        for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
           wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
         }
       }
     }
   }
 
-  void addLayoutOptionButton(){
+  void addLayoutOptionButton() {
 
     //FIRST ROW
 
@@ -609,23 +623,206 @@ class LayoutSelector{
     tempBackgroundImage = loadImage("layout_buttons/layout_12.png");
     tempLayoutButton.setBackgroundImage(tempBackgroundImage);
     layoutOptions.add(tempLayoutButton);
-
   }
-
-  void updateLayoutOptionButtons(){
-
-  }
-
 }
 
-class TutorialSelector{
+class configSelector {
+  int x, y, w, h, margin, b_w, b_h;
+  boolean isVisible;
+
+  ArrayList<Button> configOptions; //
+
+  configSelector() {
+    w = 120;
+    x = width- 3*2 - 60*3 - margin*3;
+    y = (navBarHeight * 2) - 3;
+    margin = 6;
+    b_w = w - margin*2;
+    b_h = 22;
+    h = margin*3 + b_h*2;
+
+    isVisible = false;
+
+    configOptions = new ArrayList<Button>();
+    addConfigButtons();
+  }
+
+  void update() {
+  }
+
+  void draw() {
+    if (isVisible == true) { //only draw if visible
+      pushStyle();
+
+      //println("it's happening");
+      stroke(bgColor);
+      // fill(229); //bg
+      fill(57, 128, 204); //bg
+      rect(x, y, w, h);
+
+      for (int i = 0; i < configOptions.size(); i++) {
+        configOptions.get(i).draw();
+      }
+
+      fill(57, 128, 204);
+      // fill(177, 184, 193);
+      noStroke();
+      rect(x+w-(topNav.configButton.but_dx-1), y, (topNav.configButton.but_dx-1), 1);
+
+      popStyle();
+    }
+  }
+
+  void isMouseHere() {
+  }
+
+  void mousePressed() {
+    //only allow button interactivity if isVisible==true
+    if (isVisible) {
+      for (int i = 0; i < configOptions.size(); i++) {
+        if (configOptions.get(i).isMouseHere()) {
+          configOptions.get(i).setIsActive(true);
+          println("config pressed");
+        }
+      }
+    }
+  }
+
+  void mouseReleased() {
+    //only allow button interactivity if isVisible==true
+    if (isVisible) {
+      if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.configButton.isMouseHere()) {
+        toggleVisibility();
+      }
+      for (int i = 0; i < configOptions.size(); i++) {
+        if (configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()) {
+          int configSelected = i;
+          configOptions.get(i).setIsActive(false);
+          if (configSelected == 0) { //If save button is pressed..
+            String userSettingsFileToSave = null;
+            switch(eegDataSource) {
+              case DATASOURCE_CYTON:
+                userSettingsFileToSave = cytonUserSettingsFile;
+                break;
+              case DATASOURCE_GANGLION:
+                userSettingsFileToSave = ganglionUserSettingsFile;
+                break;
+              case DATASOURCE_PLAYBACKFILE:
+                userSettingsFileToSave = playbackUserSettingsFile;
+                break;
+              case DATASOURCE_SYNTHETIC:
+                userSettingsFileToSave = syntheticUserSettingsFile;
+                break;
+            }     
+            if (saveSettingsDialogName == null) {
+              selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileToSave)); //open dialog box to save settings as json
+            } else {
+              println(saveSettingsDialogName); 
+              saveSettingsDialogName = null;
+            }
+          } else if (configSelected == 1) {
+            //Select file to load from dialog box
+            if (loadSettingsDialogName == null) {
+              selectInput("Load a custom settings file from JSON:", "loadConfigFile");
+              saveSettingsDialogName = null;
+            } else {
+              println(loadSettingsDialogName); 
+            }         
+          } else if (configSelected == 2) {           
+            //Revert GUI to default settings that were flashed on system start!
+            String defaultSettingsFileToLoad = null;
+            switch(eegDataSource) {
+              case DATASOURCE_CYTON:
+                defaultSettingsFileToLoad = cytonDefaultSettingsFile;
+                break;
+              case DATASOURCE_GANGLION:
+                defaultSettingsFileToLoad = ganglionDefaultSettingsFile;
+                break;
+              case DATASOURCE_PLAYBACKFILE:
+                defaultSettingsFileToLoad = playbackDefaultSettingsFile;
+                break;
+              case DATASOURCE_SYNTHETIC:
+                defaultSettingsFileToLoad = syntheticDefaultSettingsFile;
+                break;
+            }
+            loadGUISettings(defaultSettingsFileToLoad);            
+            outputSuccess("Default Settings Loaded!");
+          }                  
+          toggleVisibility(); //shut configSelector if something is selected
+        }
+      }
+    }
+  }
+
+  void screenResized() {
+    //update position of outer box and buttons
+    int oldX = x;
+    x = width - 3*2 - 60*3;
+    int dx = oldX - x;
+    for (int i = 0; i < configOptions.size(); i++) {
+      configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+    }
+  }
+
+  void toggleVisibility() {
+    isVisible = !isVisible;
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
+      if (isVisible) {
+        //the very convoluted way of locking all controllers of a single controlP5 instance...
+        for (int i = 0; i < wm.widgets.size(); i++) {
+          for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
+            wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
+          }
+        }
+      } else {
+        //the very convoluted way of unlocking all controllers of a single controlP5 instance...
+        for (int i = 0; i < wm.widgets.size(); i++) {
+          for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
+            wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
+          }
+        }
+      }
+    }
+  }
+
+  void addConfigButtons() {
+
+    //FIRST ROW
+
+    //setup button 1 -- Save Custom Settings
+    int buttonNumber = 0;
+    Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
+    tempConfigButton.setFont(p5, 12);
+    configOptions.add(tempConfigButton);
+
+    //setup button 2 -- Load Custom Settings
+    buttonNumber = 1;
+    h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+    tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
+    tempConfigButton.setFont(p5, 12);
+    configOptions.add(tempConfigButton);
+    
+    //setup button 3 -- Default Settings
+    buttonNumber = 2;
+    h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+    tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
+    tempConfigButton.setFont(p5, 12);
+    configOptions.add(tempConfigButton);
+  }
+
+  void updateConfigOptionButtons() {
+    //dropdown is static, so no need to update
+  }
+}  
+
+class TutorialSelector {
 
   int x, y, w, h, margin, b_w, b_h;
   boolean isVisible;
 
   ArrayList<Button> tutorialOptions; //
 
-  TutorialSelector(){
+  TutorialSelector() {
     w = 180;
     x = width - w - 3;
     y = (navBarHeight) - 3;
@@ -641,61 +838,60 @@ class TutorialSelector{
     addTutorialButtons();
   }
 
-  void update(){
-    if(isVisible){ //only update if visible
+  void update() {
+    if (isVisible) { //only update if visible
       // //close dropdown when mouse leaves
-      // if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
+      // if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
       //   toggleVisibility();
       // }
     }
   }
 
-  void draw(){
-    if(isVisible){ //only draw if visible
+  void draw() {
+    if (isVisible) { //only draw if visible
       pushStyle();
 
       // println("it's happening");
       stroke(bgColor);
       // fill(229); //bg
-      fill(31,69,110); //bg
+      fill(31, 69, 110); //bg
       rect(x, y, w, h);
 
-      for(int i = 0; i < tutorialOptions.size(); i++){
+      for (int i = 0; i < tutorialOptions.size(); i++) {
         tutorialOptions.get(i).draw();
       }
 
       fill(openbciBlue);
       // fill(177, 184, 193);
       noStroke();
-      rect(x+w-(topNav.tutorialsButton.but_dx-1), y, (topNav.tutorialsButton.but_dx-1) , 1);
+      rect(x+w-(topNav.tutorialsButton.but_dx-1), y, (topNav.tutorialsButton.but_dx-1), 1);
 
       popStyle();
     }
   }
 
-  void isMouseHere(){
-
+  void isMouseHere() {
   }
 
-  void mousePressed(){
+  void mousePressed() {
     //only allow button interactivity if isVisible==true
-    if(isVisible){
-      for(int i = 0; i < tutorialOptions.size(); i++){
-        if(tutorialOptions.get(i).isMouseHere()){
+    if (isVisible) {
+      for (int i = 0; i < tutorialOptions.size(); i++) {
+        if (tutorialOptions.get(i).isMouseHere()) {
           tutorialOptions.get(i).setIsActive(true);
         }
       }
     }
   }
 
-  void mouseReleased(){
+  void mouseReleased() {
     //only allow button interactivity if isVisible==true
-    if(isVisible){
-      if((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()){
+    if (isVisible) {
+      if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()) {
         toggleVisibility();
       }
-      for(int i = 0; i < tutorialOptions.size(); i++){
-        if(tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()){
+      for (int i = 0; i < tutorialOptions.size(); i++) {
+        if (tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()) {
           int tutorialSelected = i+1;
           tutorialOptions.get(i).setIsActive(false);
           tutorialOptions.get(i).goToURL();
@@ -708,32 +904,30 @@ class TutorialSelector{
     }
   }
 
-  void screenResized(){
+  void screenResized() {
     //update position of outer box and buttons
     int oldX = x;
     x = width - w - 3;
     int dx = oldX - x;
-    for(int i = 0; i < tutorialOptions.size(); i++){
+    for (int i = 0; i < tutorialOptions.size(); i++) {
       tutorialOptions.get(i).setX(tutorialOptions.get(i).but_x - dx);
     }
-
   }
 
-  void toggleVisibility(){
+  void toggleVisibility() {
     isVisible = !isVisible;
-    if(systemMode >= SYSTEMMODE_POSTINIT){
-      if(isVisible) {
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
+      if (isVisible) {
         //the very convoluted way of locking all controllers of a single controlP5 instance...
-        for(int i = 0; i < wm.widgets.size(); i++){
-          for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++){
+        for (int i = 0; i < wm.widgets.size(); i++) {
+          for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
             wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
           }
         }
-
       } else {
         //the very convoluted way of unlocking all controllers of a single controlP5 instance...
-        for(int i = 0; i < wm.widgets.size(); i++) {
-          for(int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
+        for (int i = 0; i < wm.widgets.size(); i++) {
+          for (int j = 0; j < wm.widgets.get(i).cp5_widget.getAll().size(); j++) {
             wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).unlock();
           }
         }
@@ -741,7 +935,7 @@ class TutorialSelector{
     }
   }
 
-  void addTutorialButtons(){
+  void addTutorialButtons() {
 
     //FIRST ROW
 
@@ -772,11 +966,39 @@ class TutorialSelector{
     tempTutorialButton.setFont(p5, 12);
     tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
     tutorialOptions.add(tempTutorialButton);
-
   }
+}
 
-  void updateLayoutOptionButtons(){
-
+// Select file to save custom settings using dropdown in TopNav.pde
+void saveConfigFile(File selection) {
+  if (selection == null) {
+    println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
+  } else {
+    println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
+    output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
+    saveSettingsDialogName = selection.getAbsolutePath();
+    saveGUISettings(saveSettingsDialogName); //save current settings to JSON file in SavedData
+    outputSuccess("Settings Saved!"); //print success message to screen
+    saveSettingsDialogName = null; //reset this variable for future use
   }
-
+}
+// Select file to load custom settings using dropdown in TopNav.pde
+void loadConfigFile(File selection) {
+  if (selection == null) {
+    println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
+  } else {
+    println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
+    output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
+    loadSettingsDialogName = selection.getAbsolutePath();
+    loadGUISettings(loadSettingsDialogName); //load settings from JSON file in /data/
+    //Output success message when Loading settings is complete without errors
+    if (chanNumError == false && dataSourceError == false && loadErrorCytonEvent == false) {
+      outputSuccess("Settings Loaded!");
+    } else if (chanNumError == true) {
+      outputError("Channel Number Error:  Loading Default Settings");
+    } else {
+      outputError("Data Source Error: Loading Default Settings");
+    }
+    loadSettingsDialogName = null; //reset this variable for future use
+  }
 }

@@ -140,17 +140,17 @@ class W_ganglionImpedance extends Widget {
     if(startStopCheck.isActive && startStopCheck.isMouseHere()){
       if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
         if(ganglion.isCheckingImpedance()){
+          //Stop impedance check
           ganglion.impedanceStop();
           startStopCheck.but_txt = "Start Impedance Check";
         } else {
-          ganglion.impedanceStart();
-          startStopCheck.but_txt = "Stop Impedance Check";
-
           // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
           stopRunning();
-          topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
+          topNav.stopButton.setString(stopButton_pressToStart_txt);
           topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-
+          //Start impedance check
+          ganglion.impedanceStart();
+          startStopCheck.but_txt = "Stop Impedance Check";
         }
       }
     }

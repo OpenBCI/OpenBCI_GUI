@@ -268,6 +268,84 @@ Robot rob3115;
 
 PApplet ourApplet;
 
+//Variables from TopNav.pde. Used to set text when stopping/starting data stream.
+public final static String stopButton_pressToStop_txt = "Stop Data Stream";
+public final static String stopButton_pressToStart_txt = "Start Data Stream";
+
+///////////Variables from HardwareSettingsController. This fixes a number of issues.
+int numSettingsPerChannel = 6; //each channel has 6 different settings
+char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+char[][] impedanceCheckValues = new char [nchan][2];
+//[Number of Channels] x 6 array of buttons for channel settings
+//Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
+
+//default layout variables
+int layoutSelected;
+int currentLayout;
+
+////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
+//Notch and Bandpass filter variables for save
+int dataProcessingNotchSave = 0;
+int dataProcessingBandpassSave = 3;
+
+//Time Series settings
+int tsVertScaleSave = 3;
+int tsHorizScaleSave = 2;
+String checkForSuccessTS;
+
+//FFT plot settings,
+int fftMaxFrqSave = 2;
+int fftMaxuVSave = 2;
+int fftLogLinSave = 0;
+int fftSmoothingSave = 3;
+int fftFilterSave = 0;
+
+//Analog Read settings
+int arVertScaleSave = 5; //updates in VertScale_AR()
+int arHorizScaleSave = 2; //updates in Duration_AR()
+
+//Headplot settings
+int hpIntensitySave = 2;
+int hpPolaritySave = 0;
+int hpContoursSave = 0;
+int hpSmoothingSave = 3;
+
+//EMG settings
+int emgSmoothingSave = 4;
+int emguVLimSave = 2;
+int emgCreepSave = 3;
+int emgMinDeltauVSave = 1;
+
+//Focus widget settings
+int focusThemeSave = 0;
+int focusKeySave = 0;
+
+//default data types for streams 1-4 in Networking widget
+int nwDataType1 = 0;
+int nwDataType2 = 0;
+int nwDataType3 = 0;
+int nwDataType4 = 0;
+int nwProtocolSave = 0;
+
+//default configuration settings file location and file name variables
+final String cytonUserSettingsFile = "SavedData/Settings/CytonUserSettings.json";
+final String cytonDefaultSettingsFile = "SavedData/Settings/CytonDefaultSettings.json";
+final String ganglionUserSettingsFile = "SavedData/Settings/GanglionUserSettings.json";
+final String ganglionDefaultSettingsFile = "SavedData/Settings/GanglionDefaultSettings.json";
+final String playbackUserSettingsFile = "SavedData/Settings/PlaybackUserSettings.json";
+final String playbackDefaultSettingsFile = "SavedData/Settings/PlaybackDefaultSettings.json";
+final String syntheticUserSettingsFile = "SavedData/Settings/SyntheticUserSettings.json";
+final String syntheticDefaultSettingsFile = "SavedData/Settings/SyntheticDefaultSettings.json";
+String userSettingsFileToSave;
+String userSettingsFileToLoad;
+String saveSettingsDialogName; //Used when Save button is pressed
+String loadSettingsDialogName; //Used when Load button is pressed
+String controlEventDataSource; //Used for output message on system start
+Boolean errorUserSettingsNotFound = false; //For error catching
+int loadErrorTimerStart;
+int loadErrorTimeWindow = 3800; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
+Boolean loadErrorCytonEvent = false;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -370,7 +448,7 @@ void setup() {
   myPresentation = new Presentation();
 
   // UDPMarker functionality
-  // Setup the UDP receiver
+  // Setup the UDP receiver // This needs to be done only when marker mode is enabled
   int portRX = 51000;  // this is the UDP port the application will be listening on
   String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
@@ -447,8 +525,7 @@ private void prepareExitHandler () {
         } else {
           System.out.println("FAILED TO SHUTDOWN HUB");
         }
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         ex.printStackTrace(); // not much else to do at this point
       }
     }
@@ -768,6 +845,82 @@ void initSystem() {
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
+  //Take a snapshot of the default GUI settings before loading User settings!
+  String defaultSettingsFileToSave = null;
+  switch(eegDataSource) {
+    case DATASOURCE_CYTON:
+      defaultSettingsFileToSave = cytonDefaultSettingsFile;
+      break;
+    case DATASOURCE_GANGLION:
+      defaultSettingsFileToSave = ganglionDefaultSettingsFile;
+      break;
+    case DATASOURCE_PLAYBACKFILE:
+      defaultSettingsFileToSave = playbackDefaultSettingsFile;
+      break;
+    case DATASOURCE_SYNTHETIC:
+      defaultSettingsFileToSave = syntheticDefaultSettingsFile;
+      break;
+  }
+  saveGUISettings(defaultSettingsFileToSave);
+
+  //Try Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization. Otherwise, load default settings.
+  loadErrorTimerStart = millis();
+  try {
+    switch(eegDataSource) {
+      case DATASOURCE_CYTON:
+        userSettingsFileToLoad = cytonUserSettingsFile;
+        break;
+      case DATASOURCE_GANGLION:
+        userSettingsFileToLoad = ganglionUserSettingsFile;
+        break;
+      case DATASOURCE_PLAYBACKFILE:
+        userSettingsFileToLoad = playbackUserSettingsFile;
+        break;
+      case DATASOURCE_SYNTHETIC:
+        userSettingsFileToLoad = syntheticUserSettingsFile;
+        break;
+    }
+    loadGUISettings(userSettingsFileToLoad);
+    errorUserSettingsNotFound = false;
+  } catch (Exception e) {
+    println(e.getMessage());
+    println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+    errorUserSettingsNotFound = true;
+  }
+
+  //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
+  String firmwareToPrint = "";
+  String dataModeVersionToPrint = controlEventDataSource;
+  if (eegDataSource == DATASOURCE_CYTON) {
+    if (!loadErrorCytonEvent) {
+      firmwareToPrint = " " + hub.firmwareVersion + ")";
+    } else {
+      firmwareToPrint = "v.?)";
+    }
+    dataModeVersionToPrint = controlEventDataSource.replace(")", " ");
+    dataModeVersionToPrint += firmwareToPrint;
+  }
+
+  //Output messages when Loading settings is complete
+  if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
+    if (eegDataSource == DATASOURCE_SYNTHETIC) {
+      outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
+    }
+  } else if (chanNumError) {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
+    output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
+  } else if (dataSourceError) {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
+    output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
+  } else if (errorUserSettingsNotFound) {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileToLoad + " not found. " + millis()); //Print the error to console
+    output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
+  } else {
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
+    outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
+  }
+
   //reset init variables
   midInit = false;
   abandonInit = false;
@@ -854,7 +1007,7 @@ void stopButtonWasPressed() {
     verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
     wm.setUpdating(false);
     stopRunning();
-    topNav.stopButton.setString(topNav.stopButton_pressToStart_txt);
+    topNav.stopButton.setString(stopButton_pressToStart_txt);
     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
     if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();
@@ -864,7 +1017,7 @@ void stopButtonWasPressed() {
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     wm.setUpdating(true);
     startRunning();
-    topNav.stopButton.setString(topNav.stopButton_pressToStop_txt);
+    topNav.stopButton.setString(stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));
     nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
     if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
@@ -884,12 +1037,47 @@ void haltSystem() {
 
   stopRunning();  //stop data transfer
 
-  if(cyton.isPortOpen()) {
-    if (w_pulsesensor.analogReadOn) {
-      hub.sendCommand("/0");
-      println("Stopping Analog Read to read accelerometer");
+  //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
+  //This method establishes default and user settings for all data modes
+  if (systemMode == SYSTEMMODE_POSTINIT) {
+    switch(eegDataSource) {
+      case DATASOURCE_CYTON:
+        userSettingsFileToSave = cytonUserSettingsFile;
+        break;
+      case DATASOURCE_GANGLION:
+        userSettingsFileToSave = ganglionUserSettingsFile;
+        break;
+      case DATASOURCE_PLAYBACKFILE:
+        userSettingsFileToSave = playbackUserSettingsFile;
+        break;
+      case DATASOURCE_SYNTHETIC:
+        userSettingsFileToSave = syntheticUserSettingsFile;
+        break;
+    }
+    saveGUISettings(userSettingsFileToSave);
+  }
+
+  if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
+    if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      output("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;
       w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
       w_pulsesensor.analogReadOn = false;
+      w_analogRead.analogModeButton.setString("Turn Analog Read On");
+      w_analogRead.analogReadOn = false;
+    } else if (w_digitalRead.digitalReadOn) {
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      output("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;
+      w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
+      w_digitalRead.digitalReadOn = false;
+    } else if (w_markermode.markerModeOn) {
+      cyton.setBoardMode(BOARD_MODE_DEFAULT);
+      output("Starting to read accelerometer");
+      w_accelerometer.accelerometerModeOn = true;
+      w_markermode.markerModeButton.setString("Turn Marker On");
+      w_markermode.markerModeOn = false;
     }
   }
 
@@ -928,13 +1116,13 @@ void haltSystem() {
   hub.changeState(STATE_NOCOM);
   abandonInit = false;
 
-  bleList.items.clear();
-  wifiList.items.clear();
+  // bleList.items.clear();
+  // wifiList.items.clear();
 
-  // TODO: Comment this back in
   // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
   //   hub.searchDeviceStart();
   // }
+
 }
 
 void delayedInit() {
@@ -1231,7 +1419,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.3.1\nMay 2018", width/2, height/2 + width/9);
+    text("OpenBCI GUI v3.4.0-beta.0\nJuly 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

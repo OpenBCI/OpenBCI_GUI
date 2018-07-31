@@ -1,3 +1,71 @@
+# v3.4.0
+
+Use OpenBCIHub v1.4.5 please.
+
+### New Features
+
+* Save/Load your favorite GUI settings via dropdown menu or keyboard shortcut (thanks @retiutut)
+* Auto-Load settings when system starts
+* Auto-Save settings when system stops
+* Default settings option added to Settings dropdown
+* Pulse streaming added to Networking
+* Added fourth stream to OSC mode
+* Added plist file to add settings for information when app is built (thanks @retiutut)
+* Add BLED112 support for windows and linux
+
+## Beta 0
+
+### Improvements
+
+* Save/Load default and user settings for all data modes independently
+
+### Bug Fixes
+* Fixed Ganglion-GUI experience on startup when loading settings
+* Error catch: allow ~ 4 seconds to apply channel settings to Cyton when loading
+
+## Alpha 2
+
+### Improvements
+
+* Fixed issue where convert from SD card could cause crash #351
+* Fixed issue with accel and playback file.
+* Fix activate/deactivate channels for Ganglion when loading settings
+* Further cleanup of error messages on system start
+* Make Channel On/Off buttons more readable with white text #361
+* Remove a bunch of outputs
+
+### Bug Fixes
+
+* Fixed bug where app crashed on Ganglion load
+
+## Alpha 1
+
+### Improvements
+
+* Moved the JSON user settings to SavedData
+* Added Info.plist
+* Add BLED112 support for windows and linux
+
+### Bug Fixes
+
+* Fixed bug where app crashed on Ganglion load
+
+### Known Issues
+
+* Ganglion channels stay activated after load from settings.
+
+## Alpha 0
+
+Initial Release
+
+# v3.3.2
+
+Use OpenBCIHub v1.4.4 please.
+
+### Bug Fixes
+
+* Fixed bug where ganglion accel did not work
+
 # v3.3.1
 
 Use OpenBCIHub v1.4.2 please.

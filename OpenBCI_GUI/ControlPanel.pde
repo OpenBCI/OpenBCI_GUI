@@ -159,6 +159,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
     String str = (String)bob.get("headline");
+    controlEventDataSource = str; //Used for output message on system start
     int newDataSource = int(theEvent.getValue());
 
     if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
@@ -173,9 +174,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-    if (isMac()) {
-      protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-    }
+    protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
     protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
     protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
 
@@ -229,7 +228,7 @@ public void controlEvent(ControlEvent theEvent) {
       synthChanButton16.color_notPressed = autoFileName.color_notPressed;
     }
 
-    output("The new data source is " + str + " and NCHAN = [" + nchan + "]");
+    //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
   }
 
   if (theEvent.isFrom("serialList")) {
@@ -461,26 +460,26 @@ class ControlPanel {
       convertSDFile();
     }
 
-    if (isHubInitialized && isHubObjectInitialized) {
-      if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-        if (!calledForBLEList) {
-          calledForBLEList = true;
-          if (hub.isHubRunning()) {
-            // Commented out because noble will auto scan
-            hub.searchDeviceStart();
-          }
-        }
-      }
-
-      if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
-        if (!calledForWifiList) {
-          calledForWifiList = true;
-          if (hub.isHubRunning()) {
-            hub.searchDeviceStart();
-          }
-        }
-      }
-    }
+    // if (isHubInitialized && isHubObjectInitialized) {
+    //   if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+    //     if (!calledForBLEList) {
+    //       calledForBLEList = true;
+    //       if (hub.isHubRunning()) {
+    //         // Commented out because noble will auto scan
+    //         hub.searchDeviceStart();
+    //       }
+    //     }
+    //   }
+    //
+    //   if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
+    //     if (!calledForWifiList) {
+    //       calledForWifiList = true;
+    //       if (hub.isHubRunning()) {
+    //         hub.searchDeviceStart();
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   public void draw() {
@@ -992,9 +991,7 @@ class ControlPanel {
         if (protocolBLEGanglion.isMouseHere()) {
           protocolBLEGanglion.setIsActive(true);
           protocolBLEGanglion.wasPressed = true;
-          if (isMac()) {
-            protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-          }
+          protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
           protocolBLEGanglion.color_notPressed = isSelected_color;
           protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         }
@@ -1002,23 +999,18 @@ class ControlPanel {
         if (protocolWifiGanglion.isMouseHere()) {
           protocolWifiGanglion.setIsActive(true);
           protocolWifiGanglion.wasPressed = true;
-          if (isMac()) {
-            protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-          }
+          protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
           protocolWifiGanglion.color_notPressed = isSelected_color;
           protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
         }
-        if (isMac()) {
-          if (protocolBLED112Ganglion.isMouseHere()) {
-            protocolBLED112Ganglion.setIsActive(true);
-            protocolBLED112Ganglion.wasPressed = true;
-            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
-            protocolBLED112Ganglion.color_notPressed = isSelected_color;
-            protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-          }
+
+        if (protocolBLED112Ganglion.isMouseHere()) {
+          protocolBLED112Ganglion.setIsActive(true);
+          protocolBLED112Ganglion.wasPressed = true;
+          protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+          protocolBLED112Ganglion.color_notPressed = isSelected_color;
+          protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         }
-
-
 
         if (sampleRate200.isMouseHere()) {
           sampleRate200.setIsActive(true);
@@ -1317,35 +1309,40 @@ class ControlPanel {
     }
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
+      println("protocolBLEGanglion");
+
       wifiList.items.clear();
       bleList.items.clear();
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
-        output("Protocol BLE Selected for Ganglion");
+        if (isWindows()) {
+          outputSuccess("Using CSR Dongle for Ganglion");
+        } else {
+          outputSuccess("Using built in BLE for Ganglion");
+        }
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLE);
+        hub.searchDeviceStart();
       } else {
         outputWarn("Please wait till hub is fully initalized");
       }
     }
-    if (isMac()) {
-      if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-        println("protocolBLED112Ganglion");
 
-        wifiList.items.clear();
-        bleList.items.clear();
-        controlPanel.hideAllBoxes();
-        if (isHubObjectInitialized) {
-          output("Protocol BLED112 Selected for Ganglion");
-          println("Protocol BLED112 Selected for Ganglion");
-          if (hub.isPortOpen()) hub.closePort();
-          ganglion.setInterface(INTERFACE_HUB_BLED112);
-        } else {
-          outputWarn("Please wait till hub is fully initalized");
-        }
+    if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
+
+      wifiList.items.clear();
+      bleList.items.clear();
+      controlPanel.hideAllBoxes();
+      if (isHubObjectInitialized) {
+        output("Protocol BLED112 Selected for Ganglion");
+        println("Protocol BLED112 Selected for Ganglion");
+        if (hub.isPortOpen()) hub.closePort();
+        ganglion.setInterface(INTERFACE_HUB_BLED112);
+        hub.searchDeviceStart();
+      } else {
+        outputWarn("Please wait till hub is fully initalized");
       }
     }
-
 
     if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
       println("protocolWifiGanglion");
@@ -1357,6 +1354,7 @@ class ControlPanel {
         output("Protocol Wifi Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_WIFI);
+        hub.searchDeviceStart();
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1383,6 +1381,7 @@ class ControlPanel {
         output("Protocol Wifi Selected for Cyton");
         if (hub.isPortOpen()) hub.closePort();
         cyton.setInterface(INTERFACE_HUB_WIFI);
+        hub.searchDeviceStart();
       } else {
         output("Please wait till hub is fully initalized");
       }
@@ -1539,10 +1538,8 @@ class ControlPanel {
     refreshWifi.wasPressed = false;
     protocolBLEGanglion.setIsActive(false);
     protocolBLEGanglion.wasPressed = false;
-    if (isMac()) {
-      protocolBLED112Ganglion.setIsActive(false);
-      protocolBLED112Ganglion.wasPressed = false;
-    }
+    protocolBLED112Ganglion.setIsActive(false);
+    protocolBLED112Ganglion.wasPressed = false;
     protocolWifiGanglion.setIsActive(false);
     protocolWifiGanglion.wasPressed = false;
     protocolSerialCyton.setIsActive(false);
@@ -1694,7 +1691,7 @@ public void initButtonPressed(){
 
     //if system is already active ... stop system and flip button state back
     else {
-      output("Learn how to use this application and more at docs.openbci.com");
+      outputInfo("Learn how to use this application and more at docs.openbci.com");
       initSystemButton.setString("START SYSTEM");
       cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
       cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
@@ -1705,9 +1702,9 @@ public void initButtonPressed(){
 
 void updateToNChan(int _nchan) {
   nchan = _nchan;
+  slnchan = _nchan; //used in SoftwareSettings.pde only
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-  output("Channel count set to " + str(nchan));
   println("channel count set to " + str(nchan));
   hub.initDataPackets(_nchan, 3);
   ganglion.initDataPackets(_nchan, 3);
@@ -2045,18 +2042,17 @@ class InterfaceBoxGanglion {
     x = _x;
     y = _y;
     w = _w;
-    h = (24 + _padding) * 3;
+    h = (24 + _padding) * 4; // Fix height for extra button for BLED112
     padding = _padding;
 
     if (isMac()) {
-      h = (24 + _padding) * 4; // Fix height for extra button for BLED112
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
       protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
       protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     } else {
       protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (CSR Dongle)", fontInfo.buttonLabel_size);
-      // protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-      protocolWifiGanglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+      protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+      protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
   }
 
@@ -2076,9 +2072,7 @@ class InterfaceBoxGanglion {
 
     protocolBLEGanglion.draw();
     protocolWifiGanglion.draw();
-    if (isMac()) {
-      protocolBLED112Ganglion.draw();
-    }
+    protocolBLED112Ganglion.draw();
   }
 };
 
