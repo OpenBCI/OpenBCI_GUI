@@ -801,7 +801,7 @@ class PlaybackScrollbar {
     } else {
       fill(102, 102, 102);
     }
-    //draws playback position
+    //draws playback position indicator
     rect(spos, ypos, sheight/2, sheight);
 
     popStyle();
@@ -838,7 +838,7 @@ class PlaybackScrollbar {
         int startIndex = 0;
 
         //println("index" + index_of_times.get(w_timeSeries.scrollbar.get_index()));
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
         ArrayList<Date> keys_to_plot = new ArrayList();
 
         //println("INDEXES"+num_indices);
@@ -911,7 +911,7 @@ class PlaybackScrollbar {
         }
 
         //This prints the equivalent digital time in playback using the playback scrollbar
-        println("indices: " + num_indices + "---- time: "+ timeToFind + " index: " + get_index());
+        //println("indices: " + num_indices + "---- time: "+ timeToFind + " index: " + get_index());
 
         //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
 
