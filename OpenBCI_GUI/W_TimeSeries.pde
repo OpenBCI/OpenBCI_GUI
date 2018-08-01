@@ -344,15 +344,6 @@ void Spillover(int n) {
 
 
 
-
-
-
-
-
-
-
-
-
 //========================================================================================================================
 //                      CHANNEL BAR CLASS -- Implemented by Time Series Widget Class
 //========================================================================================================================
@@ -779,15 +770,19 @@ class PlaybackScrollbar {
   }
 
   int get_index(){
-
-    float seperate_val = sposMax / num_indices;
+    sposMax = xpos + swidth - sheight/2;
+    float separate_val = sposMax / num_indices;
+    //println("sep val : " + separate_val);
 
     int index;
 
     for(index = 0; index < num_indices + 1; index++){
-      if(getPos() >= seperate_val * index && getPos() <= seperate_val * (index +1) ) return index;
-      else if(index == num_indices && getPos() >= seperate_val * index) return num_indices;
+      //if (getPos() <=
+      if (getPos() >= separate_val * index && getPos() <= separate_val * (index +1) ) return index;
+      if (index == num_indices && getPos() >= separate_val * index) return num_indices;
     }
+
+    println(">= val: " + (separate_val * index) + " || <= val: " + (separate_val * (index +1)) );
 
     return num_indices;
   }
@@ -853,17 +848,20 @@ class PlaybackScrollbar {
         //The"fiveBefore" variable only works for a time window of 5 secs in TimeSeries, needs to be changed
         //Try improving this loop
         //Rather than look for a matching time stamp in milliseconds, scrub using seconds
+
         try{
           Date timeIndex = format.parse(index_of_times.get(get_index()));
           Date fiveBefore = new Date(timeIndex.getTime());
           fiveBefore.setTime(fiveBefore.getTime() - 5000);
           Date fiveBeforeCopy = new Date(fiveBefore.getTime());
+          timeToFind = format.format(fiveBeforeCopy).toString();
 
+          /*
           int i = 0;
           int timeToBreak = 0;
           while(true){
             //println("in while i:" + i);
-            timeToFind = format.format(fiveBeforeCopy).toString();
+
             if(index_of_times.get(i).contains(timeToFind)){
               //This rarely happens, and when it does the GUI crashes
               println("found");
@@ -894,8 +892,10 @@ class PlaybackScrollbar {
             //fiveBefore.setTime(fiveBefore.getTime() + 1);
           }
           println("keys_to_plot size: " + keys_to_plot.size());
+          */
         }
         catch(Exception e){}
+
 
 
         float[][] data = new float[keys_to_plot.size()][nchan];
