@@ -156,7 +156,7 @@ class W_networking extends Widget {
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").open();
         }
       }
-     
+
 
       if (cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").isOpen()){
         if (!cp5_networking_dropdowns.getController("dataType4").isMouseOver()){
@@ -170,7 +170,7 @@ class W_networking extends Widget {
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").open();
         }
       }
-      
+
 
       if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()){
         if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()){
@@ -220,7 +220,7 @@ class W_networking extends Widget {
       rect(cp5_networking_dropdowns.getController("dataType1").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType1").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType1").getHeight()+2);
       rect(cp5_networking_dropdowns.getController("dataType2").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType2").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType2").getHeight()+2);
       rect(cp5_networking_dropdowns.getController("dataType3").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType3").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType3").getHeight()+2);
-      
+
       if (protocolMode.equals("OSC")){
          rect(cp5_networking_dropdowns.getController("dataType4").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType4").getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController("dataType4").getHeight()+2);
       }
@@ -347,7 +347,7 @@ class W_networking extends Widget {
 
     createDropdown("dataType1", dataTypes);
     createDropdown("dataType2", dataTypes);
-    createDropdown("dataType3", dataTypes);    
+    createDropdown("dataType3", dataTypes);
     createDropdown("dataType4", dataTypes);
 
     // Start Button
@@ -413,14 +413,14 @@ class W_networking extends Widget {
       cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setVisible(false);
       cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setVisible(false);
     }
-    
-    //Draw a 4th Data Type dropdown menu if we are using OSC! 
-    if (protocolMode.equals("OSC")){                  
+
+    //Draw a 4th Data Type dropdown menu if we are using OSC!
+    if (protocolMode.equals("OSC")){
       cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(true);
     } else {
       cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(false);
     }
-    
+
     cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
 
     if (!serial_visible){
@@ -430,8 +430,8 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
       cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
     }
-        //Draw a 4th Filter button option if we are using OSC! 
-    if (protocolMode.equals("OSC")){                  
+        //Draw a 4th Filter button option if we are using OSC!
+    if (protocolMode.equals("OSC")){
       cp5_networking.get(RadioButton.class, "filter4").setVisible(true);
     } else {
       cp5_networking.get(RadioButton.class, "filter4").setVisible(false);
@@ -603,9 +603,9 @@ class W_networking extends Widget {
     // column1 = x+3*w/10;
     // column2 = x+5*w/10;
     // column3 = x+7*w/10;
-    
+
     int widthd = 46;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
-    
+
     column1 = x+12*w/widthd-25;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
     column2 = x+(12+9*1)*w/widthd-25;
     column3 = x+(12+9*2)*w/widthd-25;
@@ -663,7 +663,6 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
-      cp5_networking.get(RadioButton.class, "filter4").setPosition(column4, row5 - 10);
     } else if (protocolMode.equals("LSL")){
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
@@ -716,7 +715,7 @@ class W_networking extends Widget {
         } catch (Exception e) {
           //e.printStackTrace();
           String exception = e.toString();
-          String [] nwError = split(exception, ':');          
+          String [] nwError = split(exception, ':');
           outputError("Networking Error - Port: " + nwError[2]);
           shutDown();
           networkActive = false;
@@ -1641,29 +1640,29 @@ class Stream extends Thread{
       }
     }
   }
-////////////////////////////////////// Stream pulse data from W_PulseSensor 
+////////////////////////////////////// Stream pulse data from W_PulseSensor
   void sendPulseData(){
     if (this.filter==0 || this.filter==1){
       // OSC
-      if (this.protocol.equals("OSC")){       
+      if (this.protocol.equals("OSC")){
         //ADD BPM Data (BPM, Signal, IBI)
-        for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){//This works 
+        for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){//This works
           msg.clearArguments(); //This belongs here
           msg.add(w_pulsesensor.BPM); //Add BPM first
           msg.add(w_pulsesensor.PulseWaveY[i]); //Add Raw Signal second
           msg.add(w_pulsesensor.IBI); //Add IBI third
           //Message received in Max via OSC is a list of three integers without commas: 75 512 600 : BPM Signal IBI
-          //println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +  w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI); 
+          //println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +  w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI);
           try {
             this.osc.send(msg,this.netaddress);
           } catch (Exception e){
             println(e);
           }
-        }        
+        }
       // UDP
       } else if (this.protocol.equals("UDP")){ //////////////////This needs to be checked
         String outputter = "{\"type\":\"pulse\",\"data\":";
-        for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){ 
+        for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){
           outputter += str(w_pulsesensor.BPM) + ",";  //Comma separated string output (BPM,Raw Signal,IBI)
           outputter += str(w_pulsesensor.PulseWaveY[i]) + ",";
           outputter += str(w_pulsesensor.IBI);
@@ -1702,9 +1701,9 @@ class Stream extends Thread{
       }
     }
   }//End sendPulseData
-   
+
   //// Add new stream function here (ex. sendWidgetData) in the same format as above
-  
+
   void quit(){
     this.isStreaming=false;
     closeNetwork();
