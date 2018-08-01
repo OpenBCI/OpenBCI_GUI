@@ -80,11 +80,10 @@ class W_timeSeries extends Widget {
       playbackWidgetHeight = 50.0;
       pb_x = ts_x - ts_padding/2;
       pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
-      pb_w = width/2 - 10;
+      pb_w = wF - ts_padding*4;
       pb_h = playbackWidgetHeight/2;
       //Make a new scrollbar
       scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
-      println("playback index indices" + indices);
     } else{
       playbackWidgetHeight = 0.0;
     }
@@ -211,11 +210,13 @@ class W_timeSeries extends Widget {
 
     if(eegDataSource == DATASOURCE_CYTON){
       hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
-    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+      ///////////////////////////////////////////////////
+      ///////////////////////////////////////////////////
       //Resize the playback slider if using playback mode
       pb_x = ts_x - ts_padding/2;
       pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
-      pb_w = wF - ts_padding;
+      pb_w = wF - ts_padding*8;
       pb_h = playbackWidgetHeight/2;
       scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
     }
@@ -712,12 +713,13 @@ class PlaybackScrollbar {
   boolean locked;
   float ratio;
   int num_indices;
+  int indexPosition = 0;
 
   PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
     swidth = sw;
     sheight = sh;
-    //float widthtoheight = sw - sh;
-    //ratio = (float)sw / widthtoheight;
+    float widthtoheight = sw - sh;
+    ratio = (float)sw / widthtoheight;
     xpos = xp;
     ypos = yp-sheight/2;
     spos = xpos;
@@ -770,21 +772,25 @@ class PlaybackScrollbar {
   }
 
   int get_index(){
-    sposMax = xpos + swidth - sheight/2;
     float separate_val = sposMax / num_indices;
     //println("sep val : " + separate_val);
+    int index_Position = int(getPos());
+    int indexCounter;
 
-    int index;
-
-    for(index = 0; index < num_indices + 1; index++){
-      //if (getPos() <=
-      if (getPos() >= separate_val * index && getPos() <= separate_val * (index +1) ) return index;
-      if (index == num_indices && getPos() >= separate_val * index) return num_indices;
+    for (indexCounter = 0; indexCounter < num_indices + 1; indexCounter++) {
+      if (spos == sposMin) {
+        indexPosition = 0;
+      }
+      if (index_Position > separate_val * indexCounter && index_Position <= separate_val * (indexCounter +1)) {
+        indexPosition = indexCounter;
+      }
+      if (spos == sposMax) {
+        indexPosition = num_indices;
+      }
     }
 
-    println(">= val: " + (separate_val * index) + " || <= val: " + (separate_val * (index +1)) );
-
-    return num_indices;
+    //println(">= val: " + (separate_val * index) + " || <= val: " + (separate_val * (index +1)) );
+    return indexPosition;
   }
 
   void draw() {
@@ -812,11 +818,11 @@ class PlaybackScrollbar {
 
     swidth = int(_w);
     sheight = int(_h);
-    xpos = _x;
+    xpos = _x + w_timeSeries.ts_padding*3;
     ypos = _y - sheight/2;
     spos = xpos;
     newspos = spos;
-    sposMin = xpos;
+    sposMin = xpos + w_timeSeries.ts_padding - sheight/2;
     sposMax = xpos + swidth - sheight/2;
   }
 
@@ -850,11 +856,18 @@ class PlaybackScrollbar {
         //Rather than look for a matching time stamp in milliseconds, scrub using seconds
 
         try{
+          Date startIndexDate = format.parse(index_of_times.get(startIndex));
           Date timeIndex = format.parse(index_of_times.get(get_index()));
-          Date fiveBefore = new Date(timeIndex.getTime());
-          fiveBefore.setTime(fiveBefore.getTime() - 5000);
-          Date fiveBeforeCopy = new Date(fiveBefore.getTime());
-          timeToFind = format.format(fiveBeforeCopy).toString();
+          Date fiveBefore = new Date(timeIndex.getTime() - 5000);
+          //fiveBefore.setTime(fiveBefore.getTime() );
+          //Date fiveBeforeDate = new Date(fiveBefore.getTime());
+
+          if (fiveBefore.before(startIndexDate)) {
+            timeToFind = format.format(startIndexDate).toString();
+            println("before five seconds");
+          } else {
+            timeToFind = format.format(timeIndex).toString();
+          }
 
           /*
           int i = 0;
@@ -894,26 +907,25 @@ class PlaybackScrollbar {
           println("keys_to_plot size: " + keys_to_plot.size());
           */
         }
-        catch(Exception e){}
+        catch(Exception e){} //end of trying to set dates/times
 
+        //This prints the equivalent digital time in playback using the playback scrollbar
+        println("MinMax: " + sposMin + " " + sposMax
+        + " { getPos() = " + getPos()
+        + "} ---- time: "+ timeToFind
+        + " index: " + get_index());
 
+        //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
 
         float[][] data = new float[keys_to_plot.size()][nchan];
         int i = 0;
-
         for(Date elm : keys_to_plot){
-
           for(int Ichan=0; Ichan < nchan; Ichan++){
             val_uV = processed_file.get(elm)[Ichan][startIndex];
             data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
           }
           i++;
         }
-
-        //This prints the equivalent digital time in playback using the playback scrollbar
-        //println("indices: " + num_indices + "---- time: "+ timeToFind + " index: " + get_index());
-
-        //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
 
         if(keys_to_plot.size() > 100){
           //update channel bars ... this means feeding new EEG data into plots
