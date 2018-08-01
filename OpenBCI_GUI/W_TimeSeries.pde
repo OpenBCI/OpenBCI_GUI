@@ -19,6 +19,7 @@ class W_timeSeries extends Widget {
   float xF, yF, wF, hF;
   float ts_padding;
   float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+  float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
   float plotBottomWell;
   float playbackWidgetHeight;
   int channelBarHeight;
@@ -47,7 +48,7 @@ class W_timeSeries extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  private boolean hasScrollbar = true;
+  private boolean hasScrollbar = true; //used to turn scrollbar widget on/off
 
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -74,10 +75,15 @@ class W_timeSeries extends Widget {
     ts_w = wF - ts_padding*2;
     ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
 
-    //Instantiate scrollbar if using playback mode
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+    //Instantiate scrollbar if using playback mode and scrollbar feature in use
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
       playbackWidgetHeight = 50.0;
-      scrollbar = new PlaybackScrollbar(int(ts_x) - 5,(height/20 * 19) - 7, width/2 - 10, 16, indices);
+      pb_x = ts_x - ts_padding/2;
+      pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
+      pb_w = width/2 - 10;
+      pb_h = playbackWidgetHeight/2;
+      //Make a new scrollbar
+      scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
       println("playback index indices" + indices);
     } else{
       playbackWidgetHeight = 0.0;
@@ -139,7 +145,6 @@ class W_timeSeries extends Widget {
       if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
         //scrub playback file
         scrollbar.update();
-        //scrollbar.playbackScrubbing(); //added to scrollbar.update()
       }
 
       //update channel bars ... this means feeding new EEG data into plots
@@ -167,11 +172,9 @@ class W_timeSeries extends Widget {
 
       //temporary placeholder for playback controller widget
       if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-        pushStyle();
         fill(0,0,0,20);
         stroke(31,69,110);
         rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
-        popStyle();
         scrollbar.draw();
       } else{
         //dont draw anything at the bottom
@@ -208,8 +211,13 @@ class W_timeSeries extends Widget {
 
     if(eegDataSource == DATASOURCE_CYTON){
       hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
-    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //Fix this to make scrollbar resize properly
-      scrollbar.screenResized((int)ts_x,(int)ts_y,(int)ts_w,(int)ts_h);
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+      //Resize the playback slider if using playback mode
+      pb_x = ts_x - ts_padding/2;
+      pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
+      pb_w = wF - ts_padding;
+      pb_h = playbackWidgetHeight/2;
+      scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
     }
   }
 
@@ -785,23 +793,38 @@ class PlaybackScrollbar {
   }
 
   void draw() {
+    pushStyle();
+
+    //draw the playback slider inside the playback sub-widget
     noStroke();
     fill(204);
     rect(xpos, ypos, swidth, sheight);
+
+    //select color for playback indicator
     if (over || locked) {
       fill(0, 0, 0);
     } else {
       fill(102, 102, 102);
     }
+    //draws playback position
     rect(spos, ypos, sheight/2, sheight);
+
+    popStyle();
   }
 
-  void screenResized(int _x, int _y, int _w, int _h){
+  //currently working here
+  void screenResized(float _x, float _y, float _w, float _h){
 
-    //x = _x;
-    //y = _y;
-    //w = _w;
-    //h = _h;
+    swidth = int(_w);
+    sheight = int(_h);
+    float widthtoheight = _w - _h;
+    ratio = _w / widthtoheight;
+    xpos = _x;
+    ypos = _y - sheight/2;
+    spos = xpos;
+    newspos = spos;
+    sposMin = xpos;
+    sposMax = xpos + swidth - sheight/2;
   }
 
   float getPos() {
@@ -810,19 +833,15 @@ class PlaybackScrollbar {
     return spos * ratio;
   }
 
+  ////////////////////////////Being worked on by Retiutut
+  //This function should scrub the file using the slider position
   void playbackScrubbing() {
-    num_indices = indices;
-
-    //WORK WITH COLIN ON IMPLEMENTING THIS ABOVE
     if(has_processed){
-      //w_timeSeries.scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices);
       if (w_timeSeries.scrollbar != null) {
         float val_uV = 0.0f;
         boolean foundIndex =true;
         int startIndex = 0;
 
-        //w_timeSeries.scrollbar.update();
-        //w_timeSeries.scrollbar.draw();
         //println("index" + index_of_times.get(w_timeSeries.scrollbar.get_index()));
         SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
         ArrayList<Date> keys_to_plot = new ArrayList();
@@ -830,13 +849,14 @@ class PlaybackScrollbar {
         //println("INDEXES"+num_indices);
         String timeToFind = "";
 
+        //This tries to find an exact time in the playback file
+        //The"fiveBefore" variable only works for a time window of 5 secs in TimeSeries, needs to be changed
+        //Try improving this loop
         try{
           Date timeIndex = format.parse(index_of_times.get(get_index()));
           Date fiveBefore = new Date(timeIndex.getTime());
           fiveBefore.setTime(fiveBefore.getTime() - 5000);
           Date fiveBeforeCopy = new Date(fiveBefore.getTime());
-
-          //START HERE TOMORROW
 
           int i = 0;
           int timeToBreak = 0;
@@ -844,11 +864,12 @@ class PlaybackScrollbar {
             //println("in while i:" + i);
             timeToFind = format.format(fiveBeforeCopy).toString();
             if(index_of_times.get(i).contains(timeToFind)){
+              //This rarely happens
               println("found");
               startIndex = i;
               break;
             }
-            if(i == index_of_times.size() -1){
+            if(i == index_of_times.size() - 1){
               i = 0;
               fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
               timeToFind = format.format(fiveBeforeCopy).toString();
@@ -860,8 +881,7 @@ class PlaybackScrollbar {
             i++;
 
           }
-          //println("after first while");
-
+          //not sure if this works
           while(fiveBefore.before(timeIndex)){
            //println("in while :" + fiveBefore);
             if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
@@ -875,6 +895,7 @@ class PlaybackScrollbar {
         }
         catch(Exception e){}
 
+
         float[][] data = new float[keys_to_plot.size()][nchan];
         int i = 0;
 
@@ -887,25 +908,25 @@ class PlaybackScrollbar {
           i++;
         }
 
+        //This prints the equivalent digital time in playback using the playback scrollbar
         println(timeToFind);
 
         //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
 
         if(keys_to_plot.size() > 100){
-          for(int Ichan=0; Ichan<nchan; Ichan++){
-            //update(data[Ichan],data_elec_imp_ohm); //used to be just update(float[], float[])
-
+          //update channel bars ... this means feeding new EEG data into plots
+          for(int Ichan = 0; Ichan < w_timeSeries.numChannelBars; Ichan++){
+            w_timeSeries.channelBars[i].update();
           }
+          //for(int Ichan=0; Ichan<nchan; Ichan++){
+            //update(data[Ichan],data_elec_imp_ohm); //used to be just update(float[], float[])
+          //}
         }
 
         //for(int index = 0; index <= scrollbar.get_index(); index++){
         //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
 
         //}
-
-        //cc.update();
-        //w_timeSeries.hsc.update()
-        //cc.draw();
       }
     }
   }//end playback scrubbing
