@@ -725,8 +725,8 @@ class PlaybackScrollbar {
   PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
     swidth = sw;
     sheight = sh;
-    int widthtoheight = sw - sh;
-    ratio = (float)sw / (float)widthtoheight;
+    //float widthtoheight = sw - sh;
+    //ratio = (float)sw / widthtoheight;
     xpos = xp;
     ypos = yp-sheight/2;
     spos = xpos;
@@ -750,14 +750,14 @@ class PlaybackScrollbar {
     }
     if (locked) { //if the slider is being used, update new position
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
-      //println("new index = " + get_index() + " ");
-    }
-    if (abs(newspos - spos) > 1) { //if the slider has been moved
-      spos = spos + (newspos-spos); //update position
       try {
         playbackScrubbing(); //perform scrubbing
       } catch (Exception e) {
         e.printStackTrace();
+      //println("new index = " + get_index() + " ");
+    }
+    if (abs(newspos - spos) > 1) { //if the slider has been moved
+      spos = spos + (newspos-spos); //update position
       }
     }
 
@@ -817,8 +817,6 @@ class PlaybackScrollbar {
 
     swidth = int(_w);
     sheight = int(_h);
-    float widthtoheight = _w - _h;
-    ratio = _w / widthtoheight;
     xpos = _x;
     ypos = _y - sheight/2;
     spos = xpos;
@@ -828,14 +826,16 @@ class PlaybackScrollbar {
   }
 
   float getPos() {
-    // Convert spos to be values between
-    // 0 and the total width of the scrollbar
-    return spos * ratio;
+    // Convert spos to be values between 0 and the total width of the scrollbar
+    //return spos * ratio;
+    return spos;
   }
 
   ////////////////////////////Being worked on by Retiutut
+  //Gets called when the playback slider position is moved by the user
   //This function should scrub the file using the slider position
   void playbackScrubbing() {
+    num_indices = indices;
     if(has_processed){
       if (w_timeSeries.scrollbar != null) {
         float val_uV = 0.0f;
@@ -852,6 +852,7 @@ class PlaybackScrollbar {
         //This tries to find an exact time in the playback file
         //The"fiveBefore" variable only works for a time window of 5 secs in TimeSeries, needs to be changed
         //Try improving this loop
+        //Rather than look for a matching time stamp in milliseconds, scrub using seconds
         try{
           Date timeIndex = format.parse(index_of_times.get(get_index()));
           Date fiveBefore = new Date(timeIndex.getTime());
@@ -864,7 +865,7 @@ class PlaybackScrollbar {
             //println("in while i:" + i);
             timeToFind = format.format(fiveBeforeCopy).toString();
             if(index_of_times.get(i).contains(timeToFind)){
-              //This rarely happens
+              //This rarely happens, and when it does the GUI crashes
               println("found");
               startIndex = i;
               break;
@@ -874,6 +875,7 @@ class PlaybackScrollbar {
               fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
               timeToFind = format.format(fiveBeforeCopy).toString();
               timeToBreak++;
+              println("end of index");
             }
             if(timeToBreak > 3){
               break;
@@ -909,7 +911,7 @@ class PlaybackScrollbar {
         }
 
         //This prints the equivalent digital time in playback using the playback scrollbar
-        println(timeToFind);
+        println("indices: " + num_indices + "---- time: "+ timeToFind + " index: " + get_index());
 
         //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
 
