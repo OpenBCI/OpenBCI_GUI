@@ -849,110 +849,118 @@ class PlaybackScrollbar {
   void playbackScrubbing() {
     num_indices = indices;
     if(has_processed){
-      if (w_timeSeries.scrollbar != null) {
-        float val_uV = 0.0f;
-        boolean foundIndex =true;
-        int startIndex = 0;
+      float val_uV = 0.0f;
+      //boolean foundIndex =true;
+      int startIndex = 0;
 
-        //println("index" + index_of_times.get(w_timeSeries.scrollbar.get_index()));
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-        ArrayList<Date> keys_to_plot = new ArrayList();
+      //println("index" + index_of_times.get(w_timeSeries.scrollbar.get_index()));
 
-        //println("INDEXES"+num_indices);
-        String timeToFind = "";
+      ArrayList<Date> keys_to_plot = new ArrayList();
 
-        //This tries to find an exact time in the playback file
-        //The"fiveBefore" variable only works for a time window of 5 secs in TimeSeries, needs to be changed
-        //Try improving this loop
-        //Rather than look for a matching time stamp in milliseconds, scrub using seconds
+      //println("INDEXES"+num_indices);
+      SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+      String timeToFind = "";
+      String timeWindowString = "";
 
-        try{
-          Date startIndexDate = format.parse(index_of_times.get(startIndex));
-          Date timeIndex = format.parse(index_of_times.get(get_index()));
-          Date fiveBefore = new Date(timeIndex.getTime() - 5000);
-          //fiveBefore.setTime(fiveBefore.getTime() );
-          //Date fiveBeforeDate = new Date(fiveBefore.getTime());
+      //This tries to find an exact time in the playback file
+      //The"fiveBefore" variable only works for a time window of 5 secs in TimeSeries, needs to be changed
+      //Try improving this loop
+      //Rather than look for a matching time stamp in milliseconds, scrub using seconds
 
-          if (fiveBefore.before(startIndexDate)) {
-            timeToFind = format.format(startIndexDate).toString();
-            println("before five seconds");
-          } else {
-            timeToFind = format.format(timeIndex).toString();
-          }
+      try{
+        Date startIndexDate = format.parse(index_of_times.get(startIndex));
+        Date timeIndex = format.parse(index_of_times.get(get_index()));
+        String currentDurationWindow = w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().getText();
+        String[] list = split(currentDurationWindow, ' ');
+        Date timeWindow = new Date(timeIndex.getTime() - int(list[0])*1000);
+        //fiveBefore.setTime(fiveBefore.getTime() );
+        //Date fiveBeforeDate = new Date(fiveBefore.getTime());
 
-          /*
-          int i = 0;
-          int timeToBreak = 0;
-          while(true){
-            //println("in while i:" + i);
-
-            if(index_of_times.get(i).contains(timeToFind)){
-              //This rarely happens, and when it does the GUI crashes
-              println("found");
-              startIndex = i;
-              break;
-            }
-            if(i == index_of_times.size() - 1){
-              i = 0;
-              fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
-              timeToFind = format.format(fiveBeforeCopy).toString();
-              timeToBreak++;
-              println("end of index");
-            }
-            if(timeToBreak > 3){
-              break;
-            }
-            i++;
-
-          }
-          //not sure if this works
-          while(fiveBefore.before(timeIndex)){
-           //println("in while :" + fiveBefore);
-            if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
-              keys_to_plot.add(fiveBefore);
-              startIndex++;
-            }
-            //println(fiveBefore);
-            //fiveBefore.setTime(fiveBefore.getTime() + 1);
-          }
-          println("keys_to_plot size: " + keys_to_plot.size());
-          */
+        if (timeWindow.before(startIndexDate)) {
+          timeToFind = format.format(startIndexDate).toString();
+          println(list[0] + " seconds have not passed yet");
+        } else {
+          timeToFind = format.format(timeIndex).toString();
         }
-        catch(Exception e){} //end of trying to set dates/times
+        timeWindowString = format.format(timeWindow).toString();
 
-        //This prints the equivalent digital time in playback using the playback scrollbar
-        println("MinMax: " + sposMin + " " + sposMax
-        + " { getPos() = " + getPos()
-        + "} ---- time: "+ timeToFind
-        + " index: " + get_index());
-
-        //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
-
-        float[][] data = new float[keys_to_plot.size()][nchan];
+        /*
         int i = 0;
-        for(Date elm : keys_to_plot){
-          for(int Ichan=0; Ichan < nchan; Ichan++){
-            val_uV = processed_file.get(elm)[Ichan][startIndex];
-            data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+        int timeToBreak = 0;
+        while(true){
+          //println("in while i:" + i);
+
+          if(index_of_times.get(i).contains(timeToFind)){
+            //This rarely happens, and when it does the GUI crashes
+            println("found");
+            startIndex = i;
+            break;
+          }
+          if(i == index_of_times.size() - 1){
+            i = 0;
+            fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
+            timeToFind = format.format(fiveBeforeCopy).toString();
+            timeToBreak++;
+            println("end of index");
+          }
+          if(timeToBreak > 3){
+            break;
           }
           i++;
-        }
 
-        if(keys_to_plot.size() > 100){
-          //update channel bars ... this means feeding new EEG data into plots
-          for(int Ichan = 0; Ichan < w_timeSeries.numChannelBars; Ichan++){
-            w_timeSeries.channelBars[i].update();
+        }
+        //not sure if this works
+        while(fiveBefore.before(timeIndex)){
+         //println("in while :" + fiveBefore);
+          if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
+            keys_to_plot.add(fiveBefore);
+            startIndex++;
           }
-          //for(int Ichan=0; Ichan<nchan; Ichan++){
-            //update(data[Ichan],data_elec_imp_ohm); //used to be just update(float[], float[])
-          //}
+          //println(fiveBefore);
+          //fiveBefore.setTime(fiveBefore.getTime() + 1);
         }
+        println("keys_to_plot size: " + keys_to_plot.size());
+        */
+      }
+      catch(Exception e){} //end of trying to set dates/times
 
-        //for(int index = 0; index <= scrollbar.get_index(); index++){
-        //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
+      //This prints the equivalent digital time in playback using the playback scrollbar
+      println("Position: " + getPos() + "/" + sposMax
+      + " index: " + get_index()
+      + "} ---- timeWindow: " + timeWindowString
+      + " to "+ timeToFind);
+      output("Position: " + getPos() + "/" + sposMax
+      + " index: " + get_index()
+      + "} ---- timeWindow: " + timeWindowString
+      + " to "+ timeToFind);
 
+      //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
+
+
+      float[][] data = new float[keys_to_plot.size()][nchan];
+      int i = 0;
+      for(Date elm : keys_to_plot){
+        for(int Ichan=0; Ichan < nchan; Ichan++){
+          val_uV = processed_file.get(elm)[Ichan][startIndex];
+          data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
+        }
+        i++;
+      }
+
+      if(keys_to_plot.size() > 100){
+        //update channel bars ... this means feeding new EEG data into plots
+        for(int Ichan = 0; Ichan < w_timeSeries.numChannelBars; Ichan++){
+          //w_timeSeries.channelBars[i].update();
+        }
+        //for(int Ichan=0; Ichan<nchan; Ichan++){
+          //update(data[Ichan],data_elec_imp_ohm); //used to be just update(float[], float[])
         //}
       }
+
+      //for(int index = 0; index <= scrollbar.get_index(); index++){
+      //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
+
+      //}
     }
   }//end playback scrubbing
 
