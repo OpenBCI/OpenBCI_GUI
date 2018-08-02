@@ -720,7 +720,7 @@ class PlaybackScrollbar {
     sheight = sh;
     float widthtoheight = sw - sh;
     ratio = (float)sw / widthtoheight;
-    xpos = xp;
+    xpos = xp + 50.0; //lots of padding to make room for button
     ypos = yp-sheight/2;
     spos = xpos;
     newspos = spos;
@@ -741,17 +741,28 @@ class PlaybackScrollbar {
     if (!mousePressed) {
       locked = false;
     }
-    if (locked) { //if the slider is being used, update new position
+    //if the slider is being used, update new position based on user mouseX
+    if (locked && !isRunning) {
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
       try {
         playbackScrubbing(); //perform scrubbing
       } catch (Exception e) {
         e.printStackTrace();
-      //println("new index = " + get_index() + " ");
+      }
+    }
+    //if the slider is not being used, let playback control it when (isRunning)
+    if (!locked && isRunning){
+      //Fetch the counter and the max time in Seconds
+      int secondCounter = int(float(currentTableRowIndex)/getSampleRateSafe());
+      int secondCounterMax = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+      //Map the values to playbackslider min and max
+      float m = map(secondCounter, 0, secondCounterMax, sposMin, sposMax);
+      //println("mapval_"+m);
+      //Set the new position of playback indicator using mapped value
+      newspos = m;
     }
     if (abs(newspos - spos) > 1) { //if the slider has been moved
       spos = spos + (newspos-spos); //update position
-      }
     }
 
   }
@@ -818,7 +829,7 @@ class PlaybackScrollbar {
 
     swidth = int(_w);
     sheight = int(_h);
-    xpos = _x + w_timeSeries.ts_padding*3;
+    xpos = _x + w_timeSeries.ts_padding*5; //add lots of padding for use
     ypos = _y - sheight/2;
     spos = xpos;
     newspos = spos;
