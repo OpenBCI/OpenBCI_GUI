@@ -750,7 +750,15 @@ void initSystem() {
     fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
   }  //make the FFT objects
 
-  initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+  //Attempt initialization. If error, print to console and exit function.
+  //Fixes GUI crash when trying to load outdated recordings
+  try {
+    initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+  } catch (Exception e) {
+    e.printStackTrace();
+    outputError("Playback file load error. Try using a more recent recording.");
+    return;
+  }
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -1037,7 +1045,7 @@ void haltSystem() {
 
   stopRunning();  //stop data transfer
 
-  //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System. 
+  //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
   //This method establishes default and user settings for all data modes
   if (systemMode == SYSTEMMODE_POSTINIT) {
     switch(eegDataSource) {
@@ -1480,37 +1488,3 @@ PVector getWindowLocation(String renderer) {
   return l;
 }
 //END OF CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
-
-// Select file to save custom settings using dropdown in TopNav.pde
-void saveConfigFile(File selection) {
-  if (selection == null) {
-    println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
-  } else {
-    println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
-    output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
-    saveSettingsDialogName = selection.getAbsolutePath();
-    saveGUISettings(saveSettingsDialogName); //save current settings to JSON file in SavedData
-    outputSuccess("Settings Saved!"); //print success message to screen
-    saveSettingsDialogName = null; //reset this variable for future use
-  }
-}
-// Select file to load custom settings using dropdown in TopNav.pde
-void loadConfigFile(File selection) {
-  if (selection == null) {
-    println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
-  } else {
-    println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
-    output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
-    loadSettingsDialogName = selection.getAbsolutePath();
-    loadGUISettings(loadSettingsDialogName); //load settings from JSON file in /data/
-    //Output success message when Loading settings is complete without errors
-    if (chanNumError == false && dataSourceError == false && loadErrorCytonEvent == false) {
-      outputSuccess("Settings Loaded!");
-    } else if (chanNumError == true) {
-      outputError("Channel Number Error:  Loading Default Settings");
-    } else {
-      outputError("Data Source Error: Loading Default Settings");
-    }
-    loadSettingsDialogName = null; //reset this variable for future use
-  }
-}

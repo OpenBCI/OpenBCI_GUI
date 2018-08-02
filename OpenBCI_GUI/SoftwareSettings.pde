@@ -15,8 +15,8 @@
     -- Capital 'L' to Load
     -- Functions SaveGUIsettings() and loadGUISettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
     -- Functions are also called in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
-    -- This allows User to store one snapshot of most GUI settings in /data/UserSettingsFile.json
-    -- After loading, only a few actions are required: start/stop the data stream and/or networking streams, open/close serial port,  Turn on/off Analog Read
+    -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
+    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -474,7 +474,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
-  Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer"); 
+  Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
     loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
@@ -677,7 +677,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
 
   //Apply Board Mode to Cyton Only
-  if (eegDataSource == DATASOURCE_CYTON){ 
+  if (eegDataSource == DATASOURCE_CYTON){
     applyBoardMode();
   }
 
@@ -707,7 +707,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
 
   //Apply Time Series Settings Last!!!
   loadApplyTimeSeriesSettings();
-  
+
   //Force headplot to redraw if it is active
   int hpWidgetNumber;
   if (eegDataSource == DATASOURCE_GANGLION) {
@@ -715,21 +715,24 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   } else {
     hpWidgetNumber = 5;
   }
-  if (wm.widgets.get(hpWidgetNumber).isActive) { 
+  if (wm.widgets.get(hpWidgetNumber).isActive) {
     w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
     println("Headplot is active: Redrawing");
   }
-  
+
   //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
   if (eegDataSource == DATASOURCE_GANGLION) {
     w_accelerometer.accelerometerModeOn = loadAccelerometer;
     //ganglion.accelModeActive = loadAccelerometer;
-    if (loadAccelerometer) {
-      ganglion.accelStart();
-      w_accelerometer.accelModeButton.setString("Turn Accel. Off");
+    if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
+      ganglion.accelStart(); //send message to hub
+      w_accelerometer.accelModeButton.setString("Turn Accel. Off"); //update button text
+      w_accelerometer.drawAccValues(); //draw accelerometer
+      w_accelerometer.draw3DGraph();
+      w_accelerometer.drawAccWave();
     } else {
-      ganglion.accelStop();
-      w_accelerometer.accelModeButton.setString("Turn Accel. On");    
+      ganglion.accelStop(); //send message to hub
+      w_accelerometer.accelModeButton.setString("Turn Accel. On"); //update button text
     }
   }
 
@@ -1018,7 +1021,7 @@ void loadApplyTimeSeriesSettings() {
       //Set SRB1
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
-    
+
     for (int i = 0; i < slnchan;) { //For all time series channels...
       cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
       if (checkForSuccessTS != null) { // If we receive a return code...
@@ -1026,11 +1029,11 @@ void loadApplyTimeSeriesSettings() {
         String[] list = split(checkForSuccessTS, ',');
         int successcode = Integer.parseInt(list[1]);
         if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
-        
+
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
-        int timeElapsed = millis() - loadErrorTimerStart;    
+        int timeElapsed = millis() - loadErrorTimerStart;
         if (timeElapsed >= loadErrorTimeWindow) {
-          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON"); 
+          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON");
           loadErrorCytonEvent = true;
           haltSystem();
           return;
