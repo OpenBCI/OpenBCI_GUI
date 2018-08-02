@@ -754,8 +754,8 @@ void initSystem() {
   //Fixes GUI crash when trying to load outdated recordings
   try {
     initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
-  } catch (Exception e) {
-    e.printStackTrace();
+  } catch (ArrayIndexOutOfBoundsException e) {
+    //e.printStackTrace();
     outputError("Playback file load error. Try using a more recent recording.");
     return;
   }
