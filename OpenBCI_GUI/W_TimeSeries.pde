@@ -84,6 +84,9 @@ class W_timeSeries extends Widget {
       pb_h = playbackWidgetHeight/2;
       //Make a new scrollbar
       scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
+
+      //Make a skip to start button and initialize it here
+      //skipToStart = new Button()
     } else{
       playbackWidgetHeight = 0.0;
     }
@@ -742,7 +745,7 @@ class PlaybackScrollbar {
       locked = false;
     }
     //if the slider is being used, update new position based on user mouseX
-    if (locked && !isRunning) {
+    if (locked && (isRunning || !isRunning)) {
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
       try {
         playbackScrubbing(); //perform scrubbing
@@ -752,14 +755,8 @@ class PlaybackScrollbar {
     }
     //if the slider is not being used, let playback control it when (isRunning)
     if (!locked && isRunning){
-      //Fetch the counter and the max time in Seconds
-      int secondCounter = int(float(currentTableRowIndex)/getSampleRateSafe());
-      int secondCounterMax = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-      //Map the values to playbackslider min and max
-      float m = map(secondCounter, 0, secondCounterMax, sposMin, sposMax);
-      //println("mapval_"+m);
       //Set the new position of playback indicator using mapped value
-      newspos = m;
+      newspos = updatePos();
     }
     if (abs(newspos - spos) > 1) { //if the slider has been moved
       spos = spos + (newspos-spos); //update position
@@ -826,21 +823,31 @@ class PlaybackScrollbar {
 
   //currently working here
   void screenResized(float _x, float _y, float _w, float _h){
-
     swidth = int(_w);
     sheight = int(_h);
     xpos = _x + w_timeSeries.ts_padding*5; //add lots of padding for use
     ypos = _y - sheight/2;
-    spos = xpos;
-    newspos = spos;
     sposMin = xpos + w_timeSeries.ts_padding - sheight/2;
     sposMax = xpos + swidth - sheight/2;
+    //update the position of the playback indicator us
+    newspos = updatePos();
   }
 
   float getPos() {
     // Convert spos to be values between 0 and the total width of the scrollbar
     //return spos * ratio;
     return spos;
+  }
+
+  float updatePos() {
+    //Fetch the counter and the max time in Seconds
+    int secondCounter = int(float(currentTableRowIndex)/getSampleRateSafe());
+    int secondCounterMax = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+    //Map the values to playbackslider min and max
+    float m = map(secondCounter, 0, secondCounterMax, sposMin, sposMax);
+    //println("mapval_"+m);
+    //Returns mapped value to set the new position of playback indicator
+    return m;
   }
 
   ////////////////////////////Being worked on by Retiutut
@@ -862,106 +869,52 @@ class PlaybackScrollbar {
       String timeToFind = "";
       String timeWindowString = "";
 
-      //This tries to find an exact time in the playback file
-      //The"fiveBefore" variable only works for a time window of 5 secs in TimeSeries, needs to be changed
-      //Try improving this loop
-      //Rather than look for a matching time stamp in milliseconds, scrub using seconds
-
+      //Try to set some times that will output to the bottom of the screen when scrubbing
       try{
         Date startIndexDate = format.parse(index_of_times.get(startIndex));
         Date timeIndex = format.parse(index_of_times.get(get_index()));
         String currentDurationWindow = w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().getText();
         String[] list = split(currentDurationWindow, ' ');
         Date timeWindow = new Date(timeIndex.getTime() - int(list[0])*1000);
-        //fiveBefore.setTime(fiveBefore.getTime() );
-        //Date fiveBeforeDate = new Date(fiveBefore.getTime());
 
+        //If the Time window has not elapsed...
         if (timeWindow.before(startIndexDate)) {
-          timeToFind = format.format(startIndexDate).toString();
-          println(list[0] + " seconds have not passed yet");
+          //Display start time
+          timeWindowString = format.format(startIndexDate).toString();
+          //to current time
+          timeToFind = format.format(timeIndex).toString();
+          //println(list[0] + " seconds have not passed yet");
         } else {
+          //Otherwise, diplay time X seconds before current time
+          timeWindowString = format.format(timeWindow).toString();
+          //to current time
           timeToFind = format.format(timeIndex).toString();
         }
-        timeWindowString = format.format(timeWindow).toString();
-
-        /*
-        int i = 0;
-        int timeToBreak = 0;
-        while(true){
-          //println("in while i:" + i);
-
-          if(index_of_times.get(i).contains(timeToFind)){
-            //This rarely happens, and when it does the GUI crashes
-            println("found");
-            startIndex = i;
-            break;
-          }
-          if(i == index_of_times.size() - 1){
-            i = 0;
-            fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
-            timeToFind = format.format(fiveBeforeCopy).toString();
-            timeToBreak++;
-            println("end of index");
-          }
-          if(timeToBreak > 3){
-            break;
-          }
-          i++;
-
-        }
-        //not sure if this works
-        while(fiveBefore.before(timeIndex)){
-         //println("in while :" + fiveBefore);
-          if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
-            keys_to_plot.add(fiveBefore);
-            startIndex++;
-          }
-          //println(fiveBefore);
-          //fiveBefore.setTime(fiveBefore.getTime() + 1);
-        }
-        println("keys_to_plot size: " + keys_to_plot.size());
-        */
       }
       catch(Exception e){} //end of trying to set dates/times
 
-      //This prints the equivalent digital time in playback using the playback scrollbar
+      //Copy the index of the slider to the backend value
+      //This updates Time Series playback position and the value at the top of the GUI in title bar
+      currentTableRowIndex = get_index();
+
+      /*
+      //Console Print the equivalent digital time in playback using the playback scrollbar
       println("Position: " + getPos() + "/" + sposMax
       + " index: " + get_index()
       + "} ---- timeWindow: " + timeWindowString
       + " to "+ timeToFind);
-      output("Position: " + getPos() + "/" + sposMax
-      + " index: " + get_index()
-      + "} ---- timeWindow: " + timeWindowString
+      */
+
+      //Success Print the same information as above to bottom of GUI
+      outputSuccess("Position: " + getPos() + "/" + sposMax
+      + " Index: " + get_index()
+      + "} ---- Time Window: " + timeWindowString
       + " to "+ timeToFind);
 
-      //int(float(currentTableRowIndex)/getSampleRateSafe()) //from the top of gui during playback
+      //This shows top of gui during playback
+      //println(int(float(currentTableRowIndex)/getSampleRateSafe()));
 
-
-      float[][] data = new float[keys_to_plot.size()][nchan];
-      int i = 0;
-      for(Date elm : keys_to_plot){
-        for(int Ichan=0; Ichan < nchan; Ichan++){
-          val_uV = processed_file.get(elm)[Ichan][startIndex];
-          data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
-        }
-        i++;
-      }
-
-      if(keys_to_plot.size() > 100){
-        //update channel bars ... this means feeding new EEG data into plots
-        for(int Ichan = 0; Ichan < w_timeSeries.numChannelBars; Ichan++){
-          //w_timeSeries.channelBars[i].update();
-        }
-        //for(int Ichan=0; Ichan<nchan; Ichan++){
-          //update(data[Ichan],data_elec_imp_ohm); //used to be just update(float[], float[])
-        //}
-      }
-
-      //for(int index = 0; index <= scrollbar.get_index(); index++){
-      //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
-
-      //}
-    }
+    }//end case for has_processed
   }//end playback scrubbing
 
 };
