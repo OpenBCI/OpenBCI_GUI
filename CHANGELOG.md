@@ -18,7 +18,7 @@ Use OpenBCIHub v1.4.5 please.
 
 ### Improvements
 
-* Added playback scrollbar sub-widget
+* Added playback scrollbar sub-widget #38
 
 ### Bug Fixes
 
