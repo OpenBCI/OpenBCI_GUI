@@ -16,6 +16,7 @@ class W_playback extends Widget {
   Button selectPlaybackFile2;
   Button widgetTemplateButton;
   int padding = 10;
+  Boolean initHasOccured = false;
 
   W_playback(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -42,6 +43,16 @@ class W_playback extends Widget {
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
     //put your code here...
+
+    //init system if the user has selected a new playback file from dialog box
+    if (systemMode == SYSTEMMODE_POSTINIT && !initHasOccured){
+      initHasOccured = true;
+      playbackData_fname = "N/A";
+    }
+    if (playbackData_fname != "N/A" && initHasOccured){
+      initSystem();
+      playbackData_fname = "N/A";
+    }
 
   }
 
@@ -107,6 +118,7 @@ class W_playback extends Widget {
     widgetTemplateButton.setIsActive(false);
 
     if (selectPlaybackFile2.isMouseHere() && selectPlaybackFile2.wasPressed) {
+      playbackData_fname = "N/A"; //reset the filename variable
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelected");
     }

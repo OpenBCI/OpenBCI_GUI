@@ -754,6 +754,8 @@ class PlaybackScrollbar {
 
   /////////////// Update loop for PlaybackScrollbar
   void update() {
+    num_indices = indices;
+
     if (overEvent()) {
       over = true;
     } else {
