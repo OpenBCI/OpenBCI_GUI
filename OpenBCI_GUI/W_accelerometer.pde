@@ -98,7 +98,7 @@ class W_accelerometer extends Widget {
       Y[i] = AccelWindowY + AccelWindowHeight/2;  // Y at 1/2
       Z[i] = AccelWindowY + (AccelWindowHeight/4)*3;  // Z at 3/4
     }
-    
+
     String defaultAccelModeButtonString;
     if (eegDataSource == DATASOURCE_GANGLION) {
       defaultAccelModeButtonString = "Turn Accel. Off";
@@ -406,7 +406,7 @@ class W_accelerometer extends Widget {
     beginShape();
     stroke(Ycolor);
     for (int i = 0; i < Y.length; i++) {
-      int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));
+      int xi = int(map(i, 0, X.length-1, 0, AccelWindowWidth-1));//scale/map the data points
       vertex(AccelWindowX+xi, Y[i]);
     }
     endShape();
@@ -420,7 +420,7 @@ class W_accelerometer extends Widget {
     endShape();
   }
 
-  void drawAccWave2() {
+  void drawAccWave2() { //used to draw playback data
     noFill();
     strokeWeight(1);
     beginShape();                                  // using beginShape() renders fast
@@ -428,25 +428,28 @@ class W_accelerometer extends Widget {
     for (int i = 0; i < accelerometerBuff[0].length; i++) {
       int x = int(map(accelerometerBuff[0][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
       x = constrain(x, AccelWindowY, AccelWindowY+AccelWindowHeight);
-      vertex(AccelWindowX+i, x);                    //draw a line connecting the data points
+      int xi = int(map(i, 0, accelerometerBuff[0].length-1, 0, AccelWindowWidth-1)); //this makes playback accel data scale properly
+      vertex(AccelWindowX+xi, x);                    //draw a line connecting the data points
     }
     endShape();
 
     beginShape();
     stroke(Ycolor);
-    for (int i = 0; i < accelerometerBuff[0].length; i++) {
+    for (int i = 0; i < accelerometerBuff[1].length; i++) {
       int y = int(map(accelerometerBuff[1][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
       y = constrain(y, AccelWindowY, AccelWindowY+AccelWindowHeight);
-      vertex(AccelWindowX+i, y);
+      int xi = int(map(i, 0, accelerometerBuff[1].length-1, 0, AccelWindowWidth-1));
+      vertex(AccelWindowX+xi, y);
     }
     endShape();
 
     beginShape();
     stroke(Zcolor);
-    for (int i = 0; i < accelerometerBuff[0].length; i++) {
+    for (int i = 0; i < accelerometerBuff[2].length; i++) {
       int z = int(map(accelerometerBuff[2][i], -yMaxMin, yMaxMin, float(AccelWindowY+AccelWindowHeight), float(AccelWindowY)));  // ss
       z = constrain(z, AccelWindowY, AccelWindowY+AccelWindowHeight);
-      vertex(AccelWindowX+i, z);
+      int xi = int(map(i, 0, accelerometerBuff[2].length-1, 0, AccelWindowWidth-1));
+      vertex(AccelWindowX+xi, z);
     }
     endShape();
   }
