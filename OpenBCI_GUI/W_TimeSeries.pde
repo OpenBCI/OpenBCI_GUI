@@ -733,7 +733,6 @@ class PlaybackScrollbar {
     sposMin = xpos;
     sposMax = xpos + swidth - sheight/2;
     num_indices = is;
-
     indicatorAtStart = true;
 
     //Let's make a button to return to the start of playback!!
@@ -742,8 +741,8 @@ class PlaybackScrollbar {
     } else{
       skipToStart_diameter = sh - 2;
     }
-    skipToStartButton = new Button (int(xp) + 6, int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "<|", fontInfo.buttonLabel_size);
-    skipToStartButton.setFont(h2, 16);
+    skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "|<", fontInfo.buttonLabel_size);
+    skipToStartButton.setFont(h2, 18);
     skipToStartButton.setCircleButton(true);
     skipToStartButton.setColorNotPressed(openbciBlue); //Set channel button background colors
     skipToStartButton.setColorPressed(color(255));
@@ -790,7 +789,7 @@ class PlaybackScrollbar {
       spos = spos + (newspos-spos); //update position
 
     }
-    if (get_index() == 0) { //if the current index is 0, the indicator is at start
+    if (getIndex() == 0) { //if the current index is 0, the indicator is at start
       indicatorAtStart = true;
     } else {
       indicatorAtStart = false;
@@ -804,12 +803,11 @@ class PlaybackScrollbar {
         indexPosition = 0; //set index position to 0
         currentTableRowIndex = 0; //set playback position to 0
         indicatorAtStart = true;
-        //playbackScrubbing(); //perform scrubbing
 
         if (!isRunning) {
           //Success print detailed position to bottom of GUI
           outputSuccess("New Position{ " + getPos() + "/" + sposMax
-          + " Index: " + get_index()
+          + " Index: " + getIndex()
           + " } --- Time: " + timeToFind
           + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
           + " seconds" );
@@ -833,36 +831,6 @@ class PlaybackScrollbar {
       cursor(ARROW);
       return false;
     }
-  }
-
-  //Fetch index using playback indicitor position
-  int get_index(){
-    //Divide the width (Max - Min) by the number of indices
-    //Store this value for scrollbar step size as a float
-    float scrollbarStepSize = (sposMax-sposMin) / num_indices;
-    //println("sep val : " + scrollbarStepSize);
-    int index_Position = int(getPos());
-    int indexCounter;
-
-    //Set index position by finding the playback indicator
-    for (indexCounter = 0; indexCounter < num_indices + 1; indexCounter++) {
-      if (spos == sposMin) { //Indicator is at the beginning
-        indexPosition = 0;
-        indicatorAtStart = true;
-      }
-      //If not at the beginning or the end, use step size from above
-      if (index_Position > scrollbarStepSize * indexCounter && index_Position <= scrollbarStepSize * (indexCounter + 1)) {
-        indexPosition = indexCounter;
-        indicatorAtStart = false;
-        //println(">= val: " + (scrollbarStepSize * indexCounter) + " || <= val: " + (scrollbarStepSize * (indexCounter +1)) );
-      }
-      if (spos == sposMax) { //Indicator is at the end
-        indexPosition = num_indices;
-        indicatorAtStart = false;
-      }
-    }
-
-    return indexPosition;
   }
 
   void draw() {
@@ -909,8 +877,41 @@ class PlaybackScrollbar {
       skipToStartButton.but_dy = skipToStart_diameter;
     }
     //update the x and y positions for the skipToStartButton
-    skipToStartButton.setPos(int(_x) + 6, int(_y) + int(_h/2) - int(skipToStart_diameter));
+    skipToStartButton.setPos(
+      int(_x) + int(skipToStart_diameter*.5),
+      int(_y) + int(_h/2) - int(skipToStart_diameter)
+      );
 
+  }
+
+  //Fetch index using playback indicitor position
+  int getIndex(){
+    //Divide the width (Max - Min) by the number of indices
+    //Store this value for scrollbar step size as a float
+    float scrollbarStepSize = (sposMax-sposMin) / num_indices;
+    //println("sep val : " + scrollbarStepSize);
+    int index_Position = int(getPos());
+    int indexCounter;
+
+    //Set index position by finding the playback indicator
+    for (indexCounter = 0; indexCounter < num_indices + 1; indexCounter++) {
+      if (spos == sposMin) { //Indicator is at the beginning
+        indexPosition = 0;
+        indicatorAtStart = true;
+      }
+      //If not at the beginning or the end, use step size from above
+      if (index_Position > scrollbarStepSize * indexCounter && index_Position <= scrollbarStepSize * (indexCounter + 1)) {
+        indexPosition = indexCounter;
+        indicatorAtStart = false;
+        //println(">= val: " + (scrollbarStepSize * indexCounter) + " || <= val: " + (scrollbarStepSize * (indexCounter +1)) );
+      }
+      if (spos == sposMax) { //Indicator is at the end
+        indexPosition = num_indices;
+        indicatorAtStart = false;
+      }
+    }
+
+    return indexPosition;
   }
 
   //Get current position of the playback indicator
@@ -946,12 +947,12 @@ class PlaybackScrollbar {
 
       //Copy the index of the slider to the backend value
       //This updates Time Series playback position and the value at the top of the GUI in title bar
-      currentTableRowIndex = get_index();
+      currentTableRowIndex = getIndex();
 
       if (!isRunning) {
         //Success print detailed position to bottom of GUI
         outputSuccess("New Position{ " + getPos() + "/" + sposMax
-        + " Index: " + get_index()
+        + " Index: " + getIndex()
         + " } --- Time: " + timeToFind
         + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
         + " seconds" );
@@ -977,7 +978,7 @@ class PlaybackScrollbar {
     //Try to set some times that will output to the bottom of the screen when scrubbing
     try{
       Date startIndexDate = format.parse(index_of_times.get(indexStartPosition));
-      Date timeIndex = format.parse(index_of_times.get(get_index()));
+      Date timeIndex = format.parse(index_of_times.get(getIndex()));
       //Fetch the time window from the dropdown text, split string, *1000, subtract from current time
       String currentDurationWindow = w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().getText();
       String[] list = split(currentDurationWindow, ' ');
