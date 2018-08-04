@@ -84,9 +84,6 @@ class W_timeSeries extends Widget {
       pb_h = playbackWidgetHeight/2;
       //Make a new scrollbar
       scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
-
-      //Make a skip to start button and initialize it here
-      //skipToStart = new Button()
     } else{
       playbackWidgetHeight = 0.0;
     }
@@ -717,12 +714,15 @@ class PlaybackScrollbar {
   float ratio;
   int num_indices;
   int indexPosition = 0;
+  Button skipToStartButton;
+  int skipToStart_diameter;
+  Boolean indicatorAtStart; //true means the indicator is at index 0
 
   PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
     swidth = sw;
     sheight = sh;
-    float widthtoheight = sw - sh;
-    ratio = (float)sw / widthtoheight;
+    //float widthtoheight = sw - sh;
+    //ratio = (float)sw / widthtoheight;
     xpos = xp + 50.0; //lots of padding to make room for button
     ypos = yp-sheight/2;
     spos = xpos;
@@ -730,6 +730,24 @@ class PlaybackScrollbar {
     sposMin = xpos;
     sposMax = xpos + swidth - sheight/2;
     num_indices = is;
+
+    indicatorAtStart = true;
+
+    //Let's make a button to return to the start of playback!!
+    if(sh > 26){
+      skipToStart_diameter = 26;
+    } else{
+      skipToStart_diameter = sh - 2;
+    }
+    skipToStartButton = new Button (int(xp) + 6, int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "<|", fontInfo.buttonLabel_size);
+    skipToStartButton.setFont(h2, 16);
+    skipToStartButton.setCircleButton(true);
+    skipToStartButton.setColorNotPressed(openbciBlue); //Set channel button background colors
+    skipToStartButton.setColorPressed(color(255));
+    skipToStartButton.textColorNotActive = color(255); //Set channel button text to white
+    skipToStartButton.textColorActive = color(0,255,0); //Green text when clicked
+    skipToStartButton.hasStroke(true);
+
   }
 
   void update() {
@@ -761,7 +779,32 @@ class PlaybackScrollbar {
     if (abs(newspos - spos) > 1) { //if the slider has been moved
       spos = spos + (newspos-spos); //update position
     }
+    if (get_index() == 0) { //if the current index is 0, the indicator is at start
+      indicatorAtStart = true;
+    } else {
+      indicatorAtStart = false;
+    }
 
+    if(mousePressed && skipToStartButton.isMouseHere()){
+      println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
+      skipToStartButton.setIsActive(true);
+      if (!indicatorAtStart) { //if indicator is not at start
+        newspos = sposMin; //move slider to min position
+        indexPosition = 0; //set index position to 0
+        currentTableRowIndex = 0; //set playback position to 0
+        indicatorAtStart = true;
+        //playbackScrubbing(); //perform scrubbing
+
+        outputSuccess("New Position {" + newspos + "/" + sposMax
+        + " Index: " + indexPosition
+        //+ "} --- Time Window: " + timeWindowString
+        //+ " to " + timeToFind
+        + "} --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+        + " seconds" );
+        //updatePos();
+      }
+    }
+    skipToStartButton.setIsActive(false);
   }
 
   float constrain(float val, float minv, float maxv) {
@@ -804,6 +847,9 @@ class PlaybackScrollbar {
   void draw() {
     pushStyle();
 
+    //draw button to skip to the beginning of recording
+    skipToStartButton.draw();
+
     //draw the playback slider inside the playback sub-widget
     noStroke();
     fill(204);
@@ -821,7 +867,6 @@ class PlaybackScrollbar {
     popStyle();
   }
 
-  //currently working here
   void screenResized(float _x, float _y, float _w, float _h){
     swidth = int(_w);
     sheight = int(_h);
@@ -831,11 +876,29 @@ class PlaybackScrollbar {
     sposMax = xpos + swidth - sheight/2;
     //update the position of the playback indicator us
     newspos = updatePos();
+
+    //resize the skip to start button
+    if(sheight > 26){
+      skipToStart_diameter = 26;
+      skipToStartButton.but_dx = skipToStart_diameter;
+      skipToStartButton.but_dy = skipToStart_diameter;
+    } else{
+      // println("h = " + h);
+      skipToStart_diameter = int(_h) - 2;
+      skipToStartButton.but_dx = skipToStart_diameter;
+      skipToStartButton.but_dy = skipToStart_diameter;
+    }
+    //update the x and y positions for the skipToStartButton
+    //skipToStartButton.but_x = int(_x) + 6;
+    //skipToStartButton.but_y = int(_y) + int(_h/2) - int(skipToStart_diameter);
+    skipToStartButton.setPos(int(_x) + 6, int(_y) + int(_h/2) - int(skipToStart_diameter));
+
   }
 
   float getPos() {
-    // Convert spos to be values between 0 and the total width of the scrollbar
+    // Convert spos to be values between 0 and the total width of the scrollbar, this doesnt work
     //return spos * ratio;
+    //Instead, just return the slider position:
     return spos;
   }
 
@@ -862,7 +925,7 @@ class PlaybackScrollbar {
 
       //println("index" + index_of_times.get(w_timeSeries.scrollbar.get_index()));
 
-      ArrayList<Date> keys_to_plot = new ArrayList();
+      //ArrayList<Date> keys_to_plot = new ArrayList();
 
       //println("INDEXES"+num_indices);
       SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
@@ -906,10 +969,12 @@ class PlaybackScrollbar {
       */
 
       //Success Print the same information as above to bottom of GUI
-      outputSuccess("Position: " + getPos() + "/" + sposMax
+      outputSuccess("New Position{ " + getPos() + "/" + sposMax
       + " Index: " + get_index()
-      + "} ---- Time Window: " + timeWindowString
-      + " to "+ timeToFind);
+      + "} --- Time Window: " + timeWindowString
+      + " to " + timeToFind
+      + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+      + " seconds" );
 
       //This shows top of gui during playback
       //println(int(float(currentTableRowIndex)/getSampleRateSafe()));
