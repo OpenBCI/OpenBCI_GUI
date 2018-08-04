@@ -27,6 +27,7 @@ W_PulseSensor w_pulsesensor;
 W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
 W_MarkerMode w_markermode;
+W_playback w_playback;
 
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -44,12 +45,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
   // println("  setupWidgets fft -- " + millis());
-  
+
   //Widget_2
   w_accelerometer = new W_accelerometer(_this);
   w_accelerometer.setTitle("Accelerometer");
   addWidget(w_accelerometer, w);
-  
+
   //only instantiate this widget if you are using a Ganglion board for live streaming
   if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
     //If using Ganglion, this is Widget_3
@@ -57,61 +58,68 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_ganglionImpedance.setTitle("Ganglion Signal");
     addWidget(w_ganglionImpedance, w);
   }
-  
-  //Cyton - Widget_3, Ganglion - Widget_4
+
+  if(eegDataSource == DATASOURCE_PLAYBACKFILE){
+    //Playback Widget_3
+    w_playback = new W_playback(_this);
+    w_playback.setTitle("Playback");
+    addWidget(w_playback, w);
+  }
+
+  //Cyton/Synthetic Widget_3, Ganglion/Playback Widget_4
   w_networking = new W_networking(_this);
   w_networking.setTitle("Networking");
   addWidget(w_networking, w);
 
-  //Cyton - Widget_4, Ganglion - Widget_5
+  //Cyton/Synthetic Widget_4, Ganglion/Playback Widget_5
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
   // println("  setupWidgets band power -- " + millis());
 
-  //Cyton - Widget_5, Ganglion - Widget_6
+  //Cyton/Synthetic Widget_5, Ganglion/Playback Widget_6
   w_headPlot = new W_headPlot(_this);
   w_headPlot.setTitle("Head Plot");
   addWidget(w_headPlot, w);
   // println("  setupWidgets head plot -- " + millis());
 
-  //Cyton - Widget_6, Ganglion - Widget_7
+  //Cyton/Synthetic Widget_6, Ganglion/Playback Widget_7
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
   // println("  setupWidgets emg -- " + millis());
 
-  //Cyton - Widget_7, Ganglion - Widget_8
+  //Cyton/Synthetic Widget_7, Ganglion/Playback Widget_8
   w_focus = new W_Focus(_this);
   w_focus.setTitle("Focus Widget");
   addWidget(w_focus, w);
   // println("  setupWidgets focus widget -- " + millis());
 
   //only instantiate these widgets if you are using a Cyton board for live streaming
-  if(eegDataSource != DATASOURCE_GANGLION){
-    //Widget_8
+  if(eegDataSource == DATASOURCE_CYTON){
+    //Cyton Widget_8
     w_pulsesensor = new W_PulseSensor(_this);
     w_pulsesensor.setTitle("Pulse Sensor");
     addWidget(w_pulsesensor, w);
     // println("  setupWidgets pulse sensor -- " + millis());
-    
-    //Widget_9
+
+    //Cyton Widget_9
     w_digitalRead = new W_DigitalRead(_this);
     w_digitalRead.setTitle("Digital Read");
     addWidget(w_digitalRead, w);
-    
-    //Widget_10
+
+    //Cyton Widget_10
     w_analogRead = new W_AnalogRead(_this);
     w_analogRead.setTitle("Analog Read");
     addWidget(w_analogRead, w);
-    
-    //Widget_11
+
+    //Cyton Widget_11
     w_markermode = new W_MarkerMode(_this);
     w_markermode.setTitle("Marker Mode");
     addWidget(w_markermode, w);
   }
 
-  //If using Ganglion, template is Widget_9, otherwise it is Widget_12.
+  //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
   w_template1 = new W_template(_this);
   w_template1.setTitle("Widget Template 1");
   addWidget(w_template1, w);
@@ -175,7 +183,7 @@ class WidgetManager{
     setupWidgets(_this, widgets);
     setupWidgetSelectorDropdowns();
 
-    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    if((nchan == 4 && eegDataSource == DATASOURCE_GANGLION) || eegDataSource == DATASOURCE_PLAYBACKFILE){
       currentContainerLayout = 1;
       currentLayout = 1; // used for save/load settings
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()

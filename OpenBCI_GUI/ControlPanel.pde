@@ -1112,7 +1112,7 @@ class ControlPanel {
         }
       }
 
-      //active buttons during DATASOURCE_PLAYBACKFILE
+      //active buttons during DATASOURCE_SYNTHETIC
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
         if (synthChanButton4.isMouseHere()) {
           synthChanButton4.setIsActive(true);
