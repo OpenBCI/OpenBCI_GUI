@@ -130,7 +130,6 @@ class W_networking extends Widget {
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").open();
         }
       }
-
       if (cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").isOpen()){
         if (!cp5_networking_dropdowns.getController("dataType2").isMouseOver()){
           // println("2");
@@ -157,7 +156,6 @@ class W_networking extends Widget {
         }
       }
 
-
       if (cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").isOpen()){
         if (!cp5_networking_dropdowns.getController("dataType4").isMouseOver()){
           //println("2");
@@ -170,8 +168,6 @@ class W_networking extends Widget {
           cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").open();
         }
       }
-
-
       if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()){
         if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()){
           // println("2");
@@ -204,8 +200,6 @@ class W_networking extends Widget {
     super.draw();
     pushStyle();
 
-
-
     // fill(255,0,0);
     // rect(cp5_networking.getController("dataType1").getPosition()[0] - 1, cp5_networking.getController("dataType1").getPosition()[1] - 1, 100 + 2, cp5_networking.get(ScrollableList.class, "dataType1").getHeight()+2);
 
@@ -235,7 +229,6 @@ class W_networking extends Widget {
       cp5_networking_dropdowns.draw();
     }
     popStyle();
-
 
     // cp5_networking_dropdowns.draw();
 
@@ -422,7 +415,6 @@ class W_networking extends Widget {
     }
 
     cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
-
     if (!serial_visible){
       cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
       cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
@@ -430,7 +422,7 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
       cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
     }
-        //Draw a 4th Filter button option if we are using OSC!
+    //Draw a 4th Filter button option if we are using OSC!
     if (protocolMode.equals("OSC")){
       cp5_networking.get(RadioButton.class, "filter4").setVisible(true);
     } else {
@@ -622,8 +614,6 @@ class W_networking extends Widget {
     row5 = y+8*h/10;
     int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
 
-
-
     startButton.setPos(x + w/2 - 70, y + h - 40 );
     cp5_networking.get(Textfield.class, "osc_ip1").setPosition(column1, row2 - offset);
     cp5_networking.get(Textfield.class, "osc_port1").setPosition(column1, row3 - offset);
@@ -663,10 +653,6 @@ class W_networking extends Widget {
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
       cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
-    } else if (protocolMode.equals("LSL")){
-      cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
-      cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
-      cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
     } else if (protocolMode.equals("UDP")){
       cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
       cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
@@ -852,7 +838,6 @@ class W_networking extends Widget {
         break;
       case 5 : dt3 = "Focus";
         break;
-
       case 6 : dt3 = "Pulse";
         break;
     }
