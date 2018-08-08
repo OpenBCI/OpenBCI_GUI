@@ -11,7 +11,19 @@ Use OpenBCIHub v1.4.5 please.
 * Pulse streaming added to Networking
 * Added fourth stream to OSC mode
 * Added plist file to add settings for information when app is built (thanks @retiutut)
+* Added playback scrollbar sub-widget
 * Add BLED112 support for windows and linux
+
+## Beta 1
+
+### Improvements
+
+* Added playback scrollbar sub-widget #38
+
+### Bug Fixes
+
+* Ganglion-accelerometer behavior when loading
+* Catch error when using outdated playback files #348
 
 ## Beta 0
 
