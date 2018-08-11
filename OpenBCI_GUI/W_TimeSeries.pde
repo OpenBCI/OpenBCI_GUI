@@ -778,6 +778,17 @@ class PlaybackScrollbar {
     }
     //if the slider is not being used, let playback control it when (isRunning)
     if (!locked && isRunning){
+      //process the file
+      if (w_playback.initHasOccured && !has_processed && !isOldData) {
+        lastReadDataPacketInd = 0;
+        pointCounter = 0;
+        try {
+          process_input_file();
+        } catch(Exception e) {
+          isOldData = true;
+          output("Error processing timestamps, are you using old data?");
+        }
+      }
       //Set the new position of playback indicator using mapped value
       newspos = updatePos();
       //Find time to display for playback indicator position
@@ -943,7 +954,7 @@ class PlaybackScrollbar {
     num_indices = indices; //update the value for the number of indices
 
     if(has_processed){ //if playback file has been processed successfully
-      //println("INDEXES"+num_indices);
+      println("INDEXES: "+num_indices);
 
       findTimesToDisplay();
 

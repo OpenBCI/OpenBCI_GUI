@@ -44,16 +44,6 @@ class W_playback extends Widget {
 
     //put your code here...
 
-    //init system if the user has selected a new playback file from dialog box
-    if (systemMode == SYSTEMMODE_POSTINIT && !initHasOccured){
-      initHasOccured = true;
-      playbackData_fname = "N/A";
-    }
-    if (playbackData_fname != "N/A" && initHasOccured){
-      initSystem();
-      playbackData_fname = "N/A";
-    }
-
   }
 
   void draw(){
@@ -119,8 +109,21 @@ class W_playback extends Widget {
 
     if (selectPlaybackFile2.isMouseHere() && selectPlaybackFile2.wasPressed) {
       playbackData_fname = "N/A"; //reset the filename variable
+      has_processed = false; //reset has_processed variable
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelected");
+
+      //init system if the user has selected a new playback file from dialog box
+      if (systemMode == SYSTEMMODE_POSTINIT && !initHasOccured){
+        initHasOccured = true;
+        playbackData_fname = "N/A";
+      }
+      if (playbackData_fname != "N/A" && initHasOccured){
+        //playbackData_fname = "N/A";
+        initSystem();
+        initHasOccured = false;
+      }
+
     }
     selectPlaybackFile2.setIsActive(false);
 
