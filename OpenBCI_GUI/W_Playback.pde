@@ -13,7 +13,7 @@ class W_playback extends Widget {
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
   PlaybackFileBox2 playbackFileBox2;
-  Button selectPlaybackFile2;
+  Button selectPlaybackFileWidget;
   Button widgetTemplateButton;
   int padding = 10;
   Boolean initHasOccured = false;
@@ -78,7 +78,7 @@ class W_playback extends Widget {
     //resize and position the playback file box and button
     playbackFileBox2.screenResized(x + padding, y + padding*2 + 13);
 
-    //selectPlaybackFile2.setPos(x + padding, y + padding*2 + 13);
+    //selectPlaybackFileWidget.setPos(x + padding, y + padding*2 + 13);
 
 
   }
@@ -86,9 +86,9 @@ class W_playback extends Widget {
   void mousePressed(){
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    if (selectPlaybackFile2.isMouseHere()) {
-      selectPlaybackFile2.setIsActive(true);
-      selectPlaybackFile2.wasPressed = true;
+    if (selectPlaybackFileWidget.isMouseHere()) {
+      selectPlaybackFileWidget.setIsActive(true);
+      selectPlaybackFileWidget.wasPressed = true;
     }
 
     //put your code here...
@@ -107,7 +107,7 @@ class W_playback extends Widget {
     }
     widgetTemplateButton.setIsActive(false);
 
-    if (selectPlaybackFile2.isMouseHere() && selectPlaybackFile2.wasPressed) {
+    if (selectPlaybackFileWidget.isMouseHere() && selectPlaybackFileWidget.wasPressed) {
       playbackData_fname = "N/A"; //reset the filename variable
       has_processed = false; //reset has_processed variable
       output("select a file for playback");
@@ -120,12 +120,13 @@ class W_playback extends Widget {
       }
       if (playbackData_fname != "N/A" && initHasOccured){
         //playbackData_fname = "N/A";
+        println(playbackData_fname);
         initSystem();
         initHasOccured = false;
       }
 
     }
-    selectPlaybackFile2.setIsActive(false);
+    selectPlaybackFileWidget.setIsActive(false);
 
   }
 
@@ -145,7 +146,7 @@ class W_playback extends Widget {
       h = 67;
       padding = _padding;
 
-      selectPlaybackFile2 = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+      selectPlaybackFileWidget = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
     }
 
     public void update() {
@@ -154,12 +155,12 @@ class W_playback extends Widget {
     public void draw() {
 
       //drawPlaybackFileBox(x,y,w,h);
-      selectPlaybackFile2.draw();
+      selectPlaybackFileWidget.draw();
       // chanButton16.draw();
     }
 
     public void screenResized(int _x, int _y) {
-      selectPlaybackFile2.setPos(_x,_y);
+      selectPlaybackFileWidget.setPos(_x,_y);
       drawPlaybackFileBox(_x,_y,w,h);
     }
 
