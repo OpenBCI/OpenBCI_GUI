@@ -1101,6 +1101,11 @@ void haltSystem() {
   // eegDataSource = -1;
   //set all data source list items inactive
 
+  //Fix issue for processing successive playback files
+  indices = 0;
+  hasRepeated = false;
+  has_processed = false;
+
   //reset connect loadStrings
   openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
   ganglion_portName = "N/A";
