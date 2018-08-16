@@ -695,21 +695,11 @@ void initSystem() {
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
 
+  //initialize playback file if necessary
   if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-    //open and load the data file
-    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
-    try {
-      playbackData_table = new Table_CSV(playbackData_fname);
-      playbackData_table.removeColumn(0);
-    } catch (Exception e) {
-      println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-      println("   : quitting...");
-      hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
-    }
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
-    //removing first column of data from data file...the first column is a time index and not eeg data
-
+    initPlaybackFile(); //found in W_playback.pde
   }
+
   verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
   // Nfft = getNfftSafe();

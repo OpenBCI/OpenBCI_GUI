@@ -811,23 +811,12 @@ class PlaybackScrollbar {
     if(mousePressed && skipToStartButton.isMouseHere()){
       println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
       skipToStartButton.setIsActive(true);
-      if (!indicatorAtStart) { //if indicator is not at start
-        newspos = sposMin; //move slider to min position
-        indexPosition = 0; //set index position to 0
-        currentTableRowIndex = 0; //set playback position to 0
-        indicatorAtStart = true;
+      skipToStartButtonAction(); //skip to start
+    } else if (!mousePressed && !skipToStartButton.isMouseHere()) {
+      skipToStartButton.setIsActive(false); //set button to not active
+    }
 
-        if (!isRunning) {
-          //Success print detailed position to bottom of GUI
-          outputSuccess("New Position{ " + getPos() + "/" + sposMax
-          + " Index: " + getIndex()
-          + " } --- Time: " + timeToFind
-          + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
-          + " seconds" );
-        }
-      }
-    } //end case for skipToStartButton pressed
-    skipToStartButton.setIsActive(false); //set button to not active
+    //end case for skipToStartButton pressed
   } //end update loop for PlaybackScrollbar
 
   float constrain(float val, float minv, float maxv) {
@@ -978,7 +967,7 @@ class PlaybackScrollbar {
   }//end playback scrubbing
 
   //Find times to display for playback position
-  void findTimesToDisplay () {
+  void findTimesToDisplay() {
     //update the value for the number of indices
     num_indices = indices;
     //Set date format to exclude milliseconds
@@ -1013,4 +1002,23 @@ class PlaybackScrollbar {
     } catch(Exception e) {} //end of trying to set dates/times
   }//end findTimesToDisplay
 
-};
+  //This function scrubs to the beginning of the playback file
+  //Useful to 'reset' the scrollbar before loading a new playback file
+  void skipToStartButtonAction() {
+    if (!indicatorAtStart) { //if indicator is not at start
+      newspos = sposMin; //move slider to min position
+      indexPosition = 0; //set index position to 0
+      currentTableRowIndex = 0; //set playback position to 0
+      indicatorAtStart = true;
+
+      if (!isRunning) { //if the system is not running
+        //Success print detailed position to bottom of GUI
+        outputSuccess("New Position{ " + getPos() + "/" + sposMax
+        + " Index: " + getIndex()
+        + " } --- Time: " + timeToFind
+        + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+        + " seconds" );
+      }
+    }
+  }// end skipToStartButtonAction
+};//end PlaybackScrollbar class

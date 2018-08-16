@@ -16,7 +16,6 @@ class W_playback extends Widget {
   Button selectPlaybackFileWidget;
   Button widgetTemplateButton;
   int padding = 10;
-  Boolean initHasOccured = false;
 
   W_playback(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -108,23 +107,10 @@ class W_playback extends Widget {
     widgetTemplateButton.setIsActive(false);
 
     if (selectPlaybackFileWidget.isMouseHere() && selectPlaybackFileWidget.wasPressed) {
-      playbackData_fname = "N/A"; //reset the filename variable
+      //playbackData_fname = "N/A"; //reset the filename variable
       has_processed = false; //reset has_processed variable
       output("select a file for playback");
-      selectInput("Select a pre-recorded file for playback:", "playbackSelected");
-
-      //init system if the user has selected a new playback file from dialog box
-      if (systemMode == SYSTEMMODE_POSTINIT && !initHasOccured){
-        initHasOccured = true;
-        playbackData_fname = "N/A";
-      }
-      if (playbackData_fname != "N/A" && initHasOccured){
-        //playbackData_fname = "N/A";
-        println(playbackData_fname);
-        initSystem();
-        initHasOccured = false;
-      }
-
+      selectInput("Select a pre-recorded file for playback:", "playbackSelectedFromWidget");
     }
     selectPlaybackFileWidget.setIsActive(false);
 
@@ -180,6 +166,8 @@ class W_playback extends Widget {
 
 };
 
+//GLOBAL FUNCTIONS BELOW THIS LINE
+
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void pbDropdown1(int n){
   println("Item " + (n+1) + " selected from Dropdown 1");
@@ -188,7 +176,6 @@ void pbDropdown1(int n){
   } else if(n==1){
     //do this instead
   }
-
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -200,4 +187,52 @@ void pbDropdown2(int n){
 void pbDropdown3(int n){
   println("Item " + (n+1) + " selected from Dropdown 3");
   closeAllDropdowns();
+}
+
+void playbackSelectedFromWidget(File selection) {
+  if (selection == null) {
+    println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
+  } else {
+    println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
+    output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
+    playbackData_fname = selection.getAbsolutePath();
+
+    //if a new file was selected
+    if (playbackData_fname != "N/A" && systemMode == SYSTEMMODE_POSTINIT){
+      //Fix issue for processing successive playback files
+      indices = 0;
+      hasRepeated = false;
+      has_processed = false;
+      w_timeSeries.scrollbar.skipToStartButtonAction(); //sets scrollbar to 0
+
+      //initialize playback file
+      initPlaybackFile();
+
+      //try to process the new playback file
+      if (has_processed = false) {
+        try {
+          process_input_file();
+        } catch(Exception e) {
+          isOldData = true;
+          output("Error processing timestamps, are you using old data?");
+        }
+      }
+
+    }
+  }
+}
+
+void initPlaybackFile() {
+  //open and load the data file
+  println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
+  try {
+    playbackData_table = new Table_CSV(playbackData_fname);
+    playbackData_table.removeColumn(0);
+  } catch (Exception e) {
+    println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
+    println("   : quitting...");
+    hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
+  }
+  println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
+  //removing first column of data from data file...the first column is a time index and not eeg data
 }
