@@ -345,6 +345,7 @@ Boolean errorUserSettingsNotFound = false; //For error catching
 int loadErrorTimerStart;
 int loadErrorTimeWindow = 3800; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
 Boolean loadErrorCytonEvent = false;
+Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -680,6 +681,7 @@ void setupWidgetManager() {
   wm = new WidgetManager(this);
 }
 
+//Initialize the system
 void initSystem() {
   println();
   println();
@@ -902,7 +904,7 @@ void initSystem() {
   //Output messages when Loading settings is complete
   if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-    if (eegDataSource == DATASOURCE_SYNTHETIC) {
+    if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
       outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
     }
   } else if (chanNumError) {
@@ -919,10 +921,13 @@ void initSystem() {
     outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
   }
 
+  //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
+  settingsLoadedCheck = true;
+
   //reset init variables
   midInit = false;
   abandonInit = false;
-}
+} //end initSystem
 
 /**
  * @description Useful function to get the correct sample rate based on data source
@@ -1095,6 +1100,7 @@ void haltSystem() {
   indices = 0;
   hasRepeated = false;
   has_processed = false;
+  settingsLoadedCheck = false; //on halt, reset this value
 
   //reset connect loadStrings
   openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017

@@ -779,7 +779,7 @@ class PlaybackScrollbar {
     //if the slider is not being used, let playback control it when (isRunning)
     if (!locked && isRunning){
       //process the file
-      if (w_playback.initHasOccured && !has_processed && !isOldData) {
+      if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
         lastReadDataPacketInd = 0;
         pointCounter = 0;
         try {

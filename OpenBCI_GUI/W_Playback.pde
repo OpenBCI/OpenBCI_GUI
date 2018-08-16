@@ -17,7 +17,10 @@ class W_playback extends Widget {
   Button widgetTemplateButton;
   int padding = 10;
 
-  W_playback(PApplet _parent){
+  private boolean visible = true;
+  private boolean updating = true;
+
+  W_playback(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
     x = x0;
     y = y0;
@@ -38,37 +41,55 @@ class W_playback extends Widget {
     widgetTemplateButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
   }
 
-  void update(){
+  public boolean isVisible() {
+    return visible;
+  }
+  public boolean isUpdating() {
+    return updating;
+  }
+
+  public void setVisible(boolean _visible) {
+    visible = _visible;
+  }
+  public void setUpdating(boolean _updating) {
+    updating = _updating;
+  }
+
+  void update() {
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
     //put your code here...
 
   }
 
-  void draw(){
-    super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+  void draw() {
+    //Only draw if the widget is visible and User settings have been loaded
+    //settingsLoadedCheck is set to true after default settings are saved between Init checkpoints 4 and 5
+    if(visible && settingsLoadedCheck) {
+      super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-    //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-    pushStyle();
-    fill(boxColor);
-    stroke(boxStrokeColor);
-    strokeWeight(1);
-    rect(x, y, w, h);
-    fill(bgColor);
-    textFont(h3, 16);
-    textAlign(LEFT, TOP);
-    text("PLAYBACK FILE", x + padding, y + padding);
-    popStyle();
+      //x,y,w,h are the positioning variables of the Widget class
+      pushStyle();
+      fill(boxColor);
+      stroke(boxStrokeColor);
+      strokeWeight(1);
+      rect(x, y, w, h);
+      fill(bgColor);
+      textFont(h3, 16);
+      textAlign(LEFT, TOP);
+      text("PLAYBACK FILE", x + padding, y + padding);
+      //println("DRAWING PLAYBACK FILE BOX");
+      popStyle();
 
-    pushStyle();
-    widgetTemplateButton.draw();
-    playbackFileBox2.draw();
+      pushStyle();
+      widgetTemplateButton.draw();
+      playbackFileBox2.draw();
 
-    popStyle();
+      popStyle();
+    }
+  } //end draw loop
 
-  }
-
-  void screenResized(){
+  void screenResized() {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
@@ -82,7 +103,7 @@ class W_playback extends Widget {
 
   }
 
-  void mousePressed(){
+  void mousePressed() {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
     if (selectPlaybackFileWidget.isMouseHere()) {
@@ -91,17 +112,17 @@ class W_playback extends Widget {
     }
 
     //put your code here...
-    if(widgetTemplateButton.isMouseHere()){
+    if(widgetTemplateButton.isMouseHere()) {
       widgetTemplateButton.setIsActive(true);
     }
 
   }
 
-  void mouseReleased(){
+  void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
+    if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()) {
       widgetTemplateButton.goToURL();
     }
     widgetTemplateButton.setIsActive(false);
@@ -117,7 +138,7 @@ class W_playback extends Widget {
   }
 
   //add custom functions here
-  void customFunction(){
+  void customFunction() {
     //this is a fake function... replace it with something relevant to this widget
 
   }
@@ -151,16 +172,18 @@ class W_playback extends Widget {
     }
 
     public void drawPlaybackFileBox(int x, int y, int w, int h) {
-      pushStyle();
-      fill(boxColor);
-      stroke(boxStrokeColor);
-      strokeWeight(1);
-      rect(x, y, w, h);
-      fill(bgColor);
-      textFont(h3, 16);
-      textAlign(LEFT, TOP);
-      text("PLAYBACK FILE", x + padding, y + padding);
-      popStyle();
+      if(visible && settingsLoadedCheck) {
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        fill(bgColor);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("PLAYBACK FILE", x + padding, y + padding);
+        popStyle();
+      }
     }
   };
 
@@ -169,22 +192,22 @@ class W_playback extends Widget {
 //GLOBAL FUNCTIONS BELOW THIS LINE
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void pbDropdown1(int n){
+void pbDropdown1(int n) {
   println("Item " + (n+1) + " selected from Dropdown 1");
-  if(n==0){
+  if(n==0) {
     //do this
-  } else if(n==1){
+  } else if(n==1) {
     //do this instead
   }
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
-void pbDropdown2(int n){
+void pbDropdown2(int n) {
   println("Item " + (n+1) + " selected from Dropdown 2");
   closeAllDropdowns();
 }
 
-void pbDropdown3(int n){
+void pbDropdown3(int n) {
   println("Item " + (n+1) + " selected from Dropdown 3");
   closeAllDropdowns();
 }
@@ -198,7 +221,7 @@ void playbackSelectedFromWidget(File selection) {
     playbackData_fname = selection.getAbsolutePath();
 
     //if a new file was selected
-    if (playbackData_fname != "N/A" && systemMode == SYSTEMMODE_POSTINIT){
+    if (playbackData_fname != "N/A" && systemMode == SYSTEMMODE_POSTINIT) {
       //Fix issue for processing successive playback files
       indices = 0;
       hasRepeated = false;

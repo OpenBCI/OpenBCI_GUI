@@ -183,7 +183,11 @@ class WidgetManager{
     setupWidgets(_this, widgets);
     setupWidgetSelectorDropdowns();
 
-    if((nchan == 4 && eegDataSource == DATASOURCE_GANGLION) || eegDataSource == DATASOURCE_PLAYBACKFILE){
+    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION) {
+      currentContainerLayout = 1;
+      currentLayout = 1; // used for save/load settings
+      setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
       currentContainerLayout = 1;
       currentLayout = 1; // used for save/load settings
       setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
