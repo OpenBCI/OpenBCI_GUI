@@ -1524,7 +1524,7 @@ class ControlPanel {
 
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
       output("select a file for playback");
-      selectInput("Select a pre-recorded file for playback:", "playbackSelected");
+      selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
     }
 
     if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {

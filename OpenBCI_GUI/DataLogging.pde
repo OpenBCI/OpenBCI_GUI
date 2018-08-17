@@ -79,7 +79,7 @@ void openNewLogFileODF(String _fileName) {
  *  biosemi data format.
  * @param `_fileName` {String} - The meat of the file name
  */
-void playbackSelected(File selection) {
+void playbackSelectedControlPanel(File selection) {
   if (selection == null) {
     println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
   } else {

@@ -703,7 +703,7 @@ void initSystem() {
 
   //initialize playback file if necessary
   if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-    initPlaybackFile(); //found in W_playback.pde
+    initPlaybackFileToTable(); //found in W_Playback.pde
   }
 
   verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
@@ -1216,6 +1216,7 @@ void systemUpdate() { // for updating data values and variables
       pointCounter = 0;
       try {
         process_input_file();
+        println("GUI update process file");
       }
       catch(Exception e) {
         isOldData = true;
