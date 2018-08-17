@@ -784,7 +784,7 @@ class PlaybackScrollbar {
         pointCounter = 0;
         try {
           process_input_file();
-          println("TimeSeriesFileProcessed");
+          ///println("TimeSeriesFileProcessed");
         } catch(Exception e) {
           isOldData = true;
           output("Error processing timestamps, are you using old data?");
