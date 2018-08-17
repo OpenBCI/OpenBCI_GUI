@@ -884,7 +884,7 @@ class PlaybackScrollbar {
 
   }
 
-  //Fetch index using playback indicitor position
+  //Fetch index using playback indicator position
   int getIndex(){
     //Divide the width (Max - Min) by the number of indices
     //Store this value for scrollbar step size as a float
