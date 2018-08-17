@@ -84,7 +84,6 @@ class W_playback extends Widget {
       pushStyle();
       widgetTemplateButton.draw();
       playbackFileBox2.draw();
-
       popStyle();
     }
   } //end draw loop
@@ -222,25 +221,30 @@ void playbackSelectedFromWidget(File selection) {
 
     //if a new file was selected
     if (playbackData_fname != "N/A" && systemMode == SYSTEMMODE_POSTINIT) {
-      //Fix issue for processing successive playback files
-      indices = 0;
-      hasRepeated = false;
-      has_processed = false;
-      w_timeSeries.scrollbar.skipToStartButtonAction(); //sets scrollbar to 0
+      processNewPlaybackFile();
+    }
+  }
+}
 
-      //initialize playback file
-      initPlaybackFile();
+void processNewPlaybackFile() {
+  //Fix issue for processing successive playback files
+  indices = 0;
+  hasRepeated = false;
+  has_processed = false;
+  if (systemMode == SYSTEMMODE_POSTINIT) {
+    w_timeSeries.scrollbar.skipToStartButtonAction(); //sets scrollbar to 0
+  }
 
-      //try to process the new playback file
-      if (has_processed = false) {
-        try {
-          process_input_file();
-        } catch(Exception e) {
-          isOldData = true;
-          output("Error processing timestamps, are you using old data?");
-        }
-      }
+  //initialize playback file
+  initPlaybackFile();
 
+  //try to process the new playback file
+  if (has_processed = false) {
+    try {
+      process_input_file();
+    } catch(Exception e) {
+      isOldData = true;
+      output("Error processing timestamps, are you using old data?");
     }
   }
 }

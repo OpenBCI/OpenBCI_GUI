@@ -135,9 +135,9 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
-Button playbackChanButton4;
-Button playbackChanButton8;
-Button playbackChanButton16;
+//Button playbackChanButton4;
+//Button playbackChanButton8;
+//Button playbackChanButton16;
 
 Serial board;
 
@@ -217,10 +217,10 @@ public void controlEvent(ControlEvent theEvent) {
       wifiIPAddressDyanmic.color_notPressed = isSelected_color;
       wifiIPAddressStatic.color_notPressed = autoFileName.color_notPressed;
     } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
-      updateToNChan(8);
-      playbackChanButton4.color_notPressed = autoFileName.color_notPressed;
-      playbackChanButton8.color_notPressed = isSelected_color;
-      playbackChanButton16.color_notPressed = autoFileName.color_notPressed;
+      updateToNChan(8); //default to 8 chan before user selects a playback file
+      //playbackChanButton4.color_notPressed = autoFileName.color_notPressed;
+      //playbackChanButton8.color_notPressed = isSelected_color;
+      //playbackChanButton16.color_notPressed = autoFileName.color_notPressed;
     } else if(newDataSource == DATASOURCE_SYNTHETIC){
       updateToNChan(8);
       synthChanButton4.color_notPressed = autoFileName.color_notPressed;
@@ -297,7 +297,7 @@ class ControlPanel {
   ChannelCountBox channelCountBox;
   InitBox initBox;
   SyntheticChannelCountBox synthChannelCountBox;
-  PlaybackChannelCountBox playbackChannelCountBox;
+  //PlaybackChannelCountBox playbackChannelCountBox;
 
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
@@ -371,8 +371,8 @@ class ControlPanel {
     wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
-    playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
-    playbackFileBox = new PlaybackFileBox(x + w, (playbackChannelCountBox.y + playbackChannelCountBox.h), w, h, globalPadding);
+    //playbackChannelCountBox = new PlaybackChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
 
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
@@ -435,7 +435,7 @@ class ControlPanel {
     dataLogBox.update();
     channelCountBox.update();
     synthChannelCountBox.update();
-    playbackChannelCountBox.update();
+    //playbackChannelCountBox.update();
     sdBox.update();
     rcBox.update();
     wcBox.update();
@@ -595,7 +595,7 @@ class ControlPanel {
           cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         }
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
-        playbackChannelCountBox.draw();
+        //playbackChannelCountBox.draw();
         playbackFileBox.draw();
         sdConverterBox.draw();
 
@@ -1087,6 +1087,7 @@ class ControlPanel {
           selectSDFile.wasPressed = true;
         }
 
+        /*
         if (playbackChanButton4.isMouseHere()) {
           playbackChanButton4.setIsActive(true);
           playbackChanButton4.wasPressed = true;
@@ -1110,6 +1111,7 @@ class ControlPanel {
           playbackChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
           playbackChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
         }
+        */
       }
 
       //active buttons during DATASOURCE_SYNTHETIC
@@ -1446,6 +1448,7 @@ class ControlPanel {
       cyton.setSampleRate(1000);
     }
 
+    /*
     if (playbackChanButton4.isMouseHere() && playbackChanButton4.wasPressed) {
       updateToNChan(4);
     }
@@ -1457,6 +1460,7 @@ class ControlPanel {
     if (playbackChanButton16.isMouseHere() && playbackChanButton16.wasPressed) {
       updateToNChan(16);
     }
+    */
 
     if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
       updateToNChan(4);
@@ -1606,12 +1610,14 @@ class ControlPanel {
     synthChanButton8.wasPressed = false;
     synthChanButton16.setIsActive(false);
     synthChanButton16.wasPressed = false;
+    /*
     playbackChanButton4.setIsActive(false);
     playbackChanButton4.wasPressed = false;
     playbackChanButton8.setIsActive(false);
     playbackChanButton8.wasPressed = false;
     playbackChanButton16.setIsActive(false);
     playbackChanButton16.wasPressed = false;
+    */
     chanButton16.setIsActive(false);
     chanButton16.wasPressed  = false;
     selectPlaybackFile.setIsActive(false);
@@ -2606,6 +2612,8 @@ class SyntheticChannelCountBox {
   }
 };
 
+//This has been removed since number of channels is auto-set when file is loaded
+/*
 class PlaybackChannelCountBox {
   int x, y, w, h, padding; //size and position
 
@@ -2651,6 +2659,7 @@ class PlaybackChannelCountBox {
     playbackChanButton16.draw();
   }
 };
+*/
 
 class PlaybackFileBox {
   int x, y, w, h, padding; //size and position

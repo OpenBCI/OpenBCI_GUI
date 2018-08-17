@@ -246,8 +246,12 @@ ButtonHelpText buttonHelpText;
 boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
-
+//Used for playback file
 int indices = 0;
+//# columns used by a playback file determines number of channels
+final int totalColumnsFourChannels = 8;
+final int totalColumnsEightChannels = 12;
+final int totalColumnsSixteenChannels = 20;
 
 boolean synthesizeData = false;
 
