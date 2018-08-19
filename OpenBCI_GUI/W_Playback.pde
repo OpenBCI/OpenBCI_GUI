@@ -12,8 +12,8 @@ class W_playback extends Widget {
 
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
-  PlaybackFileBox2 playbackFileBox2;
-  Button selectPlaybackFileWidget;
+  //PlaybackFileBox2 playbackFileBox2;
+  Button selectPlaybackFileButton;
   Button widgetTemplateButton;
   int padding = 10;
 
@@ -30,11 +30,13 @@ class W_playback extends Widget {
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("pbDropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-    addDropdown("pbDropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-    addDropdown("pbDropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+    //addDropdown("pbDropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
+    //addDropdown("pbDropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
+    //addDropdown("pbDropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-    playbackFileBox2 = new PlaybackFileBox2(x, y, 200, navHeight, 12);
+    //playbackFileBox2 = new PlaybackFileBox2(x, y, 200, navHeight, 12);
+    selectPlaybackFileButton = new Button (x + padding, y + padding*2 + 13, 200, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+
 
     widgetTemplateButton = new Button (x + w/2 + 50, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
     widgetTemplateButton.setFont(p4, 14);
@@ -81,7 +83,8 @@ class W_playback extends Widget {
 
       pushStyle();
       widgetTemplateButton.draw();
-      playbackFileBox2.draw();
+      //playbackFileBox2.draw();
+      selectPlaybackFileButton.draw();
       popStyle();
     }
   } //end draw loop
@@ -93,9 +96,10 @@ class W_playback extends Widget {
     widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
 
     //resize and position the playback file box and button
-    playbackFileBox2.screenResized(x + padding, y + padding*2 + 13);
+    //playbackFileBox2.screenResized(x + padding, y + padding*2 + 13);
+    selectPlaybackFileButton.setPos(x + padding, y + padding*2 + 13);
 
-    //selectPlaybackFileWidget.setPos(x + padding, y + padding*2 + 13);
+    //selectPlaybackFileButton.setPos(x + padding, y + padding*2 + 13);
 
 
   }
@@ -103,9 +107,9 @@ class W_playback extends Widget {
   void mousePressed() {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    if (selectPlaybackFileWidget.isMouseHere()) {
-      selectPlaybackFileWidget.setIsActive(true);
-      selectPlaybackFileWidget.wasPressed = true;
+    if (selectPlaybackFileButton.isMouseHere()) {
+      selectPlaybackFileButton.setIsActive(true);
+      selectPlaybackFileButton.wasPressed = true;
     }
 
     //put your code here...
@@ -124,13 +128,13 @@ class W_playback extends Widget {
     }
     widgetTemplateButton.setIsActive(false);
 
-    if (selectPlaybackFileWidget.isMouseHere() && selectPlaybackFileWidget.wasPressed) {
+    if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.wasPressed) {
       //playbackData_fname = "N/A"; //reset the filename variable
       has_processed = false; //reset has_processed variable
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
     }
-    selectPlaybackFileWidget.setIsActive(false);
+    selectPlaybackFileButton.setIsActive(false);
 
   }
 
@@ -140,6 +144,7 @@ class W_playback extends Widget {
 
   }
 
+  /*
   class PlaybackFileBox2 {
     int x, y, w, h, padding; //size and position
 
@@ -150,7 +155,7 @@ class W_playback extends Widget {
       h = 67;
       padding = _padding;
 
-      selectPlaybackFileWidget = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+      selectPlaybackFileButton = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
     }
 
     public void update() {
@@ -159,12 +164,12 @@ class W_playback extends Widget {
     public void draw() {
 
       //drawPlaybackFileBox(x,y,w,h);
-      selectPlaybackFileWidget.draw();
+      selectPlaybackFileButton.draw();
       // chanButton16.draw();
     }
 
     public void screenResized(int _x, int _y) {
-      selectPlaybackFileWidget.setPos(_x,_y);
+      selectPlaybackFileButton.setPos(_x,_y);
       drawPlaybackFileBox(_x,_y,w,h);
     }
 
@@ -183,6 +188,7 @@ class W_playback extends Widget {
       }
     }
   };
+  */
 
 };
 
