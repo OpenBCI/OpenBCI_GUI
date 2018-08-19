@@ -79,8 +79,8 @@ final static String TCP_CMD_CONNECT = "c";
 final static String TCP_CMD_COMMAND = "k";
 final static String TCP_CMD_DISCONNECT = "d";
 final static String TCP_CMD_DATA = "t";
-final static String TCP_CMD_ERROR = "e"; //<>// //<>//
-final static String TCP_CMD_EXAMINE = "x"; //<>// //<>//
+final static String TCP_CMD_ERROR = "e"; //<>//
+final static String TCP_CMD_EXAMINE = "x"; //<>//
 final static String TCP_CMD_IMPEDANCE = "i";
 final static String TCP_CMD_LOG = "l";
 final static String TCP_CMD_PROTOCOL = "p";
@@ -242,22 +242,18 @@ class Hub {
   public boolean isAccelModeActive() { return accelModeActive; }
   public void setLatency(int latency) {
     curLatency = latency;
-    output("Setting Latency to " + latency);
     println("Setting Latency to " + latency);
   }
   public void setCurBLEHardware(String bleHardware) {
     curBLEHardware = bleHardware;
-    output("Setting BLE Hardware to " + bleHardware);
     println("Setting BLE Hardware to " + bleHardware);
   }
   public void setWifiInternetProtocol(String internetProtocol) {
     curInternetProtocol = internetProtocol;
-    output("Setting WiFi Internet Protocol to " + internetProtocol);
     println("Setting WiFi Internet Protocol to " + internetProtocol);
   }
   public void setWiFiStyle(String wifiStyle) {
     curWiFiStyle = wifiStyle;
-    output("Setting WiFi style to " + wifiStyle);
     println("Setting WiFi style to " + wifiStyle);
   }
 
@@ -368,6 +364,7 @@ class Hub {
         break;
       case 'r':
         processRegisterQuery(msg);
+        checkForSuccessTS = msg;
         break;
       case 'm':
         processSDCard(msg);
@@ -490,12 +487,20 @@ class Hub {
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
     String firmwareString = " Cyton firmware ";
+    String settingsString = "Settings Loaded! ";
     if (eegDataSource == DATASOURCE_CYTON) {
-      firmwareString += firmwareVersion;
+      firmwareString += firmwareVersion; 
+    } else if (eegDataSource == DATASOURCE_GANGLION) {
+      firmwareString = ganglion_portName;
     } else {
       firmwareString = "";
     }
-    outputSuccess("The GUI is done intializing." + firmwareString + " Press \"Start Data Stream\" to start streaming!");
+    //This success message appears in Ganglion mode
+    if (loadErrorCytonEvent == true) {
+      outputError("Connection Error: Failed to apply channel settings to Cyton.");
+    } else {
+      outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);    
+    }
     portIsOpen = true;
     controlPanel.hideAllBoxes();
   }

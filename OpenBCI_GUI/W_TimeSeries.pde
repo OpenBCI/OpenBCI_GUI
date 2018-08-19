@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////
 //
-// This class creates an Time Sereis Plot separate from the old Gui_Manager
+// This class creates a Time Series Plot separate from the old Gui_Manager
 // It extends the Widget class
 //
 // Conor Russomanno, November 2016
@@ -19,6 +19,7 @@ class W_timeSeries extends Widget {
   float xF, yF, wF, hF;
   float ts_padding;
   float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+  float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
   float plotBottomWell;
   float playbackWidgetHeight;
   int channelBarHeight;
@@ -27,6 +28,7 @@ class W_timeSeries extends Widget {
   Button hardwareSettingsButton;
 
   ChannelBar[] channelBars;
+  PlaybackScrollbar scrollbar;
 
   int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
@@ -46,9 +48,7 @@ class W_timeSeries extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  int startingVertScaleIndex = 3;
-
-  private boolean hasScrollbar = false;
+  private boolean hasScrollbar = true; //used to turn scrollbar widget on/off
 
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -57,8 +57,8 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), startingVertScaleIndex);
-    addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), 2);
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
+    addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), tsHorizScaleSave);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
@@ -68,18 +68,26 @@ class W_timeSeries extends Widget {
     wF = float(w);
     hF = float(h);
 
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-      playbackWidgetHeight = 50.0;
-    } else{
-      playbackWidgetHeight = 0.0;
-    }
-
     plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
     ts_padding = 10.0;
     ts_x = xF + ts_padding;
     ts_y = yF + (ts_padding);
     ts_w = wF - ts_padding*2;
     ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
+
+    //Instantiate scrollbar if using playback mode and scrollbar feature in use
+    if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
+      playbackWidgetHeight = 50.0;
+      pb_x = ts_x - ts_padding/2;
+      pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
+      pb_w = wF - ts_padding*4;
+      pb_h = playbackWidgetHeight/2;
+      //Make a new scrollbar
+      scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
+    } else{
+      playbackWidgetHeight = 0.0;
+    }
+
     channelBarHeight = int(ts_h/numChannelBars);
 
     channelBars = new ChannelBar[numChannelBars];
@@ -133,6 +141,11 @@ class W_timeSeries extends Widget {
       //put your code here...
       hsc.update(); //update channel controller
 
+      if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
+        //scrub playback file
+        scrollbar.update();
+      }
+
       //update channel bars ... this means feeding new EEG data into plots
       for(int i = 0; i < numChannelBars; i++){
         channelBars[i].update();
@@ -158,11 +171,10 @@ class W_timeSeries extends Widget {
 
       //temporary placeholder for playback controller widget
       if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-        pushStyle();
         fill(0,0,0,20);
         stroke(31,69,110);
         rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
-        popStyle();
+        scrollbar.draw();
       } else{
         //dont draw anything at the bottom
       }
@@ -198,6 +210,15 @@ class W_timeSeries extends Widget {
 
     if(eegDataSource == DATASOURCE_CYTON){
       hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+      ///////////////////////////////////////////////////
+      ///////////////////////////////////////////////////
+      //Resize the playback slider if using playback mode
+      pb_x = ts_x - ts_padding/2;
+      pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
+      pb_w = wF - ts_padding*8;
+      pb_h = playbackWidgetHeight/2;
+      scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
     }
   }
 
@@ -255,6 +276,7 @@ class W_timeSeries extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
+  tsVertScaleSave = n;
   if (n==0) { //autoscale
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
       w_timeSeries.channelBars[i].adjustVertScale(0);
@@ -284,11 +306,11 @@ void VertScale_TS(int n) {
       w_timeSeries.channelBars[i].adjustVertScale(10000);
     }
   }
-  closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration(int n) {
+  tsHorizScaleSave = n;
   // println("adjust duration to: ");
   if(n==0){ //set time series x axis to 1 secconds
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
@@ -319,15 +341,6 @@ void Spillover(int n) {
   }
   closeAllDropdowns();
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -384,7 +397,8 @@ class ChannelBar{
     onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
     onOffButton.setFont(h2, 16);
     onOffButton.setCircleButton(true);
-    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
+    onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]); //Set channel button background colors
+    onOffButton.textColorNotActive = color(255); //Set channel button text to white
     onOffButton.hasStroke(false);
 
     if(eegDataSource == DATASOURCE_CYTON){
@@ -392,7 +406,9 @@ class ChannelBar{
       impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
       impCheckButton.setFont(h2, 16);
       impCheckButton.setCircleButton(true);
-      impCheckButton.setColorNotPressed(color(255));
+      impCheckButton.setColorNotPressed(color(255)); //White background
+      impCheckButton.textColorNotActive = color(0); //Black text
+      impCheckButton.textColorActive = color(255); //White text when clicked
       impCheckButton.hasStroke(false);
     } else {
       impButton_diameter = 0;
@@ -667,10 +683,12 @@ class ChannelBar{
         w_timeSeries.hsc.toggleImpedanceCheck(channelNumber-1);  // 'n' indicates the N inputs and '1' indicates test impedance
         if(drawImpValue){
           drawImpValue = false;
-          impCheckButton.setColorNotPressed(color(255));
+          impCheckButton.setColorNotPressed(color(255)); //White background
+          impCheckButton.textColorNotActive = color(0); //Black text
         } else {
           drawImpValue = true;
-          impCheckButton.setColorNotPressed(color(50));
+          impCheckButton.setColorNotPressed(color(50)); //Dark background
+          impCheckButton.textColorNotActive = color (255); //White text
         }
       }
       impCheckButton.setIsActive(false);
@@ -682,6 +700,9 @@ class ChannelBar{
 //                                          END OF -- CHANNEL BAR CLASS
 //========================================================================================================================
 
+
+
+
 //============= PLAYBACKSLIDER =============
 class PlaybackScrollbar {
   int swidth, sheight;    // width and height of bar
@@ -692,21 +713,46 @@ class PlaybackScrollbar {
   boolean locked;
   float ratio;
   int num_indices;
+  int indexStartPosition = 0;
+  int indexPosition = indexStartPosition;
+  Button skipToStartButton;
+  int skipToStart_diameter;
+  Boolean indicatorAtStart; //true means the indicator is at index 0
+  float ps_Padding = 50.0; //used to make room for skip to start button
+  String timeToFind = "";
 
   PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
     swidth = sw;
     sheight = sh;
-    int widthtoheight = sw - sh;
-    ratio = (float)sw / (float)widthtoheight;
-    xpos = xp;
+    //float widthtoheight = sw - sh;
+    //ratio = (float)sw / widthtoheight;
+    xpos = xp + ps_Padding; //lots of padding to make room for button
     ypos = yp-sheight/2;
     spos = xpos;
     newspos = spos;
     sposMin = xpos;
     sposMax = xpos + swidth - sheight/2;
     num_indices = is;
+    indicatorAtStart = true;
+
+    //Let's make a button to return to the start of playback!!
+    if(sh > 26){
+      skipToStart_diameter = 26;
+    } else{
+      skipToStart_diameter = sh - 2;
+    }
+    skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "|<", fontInfo.buttonLabel_size);
+    skipToStartButton.setFont(h2, 18);
+    skipToStartButton.setCircleButton(true);
+    skipToStartButton.setColorNotPressed(openbciBlue); //Set channel button background colors
+    skipToStartButton.setColorPressed(color(255));
+    skipToStartButton.textColorNotActive = color(255); //Set channel button text to white
+    skipToStartButton.textColorActive = color(0,255,0); //Green text when clicked
+    skipToStartButton.hasStroke(true);
+
   }
 
+  /////////////// Update loop for PlaybackScrollbar
   void update() {
     if (overEvent()) {
       over = true;
@@ -719,22 +765,67 @@ class PlaybackScrollbar {
     if (!mousePressed) {
       locked = false;
     }
-    if (locked) {
+    //if the slider is being used, update new position based on user mouseX
+    if (locked && (!isRunning || isRunning)) {
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
+      try {
+        playbackScrubbing(); //perform scrubbing
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
-    if (abs(newspos - spos) > 1) {
-      spos = spos + (newspos-spos);
+    //if the slider is not being used, let playback control it when (isRunning)
+    if (!locked && isRunning){
+      //Set the new position of playback indicator using mapped value
+      newspos = updatePos();
+      //Find time to display for playback indicator position
+      findTimesToDisplay();
+      //Print current position to bottom of GUI
+      output("Time: " + timeToFind
+      + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+      + " seconds" );
     }
-  }
+    if (abs(newspos - spos) > 1) { //if the slider has been moved
+      spos = spos + (newspos-spos); //update position
+
+    }
+    if (getIndex() == 0) { //if the current index is 0, the indicator is at start
+      indicatorAtStart = true;
+    } else {
+      indicatorAtStart = false;
+    }
+
+    if(mousePressed && skipToStartButton.isMouseHere()){
+      println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
+      skipToStartButton.setIsActive(true);
+      if (!indicatorAtStart) { //if indicator is not at start
+        newspos = sposMin; //move slider to min position
+        indexPosition = 0; //set index position to 0
+        currentTableRowIndex = 0; //set playback position to 0
+        indicatorAtStart = true;
+
+        if (!isRunning) {
+          //Success print detailed position to bottom of GUI
+          outputSuccess("New Position{ " + getPos() + "/" + sposMax
+          + " Index: " + getIndex()
+          + " } --- Time: " + timeToFind
+          + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+          + " seconds" );
+        }
+      }
+    } //end case for skipToStartButton pressed
+    skipToStartButton.setIsActive(false); //set button to not active
+  } //end update loop for PlaybackScrollbar
 
   float constrain(float val, float minv, float maxv) {
     return min(max(val, minv), maxv);
-  }
+  } //end update loop
 
+  //checks if mouse is over the playback scrollbar
   boolean overEvent() {
     if (mouseX > xpos && mouseX < xpos+swidth &&
        mouseY > ypos && mouseY < ypos+sheight) {
-      cursor(HAND);
+      cursor(HAND); //changes cursor icon to a hand
       return true;
     } else {
       cursor(ARROW);
@@ -742,124 +833,171 @@ class PlaybackScrollbar {
     }
   }
 
-  int get_index(){
+  void draw() {
+    pushStyle();
 
-    float seperate_val = sposMax / num_indices;
+    //draw button to skip to the beginning of recording
+    skipToStartButton.draw();
 
-    int index;
-
-    for(index = 0; index < num_indices + 1; index++){
-      if(getPos() >= seperate_val * index && getPos() <= seperate_val * (index +1) ) return index;
-      else if(index == num_indices && getPos() >= seperate_val * index) return num_indices;
-    }
-
-    return -1;
-  }
-
-  void display() {
+    //draw the playback slider inside the playback sub-widget
     noStroke();
     fill(204);
     rect(xpos, ypos, swidth, sheight);
+
+    //select color for playback indicator
     if (over || locked) {
       fill(0, 0, 0);
     } else {
       fill(102, 102, 102);
     }
+    //draws playback position indicator
     rect(spos, ypos, sheight/2, sheight);
+
+    popStyle();
   }
 
+  void screenResized(float _x, float _y, float _w, float _h){
+    swidth = int(_w);
+    sheight = int(_h);
+    xpos = _x + ps_Padding; //add lots of padding for use
+    ypos = _y - sheight/2;
+    sposMin = xpos;
+    sposMax = xpos + swidth - sheight/2;
+    //update the position of the playback indicator us
+    newspos = updatePos();
+
+    //resize the skip to start button
+    if(sheight > 26){
+      skipToStart_diameter = 26;
+      skipToStartButton.but_dx = skipToStart_diameter;
+      skipToStartButton.but_dy = skipToStart_diameter;
+    } else{
+      skipToStart_diameter = int(_h) - 2;
+      skipToStartButton.but_dx = skipToStart_diameter;
+      skipToStartButton.but_dy = skipToStart_diameter;
+    }
+    //update the x and y positions for the skipToStartButton
+    skipToStartButton.setPos(
+      int(_x) + int(skipToStart_diameter*.5),
+      int(_y) + int(_h/2) - int(skipToStart_diameter)
+      );
+
+  }
+
+  //Fetch index using playback indicator position
+  int getIndex(){
+    //Divide the width (Max - Min) by the number of indices
+    //Store this value for scrollbar step size as a float
+    float scrollbarStepSize = (sposMax-sposMin) / num_indices;
+    //println("sep val : " + scrollbarStepSize);
+    int index_Position = int(getPos());
+    int indexCounter;
+
+    //Set index position by finding the playback indicator
+    for (indexCounter = 0; indexCounter < num_indices + 1; indexCounter++) {
+      if (spos == sposMin) { //Indicator is at the beginning
+        indexPosition = 0;
+        indicatorAtStart = true;
+      }
+      //If not at the beginning or the end, use step size from above
+      if (index_Position > scrollbarStepSize * indexCounter && index_Position <= scrollbarStepSize * (indexCounter + 1)) {
+        indexPosition = indexCounter;
+        indicatorAtStart = false;
+        //println(">= val: " + (scrollbarStepSize * indexCounter) + " || <= val: " + (scrollbarStepSize * (indexCounter +1)) );
+      }
+      if (spos == sposMax) { //Indicator is at the end
+        indexPosition = num_indices;
+        indicatorAtStart = false;
+      }
+    }
+
+    return indexPosition;
+  }
+
+  //Get current position of the playback indicator
   float getPos() {
-    // Convert spos to be values between
-    // 0 and the total width of the scrollbar
-    return spos * ratio;
+    //Return the slider position and account for button space
+    return spos - ps_Padding;
   }
-};
 
-//WORK WITH COLIN ON IMPLEMENTING THIS ABOVE
-/*
-if(has_processed){
-  if(scrollbar == null) scrollbar = new PlaybackScrollbar(10,height/20 * 19, width/2 - 10, 16, indices);
-  else {
-    float val_uV = 0.0f;
-    boolean foundIndex =true;
-    int startIndex = 0;
+  //Update the position of the playback indicator during playback
+  float updatePos() {
+    //Fetch the counter and the max time in Seconds
+    int secondCounter = int(float(currentTableRowIndex)/getSampleRateSafe());
+    int secondCounterMax = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+    //Map the values to playbackslider min and max
+    float m = map(secondCounter, 0, secondCounterMax, sposMin, sposMax);
+    //println("mapval_"+m);
+    //Returns mapped value to set the new position of playback indicator
+    return m;
+  }
 
-    scrollbar.update();
-    scrollbar.display();
-    //println(index_of_times.get(scrollbar.get_index()));
-    SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
-    ArrayList<Date> keys_to_plot = new ArrayList();
+  ////////////////////////////////////////////////////////////////////////
+  //                        PlaybackScrubbing                           //
+  // Gets called when the playback slider position is moved by the user //
+  // This function should scrub the file using the slider position      //
+  void playbackScrubbing() {
 
+    num_indices = indices; //update the value for the number of indices
+
+    if(has_processed){ //if playback file has been processed successfully
+      //println("INDEXES"+num_indices);
+
+      findTimesToDisplay();
+
+      //Copy the index of the slider to the backend value
+      //This updates Time Series playback position and the value at the top of the GUI in title bar
+      currentTableRowIndex = getIndex();
+
+      if (!isRunning) {
+        //Success print detailed position to bottom of GUI
+        outputSuccess("New Position{ " + getPos() + "/" + sposMax
+        + " Index: " + getIndex()
+        + " } --- Time: " + timeToFind
+        + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+        + " seconds" );
+      }
+
+      //This shows top of gui during playback
+      //println(int(float(currentTableRowIndex)/getSampleRateSafe()));
+
+    }//end case for has_processed
+  }//end playback scrubbing
+
+  //Find times to display for playback position
+  void findTimesToDisplay () {
+    //update the value for the number of indices
+    num_indices = indices;
+    //Set date format to exclude milliseconds
+    SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+    //current playback time
+    timeToFind = "";
+    //time window size X seconds before current playback time
+    String timeWindowString = ""; //not necessary, here if needed for debugging
+
+    //Try to set some times that will output to the bottom of the screen when scrubbing
     try{
-      Date timeIndex = format.parse(index_of_times.get(scrollbar.get_index()));
-      Date fiveBefore = new Date(timeIndex.getTime());
-      fiveBefore.setTime(fiveBefore.getTime() - 5000);
-      Date fiveBeforeCopy = new Date(fiveBefore.getTime());
+      Date startIndexDate = format.parse(index_of_times.get(indexStartPosition));
+      Date timeIndex = format.parse(index_of_times.get(getIndex()));
+      //Fetch the time window from the dropdown text, split string, *1000, subtract from current time
+      String currentDurationWindow = w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().getText();
+      String[] list = split(currentDurationWindow, ' ');
+      Date timeWindow = new Date(timeIndex.getTime() - int(list[0])*1000);
 
-      //START HERE TOMORROW
-
-      int i = 0;
-      int timeToBreak = 0;
-      while(true){
-        //println("in while i:" + i);
-        if(index_of_times.get(i).contains(format.format(fiveBeforeCopy).toString())){
-          println("found");
-          startIndex = i;
-          break;
-        }
-        if(i == index_of_times.size() -1){
-          i = 0;
-          fiveBeforeCopy.setTime(fiveBefore.getTime() + 1);
-          timeToBreak++;
-        }
-        if(timeToBreak > 3){
-          break;
-        }
-        i++;
-
+      //If the Time window has not elapsed...
+      if (timeWindow.before(startIndexDate)) {
+        //Display start time
+        timeWindowString = format.format(startIndexDate).toString();
+        //to current time
+        timeToFind = format.format(timeIndex).toString();
+        //println(list[0] + " seconds have not passed yet");
+      } else {
+        //Otherwise, diplay time X seconds before current time
+        timeWindowString = format.format(timeWindow).toString();
+        //to current time
+        timeToFind = format.format(timeIndex).toString();
       }
-      println("after first while");
+    } catch(Exception e) {} //end of trying to set dates/times
+  }//end findTimesToDisplay
 
-      while(fiveBefore.before(timeIndex)){
-       //println("in while :" + fiveBefore);
-        if(index_of_times.get(startIndex).contains(format.format(fiveBefore).toString())){
-          keys_to_plot.add(fiveBefore);
-          startIndex++;
-        }
-        //println(fiveBefore);
-        fiveBefore.setTime(fiveBefore.getTime() + 1);
-      }
-      println("keys_to_plot size: " + keys_to_plot.size());
-    }
-    catch(Exception e){}
-
-    float[][] data = new float[keys_to_plot.size()][nchan];
-    int i = 0;
-
-    for(Date elm : keys_to_plot){
-
-      for(int Ichan=0; Ichan < nchan; Ichan++){
-        val_uV = processed_file.get(elm)[Ichan][startIndex];
-
-
-        data[Ichan][i] = (int) (0.5f+ val_uV / cyton.get_scale_fac_uVolts_per_count()); //convert to counts, the 0.5 is to ensure roundi
-      }
-      i++;
-    }
-
-    //println(keys_to_plot.size());
-    if(keys_to_plot.size() > 100){
-    for(int Ichan=0; Ichan<nchan; Ichan++){
-      update(data[Ichan],data_elec_imp_ohm);
-    }
-    }
-    //for(int index = 0; index <= scrollbar.get_index(); index++){
-    //  //yLittleBuff_uV = processed_file.get(index_of_times.get(index));
-
-    //}
-
-    cc.update();
-    cc.draw();
-  }
-}
-*/
+};
