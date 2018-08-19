@@ -32,7 +32,7 @@ void process_input_file() throws Exception {
 
   try {
     while (!hasRepeated) {
-      currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+      currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
 
       for (int Ichan=0; Ichan < nchan; Ichan++) {
         //scale the data into engineering units..."microvolts"
