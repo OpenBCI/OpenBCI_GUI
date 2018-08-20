@@ -95,6 +95,13 @@ final static String TCP_JSON_KEY_ACCEL_DATA_COUNTS = "accelDataCounts";
 final static String TCP_JSON_KEY_AUX_DATA = "auxData";
 final static String TCP_JSON_KEY_BOARD_TYPE = "boardType";
 final static String TCP_JSON_KEY_CHANNEL_DATA_COUNTS = "channelDataCounts";
+final static String TCP_JSON_KEY_CHANNEL_SET_CHANNEL_NUMBER = "channelNumber";
+final static String TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN = "powerDown";
+final static String TCP_JSON_KEY_CHANNEL_SET_GAIN = "gain";
+final static String TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE = "inputType";
+final static String TCP_JSON_KEY_CHANNEL_SET_BIAS = "bias";
+final static String TCP_JSON_KEY_CHANNEL_SET_SRB2 = "srb2";
+final static String TCP_JSON_KEY_CHANNEL_SET_SRB1 = "srb1";
 final static String TCP_JSON_KEY_CODE = "code";
 final static String TCP_JSON_KEY_COMMAND = "command";
 final static String TCP_JSON_KEY_FIRMWARE = "firmware";
@@ -663,23 +670,14 @@ class Hub {
               for (int i = 0; i < auxDataValues.size(); i+=2) {
                 int val1 = auxDataValues.getInt(i);
                 int val2 = auxDataValues.getInt(i+1);
-              }
-              if (valsToRead == 6) {
-                for (int i = 0; i < 3; i++) {
-                  // println(list[valCounter]);
-                  int val1 = Integer.parseInt(list[valCounter++]);
-                  int val2 = Integer.parseInt(list[valCounter++]);
 
-                  dataPacket.auxValues[i] = (val1 << 8) | val2;
-                  validAccelValues[i] = (val1 << 8) | val2;
+                dataPacket.auxValues[i] = (val1 << 8) | val2;
+                validAccelValues[i] = (val1 << 8) | val2;
 
-                  dataPacket.rawAuxValues[i][0] = byte(val2);
-                  dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
-                }
-                // println(validAccelValues[1]);
+                dataPacket.rawAuxValues[i][0] = byte(val2);
+                dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
               }
             }
-
           }
           getRawValues(dataPacket);
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
@@ -713,9 +711,21 @@ class Hub {
           switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
               if (eegDataSource == DATASOURCE_GANGLION) {
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], ganglion.get_scale_fac_uVolts_per_count(), ganglion.get_scale_fac_accel_G_per_count(), stopByte);
+                fileoutput_odf.writeRawData_dataPacket(
+                  dataPacketBuff[curDataPacketInd],
+                  ganglion.get_scale_fac_uVolts_per_count(),
+                  ganglion.get_scale_fac_accel_G_per_count(),
+                  stopByte,
+                  json.getInt(TCP_JSON_KEY_TIMESTAMP)
+                );
               } else {
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), stopByte);
+                fileoutput_odf.writeRawData_dataPacket(
+                  dataPacketBuff[curDataPacketInd],
+                  cyton.get_scale_fac_uVolts_per_count(),
+                  cyton.get_scale_fac_accel_G_per_count(),
+                  stopByte,
+                  json.getInt(TCP_JSON_KEY_TIMESTAMP)
+                );
               }
               break;
             case OUTPUT_SOURCE_BDF:
@@ -743,9 +753,8 @@ class Hub {
 
   }
 
-  private void processDisconnect(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processDisconnect(JSONObject json) {
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
         if (!waitingForResponse) {
@@ -764,36 +773,40 @@ class Hub {
     portIsOpen = false;
   }
 
-  private void processImpedance(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processImpedance(JSONObject json) {
+    String action, message;
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_ERROR_IMPEDANCE_COULD_NOT_START:
         ganglion.overrideCheckingImpedance(false);
       case RESP_ERROR_IMPEDANCE_COULD_NOT_STOP:
       case RESP_ERROR_IMPEDANCE_FAILED_TO_SET_IMPEDANCE:
       case RESP_ERROR_IMPEDANCE_FAILED_TO_PARSE:
-        handleError(code, list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        handleError(code, message);
         break;
       case RESP_SUCCESS_DATA_IMPEDANCE:
         ganglion.processImpedance(msg);
         break;
       case RESP_SUCCESS:
-        output("Success: Impedance " + list[2] + ".");
+        action = json.getString(TCP_JSON_KEY_ACTION);
+        output("Success: Impedance " + action + ".");
         break;
       default:
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
         handleError(code, list[2]);
         break;
     }
   }
 
-  private void processProtocol(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processProtocol(JSONObject json) {
+    String message, protocol;
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
-        output("Transfer Protocol set to " + list[2]);
-        println("Transfer Protocol set to " + list[2]);
+        protocol = json.getString(TCP_JSON_KEY_PROTOCOL);
+        output("Transfer Protocol set to " + protocol);
+        println("Transfer Protocol set to " + protocol);
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
           // hub.searchDeviceStart();
           outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
@@ -804,14 +817,14 @@ class Hub {
         println("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
         break;
       default:
-        handleError(code, list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        handleError(code, message);
         break;
     }
   }
 
-  private void processStatus(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processStatus(JSONObject json) {
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     if (waitingForResponse) {
       waitingForResponse = false;
       println("Node process up!");
@@ -824,48 +837,49 @@ class Hub {
     }
   }
 
-  private void processRegisterQuery(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processRegisterQuery(JSONObject json) {
+    String action, message;
+    int code = json.getInt(TCP_JSON_KEY_CODE);
 
     switch (code) {
       case RESP_ERROR_CHANNEL_SETTINGS:
         killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
-        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + message);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
         println("tried to sync channel settings but there was already one in progress");
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
-        println("an error was thrown trying to set the channels | error: " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("an error was thrown trying to set the channels | error: " + message);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
-        println("an error was thrown trying to call the function to set the channels | error: " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("an error was thrown trying to call the function to set the channels | error: " + message);
         break;
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
-        String action = list[2];
-        switch (action) {
-          case TCP_ACTION_START:
-            println("Query registers for cyton channel settings");
-            break;
+        action = json.getString(TCP_JSON_KEY_ACTION);
+        if (action.equals(TCP_ACTION_START)) {
+          println("Query registers for cyton channel settings");
         }
         break;
       case RESP_SUCCESS_CHANNEL_SETTING:
-        int channelNumber = Integer.parseInt(list[2]);
+        int channelNumber = json.getInt(TCP_JSON_KEY_CHANNEL_SET_CHANNEL_NUMBER);
         // power down comes in as either 'true' or 'false', 'true' is a '1' and false is a '0'
-        channelSettingValues[channelNumber][0] = list[3].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][0] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN) ? '1' : '0';
         // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
         //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
-        channelSettingValues[channelNumber][1] = cyton.getCommandForGain(Integer.parseInt(list[4]));
+        channelSettingValues[channelNumber][1] = cyton.getCommandForGain(json.getInt(TCP_JSON_KEY_CHANNEL_SET_GAIN));
         // input type comes in as a string version and must get converted to char
-        channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(list[5]);
+        channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(json.getString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE));
         // bias is like power down
-        channelSettingValues[channelNumber][3] = list[6].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][3] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS ? '1' : '0';
         // srb2 is like power down
-        channelSettingValues[channelNumber][4] = list[7].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][4] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB2) ? '1' : '0';
         // srb1 is like power down
-        channelSettingValues[channelNumber][5] = list[8].equals("true") ? '1' : '0';
+        channelSettingValues[channelNumber][5] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB1) ? '1' : '0';
         break;
     }
   }
