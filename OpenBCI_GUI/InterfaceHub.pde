@@ -91,13 +91,19 @@ final static String BLE_HARDWARE_BLED112 = "bled112";
 // final static String TCP_STOP = ",;\n";
 
 final static String TCP_JSON_KEY_ACTION = "action";
+final static String TCP_JSON_KEY_ACCEL_DATA_COUNTS = "accelDataCounts";
+final static String TCP_JSON_KEY_AUX_DATA = "auxData";
 final static String TCP_JSON_KEY_BOARD_TYPE = "boardType";
+final static String TCP_JSON_KEY_CHANNEL_DATA_COUNTS = "channelDataCounts";
 final static String TCP_JSON_KEY_CODE = "code";
+final static String TCP_JSON_KEY_COMMAND = "command";
 final static String TCP_JSON_KEY_FIRMWARE = "firmware";
 final static String TCP_JSON_KEY_MESSAGE = "message";
 final static String TCP_JSON_KEY_PROTOCOL = "protocol";
+final static String TCP_JSON_KEY_SAMPLE_NUMBER = "sampleNumber";
+final static String TCP_JSON_KEY_STOP_BYTE = "stopByte";
+final static String TCP_JSON_KEY_TIMESTAMP = "timestamp";
 final static String TCP_JSON_KEY_TYPE = "type";
-
 
 final static String TCP_TYPE_ACCEL = "accel";
 final static String TCP_TYPE_BOARD_TYPE = "boardType";
@@ -409,7 +415,8 @@ class Hub {
 
   public void setBoardType(String boardType) {
     println("Hub: setBoardType(): sending \'" + boardType + " -- " + millis());
-    json = new JSONObject();
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_JSON_KEY_BOARD_TYPE);
     json.setString(TCP_JSON_KEY_BOARD_TYPE, boardType);
     writeJSON(json);
     // write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
@@ -435,13 +442,13 @@ class Hub {
     }
   }
 
-  private void processConnect(String msg) {
+  private void processConnect(JSONObject json) {
     int code = json.getInt(TCP_JSON_KEY_CODE);
     println("Hub: processConnect: made it -- " + millis() + " code: " + code);
     switch (code) {
       case RESP_SUCCESS:
       case RESP_ERROR_ALREADY_CONNECTED:
-        firmwareVersion = list[2];
+        firmwareVersion = json.getString(TCP_JSON_KEY_FIRMWARE);
         changeState(STATE_SYNCWITHHARDWARE);
         if (eegDataSource == DATASOURCE_CYTON) {
           if (nchan == 8) {
@@ -456,14 +463,15 @@ class Hub {
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
         println("Error in processConnect: RESP_ERROR_UNABLE_TO_CONNECT");
-        if (list[2].equals("Error: Invalid sample rate")) {
+        String message = json.getString(TCP_JSON_KEY_MESSAGE);
+        if (message.equals("Error: Invalid sample rate")) {
           if (eegDataSource == DATASOURCE_CYTON) {
             killAndShowMsg("WiFi Shield is connected to a Ganglion. Please select LIVE (from Ganglion) instead of LIVE (from Cyton)");
           } else {
             killAndShowMsg("WiFi Shield is connected to a Cyton. Please select LIVE (from Cyton) instead LIVE (from Cyton)");
           }
         } else {
-          killAndShowMsg(list[2]);
+          killAndShowMsg(message);
         }
         break;
       case RESP_ERROR_WIFI_NEEDS_UPDATE:
@@ -472,15 +480,15 @@ class Hub {
         break;
       default:
         println("Error in processConnect");
-        handleError(code, list[2]);
+        String message = json.getString(TCP_JSON_KEY_MESSAGE, "none");
+        handleError(code, message);
         break;
     }
   }
 
-  private void processExamine(String msg) {
+  private void processExamine(JSONObject json) {
     // println(msg);
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
         portIsOpen = true;
@@ -498,7 +506,8 @@ class Hub {
         break;
       default:
         if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
-        handleError(code, list[2]);
+        String message = json.getString(TCP_JSON_KEY_MESSAGE, "none");
+        handleError(code, message);
         break;
     }
   }
@@ -541,7 +550,11 @@ class Hub {
    */
   public void sendCommand(char c) {
     println("Hub: sendCommand(char): sending \'" + c + "\'");
-    write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_COMMAND);
+    json.setString(TCP_JSON_KEY_COMMAND, c);
+    writeJSON(json);
+    // write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
   /**
@@ -549,32 +562,39 @@ class Hub {
    */
   public void sendCommand(String s) {
     println("Hub: sendCommand(String): sending \'" + s + "\'");
-    write(TCP_CMD_COMMAND + "," + s + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_COMMAND);
+    json.setString(TCP_JSON_KEY_COMMAND, s);
+    writeJSON(json);
+    // write(TCP_CMD_COMMAND + "," + s + TCP_STOP);
   }
 
-  public void processCommand(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  public void processCommand(JSONObject json) {
+    String message = "";
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
         println("Hub: processCommand: success -- " + millis());
         break;
       case RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT:
-        println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE, "");
+        println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + message);
         break;
       case RESP_ERROR_PROTOCOL_NOT_STARTED:
-        println("Hub: processCommand: RESP_ERROR_PROTOCOL_NOT_STARTED -- " + millis() + " " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE, "");
+        println("Hub: processCommand: RESP_ERROR_PROTOCOL_NOT_STARTED -- " + millis() + " " + message);
         break;
       default:
         break;
     }
   }
 
-  public void processAccel(String msg) {
-    String[] list = split(msg, ',');
-    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_ACCEL) {
+  public void processAccel(JSONObject json) {
+    int code = json.getInt(TCP_JSON_KEY_CODE);
+    if (code == RESP_SUCCESS_DATA_ACCEL) {
+      JSONArray accelDataCounts = json.getJSONArray(TCP_JSON_KEY_ACCEL_DATA_COUNTS);
       for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-        accelArray[i] = Integer.parseInt(list[i + 2]);
+        accelArray[i] = accelDataCounts.getInt(i);
       }
       newAccelData = true;
       if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
@@ -585,16 +605,15 @@ class Hub {
     }
   }
 
-  public void processData(String msg) {
+  public void processData(JSONObject json) {
     try {
       // println(msg);
-      String[] list = split(msg, ',');
-      int code = Integer.parseInt(list[1]);
+      int code = json.getInt(TCP_JSON_KEY_CODE);
       int stopByte = 0xC0; //<>//
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_SAMPLE) {
           // Sample number stuff
-          dataPacket.sampleIndex = int(Integer.parseInt(list[2]));
+          dataPacket.sampleIndex = json.getInt(TCP_JSON_KEY_SAMPLE_NUMBER);
 
           if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
             if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
@@ -613,8 +632,9 @@ class Hub {
           prevSampleIndex = dataPacket.sampleIndex;
 
           // Channel data storage
+          JSONArray eegChannelDataCounts = json.getJSONArray(TCP_JSON_KEY_CHANNEL_DATA_COUNTS);
           for (int i = 0; i < nEEGValuesPerPacket; i++) {
-            dataPacket.values[i] = Integer.parseInt(list[3 + i]);
+            dataPacket.values[i] = eegChannelDataCounts.getInt(i);
           }
           if (newAccelData) {
             newAccelData = false;
@@ -623,43 +643,43 @@ class Hub {
               dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
             }
           } else {
-            if (list.length > nEEGValuesPerPacket + 5) {
-              int valCounter = nEEGValuesPerPacket + 3;
-              // println(list[valCounter]);
-              stopByte = Integer.parseInt(list[valCounter++]);
-              int valsToRead = list.length - valCounter - 1;
-              // println(msg);
-              // println("stopByte: " + stopByte + " valCounter: " + valCounter + " valsToRead: " + valsToRead);
-              if (stopByte == 0xC0) {
+            stopByte = json.getInt(TCP_JSON_KEY_STOP_BYTE);
+            if (stopByte == 0xC0) {
+              JSONArray accelValues = json.getJSONArray(TCP_JSON_KEY_ACCEL_DATA_COUNTS);
+              for (int i = 0; i < accelValues.size(); i++) {
+                accelArray[i] = accelValues.getInt(i);
+                dataPacket.auxValues[i] = accelArray[i];
+                dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+                dataPacket.rawAuxValues[i][1] = byte(accelArray[i] >> 8);
+              }
+              if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+                // println(msg);
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                  accelArray[i] = Integer.parseInt(list[valCounter++]);
-                  dataPacket.auxValues[i] = accelArray[i];
-                  dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
-                  dataPacket.rawAuxValues[i][1] = byte(accelArray[i] >> 8);
-                }
-                if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
-                  // println(msg);
-                  for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    validAccelValues[i] = accelArray[i];
-                  }
-                }
-              } else {
-                if (valsToRead == 6) {
-                  for (int i = 0; i < 3; i++) {
-                    // println(list[valCounter]);
-                    int val1 = Integer.parseInt(list[valCounter++]);
-                    int val2 = Integer.parseInt(list[valCounter++]);
-
-                    dataPacket.auxValues[i] = (val1 << 8) | val2;
-                    validAccelValues[i] = (val1 << 8) | val2;
-
-                    dataPacket.rawAuxValues[i][0] = byte(val2);
-                    dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
-                  }
-                  // println(validAccelValues[1]);
+                  validAccelValues[i] = accelArray[i];
                 }
               }
+            } else {
+              JSONArray auxDataValues = json.getJSONArray(TCP_JSON_KEY_AUX_DATA);
+              for (int i = 0; i < auxDataValues.size(); i+=2) {
+                int val1 = auxDataValues.getInt(i);
+                int val2 = auxDataValues.getInt(i+1);
+              }
+              if (valsToRead == 6) {
+                for (int i = 0; i < 3; i++) {
+                  // println(list[valCounter]);
+                  int val1 = Integer.parseInt(list[valCounter++]);
+                  int val2 = Integer.parseInt(list[valCounter++]);
+
+                  dataPacket.auxValues[i] = (val1 << 8) | val2;
+                  validAccelValues[i] = (val1 << 8) | val2;
+
+                  dataPacket.rawAuxValues[i][0] = byte(val2);
+                  dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                }
+                // println(validAccelValues[1]);
+              }
             }
+
           }
           getRawValues(dataPacket);
           // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
