@@ -291,7 +291,7 @@ int dataProcessingBandpassSave = 3;
 //Time Series settings
 int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
-String checkForSuccessTS;
+int checkForSuccessTS = 0;
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;

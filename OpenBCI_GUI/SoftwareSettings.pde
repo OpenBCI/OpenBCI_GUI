@@ -1024,11 +1024,13 @@ void loadApplyTimeSeriesSettings() {
 
     for (int i = 0; i < slnchan;) { //For all time series channels...
       cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-      if (checkForSuccessTS != null) { // If we receive a return code...
+      if (checkForSuccessTS > 0) { // If we receive a return code...
         println("Return code:" + checkForSuccessTS);
-        String[] list = split(checkForSuccessTS, ',');
-        int successcode = Integer.parseInt(list[1]);
-        if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+        //when successful, iterate to next channel(i++) and set Check to null
+        if (checkForSuccessTS == RESP_SUCCESS) {
+          i++;
+          checkForSuccessTS = 0;
+        }
 
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
