@@ -239,10 +239,8 @@ public class OutputFile_rawtxt {
     output.flush();
   }
 
-  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte) {
+  public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte, Date date) {
     //get current date time with Date()
-    Date date = new Date();
-
     if (output != null) {
       output.print(Integer.toString(data.sampleIndex));
       writeValues(data.values,scale_to_uV);

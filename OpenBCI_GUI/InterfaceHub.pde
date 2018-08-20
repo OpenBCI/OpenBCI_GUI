@@ -73,22 +73,49 @@ void clientEvent(Client someClient) {
 final static String BLE_HARDWARE_NOBLE = "noble";
 final static String BLE_HARDWARE_BLED112 = "bled112";
 
-final static String TCP_CMD_ACCEL = "a";
-final static String TCP_CMD_BOARD_TYPE = "b";
-final static String TCP_CMD_CONNECT = "c";
-final static String TCP_CMD_COMMAND = "k";
-final static String TCP_CMD_DISCONNECT = "d";
-final static String TCP_CMD_DATA = "t";
-final static String TCP_CMD_ERROR = "e"; //<>//
-final static String TCP_CMD_EXAMINE = "x"; //<>//
-final static String TCP_CMD_IMPEDANCE = "i";
-final static String TCP_CMD_LOG = "l";
-final static String TCP_CMD_PROTOCOL = "p";
-final static String TCP_CMD_SCAN = "s";
-final static String TCP_CMD_SD = "m";
-final static String TCP_CMD_STATUS = "q";
-final static String TCP_CMD_WIFI = "w";
-final static String TCP_STOP = ",;\n";
+// final static String TCP_CMD_ACCEL = "a";
+// final static String TCP_CMD_BOARD_TYPE = "b";
+// final static String TCP_CMD_CONNECT = "c";
+// final static String TCP_CMD_COMMAND = "k";
+// final static String TCP_CMD_DISCONNECT = "d";
+// final static String TCP_CMD_DATA = "t";
+// final static String TCP_CMD_ERROR = "e"; //<>//
+// final static String TCP_CMD_EXAMINE = "x"; //<>//
+// final static String TCP_CMD_IMPEDANCE = "i";
+// final static String TCP_CMD_LOG = "l";
+// final static String TCP_CMD_PROTOCOL = "p";
+// final static String TCP_CMD_SCAN = "s";
+// final static String TCP_CMD_SD = "m";
+// final static String TCP_CMD_STATUS = "q";
+// final static String TCP_CMD_WIFI = "w";
+// final static String TCP_STOP = ",;\n";
+
+final static String TCP_JSON_KEY_ACTION = "action";
+final static String TCP_JSON_KEY_BOARD_TYPE = "boardType";
+final static String TCP_JSON_KEY_CODE = "code";
+final static String TCP_JSON_KEY_FIRMWARE = "firmware";
+final static String TCP_JSON_KEY_MESSAGE = "message";
+final static String TCP_JSON_KEY_PROTOCOL = "protocol";
+final static String TCP_JSON_KEY_TYPE = "type";
+
+
+final static String TCP_TYPE_ACCEL = "accel";
+final static String TCP_TYPE_BOARD_TYPE = "boardType";
+final static String TCP_TYPE_CHANNEL_SETTINGS = "channelSettings";
+final static String TCP_TYPE_COMMAND = "command";
+final static String TCP_TYPE_CONNECT = "connect";
+final static String TCP_TYPE_DISCONNECT = "disconnect";
+final static String TCP_TYPE_DATA = "data";
+final static String TCP_TYPE_ERROR = "error";
+final static String TCP_TYPE_EXAMINE = "examine";
+final static String TCP_TYPE_IMPEDANCE = "impedance";
+final static String TCP_TYPE_LOG = "log";
+final static String TCP_TYPE_PROTOCOL = "protocol";
+final static String TCP_TYPE_SCAN = "scan";
+final static String TCP_TYPE_SD = "sd";
+final static String TCP_TYPE_STATUS = "status";
+final static String TCP_TYPE_WIFI = "wifi";
+final static String TCP_STOP = "\r\n";
 
 final static String TCP_ACTION_START = "start";
 final static String TCP_ACTION_STATUS = "status";
@@ -318,68 +345,61 @@ class Hub {
   }
 
   // Return true if the display needs to be updated for the BLE list
-  public void parseMessage(String msg) {
+  public void parseMessage(String data) {
     // println(msg);
-    String[] list = split(msg, ',');
-    switch (list[0].charAt(0)) {
-      case 'b': // board type setting
-        processBoardType(msg);
-        break;
-      case 'c': // Connect
-        processConnect(msg);
-        break;
-      case 'a': // Accel
-        processAccel(msg);
-        break;
-      case 'd': // Disconnect
-        processDisconnect(msg);
-        break;
-      case 'i': // Impedance
-        processImpedance(msg);
-        break;
-      case 't': // Data
-        processData(msg);
-        break;
-      case 'e': // Error
-        int code = int(list[1]);
-        println("Hub: parseMessage: error: " + list[2]);
+    JSONObject message = parseJSONObject(data);
+    if (message == null) {
+      println("JSONObject could not be parsed" + data);
+    } else {
+      String type = json.getString(TCP_JSON_KEY_TYPE);
+      if (type.equals(TCP_TYPE_ACCEL)) {
+        processAccel(message);
+      } else if (type.equals(TCP_TYPE_BOARD_TYPE)) {
+        processBoardType(message);
+      } else if (type.equals(TCP_TYPE_CHANNEL_SETTINGS)) {
+        processRegisterQuery(message);
+        checkForSuccessTS = msg;
+      } else if (type.equals(TCP_TYPE_COMMAND)) {
+        processCommand(message);
+      } else if (type.equals(TCP_TYPE_CONNECT)) {
+        processConnect(message);
+      } else if (type.equals(TCP_TYPE_DATA)) {
+        processData(message);
+      } else if (type.equals(TCP_TYPE_DISCONNECT)) {
+        processDisconnect(message);
+      } else if (type.equals(TCP_TYPE_ERROR)) {
+        int code = json.getInt(TCP_JSON_KEY_CODE);
+        String errorMessage = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("Hub: parseMessage: error: " + errorMessage);
         if (code == RESP_ERROR_COMMAND_NOT_RECOGNIZED) {
           output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
         }
-        break;
-      case 'x':
-        processExamine(msg);
-        break;
-      case 's': // Scan
-        processScan(msg);
-        break;
-      case 'l':
-        println("Hub: Log: " + list[1]);
-        break;
-      case 'p':
-        processProtocol(msg);
-        break;
-      case 'q':
-        processStatus(msg);
-        break;
-      case 'r':
-        processRegisterQuery(msg);
-        checkForSuccessTS = msg;
-        break;
-      case 'm':
-        processSDCard(msg);
-        break;
-      case 'w':
-        processWifi(msg);
-        break;
-      case 'k':
-        processCommand(msg);
-        break;
-      default:
+      } else if (type.equals(TCP_TYPE_EXAMINE)) {
+        processExamine(message);
+      } else if (type.equals(TCP_TYPE_IMPEDANCE)) {
+        processImpedance(message);
+      } else if (type.equals(TCP_TYPE_LOG)) {
+        String logMessage = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("Hub: Log: " + logMessage);
+      } else if (type.equals(TCP_TYPE_PROTOCOL)) {
+        processProtocol(message);
+      } else if (type.equals(TCP_TYPE_SCAN)) {
+        processScan(message);
+      } else if (type.equals(TCP_TYPE_SD)) {
+        processSDCard(message);
+      } else if (type.equals(TCP_TYPE_STATUS)) {
+        processStatus(message);
+      } else if (type.equals(TCP_TYPE_WIFI)) {
+        processWifi(message);
+      } else {
         println("Hub: parseMessage: default: " + msg);
         output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
-        break;
+      }
     }
+  }
+
+  private void writeJSON(JSONObject json) {
+    write(json.toString() + TCP_STOP);
   }
 
   private void handleError(int code, String msg) {
@@ -389,12 +409,14 @@ class Hub {
 
   public void setBoardType(String boardType) {
     println("Hub: setBoardType(): sending \'" + boardType + " -- " + millis());
-    write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
+    json = new JSONObject();
+    json.setString(TCP_JSON_KEY_BOARD_TYPE, boardType);
+    writeJSON(json);
+    // write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
   }
 
-  private void processBoardType(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processBoardType(JSONObject json) {
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
         if (sdSetting > 0) {
@@ -407,14 +429,14 @@ class Hub {
         break;
       case RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE:
       default:
-        killAndShowMsg(list[2]);
+        String msg = json.getString(TCP_JSON_KEY_MESSAGE);
+        killAndShowMsg(msg);
         break;
     }
   }
 
   private void processConnect(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     println("Hub: processConnect: made it -- " + millis() + " code: " + code);
     switch (code) {
       case RESP_SUCCESS:
@@ -489,7 +511,7 @@ class Hub {
     String firmwareString = " Cyton firmware ";
     String settingsString = "Settings Loaded! ";
     if (eegDataSource == DATASOURCE_CYTON) {
-      firmwareString += firmwareVersion; 
+      firmwareString += firmwareVersion;
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       firmwareString = ganglion_portName;
     } else {
@@ -499,7 +521,7 @@ class Hub {
     if (loadErrorCytonEvent == true) {
       outputError("Connection Error: Failed to apply channel settings to Cyton.");
     } else {
-      outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);    
+      outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
     }
     portIsOpen = true;
     controlPanel.hideAllBoxes();
