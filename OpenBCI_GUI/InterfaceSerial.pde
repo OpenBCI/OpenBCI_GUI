@@ -85,7 +85,7 @@ void serialEvent(Serial port){
 
       switch (outputDataSource) {
       case OUTPUT_SOURCE_ODF:
-        fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), byte(0xC0), new Date());
+        fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), byte(0xC0), (new Date()).getTime());
         break;
       case OUTPUT_SOURCE_BDF:
         curBDFDataPacketInd = curDataPacketInd;

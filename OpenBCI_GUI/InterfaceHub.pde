@@ -30,8 +30,9 @@ void clientEvent(Client someClient) {
     hub.tcpBufferPositon++;
 
     if(p > 2) {
-      String posMatch  = new String(hub.tcpBuffer, p - 2, 3);
+      String posMatch  = new String(hub.tcpBuffer, p - 1, 2);
       if (posMatch.equals(TCP_STOP)) {
+        // println("MATCH");
         if (!hub.nodeProcessHandshakeComplete) {
           hub.nodeProcessHandshakeComplete = true;
           hub.setHubIsRunning(true);
@@ -72,23 +73,6 @@ void clientEvent(Client someClient) {
 
 final static String BLE_HARDWARE_NOBLE = "noble";
 final static String BLE_HARDWARE_BLED112 = "bled112";
-
-// final static String TCP_CMD_ACCEL = "a";
-// final static String TCP_CMD_BOARD_TYPE = "b";
-// final static String TCP_CMD_CONNECT = "c";
-// final static String TCP_CMD_COMMAND = "k";
-// final static String TCP_CMD_DISCONNECT = "d";
-// final static String TCP_CMD_DATA = "t";
-// final static String TCP_CMD_ERROR = "e"; //<>//
-// final static String TCP_CMD_EXAMINE = "x"; //<>//
-// final static String TCP_CMD_IMPEDANCE = "i";
-// final static String TCP_CMD_LOG = "l";
-// final static String TCP_CMD_PROTOCOL = "p";
-// final static String TCP_CMD_SCAN = "s";
-// final static String TCP_CMD_SD = "m";
-// final static String TCP_CMD_STATUS = "q";
-// final static String TCP_CMD_WIFI = "w";
-// final static String TCP_STOP = ",;\n";
 
 final static String TCP_JSON_KEY_ACTION = "action";
 final static String TCP_JSON_KEY_ACCEL_DATA_COUNTS = "accelDataCounts";
@@ -368,7 +352,6 @@ class Hub {
 
   // Return true if the display needs to be updated for the BLE list
   public void parseMessage(String data) {
-    // println(msg);
     JSONObject json = parseJSONObject(data);
     if (json == null) {
       println("JSONObject could not be parsed" + data);
@@ -422,6 +405,7 @@ class Hub {
 
   private void writeJSON(JSONObject json) {
     write(json.toString() + TCP_STOP);
+    println("OUTPUT >>>>>>> \n" + json);
   }
 
   private void handleError(int code, String msg) {
@@ -725,7 +709,7 @@ class Hub {
                   ganglion.get_scale_fac_uVolts_per_count(),
                   ganglion.get_scale_fac_accel_G_per_count(),
                   stopByte,
-                  new Date(json.getInt(TCP_JSON_KEY_TIMESTAMP))
+                  json.getLong(TCP_JSON_KEY_TIMESTAMP)
                 );
               } else {
                 fileoutput_odf.writeRawData_dataPacket(
@@ -733,7 +717,7 @@ class Hub {
                   cyton.get_scale_fac_uVolts_per_count(),
                   cyton.get_scale_fac_accel_G_per_count(),
                   stopByte,
-                  new Date(json.getInt(TCP_JSON_KEY_TIMESTAMP))
+                  json.getLong(TCP_JSON_KEY_TIMESTAMP)
                 );
               }
               break;
@@ -1155,6 +1139,7 @@ class Hub {
   public void setProtocol(String _protocol) {
     curProtocol = _protocol;
     JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
     json.setString(TCP_JSON_KEY_PROTOCOL, curProtocol);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_PROTOCOL);
     writeJSON(json);
