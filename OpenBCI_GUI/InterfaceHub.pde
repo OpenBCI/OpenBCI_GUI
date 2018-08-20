@@ -105,9 +105,13 @@ final static String TCP_JSON_KEY_CHANNEL_SET_SRB1 = "srb1";
 final static String TCP_JSON_KEY_CODE = "code";
 final static String TCP_JSON_KEY_COMMAND = "command";
 final static String TCP_JSON_KEY_FIRMWARE = "firmware";
+final static String TCP_JSON_KEY_LATENCY = "latency";
 final static String TCP_JSON_KEY_MESSAGE = "message";
+final static String TCP_JSON_KEY_NAME = "name";
 final static String TCP_JSON_KEY_PROTOCOL = "protocol";
 final static String TCP_JSON_KEY_SAMPLE_NUMBER = "sampleNumber";
+final static String TCP_JSON_KEY_SAMPLE_RATE = "sampleRate";
+final static String TCP_JSON_KEY_SHIELD_NAME = "shieldName";
 final static String TCP_JSON_KEY_STOP_BYTE = "stopByte";
 final static String TCP_JSON_KEY_TIMESTAMP = "timestamp";
 final static String TCP_JSON_KEY_TYPE = "type";
@@ -840,7 +844,6 @@ class Hub {
   private void processRegisterQuery(JSONObject json) {
     String action, message;
     int code = json.getInt(TCP_JSON_KEY_CODE);
-
     switch (code) {
       case RESP_ERROR_CHANNEL_SETTINGS:
         killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
@@ -884,14 +887,15 @@ class Hub {
     }
   }
 
-  private void processScan(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+  private void processScan(JSONObject json) {
+    String action, message, name;
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_GANGLION_FOUND:
       case RESP_WIFI_FOUND:
         // Sent every time a new ganglion device is found
-        if (searchDeviceAdd(list[2])) {
+        name = json.getString(TCP_JSON_KEY_NAME, "");
+        if (searchDeviceAdd(name)) {
           deviceListUpdated = true;
         }
         break;
@@ -903,7 +907,7 @@ class Hub {
         break;
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
-        String action = list[2];
+        action = json.getString(TCP_JSON_KEY_ACTION);
         switch (action) {
           case TCP_ACTION_START:
             searching = true;
@@ -918,12 +922,14 @@ class Hub {
         break;
       case RESP_ERROR_SCAN_COULD_NOT_START:
         // Sent when err on search start
-        handleError(code, list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE, "");
+        handleError(code, message);
         searching = false;
         break;
       case RESP_ERROR_SCAN_COULD_NOT_STOP:
         // Send when err on search stop
-        handleError(code, list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE, "");
+        handleError(code, message);
         searching = false;
         break;
       case RESP_STATUS_SCANNING:
@@ -941,7 +947,8 @@ class Hub {
         break;
       case RESP_ERROR_UNKNOWN:
       default:
-        handleError(code, list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE, "");
+        handleError(code, message);
         break;
     }
   }
@@ -949,13 +956,18 @@ class Hub {
   public void sdCardStart(int sdSetting) {
     String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
     println("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
-    write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
+    json.setString(TCP_JSON_KEY_COMMAND, sdSettingStr);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_SD);
+    writeJSON(json);
+    // write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
   }
 
   private void processSDCard(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
-    String action = list[2];
+    String action, message;
+    int code = json.getInt(TCP_JSON_KEY_CODE);
+    action = json.getString(TCP_JSON_KEY_ACTION);
 
     switch(code) {
       case RESP_SUCCESS:
@@ -967,22 +979,26 @@ class Hub {
             initAndShowGUI();
             break;
           case TCP_ACTION_STOP:
-            println(list[3]);
+            message = json.getString(TCP_JSON_KEY_MESSAGE);
+            println(message);
             break;
         }
         break;
       case RESP_ERROR_UNKNOWN:
         switch (action) {
           case TCP_ACTION_START:
-            killAndShowMsg(list[3]);
+            message = json.getString(TCP_JSON_KEY_MESSAGE);
+            killAndShowMsg(message);
             break;
           case TCP_ACTION_STOP:
-            println(list[3]);
+            message = json.getString(TCP_JSON_KEY_MESSAGE);
+            println(message);
             break;
         }
         break;
       default:
-        handleError(code, list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        handleError(code, message);
         break;
     }
   }
@@ -1058,33 +1074,61 @@ class Hub {
 
   // CONNECTION
   public void connectBLE(String id) {
-    write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    // write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_NAME, id);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
+    writeJSON(json);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
 
   }
   public void disconnectBLE() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT + "," + PROTOCOL_BLE + "," + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_BLE);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
+    writeJSON(json);
+    // write(TCP_CMD_DISCONNECT + "," + PROTOCOL_BLE + "," + TCP_STOP);
   }
 
   public void connectWifi(String id) {
-    write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + "," + curInternetProtocol + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_LATENCY, curLatency);
+    json.setString(TCP_JSON_KEY_PROTOCOL, curInternetProtocol);
+    json.setString(TCP_JSON_KEY_SAMPLE_RATE, requestedSampleRate);
+    json.setString(TCP_JSON_KEY_NAME, id);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
+    writeJSON(json);
+    // write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + "," + curInternetProtocol + TCP_STOP);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
   }
 
   public void examineWifi(String id) {
-    write(TCP_CMD_EXAMINE + "," + id + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_NAME, id);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_EXAMINE);
+    writeJSON(json);
+    // write(TCP_CMD_EXAMINE + "," + id + TCP_STOP);
   }
 
   public int disconnectWifi() {
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_WIFI + "," +  TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_WIFI);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
+    writeJSON(json);
+    // write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_WIFI + "," +  TCP_STOP);
     return 0;
   }
 
   public void connectSerial(String id) {
     waitingForResponse = true;
-    write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    // write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_SERIAL);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
+    json.setString(TCP_JSON_KEY_NAME, id);
+    writeJSON(json);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
     delay(1000);
 
@@ -1092,13 +1136,21 @@ class Hub {
   public int disconnectSerial() {
     println("disconnecting serial");
     waitingForResponse = true;
-    write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_SERIAL);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
+    writeJSON(json);
+    // write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
     return 0;
   }
 
   public void setProtocol(String _protocol) {
     curProtocol = _protocol;
-    write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_PROTOCOL, curProtocol);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_PROTOCOL);
+    writeJSON(json);
+    // write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
   public int getSampleRate() {
@@ -1112,16 +1164,20 @@ class Hub {
   }
 
   public void getWifiInfo(String info) {
-    write(TCP_CMD_WIFI + "," + info + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, info);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_WIFI);
+    writeJSON(json);
+    // write(TCP_CMD_WIFI + "," + info + TCP_STOP);
   }
 
-  public void setWifiInfo(String info, int value) {
-    write(TCP_CMD_WIFI + "," + info + "," + value + TCP_STOP);
-  }
+  // public void setWifiInfo(String info, int value) {
+  //   write(TCP_CMD_WIFI + "," + info + "," + value + TCP_STOP);
+  // }
 
   private void processWifi(String msg) {
-    String[] list = split(msg, ',');
-    int code = Integer.parseInt(list[1]);
+    String action, message;
+    int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED:
         println("Sent an action to hub for wifi info but the command was unrecognized");
@@ -1132,19 +1188,21 @@ class Hub {
         output("Tried to get wifi info but no WiFi Shield was connected.");
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
-        println("an error was thrown trying to set the channels | error: " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("an error was thrown trying to set the channels | error: " + message);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
-        println("an error was thrown trying to call the function to set the channels | error: " + list[2]);
+        message = json.getString(TCP_JSON_KEY_MESSAGE);
+        println("an error was thrown trying to call the function to set the channels | error: " + message);
         break;
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
         if (wcBox.isShowing) {
-          String msgForWcBox = list[3];
-
-          switch (list[2]) {
+          String msgForWcBox = json.getString(TCP_JSON_KEY_MESSAGE);
+          String command = json.getString(TCP_JSON_KEY_COMMAND);
+          switch (command) {
             case TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD:
-              switch(list[3]) {
+              switch(message) {
                 case "none":
                   msgForWcBox = "No OpenBCI Board attached to WiFi Shield";
                   break;
@@ -1168,9 +1226,9 @@ class Hub {
               controlPanel.wifiBox.refreshWifiList();
               break;
           }
+          println("Success for wifi " + command + ": " + msgForWcBox);
           wcBox.updateMessage(msgForWcBox);
         }
-        println("Success for wifi " + list[2] + ": " + list[3]);
         break;
     }
   }
@@ -1212,11 +1270,19 @@ class Hub {
 
   public void searchDeviceStart() {
     clearDeviceList();
-    write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_SCAN;
+    writeJSON(json);
+    // write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 
   public void searchDeviceStop() {
-    write(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_STOP);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_SCAN;
+    writeJSON(json);
+    // write(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
   }
 
   public boolean searchDeviceAdd(String localName) {
