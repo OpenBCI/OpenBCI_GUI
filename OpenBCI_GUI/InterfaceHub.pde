@@ -577,18 +577,8 @@ class Hub {
         println("Hub: processCommand: success -- " + millis());
         break;
       case RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT:
-<<<<<<< HEAD
-        println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + list[2]);
-        if (eegDataSource == DATASOURCE_CYTON) {
-          println("FAILED TO APPLY SETTINGS TO CYTON. STOPPING SYSTEM.");
-          loadErrorCytonEvent = true;
-          haltSystem();
-          return;
-        }
-=======
         message = json.getString(TCP_JSON_KEY_MESSAGE, "");
         println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + message);
->>>>>>> 3d02a849f2b3d2006f7aebd7be1c42d9ec0ed15f
         break;
       case RESP_ERROR_PROTOCOL_NOT_STARTED:
         message = json.getString(TCP_JSON_KEY_MESSAGE, "");
