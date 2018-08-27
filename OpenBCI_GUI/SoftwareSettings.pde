@@ -1039,7 +1039,7 @@ void loadApplyTimeSeriesSettings() {
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
         if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
-          println("FAILED TO APPLY SETTINGS TO CYTON. STOPPING SYSTEM.");
+          println("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
           loadErrorCytonEvent = true; //Set true because an error has occured
           haltSystem(); //Halt the system to stop the initialization process
           return;
