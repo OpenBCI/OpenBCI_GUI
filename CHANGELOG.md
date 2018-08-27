@@ -1,3 +1,11 @@
+# v3.5.0
+
+Use OpenBCIHub v1.5.0 please.
+
+### New Features
+
+* Timestamps in CSV now come from the OpenBCIHub
+
 # v3.4.0
 
 Use OpenBCIHub v1.4.5 please.

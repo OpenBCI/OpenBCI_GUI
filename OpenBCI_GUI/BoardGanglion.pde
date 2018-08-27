@@ -167,12 +167,12 @@ class Ganglion {
     println("Code " + code + "Error: " + msg);
   }
 
-  public void processImpedance(String msg) {
-    String[] list = split(msg, ',');
-    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
-      int channel = Integer.parseInt(list[2]);
+  public void processImpedance(JSONObject json) {
+    int code = json.getInt(TCP_JSON_KEY_CODE);
+    if (code == RESP_SUCCESS_DATA_IMPEDANCE) {
+      int channel = json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER);
       if (channel < 5) { //<>// //<>//
-        int value = Integer.parseInt(list[3]);
+        int value = json.getInt(TCP_JSON_KEY_IMPEDANCE_VALUE);
         impedanceArray[channel] = value;
         if (channel == 0) {
           impedanceUpdated = true;

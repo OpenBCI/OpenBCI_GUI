@@ -1023,16 +1023,23 @@ void loadApplyTimeSeriesSettings() {
     } //end case for all channels
 
     for (int i = 0; i < slnchan;) { //For all time series channels...
+<<<<<<< HEAD
       try {
         cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
       } catch (RuntimeException e) {
         verbosePrint("Runtime Error when trying to write channel settings to cyton...");
       }
       if (checkForSuccessTS != null) { // If we receive a return code...
+=======
+      cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      if (checkForSuccessTS > 0) { // If we receive a return code...
+>>>>>>> 3d02a849f2b3d2006f7aebd7be1c42d9ec0ed15f
         println("Return code:" + checkForSuccessTS);
-        String[] list = split(checkForSuccessTS, ',');
-        int successcode = Integer.parseInt(list[1]);
-        if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+        //when successful, iterate to next channel(i++) and set Check to null
+        if (checkForSuccessTS == RESP_SUCCESS) {
+          i++;
+          checkForSuccessTS = 0;
+        }
 
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
