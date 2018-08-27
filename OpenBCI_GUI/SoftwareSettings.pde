@@ -1038,15 +1038,16 @@ void loadApplyTimeSeriesSettings() {
 
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
-        if (timeElapsed >= loadErrorTimeWindow) {
+        if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
           println("FAILED TO APPLY SETTINGS TO CYTON. STOPPING SYSTEM.");
-          loadErrorCytonEvent = true;
-          haltSystem();
+          loadErrorCytonEvent = true; //Set true because an error has occured
+          haltSystem(); //Halt the system to stop the initialization process
           return;
         }
       }
       //delay(10);// Works on 8 chan sometimes
-      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
+      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
+      //Tested by setting gain 1x and loading 24x.
     }
     loadErrorCytonEvent = false;
   } //end Cyton case
