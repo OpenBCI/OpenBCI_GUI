@@ -539,6 +539,12 @@ class Hub {
         break;
       case RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT:
         println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + list[2]);
+        if (eegDataSource == DATASOURCE_CYTON) {
+          println("FAILED TO APPLY SETTINGS TO CYTON. STOPPING SYSTEM.");
+          loadErrorCytonEvent = true;
+          haltSystem();
+          return;
+        }
         break;
       case RESP_ERROR_PROTOCOL_NOT_STARTED:
         println("Hub: processCommand: RESP_ERROR_PROTOCOL_NOT_STARTED -- " + millis() + " " + list[2]);

@@ -1023,7 +1023,11 @@ void loadApplyTimeSeriesSettings() {
     } //end case for all channels
 
     for (int i = 0; i < slnchan;) { //For all time series channels...
-      cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      try {
+        cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      } catch (RuntimeException e) {
+        verbosePrint("Runtime Error when trying to write channel settings to cyton...");
+      }
       if (checkForSuccessTS != null) { // If we receive a return code...
         println("Return code:" + checkForSuccessTS);
         String[] list = split(checkForSuccessTS, ',');
@@ -1033,7 +1037,7 @@ void loadApplyTimeSeriesSettings() {
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
         if (timeElapsed >= loadErrorTimeWindow) {
-          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON");
+          println("FAILED TO APPLY SETTINGS TO CYTON. STOPPING SYSTEM.");
           loadErrorCytonEvent = true;
           haltSystem();
           return;

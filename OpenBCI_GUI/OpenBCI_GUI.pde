@@ -359,7 +359,6 @@ void setup() {
   hubInit(); // putting down here gives windows time to close any open apps
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 9/5/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
   size(1024, 768, P2D);
