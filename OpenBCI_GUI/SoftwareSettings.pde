@@ -1023,7 +1023,11 @@ void loadApplyTimeSeriesSettings() {
     } //end case for all channels
 
     for (int i = 0; i < slnchan;) { //For all time series channels...
-      cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      try {
+        cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      } catch (RuntimeException e) {
+        verbosePrint("Runtime Error when trying to write channel settings to cyton...");
+      }
       if (checkForSuccessTS > 0) { // If we receive a return code...
         println("Return code:" + checkForSuccessTS);
         //when successful, iterate to next channel(i++) and set Check to null
@@ -1034,15 +1038,16 @@ void loadApplyTimeSeriesSettings() {
 
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
-        if (timeElapsed >= loadErrorTimeWindow) {
-          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON");
-          loadErrorCytonEvent = true;
-          haltSystem();
+        if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
+          println("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
+          loadErrorCytonEvent = true; //Set true because an error has occured
+          haltSystem(); //Halt the system to stop the initialization process
           return;
         }
       }
       //delay(10);// Works on 8 chan sometimes
-      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
+      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
+      //Tested by setting gain 1x and loading 24x.
     }
     loadErrorCytonEvent = false;
   } //end Cyton case
