@@ -529,10 +529,6 @@ class Cyton {
     isWritingChannel = true;
   }
 
-  public void syncChannelSettings() {
-    write("r,start" + TCP_STOP);
-  }
-
   /**
    * Used to convert a gain from the hub back into local codes.
    */
