@@ -373,7 +373,6 @@ void setup() {
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
-  ///////////////moved size()
   ourApplet = this;
 
   if(frameRateCounter==0){
