@@ -361,15 +361,15 @@ void setup() {
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
-  println("Screen Resolution: " displayWidth + " X " + displayHeight);
+  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
   //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
   //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
-  if (displayWidth == 1366 && displayHeight == 768) {
-    size(976, 549, P2D);
-  } else {
-    //default 1024x768 resolution with 2D graphics
+  // if (displayWidth == 1366 && displayHeight == 768) {
+  //   size(976, 549, P2D);
+  // } else {
+  //   //default 1024x768 resolution with 2D graphics
     size(1024, 768, P2D);
-  }
+  // }
   ourApplet = this;
 
   if(frameRateCounter==0){

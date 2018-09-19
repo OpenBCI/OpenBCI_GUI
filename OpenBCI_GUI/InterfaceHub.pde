@@ -91,6 +91,8 @@ final static String TCP_JSON_KEY_CODE = "code";
 final static String TCP_JSON_KEY_COMMAND = "command";
 final static String TCP_JSON_KEY_FIRMWARE = "firmware";
 final static String TCP_JSON_KEY_IMPEDANCE_VALUE = "impedanceValue";
+final static String TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT = "pInputApplied";
+final static String TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT = "nInputApplied";
 final static String TCP_JSON_KEY_LATENCY = "latency";
 final static String TCP_JSON_KEY_MESSAGE = "message";
 final static String TCP_JSON_KEY_NAME = "name";
@@ -120,9 +122,11 @@ final static String TCP_TYPE_STATUS = "status";
 final static String TCP_TYPE_WIFI = "wifi";
 final static String TCP_STOP = "\r\n";
 
+final static String TCP_ACTION_SET = "set";
 final static String TCP_ACTION_START = "start";
 final static String TCP_ACTION_STATUS = "status";
 final static String TCP_ACTION_STOP = "stop";
+
 
 final static String TCP_WIFI_ERASE_CREDENTIALS = "eraseCredentials";
 final static String TCP_WIFI_GET_FIRMWARE_VERSION = "getFirmwareVersion";
