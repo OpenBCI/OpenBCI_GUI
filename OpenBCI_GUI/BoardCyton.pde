@@ -529,10 +529,6 @@ class Cyton {
     isWritingChannel = true;
   }
 
-  public void syncChannelSettings() {
-    write("r,start" + TCP_STOP);
-  }
-
   /**
    * Used to convert a gain from the hub back into local codes.
    */
@@ -659,16 +655,18 @@ class Cyton {
 
   // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
   public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
-    String output = "r,set,";
-    output += Integer.toString(_numChannel) + ","; // 0 indexed channel number
-    output += channelSettingValues[_numChannel][0] + ","; // power down
-    output += getGainForCommand(channelSettingValues[_numChannel][1]) + ","; // gain
-    output += getInputTypeForCommand(channelSettingValues[_numChannel][2]) + ",";
-    output += channelSettingValues[_numChannel][3] + ",";
-    output += channelSettingValues[_numChannel][4] + ",";
-    output += channelSettingValues[_numChannel][5] + TCP_STOP;
-    write(output);
-    verbosePrint("done writing channel." + output); //debugging
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CHANNEL_SETTINGS);
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
+    json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN, channelSettingValues[_numChannel][0] == '1');
+    json.setInt(TCP_JSON_KEY_CHANNEL_SET_GAIN, getGainForCommand(channelSettingValues[_numChannel][1]));
+    json.setString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE, getInputTypeForCommand(channelSettingValues[_numChannel][2]));
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS, channelSettingValues[_numChannel][3] == '1');
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB2, channelSettingValues[_numChannel][4] == '1');
+    json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB1, channelSettingValues[_numChannel][5] == '1');
+    hub.writeJSON(json);
+    verbosePrint("done writing channel." + json); //debugging
     isWritingChannel = false;
   }
 
@@ -685,16 +683,13 @@ class Cyton {
   // }
 
   public void writeImpedanceSettings(int _numChannel, char[][] impedanceCheckValues) {  //numChannel counts from zero
-    String output = "i,set,";
-    if (_numChannel < 8) {
-      output += (char)('0'+(_numChannel+1)) + ",";
-    } else { //(_numChannel >= 8) {
-      //command_activate_channel holds non-daisy and daisy values
-      output += command_activate_channel[_numChannel] + ",";
-    }
-    output += impedanceCheckValues[_numChannel][0] + ",";
-    output += impedanceCheckValues[_numChannel][1] + TCP_STOP;
-    write(output);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
+    json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
+    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel][0] == '1');
+    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel][1] == '1');
+    hub.writeJSON(json);
     isWritingImp = false;
   }
 };

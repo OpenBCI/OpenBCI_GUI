@@ -1,3 +1,19 @@
+# v4.0.0
+
+Use OpenBCIHub v2.0.0 please.
+
+### New Features
+
+* Timestamps in CSV now come from the OpenBCIHub
+
+### Breaking Changes
+
+* Now sending and receiving from the hub in JSON!
+
+### Alpha 0
+
+* Initial Release
+
 # v3.4.0
 
 Use OpenBCIHub v1.4.5 please.

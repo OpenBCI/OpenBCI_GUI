@@ -295,7 +295,7 @@ int dataProcessingBandpassSave = 3;
 //Time Series settings
 int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
-String checkForSuccessTS;
+int checkForSuccessTS = 0;
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;
@@ -347,7 +347,7 @@ String loadSettingsDialogName; //Used when Load button is pressed
 String controlEventDataSource; //Used for output message on system start
 Boolean errorUserSettingsNotFound = false; //For error catching
 int loadErrorTimerStart;
-int loadErrorTimeWindow = 3800; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
+int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
 Boolean loadErrorCytonEvent = false;
 Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
 
@@ -359,15 +359,25 @@ Boolean settingsLoadedCheck = false; //Used to determine if settings are done lo
 
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
+void settings() {
+  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
+  //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
+  //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+  if (displayWidth == 1366 && displayHeight == 768) {
+    size(976, 549, P2D);
+  } else {
+    //default 1024x768 resolution with 2D graphics
+    size(1024, 768, P2D);
+  }
+}
+
 void setup() {
   if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
   hubInit(); // putting down here gives windows time to close any open apps
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 9/5/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
-  size(1024, 768, P2D);
   ourApplet = this;
 
   if(frameRateCounter==0){
@@ -1433,7 +1443,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.4.0-beta.1\nAugust 2018", width/2, height/2 + width/9);
+    text("OpenBCI GUI v4.0.0-alpha.0\nSeptember 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2

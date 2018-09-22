@@ -62,7 +62,7 @@ class W_accelerometer extends Widget {
   boolean Yrising;
   boolean Zrising;
   boolean OBCI_inited= true;
-  boolean accelerometerModeOn = true;
+  boolean accelerometerModeOn = false;
 
   Button accelModeButton;
 
