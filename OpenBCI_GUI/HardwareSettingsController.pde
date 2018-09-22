@@ -20,7 +20,6 @@ void activateChannel(int Ichan) {
   println("OpenBCI_GUI: activating channel " + (Ichan+1));
   if (eegDataSource == DATASOURCE_CYTON) {
     if (cyton.isPortOpen()) {
-      verbosePrint("**");
       cyton.changeChannelState(Ichan, true); //activate
     }
   } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -69,7 +68,7 @@ class HardwareSettingsController{
   //char[][] impedanceCheckValues = new char [nchan][2];
 
   int spaceBetweenButtons = 5; //space between buttons
-  
+
   // [Number of Channels] x 6 array of buttons for channel settings
   Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#]
 
@@ -77,7 +76,7 @@ class HardwareSettingsController{
   char[] previousSRB2 = new char [nchan];
   // Array for storing SRB2 history settings of channels prior to shutting off .. so you can return to previous state when reactivating channel
   char[] previousBIAS = new char [nchan];
-  
+
   //maximum different values for the different settings (Power Down, Gain, Input Type, BIAS, SRB2, SRB1) of
   //refer to page 44 of ADS1299 Datasheet: http://www.ti.com/lit/ds/symlink/ads1299.pdf
   char[] maxValuesPerSetting = {
@@ -89,7 +88,7 @@ class HardwareSettingsController{
     '1'
   }; // SRB1 :: (0) Yes, (1) No ... this setting affects all channels ... either all on or all off
   //
-  
+
   //variables used for channel write timing in writeChannelSettings()
   int channelToWrite = -1;
 
