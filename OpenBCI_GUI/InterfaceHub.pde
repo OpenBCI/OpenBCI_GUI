@@ -367,7 +367,6 @@ class Hub {
         processBoardType(json);
       } else if (type.equals(TCP_TYPE_CHANNEL_SETTINGS)) {
         processRegisterQuery(json);
-        checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
       } else if (type.equals(TCP_TYPE_COMMAND)) {
         processCommand(json);
       } else if (type.equals(TCP_TYPE_CONNECT)) {
@@ -860,6 +859,10 @@ class Hub {
         action = json.getString(TCP_JSON_KEY_ACTION);
         if (action.equals(TCP_ACTION_START)) {
           println("Query registers for cyton channel settings");
+        } else if (action.equals(TCP_ACTION_SET)) {
+          checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
+          println("Success writing channel " + json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER));
+
         }
         break;
       case RESP_SUCCESS_CHANNEL_SETTING:

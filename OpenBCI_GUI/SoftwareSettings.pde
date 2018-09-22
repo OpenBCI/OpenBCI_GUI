@@ -1002,11 +1002,15 @@ void loadApplyTimeSeriesSettings() {
       //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
       channelSettingValues[i][0] = (char)(active + '0');
       if (active == 0) {
-        activateChannel(channel);// power down == false, set color to vibrant
+        if (eegDataSource == DATASOURCE_GANGLION) {
+          activateChannel(channel);// power down == false, set color to vibrant
+        }
         w_timeSeries.channelBars[i].isOn = true;
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
       } else {
-        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
+        if (eegDataSource == DATASOURCE_GANGLION) {
+          deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
+        }
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
@@ -1022,17 +1026,17 @@ void loadApplyTimeSeriesSettings() {
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
 
-    for (int i = 0; i < slnchan;) { //For all time series channels...
+    for (int i = 0; i < slnchan; i++) { //For all time series channels...
       try {
         cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
       } catch (RuntimeException e) {
         verbosePrint("Runtime Error when trying to write channel settings to cyton...");
       }
       if (checkForSuccessTS > 0) { // If we receive a return code...
-        println("Return code:" + checkForSuccessTS);
+        println("Return code: " + checkForSuccessTS);
         //when successful, iterate to next channel(i++) and set Check to null
         if (checkForSuccessTS == RESP_SUCCESS) {
-          i++;
+          // i++;
           checkForSuccessTS = 0;
         }
 
@@ -1046,7 +1050,7 @@ void loadApplyTimeSeriesSettings() {
         }
       }
       //delay(10);// Works on 8 chan sometimes
-      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
+      delay(250); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
       //Tested by setting gain 1x and loading 24x.
     }
     loadErrorCytonEvent = false;

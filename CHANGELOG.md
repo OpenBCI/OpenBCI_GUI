@@ -10,7 +10,7 @@ Use OpenBCIHub v2.0.0 please.
 
 * Now sending and receiving from the hub in JSON!
 
-### Beta 0
+### Alpha 0
 
 * Initial Release
 
