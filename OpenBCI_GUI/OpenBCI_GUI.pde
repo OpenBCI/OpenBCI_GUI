@@ -354,14 +354,8 @@ Boolean loadErrorCytonEvent = false;
 
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
-void setup() {
-  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
-  hubInit(); // putting down here gives windows time to close any open apps
-
-  println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
-  //open window
-  println("Screen Resolution: " displayWidth + " X " + displayHeight);
+void settings() {
+  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
   //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
   //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
   if (displayWidth == 1366 && displayHeight == 768) {
@@ -370,6 +364,15 @@ void setup() {
     //default 1024x768 resolution with 2D graphics
     size(1024, 768, P2D);
   }
+}
+
+void setup() {
+  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
+  hubInit(); // putting down here gives windows time to close any open apps
+
+  println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
+  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+  //open window
   ourApplet = this;
 
   if(frameRateCounter==0){
