@@ -343,7 +343,7 @@ String loadSettingsDialogName; //Used when Load button is pressed
 String controlEventDataSource; //Used for output message on system start
 Boolean errorUserSettingsNotFound = false; //For error catching
 int loadErrorTimerStart;
-int loadErrorTimeWindow = 3800; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
+int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
 Boolean loadErrorCytonEvent = false;
 
 //------------------------------------------------------------------------
@@ -1442,7 +1442,7 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.4.0\nAugust 2018", width/2, height/2 + width/9);
+    text("OpenBCI GUI v4.0.0-alpha.0\nSeptember 2018", width/2, height/2 + width/9);
   }
 
   //exit intro animation at t2
