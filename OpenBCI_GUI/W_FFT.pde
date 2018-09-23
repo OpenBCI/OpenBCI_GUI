@@ -130,13 +130,10 @@ class W_fft extends Widget {
         // float aa = fftBuff[i].getBand(j);
         // float b = fftBuff[i].getBand(j);
         // float c = Nfft;
-        if (fftBuff == null || fft_points == null || int(sr) != 0 || nfft != 0) {
-          //do nothing
-          //println("Sample rate: "+ sr + " -- Nfft: " + nfft);
-        } else {
-          powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
-          fft_points[i].set(j, powerAtBin);
-        }
+
+        //println("Sample rate: "+ sr + " -- Nfft: " + nfft);
+        powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
+        fft_points[i].set(j, powerAtBin);
         // GPoint powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
 
         //println("=========================================");
