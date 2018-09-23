@@ -1221,15 +1221,16 @@ void systemUpdate() { // for updating data values and variables
       } else {
         //not enough data has arrived yet... only update the channel controller
       }
-    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData && playbackData_fname != "N/A") {
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
       lastReadDataPacketInd = 0;
       pointCounter = 0;
       try {
         process_input_file();
-        println("GUI update process file");
+        println("^^^GUI update process file has occurred");
       }
       catch(Exception e) {
         isOldData = true;
+        println("^^^Error processing timestamps");
         output("Error processing timestamps, are you using old data?");
       }
     }

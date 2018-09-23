@@ -48,7 +48,8 @@ class W_timeSeries extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  private boolean hasScrollbar = true; //used to turn scrollbar widget on/off
+  private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
+  boolean updateNumberOfChannelBars = false; //used if user selects new playback file using playback widget
 
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -146,6 +147,10 @@ class W_timeSeries extends Widget {
         scrollbar.update();
       }
 
+      //update the number of channel bars if user has selected a new file using playback widget
+      if (updateNumberOfChannelBars) {
+        updateNumChannelBars(ourApplet);
+      }
       //update channel bars ... this means feeding new EEG data into plots
       for(int i = 0; i < numChannelBars; i++){
         channelBars[i].update();
@@ -272,9 +277,42 @@ class W_timeSeries extends Widget {
       }
     }
   }
+
+  //Called when a user selects a new playback file from playback widget
+  void updateNumChannelBars(PApplet _parent) {
+    //println("NEW NCHAN = " + nchan);
+    numChannelBars = nchan;
+
+    //Clear the array that holds the channel bars
+    channelBars = null;
+
+    //Create new channel bars
+    channelBarHeight = int(ts_h/numChannelBars);
+
+    channelBars = new ChannelBar[numChannelBars];
+
+    //Create our channel bars and populate our channelBars array!
+    for(int i = 0; i < numChannelBars; i++){
+      int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
+      ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+      channelBars[i] = tempBar;
+    }
+
+    /*
+    //this resizes all of the chanel bars
+    channelBarHeight = int(ts_h/numChannelBars);
+
+    for(int i = 0; i < numChannelBars; i++){
+      int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
+      channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+    }
+    */
+
+    updateNumberOfChannelBars = false;
+  }
 };
 
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+//These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
   tsVertScaleSave = n;
   if (n==0) { //autoscale
@@ -787,7 +825,7 @@ class PlaybackScrollbar {
           ///println("TimeSeriesFileProcessed");
         } catch(Exception e) {
           isOldData = true;
-          output("Error processing timestamps, are you using old data?");
+          output("###Error processing timestamps, are you using old data?");
         }
       }
       //Set the new position of playback indicator using mapped value
@@ -944,7 +982,7 @@ class PlaybackScrollbar {
     num_indices = indices; //update the value for the number of indices
 
     if(has_processed){ //if playback file has been processed successfully
-      println("INDEXES: "+num_indices);
+      //println("INDEXES: "+num_indices);
 
       findTimesToDisplay();
 

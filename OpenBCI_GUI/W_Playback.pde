@@ -10,6 +10,7 @@
 
 class W_playback extends Widget {
 
+  DataProcessing dataProcessing;
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
   //PlaybackFileBox2 playbackFileBox2;
@@ -34,7 +35,6 @@ class W_playback extends Widget {
     //addDropdown("pbDropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     //addDropdown("pbDropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-    //playbackFileBox2 = new PlaybackFileBox2(x, y, 200, navHeight, 12);
     selectPlaybackFileButton = new Button (x + padding, y + padding*2 + 13, 200, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
 
 
@@ -98,11 +98,7 @@ class W_playback extends Widget {
     //resize and position the playback file box and button
     //playbackFileBox2.screenResized(x + padding, y + padding*2 + 13);
     selectPlaybackFileButton.setPos(x + padding, y + padding*2 + 13);
-
-    //selectPlaybackFileButton.setPos(x + padding, y + padding*2 + 13);
-
-
-  }
+  } //end screen Resized
 
   void mousePressed() {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
@@ -116,8 +112,7 @@ class W_playback extends Widget {
     if(widgetTemplateButton.isMouseHere()) {
       widgetTemplateButton.setIsActive(true);
     }
-
-  }
+  } // end mouse Pressed
 
   void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
@@ -130,67 +125,13 @@ class W_playback extends Widget {
 
     if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.wasPressed) {
       //playbackData_fname = "N/A"; //reset the filename variable
-      has_processed = false; //reset has_processed variable
+      //has_processed = false; //reset has_processed variable
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
     }
     selectPlaybackFileButton.setIsActive(false);
-
-  }
-
-  //add custom functions here
-  void customFunction() {
-    //this is a fake function... replace it with something relevant to this widget
-
-  }
-
-  /*
-  class PlaybackFileBox2 {
-    int x, y, w, h, padding; //size and position
-
-    PlaybackFileBox2(int _x, int _y, int _w, int _h, int _padding) {
-      x = _x;
-      y = _y;
-      w = _w;
-      h = 67;
-      padding = _padding;
-
-      selectPlaybackFileButton = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-
-      //drawPlaybackFileBox(x,y,w,h);
-      selectPlaybackFileButton.draw();
-      // chanButton16.draw();
-    }
-
-    public void screenResized(int _x, int _y) {
-      selectPlaybackFileButton.setPos(_x,_y);
-      drawPlaybackFileBox(_x,_y,w,h);
-    }
-
-    public void drawPlaybackFileBox(int x, int y, int w, int h) {
-      if(visible && settingsLoadedCheck) {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("PLAYBACK FILE", x + padding, y + padding);
-        popStyle();
-      }
-    }
-  };
-  */
-
-};
+  } // end mouse Released
+}; //end Playback widget class
 
 //GLOBAL FUNCTIONS BELOW THIS LINE
 
@@ -223,18 +164,51 @@ void playbackSelectedWidgetButton(File selection) {
     output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = selection.getAbsolutePath();
 
-    //if a new file was selected, process it
-    if (playbackData_fname != "N/A" && systemMode == SYSTEMMODE_POSTINIT) {
-      processNewPlaybackFile();
-    }
+    //If a new file was selected, process it so we can set variables first.
+    processNewPlaybackFile();
 
     //Determine the number of channels and updateToNChan()
     determineNumChanFromFile(playbackData_table);
 
-    //Output new playback settings to GUI as success
+    //Print success message
     outputSuccess("You have selected \""
     + selection.getName() + "\" for playback. "
     + str(nchan) + " channels found.");
+
+    //Tell TS widget that the number of channel bars needs to be updated
+    w_timeSeries.updateNumberOfChannelBars = true;
+
+    //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
+    dataProcessing.nchan = nchan;
+    dataProcessing.fs_Hz = getSampleRateSafe();
+    dataProcessing.data_std_uV = new float[nchan];
+    dataProcessing.polarity = new float[nchan];
+    dataProcessing.newDataToSend = false;
+    dataProcessing.avgPowerInBins = new float[nchan][dataProcessing.processing_band_low_Hz.length];
+    dataProcessing.headWidePower = new float[dataProcessing.processing_band_low_Hz.length];
+    dataProcessing.defineFilters();  //define the filters anyway just so that the code doesn't bomb
+
+    //Reinitialize core data and variables that occur between Init checkpoints 1 and 2
+    reinitializeCoreDataAndFFTBuffer();
+
+    //Update the number of channels for FFT
+    w_fft.fft_points = null;
+    w_fft.fft_points = new GPointsArray[nchan];
+    w_fft.initializeFFTPlot(ourApplet);
+    w_fft.update();
+
+    //Process the file again to fix issue. This makes indexes for playback slider load properly
+    try {
+      hasRepeated = false;
+      has_processed = false;
+      process_input_file();
+      println("+++GUI update process file has occurred");
+    }
+    catch(Exception e) {
+      isOldData = true;
+      output("+++Error processing timestamps, are you using old data?");
+    }
+
   }
 }
 
@@ -249,16 +223,9 @@ void processNewPlaybackFile() { //Also used in DataLogging.pde
 
   //initialize playback file
   initPlaybackFileToTable();
-
-  /*
-  if (systemMode == SYSTEMMODE_POSTINIT) {
-    //Re-initialize the system
-    initSystemFromPlaybackWidget();
-  }
-  */
 }
 
-void initPlaybackFileToTable() {
+void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
   //open and load the data file
   println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
   try {
@@ -270,29 +237,13 @@ void initPlaybackFileToTable() {
     println("   : quitting...");
     hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
   }
+
   println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
 }
 
-//This needs lots of work
-void initSystemFromPlaybackWidget() {
-  println();
-  println();
-  println("=================================================");
-  println("||          RE-INITIALIZING SYSTEM             ||");
-  println("=================================================");
-  println();
 
-  verbosePrint("W_Playback: initSystem: -- Init 0 -- " + millis());
-  timeOfInit = millis(); //store this for timeout in case init takes too long
-  verbosePrint("timeOfInit = " + timeOfInit);
-
-  //prepare data variables
-  //verbosePrint("W_Playback: initSystem: Preparing data variables...");
-  //initPlaybackFileToTable(); //found in W_Playback.pde
-
-  verbosePrint("W_Playback: initSystem: Initializing core data objects");
-
-  // Nfft = getNfftSafe();
+void reinitializeCoreDataAndFFTBuffer() {
+  //initialize core data objects
   nDataBackBuff = 3*(int)getSampleRateSafe();
   dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
   nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
@@ -321,8 +272,8 @@ void initSystemFromPlaybackWidget() {
   //initialize the data
   prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
-  verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
-  verbosePrint("W_Playback: initSystem: Initializing FFT data objects");
+  //verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
+  //verbosePrint("W_Playback: initSystem: Initializing FFT data objects");
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -330,7 +281,7 @@ void initSystemFromPlaybackWidget() {
     fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
   }  //make the FFT objects
 
-  printArray(fftBuff);
+  //printArray(fftBuff);
 
   //Attempt initialization. If error, print to console and exit function.
   //Fixes GUI crash when trying to load outdated recordings
@@ -342,5 +293,5 @@ void initSystemFromPlaybackWidget() {
     return;
   }
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+  //verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
 }
