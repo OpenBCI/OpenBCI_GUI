@@ -15,7 +15,7 @@ class W_playback extends Widget {
   //put your custom variables here...
   //PlaybackFileBox2 playbackFileBox2;
   Button selectPlaybackFileButton;
-  Button widgetTemplateButton;
+  //Button widgetTemplateButton;
   int padding = 10;
 
   private boolean visible = true;
@@ -38,9 +38,9 @@ class W_playback extends Widget {
     selectPlaybackFileButton = new Button (x + padding, y + padding*2 + 13, 200, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
 
 
-    widgetTemplateButton = new Button (x + w/2 + 50, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
-    widgetTemplateButton.setFont(p4, 14);
-    widgetTemplateButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
+    //widgetTemplateButton = new Button (x + w/2 + 50, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
+    //widgetTemplateButton.setFont(p4, 14);
+    //widgetTemplateButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
   }
 
   public boolean isVisible() {
@@ -82,7 +82,7 @@ class W_playback extends Widget {
       popStyle();
 
       pushStyle();
-      widgetTemplateButton.draw();
+      //widgetTemplateButton.draw();
       //playbackFileBox2.draw();
       selectPlaybackFileButton.draw();
       popStyle();
@@ -93,7 +93,7 @@ class W_playback extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
+    //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
 
     //resize and position the playback file box and button
     //playbackFileBox2.screenResized(x + padding, y + padding*2 + 13);
@@ -109,19 +109,23 @@ class W_playback extends Widget {
     }
 
     //put your code here...
+    /*
     if(widgetTemplateButton.isMouseHere()) {
       widgetTemplateButton.setIsActive(true);
     }
+    */
   } // end mouse Pressed
 
   void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
+    /*
     if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()) {
       widgetTemplateButton.goToURL();
     }
     widgetTemplateButton.setIsActive(false);
+    */
 
     if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.wasPressed) {
       //playbackData_fname = "N/A"; //reset the filename variable
