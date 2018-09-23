@@ -13,7 +13,6 @@ class W_playback extends Widget {
   DataProcessing dataProcessing;
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
-  //PlaybackFileBox2 playbackFileBox2;
   Button selectPlaybackFileButton;
   //Button widgetTemplateButton;
   int padding = 10;
@@ -35,7 +34,7 @@ class W_playback extends Widget {
     //addDropdown("pbDropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
     //addDropdown("pbDropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-    selectPlaybackFileButton = new Button (x + padding, y + padding*2 + 13, 200, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+    selectPlaybackFileButton = new Button (x + w - 200 - padding, y - navHeight + 2, 200, navHeight - 6, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
 
 
     //widgetTemplateButton = new Button (x + w/2 + 50, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
@@ -73,17 +72,19 @@ class W_playback extends Widget {
       fill(boxColor);
       stroke(boxStrokeColor);
       strokeWeight(1);
-      rect(x, y, w, h);
+      //rect(x, y, w, h);
+      //Add text if needed
+      /*
       fill(bgColor);
       textFont(h3, 16);
       textAlign(LEFT, TOP);
       text("PLAYBACK FILE", x + padding, y + padding);
+      */
       //println("DRAWING PLAYBACK FILE BOX");
       popStyle();
 
       pushStyle();
       //widgetTemplateButton.draw();
-      //playbackFileBox2.draw();
       selectPlaybackFileButton.draw();
       popStyle();
     }
@@ -93,11 +94,9 @@ class W_playback extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
-
     //resize and position the playback file box and button
-    //playbackFileBox2.screenResized(x + padding, y + padding*2 + 13);
-    selectPlaybackFileButton.setPos(x + padding, y + padding*2 + 13);
+    //widgetTemplateButton.setPos(x + padding, y + padding*2 + 13);
+    selectPlaybackFileButton.setPos(x + w - 200 - padding, y - navHeight + 2);
   } //end screen Resized
 
   void mousePressed() {
