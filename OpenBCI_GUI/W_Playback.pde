@@ -7,6 +7,10 @@
                        Created: Richard Waltman - August 2018
  */
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.json";
+boolean userPlaybackFileNotFound = false;
 
 class W_playback extends Widget {
 
@@ -80,8 +84,33 @@ class W_playback extends Widget {
       textAlign(LEFT, TOP);
       text("PLAYBACK FILE", x + padding, y + padding);
       */
-      //println("DRAWING PLAYBACK FILE BOX");
       popStyle();
+
+      //Load the JSON array from setting
+      if (!userPlaybackFileNotFound) {
+        try {
+          loadPlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+
+          JSONArray loadPlaybackHistoryJSONArray = loadPlaybackHistoryJSON.getJSONArray("PlaybackFileHistory");
+          //println("History Size = " + loadPlaybackHistoryJSONArray.size());
+          //for all files that appear in JSON (for now)
+          for (int i = 0; i < loadPlaybackHistoryJSONArray.size(); i++) {
+            JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
+            int fileNumber = loadRecentPlaybackFile.getInt("RecentFileNumber");
+            String fileName = loadRecentPlaybackFile.getString("id");
+            //pushStyle();
+            fill(bgColor);
+            textAlign(LEFT, TOP);
+            textFont(p1, 20);
+            text(fileName, x + padding, y + (i * padding * 2.5));
+            //popStyle();
+            //println(fileName);
+          }
+        } catch (NullPointerException e) {
+          println("Playback history file not found.");
+          userPlaybackFileNotFound = true;
+        }
+      }
 
       pushStyle();
       //widgetTemplateButton.draw();
