@@ -98,12 +98,15 @@ class TopNav {
 
     butNum = 4;
     updateGuiVersionButton = new Button(width - 3*(butNum) - 80 - issuesButton.but_dx - tutorialsButton.but_dx - shopButton.but_dx, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
+    //Lookup and check the local GUI version against the latest Github release
     loadGUIVersionData();
+    //Print the message to the button help text that appears when mouse hovers over button
     if (guiVersionIsUpToDate) {
       updateGuiVersionButton.setHelpText("GUI is up to date!");
     } else {
       updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
     }
+    //Pressing the button opens web browser to Github latest release page
     updateGuiVersionButton.setURL(guiLatestReleaseLocation);
     updateGuiVersionButton.setFont(h3, 16);
 
@@ -448,27 +451,24 @@ class TopNav {
   //Load data from the latest release page from Github and the info.plist file
   void loadGUIVersionData() {
 
-    //////////////////////////////////////////////////
+    /////////////////////////////////////////////
     //Get the latest release version from Github
     String webTitle;
     String[] version;
-
     // Get the raw HTML source into an array of strings (each line is one element in the array).
     // The next step is to turn array into one long string with join().
     String[] lines = loadStrings(guiLatestReleaseLocation);
     String html = join(lines, "");
-
     String start = "<title>";
     String end = "</title>";
     webTitle = giveMeTextBetween(html, start, end);
     version = split(webTitle, '·'); //split the string in the html title
     String[] webVersionNumberArray = split(version[0], ' ');
 
+    ///Parse the string from Github
     //remove 'v' character if nedded
     if (webVersionNumberArray[1].charAt(0) == 'v') {
      webVersionNumberArray = split(webVersionNumberArray[1], 'v');
-     webGUIVersionString = webVersionNumberArray[1];
-    } else {
      webGUIVersionString = webVersionNumberArray[1];
     }
     //then remove "-alpha" or "-beta" as needed
@@ -478,15 +478,16 @@ class TopNav {
      //printArray(webGUIVersionStringArray);
      webGUIVersionString = webGUIVersionStringArray[0];
     }
-    //webVersionNumberString is the current version, fetched from Github
+    //webGUIVersionString is the current version, fetched from Github
 
+    /////////////////////////////////////////////////////////////////////////////
+    //Copy the local GUI version from the string that appears in OpenBCI_GUI.pde
+    //Then, format it just as we did above removing 'v' and splitting before any -alpha -beta
     String localVersionString = localGUIVersionString;
     //remove 'v' character if needed
     if (localVersionString.charAt(0) == 'v') {
      String[] localGUIVersionStringArray = split(localVersionString, 'v');
      localVersionString = localGUIVersionStringArray[1];
-    } else {
-     localVersionString = localGUIVersionString;
     }
     //then remove "-alpha" or "-beta" as needed
     if (localVersionString.length() > 5) {
@@ -499,10 +500,9 @@ class TopNav {
     int[] localVersionCompareArray = int(split(localVersionString, '.'));
     webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
     localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-
+    //Print the results to console
     println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
-    //printArray(localVersionCompareArray);
-    //compare the versions using the three digit integers
+    //compare the versions using the three digit integers and print to console
     if (localGUIVersionInt < webGUIVersionInt) {
       guiVersionIsUpToDate = false;
       println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
