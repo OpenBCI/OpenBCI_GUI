@@ -302,4 +302,8 @@ void reinitializeCoreDataAndFFTBuffer() {
   w_emg.motorWidgets = null;
   w_emg.updateEMGMotorWidgets(nchan);
 
+  //Update the number of channels for HeadPlot
+  w_headPlot.headPlot = null;
+  w_headPlot.updateHeadPlot(nchan);
+
 }
