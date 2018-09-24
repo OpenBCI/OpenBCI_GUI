@@ -181,24 +181,8 @@ void playbackSelectedWidgetButton(File selection) {
     //Tell TS widget that the number of channel bars needs to be updated
     w_timeSeries.updateNumberOfChannelBars = true;
 
-    //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
-    dataProcessing.nchan = nchan;
-    dataProcessing.fs_Hz = getSampleRateSafe();
-    dataProcessing.data_std_uV = new float[nchan];
-    dataProcessing.polarity = new float[nchan];
-    dataProcessing.newDataToSend = false;
-    dataProcessing.avgPowerInBins = new float[nchan][dataProcessing.processing_band_low_Hz.length];
-    dataProcessing.headWidePower = new float[dataProcessing.processing_band_low_Hz.length];
-    dataProcessing.defineFilters();  //define the filters anyway just so that the code doesn't bomb
-
-    //Reinitialize core data and variables that occur between Init checkpoints 1 and 2
+    //Reinitialize core data, EMG, FFT, and Headplot number of channels
     reinitializeCoreDataAndFFTBuffer();
-
-    //Update the number of channels for FFT
-    w_fft.fft_points = null;
-    w_fft.fft_points = new GPointsArray[nchan];
-    w_fft.initializeFFTPlot(ourApplet);
-    w_fft.update();
 
     //Process the file again to fix issue. This makes indexes for playback slider load properly
     try {
@@ -246,6 +230,16 @@ void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
 
 
 void reinitializeCoreDataAndFFTBuffer() {
+  //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
+  dataProcessing.nchan = nchan;
+  dataProcessing.fs_Hz = getSampleRateSafe();
+  dataProcessing.data_std_uV = new float[nchan];
+  dataProcessing.polarity = new float[nchan];
+  dataProcessing.newDataToSend = false;
+  dataProcessing.avgPowerInBins = new float[nchan][dataProcessing.processing_band_low_Hz.length];
+  dataProcessing.headWidePower = new float[dataProcessing.processing_band_low_Hz.length];
+  dataProcessing.defineFilters();  //define the filters anyway just so that the code doesn't bomb
+
   //initialize core data objects
   nDataBackBuff = 3*(int)getSampleRateSafe();
   dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
@@ -297,4 +291,15 @@ void reinitializeCoreDataAndFFTBuffer() {
   }
 
   //verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+
+  //Update the number of channels for FFT
+  w_fft.fft_points = null;
+  w_fft.fft_points = new GPointsArray[nchan];
+  w_fft.initializeFFTPlot(ourApplet);
+  w_fft.update();
+
+  //Update the number of channels for EMG
+  w_emg.motorWidgets = null;
+  w_emg.updateEMGMotorWidgets(nchan);
+
 }

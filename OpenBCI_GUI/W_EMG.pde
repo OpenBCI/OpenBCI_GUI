@@ -146,33 +146,13 @@ class W_emg extends Widget {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
     parent = _parent;
 
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
-    //use these as new configuration widget
-    motorWidgets = new Motor_Widget[nchan];
-
-    for (int i = 0; i < nchan; i++) {
-      motorWidgets[i] = new Motor_Widget();
-      motorWidgets[i].ourChan = i;
-      if(eegDataSource == DATASOURCE_GANGLION){
-        motorWidgets[i].averagePeriod = 200 * 0.5;
-      } else {
-        motorWidgets[i].averagePeriod = 250 * 0.5;
-      }
-    }
-
-    events = new boolean[nchan];
-
-    for (int i = 0; i < nchan; i++) {
-      events[i] = true;
-    }
-
+    //Add dropdowns
     addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"), 4);
     addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), 2);
     addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), 3);
     addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), 1);
+
+    updateEMGMotorWidgets(nchan);
 
     if (emgAdvanced) {
       channelList = new ArrayList<String>();
@@ -245,6 +225,28 @@ class W_emg extends Widget {
       }
     }
   }
+
+  void updateEMGMotorWidgets(int _nchan) {
+    //use these as new configuration widget
+    motorWidgets = new Motor_Widget[_nchan];
+
+    for (int i = 0; i < _nchan; i++) {
+      motorWidgets[i] = new Motor_Widget();
+      motorWidgets[i].ourChan = i;
+      if(eegDataSource == DATASOURCE_GANGLION){
+        motorWidgets[i].averagePeriod = 200 * 0.5;
+      } else {
+        motorWidgets[i].averagePeriod = 250 * 0.5;
+      }
+    }
+
+    events = new boolean[_nchan];
+
+    for (int i = 0; i < _nchan; i++) {
+      events[i] = true;
+    }
+  }
+
 
   void update() {
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
