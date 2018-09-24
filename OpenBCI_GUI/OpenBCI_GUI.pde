@@ -351,6 +351,11 @@ int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel s
 Boolean loadErrorCytonEvent = false;
 Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
 
+//Used to check GUI version in TopNav.pde
+String localGUIVersionString = "v4.0.0-alpha.0";
+String localGUIVersionDate = "September 2018";
+String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -1444,7 +1449,9 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v4.0.0-alpha.0\nSeptember 2018", width/2, height/2 + width/9);
+    String displayVersion = "OpenBCI GUI " + localGUIVersionString;
+    text(displayVersion, width/2, height/2 + width/9);
+    text(localGUIVersionDate, width/2, height/2 + ((width/8) * 1.125));
   }
 
   //exit intro animation at t2

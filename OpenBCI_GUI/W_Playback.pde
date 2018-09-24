@@ -98,7 +98,7 @@ class W_playback extends Widget {
             JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
             int fileNumber = loadRecentPlaybackFile.getInt("RecentFileNumber");
             String fileName = loadRecentPlaybackFile.getString("id");
-            //pushStyle();
+            //Set the text for each fileName
             fill(bgColor);
             textAlign(LEFT, TOP);
             textFont(p1, 20);
