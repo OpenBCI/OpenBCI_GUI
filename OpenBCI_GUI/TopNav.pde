@@ -464,12 +464,14 @@ class TopNav {
     webTitle = giveMeTextBetween(html, start, end);
     version = split(webTitle, '·'); //split the string in the html title
     String[] webVersionNumberArray = split(version[0], ' ');
-
+    //printArray(webVersionNumberArray);
     ///Parse the string from Github
     //remove 'v' character if nedded
     if (webVersionNumberArray[1].charAt(0) == 'v') {
-     webVersionNumberArray = split(webVersionNumberArray[1], 'v');
-     webGUIVersionString = webVersionNumberArray[1];
+      String[] splitV = split(webVersionNumberArray[1], 'v');
+      webGUIVersionString = splitV[1];
+    } else {
+      webGUIVersionString = webVersionNumberArray[1];
     }
     //then remove "-alpha" or "-beta" as needed
     //println(webGUIVersionString);
@@ -486,8 +488,8 @@ class TopNav {
     String localVersionString = localGUIVersionString;
     //remove 'v' character if needed
     if (localVersionString.charAt(0) == 'v') {
-     String[] localGUIVersionStringArray = split(localVersionString, 'v');
-     localVersionString = localGUIVersionStringArray[1];
+     String[] splitV = split(localVersionString, 'v');
+     localVersionString = splitV[1];
     }
     //then remove "-alpha" or "-beta" as needed
     if (localVersionString.length() > 5) {
