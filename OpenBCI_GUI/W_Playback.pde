@@ -12,6 +12,8 @@ JSONObject loadPlaybackHistoryJSON;
 final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.json";
 boolean userPlaybackFileNotFound = false;
 String playbackData_ShortName;
+String[] rangeSelectStringArray = {"0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
+
 
 class W_playback extends Widget {
 
@@ -25,6 +27,13 @@ class W_playback extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
+  int fileSelectTabsInt = 1;
+  int rangeSelected = 0; //this var is the range the user has selected
+  int maxRangeSelect = 1; //max number of range tabs
+  int oldArraySize;
+  int newArraySize;
+
+
   W_playback(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
     x = x0;
@@ -32,19 +41,19 @@ class W_playback extends Widget {
     w = w0;
     h = h0;
 
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    //addDropdown("pbDropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-    //addDropdown("pbDropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-    //addDropdown("pbDropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+    //look at the JSON file to set the range menu using number of recent file entries
+    savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+    JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("Playback File History");
+    maxRangeSelect = recentFilesArray.size()/10;
+    String[] rangeSelect = {};
+    for (int i = 0; i <= maxRangeSelect; i++) {
+      rangeSelect = append(rangeSelect, rangeSelectStringArray[i]);
+    }
 
-    selectPlaybackFileButton = new Button (x + w - 200 - padding, y - navHeight + 2, 200, navHeight - 6, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
-
-
-    //widgetTemplateButton = new Button (x + w/2 + 50, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
-    //widgetTemplateButton.setFont(p4, 14);
-    //widgetTemplateButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
+    //make a dropdown menu to select the rang
+    addDropdown("pbRecentRange", "Range", Arrays.asList(rangeSelect), 0);
+    //make a button to load new files
+    selectPlaybackFileButton = new Button (x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
   }
 
   public boolean isVisible() {
@@ -90,12 +99,10 @@ class W_playback extends Widget {
       //These variables are used to show 10 of 100 latest playback files
       //fileSelectTabsInt changes when user selects playback range from dropdown
       int numFilesToShow = 10;
-      int fileSelectTabsInt = 1;
       //Load the JSON array from setting
       if (!userPlaybackFileNotFound) {
         try {
           loadPlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
-
           JSONArray loadPlaybackHistoryJSONArray = loadPlaybackHistoryJSON.getJSONArray("Playback File History");
           //remove entries greater than 100
           if (loadPlaybackHistoryJSONArray.size() >= 100) {
@@ -104,13 +111,19 @@ class W_playback extends Widget {
             }
           }
           //println("History Size = " + loadPlaybackHistoryJSONArray.size());
-          //numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10;
+          if (rangeSelected == maxRangeSelect) {
+            numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10;
+          } else {
+            numFilesToShow = fileSelectTabsInt + 10;
+          }
+
+          //if (loadPlaybackHistoryJSONArray.size)
 
           //for all files that appear in JSON array in increments of 10
           //println(fileSelectTabsInt + " " + numFilesToShow);
           //println("Array Size:" + loadPlaybackHistoryJSONArray.size());
           int currentFileNameToDraw = 0;
-          for (int i = loadPlaybackHistoryJSONArray.size()-1; i > (loadPlaybackHistoryJSONArray.size() - numFilesToShow-1); i--) {
+          for (int i = (loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt); i > (loadPlaybackHistoryJSONArray.size() - numFilesToShow); i--) {
             JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
             int fileNumber = loadRecentPlaybackFile.getInt("RecentFileNumber");
             String fileName = loadRecentPlaybackFile.getString("id");
@@ -128,7 +141,7 @@ class W_playback extends Widget {
             fill(bgColor);
             textAlign(LEFT, TOP);
             textFont(p1, 20);
-            text(fileNumberString + fileName, x + padding, y + (currentFileNameToDraw * padding * 2.3));
+            text(fileNumberString + fileName, x + padding, y + (currentFileNameToDraw * padding * 2.9));
             currentFileNameToDraw++;
             //popStyle();
             //println(fileName);
@@ -152,7 +165,7 @@ class W_playback extends Widget {
     //put your code here...
     //resize and position the playback file box and button
     //widgetTemplateButton.setPos(x + padding, y + padding*2 + 13);
-    selectPlaybackFileButton.setPos(x + w - 200 - padding, y - navHeight + 2);
+    selectPlaybackFileButton.setPos(x + w/2 - (padding*2), y - navHeight + 2);
   } //end screen Resized
 
   void mousePressed() {
@@ -192,29 +205,22 @@ class W_playback extends Widget {
   } // end mouse Released
 }; //end Playback widget class
 
-//GLOBAL FUNCTIONS BELOW THIS LINE
-
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void pbDropdown1(int n) {
+//////////////////////////////////////
+// GLOBAL FUNCTIONS BELOW THIS LINE //
+//////////////////////////////////////
+//Activated when an item from the corresponding dropdown is selected
+void pbRecentRange(int n) {
   println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0) {
-    //do this
-  } else if(n==1) {
-    //do this instead
+    w_playback.fileSelectTabsInt = 1;
+  } else {
+    w_playback.fileSelectTabsInt = 10 * n + 1;
   }
+  w_playback.rangeSelected = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
-void pbDropdown2(int n) {
-  println("Item " + (n+1) + " selected from Dropdown 2");
-  closeAllDropdowns();
-}
-
-void pbDropdown3(int n) {
-  println("Item " + (n+1) + " selected from Dropdown 3");
-  closeAllDropdowns();
-}
-
+//Activated when user selects a file using the load playback file button
 void playbackSelectedWidgetButton(File selection) {
   if (selection == null) {
     println("W_Playback: playbackSelected: Window was closed or the user hit cancel.");
@@ -373,7 +379,7 @@ void savePlaybackFileToHistory() {
   int maxNumHistoryFiles = 100;
   savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
   JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("Playback File History");
-
+  w_playback.oldArraySize = savePlaybackHistoryJSON.size();
 
   //move all current entries +1
   for (int i = 0; i < recentFilesArray.size(); i++) {
@@ -393,6 +399,18 @@ void savePlaybackFileToHistory() {
       recentFilesArray.remove(i);
     }
   }
+  w_playback.newArraySize = recentFilesArray.size();
+
+  //make sure the dropdown list shows the correct ranges
+  //w_playback.maxRangeSelect = recentFilesArray.size()/10;
+  /*
+  if (newArraySize > oldArraySize && oldArraySize%10 >= 1) {
+    String itemToAdd = rangeSelectStringArray[maxRangeSelect];
+    cp5.get(ScrollableList.class, "pbRecentRange").clear();
+    cp5.get(ScrollableList.class, "pbRecentRange").addItem(itemToAdd, "pbRecentRange");
+  }
+  */
+
 
   savePlaybackHistoryJSON.setJSONArray("Playback File History", recentFilesArray);
   saveJSONObject(savePlaybackHistoryJSON, userPlaybackHistoryFile);
