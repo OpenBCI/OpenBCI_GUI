@@ -86,6 +86,10 @@ class W_playback extends Widget {
       */
       popStyle();
 
+      //These variables are used to show 10 of 100 latest playback files
+      //fileSelectTabsInt changes when user selects playback range from dropdown
+      int numFilesToShow = 10;
+      int fileSelectTabsInt = 10;
       //Load the JSON array from setting
       if (!userPlaybackFileNotFound) {
         try {
@@ -93,16 +97,28 @@ class W_playback extends Widget {
 
           JSONArray loadPlaybackHistoryJSONArray = loadPlaybackHistoryJSON.getJSONArray("PlaybackFileHistory");
           //println("History Size = " + loadPlaybackHistoryJSONArray.size());
-          //for all files that appear in JSON (for now)
-          for (int i = 0; i < loadPlaybackHistoryJSONArray.size(); i++) {
+          numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10;
+          //for all files that appear in JSON array in increments of 10
+          //println(fileSelectTabsInt + " " + numFilesToShow);
+          for (int i = fileSelectTabsInt; i < numFilesToShow; i++) {
             JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
             int fileNumber = loadRecentPlaybackFile.getInt("RecentFileNumber");
             String fileName = loadRecentPlaybackFile.getString("id");
-            //Set the text for each fileName
+            //Set up the string that will be displayed for each recent file
+            int digitPadding = 0;
+            if (fileNumber == 100) {
+              digitPadding = 3;
+            } else if (fileNumber >= 10 && fileNumber <= 99) {
+              digitPadding = 2;
+            } else if (fileNumber <= 9) {
+              digitPadding = 1;
+            }
+            String fileNumberString = nfs(fileNumber, digitPadding) + ". ";
+            //Draw the text for each fileName
             fill(bgColor);
             textAlign(LEFT, TOP);
             textFont(p1, 20);
-            text(fileName, x + padding, y + (i * padding * 2.5));
+            text(fileNumberString + fileName, x + padding, y + (i%10 * padding * 2.3));
             //popStyle();
             //println(fileName);
           }
