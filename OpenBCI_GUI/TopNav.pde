@@ -101,10 +101,13 @@ class TopNav {
     //Lookup and check the local GUI version against the latest Github release
     loadGUIVersionData();
     //Print the message to the button help text that appears when mouse hovers over button
-    if (guiVersionIsUpToDate) {
-      updateGuiVersionButton.setHelpText("GUI is up to date!");
-    } else {
-      updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
+    if (!guiVersionCheckHasOccured) {
+      if (guiVersionIsUpToDate) {
+        updateGuiVersionButton.setHelpText("GUI is up to date!");
+      } else {
+        updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
+      }
+      guiVersionCheckHasOccured = true;
     }
     //Pressing the button opens web browser to Github latest release page
     updateGuiVersionButton.setURL(guiLatestReleaseLocation);
