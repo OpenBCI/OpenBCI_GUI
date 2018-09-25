@@ -355,6 +355,7 @@ Boolean settingsLoadedCheck = false; //Used to determine if settings are done lo
 String localGUIVersionString = "v4.0.0-alpha.0";
 String localGUIVersionDate = "September 2018";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+Boolean guiVersionCheckHasOccured = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
