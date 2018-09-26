@@ -357,6 +357,14 @@ String localGUIVersionDate = "September 2018";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
+//Used mostly in W_playback.pde
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.json";
+boolean playbackHistoryFileExists = false;
+String playbackData_ShortName;
+String[] rangeSelectStringArray = {"0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

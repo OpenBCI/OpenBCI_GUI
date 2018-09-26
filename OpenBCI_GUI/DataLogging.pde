@@ -86,6 +86,7 @@ void playbackSelectedControlPanel(File selection) {
     println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
     //Set the name of the file
     playbackData_fname = selection.getAbsolutePath();
+    playbackData_ShortName = selection.getName();
     //Process the playback file
     processNewPlaybackFile();
     //Determine the number of channels
@@ -94,6 +95,14 @@ void playbackSelectedControlPanel(File selection) {
     outputSuccess("You have selected \""
     + selection.getName() + "\" for playback. "
     + str(nchan) + " channels found.");
+    //Try to load user playback history JSON file, set whether it exists or not
+    try {
+      JSONObject tmpCheckJSON = loadJSONObject(userPlaybackHistoryFile);
+      playbackHistoryFileExists = true;
+    } catch (NullPointerException e) {
+      println("Playback history JSON file does not exist. Load first file to make it.");
+      playbackHistoryFileExists = false;
+    }
   }
 }
 
