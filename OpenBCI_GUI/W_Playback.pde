@@ -18,7 +18,7 @@ class W_playback extends Widget {
   int playbackNumButtonsToDraw = 1;
   String[] shortFileNames = new String[10];
   String[] longFilePaths = new String[10];
-  //Button widgetTemplateButton;
+  //Used for spacing
   int padding = 10;
 
   private boolean visible = true;
@@ -26,10 +26,6 @@ class W_playback extends Widget {
 
   W_playback(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-    //x = x0;
-    //y = y0;
-    //w = w0;
-    //h = h0;
 
     //make a dropdown menu to select the rang
     addDropdown("pbRecentRange", "Range", Arrays.asList(rangePlaybackSelectArray), 0);
@@ -44,10 +40,10 @@ class W_playback extends Widget {
     //make ten buttons for recent playback with blank text
     for (int i = 0; i < 10; i++) { //playbackNumButtonsToDraw
       selectRecentFileButtons[i] = new Button (
-        x + (padding*3),
-        y + int(i * (h/10)),
+        x + (padding*4),
+        y + int(i * (h/10)) + padding/10,
         int(w/2.4) - padding*2,
-        30,
+        30 - padding/10,
         " ",
         30);
         selectRecentFileButtons[i].setFont(p4,16);
@@ -97,13 +93,11 @@ class W_playback extends Widget {
       popStyle();
 
       pushStyle();
-      //widgetTemplateButton.draw();
       selectPlaybackFileButton.draw();
 
-      for (int i = 0; i < playbackNumButtonsToDraw; i++) { //playbackNumButtonsToDraw
+      for (int i = 0; i < playbackNumButtonsToDraw; i++) {
         selectRecentFileButtons[i].draw();
       }
-
       popStyle();
     }
   } //end draw loop
@@ -112,13 +106,12 @@ class W_playback extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //resize and position the playback file box and button
-    //widgetTemplateButton.setPos(x + padding, y + padding*2 + 13);
     selectPlaybackFileButton.setPos(x + w/2 - (padding*2), y - navHeight + 2);
 
-    for (int i = 0; i < 10; i++) { //playbackNumButtonsToDraw
+    for (int i = 0; i < playbackNumButtonsToDraw; i++) { //playbackNumButtonsToDraw
       selectRecentFileButtons[i].setPos(
-        x + (padding*3),
-        y + int(i * (h/10)));
+        x + (padding*4),
+        y + int(i * (h/10)) + padding/10);
       }
   } //end screen Resized
 
@@ -128,41 +121,27 @@ class W_playback extends Widget {
     //check if mouse is over the select playback file button
     if (selectPlaybackFileButton.isMouseHere()) {
       selectPlaybackFileButton.setIsActive(true);
-      selectPlaybackFileButton.wasPressed = true;
+      //selectPlaybackFileButton.wasPressed = true;
     }
 
     //check if mouse is over the recent file buttons
-    for (int i = 0; i < 10 ;i++) {
+    for (int i = 0; i < playbackNumButtonsToDraw ;i++) {
       if (selectRecentFileButtons[i].isMouseHere()) {
         selectRecentFileButtons[i].setIsActive(true);
       }
     }
-
-    //put your code here...
-    /*
-    if(widgetTemplateButton.isMouseHere()) {
-      widgetTemplateButton.setIsActive(true);
-    }
-    */
   } // end mouse Pressed
 
   void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-    //put your code here...
-    /*
-    if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()) {
-      widgetTemplateButton.goToURL();
-    }
-    widgetTemplateButton.setIsActive(false);
-    */
-
     //check if user has clicked on one of the recent file buttons
     for (int i = 0; i < playbackNumButtonsToDraw; i++) { //playbackNumButtonsToDraw
-      if (selectRecentFileButtons[i].isMouseHere() && selectRecentFileButtons[i].wasPressed) {
+      if (selectRecentFileButtons[i].isMouseHere() && selectRecentFileButtons[i].isActive) {
         //load the playback file using the full file path
         //String fileToLoad = longFilePaths[i];
-        recentFileSelectedButton(longFilePaths[i], shortFileNames[1]);
+        //println("FILE PATH TO LOAD: " + longFilePaths[i] + " && Shrt file pth 2 ld: " + shortFileNames[i]);
+        recentFileSelectedButton(longFilePaths[i], shortFileNames[i]);
       }
     }
     //make the button show it is inactive
@@ -183,10 +162,8 @@ class W_playback extends Widget {
   } // end mouse Released
 
   void updatePlaybackWidgetButtons() {
+    //Used to show 10 of 100 latest playback files
 
-
-    //These variables are used to show 10 of 100 latest playback files
-    //fileSelectTabsInt changes when user selects playback range from dropdown
     int numFilesToShow = 10;
     //Load the JSON array for playback history
     if (playbackHistoryFileExists) {
@@ -200,10 +177,15 @@ class W_playback extends Widget {
           }
         }
         //println("History Size = " + loadPlaybackHistoryJSONArray.size());
-        if (rangePlaybackSelected == maxRangePlaybackSelect && loadPlaybackHistoryJSONArray.size() != 10) {
+        if (rangePlaybackSelected == maxRangePlaybackSelect && loadPlaybackHistoryJSONArray.size()%10 != 0) {
+          //fileSelectTabsInt changes when user selects playback range from dropdown
           numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10; //if set to max, show the remainer only
           playbackNumButtonsToDraw = loadPlaybackHistoryJSONArray.size()%10; //and draw the remainder
+        } else if (loadPlaybackHistoryJSONArray.size()%10 == 0) {
+          numFilesToShow = fileSelectTabsInt + 10 - 1;
+          playbackNumButtonsToDraw = 10;
         } else {
+          //fileSelectTabsInt changes when user selects playback range from dropdown
           numFilesToShow = fileSelectTabsInt + 10; //otherwise show 10 files
           playbackNumButtonsToDraw = 10; //and draw 10 buttons
         }
@@ -250,18 +232,6 @@ class W_playback extends Widget {
             }
 
             currentFileNameToDraw++;
-            /*
-            //MAKE BUTTONS HERE instead of just text. Give the buttons the short text.
-            //On click, need to lauch FULL filename, just show the short filename as button text only
-            selectRecentFileButtons[currentFileNameToDraw] = new Button (
-              x + padding,
-              y + int(currentFileNameToDraw * padding * 1),
-              w/4 - padding*2,
-              y + int(.1*h*(currentFileNameToDraw+1)),
-              shortFileName,
-              20);
-            currentFileNameToDraw++;
-            */
           }
         } else { //if there is only 1 file in the playback history file...
           JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(0);
@@ -290,9 +260,6 @@ class W_playback extends Widget {
 
           currentFileNameToDraw++;
         }
-
-
-
 
       } catch (NullPointerException e) {
         println("Playback history file not found.");
