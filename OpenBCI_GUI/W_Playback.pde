@@ -20,9 +20,9 @@ class W_playback extends Widget {
   private boolean visible = true;
   private boolean updating = true;
 
-  int fileSelectTabsInt = 1;
-  int rangeSelected = 0; //this var is the range the user has selected
-  int maxRangeSelect = 1; //max number of range tabs
+  //int fileSelectTabsInt = 1;
+  //int rangeSelected = 0; //this var is the range the user has selected
+  //int maxRangePlaybackSelect = 1; //max number of range tabs
 
   W_playback(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -31,29 +31,31 @@ class W_playback extends Widget {
     w = w0;
     h = h0;
 
-    String[] rangeSelect = {};
+    /*
+    String[] rangePlaybackSelectArray = {};
     //look at the JSON file to set the range menu using number of recent file entries
     try {
       savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
       JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-      maxRangeSelect = recentFilesArray.size()/10;
+      maxRangePlaybackSelect = recentFilesArray.size()/10;
 
-      for (int i = 0; i <= maxRangeSelect; i++) {
-        rangeSelect = append(rangeSelect, rangeSelectStringArray[i]);
+      for (int i = 0; i <= maxRangePlaybackSelect; i++) {
+        rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[i]);
       }
       playbackHistoryFileExists = true;
     } catch (NullPointerException e) {
       println("Playback history JSON file does not exist. Load first file to make it.");
       playbackHistoryFileExists = false;
     }
+    */
 
     //make a dropdown menu to select the rang
-    addDropdown("pbRecentRange", "Range", Arrays.asList(rangeSelect), 0);
+    addDropdown("pbRecentRange", "Range", Arrays.asList(rangePlaybackSelectArray), 0);
     //make a button to load new files
     selectPlaybackFileButton = new Button (x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
 
     //add playback file that was processed to the JSON history
-    savePlaybackFileToHistory(playbackData_ShortName);
+    //savePlaybackFileToHistory(playbackData_ShortName);
   }
 
   public boolean isVisible() {
@@ -86,7 +88,6 @@ class W_playback extends Widget {
       fill(boxColor);
       stroke(boxStrokeColor);
       strokeWeight(1);
-      //rect(x, y, w, h);
       //Add text if needed
       /*
       fill(bgColor);
@@ -111,22 +112,53 @@ class W_playback extends Widget {
             }
           }
           //println("History Size = " + loadPlaybackHistoryJSONArray.size());
-          if (rangeSelected == maxRangeSelect) {
+          if (rangePlaybackSelected == maxRangePlaybackSelect) {
             numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10;
           } else {
             numFilesToShow = fileSelectTabsInt + 10;
           }
 
-          //if (loadPlaybackHistoryJSONArray.size)
 
           //for all files that appear in JSON array in increments of 10
           //println(fileSelectTabsInt + " " + numFilesToShow);
           //println("Array Size:" + loadPlaybackHistoryJSONArray.size());
           int currentFileNameToDraw = 0;
-          for (int i = (loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt); i > (loadPlaybackHistoryJSONArray.size() - numFilesToShow); i--) {
-            JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
+          if (loadPlaybackHistoryJSONArray.size() > 1) {
+            for (int i = (loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt); i > (loadPlaybackHistoryJSONArray.size() - numFilesToShow); i--) {
+              JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
+              int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
+              String shortFileName = loadRecentPlaybackFile.getString("id");
+
+              //String longFilePath = loadRecentPlaybackFile.getString("filePath");
+
+              //Set up the string that will be displayed for each recent file
+              int digitPadding = 0;
+              if (fileNumber == 100) {
+                digitPadding = 3;
+              } else if (fileNumber >= 10 && fileNumber <= 99) {
+                digitPadding = 2;
+              } else if (fileNumber <= 9) {
+                digitPadding = 1;
+              }
+              String fileNumberString = nfs(fileNumber, digitPadding) + ". ";
+              //Draw the text for each fileName
+
+              //MAKE BUTTONS HERE instead of just text. Give the buttons the same text.
+              //On click, need to lauch FULL filename, just show the short filename as button text only
+              fill(bgColor);
+              textAlign(LEFT, TOP);
+              textFont(p1, 20);
+              text(fileNumberString + shortFileName, x + padding, y + (currentFileNameToDraw * padding * 2.9));
+              currentFileNameToDraw++;
+              //popStyle();
+              //println(fileName);
+            }
+          } else {
+            JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(0);
             int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
-            String fileName = loadRecentPlaybackFile.getString("id");
+            String shortFileName = loadRecentPlaybackFile.getString("id"); //used to display in playback widget
+            //String longFilePath = loadRecentPlaybackFile.getString("filePath"); //used to load file
+
             //Set up the string that will be displayed for each recent file
             int digitPadding = 0;
             if (fileNumber == 100) {
@@ -137,14 +169,15 @@ class W_playback extends Widget {
               digitPadding = 1;
             }
             String fileNumberString = nfs(fileNumber, digitPadding) + ". ";
-            //Draw the text for each fileName
+
+            //MAKE BUTTONS HERE instead of just text. Give the buttons the same text.
+            //On click, need to lauch FULL filename, just show the short filename as button text only
             fill(bgColor);
             textAlign(LEFT, TOP);
             textFont(p1, 20);
-            text(fileNumberString + fileName, x + padding, y + (currentFileNameToDraw * padding * 2.9));
+            //Draw the text for each fileName
+            text(fileNumberString + shortFileName, x + padding, y + (currentFileNameToDraw * padding * 2.9));
             currentFileNameToDraw++;
-            //popStyle();
-            //println(fileName);
           }
         } catch (NullPointerException e) {
           println("Playback history file not found.");
@@ -164,7 +197,6 @@ class W_playback extends Widget {
   void screenResized() {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-    //put your code here...
     //resize and position the playback file box and button
     //widgetTemplateButton.setPos(x + padding, y + padding*2 + 13);
     selectPlaybackFileButton.setPos(x + w/2 - (padding*2), y - navHeight + 2);
@@ -214,11 +246,11 @@ class W_playback extends Widget {
 void pbRecentRange(int n) {
   println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0) {
-    w_playback.fileSelectTabsInt = 1;
+    fileSelectTabsInt = 1;
   } else {
-    w_playback.fileSelectTabsInt = 10 * n + 1;
+    fileSelectTabsInt = 10 * n + 1;
   }
-  w_playback.rangeSelected = n;
+  rangePlaybackSelected = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -392,12 +424,14 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
       JSONObject playbackFile = recentFilesArray.getJSONObject(i);
       playbackFile.setInt("recentFileNumber", recentFilesArray.size()-(i-1));
       playbackFile.setString("id", playbackFile.getString("id"));
+      playbackFile.setString("filePath", playbackFile.getString("filepath"));
       recentFilesArray.setJSONObject(i, playbackFile);
     }
     //save selected playback file to position 1 in recent file history
     JSONObject mostRecentFile = new JSONObject();
     mostRecentFile.setInt("recentFileNumber", 1);
     mostRecentFile.setString("id", playbackData_ShortName);
+    mostRecentFile.setString("filePath", playbackData_fname);
     recentFilesArray.append(mostRecentFile);
     //remove entries greater than 100
     if (recentFilesArray.size() >= maxNumHistoryFiles) {
@@ -422,20 +456,28 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
     JSONObject mostRecentFile = new JSONObject();
     mostRecentFile.setInt("recentFileNumber", 1);
     mostRecentFile.setString("id", fileNameToAdd);
+    mostRecentFile.setString("filePath", playbackData_fname);
     newHistoryFileArray.setJSONObject(0, mostRecentFile);
     //newHistoryFile.setJSONArray("")
 
     //save the JSON array and file
     newHistoryFile.setJSONArray("playbackFileHistory", newHistoryFileArray);
     saveJSONObject(newHistoryFile, userPlaybackHistoryFile);
+
+    //set the dropdown menu array for range select
+    rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[0]);
+
+    //now the file exists!
+    println("Playback history JSON has been made!");
+    playbackHistoryFileExists = true;
   }
 
 
   //make sure the dropdown list shows the correct ranges
-  //w_playback.maxRangeSelect = recentFilesArray.size()/10;
+  //w_playback.maxRangePlaybackSelect = recentFilesArray.size()/10;
   /*
   if (newArraySize > oldArraySize && oldArraySize%10 >= 1) {
-    String itemToAdd = rangeSelectStringArray[maxRangeSelect];
+    String itemToAdd = rangeSelectStringArray[maxRangePlaybackSelect];
     cp5.get(ScrollableList.class, "pbRecentRange").clear();
     cp5.get(ScrollableList.class, "pbRecentRange").addItem(itemToAdd, "pbRecentRange");
   }

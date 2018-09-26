@@ -95,14 +95,22 @@ void playbackSelectedControlPanel(File selection) {
     outputSuccess("You have selected \""
     + selection.getName() + "\" for playback. "
     + str(nchan) + " channels found.");
-    //Try to load user playback history JSON file, set whether it exists or not
+    //look at the JSON file to set the range menu using number of recent file entries
     try {
-      JSONObject tmpCheckJSON = loadJSONObject(userPlaybackHistoryFile);
+      savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+      JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
+      maxRangePlaybackSelect = recentFilesArray.size()/10;
+
+      for (int i = 0; i <= maxRangePlaybackSelect; i++) {
+        rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[i]);
+      }
       playbackHistoryFileExists = true;
     } catch (NullPointerException e) {
-      println("Playback history JSON file does not exist. Load first file to make it.");
+      //println("Playback history JSON file does not exist. Load first file to make it.");
       playbackHistoryFileExists = false;
     }
+    //add playback file that was processed to the JSON history
+    savePlaybackFileToHistory(playbackData_ShortName);
   }
 }
 

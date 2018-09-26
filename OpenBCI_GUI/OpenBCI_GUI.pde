@@ -364,6 +364,10 @@ final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.j
 boolean playbackHistoryFileExists = false;
 String playbackData_ShortName;
 String[] rangeSelectStringArray = {"1-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
+int fileSelectTabsInt = 1;
+int rangePlaybackSelected = 0; //this var is the range the user has selected
+int maxRangePlaybackSelect = 1; //max number of range tabs
+String[] rangePlaybackSelectArray = {};
 
 //------------------------------------------------------------------------
 //                       Global Functions
