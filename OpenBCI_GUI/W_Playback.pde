@@ -381,7 +381,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
 
   int maxNumHistoryFiles = 100;
   if (playbackHistoryFileExists) {
-    println("playbackFileFound");
+    println("Found user playback file!");
     //do this if the file exists
     savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
     JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
@@ -413,7 +413,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
     saveJSONObject(savePlaybackHistoryJSON, userPlaybackHistoryFile);
 
   } else if (!playbackHistoryFileExists) {
-    println("playback history file not found. making a new one.");
+    println("Playback history file not found. making a new one.");
     //do this if the file does not exist
     JSONObject newHistoryFile;
     newHistoryFile = new JSONObject();
