@@ -182,15 +182,20 @@ class W_playback extends Widget {
           numFilesToShow = loadPlaybackHistoryJSONArray.size();
           playbackNumButtonsToDraw = loadPlaybackHistoryJSONArray.size();
           fileSelectTabsInt = 1;
-        } else if (loadPlaybackHistoryJSONArray.size() > 10 && loadPlaybackHistoryJSONArray.size()%10 != 0 && rangePlaybackSelected == maxRangePlaybackSelect) {
+        } else if (rangePlaybackSelected == 0 && loadPlaybackHistoryJSONArray.size() > 10) {
+          numFilesToShow = 10;
+          playbackNumButtonsToDraw = 10;
+        } else if (rangePlaybackSelected > 0
+        && rangePlaybackSelected == maxRangePlaybackSelect) {
           //fileSelectTabsInt changes when user selects playback range from dropdown
           numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10; //if set to max, show the remainer only
           playbackNumButtonsToDraw = loadPlaybackHistoryJSONArray.size()%10; //and draw the remainder
-        } else if (loadPlaybackHistoryJSONArray.size()%10 == 0) {
-          numFilesToShow = 10;
-          playbackNumButtonsToDraw = 10;
-        } else if (rangePlaybackSelected == 0 && loadPlaybackHistoryJSONArray.size() > 10) {
-          numFilesToShow = 10;
+        //} else if (loadPlaybackHistoryJSONArray.size()%10 == 0) {
+        //  numFilesToShow = 10;
+        //  playbackNumButtonsToDraw = 10;
+        } else if (rangePlaybackSelected > 0
+        && rangePlaybackSelected < maxRangePlaybackSelect) {
+          numFilesToShow = fileSelectTabsInt + 10;
           playbackNumButtonsToDraw = 10;
         }
         //println ("min = " + int(loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt)
@@ -232,6 +237,7 @@ class W_playback extends Widget {
             }
 
             currentFileNameToDraw++;
+            if (currentFileNameToDraw > 9) currentFileNameToDraw = 9;
           }
         } else { //if there is only 1 file in the playback history file...
           JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(0);
