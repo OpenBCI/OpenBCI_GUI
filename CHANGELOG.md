@@ -5,6 +5,8 @@ Use OpenBCIHub v2.0.0 please.
 ### New Features
 
 * Timestamps in CSV now come from the OpenBCIHub
+* Playback widget with recent file history
+* Update GUI button and version check
 
 ### Breaking Changes
 
