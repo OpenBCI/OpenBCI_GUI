@@ -151,19 +151,14 @@ class W_playback extends Widget {
 
     //check if user has clicked on the select playback file button
     if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.isActive) {
-      //playbackData_fname = "N/A"; //reset the filename variable
-      //has_processed = false; //reset has_processed variable
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
     }
     selectPlaybackFileButton.setIsActive(false);
-
-
   } // end mouse Released
 
   void updatePlaybackWidgetButtons() {
     //Used to show 10 of 100 latest playback files
-
     int numFilesToShow = 10;
     //Load the JSON array for playback history
     if (playbackHistoryFileExists) {
@@ -247,29 +242,9 @@ class W_playback extends Widget {
           //store to arrays to set recent playback buttons text and function
           shortFileNames[currentFileNameToDraw] = shortFileName;
           longFilePaths[currentFileNameToDraw] = longFilePath;
-          /*
-          //Set up the string that will be displayed for each recent file
-          int digitPadding = 0;
-          if (fileNumber == 100) {
-            digitPadding = 3;
-          } else if (fileNumber >= 10 && fileNumber <= 99) {
-            digitPadding = 2;
-          } else if (fileNumber <= 9) {
-            digitPadding = 1;
-          }
-          String fileNumberString = nfs(fileNumber, digitPadding) + ". ";
-          */
-
-          /*
-          fill(bgColor);
-          textAlign(LEFT, TOP);
-          textFont(p1, 20);
-          //Draw the text for each fileName
-          text(fileNumberString + shortFileName, x + padding, y + (currentFileNameToDraw * padding * 2.9));
-          */
-
+          //set the text of the first button
           selectRecentFileButtons[0].setString(shortFileNames[0]);
-
+          //increment which file name to draw
           currentFileNameToDraw++;
         }
 
@@ -472,14 +447,12 @@ void reinitializeCoreDataAndFFTBuffer() {
   prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 
   //verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
-  //verbosePrint("W_Playback: initSystem: Initializing FFT data objects");
 
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
     // verbosePrint("Init FFT Buff – " + Ichan);
     fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
   }  //make the FFT objects
-
   //printArray(fftBuff);
 
   //Attempt initialization. If error, print to console and exit function.
@@ -492,7 +465,7 @@ void reinitializeCoreDataAndFFTBuffer() {
     return;
   }
 
-  //verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+  //verbosePrint("W_Playback: initSystem: -- Init 2 -- " + millis());
 
   //Update the number of channels for FFT
   w_fft.fft_points = null;
@@ -572,7 +545,6 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
     println("Playback history JSON has been made!");
     playbackHistoryFileExists = true;
   }
-
 
   //make sure the dropdown list shows the correct ranges
   //w_playback.maxRangePlaybackSelect = recentFilesArray.size()/10;
