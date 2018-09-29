@@ -10,7 +10,19 @@ Use OpenBCIHub v2.0.0 please.
 
 * Now sending and receiving from the hub in JSON!
 
-### Alpha 0
+## Alpha 2
+
+### Bug fixes
+
+* Ganglion did not work
+* Ganglion accel did not work
+* Ganglion over bled112 did not work
+
+## Alpha 1
+
+* Initial Release with an error
+
+## Alpha 0
 
 * Initial Release
 
