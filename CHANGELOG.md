@@ -12,6 +12,11 @@ Use OpenBCIHub v2.0.0 please.
 
 * Now sending and receiving from the hub in JSON!
 
+### Alpha 2
+
+* Added playback widget to address #48 #55
+* Added button to check version and update GUI
+
 ### Alpha 0
 
 * Initial Release
