@@ -114,6 +114,10 @@ void playbackSelectedControlPanel(File selection) {
   }
 }
 
+//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
+//Currently looks at the total number of Columns
+//Maybe try counting the number of columns after first index and before X...
+//...where X is the unique data type that occurs after last channel
 void determineNumChanFromFile(Table datatable) {
   switch (datatable.getColumnCount()) {
     case (totalColumnsFourChannels):
@@ -126,7 +130,6 @@ void determineNumChanFromFile(Table datatable) {
       updateToNChan(16);
       break;
   }
-  //outputSuccess(str(datatable.getColumnCount()));
 }
 
 void closeLogFile() {

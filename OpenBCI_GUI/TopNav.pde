@@ -5,7 +5,6 @@
 //
 //  Edited by Richard Waltman 9/24/18
 //  Added feature to check GUI version using "latest version" tag on Github
-//
 ///////////////////////////////////////////////////////////////////////////////////////
 
 import java.awt.Desktop;
@@ -17,7 +16,6 @@ TopNav topNav;
 class TopNav {
 
   // PlotFontInfo fontInfo;
-
   Button controlPanelCollapser;
 
   Button fpsButton;
@@ -32,8 +30,6 @@ class TopNav {
   Button shopButton;
   Button issuesButton;
   Button updateGuiVersionButton;
-
-
   Button layoutButton;
   Button configButton;
 
@@ -48,7 +44,6 @@ class TopNav {
   int localGUIVersionInt;
   Boolean guiVersionIsUpToDate;
   Boolean unableToFindPlistFile;
-
 
   //constructor
   TopNav() {
