@@ -104,7 +104,7 @@ final static String TCP_JSON_KEY_STOP_BYTE = "stopByte";
 final static String TCP_JSON_KEY_TIMESTAMP = "timestamp";
 final static String TCP_JSON_KEY_TYPE = "type";
 
-final static String TCP_TYPE_ACCEL = "accel";
+final static String TCP_TYPE_ACCEL = "accelerometer";
 final static String TCP_TYPE_BOARD_TYPE = "boardType";
 final static String TCP_TYPE_CHANNEL_SETTINGS = "channelSettings";
 final static String TCP_TYPE_COMMAND = "command";
@@ -340,7 +340,6 @@ class Hub {
       JSONObject json = new JSONObject();
       json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_STATUS);
       writeJSON(json);
-      // write(TCP_CMD_STATUS + TCP_STOP);
       waitingForResponse = true;
       return true;
     } catch (NullPointerException E) {
@@ -408,7 +407,6 @@ class Hub {
 
   private void writeJSON(JSONObject json) {
     write(json.toString() + TCP_STOP);
-    println("OUTPUT >>>>>>> \n" + json);
   }
 
   private void handleError(int code, String msg) {
@@ -422,7 +420,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_BOARD_TYPE);
     json.setString(TCP_JSON_KEY_BOARD_TYPE, boardType);
     writeJSON(json);
-    // write(TCP_CMD_BOARD_TYPE + "," + boardType + TCP_STOP);
   }
 
   private void processBoardType(JSONObject json) {
@@ -557,7 +554,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_COMMAND);
     json.setString(TCP_JSON_KEY_COMMAND, Character.toString(c));
     writeJSON(json);
-    // write(TCP_CMD_COMMAND + "," + c + TCP_STOP);
   }
 
   /**
@@ -569,7 +565,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_COMMAND);
     json.setString(TCP_JSON_KEY_COMMAND, s);
     writeJSON(json);
-    // write(TCP_CMD_COMMAND + "," + s + TCP_STOP);
   }
 
   public void processCommand(JSONObject json) {
@@ -610,9 +605,8 @@ class Hub {
 
   public void processData(JSONObject json) {
     try {
-      // println(msg);
       int code = json.getInt(TCP_JSON_KEY_CODE);
-      int stopByte = 0xC0; //<>//
+      int stopByte = 0xC0;
       if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
         if (code == RESP_SUCCESS_DATA_SAMPLE) {
           // Sample number stuff
@@ -960,7 +954,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_COMMAND, sdSettingStr);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_SD);
     writeJSON(json);
-    // write(TCP_CMD_SD + "," + TCP_ACTION_START + "," + sdSettingStr + TCP_STOP);
   }
 
   private void processSDCard(JSONObject json) {
@@ -1041,17 +1034,7 @@ class Hub {
       // defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
       // daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
       println("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
-      // write('v');
     }
-
-    //if we are in SYNC WITH HARDWARE state ... trigger a command
-    // if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
-    //   if (millis() - timeOfLastCommand > 200) {
-    //     timeOfLastCommand = millis();
-    //     // hardwareSyncStep++;
-    //     cyton.syncWithHardware(sdSetting);
-    //   }
-    // }
   }
 
   public void closePort() {
@@ -1073,7 +1056,6 @@ class Hub {
 
   // CONNECTION
   public void connectBLE(String id) {
-    // write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_NAME, id);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
@@ -1087,7 +1069,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_BLE);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
     writeJSON(json);
-    // write(TCP_CMD_DISCONNECT + "," + PROTOCOL_BLE + "," + TCP_STOP);
   }
 
   public void connectWifi(String id) {
@@ -1098,7 +1079,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_NAME, id);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
     writeJSON(json);
-    // write(TCP_CMD_CONNECT + "," + id + "," + requestedSampleRate + "," + curLatency + "," + curInternetProtocol + TCP_STOP);
     verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
   }
 
@@ -1107,7 +1087,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_NAME, id);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_EXAMINE);
     writeJSON(json);
-    // write(TCP_CMD_EXAMINE + "," + id + TCP_STOP);
   }
 
   public int disconnectWifi() {
@@ -1116,13 +1095,11 @@ class Hub {
     json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_WIFI);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
     writeJSON(json);
-    // write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_WIFI + "," +  TCP_STOP);
     return 0;
   }
 
   public void connectSerial(String id) {
     waitingForResponse = true;
-    // write(TCP_CMD_CONNECT + "," + id + TCP_STOP);
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_SERIAL);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
@@ -1139,7 +1116,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_SERIAL);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_DISCONNECT);
     writeJSON(json);
-    // write(TCP_CMD_DISCONNECT +  "," + PROTOCOL_SERIAL + "," +  TCP_STOP);
     return 0;
   }
 
@@ -1150,7 +1126,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_PROTOCOL, curProtocol);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_PROTOCOL);
     writeJSON(json);
-    // write(TCP_CMD_PROTOCOL + ",start," + curProtocol + TCP_STOP);
   }
 
   public int getSampleRate() {
@@ -1168,12 +1143,7 @@ class Hub {
     json.setString(TCP_JSON_KEY_ACTION, info);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_WIFI);
     writeJSON(json);
-    // write(TCP_CMD_WIFI + "," + info + TCP_STOP);
   }
-
-  // public void setWifiInfo(String info, int value) {
-  //   write(TCP_CMD_WIFI + "," + info + "," + value + TCP_STOP);
-  // }
 
   private void processWifi(JSONObject json) {
     String action = "";
@@ -1275,7 +1245,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_SCAN);
     writeJSON(json);
-    // write(TCP_CMD_SCAN + ',' + TCP_ACTION_START + TCP_STOP);
   }
 
   public void searchDeviceStop() {
@@ -1283,7 +1252,6 @@ class Hub {
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_STOP);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_SCAN);
     writeJSON(json);
-    // write(TCP_CMD_SCAN + ',' + TCP_ACTION_STOP + TCP_STOP);
   }
 
   public boolean searchDeviceAdd(String localName) {

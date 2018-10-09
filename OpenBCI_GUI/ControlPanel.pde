@@ -1303,7 +1303,7 @@ class ControlPanel {
         println("Protocol BLED112 Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLED112);
-        hub.searchDeviceStart();
+        // hub.searchDeviceStart();
       } else {
         outputWarn("Please wait till hub is fully initalized");
       }
