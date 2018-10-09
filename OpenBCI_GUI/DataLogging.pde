@@ -119,17 +119,16 @@ void playbackSelectedControlPanel(File selection) {
 //Maybe try counting the number of columns after first index and before X...
 //...where X is the unique data type that occurs after last channel
 void determineNumChanFromFile(Table datatable) {
-  switch (datatable.getColumnCount()) {
-    case (totalColumnsFourChannels):
-      updateToNChan(4);
-      break;
-    case (totalColumnsEightChannels):
-      updateToNChan(8);
-      break;
-    case (totalColumnsSixteenChannels):
-      updateToNChan(16);
-      break;
+  int numColumnsPlaybackFile = datatable.getColumnCount();
+  int numChannelsFoundInPlaybackFile;
+  if (numColumnsPlaybackFile > totalColumns16ChanThresh) {
+    numChannelsFoundInPlaybackFile = 16;
+  } else if (numColumnsPlaybackFile <= totalColumns4ChanThresh) {
+    numChannelsFoundInPlaybackFile = 4;
+  } else {
+    numChannelsFoundInPlaybackFile = 8;
   }
+  updateToNChan(numChannelsFoundInPlaybackFile);
 }
 
 void closeLogFile() {
