@@ -5,6 +5,8 @@ Use OpenBCIHub v2.0.0 please.
 ### New Features
 
 * Timestamps in CSV now come from the OpenBCIHub
+* Playback widget with recent file history
+* Update GUI button and version check
 
 ### Breaking Changes
 
@@ -17,6 +19,8 @@ Use OpenBCIHub v2.0.0 please.
 * Ganglion did not work
 * Ganglion accel did not work
 * Ganglion over bled112 did not work
+* Added playback widget to address #48 #55
+* Added button to check version and update GUI
 
 ## Alpha 1
 

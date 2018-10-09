@@ -266,29 +266,29 @@ void parseKey(char val) {
         println ("chan " + i + " bias include");
       }
       break;
-         
+
     ///////////////////// Save settings lowercase n
-    case 'n':      
-      println("Save key pressed!"); 
+    case 'n':
+      println("Save key pressed!");
       switch(eegDataSource) {
         case DATASOURCE_CYTON:
-          userSettingsFileToSave = cytonDefaultSettingsFile;
+          userSettingsFileToSave = cytonUserSettingsFile;
           break;
         case DATASOURCE_GANGLION:
-          userSettingsFileToSave = ganglionDefaultSettingsFile;
+          userSettingsFileToSave = ganglionUserSettingsFile;
           break;
         case DATASOURCE_PLAYBACKFILE:
-          userSettingsFileToSave = playbackDefaultSettingsFile;
+          userSettingsFileToSave = playbackUserSettingsFile;
           break;
         case DATASOURCE_SYNTHETIC:
-          userSettingsFileToSave = syntheticDefaultSettingsFile;
+          userSettingsFileToSave = syntheticUserSettingsFile;
           break;
       }
       saveGUISettings(userSettingsFileToSave);
       outputSuccess("Settings Saved!");
       break;
-      
-    ///////////////////// Load settings uppercase N     
+
+    ///////////////////// Load settings uppercase N
     case 'N':
       println("Load key pressed!");
       loadErrorTimerStart = millis();

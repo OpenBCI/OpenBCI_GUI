@@ -79,13 +79,56 @@ void openNewLogFileODF(String _fileName) {
  *  biosemi data format.
  * @param `_fileName` {String} - The meat of the file name
  */
-void playbackSelected(File selection) {
+void playbackSelectedControlPanel(File selection) {
   if (selection == null) {
     println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
   } else {
     println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
-    output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
+    //Set the name of the file
     playbackData_fname = selection.getAbsolutePath();
+    playbackData_ShortName = selection.getName();
+    //Process the playback file
+    processNewPlaybackFile();
+    //Determine the number of channels
+    determineNumChanFromFile(playbackData_table);
+    //Output new playback settings to GUI as success
+    outputSuccess("You have selected \""
+    + selection.getName() + "\" for playback. "
+    + str(nchan) + " channels found.");
+    //look at the JSON file to set the range menu using number of recent file entries
+    try {
+      savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+      JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
+      maxRangePlaybackSelect = recentFilesArray.size()/10;
+
+      for (int i = 0; i <= maxRangePlaybackSelect; i++) {
+        rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[i]);
+      }
+      playbackHistoryFileExists = true;
+    } catch (NullPointerException e) {
+      //println("Playback history JSON file does not exist. Load first file to make it.");
+      playbackHistoryFileExists = false;
+    }
+    //add playback file that was processed to the JSON history
+    savePlaybackFileToHistory(playbackData_ShortName);
+  }
+}
+
+//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
+//Currently looks at the total number of Columns
+//Maybe try counting the number of columns after first index and before X...
+//...where X is the unique data type that occurs after last channel
+void determineNumChanFromFile(Table datatable) {
+  switch (datatable.getColumnCount()) {
+    case (totalColumnsFourChannels):
+      updateToNChan(4);
+      break;
+    case (totalColumnsEightChannels):
+      updateToNChan(8);
+      break;
+    case (totalColumnsSixteenChannels):
+      updateToNChan(16);
+      break;
   }
 }
 

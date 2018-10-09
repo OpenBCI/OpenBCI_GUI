@@ -29,7 +29,7 @@ void process_input_file() throws Exception {
   index_of_times = new HashMap<Integer, String>();
   index_of_times_rev = new HashMap<String, Integer>();
   float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
-
+  indices = 0;
   try {
     while (!hasRepeated) {
       currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
