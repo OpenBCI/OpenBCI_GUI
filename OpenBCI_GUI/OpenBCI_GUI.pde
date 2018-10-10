@@ -351,7 +351,7 @@ Boolean loadErrorCytonEvent = false;
 Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
 final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
-//Used to check GUI version in TopNav.pde and displayedon the splash screen on startup
+//Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
 String localGUIVersionString = "v4.0.0-alpha.2";
 String localGUIVersionDate = "September 2018";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
