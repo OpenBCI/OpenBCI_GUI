@@ -94,15 +94,21 @@ class TopNav {
     butNum = 4;
     updateGuiVersionButton = new Button(width - 3*(butNum) - 80 - issuesButton.but_dx - tutorialsButton.but_dx - shopButton.but_dx, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
     //Lookup and check the local GUI version against the latest Github release
-    loadGUIVersionData();
-    //Print the message to the button help text that appears when mouse hovers over button
-    if (!guiVersionCheckHasOccured) {
-      if (guiVersionIsUpToDate) {
-        updateGuiVersionButton.setHelpText("GUI is up to date!");
-      } else {
-        updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
+    try {
+      loadGUIVersionData();
+      //Print the message to the button help text that appears when mouse hovers over button
+      if (!guiVersionCheckHasOccured) {
+        if (guiVersionIsUpToDate) {
+          updateGuiVersionButton.setHelpText("GUI is up to date!");
+        } else {
+          updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
+        }
+        guiVersionCheckHasOccured = true;
       }
-      guiVersionCheckHasOccured = true;
+    } catch (NullPointerException e)  {
+      //e.printStackTrace();
+      //If github is unreachable, catch the error update button help text
+      updateGuiVersionButton.setHelpText("Connect to internet to check GUI version.");
     }
     //Pressing the button opens web browser to Github latest release page
     updateGuiVersionButton.setURL(guiLatestReleaseLocation);
