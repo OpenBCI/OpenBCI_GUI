@@ -349,6 +349,7 @@ int loadErrorTimerStart;
 int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
 Boolean loadErrorCytonEvent = false;
 Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
+final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
 //Used to check GUI version in TopNav.pde and displayedon the splash screen on startup
 String localGUIVersionString = "v4.0.0-alpha.2";
@@ -1412,7 +1413,7 @@ void systemDraw() { //for drawing to the screen
       output("");
     }
 
-    if (millis() - timeOfInit > 12000) {
+    if (millis() - timeOfInit > initTimeoutThreshold) {
       haltSystem();
       initSystemButton.but_txt = "START SYSTEM";
       output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
