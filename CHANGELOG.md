@@ -14,6 +14,10 @@ Use OpenBCIHub v2.0.0 please.
 
 ## Alpha 2
 
+### New features
+
+* Add number of channels to output of odf files.
+
 ### Bug fixes
 
 * Ganglion did not work

@@ -273,7 +273,7 @@ public class OutputFile_rawtxt {
 
   public void writeHeader(float fs_Hz) {
     output.println("%OpenBCI Raw EEG Data");
-    output.println("%");
+    output.println("%Number of channels = " + nchan);
     output.println("%Sample Rate = " + fs_Hz + " Hz");
     output.println("%First Column = SampleIndex");
     output.println("%Last Column = Timestamp ");
