@@ -246,8 +246,11 @@ ButtonHelpText buttonHelpText;
 boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
-
+//Used for playback file
 int indices = 0;
+//# columns used by a playback file determines number of channels
+final int totalColumns4ChanThresh = 8;
+final int totalColumns16ChanThresh = 16;
 
 boolean synthesizeData = false;
 
@@ -291,7 +294,7 @@ int dataProcessingBandpassSave = 3;
 //Time Series settings
 int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
-String checkForSuccessTS;
+int checkForSuccessTS = 0;
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;
@@ -343,8 +346,28 @@ String loadSettingsDialogName; //Used when Load button is pressed
 String controlEventDataSource; //Used for output message on system start
 Boolean errorUserSettingsNotFound = false; //For error catching
 int loadErrorTimerStart;
-int loadErrorTimeWindow = 3800; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
+int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
 Boolean loadErrorCytonEvent = false;
+Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
+final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
+
+//Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
+String localGUIVersionString = "v4.0.0-alpha.2";
+String localGUIVersionDate = "September 2018";
+String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+Boolean guiVersionCheckHasOccured = false;
+
+//Used mostly in W_playback.pde
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.json";
+boolean playbackHistoryFileExists = false;
+String playbackData_ShortName;
+String[] rangeSelectStringArray = {"1-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
+int fileSelectTabsInt = 1;
+int rangePlaybackSelected = 0; //this var is the range the user has selected
+int maxRangePlaybackSelect = 1; //max number of range tabs
+String[] rangePlaybackSelectArray = {};
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -354,15 +377,25 @@ Boolean loadErrorCytonEvent = false;
 
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
+void settings() {
+  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
+  //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
+  //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+  if (displayWidth == 1366 && displayHeight == 768) {
+    size(976, 549, P2D);
+  } else {
+    //default 1024x768 resolution with 2D graphics
+    size(1024, 768, P2D);
+  }
+}
+
 void setup() {
   if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
   hubInit(); // putting down here gives windows time to close any open apps
 
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("Last update: 9/5/2016"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
   //open window
-  size(1024, 768, P2D);
   ourApplet = this;
 
   if(frameRateCounter==0){
@@ -680,6 +713,7 @@ void setupWidgetManager() {
   wm = new WidgetManager(this);
 }
 
+//Initialize the system
 void initSystem() {
   println();
   println();
@@ -695,21 +729,11 @@ void initSystem() {
   //prepare data variables
   verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
 
+  //initialize playback file if necessary
   if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-    //open and load the data file
-    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
-    try {
-      playbackData_table = new Table_CSV(playbackData_fname);
-      playbackData_table.removeColumn(0);
-    } catch (Exception e) {
-      println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-      println("   : quitting...");
-      hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
-    }
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
-    //removing first column of data from data file...the first column is a time index and not eeg data
-
+    initPlaybackFileToTable(); //found in W_Playback.pde
   }
+
   verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
   // Nfft = getNfftSafe();
@@ -912,7 +936,7 @@ void initSystem() {
   //Output messages when Loading settings is complete
   if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-    if (eegDataSource == DATASOURCE_SYNTHETIC) {
+    if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
       outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
     }
   } else if (chanNumError) {
@@ -929,10 +953,13 @@ void initSystem() {
     outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
   }
 
+  //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
+  settingsLoadedCheck = true;
+
   //reset init variables
   midInit = false;
   abandonInit = false;
-}
+} //end initSystem
 
 /**
  * @description Useful function to get the correct sample rate based on data source
@@ -1105,6 +1132,7 @@ void haltSystem() {
   indices = 0;
   hasRepeated = false;
   has_processed = false;
+  settingsLoadedCheck = false; //on halt, reset this value
 
   //reset connect loadStrings
   openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
@@ -1216,9 +1244,11 @@ void systemUpdate() { // for updating data values and variables
       pointCounter = 0;
       try {
         process_input_file();
+        println("^^^GUI update process file has occurred");
       }
       catch(Exception e) {
         isOldData = true;
+        println("^^^Error processing timestamps");
         output("Error processing timestamps, are you using old data?");
       }
     }
@@ -1383,7 +1413,7 @@ void systemDraw() { //for drawing to the screen
       output("");
     }
 
-    if (millis() - timeOfInit > 12000) {
+    if (millis() - timeOfInit > initTimeoutThreshold) {
       haltSystem();
       initSystemButton.but_txt = "START SYSTEM";
       output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
@@ -1432,7 +1462,9 @@ void introAnimation() {
     textLeading(24);
     fill(31, 69, 110, transparency);
     textAlign(CENTER, CENTER);
-    text("OpenBCI GUI v3.4.0\nAugust 2018", width/2, height/2 + width/9);
+    String displayVersion = "OpenBCI GUI " + localGUIVersionString;
+    text(displayVersion, width/2, height/2 + width/9);
+    text(localGUIVersionDate, width/2, height/2 + ((width/8) * 1.125));
   }
 
   //exit intro animation at t2
