@@ -11,10 +11,12 @@
                        Created: Richard Waltman - May/June 2018
 
     -- Start System first!
-    -- Capital 'S' to Save
-    -- Capital 'L' to Load
-    -- Functions SaveGUIsettings() and loadGUISettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
-    -- Functions are also called in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
+    -- Lowercase 'n' to Save
+    -- Capital 'N' to Load
+    -- Functions saveGUIsettings() and loadGUISettings() are called:
+        - during system initialization between checkpoints 4 and 5
+        - in Interactivty.pde with the rest of the keyboard shortcuts
+        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
     -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
     -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
 */
@@ -223,13 +225,9 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
     for (int i = 0; i < slnchan; i++) { //For all channels...
       //Make a JSON Object for each of the Time Series Channels
       JSONObject saveTimeSeriesSettings = new JSONObject();
-      for (int j = 0; j < 1; j++) {
-        switch(j) {
-          case 0: //Just save what channels are active
-            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Get integer value from char array channelSettingValues
-            break;
-          }
-      }
+      //Get integer value from char array channelSettingValues
+      tsActiveSetting = Character.getNumericValue(channelSettingValues[i][0]);
+      tsActiveSetting ^= 1;
       saveTimeSeriesSettings.setInt("Channel_Number", (i+1));
       saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
       saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
@@ -1057,24 +1055,26 @@ void loadApplyTimeSeriesSettings() {
     if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
+      //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
       int active = loadTSChannelSettings.getInt("Active");
       //println("Ch " + channel + ", " + channelsActiveArray[active]);
-      if (active == 0) {
+      if (active == 1) {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[channel]);
-          hub.sendCommand(command_activate_channel[channel]);
-          w_timeSeries.hsc.powerUpChannel(channel);
+          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
+          hub.sendCommand(command_activate_channel[i]);
+          w_timeSeries.hsc.powerUpChannel(i);
         }
         w_timeSeries.channelBars[i].isOn = true;
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
+        channelSettingValues[i][0] = '0';
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
       } else {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[channel]);
-          hub.sendCommand(command_deactivate_channel[channel]);
-          w_timeSeries.hsc.powerDownChannel(channel);
+          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
+          hub.sendCommand(command_deactivate_channel[i]);
+          w_timeSeries.hsc.powerDownChannel(i);
         }
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
+        channelSettingValues[i][0] = '1';
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
     }
