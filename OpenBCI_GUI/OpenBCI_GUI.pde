@@ -249,7 +249,7 @@ boolean isOldData = false;
 //Used for playback file
 int indices = 0;
 //# columns used by a playback file determines number of channels
-final int totalColumns4ChanThresh = 8;
+final int totalColumns4ChanThresh = 10;
 final int totalColumns16ChanThresh = 16;
 
 boolean synthesizeData = false;
@@ -352,7 +352,7 @@ Boolean settingsLoadedCheck = false; //Used to determine if settings are done lo
 final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.0.2";
+String localGUIVersionString = "v4.0.3";
 String localGUIVersionDate = "November 2018";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
