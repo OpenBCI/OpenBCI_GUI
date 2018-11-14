@@ -1,3 +1,16 @@
+# v4.0.3
+
+Use OpenBCIHub v2.0.3 please.
+
+### Bug Fixes
+
+* Ganglion did not work for Mojave #402
+* Ganglion could not do playback file #399
+
+## Beta 0
+
+* Initial Release
+
 # v4.0.2
 
 Use OpenBCIHub v2.0.2 please.
