@@ -895,7 +895,8 @@ void initSystem() {
   }
   saveGUISettings(defaultSettingsFileToSave);
 
-  //Try Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization. Otherwise, load default settings.
+  //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
+  //Otherwise, load default settings.
   loadErrorTimerStart = millis();
   try {
     switch(eegDataSource) {
