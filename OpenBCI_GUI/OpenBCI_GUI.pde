@@ -462,7 +462,7 @@ void setup() {
   //from the user's perspective, the program hangs out on the ControlPanel until the user presses "Start System".
   print("Graphics & GUI Library: ");
   controlPanel = new ControlPanel(this);
-  //The effect of "Start System" is that initSystem() gets called, which starts up the conneciton to the OpenBCI
+  //The effect of "Start System" is that initSystem() gets called, which starts up the connection to the OpenBCI
   //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.
   //Once the hardware is synchronized, the main GUI is drawn and the user switches over to the main GUI.
 
