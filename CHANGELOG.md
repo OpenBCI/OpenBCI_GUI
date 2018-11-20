@@ -6,6 +6,7 @@ Use OpenBCIHub v2.0.3 please.
 
 * Ganglion did not work for Mojave #402
 * Ganglion could not do playback file #399
+* Add GUI version info to Update button help text #407
 
 ## Beta 0
 
