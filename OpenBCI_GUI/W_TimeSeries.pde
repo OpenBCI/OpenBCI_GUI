@@ -30,7 +30,7 @@ class W_timeSeries extends Widget {
   ChannelBar[] channelBars;
   PlaybackScrollbar scrollbar;
 
-  int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   int xLim = xLimOptions[1];  //start at 5s
@@ -59,7 +59,7 @@ class W_timeSeries extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
     addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
-    addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), tsHorizScaleSave);
+    addDropdown("Duration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), tsHorizScaleSave);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
@@ -346,26 +346,13 @@ void VertScale_TS(int n) {
   }
 }
 
-//triggered when there is an event in the LogLin Dropdown
+//triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
   tsHorizScaleSave = n;
-  // println("adjust duration to: ");
-  if(n==0){ //set time series x axis to 1 secconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(1);
-    }
-  } else if(n==1){ //set time series x axis to 3 secconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(3);
-    }
-  } else if(n==2){ //set to 5 seconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(5);
-    }
-  } else if(n==3){ //set to 7 seconds (max due to arry size ... 2000 total packets saved)
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(7);
-    }
+  // println("adjust duration to: " + xLimOptions[n]);
+  //set time series x axis to the duration selected from dropdown
+  for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    w_timeSeries.channelBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
   }
   closeAllDropdowns();
 }
@@ -615,6 +602,13 @@ class ChannelBar{
     plot.setXLim(-_newTimeSize,0);
 
     nPoints = nPointsBasedOnDataSource();
+    //println("npoints = " + nPoints);
+
+    //Change the databuff size
+    //displayTime_sec = float(_newTimeSize);    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+    //dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
+    //initCoreDataObjects();
+
 
     channelPoints = new GPointsArray(nPoints);
     if(_newTimeSize > 1){

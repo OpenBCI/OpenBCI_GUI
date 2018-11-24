@@ -164,7 +164,7 @@ float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
 
-float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
@@ -295,6 +295,7 @@ int dataProcessingBandpassSave = 3;
 int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
 int checkForSuccessTS = 0;
+String[] timeSeriesHorizScaleStrArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;
@@ -736,34 +737,7 @@ void initSystem() {
 
   verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
-  // Nfft = getNfftSafe();
-  nDataBackBuff = 3*(int)getSampleRateSafe();
-  dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
-  nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
-  dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
-  dataBuffY_uV = new float[nchan][dataBuffX.length];
-  dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
-  yLittleBuff = new float[nPointsPerUpdate];
-  yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
-  auxBuff = new float[3][nPointsPerUpdate];
-  accelerometerBuff = new float[3][500]; // 500 points
-  for (int i=0; i<n_aux_ifEnabled; i++) {
-    for (int j=0; j<accelerometerBuff[0].length; j++) {
-      accelerometerBuff[i][j] = 0;
-    }
-  }
-  //data_std_uV = new float[nchan];
-  data_elec_imp_ohm = new float[nchan];
-  is_railed = new DataStatus[nchan];
-  for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
-  for (int i=0; i<nDataBackBuff; i++) {
-    dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
-  }
-  dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
-  dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
-
-  //initialize the data
-  prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+  initCoreDataObjects();
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
   verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
@@ -995,6 +969,37 @@ int getNfftSafe() {
     default:
       return 256;
   }
+}
+
+void initCoreDataObjects() {
+  // Nfft = getNfftSafe();
+  nDataBackBuff = 3*(int)getSampleRateSafe();
+  dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
+  nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
+  dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
+  dataBuffY_uV = new float[nchan][dataBuffX.length];
+  dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  yLittleBuff = new float[nPointsPerUpdate];
+  yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+  auxBuff = new float[3][nPointsPerUpdate];
+  accelerometerBuff = new float[3][500]; // 500 points
+  for (int i=0; i<n_aux_ifEnabled; i++) {
+    for (int j=0; j<accelerometerBuff[0].length; j++) {
+      accelerometerBuff[i][j] = 0;
+    }
+  }
+  //data_std_uV = new float[nchan];
+  data_elec_imp_ohm = new float[nchan];
+  is_railed = new DataStatus[nchan];
+  for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
+  for (int i=0; i<nDataBackBuff; i++) {
+    dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
+  }
+  dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
+  dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
+
+  //initialize the data
+  prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 }
 
 void startRunning() {

@@ -23,7 +23,7 @@ class W_AnalogRead extends Widget {
 
   AnalogReadBar[] analogReadBars;
 
-  int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   boolean allowSpillover = false;
@@ -50,7 +50,7 @@ class W_AnalogRead extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
     addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), analogReadStartingVertScaleIndex);
-    addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), analogReadStartingHorizontalScaleIndex);
+    addDropdown("Duration_AR", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), analogReadStartingHorizontalScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //set number of anaolg reads
@@ -246,25 +246,11 @@ void VertScale_AR(int n) {
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration_AR(int n) {
-  // println("adjust duration to: ");
-  if(n==0){ //set time series x axis to 1 secconds
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(1);
-    }
-  } else if(n==1){ //set time series x axis to 3 secconds
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(3);
-    }
-  } else if(n==2){ //set to 5 seconds
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(5);
-    }
-  } else if(n==3){ //set to 7 seconds (max due to arry size ... 2000 total packets saved)
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(7);
-    }
-  }
+  // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
   arHorizScaleSave = n;
+  for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+    w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
+  }
   closeAllDropdowns();
 }
 
