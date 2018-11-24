@@ -164,7 +164,7 @@ float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
 
-float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
@@ -295,7 +295,7 @@ int dataProcessingBandpassSave = 3;
 int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
 int checkForSuccessTS = 0;
-String[] timeSeriesHorizScaleStrArray = {"1 sec", "3 sec", "5 sec", "8 sec", "16 sec"};
+String[] timeSeriesHorizScaleStrArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;

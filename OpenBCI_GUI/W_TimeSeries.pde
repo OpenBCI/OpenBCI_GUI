@@ -30,7 +30,7 @@ class W_timeSeries extends Widget {
   ChannelBar[] channelBars;
   PlaybackScrollbar scrollbar;
 
-  int[] xLimOptions = {1, 3, 5, 8, 16}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   int xLim = xLimOptions[1];  //start at 5s
@@ -536,7 +536,7 @@ class ChannelBar{
     // update data in plot
     if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
       for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
-        float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints));
+        float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
         float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
         // float filt_uV_value = 0.0;
         GPoint tempPoint = new GPoint(time, filt_uV_value);
