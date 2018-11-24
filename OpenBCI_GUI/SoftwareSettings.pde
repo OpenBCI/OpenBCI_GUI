@@ -41,7 +41,7 @@ String [] dataProcessingBPArray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", 
 
 // Used to set text in Time Series dropdown settings
 String[] tsVertScaleArray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
-String[] tsHorizScaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+String[] tsHorizScaleArray = timeSeriesHorizScaleStrArray;
 
 //Used to print the status of each channel in the console when loading settings
 String[] channelsActiveArray = {"Active", "Not Active"};
@@ -65,7 +65,7 @@ String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
 //Used to set text in dropdown menus when loading Analog Read settings
 String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
-String[] arHorizScaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+String[] arHorizScaleArray = timeSeriesHorizScaleStrArray;
 
 //Used to set text in dropdown menus when loading Head Plot settings
 String[] hpIntensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};

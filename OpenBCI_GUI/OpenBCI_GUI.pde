@@ -295,6 +295,7 @@ int dataProcessingBandpassSave = 3;
 int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
 int checkForSuccessTS = 0;
+String[] timeSeriesHorizScaleStrArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;
