@@ -30,7 +30,7 @@ class W_timeSeries extends Widget {
   ChannelBar[] channelBars;
   PlaybackScrollbar scrollbar;
 
-  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {1, 3, 5, 8, 16}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   int xLim = xLimOptions[1];  //start at 5s
@@ -602,7 +602,13 @@ class ChannelBar{
     plot.setXLim(-_newTimeSize,0);
 
     nPoints = nPointsBasedOnDataSource();
-    println("npoints = " + nPoints);
+    //println("npoints = " + nPoints);
+
+    //Change the databuff size
+    //displayTime_sec = float(_newTimeSize);    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+    //dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
+    //initCoreDataObjects();
+
 
     channelPoints = new GPointsArray(nPoints);
     if(_newTimeSize > 1){
