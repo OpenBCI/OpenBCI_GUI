@@ -15,8 +15,8 @@ class W_AnalogRead extends Widget {
 
   int numAnalogReadBars;
   float xF, yF, wF, hF;
-  float ts_padding;
-  float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all analogReadBars)
+  float arPadding;
+  float ar_x, ar_y, ar_h, ar_w; //values for actual time series chart (rectangle encompassing all analogReadBars)
   float plotBottomWell;
   float playbackWidgetHeight;
   int analogReadBarHeight;
@@ -35,8 +35,8 @@ class W_AnalogRead extends Widget {
   private boolean updating = true;
   boolean analogReadOn = false;
 
- int analogReadStartingVertScaleIndex = 5;
- int analogReadStartingHorizontalScaleIndex = 2;
+ int arInitialVertScaleIndex = 5;
+ int arInitialHorizScaleIndex = 2;
 
   private boolean hasScrollbar = false;
 
@@ -49,8 +49,8 @@ class W_AnalogRead extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), analogReadStartingVertScaleIndex);
-    addDropdown("Duration_AR", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), analogReadStartingHorizontalScaleIndex);
+    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), arInitialVertScaleIndex);
+    addDropdown("Duration_AR", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), arInitialHorizScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //set number of anaolg reads
@@ -66,23 +66,23 @@ class W_AnalogRead extends Widget {
     hF = float(h);
 
     plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
-    ts_padding = 10.0;
-    ts_x = xF + ts_padding;
-    ts_y = yF + (ts_padding);
-    ts_w = wF - ts_padding*2;
-    ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-    analogReadBarHeight = int(ts_h/numAnalogReadBars);
+    arPadding = 10.0;
+    ar_x = xF + arPadding;
+    ar_y = yF + (arPadding);
+    ar_w = wF - arPadding*2;
+    ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
+    analogReadBarHeight = int(ar_h/numAnalogReadBars);
 
     analogReadBars = new AnalogReadBar[numAnalogReadBars];
 
     //create our channel bars and populate our analogReadBars array!
     for(int i = 0; i < numAnalogReadBars; i++){
       println("init analog read bar " + i);
-      int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
-      AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+      int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
+      AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
-      analogReadBars[i].adjustVertScale(yLimOptions[analogReadStartingVertScaleIndex]);
-      analogReadBars[i].adjustTimeAxis(xLimOptions[analogReadStartingHorizontalScaleIndex]);
+      analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
+      analogReadBars[i].adjustTimeAxis(xLimOptions[arInitialHorizScaleIndex]);
     }
 
     analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
@@ -157,15 +157,15 @@ class W_AnalogRead extends Widget {
     wF = float(w);
     hF = float(h);
 
-    ts_x = xF + ts_padding;
-    ts_y = yF + (ts_padding);
-    ts_w = wF - ts_padding*2;
-    ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-    analogReadBarHeight = int(ts_h/numAnalogReadBars);
+    ar_x = xF + arPadding;
+    ar_y = yF + (arPadding);
+    ar_w = wF - arPadding*2;
+    ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
+    analogReadBarHeight = int(ar_h/numAnalogReadBars);
 
     for(int i = 0; i < numAnalogReadBars; i++){
-      int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
-      analogReadBars[i].screenResized(int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
+      int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
+      analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
     }
 
     analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));

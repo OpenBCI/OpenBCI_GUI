@@ -602,14 +602,6 @@ class ChannelBar{
     plot.setXLim(-_newTimeSize,0);
 
     nPoints = nPointsBasedOnDataSource();
-    //println("npoints = " + nPoints);
-
-    //Change the databuff size
-    //displayTime_sec = float(_newTimeSize);    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-    //dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
-    //initCoreDataObjects();
-
-
     channelPoints = new GPointsArray(nPoints);
     if(_newTimeSize > 1){
       plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
