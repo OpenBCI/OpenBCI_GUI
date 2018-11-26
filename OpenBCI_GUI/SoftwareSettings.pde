@@ -722,7 +722,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
       w_accelerometer.accelModeButton.setString("Turn Accel. Off"); //update button text
       w_accelerometer.drawAccValues(); //draw accelerometer
       w_accelerometer.draw3DGraph();
-      w_accelerometer.drawAccWave();
+      w_accelerometer.accelerometerBar[0].draw();;
     } else {
       ganglion.accelStop(); //send message to hub
       w_accelerometer.accelModeButton.setString("Turn Accel. On"); //update button text
