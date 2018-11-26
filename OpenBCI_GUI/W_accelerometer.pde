@@ -142,10 +142,10 @@ class W_accelerometer extends Widget {
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-    //put your code here...
     if (isRunning) {
+      //update the current Accelerometer plot points
       updatePlotPoints();
-      //feed new data to into plot
+      //update the line graph plot points
       accelerometerBar[0].update();
     }
   }
@@ -180,7 +180,7 @@ class W_accelerometer extends Widget {
       accelArrayX[accelArrayX.length-1] = currentXvalue;
       accelArrayY[accelArrayY.length-1] = currentYvalue;
       accelArrayZ[accelArrayZ.length-1] = currentZvalue;
-      //shiftWave();
+      shiftWave();
     }
   }
 
