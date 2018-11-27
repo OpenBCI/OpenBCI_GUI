@@ -211,6 +211,7 @@ class W_AnalogRead extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_AR(int n) {
+  arVertScaleSave = n;
   if (n==0) { //autoscale
     for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(0);
@@ -240,7 +241,6 @@ void VertScale_AR(int n) {
       w_analogRead.analogReadBars[i].adjustVertScale(10000);
     }
   }
-  arVertScaleSave = n;
   closeAllDropdowns();
 }
 
