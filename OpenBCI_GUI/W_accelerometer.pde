@@ -35,9 +35,8 @@ class W_accelerometer extends Widget {
   // Accelerometer Stuff
   int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
-  //Number of points registered in accelerometer buff by default:
-  //accelBuffSize = 10 seconds * 25 Hz
-  int accelBuffSize = accelHorizLimit * accelHz;
+  //Number of points, used to make buffers
+  int accelBuffSize;
   AccelerometerBar[] accelerometerBar;
 
   // bottom xyz graph
@@ -83,6 +82,7 @@ class W_accelerometer extends Widget {
     yMaxMin = adjustYMaxMinBasedOnSource();
 
     // XYZ buffer for bottom graph
+    accelBuffSize = nPointsBasedOnDataSource();   //accelBuffSize = 10 seconds * 25 Hz
     accelArrayX = new float[accelBuffSize];
     accelArrayY = new float[accelBuffSize];
     accelArrayZ = new float[accelBuffSize];
@@ -136,6 +136,10 @@ class W_accelerometer extends Widget {
     return _yMaxMin;
   }
 
+  int nPointsBasedOnDataSource(){
+    return xLimOptions[accelInitialHorizScaleIndex] * accelHz;
+  }
+
   public boolean isVisible() {
     return visible;
   }
@@ -152,8 +156,8 @@ class W_accelerometer extends Widget {
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-    if (isRunning || (systemMode >= SYSTEMMODE_POSTINIT && !accelInitHasOccured)) {
-      //update the current Accelerometer plot points
+    if (isRunning) {
+      //update the current Accelerometer points
       updatePlotPoints();
       //update the line graph plot points
       accelerometerBar[0].update();
@@ -162,35 +166,36 @@ class W_accelerometer extends Widget {
   }
 
   void updatePlotPoints() {
+    int endOfArray = accelArrayX.length-1;
     if (eegDataSource == DATASOURCE_SYNTHETIC) {
       synthesizeAccelData();
-      currentXvalue = accelArrayX[accelArrayX.length-1];
-      currentYvalue = accelArrayY[accelArrayY.length-1];
-      currentZvalue = accelArrayZ[accelArrayZ.length-1];
+      currentXvalue = accelArrayX[endOfArray];
+      currentYvalue = accelArrayY[endOfArray];
+      currentZvalue = accelArrayZ[endOfArray];
       shiftWave();
     } else if (eegDataSource == DATASOURCE_CYTON) {
       currentXvalue = hub.validAccelValues[0] * cyton.get_scale_fac_accel_G_per_count();
       currentYvalue = hub.validAccelValues[1] * cyton.get_scale_fac_accel_G_per_count();
       currentZvalue = hub.validAccelValues[2] * cyton.get_scale_fac_accel_G_per_count();
-      accelArrayX[accelArrayX.length-1] = currentXvalue;
-      accelArrayY[accelArrayY.length-1] = currentYvalue;
-      accelArrayZ[accelArrayZ.length-1] = currentZvalue;
+      accelArrayX[endOfArray] = currentXvalue;
+      accelArrayY[endOfArray] = currentYvalue;
+      accelArrayZ[endOfArray] = currentZvalue;
       shiftWave();
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       currentXvalue = hub.validAccelValues[0] * ganglion.get_scale_fac_accel_G_per_count();
       currentYvalue = hub.validAccelValues[1] * ganglion.get_scale_fac_accel_G_per_count();
       currentZvalue = hub.validAccelValues[2] * ganglion.get_scale_fac_accel_G_per_count();
-      accelArrayX[accelArrayX.length-1] = currentXvalue;
-      accelArrayY[accelArrayY.length-1] = currentYvalue;
-      accelArrayZ[accelArrayZ.length-1] = currentZvalue;
+      accelArrayX[endOfArray] = currentXvalue;
+      accelArrayY[endOfArray] = currentYvalue;
+      accelArrayZ[endOfArray] = currentZvalue;
       shiftWave();
     } else {  // playback data
       currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1];
       currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
       currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
-      accelArrayX[accelArrayX.length-1] = currentXvalue;
-      accelArrayY[accelArrayY.length-1] = currentYvalue;
-      accelArrayZ[accelArrayZ.length-1] = currentZvalue;
+      accelArrayX[endOfArray] = currentXvalue;
+      accelArrayY[endOfArray] = currentYvalue;
+      accelArrayZ[endOfArray] = currentZvalue;
       shiftWave();
     }
   }
@@ -557,6 +562,7 @@ class AccelerometerBar{
   //Used to update the Points within the graph
   void updatePlotPoints(){
     int accelBuffSize = w_accelerometer.accelBuffSize;
+    //nPoints = nPointsBasedOnDataSource();
     if (accelBuffSize >= nPoints) {
       //println("UPDATING ACCEL GRAPH");
       int accelBuffDiff = accelBuffSize - nPoints;
