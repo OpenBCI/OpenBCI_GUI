@@ -21,7 +21,8 @@ float[] accelArrayY;
 float[] accelArrayZ;
 float accelXyzLimit = 4.0;
 int accelHorizLimit = 20;
-int accelHz = 25;
+int accelHz = 25; //default 25hz
+//int accDefaultNumSeconds = 10;
 
 class W_accelerometer extends Widget {
   //to see all core variables/methods of the Widget class, refer to Widget.pde
@@ -34,7 +35,9 @@ class W_accelerometer extends Widget {
   // Accelerometer Stuff
   int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
-  int accelBuffSize = accelHorizLimit * accelHz; //points registered in accelerometer buff
+  //Number of points registered in accelerometer buff by default:
+  //accelBuffSize = 10 seconds * 25 Hz
+  int accelBuffSize = accelHorizLimit * accelHz;
   AccelerometerBar[] accelerometerBar;
 
   // bottom xyz graph
@@ -444,9 +447,8 @@ class AccelerometerBar{
   GPointsArray accelPointsY;
   GPointsArray accelPointsZ;
   int nPoints;
-  int numSeconds = 10;
+  int numSeconds = accelHorizLimit/2; //default to 10 seconds as
   float timeBetweenPoints;
-  int oldArraySize;
 
   color channelColor; //color of plot trace
 
@@ -472,7 +474,7 @@ class AccelerometerBar{
     plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
     plot.setXLim(-numSeconds,0); //set the horizontal scale
     plot.setYLim(-accelXyzLimit,accelXyzLimit); //change this to adjust vertical scale
-    plot.setPointSize(2);
+    //plot.setPointSize(2);
     plot.setPointColor(0);
     plot.getXAxis().setAxisLabelText("Time (s)");
 
@@ -488,9 +490,9 @@ class AccelerometerBar{
       GPoint tempPointX = new GPoint(time, accelArrayX[i]);
       GPoint tempPointY = new GPoint(time, accelArrayY[i]);
       GPoint tempPointZ = new GPoint(time, accelArrayZ[i]);
-      accelPointsX.add(i, tempPointX);
-      accelPointsY.add(i, tempPointY);
-      accelPointsZ.add(i, tempPointZ);
+      accelPointsX.set(i, tempPointX);
+      accelPointsY.set(i, tempPointY);
+      accelPointsZ.set(i, tempPointZ);
     }
 
     //set the plot points for X, Y, and Z axes
@@ -500,7 +502,6 @@ class AccelerometerBar{
     plot.getLayer("layer 2").setLineColor(accelYcolor);
     plot.addLayer("layer 3", accelPointsZ);
     plot.getLayer("layer 3").setLineColor(accelZcolor);
-
   }
 
   //Used to update the accelerometerBar class
@@ -532,10 +533,12 @@ class AccelerometerBar{
   void adjustTimeAxis(int _newTimeSize){
     numSeconds = _newTimeSize;
     plot.setXLim(-_newTimeSize,0);
-    oldArraySize = nPoints;
 
     nPoints = nPointsBasedOnDataSource();
+    println(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
+    println(timeBetweenPoints);
+    plot.setPointSize(timeBetweenPoints);
 
     accelPointsX = new GPointsArray(nPoints);
     accelPointsY = new GPointsArray(nPoints);
@@ -555,7 +558,7 @@ class AccelerometerBar{
   void updatePlotPoints(){
     int accelBuffSize = w_accelerometer.accelBuffSize;
     if (accelBuffSize >= nPoints) {
-      println("UPDATING ACCEL GRAPH");
+      //println("UPDATING ACCEL GRAPH");
       int accelBuffDiff = accelBuffSize - nPoints;
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
         float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;

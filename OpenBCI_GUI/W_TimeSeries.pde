@@ -534,7 +534,7 @@ class ChannelBar{
 
   void updatePlotPoints(){
     // update data in plot
-    if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
+    if(dataBuffY_filtY_uV[channelNumber-1].length >= nPoints){
       for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
         float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
         float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
