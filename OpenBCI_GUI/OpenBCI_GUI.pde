@@ -855,49 +855,8 @@ void initSystem() {
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-  //Take a snapshot of the default GUI settings before loading User settings!
-  String defaultSettingsFileToSave = null;
-  switch(eegDataSource) {
-    case DATASOURCE_CYTON:
-      defaultSettingsFileToSave = cytonDefaultSettingsFile;
-      break;
-    case DATASOURCE_GANGLION:
-      defaultSettingsFileToSave = ganglionDefaultSettingsFile;
-      break;
-    case DATASOURCE_PLAYBACKFILE:
-      defaultSettingsFileToSave = playbackDefaultSettingsFile;
-      break;
-    case DATASOURCE_SYNTHETIC:
-      defaultSettingsFileToSave = syntheticDefaultSettingsFile;
-      break;
-  }
-  saveGUISettings(defaultSettingsFileToSave);
-
-  //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
-  //Otherwise, load default settings.
-  loadErrorTimerStart = millis();
-  try {
-    switch(eegDataSource) {
-      case DATASOURCE_CYTON:
-        userSettingsFileToLoad = cytonUserSettingsFile;
-        break;
-      case DATASOURCE_GANGLION:
-        userSettingsFileToLoad = ganglionUserSettingsFile;
-        break;
-      case DATASOURCE_PLAYBACKFILE:
-        userSettingsFileToLoad = playbackUserSettingsFile;
-        break;
-      case DATASOURCE_SYNTHETIC:
-        userSettingsFileToLoad = syntheticUserSettingsFile;
-        break;
-    }
-    loadGUISettings(userSettingsFileToLoad);
-    errorUserSettingsNotFound = false;
-  } catch (Exception e) {
-    println(e.getMessage());
-    println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
-    errorUserSettingsNotFound = true;
-  }
+  //Init software settings: create default settings files, load user settings, etc.
+  initSoftwareSettings();
 
   //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
   String firmwareToPrint = "";
@@ -986,7 +945,7 @@ void initCoreDataObjects() {
   yLittleBuff = new float[nPointsPerUpdate];
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
   auxBuff = new float[3][nPointsPerUpdate];
-  accelerometerBuff = new float[3][500]; // 500 points
+  accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
   for (int i=0; i<n_aux_ifEnabled; i++) {
     for (int j=0; j<accelerometerBuff[0].length; j++) {
       accelerometerBuff[i][j] = 0;

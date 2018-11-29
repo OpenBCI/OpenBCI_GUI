@@ -158,6 +158,80 @@ int loadFramerate;
 int loadDatasource;
 Boolean dataSourceError = false;
 
+////////////////////////////////////////////////////////////////
+//               Init GUI Software Settings                   //
+//                                                            //
+//  - Called during system initialization in OpenBCI_GUI.pde  //
+////////////////////////////////////////////////////////////////
+void initSoftwareSettings() {
+  String defaultSettingsFileToSave = null;
+  boolean defaultSettingsFileExists;
+  boolean defaultFileDataSourceError;
+  boolean defaultFileChanNumError;
+  int defaultNumChanLoaded = 0;
+  int defaultLoadedDataSource = 0;
+  switch(eegDataSource) {
+    case DATASOURCE_CYTON:
+      defaultSettingsFileToSave = cytonDefaultSettingsFile;
+      break;
+    case DATASOURCE_GANGLION:
+      defaultSettingsFileToSave = ganglionDefaultSettingsFile;
+      break;
+    case DATASOURCE_PLAYBACKFILE:
+      defaultSettingsFileToSave = playbackDefaultSettingsFile;
+      break;
+    case DATASOURCE_SYNTHETIC:
+      defaultSettingsFileToSave = syntheticDefaultSettingsFile;
+      break;
+  }
+  try {
+    //Load all saved User Settings from a JSON file if it exists
+    JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToSave);
+    //Check the number of channels saved to json first!
+    JSONObject loadDataSettings = loadDefaultSettingsJSONData.getJSONObject("dataInfo");
+    defaultNumChanLoaded = loadDataSettings.getInt("Channels");
+    //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
+    defaultLoadedDataSource = loadDataSettings.getInt("Data Source");
+    //println("Data source loaded: " + defaultLoadedDatasource + ". Current data source: " + eegDataSource);
+    defaultSettingsFileExists = true;
+  } catch (Exception e) {
+    defaultSettingsFileExists = false;
+  }
+  if ( //Take a snapshot of the default GUI settings if needed
+    (!defaultSettingsFileExists) ||
+    (defaultLoadedDataSource != eegDataSource) ||
+    (defaultNumChanLoaded != slnchan)) {
+      println("Default user settings file saved!");
+      saveGUISettings(defaultSettingsFileToSave);
+  }
+
+  //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
+  //Otherwise, load default settings.
+  loadErrorTimerStart = millis();
+  try {
+    switch(eegDataSource) {
+      case DATASOURCE_CYTON:
+        userSettingsFileToLoad = cytonUserSettingsFile;
+        break;
+      case DATASOURCE_GANGLION:
+        userSettingsFileToLoad = ganglionUserSettingsFile;
+        break;
+      case DATASOURCE_PLAYBACKFILE:
+        userSettingsFileToLoad = playbackUserSettingsFile;
+        break;
+      case DATASOURCE_SYNTHETIC:
+        userSettingsFileToLoad = syntheticUserSettingsFile;
+        break;
+    }
+    loadGUISettings(userSettingsFileToLoad);
+    errorUserSettingsNotFound = false;
+  } catch (Exception e) {
+    println(e.getMessage());
+    println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+    errorUserSettingsNotFound = true;
+  }
+}
+
 ///////////////////////////////
 //      Save GUI Settings    //
 ///////////////////////////////
@@ -449,7 +523,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   }
   //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
   loadDatasource = loadDataSettings.getInt("Data Source");
-  println("Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
+  println("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
   //Print error if trying to load a different data source (ex. Live != Synthetic)
   if (loadDatasource != eegDataSource) {
     println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
@@ -492,7 +566,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     //Add new global settings above this line to print to console
     };
   //Print the global settings that have been loaded to the console
-  printArray(loadedGlobalSettings);
+  //printArray(loadedGlobalSettings);
 
   //parse the FFT settings that appear after the global settings
   JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject("fft");
@@ -511,7 +585,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "FFT_Filter: " + fftFilterLoad,
     };
   //Print the FFT settings that have been loaded to the console
-  printArray(loadedFFTSettings);
+  //printArray(loadedFFTSettings);
 
   //parse Networking settings that appear after FFT settings
   JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject("networking");
@@ -592,7 +666,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "HP_smoothing: " + hpSmoothingLoad,
     };
   //Print the Headplot settings
-  printArray(loadedHPSettings);
+  //printArray(loadedHPSettings);
 
   //parse the EMG settings
   JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject("emg");
@@ -609,7 +683,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "EMG_minuV: " + emgMinDeltauVLoad,
     };
   //Print the EMG settings
-  printArray(loadedEMGSettings);
+  //printArray(loadedEMGSettings);
 
   //parse the Focus settings
   JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject("focus");
@@ -622,7 +696,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "Focus_keypress: " + focusKeyLoad,
     };
   //Print the EMG settings
-  printArray(loadedFocusSettings);
+  //printArray(loadedFocusSettings);
 
   //parse the Widget/Container settings
   JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
