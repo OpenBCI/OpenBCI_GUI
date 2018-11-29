@@ -34,6 +34,7 @@ class W_accelerometer extends Widget {
 
   // Accelerometer Stuff
   int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+  int[] yLimOptions = {0, 1, 2, 4};
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
   //Number of points, used to make buffers
   int accelBuffSize;
@@ -75,7 +76,7 @@ class W_accelerometer extends Widget {
   W_accelerometer(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    addDropdown("accelVertScale", "Vert Scale", Arrays.asList("1 g", "2 g", "4 g"), accVertScaleSave);
+    addDropdown("accelVertScale", "Vert Scale", Arrays.asList("Auto","1 g", "2 g", "4 g"), accVertScaleSave);
     addDropdown("accelDuration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), accHorizScaleSave);
 
     setGraphDimensions();
@@ -137,7 +138,7 @@ class W_accelerometer extends Widget {
   }
 
   int nPointsBasedOnDataSource(){
-    return xLimOptions[accelInitialHorizScaleIndex] * accelHz;
+    return accelHorizLimit * accelHz;
   }
 
   public boolean isVisible() {
@@ -263,14 +264,14 @@ class W_accelerometer extends Widget {
     accelGraphWidth = w - accPadding*2;
     accelGraphHeight = int((float(h) - float(accPadding*3))/2.0);
     accelGraphX = x + accPadding/3;
-    accelGraphY = y + h - accelGraphHeight - accPadding;
+    accelGraphY = y + h - accelGraphHeight - int(accPadding*2) + accPadding/6;
 
     // PolarWindowWidth = 155;
     // PolarWindowHeight = 155;
     PolarWindowWidth = accelGraphHeight;
     PolarWindowHeight = accelGraphHeight;
     PolarWindowX = x + w - accPadding - PolarWindowWidth/2;
-    PolarWindowY = y + accPadding + PolarWindowHeight/2;
+    PolarWindowY = y + accPadding + PolarWindowHeight/2 - 10;
     PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
   }
 
@@ -340,11 +341,11 @@ class W_accelerometer extends Widget {
     textAlign(LEFT,CENTER);
     textFont(h1,20);
     fill(accelXcolor);
-    text("X = " + nf(currentXvalue, 1, 3) + " g", x+accPadding , y + (h/12)*1.5);
+    text("X = " + nf(currentXvalue, 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
     fill(accelYcolor);
-    text("Y = " + nf(currentYvalue, 1, 3) + " g", x+accPadding, y + (h/12)*3);
+    text("Y = " + nf(currentYvalue, 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
     fill(accelZcolor);
-    text("Z = " + nf(currentZvalue, 1, 3) + " g", x+accPadding, y + (h/12)*4.5);
+    text("Z = " + nf(currentZvalue, 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
   }
 
   //Draw the current accelerometer values as a 3D graph
@@ -413,26 +414,13 @@ class W_accelerometer extends Widget {
 //These functions are activated when an item from the corresponding dropdown is selected
 void accelVertScale(int n) {
   accVertScaleSave = n;
-  if (n==0) { //autoscale
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      //w_timeSeries.channelBars[i].adjustVertScale(0);
-    }
-  } else if(n==1) { //50uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      //w_timeSeries.channelBars[i].adjustVertScale(50);
-    }
-  } else if(n==2) { //100uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      //w_timeSeries.channelBars[i].adjustVertScale(100);
-    }
-  }
+  w_accelerometer.accelerometerBar[0].adjustVertScale(w_accelerometer.yLimOptions[n]);
   closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
 void accelDuration(int n) {
   accHorizScaleSave = n;
-  println("adjust duration to: " + w_accelerometer.xLimOptions[n]);
   //set accelerometer x axis to the duration selected from dropdown
   w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
   closeAllDropdowns();
@@ -446,6 +434,7 @@ class AccelerometerBar{
 
   int x, y, w, h;
   boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
+  int accBarPadding = 30;
 
   GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
   GPointsArray accelPointsX;
@@ -457,7 +446,7 @@ class AccelerometerBar{
 
   color channelColor; //color of plot trace
 
-  boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+  boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
   int autoScaleYLim = 0;
   int lastProcessedDataPacketInd = 0;
 
@@ -482,6 +471,9 @@ class AccelerometerBar{
     //plot.setPointSize(2);
     plot.setPointColor(0);
     plot.getXAxis().setAxisLabelText("Time (s)");
+    plot.getYAxis().setAxisLabelText("Acceleration (g)");
+    plot.getXAxis().getAxisLabel().setOffset(float(accBarPadding));
+    plot.getYAxis().getAxisLabel().setOffset(float(accBarPadding));
 
     nPoints = nPointsBasedOnDataSource();
     accelData = new int[NUM_ACCEL_DIMS][nPoints];

@@ -315,35 +315,10 @@ class W_timeSeries extends Widget {
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
   tsVertScaleSave = n;
-  if (n==0) { //autoscale
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(0);
-    }
-  } else if(n==1) { //50uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(50);
-    }
-  } else if(n==2) { //100uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(100);
-    }
-  } else if(n==3) { //200uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(200);
-    }
-  } else if(n==4) { //400uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(400);
-    }
-  } else if(n==5) { //1000uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(1000);
-    }
-  } else if(n==6) { //10000uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(10000);
-    }
+  for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
   }
+  closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown

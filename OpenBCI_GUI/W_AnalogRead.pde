@@ -212,35 +212,9 @@ class W_AnalogRead extends Widget {
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_AR(int n) {
   arVertScaleSave = n;
-  if (n==0) { //autoscale
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(0);
+  for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+      w_analogRead.analogReadBars[i].adjustVertScale(w_analogRead.yLimOptions[n]);
     }
-  } else if(n==1) { //50uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(50);
-    }
-  } else if(n==2) { //100uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(100);
-    }
-  } else if(n==3) { //200uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(200);
-    }
-  } else if(n==4) { //400uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(400);
-    }
-  } else if(n==5) { //1000uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(1000);
-    }
-  } else if(n==6) { //10000uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(10000);
-    }
-  }
   closeAllDropdowns();
 }
 
@@ -249,7 +223,7 @@ void Duration_AR(int n) {
   // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
   arHorizScaleSave = n;
   for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-    w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
+    w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
   }
   closeAllDropdowns();
 }
@@ -497,6 +471,7 @@ class AnalogReadBar{
       }
     }
     // println("New X axis = " + _newTimeSize);
+    closeAllDropdowns();
   }
 
   void adjustVertScale(int _vertScaleValue){
@@ -506,6 +481,7 @@ class AnalogReadBar{
       isAutoscale = false;
       plot.setYLim(-_vertScaleValue, _vertScaleValue);
     }
+    closeAllDropdowns();
   }
 
   void autoScale(){
