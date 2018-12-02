@@ -421,22 +421,7 @@ void reinitializeCoreDataAndFFTBuffer() {
   initCoreDataObjects();
   //verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
 
-  //initialize the FFT objects
-  for (int Ichan=0; Ichan < nchan; Ichan++) {
-    // verbosePrint("Init FFT Buff – " + Ichan);
-    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
-  }  //make the FFT objects
-  //printArray(fftBuff);
-
-  //Attempt initialization. If error, print to console and exit function.
-  //Fixes GUI crash when trying to load outdated recordings
-  try {
-    initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
-  } catch (ArrayIndexOutOfBoundsException e) {
-    //e.printStackTrace();
-    outputError("Playback file load error. Try using a more recent recording.");
-    return;
-  }
+  initFFTObjectsAndBuffer();
 
   //verbosePrint("W_Playback: initSystem: -- Init 2 -- " + millis());
 

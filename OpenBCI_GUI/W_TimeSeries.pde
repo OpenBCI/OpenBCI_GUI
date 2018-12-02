@@ -808,10 +808,11 @@ class PlaybackScrollbar {
       indicatorAtStart = false;
     }
 
-    if(mousePressed && skipToStartButton.isMouseHere()){
-      println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
+    if(mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
+      //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
       skipToStartButton.setIsActive(true);
       skipToStartButtonAction(); //skip to start
+      indicatorAtStart = true;
     } else if (!mousePressed && !skipToStartButton.isMouseHere()) {
       skipToStartButton.setIsActive(false); //set button to not active
     }
@@ -1010,6 +1011,17 @@ class PlaybackScrollbar {
       indexPosition = 0; //set index position to 0
       currentTableRowIndex = 0; //set playback position to 0
       indicatorAtStart = true;
+
+      //clear Time Series, FFT, and Accelerometer data and update all plots
+      prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+      processNewData();
+      reinitializeCoreDataAndFFTBuffer();
+      for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+        w_timeSeries.updating = true;
+        w_timeSeries.update();
+      }
+      w_accelerometer.initAccelData();
+      w_accelerometer.accelerometerBar[0].update();
 
       if (!isRunning) { //if the system is not running
         //Success print detailed position to bottom of GUI

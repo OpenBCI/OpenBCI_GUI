@@ -608,7 +608,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
   final String[] loadedAccSettings = {
     "Accelerometer Vert Scale: " + loadAccelVertScale,
-    "Accelerometer Horiz Scale: " + loadAccelHorizScale,
+    "Accelerometer Horiz Scale: " + loadAccelHorizScale
   };
 
   //get the Networking Settings
@@ -687,7 +687,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "HP_intensity: " + hpIntensityLoad,
     "HP_polarity: " + hpPolarityLoad,
     "HP_contours: " + hpContoursLoad,
-    "HP_smoothing: " + hpSmoothingLoad,
+    "HP_smoothing: " + hpSmoothingLoad
     };
   //Print the Headplot settings
   //printArray(loadedHPSettings);
@@ -704,7 +704,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "EMG_smoothing: " + emgSmoothingLoad,
     "EMG_uVlimit: " + emguVLimLoad,
     "EMG_creepspeed: " + emgCreepLoad,
-    "EMG_minuV: " + emgMinDeltauVLoad,
+    "EMG_minuV: " + emgMinDeltauVLoad
     };
   //Print the EMG settings
   //printArray(loadedEMGSettings);
@@ -717,7 +717,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Create a string array to print to console
   final String[] loadedFocusSettings = {
     "Focus_theme: " + focusThemeLoad,
-    "Focus_keypress: " + focusKeyLoad,
+    "Focus_keypress: " + focusKeyLoad
     };
   //Print the EMG settings
   //printArray(loadedFocusSettings);

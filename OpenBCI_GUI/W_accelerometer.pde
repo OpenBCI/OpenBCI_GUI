@@ -87,12 +87,7 @@ class W_accelerometer extends Widget {
     accelArrayY = new float[accelBuffSize];
     accelArrayZ = new float[accelBuffSize];
 
-    // initialize data
-    for(int i = 0; i < accelArrayX.length; i++) {  // initialize the accelerometer data
-      accelArrayX[i] = accelXyzLimit/2;
-      accelArrayY[i] = 0;
-      accelArrayZ[i] = -accelXyzLimit/2;
-    }
+    initAccelData();
 
     //create our channel bar and populate our accelerometerBar array!
     accelerometerBar = new AccelerometerBar[numAccelerometerBars];
@@ -121,6 +116,15 @@ class W_accelerometer extends Widget {
 
   public void initPlayground(Cyton _OBCI) {
     OBCI_inited = true;
+  }
+
+  void initAccelData() {
+    // initialize data
+    for(int i = 0; i < accelArrayX.length; i++) {  // initialize the accelerometer data
+      accelArrayX[i] = accelXyzLimit/2;
+      accelArrayY[i] = 0;
+      accelArrayZ[i] = -accelXyzLimit/2;
+    }
   }
 
   float adjustYMaxMinBasedOnSource(){

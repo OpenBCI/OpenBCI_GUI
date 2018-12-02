@@ -746,21 +746,7 @@ void initSystem() {
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
   verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
 
-  //initialize the FFT objects
-  for (int Ichan=0; Ichan < nchan; Ichan++) {
-    // verbosePrint("Init FFT Buff – " + Ichan);
-    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
-  }  //make the FFT objects
-
-  //Attempt initialization. If error, print to console and exit function.
-  //Fixes GUI crash when trying to load outdated recordings
-  try {
-    initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
-  } catch (ArrayIndexOutOfBoundsException e) {
-    //e.printStackTrace();
-    outputError("Playback file load error. Try using a more recent recording.");
-    return;
-  }
+  initFFTObjectsAndBuffer();
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -965,6 +951,24 @@ void initCoreDataObjects() {
   prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
 }
 
+void initFFTObjectsAndBuffer() {
+  //initialize the FFT objects
+  for (int Ichan=0; Ichan < nchan; Ichan++) {
+    // verbosePrint("Init FFT Buff – " + Ichan);
+    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
+  }  //make the FFT objects
+
+  //Attempt initialization. If error, print to console and exit function.
+  //Fixes GUI crash when trying to load outdated recordings
+  try {
+    initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+  } catch (ArrayIndexOutOfBoundsException e) {
+    //e.printStackTrace();
+    outputError("Playback file load error. Try using a more recent recording.");
+    return;
+  }
+}
+
 void startRunning() {
   verbosePrint("startRunning...");
   output("Data stream started.");
@@ -985,7 +989,11 @@ void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
   if (isRunning) {
-    output("Data stream stopped.");
+    //Dont print this message for playback mode.
+    //Allows user to see current playback time
+    if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
+      output("Data stream stopped.");
+    }
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
