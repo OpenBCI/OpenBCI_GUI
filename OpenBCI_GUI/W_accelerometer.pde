@@ -431,16 +431,15 @@ class AccelerometerBar{
   GPointsArray accelPointsY;
   GPointsArray accelPointsZ;
   int nPoints;
-  int numSeconds = 10; //default to 10 seconds
+  int numSeconds = 20; //default to 10 seconds
   float timeBetweenPoints;
+  float[] accelTimeArray;
 
   color channelColor; //color of plot trace
 
   boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
   int autoScaleYLim = 0;
   int lastProcessedDataPacketInd = 0;
-
-  int[][] accelData;
 
   AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
 
@@ -471,17 +470,23 @@ class AccelerometerBar{
     plot.getYAxis().getAxisLabel().setOffset(float(accBarPadding));
 
     nPoints = nPointsBasedOnDataSource();
-    accelData = new int[NUM_ACCEL_DIMS][nPoints];
-    accelPointsX = new GPointsArray(nPoints);
-    accelPointsY = new GPointsArray(nPoints);
-    accelPointsZ = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
+    accelTimeArray = new float[nPoints];
+    for (int i = 0; i < accelTimeArray.length; i++) {
+      accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
+    }
+    //make a GPoint array using float arrays x[] and y[] instead of plain index points
+    accelPointsX = new GPointsArray(accelTimeArray, accelArrayX);
+    accelPointsY = new GPointsArray(accelTimeArray, accelArrayY);
+    accelPointsZ = new GPointsArray(accelTimeArray, accelArrayZ);
 
-    for (int i = accelArrayX.length - nPoints; i < nPoints; i++) {
-      float time = -(float)numSeconds + (float)i*timeBetweenPoints;
-      GPoint tempPointX = new GPoint(time, accelArrayX[i]);
-      GPoint tempPointY = new GPoint(time, accelArrayY[i]);
-      GPoint tempPointZ = new GPoint(time, accelArrayZ[i]);
+    //int accelBuffDiff = accelArrayX.length - nPoints;
+    for (int i = 0; i < nPoints; i++) {
+      //float time = -(float)numSeconds + (float)(i-accelBuffDiff)*timeBetweenPoints;
+      GPoint tempPointX = new GPoint(accelTimeArray[i], accelArrayX[i]);
+      GPoint tempPointY = new GPoint(accelTimeArray[i], accelArrayY[i]);
+      GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArrayZ[i]);
+      //println(accelTimeArray[i]);
       accelPointsX.set(i, tempPointX);
       accelPointsY.set(i, tempPointY);
       accelPointsZ.set(i, tempPointZ);
@@ -527,10 +532,8 @@ class AccelerometerBar{
     plot.setXLim(-_newTimeSize,0);
 
     nPoints = nPointsBasedOnDataSource();
-    println(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
-    println(timeBetweenPoints);
-    plot.setPointSize(timeBetweenPoints);
+    println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
 
     accelPointsX = new GPointsArray(nPoints);
     accelPointsY = new GPointsArray(nPoints);
@@ -550,23 +553,21 @@ class AccelerometerBar{
   void updateGPlotPoints(){
     int accelBuffSize = w_accelerometer.accelBuffSize;
     //nPoints = nPointsBasedOnDataSource();
-    if (accelBuffSize >= nPoints) {
-      //println("UPDATING ACCEL GRAPH");
-      int accelBuffDiff = accelBuffSize - nPoints;
-      for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-        float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
-        //println(time);
-        GPoint tempPointX = new GPoint(time, accelArrayX[i]);
-        GPoint tempPointY = new GPoint(time, accelArrayY[i]);
-        GPoint tempPointZ = new GPoint(time, accelArrayZ[i]);
-        accelPointsX.set(i-accelBuffDiff, tempPointX);
-        accelPointsY.set(i-accelBuffDiff, tempPointY);
-        accelPointsZ.set(i-accelBuffDiff, tempPointZ);
-      }
-      plot.setPoints(accelPointsX, "layer 1");
-      plot.setPoints(accelPointsY, "layer 2");
-      plot.setPoints(accelPointsZ, "layer 3");
+    //println("UPDATING ACCEL GRAPH");
+    int accelBuffDiff = accelBuffSize - nPoints;
+    for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
+      float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
+      //println(time);
+      GPoint tempPointX = new GPoint(accelTimeArray[i], accelArrayX[i]);
+      GPoint tempPointY = new GPoint(accelTimeArray[i], accelArrayY[i]);
+      GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArrayZ[i]);
+      accelPointsX.set(i-accelBuffDiff, tempPointX);
+      accelPointsY.set(i-accelBuffDiff, tempPointY);
+      accelPointsZ.set(i-accelBuffDiff, tempPointZ);
     }
+    plot.setPoints(accelPointsX, "layer 1");
+    plot.setPoints(accelPointsY, "layer 2");
+    plot.setPoints(accelPointsZ, "layer 3");
   }
 
   void adjustVertScale(int _vertScaleValue){
