@@ -29,6 +29,7 @@ final String kJSONKeyDataInfo = "dataInfo";
 final String kJSONKeyChannelSettings = "channelSettings";
 final String kJSONKeySettings = "settings";
 final String kJSONKeyFFT = "fft";
+final String kJSONKeyAccel = "accelerometer";
 final String kJSONKeyNetworking = "networking";
 final String kJSONKeyHeadplot = "headplot";
 final String kJSONKeyEMG = "emg";
@@ -57,6 +58,10 @@ String[] fftVertScaleArray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
 String[] fftLogLinArray = {"Log", "Linear"};
 String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 String[] fftFilterArray = {"Filtered", "Unfilt."};
+
+//Used to set text in dropdown menus when loading Accelerometer settings
+String[] accVertScaleArray = {"Auto","1 g", "2 g", "4 g"};
+String[] accHorizScaleArray = timeSeriesHorizScaleStrArray;
 
 //Used to set text in dropdown menus when loading Networking settings
 String[] nwProtocolArray = {"OSC", "UDP", "LSL", "Serial"};
@@ -100,6 +105,10 @@ int loadBoardMode;
 //Load TS dropdown variables
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
+
+//Load Accel. dropdown variables
+int loadAccelVertScale;
+int loadAccelHorizScale;
 
 //Load Analog Read dropdown variables
 int loadAnalogReadVertScale;
@@ -346,6 +355,12 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   //Set the FFT JSON Object
   saveSettingsJSONData.setJSONObject(kJSONKeyFFT, saveFFTSettings); //next object will be set to slnchan+3, etc.
 
+  ///////////////////////////////////////////////Setup new JSON object to save Accelerometer settings
+  JSONObject saveAccSettings = new JSONObject();
+  saveAccSettings.setInt("Accelerometer Vert Scale", accVertScaleSave);
+  saveAccSettings.setInt("Accelerometer Horiz Scale", accHorizScaleSave);
+  saveSettingsJSONData.setJSONObject(kJSONKeyAccel, saveAccSettings);
+
   ///////////////////////////////////////////////Setup new JSON object to save Networking settings
   JSONObject saveNetworkingSettings = new JSONObject();
   //Save Protocol
@@ -533,7 +548,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     dataSourceError = false;
   }
 
-  //parse the global settings
+  //get the global settings JSON object
   JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject("settings");
   loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
   loadNotchSetting = loadGlobalSettings.getInt("Notch");
@@ -568,7 +583,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Print the global settings that have been loaded to the console
   //printArray(loadedGlobalSettings);
 
-  //parse the FFT settings that appear after the global settings
+  //get the FFT settings
   JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject("fft");
   fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
   fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
@@ -582,12 +597,21 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     "FFT_Max uV: " + fftMaxuVLoad,
     "FFT_Log/Lin: " + fftLogLinLoad,
     "FFT_Smoothing: " + fftSmoothingLoad,
-    "FFT_Filter: " + fftFilterLoad,
+    "FFT_Filter: " + fftFilterLoad
     };
   //Print the FFT settings that have been loaded to the console
   //printArray(loadedFFTSettings);
 
-  //parse Networking settings that appear after FFT settings
+  //get the Accelerometer settings
+  JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject("accelerometer");
+  loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
+  loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
+  final String[] loadedAccSettings = {
+    "Accelerometer Vert Scale: " + loadAccelVertScale,
+    "Accelerometer Horiz Scale: " + loadAccelHorizScale,
+  };
+
+  //get the Networking Settings
   JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject("networking");
   nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
   switch (nwProtocolLoad)  {
@@ -651,7 +675,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
       break;
   } //end switch case for all networking types
 
-  //parse the Headplot settings
+  //get the  Headplot settings
   JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject("headplot");
   hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
   hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
@@ -668,7 +692,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Print the Headplot settings
   //printArray(loadedHPSettings);
 
-  //parse the EMG settings
+  //get the EMG settings
   JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject("emg");
   emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
   emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
@@ -685,7 +709,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Print the EMG settings
   //printArray(loadedEMGSettings);
 
-  //parse the Focus settings
+  //get the  Focus settings
   JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject("focus");
   focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
   focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
@@ -698,7 +722,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Print the EMG settings
   //printArray(loadedFocusSettings);
 
-  //parse the Widget/Container settings
+  //get the  Widget/Container settings
   JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
   //Apply Layout directly before loading and applying widgets to containers
   wm.setNewContainerLayout(loadLayoutSetting);
@@ -895,7 +919,7 @@ void loadApplyWidgetDropdownText() {
   Duration(loadTimeSeriesHorizScale);
     w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
 
-  //////Apply FFT settings
+  ////////Apply FFT settings
   MaxFreq(fftMaxFrqLoad); //This changes the back-end
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(fftMaxFrqArray[fftMaxFrqLoad]); //This changes front-end... etc.
 
@@ -903,15 +927,22 @@ void loadApplyWidgetDropdownText() {
     w_fft.cp5_widget.getController("VertScale").getCaptionLabel().setText(fftVertScaleArray[fftMaxuVLoad]);
 
   LogLin(fftLogLinLoad);
-     w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(fftLogLinArray[fftLogLinLoad]);
+    w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(fftLogLinArray[fftLogLinLoad]);
 
   Smoothing(fftSmoothingLoad);
-     w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(fftSmoothingArray[fftSmoothingLoad]);
+    w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(fftSmoothingArray[fftSmoothingLoad]);
 
   UnfiltFilt(fftFilterLoad);
-     w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
+    w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
 
-  if (eegDataSource == DATASOURCE_CYTON){ //Apply Anolog Read dropdowns to Live Cyton Only
+  ////////Apply Accelerometer settings;
+  accelVertScale(loadAccelVertScale);
+    w_accelerometer.cp5_widget.getController("Vert Scale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
+  accelDuration(loadAccelHorizScale);
+    w_accelerometer.cp5_widget.getController("Window").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
+
+  ////////Apply Anolog Read dropdowns to Live Cyton Only
+  if (eegDataSource == DATASOURCE_CYTON){
     ////////Apply Analog Read settings
     VertScale_AR(loadAnalogReadVertScale);
       w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);
@@ -1048,7 +1079,7 @@ void loadApplyTimeSeriesSettings() {
 
  //Case for loading time series settings in Live Data mode
  if (eegDataSource == DATASOURCE_CYTON)  {
-    //parse the channel settings first for only the number of channels being used
+    //get the channel settings first for only the number of channels being used
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
       int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
@@ -1125,7 +1156,7 @@ void loadApplyTimeSeriesSettings() {
 
   //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
   if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
-    //parse the channel settings first for only the number of channels being used
+    //get the channel settings first for only the number of channels being used
     if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);

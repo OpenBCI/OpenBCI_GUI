@@ -75,7 +75,7 @@ class W_accelerometer extends Widget {
   W_accelerometer(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    addDropdown("accelVertScale", "Vert Scale", Arrays.asList("Auto","1 g", "2 g", "4 g"), accVertScaleSave);
+    addDropdown("accelVertScale", "Vert Scale", Arrays.asList(accVertScaleArray), accVertScaleSave);
     addDropdown("accelDuration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), accHorizScaleSave);
 
     setGraphDimensions();
