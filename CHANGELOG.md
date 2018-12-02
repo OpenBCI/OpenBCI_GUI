@@ -2,11 +2,18 @@
 
 Use OpenBCIHub v2.0.3 please.
 
+### New Features
+* Update Accelerometer widget to use Gplot #410
+* Option in Time Series to sync time window for all widgets #410
+
 ### Bug Fixes
 
 * Ganglion did not work for Mojave #402
 * Ganglion could not do playback file #399
 * Add GUI version info to Update button help text #407
+* Fix Time Series graph display issue #247
+* Align Ganglion accelerometer data to match Cyton #398
+* Sync Time Series and Accelerometer widget functionality and appearance #410
 
 ## Beta 0
 

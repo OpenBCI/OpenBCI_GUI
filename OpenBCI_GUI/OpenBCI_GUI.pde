@@ -296,6 +296,7 @@ int tsVertScaleSave = 3;
 int tsHorizScaleSave = 2;
 int checkForSuccessTS = 0;
 String[] timeSeriesHorizScaleStrArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
+int syncDuration = 0; //0=off, 1=on. Used to sync time window across widgets
 
 //Accelerometer settings
 int accVertScaleSave = 2;

@@ -416,6 +416,12 @@ void accelDuration(int n) {
   accHorizScaleSave = n;
   //set accelerometer x axis to the duration selected from dropdown
   w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
+  //If selected by user in Time Series...
+  //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
+  if (syncDuration > 0) {
+    Duration(n);
+    if (eegDataSource == DATASOURCE_CYTON) Duration_AR(n);
+  }
   closeAllDropdowns();
 }
 
@@ -537,7 +543,7 @@ class AccelerometerBar{
 
     nPoints = nPointsBasedOnDataSource();
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
-    println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
+    //println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
 
     accelPointsX = new GPointsArray(nPoints);
     accelPointsY = new GPointsArray(nPoints);

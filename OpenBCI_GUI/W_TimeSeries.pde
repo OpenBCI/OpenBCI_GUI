@@ -54,16 +54,6 @@ class W_timeSeries extends Widget {
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
-    addDropdown("Duration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), tsHorizScaleSave);
-    // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
-
-    numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
-
     xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
     yF = float(y);
     wF = float(w);
@@ -75,6 +65,16 @@ class W_timeSeries extends Widget {
     ts_y = yF + (ts_padding);
     ts_w = wF - ts_padding*2;
     ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
+    numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
+
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+
+    addDropdown("Sync_Duration", "Sync", Arrays.asList("Off", "On"), 0);
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
+    addDropdown("Duration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), tsHorizScaleSave);
+    // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //Instantiate scrollbar if using playback mode and scrollbar feature in use
     if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
@@ -329,7 +329,23 @@ void Duration(int n) {
   for(int i = 0; i < w_timeSeries.numChannelBars; i++){
     w_timeSeries.channelBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
   }
+  //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
+  if (syncDuration > 0) {
+    accHorizScaleSave = n;
+    //set accelerometer x axis to the duration selected from dropdown
+    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
+    if (eegDataSource == DATASOURCE_CYTON) {
+      arHorizScaleSave = n;
+      for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+        w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
+      }
+    }
+  }
   closeAllDropdowns();
+}
+
+void Sync_Duration(int n) {
+  syncDuration = n;
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -341,8 +357,6 @@ void Spillover(int n) {
   }
   closeAllDropdowns();
 }
-
-
 
 
 //========================================================================================================================

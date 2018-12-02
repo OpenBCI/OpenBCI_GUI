@@ -225,6 +225,18 @@ void Duration_AR(int n) {
   for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
     w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
   }
+  //If selected by user in Time Series...
+  //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
+  if (syncDuration > 0) {
+    tsHorizScaleSave = n;
+    //set time series x axis to the duration selected from dropdown
+    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+      w_timeSeries.channelBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
+    }
+    accHorizScaleSave = n;
+    //set accelerometer x axis to the duration selected from dropdown
+    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
+  }
   closeAllDropdowns();
 }
 
