@@ -42,8 +42,7 @@ String [] dataProcessingBPArray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", 
 
 // Used to set text in Time Series dropdown settings
 String[] tsVertScaleArray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
-String[] tsHorizScaleArray = timeSeriesHorizScaleStrArray;
-String[] tsSyncArray = {"Off", "On"};
+String[] tsHorizScaleArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //Used to print the status of each channel in the console when loading settings
 String[] channelsActiveArray = {"Active", "Not Active"};
@@ -62,7 +61,7 @@ String[] fftFilterArray = {"Filtered", "Unfilt."};
 
 //Used to set text in dropdown menus when loading Accelerometer settings
 String[] accVertScaleArray = {"Auto","1 g", "2 g", "4 g"};
-String[] accHorizScaleArray = timeSeriesHorizScaleStrArray;
+String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //Used to set text in dropdown menus when loading Networking settings
 String[] nwProtocolArray = {"OSC", "UDP", "LSL", "Serial"};
@@ -71,7 +70,7 @@ String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
 //Used to set text in dropdown menus when loading Analog Read settings
 String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
-String[] arHorizScaleArray = timeSeriesHorizScaleStrArray;
+String[] arHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //Used to set text in dropdown menus when loading Head Plot settings
 String[] hpIntensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};
@@ -106,7 +105,6 @@ int loadBoardMode;
 //Load TS dropdown variables
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
-int loadTimeSeriesHorizSync;
 
 //Load Accel. dropdown variables
 int loadAccelVertScale;
@@ -327,7 +325,6 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   saveGlobalSettings.setInt("Framerate", frameRateCounter);
   saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-  saveGlobalSettings.setInt("Time Series Horiz Sync", syncDuration);
   saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
     saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
@@ -559,7 +556,6 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
-  loadTimeSeriesHorizSync = loadGlobalSettings.getInt("Time Series Horiz Sync");
   Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
@@ -922,9 +918,6 @@ void loadApplyWidgetDropdownText() {
 
   Duration(loadTimeSeriesHorizScale);
     w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
-
-  Sync_Duration(loadTimeSeriesHorizSync);
-    w_timeSeries.cp5_widget.getController("Sync_Duration").getCaptionLabel().setText(tsSyncArray[loadTimeSeriesHorizSync]);
 
   ////////Apply FFT settings
   MaxFreq(fftMaxFrqLoad); //This changes the back-end

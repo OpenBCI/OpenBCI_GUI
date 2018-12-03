@@ -4,7 +4,7 @@ Use OpenBCIHub v2.0.3 please.
 
 ### New Features
 * Sync Time Series and Accelerometer functionality and appearance #410
-* Option in Time Series to sync time window for all widgets #410
+* Option to sync time window in Accelerometer and Analog Read #410
 
 ### Bug Fixes
 

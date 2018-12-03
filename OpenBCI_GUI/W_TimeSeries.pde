@@ -71,9 +71,8 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("Sync_Duration", "Sync", Arrays.asList(tsSyncArray), 0);
     addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(tsVertScaleArray), tsVertScaleSave);
-    addDropdown("Duration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), tsHorizScaleSave);
+    addDropdown("Duration", "Window", Arrays.asList(tsHorizScaleArray), tsHorizScaleSave);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //Instantiate scrollbar if using playback mode and scrollbar feature in use
@@ -326,26 +325,25 @@ void Duration(int n) {
   tsHorizScaleSave = n;
   // println("adjust duration to: " + xLimOptions[n]);
   //set time series x axis to the duration selected from dropdown
+  int newDuration = w_timeSeries.xLimOptions[tsHorizScaleSave];
   for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-    w_timeSeries.channelBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
+    w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
   }
   //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-  if (syncDuration > 0) {
-    accHorizScaleSave = n;
+  if (accHorizScaleSave == 0) {
+    //accHorizScaleSave = n;
     //set accelerometer x axis to the duration selected from dropdown
-    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
+    w_accelerometer.accelerometerBar[0].adjustTimeAxis(newDuration);
+  } else if (arHorizScaleSave == 0){
+    //set analog read x axis to the duration selected from dropdown
     if (eegDataSource == DATASOURCE_CYTON) {
-      arHorizScaleSave = n;
+      //arHorizScaleSave = n;
       for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-        w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
+        w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
       }
     }
   }
   closeAllDropdowns();
-}
-
-void Sync_Duration(int n) {
-  syncDuration = n;
 }
 
 //triggered when there is an event in the LogLin Dropdown

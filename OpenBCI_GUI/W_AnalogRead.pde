@@ -23,7 +23,7 @@ class W_AnalogRead extends Widget {
 
   AnalogReadBar[] analogReadBars;
 
-  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   boolean allowSpillover = false;
@@ -50,7 +50,7 @@ class W_AnalogRead extends Widget {
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
     addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), arInitialVertScaleIndex);
-    addDropdown("Duration_AR", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), arInitialHorizScaleIndex);
+    addDropdown("Duration_AR", "Window", Arrays.asList(arHorizScaleArray), arInitialHorizScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //set number of anaolg reads
@@ -221,21 +221,18 @@ void VertScale_AR(int n) {
 //triggered when there is an event in the LogLin Dropdown
 void Duration_AR(int n) {
   // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
+  //set analog read x axis to the duration selected from dropdown
   arHorizScaleSave = n;
-  for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-    w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
-  }
-  //If selected by user in Time Series...
+
   //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-  if (syncDuration > 0) {
-    tsHorizScaleSave = n;
-    //set time series x axis to the duration selected from dropdown
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[n]);
+  if (n == 0) {
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+      w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
     }
-    accHorizScaleSave = n;
-    //set accelerometer x axis to the duration selected from dropdown
-    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
+  } else {
+    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+      w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
+    }
   }
   closeAllDropdowns();
 }

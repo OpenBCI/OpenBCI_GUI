@@ -31,7 +31,7 @@ class W_accelerometer extends Widget {
   color eggshell = color(255, 253, 248);
 
   // Accelerometer Stuff
-  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 1, 2, 4};
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
   int accelHorizLimit = 20;
@@ -76,7 +76,7 @@ class W_accelerometer extends Widget {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     addDropdown("accelVertScale", "Vert Scale", Arrays.asList(accVertScaleArray), accVertScaleSave);
-    addDropdown("accelDuration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), accHorizScaleSave);
+    addDropdown("accelDuration", "Window", Arrays.asList(accHorizScaleArray), accHorizScaleSave);
 
     setGraphDimensions();
     yMaxMin = adjustYMaxMinBasedOnSource();
@@ -414,13 +414,13 @@ void accelVertScale(int n) {
 //triggered when there is an event in the Duration Dropdown
 void accelDuration(int n) {
   accHorizScaleSave = n;
-  //set accelerometer x axis to the duration selected from dropdown
-  w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
-  //If selected by user in Time Series...
+
   //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-  if (syncDuration > 0) {
-    Duration(n);
-    if (eegDataSource == DATASOURCE_CYTON) Duration_AR(n);
+  if (n == 0) {
+    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+  } else {
+    //set accelerometer x axis to the duration selected from dropdown
+    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
   }
   closeAllDropdowns();
 }
