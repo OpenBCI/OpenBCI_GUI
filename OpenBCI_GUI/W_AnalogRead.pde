@@ -82,7 +82,8 @@ class W_AnalogRead extends Widget {
       AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
       analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
-      analogReadBars[i].adjustTimeAxis(xLimOptions[arInitialHorizScaleIndex]);
+      //sync horiz axis to Time Series by default
+      analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
     }
 
     analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);

@@ -298,7 +298,7 @@ int checkForSuccessTS = 0;
 
 //Accelerometer settings
 int accVertScaleSave = 2;
-int accHorizScaleSave = 3;
+int accHorizScaleSave = 0;
 
 //FFT plot settings,
 int fftMaxFrqSave = 2;
@@ -309,7 +309,7 @@ int fftFilterSave = 0;
 
 //Analog Read settings
 int arVertScaleSave = 5; //updates in VertScale_AR()
-int arHorizScaleSave = 2; //updates in Duration_AR()
+int arHorizScaleSave = 0; //updates in Duration_AR()
 
 //Headplot settings
 int hpIntensitySave = 2;

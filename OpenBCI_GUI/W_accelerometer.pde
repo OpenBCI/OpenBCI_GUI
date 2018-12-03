@@ -96,7 +96,8 @@ class W_accelerometer extends Widget {
     AccelerometerBar tempBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //int _channelNumber, int _x, int _y, int _w, int _h
     accelerometerBar[0] = tempBar;
     //accelerometerBar[0].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
-    accelerometerBar[0].adjustTimeAxis(xLimOptions[accelInitialHorizScaleIndex]);
+    //sync horiz axis to Time Series by default
+    accelerometerBar[0].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
 
     String defaultAccelModeButtonString;
     if (eegDataSource == DATASOURCE_GANGLION) {
