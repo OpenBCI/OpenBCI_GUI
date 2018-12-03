@@ -43,6 +43,7 @@ String [] dataProcessingBPArray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", 
 // Used to set text in Time Series dropdown settings
 String[] tsVertScaleArray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
 String[] tsHorizScaleArray = timeSeriesHorizScaleStrArray;
+String[] tsSyncArray = {"Off", "On"};
 
 //Used to print the status of each channel in the console when loading settings
 String[] channelsActiveArray = {"Active", "Not Active"};
@@ -105,6 +106,7 @@ int loadBoardMode;
 //Load TS dropdown variables
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
+int loadTimeSeriesHorizSync;
 
 //Load Accel. dropdown variables
 int loadAccelVertScale;
@@ -235,7 +237,7 @@ void initSoftwareSettings() {
     loadGUISettings(userSettingsFileToLoad);
     errorUserSettingsNotFound = false;
   } catch (Exception e) {
-    println(e.getMessage());
+    e.printStackTrace();
     println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
     errorUserSettingsNotFound = true;
   }
@@ -325,6 +327,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   saveGlobalSettings.setInt("Framerate", frameRateCounter);
   saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
+  saveGlobalSettings.setInt("Time Series Horiz Sync", syncDuration);
   saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
     saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
@@ -556,6 +559,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadFramerate = loadGlobalSettings.getInt("Framerate");
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
+  loadTimeSeriesHorizSync = loadGlobalSettings.getInt("Time Series Horiz Sync");
   Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
   if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
@@ -820,7 +824,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
       w_accelerometer.accelModeButton.setString("Turn Accel. Off"); //update button text
       w_accelerometer.drawAccValues(); //draw accelerometer
       w_accelerometer.draw3DGraph();
-      w_accelerometer.accelerometerBar[0].draw();;
+      w_accelerometer.accelerometerBar[0].draw();
     } else {
       ganglion.accelStop(); //send message to hub
       w_accelerometer.accelModeButton.setString("Turn Accel. On"); //update button text
@@ -919,6 +923,9 @@ void loadApplyWidgetDropdownText() {
   Duration(loadTimeSeriesHorizScale);
     w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
 
+  Sync_Duration(loadTimeSeriesHorizSync);
+    w_timeSeries.cp5_widget.getController("Sync_Duration").getCaptionLabel().setText(tsSyncArray[loadTimeSeriesHorizSync]);
+
   ////////Apply FFT settings
   MaxFreq(fftMaxFrqLoad); //This changes the back-end
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(fftMaxFrqArray[fftMaxFrqLoad]); //This changes front-end... etc.
@@ -937,9 +944,10 @@ void loadApplyWidgetDropdownText() {
 
   ////////Apply Accelerometer settings;
   accelVertScale(loadAccelVertScale);
-    w_accelerometer.cp5_widget.getController("Vert Scale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
+    w_accelerometer.cp5_widget.getController("accelVertScale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
+
   accelDuration(loadAccelHorizScale);
-    w_accelerometer.cp5_widget.getController("Window").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
+    w_accelerometer.cp5_widget.getController("accelDuration").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
 
   ////////Apply Anolog Read dropdowns to Live Cyton Only
   if (eegDataSource == DATASOURCE_CYTON){

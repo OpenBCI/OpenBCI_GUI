@@ -71,8 +71,8 @@ class W_timeSeries extends Widget {
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-    addDropdown("Sync_Duration", "Sync", Arrays.asList("Off", "On"), 0);
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
+    addDropdown("Sync_Duration", "Sync", Arrays.asList(tsSyncArray), 0);
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(tsVertScaleArray), tsVertScaleSave);
     addDropdown("Duration", "Window", Arrays.asList(timeSeriesHorizScaleStrArray), tsHorizScaleSave);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
