@@ -67,6 +67,11 @@ class W_timeSeries extends Widget {
     ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
     numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
+    //Time Series settings
+    tsVertScaleSave = 3;
+    tsHorizScaleSave = 2;
+    //checkForSuccessTS = 0;
+
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function

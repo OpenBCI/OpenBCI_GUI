@@ -290,49 +290,41 @@ int currentLayout;
 //Notch and Bandpass filter variables for save
 int dataProcessingNotchSave = 0;
 int dataProcessingBandpassSave = 3;
-
 //Time Series settings
-int tsVertScaleSave = 3;
-int tsHorizScaleSave = 2;
+int tsVertScaleSave;
+int tsHorizScaleSave;
 int checkForSuccessTS = 0;
-
 //Accelerometer settings
-int accVertScaleSave = 2;
-int accHorizScaleSave = 0;
-
+int accVertScaleSave;
+int accHorizScaleSave;
 //FFT plot settings,
-int fftMaxFrqSave = 2;
-int fftMaxuVSave = 2;
-int fftLogLinSave = 0;
-int fftSmoothingSave = 3;
-int fftFilterSave = 0;
-
+int fftMaxFrqSave;
+int fftMaxuVSave;
+int fftLogLinSave;
+int fftSmoothingSave;
+int fftFilterSave;
 //Analog Read settings
-int arVertScaleSave = 5; //updates in VertScale_AR()
-int arHorizScaleSave = 0; //updates in Duration_AR()
-
+int arVertScaleSave; //updates in VertScale_AR()
+int arHorizScaleSave; //updates in Duration_AR()
 //Headplot settings
-int hpIntensitySave = 2;
-int hpPolaritySave = 0;
-int hpContoursSave = 0;
-int hpSmoothingSave = 3;
-
+int hpIntensitySave;
+int hpPolaritySave;
+int hpContoursSave;
+int hpSmoothingSave;
 //EMG settings
-int emgSmoothingSave = 4;
-int emguVLimSave = 2;
-int emgCreepSave = 3;
-int emgMinDeltauVSave = 1;
-
+int emgSmoothingSave;
+int emguVLimSave;
+int emgCreepSave;
+int emgMinDeltauVSave;
 //Focus widget settings
-int focusThemeSave = 0;
-int focusKeySave = 0;
-
+int focusThemeSave;
+int focusKeySave;
 //default data types for streams 1-4 in Networking widget
-int nwDataType1 = 0;
-int nwDataType2 = 0;
-int nwDataType3 = 0;
-int nwDataType4 = 0;
-int nwProtocolSave = 0;
+int nwDataType1;
+int nwDataType2;
+int nwDataType3;
+int nwDataType4;
+int nwProtocolSave;
 
 //default configuration settings file location and file name variables
 final String cytonUserSettingsFile = "SavedData/Settings/CytonUserSettings.json";
@@ -357,7 +349,7 @@ final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
 String localGUIVersionString = "v4.0.3";
-String localGUIVersionDate = "November 2018";
+String localGUIVersionDate = "December 2018";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 

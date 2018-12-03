@@ -75,6 +75,11 @@ class W_accelerometer extends Widget {
   W_accelerometer(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+    //Default dropdown settings
+    accVertScaleSave = 2;
+    accHorizScaleSave = 0;
+
+    //Make dropdowns
     addDropdown("accelVertScale", "Vert Scale", Arrays.asList(accVertScaleArray), accVertScaleSave);
     addDropdown("accelDuration", "Window", Arrays.asList(accHorizScaleArray), accHorizScaleSave);
 

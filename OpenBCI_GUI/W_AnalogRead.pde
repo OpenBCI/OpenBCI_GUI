@@ -36,7 +36,7 @@ class W_AnalogRead extends Widget {
   boolean analogReadOn = false;
 
  int arInitialVertScaleIndex = 5;
- int arInitialHorizScaleIndex = 2;
+ int arInitialHorizScaleIndex = 0;
 
   private boolean hasScrollbar = false;
 
@@ -45,15 +45,18 @@ class W_AnalogRead extends Widget {
   W_AnalogRead(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+    //Analog Read settings
+    arVertScaleSave = 5; //updates in VertScale_AR()
+    arHorizScaleSave = 0; //updates in Duration_AR()
+
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
-    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), arInitialVertScaleIndex);
+    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList(arVertScaleArray), arInitialVertScaleIndex);
     addDropdown("Duration_AR", "Window", Arrays.asList(arHorizScaleArray), arInitialHorizScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
-    //set number of anaolg reads
+    //set number of analog reads
     if (cyton.isWifi()) {
       numAnalogReadBars = 2;
     } else {
