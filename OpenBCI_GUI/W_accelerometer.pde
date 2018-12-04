@@ -550,6 +550,12 @@ class AccelerometerBar{
     nPoints = nPointsBasedOnDataSource();
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
     //println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
+    accelTimeArray = new float[nPoints];
+    for (int i = 0; i < accelTimeArray.length; i++) {
+      accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
+    }
+
+    //printArray(accelTimeArray);
 
     accelPointsX = new GPointsArray(nPoints);
     accelPointsY = new GPointsArray(nPoints);
@@ -572,11 +578,11 @@ class AccelerometerBar{
     //println("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
     for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-      float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
+      //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
       //println(time);
-      GPoint tempPointX = new GPoint(accelTimeArray[i], accelArrayX[i]);
-      GPoint tempPointY = new GPoint(accelTimeArray[i], accelArrayY[i]);
-      GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArrayZ[i]);
+      GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayX[i]);
+      GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayY[i]);
+      GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayZ[i]);
       accelPointsX.set(i-accelBuffDiff, tempPointX);
       accelPointsY.set(i-accelBuffDiff, tempPointY);
       accelPointsZ.set(i-accelBuffDiff, tempPointZ);
