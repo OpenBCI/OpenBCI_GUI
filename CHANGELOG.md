@@ -1,3 +1,53 @@
+# v4.0.2
+
+Use OpenBCIHub v2.0.2 please.
+
+### New Features
+
+* Timestamps in CSV now come from the OpenBCIHub
+* Playback widget with recent file history
+* Update GUI button and version check
+
+### Breaking Changes
+
+* Now sending and receiving from the hub in JSON!
+
+# v4.0.0
+
+Use OpenBCIHub v2.0.0 please.
+
+### New Features
+
+* Timestamps in CSV now come from the OpenBCIHub
+* Playback widget with recent file history
+* Update GUI button and version check
+
+### Breaking Changes
+
+* Now sending and receiving from the hub in JSON!
+
+## Alpha 2
+
+### New features
+
+* Add number of channels to output of odf files.
+
+### Bug fixes
+
+* Ganglion did not work
+* Ganglion accel did not work
+* Ganglion over bled112 did not work
+* Added playback widget to address #48 #55
+* Added button to check version and update GUI
+
+## Alpha 1
+
+* Initial Release with an error
+
+## Alpha 0
+
+* Initial Release
+
 # v3.4.0
 
 Use OpenBCIHub v1.4.5 please.
@@ -11,7 +61,19 @@ Use OpenBCIHub v1.4.5 please.
 * Pulse streaming added to Networking
 * Added fourth stream to OSC mode
 * Added plist file to add settings for information when app is built (thanks @retiutut)
+* Added playback scrollbar sub-widget
 * Add BLED112 support for windows and linux
+
+## Beta 1
+
+### Improvements
+
+* Added playback scrollbar sub-widget #38
+
+### Bug Fixes
+
+* Ganglion-accelerometer behavior when loading
+* Catch error when using outdated playback files #348
 
 ## Beta 0
 
