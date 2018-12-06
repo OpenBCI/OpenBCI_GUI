@@ -7,6 +7,12 @@ Use OpenBCIHub v2.0.3 please.
 * Ganglion did not work for Mojave #402
 * Ganglion could not do playback file #399
 
+## Beta 1
+
+### Bug Fixes
+
+* Fixed bug where cyton (and cyton daisy) did not work for auxData #414
+
 ## Beta 0
 
 * Initial Release
