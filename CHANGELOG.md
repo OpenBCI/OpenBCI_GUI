@@ -14,6 +14,12 @@ Use OpenBCIHub v2.0.3 please.
 * Fix Time Series graph display issue #247
 * Align Ganglion accelerometer data to match Cyton #398
 
+## Beta 1
+
+### Bug Fixes
+
+* Fixed bug where cyton (and cyton daisy) did not work for auxData #414
+
 ## Beta 0
 
 * Initial Release
