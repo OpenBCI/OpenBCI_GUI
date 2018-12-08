@@ -166,7 +166,7 @@ class W_accelerometer extends Widget {
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-    if (isRunning) {
+    if (isRunning && accelerometerModeOn) {
       //update the current Accelerometer points
       //println("plot points updating");
       updateAccelPoints();
@@ -226,10 +226,11 @@ class W_accelerometer extends Widget {
     if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
       drawAccValues();
       draw3DGraph();
-      accelerometerBar[0].draw();
       if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
         accelModeButton.setString("Turn Accel. On");
         accelModeButton.draw();
+      } else {
+        accelerometerBar[0].draw();
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       if (accelerometerModeOn) {
@@ -447,7 +448,7 @@ class AccelerometerBar{
   GPointsArray accelPointsY;
   GPointsArray accelPointsZ;
   int nPoints;
-  int numSeconds = 20; //default to 10 seconds
+  int numSeconds = 20; //default to 20 seconds
   float timeBetweenPoints;
   float[] accelTimeArray;
 

@@ -322,7 +322,7 @@ void VertScale_TS(int n) {
   for(int i = 0; i < w_timeSeries.numChannelBars; i++){
     w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
   }
-  closeAllDropdowns();
+  //closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
@@ -336,13 +336,12 @@ void Duration(int n) {
   }
   //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
   if (accHorizScaleSave == 0) {
-    //accHorizScaleSave = n;
     //set accelerometer x axis to the duration selected from dropdown
     w_accelerometer.accelerometerBar[0].adjustTimeAxis(newDuration);
-  } else if (arHorizScaleSave == 0){
-    //set analog read x axis to the duration selected from dropdown
-    if (eegDataSource == DATASOURCE_CYTON) {
-      //arHorizScaleSave = n;
+  }
+  if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
+    if (arHorizScaleSave == 0){
+      //set analog read x axis to the duration selected from dropdown
       for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
         w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
       }

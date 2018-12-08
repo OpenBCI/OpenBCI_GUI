@@ -229,12 +229,10 @@ void Duration_AR(int n) {
   arHorizScaleSave = n;
 
   //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-  if (n == 0) {
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+  for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+    if (n == 0) {
       w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
-    }
-  } else {
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+    } else {
       w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
     }
   }
@@ -259,6 +257,7 @@ class AnalogReadBar{
   int nPoints;
   int numSeconds;
   float timeBetweenPoints;
+  int arBuffSize;
 
   color channelColor; //color of plot trace
 
@@ -298,7 +297,7 @@ class AnalogReadBar{
     w = _w;
     h = _h;
 
-    numSeconds = 5;
+    numSeconds = 20;
     plot = new GPlot(_parent);
     plot.setPos(x + 36 + 4, y);
     plot.setDim(w - 36 - 4, h);
@@ -318,14 +317,14 @@ class AnalogReadBar{
       }
     }
 
-    nPoints = nPointsBasedOnDataSource();
-
+    nPoints = nPointsBasedOnDataSource(); //max duration 20s
+    arBuffSize = nPoints;
     analogReadData = new int[nPoints];
 
     analogReadPoints = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
 
-    for (int i = 0; i < nPoints; i++) {
+    for (int i = 0; i < arBuffSize; i++) {
       float time = -(float)numSeconds + (float)i*timeBetweenPoints;
       float analog_value = 0.0; //0.0 for all points to start
       GPoint tempPoint = new GPoint(time, analog_value);
@@ -411,13 +410,14 @@ class AnalogReadBar{
       samplesProcessed++;
     }
 
+    int arBuffDiff = arBuffSize - nPoints;
     if (numSamplesToProcess > 0) {
-      for (int i = 0; i < nPoints; i++) {
-        float timey = -(float)numSeconds + (float)i*timeBetweenPoints;
+      for (int i = arBuffDiff; i < arBuffSize; i++) {
+        float timey = -(float)numSeconds + (float)(i-arBuffDiff)*timeBetweenPoints;
         float voltage = analogReadData[i];
 
         GPoint tempPoint = new GPoint(timey, voltage);
-        analogReadPoints.set(i, tempPoint);
+        analogReadPoints.set(i-arBuffDiff, tempPoint);
 
       }
       plot.setPoints(analogReadPoints); //reset the plot with updated analogReadPoints
