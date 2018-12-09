@@ -218,8 +218,8 @@ void VertScale_AR(int n) {
   arVertScaleSave = n;
   for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
       w_analogRead.analogReadBars[i].adjustVertScale(w_analogRead.yLimOptions[n]);
-    }
-  closeAllDropdowns();
+  }
+  //closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -236,7 +236,7 @@ void Duration_AR(int n) {
       w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
     }
   }
-  closeAllDropdowns();
+  //closeAllDropdowns();
 }
 
 //========================================================================================================================
@@ -484,7 +484,7 @@ class AnalogReadBar{
       }
     }
     // println("New X axis = " + _newTimeSize);
-    closeAllDropdowns();
+    //closeAllDropdowns();
   }
 
   void adjustVertScale(int _vertScaleValue){
@@ -494,7 +494,7 @@ class AnalogReadBar{
       isAutoscale = false;
       plot.setYLim(-_vertScaleValue, _vertScaleValue);
     }
-    closeAllDropdowns();
+    //closeAllDropdowns();
   }
 
   void autoScale(){

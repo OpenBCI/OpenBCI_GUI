@@ -165,7 +165,7 @@ float auxBuff[][];
 float data_elec_imp_ohm[];
 
 float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-float dataBuff_len_sec = displayTime_sec + 0f; //needs to be wider than actual display so that filter startup is hidden
+float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
 OutputFile_rawtxt fileoutput_odf;

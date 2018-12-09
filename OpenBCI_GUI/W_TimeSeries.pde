@@ -347,7 +347,7 @@ void Duration(int n) {
       }
     }
   }
-  closeAllDropdowns();
+  //closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
