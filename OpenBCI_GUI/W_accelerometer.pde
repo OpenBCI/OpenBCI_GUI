@@ -37,7 +37,7 @@ class W_accelerometer extends Widget {
   int accelHorizLimit = 20;
   //Number of points, used to make buffers
   int accelBuffSize;
-  AccelerometerBar[] accelerometerBar;
+  AccelerometerBar accelerometerBar;
 
   // bottom xyz graph
   int accelGraphWidth;
@@ -95,14 +95,14 @@ class W_accelerometer extends Widget {
     initAccelData();
 
     //create our channel bar and populate our accelerometerBar array!
-    accelerometerBar = new AccelerometerBar[numAccelerometerBars];
+    //accelerometerBar = new AccelerometerBar();
     println("init accelerometer bar");
     int analogReadBarY = int(accelGraphY) + (accelGraphHeight); //iterate through bar locations
     AccelerometerBar tempBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //int _channelNumber, int _x, int _y, int _w, int _h
-    accelerometerBar[0] = tempBar;
-    //accelerometerBar[0].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
+    accelerometerBar = tempBar;
+    //accelerometerBar.adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
     //sync horiz axis to Time Series by default
-    accelerometerBar[0].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+    accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
 
     String defaultAccelModeButtonString;
     if (eegDataSource == DATASOURCE_GANGLION) {
@@ -167,11 +167,13 @@ class W_accelerometer extends Widget {
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
     if (isRunning && accelerometerModeOn) {
-      //update the current Accelerometer points
-      //println("plot points updating");
+
+      //update the current Accelerometer values
       updateAccelPoints();
+
       //update the line graph and corresponding gplot points
-      accelerometerBar[0].update();
+      accelerometerBar.update();
+
       if (!accelInitHasOccured) accelInitHasOccured = true;
     }
   }
@@ -192,9 +194,9 @@ class W_accelerometer extends Widget {
       currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
       currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
     }
-    appendAndShift(accelArrayX, currentXvalue);
-    appendAndShift(accelArrayY, currentYvalue);
-    appendAndShift(accelArrayZ, currentZvalue);
+    //appendAndShift(accelArrayX, currentXvalue);
+    //appendAndShift(accelArrayY, currentYvalue);
+    //appendAndShift(accelArrayZ, currentZvalue);
   }
 
   void draw(){
@@ -230,24 +232,24 @@ class W_accelerometer extends Widget {
         accelModeButton.setString("Turn Accel. On");
         accelModeButton.draw();
       } else {
-        accelerometerBar[0].draw();
+        accelerometerBar.draw();
       }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
       if (accelerometerModeOn) {
         drawAccValues();
         draw3DGraph();
-        accelerometerBar[0].draw();
+        accelerometerBar.draw();
       }
       if (ganglion.isBLE()) accelModeButton.draw();
     } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
       drawAccValues();
       draw3DGraph();
-      accelerometerBar[0].draw();
+      accelerometerBar.draw();
     }
     else {  // PLAYBACK
       drawAccValues();
       draw3DGraph();
-      accelerometerBar[0].draw();
+      accelerometerBar.draw();
     }
 
     popStyle();
@@ -280,7 +282,7 @@ class W_accelerometer extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
     setGraphDimensions();
     //resize the accelerometer line graph
-    accelerometerBar[0].screenResized(accelGraphX, accelGraphY, accelGraphWidth-accPadding*2, accelGraphHeight); //bar x, bar y, bar w, bar h
+    accelerometerBar.screenResized(accelGraphX, accelGraphY, accelGraphWidth-accPadding*2, accelGraphHeight); //bar x, bar y, bar w, bar h
     //update the position of the accel mode button
     accelModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
@@ -414,7 +416,7 @@ class W_accelerometer extends Widget {
 //These functions are activated when an item from the corresponding dropdown is selected
 void accelVertScale(int n) {
   accVertScaleSave = n;
-  w_accelerometer.accelerometerBar[0].adjustVertScale(w_accelerometer.yLimOptions[n]);
+  w_accelerometer.accelerometerBar.adjustVertScale(w_accelerometer.yLimOptions[n]);
   closeAllDropdowns();
 }
 
@@ -424,10 +426,10 @@ void accelDuration(int n) {
 
   //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
   if (n == 0) {
-    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+    w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
   } else {
     //set accelerometer x axis to the duration selected from dropdown
-    w_accelerometer.accelerometerBar[0].adjustTimeAxis(w_accelerometer.xLimOptions[n]);
+    w_accelerometer.accelerometerBar.adjustTimeAxis(w_accelerometer.xLimOptions[n]);
   }
   closeAllDropdowns();
 }

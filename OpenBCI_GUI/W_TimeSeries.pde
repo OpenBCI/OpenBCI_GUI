@@ -337,7 +337,7 @@ void Duration(int n) {
   //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
   if (accHorizScaleSave == 0) {
     //set accelerometer x axis to the duration selected from dropdown
-    w_accelerometer.accelerometerBar[0].adjustTimeAxis(newDuration);
+    w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
   }
   if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
     if (arHorizScaleSave == 0){
@@ -1037,7 +1037,7 @@ class PlaybackScrollbar {
         w_timeSeries.update();
       }
       w_accelerometer.initAccelData();
-      w_accelerometer.accelerometerBar[0].update();
+      w_accelerometer.accelerometerBar.update();
 
       if (!isRunning) { //if the system is not running
         //Success print detailed position to bottom of GUI
