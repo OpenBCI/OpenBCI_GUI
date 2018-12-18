@@ -70,7 +70,7 @@ class W_accelerometer extends Widget {
   boolean accelerometerModeOn = true;
   Button accelModeButton;
 
-  W_accelerometer(PApplet _parent){
+  W_accelerometer(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //Default dropdown settings
@@ -130,11 +130,11 @@ class W_accelerometer extends Widget {
     }
   }
 
-  float adjustYMaxMinBasedOnSource(){
+  float adjustYMaxMinBasedOnSource() {
     float _yMaxMin;
-    if(eegDataSource == DATASOURCE_CYTON){
+    if(eegDataSource == DATASOURCE_CYTON) {
       _yMaxMin = 4.0;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4){
+    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4) {
       _yMaxMin = 2.0;
       accelXyzLimit = 2.0;
     }else{
@@ -143,7 +143,7 @@ class W_accelerometer extends Widget {
     return _yMaxMin;
   }
 
-  int nPointsBasedOnDataSource(){
+  int nPointsBasedOnDataSource() {
     return accelHorizLimit * (int)getSampleRateSafe();
   }
 
@@ -161,7 +161,7 @@ class W_accelerometer extends Widget {
     updating = _updating;
   }
 
-  void update(){
+  void update() {
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
     if (isRunning && accelerometerModeOn) {
@@ -190,7 +190,7 @@ class W_accelerometer extends Widget {
     }
   }
 
-  void draw(){
+  void draw() {
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
     pushStyle();
@@ -246,7 +246,7 @@ class W_accelerometer extends Widget {
     popStyle();
   }
 
-  void setGraphDimensions(){
+  void setGraphDimensions() {
     //println("accel w "+w);
     //println("accel h "+h);
     //println("accel x "+x);
@@ -265,7 +265,7 @@ class W_accelerometer extends Widget {
     PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
   }
 
-  void screenResized(){
+  void screenResized() {
     int prevX = x;
     int prevY = y;
     int prevW = w;
@@ -278,10 +278,10 @@ class W_accelerometer extends Widget {
     accelModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
-  void mousePressed(){
+  void mousePressed() {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    if(eegDataSource == DATASOURCE_GANGLION){
+    if(eegDataSource == DATASOURCE_GANGLION) {
       if (ganglion.isBLE()) {
         if (accelModeButton.isMouseHere()) {
           accelModeButton.setIsActive(true);
@@ -294,12 +294,12 @@ class W_accelerometer extends Widget {
     }
   }
 
-  void mouseReleased(){
+  void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-    if(eegDataSource == DATASOURCE_GANGLION){
-      if(accelModeButton.isActive && accelModeButton.isMouseHere()){
-        if(ganglion.isAccelModeActive()){
+    if(eegDataSource == DATASOURCE_GANGLION) {
+      if(accelModeButton.isActive && accelModeButton.isMouseHere()) {
+        if(ganglion.isAccelModeActive()) {
           ganglion.accelStop();
           accelModeButton.setString("Turn Accel. On");
           accelerometerModeOn = false;
@@ -312,7 +312,7 @@ class W_accelerometer extends Widget {
       }
       accelModeButton.setIsActive(false);
     } else if (eegDataSource == DATASOURCE_CYTON) {
-      if(accelModeButton.isActive && accelModeButton.isMouseHere()){
+      if(accelModeButton.isActive && accelModeButton.isMouseHere()) {
         cyton.setBoardMode(BOARD_MODE_DEFAULT);
         output("Starting to read accelerometer");
         accelerometerModeOn = true;
@@ -442,7 +442,7 @@ class AccelerometerBar{
   int autoScaleYLim = 0;
   int lastProcessedDataPacketInd = 0;
 
-  AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
+  AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
     isOn = true;
 
@@ -503,14 +503,14 @@ class AccelerometerBar{
   }
 
   //Used to update the accelerometerBar class
-  void update(){
+  void update() {
     updateGPlotPoints();
-    if(isAutoscale){
+    if(isAutoscale) {
       autoScale();
     }
   }
 
-  void draw(){
+  void draw() {
     pushStyle();
     plot.beginDraw();
     plot.drawBox(); // we won't draw this eventually ...
@@ -524,11 +524,11 @@ class AccelerometerBar{
     popStyle();
   }
 
-  int nPointsBasedOnDataSource(){
+  int nPointsBasedOnDataSource() {
     return numSeconds * (int)getSampleRateSafe();
   }
 
-  void adjustTimeAxis(int _newTimeSize){
+  void adjustTimeAxis(int _newTimeSize) {
     numSeconds = _newTimeSize;
     plot.setXLim(-_newTimeSize,0);
 
@@ -547,7 +547,7 @@ class AccelerometerBar{
     accelPointsY = new GPointsArray(nPoints);
     accelPointsZ = new GPointsArray(nPoints);
 
-    if(_newTimeSize > 1){
+    if(_newTimeSize > 1) {
       plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
     }else{
       plot.getXAxis().setNTicks(10);
@@ -561,7 +561,7 @@ class AccelerometerBar{
   }
 
   //Used to update the Points within the graph
-  void updateGPlotPoints(){
+  void updateGPlotPoints() {
     int accelBuffSize = w_accelerometer.accelBuffSize;
 
     // update data in plot
@@ -572,7 +572,7 @@ class AccelerometerBar{
 
     // Shift internal ring buffer numSamplesToProcess
     if (numSamplesToProcess > 0) {
-      for(int i = 0; i < accelArrayX.length - numSamplesToProcess; i++){
+      for(int i = 0; i < accelArrayX.length - numSamplesToProcess; i++) {
         accelArrayX[i] = accelArrayX[i + numSamplesToProcess];
         accelArrayY[i] = accelArrayY[i + numSamplesToProcess];
         accelArrayZ[i] = accelArrayZ[i + numSamplesToProcess];
@@ -621,8 +621,8 @@ class AccelerometerBar{
     }
   }
 
-  void adjustVertScale(int _vertScaleValue){
-    if(_vertScaleValue == 0){
+  void adjustVertScale(int _vertScaleValue) {
+    if(_vertScaleValue == 0) {
       isAutoscale = true;
     } else {
       isAutoscale = false;
@@ -630,17 +630,17 @@ class AccelerometerBar{
     }
   }
 
-  void autoScale(){
+  void autoScale() {
     autoScaleYLim = 0;
-    for(int i = 0; i < nPoints; i++){
-      if(int(abs(accelPointsX.getY(i))) > autoScaleYLim){
+    for(int i = 0; i < nPoints; i++) {
+      if(int(abs(accelPointsX.getY(i))) > autoScaleYLim) {
         autoScaleYLim = int(abs(accelPointsX.getY(i)));
       }
     }
     plot.setYLim(-autoScaleYLim, autoScaleYLim);
   }
 
-  void screenResized(int _x, int _y, int _w, int _h){
+  void screenResized(int _x, int _y, int _w, int _h) {
     x = _x;
     y = _y;
     w = _w+100;
