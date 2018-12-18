@@ -20,17 +20,16 @@ float[] accelArrayX;
 float[] accelArrayY;
 float[] accelArrayZ;
 float accelXyzLimit = 4.0;
-int accelHz = 25; //default 25hz
 
 class W_accelerometer extends Widget {
-  //to see all core variables/methods of the Widget class, refer to Widget.pde
+  //To see all core variables/methods of the Widget class, refer to Widget.pde
   color graphStroke = color(210);
   color graphBG = color(245);
   color textColor = color(0);
   color strokeColor = color(138, 146, 153);
   color eggshell = color(255, 253, 248);
 
-  // Accelerometer Stuff
+  // Graphing variables
   int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 1, 2, 4};
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
@@ -39,15 +38,14 @@ class W_accelerometer extends Widget {
   int accelBuffSize;
   AccelerometerBar accelerometerBar;
 
-  // bottom xyz graph
+  //Bottom xyz graph
   int accelGraphWidth;
   int accelGraphHeight;
   int accelGraphX;
   int accelGraphY;
-  int numAccelerometerBars = 1;
   int accPadding = 30;
 
-  // circular 3d xyz graph
+  //Circular 3d xyz graph
   float PolarWindowX;
   float PolarWindowY;
   int PolarWindowWidth;
@@ -60,7 +58,7 @@ class W_accelerometer extends Widget {
   float currentYvalue;
   float currentZvalue;
 
-  //for synthesizing values
+  //For synthesizing values
   boolean Xrising = false;
   boolean Yrising = true;
   boolean Zrising = true;
@@ -146,7 +144,6 @@ class W_accelerometer extends Widget {
   }
 
   int nPointsBasedOnDataSource(){
-    //return  accelHorizLimit * accelHz;
     return accelHorizLimit * (int)getSampleRateSafe();
   }
 
@@ -166,15 +163,12 @@ class W_accelerometer extends Widget {
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-    if (isRunning && accelerometerModeOn) {
 
+    if (isRunning && accelerometerModeOn) {
       //update the current Accelerometer values
       updateAccelPoints();
-
       //update the line graph and corresponding gplot points
       accelerometerBar.update();
-
-      if (!accelInitHasOccured) accelInitHasOccured = true;
     }
   }
 
@@ -440,6 +434,7 @@ class AccelerometerBar{
   int numSeconds = 20; //default to 20 seconds
   float timeBetweenPoints;
   float[] accelTimeArray;
+  int numSamplesToProcess;
 
   color channelColor; //color of plot trace
 
@@ -530,7 +525,6 @@ class AccelerometerBar{
   }
 
   int nPointsBasedOnDataSource(){
-    //return numSeconds * accelHz;
     return numSeconds * (int)getSampleRateSafe();
   }
 
@@ -541,25 +535,29 @@ class AccelerometerBar{
     nPoints = nPointsBasedOnDataSource();
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
     //println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
+
     accelTimeArray = new float[nPoints];
     for (int i = 0; i < accelTimeArray.length; i++) {
       accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
     }
-
     //printArray(accelTimeArray);
 
+    //Overwrite the existing GPointsArrays with a blank one of size == nPoints
     accelPointsX = new GPointsArray(nPoints);
     accelPointsY = new GPointsArray(nPoints);
     accelPointsZ = new GPointsArray(nPoints);
+
     if(_newTimeSize > 1){
       plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
     }else{
       plot.getXAxis().setNTicks(10);
     }
+
+    //If user changes time window, and the accelerometer widget exists...
     if (w_accelerometer != null) {
-      updateGPlotPoints();
+      //...Redraw/update all of the points in the GPlot from the buffer
+      setGPlotPoints(w_accelerometer.accelBuffSize);
     }
-    // println("New X axis = " + _newTimeSize);
   }
 
   //Used to update the Points within the graph
@@ -567,7 +565,7 @@ class AccelerometerBar{
     int accelBuffSize = w_accelerometer.accelBuffSize;
 
     // update data in plot
-    int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
+    numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
     if (numSamplesToProcess < 0) {
       numSamplesToProcess += dataPacketBuff.length;
     }
@@ -576,6 +574,8 @@ class AccelerometerBar{
     if (numSamplesToProcess > 0) {
       for(int i = 0; i < accelArrayX.length - numSamplesToProcess; i++){
         accelArrayX[i] = accelArrayX[i + numSamplesToProcess];
+        accelArrayY[i] = accelArrayY[i + numSamplesToProcess];
+        accelArrayZ[i] = accelArrayZ[i + numSamplesToProcess];
       }
     }
 
@@ -588,18 +588,25 @@ class AccelerometerBar{
       if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
         lastProcessedDataPacketInd = 0;
       }
-      //println(numSamplesToProcess + samplesProcessed);
-      accelArrayX[accelBuffSize - numSamplesToProcess + samplesProcessed] = w_accelerometer.currentXvalue;
+
+      int curArrayInd = accelBuffSize - numSamplesToProcess + samplesProcessed;
+      accelArrayX[curArrayInd] = w_accelerometer.currentXvalue;
+      accelArrayY[curArrayInd] = w_accelerometer.currentYvalue;
+      accelArrayZ[curArrayInd] = w_accelerometer.currentZvalue;
 
       samplesProcessed++;
     }
 
+    //set all of the Gplot points
+    setGPlotPoints(accelBuffSize);
+  }
+
+  void setGPlotPoints(int accelBuffSize) {
     //println("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
     if (numSamplesToProcess > 0) {
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
         //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
-        //println(time);
         GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayX[i]);
         GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayY[i]);
         GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayZ[i]);
@@ -607,6 +614,7 @@ class AccelerometerBar{
         accelPointsY.set(i-accelBuffDiff, tempPointY);
         accelPointsZ.set(i-accelBuffDiff, tempPointZ);
       }
+      //set points in three layers on the same plot, just like old graph
       plot.setPoints(accelPointsX, "layer 1");
       plot.setPoints(accelPointsY, "layer 2");
       plot.setPoints(accelPointsZ, "layer 3");
