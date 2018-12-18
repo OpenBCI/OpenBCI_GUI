@@ -145,10 +145,10 @@ long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
-// @update_millis: update the buffer every 40 milliseconds
+// @UPDATE_MILLIS: update the buffer every 40 milliseconds
 // @nPointsPerUpdate: update the GUI after this many data points have been received.
 // The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
-final int update_millis = 40;
+final int UPDATE_MILLIS = 40;
 int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 // final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
 // final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
@@ -394,16 +394,16 @@ void setup() {
   //open window
   ourApplet = this;
 
-  if(frameRateCounter==0){
+  if(frameRateCounter==0) {
     frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
-  if(frameRateCounter==1){
+  if(frameRateCounter==1) {
     frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
-  if(frameRateCounter==2){
+  if(frameRateCounter==2) {
     frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
-  if(frameRateCounter==3){
+  if(frameRateCounter==3) {
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
 
@@ -501,21 +501,21 @@ void setup() {
 
 String udpReceiveString = null;
 
-void udpReceiveHandler(byte[] data, String ip, int portRX){
+void udpReceiveHandler(byte[] data, String ip, int portRX) {
 
   String udpString = new String(data);
   println(udpString+" from: "+ip+" and port: "+portRX);
-  if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0){
+  if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
 
     /*  Old version with 10 markers
     char c = value.charAt(4);
-  if ( c>= '0' && c <= '9'){
+  if ( c>= '0' && c <= '9') {
       println("Found a valid UDP STIM of value: "+int(c)+" chr: "+c);
       hub.sendCommand("`"+char(c-(int)'0'));
       */
     int intValue = Integer.parseInt(udpString.substring(4));
 
-    if (intValue > 0 && intValue < 96){ // Since we only send single char ascii value markers (from space to char(126)
+    if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
 
       String sendString = "`"+char(intValue+31);
 
@@ -883,7 +883,7 @@ void initSystem() {
 float getSampleRateSafe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
     return ganglion.getSampleRate();
-  } else if (eegDataSource == DATASOURCE_CYTON){
+  } else if (eegDataSource == DATASOURCE_CYTON) {
     return cyton.getSampleRate();
   } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
     return playbackData_table.getSampleRate();
@@ -915,7 +915,7 @@ void initCoreDataObjects() {
   // Nfft = getNfftSafe();
   nDataBackBuff = 3*(int)getSampleRateSafe();
   dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
-  nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
+  nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
   dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
   dataBuffY_uV = new float[nchan][dataBuffX.length];
   dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
@@ -1114,7 +1114,7 @@ void haltSystem() {
     cyton.closeSDandPort();
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
-    if(ganglion.isCheckingImpedance()){
+    if(ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();
       w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
     }
@@ -1263,11 +1263,11 @@ void systemDraw() { //for drawing to the screen
   // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
   // int currentWidth;
   // int currentHeight;
-  // if(!highDPI){
+  // if(!highDPI) {
   //   currentWidth = width;
   //   currentHeight = height;
   // }
-  // if(highDPI){
+  // if(highDPI) {
   //   pushMatrix();
   //   scale(2);
   // }
@@ -1405,7 +1405,7 @@ void systemDraw() { //for drawing to the screen
 
 
   // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-  // if(highDPI){
+  // if(highDPI) {
   //   popMatrix();
   //   size(currentWidth*2, currentHeight*2);
   // }

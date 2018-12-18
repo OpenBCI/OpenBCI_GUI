@@ -326,7 +326,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
   saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
-  if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+  if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
     saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
     saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
     saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
@@ -366,7 +366,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   //Save Protocol
   saveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
 
-  switch(nwProtocolSave){
+  switch(nwProtocolSave) {
     case 0:
       //Save Data Types for OSC
       saveNetworkingSettings.setInt("OSC_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
@@ -489,8 +489,8 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
 
   int numActiveWidgets = 0;
   //Save what Widgets are active and respective Container number (see Containers.pde)
-  for (int i = 0; i < wm.widgets.size(); i++){ //increment through all widgets
-    if (wm.widgets.get(i).isActive){ //If a widget is active...
+  for (int i = 0; i < wm.widgets.size(); i++) { //increment through all widgets
+    if (wm.widgets.get(i).isActive) { //If a widget is active...
       numActiveWidgets++; //increment numActiveWidgets
       //println("Widget" + i + " is active");
       // activeWidgets.add(i); //keep track of the active widget
@@ -504,7 +504,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   }
   println(numActiveWidgets + " active widgets saved!");
   //Print what widgets are in the containers used by current layout for only the number of active widgets
-  //for (int i = 0; i < numActiveWidgets; i++){
+  //for (int i = 0; i < numActiveWidgets; i++) {
     //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
     //println("Container " + containerCounter + " is available"); //For debugging
   //}
@@ -557,7 +557,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
   Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
-  if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+  if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
     loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
     loadBoardMode = loadGlobalSettings.getInt("Board Mode");
@@ -567,7 +567,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Load more global settings after this line, if needed
 
   //Create a string array to print global settings to console
-  final String[] loadedGlobalSettings = {
+  String[] loadedGlobalSettings = {
     "Using Layout Number: " + loadLayoutSetting,
     "Default Notch: " + loadNotchSetting, //default notch
     "Default BP: " + loadBandpassSetting, //default bp
@@ -592,7 +592,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
 
   //Create a string array to print to console
-  final String[] loadedFFTSettings = {
+  String[] loadedFFTSettings = {
     "FFT_Max Frequency: " + fftMaxFrqLoad,
     "FFT_Max uV: " + fftMaxuVLoad,
     "FFT_Log/Lin: " + fftLogLinLoad,
@@ -606,7 +606,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject("accelerometer");
   loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
   loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
-  final String[] loadedAccSettings = {
+  String[] loadedAccSettings = {
     "Accelerometer Vert Scale: " + loadAccelVertScale,
     "Accelerometer Horiz Scale: " + loadAccelHorizScale
   };
@@ -683,7 +683,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
 
   //Create a string array to print to console
-  final String[] loadedHPSettings = {
+  String[] loadedHPSettings = {
     "HP_intensity: " + hpIntensityLoad,
     "HP_polarity: " + hpPolarityLoad,
     "HP_contours: " + hpContoursLoad,
@@ -700,7 +700,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
   //Create a string array to print to console
-  final String[] loadedEMGSettings = {
+  String[] loadedEMGSettings = {
     "EMG_smoothing: " + emgSmoothingLoad,
     "EMG_uVlimit: " + emguVLimLoad,
     "EMG_creepspeed: " + emgCreepLoad,
@@ -715,7 +715,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
 
   //Create a string array to print to console
-  final String[] loadedFocusSettings = {
+  String[] loadedFocusSettings = {
     "Focus_theme: " + focusThemeLoad,
     "Focus_keypress: " + focusKeyLoad
     };
@@ -731,8 +731,8 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
 
 
   //int numActiveWidgets = 0; //reset the counter
-  for (int w = 0; w < wm.widgets.size(); w++){ //increment through all widgets
-    if (wm.widgets.get(w).isActive){ //If a widget is active...
+  for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
+    if (wm.widgets.get(w).isActive) { //If a widget is active...
       println("Deactivating widget [" + w + "]");
       wm.widgets.get(w).isActive = false;
       //numActiveWidgets++; //counter the number of de-activated widgets
@@ -768,13 +768,13 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
 
   //Apply Board Mode to Cyton Only
-  if (eegDataSource == DATASOURCE_CYTON){
+  if (eegDataSource == DATASOURCE_CYTON) {
     applyBoardMode();
   }
 
   //Apply Framerate
   frameRateCounter = loadFramerate;
-  switch (frameRateCounter){
+  switch (frameRateCounter) {
     case 0:
       topNav.fpsButton.setString("24 fps");
       frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
@@ -943,7 +943,7 @@ void loadApplyWidgetDropdownText() {
     w_accelerometer.cp5_widget.getController("accelDuration").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
 
   ////////Apply Anolog Read dropdowns to Live Cyton Only
-  if (eegDataSource == DATASOURCE_CYTON){
+  if (eegDataSource == DATASOURCE_CYTON) {
     ////////Apply Analog Read settings
     VertScale_AR(loadAnalogReadVertScale);
       w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);

@@ -12,9 +12,9 @@
 ////////////////////////////////////////////////////
 
 
-final color accelXcolor = color(224, 56, 45);
-final color accelYcolor = color(49, 113, 89);
-final color accelZcolor = color(54, 87, 158);
+final color ACCEL_X_COLOR = color(224, 56, 45);
+final color ACCEL_Y_COLOR = color(49, 113, 89);
+final color ACCEL_Z_COLOR = color(54, 87, 158);
 
 float[] accelArrayX;
 float[] accelArrayY;
@@ -330,11 +330,11 @@ class W_accelerometer extends Widget {
   void drawAccValues() {
     textAlign(LEFT,CENTER);
     textFont(h1,20);
-    fill(accelXcolor);
+    fill(ACCEL_X_COLOR);
     text("X = " + nf(currentXvalue, 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
-    fill(accelYcolor);
+    fill(ACCEL_Y_COLOR);
     text("Y = " + nf(currentYvalue, 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
-    fill(accelZcolor);
+    fill(ACCEL_Z_COLOR);
     text("Z = " + nf(currentZvalue, 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
   }
 
@@ -342,11 +342,11 @@ class W_accelerometer extends Widget {
   void draw3DGraph() {
     noFill();
     strokeWeight(3);
-    stroke(accelXcolor);
+    stroke(ACCEL_X_COLOR);
     line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
-    stroke(accelYcolor);
+    stroke(ACCEL_Y_COLOR);
     line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
-    stroke(accelZcolor);
+    stroke(ACCEL_Z_COLOR);
     line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
     strokeWeight(1);
   }
@@ -495,11 +495,11 @@ class AccelerometerBar{
 
     //set the plot points for X, Y, and Z axes
     plot.addLayer("layer 1", accelPointsX);
-    plot.getLayer("layer 1").setLineColor(accelXcolor);
+    plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
     plot.addLayer("layer 2", accelPointsY);
-    plot.getLayer("layer 2").setLineColor(accelYcolor);
+    plot.getLayer("layer 2").setLineColor(ACCEL_Y_COLOR);
     plot.addLayer("layer 3", accelPointsZ);
-    plot.getLayer("layer 3").setLineColor(accelZcolor);
+    plot.getLayer("layer 3").setLineColor(ACCEL_Z_COLOR);
   }
 
   //Used to update the accelerometerBar class
