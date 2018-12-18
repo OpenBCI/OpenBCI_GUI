@@ -95,7 +95,6 @@ class W_accelerometer extends Widget {
     initAccelData();
 
     //create our channel bar and populate our accelerometerBar array!
-    //accelerometerBar = new AccelerometerBar();
     println("init accelerometer bar");
     int analogReadBarY = int(accelGraphY) + (accelGraphHeight); //iterate through bar locations
     AccelerometerBar tempBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //int _channelNumber, int _x, int _y, int _w, int _h
@@ -147,7 +146,8 @@ class W_accelerometer extends Widget {
   }
 
   int nPointsBasedOnDataSource(){
-    return  accelHorizLimit * accelHz;
+    //return  accelHorizLimit * accelHz;
+    return accelHorizLimit * (int)getSampleRateSafe();
   }
 
   public boolean isVisible() {
@@ -194,9 +194,6 @@ class W_accelerometer extends Widget {
       currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
       currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
     }
-    //appendAndShift(accelArrayX, currentXvalue);
-    //appendAndShift(accelArrayY, currentYvalue);
-    //appendAndShift(accelArrayZ, currentZvalue);
   }
 
   void draw(){
@@ -358,16 +355,6 @@ class W_accelerometer extends Widget {
     stroke(accelZcolor);
     line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
     strokeWeight(1);
-  }
-
-  //help append and shift a single data
-  void appendAndShift(float[] data, float newData) {
-    int nshift = 1;
-    int end = data.length-nshift;
-    for (int i=0; i < end; i++) {
-      data[i]=data[i+nshift];  //shift data points down by 1
-    }
-    data[end] = newData;  //append new data
   }
 
   //Used during Synthetic data mode
@@ -543,7 +530,8 @@ class AccelerometerBar{
   }
 
   int nPointsBasedOnDataSource(){
-    return numSeconds * accelHz;
+    //return numSeconds * accelHz;
+    return numSeconds * (int)getSampleRateSafe();
   }
 
   void adjustTimeAxis(int _newTimeSize){
@@ -577,22 +565,52 @@ class AccelerometerBar{
   //Used to update the Points within the graph
   void updateGPlotPoints(){
     int accelBuffSize = w_accelerometer.accelBuffSize;
-    //nPoints = nPointsBasedOnDataSource();
+
+    // update data in plot
+    int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
+    if (numSamplesToProcess < 0) {
+      numSamplesToProcess += dataPacketBuff.length;
+    }
+
+    // Shift internal ring buffer numSamplesToProcess
+    if (numSamplesToProcess > 0) {
+      for(int i = 0; i < accelArrayX.length - numSamplesToProcess; i++){
+        accelArrayX[i] = accelArrayX[i + numSamplesToProcess];
+      }
+    }
+
+    // for each new sample
+    int samplesProcessed = 0;
+    while (samplesProcessed < numSamplesToProcess) {
+      lastProcessedDataPacketInd++;
+
+      // Watch for wrap around
+      if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
+        lastProcessedDataPacketInd = 0;
+      }
+      //println(numSamplesToProcess + samplesProcessed);
+      accelArrayX[accelBuffSize - numSamplesToProcess + samplesProcessed] = w_accelerometer.currentXvalue;
+
+      samplesProcessed++;
+    }
+
     //println("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
-    for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-      //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
-      //println(time);
-      GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayX[i]);
-      GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayY[i]);
-      GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayZ[i]);
-      accelPointsX.set(i-accelBuffDiff, tempPointX);
-      accelPointsY.set(i-accelBuffDiff, tempPointY);
-      accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+    if (numSamplesToProcess > 0) {
+      for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
+        //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
+        //println(time);
+        GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayX[i]);
+        GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayY[i]);
+        GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayZ[i]);
+        accelPointsX.set(i-accelBuffDiff, tempPointX);
+        accelPointsY.set(i-accelBuffDiff, tempPointY);
+        accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+      }
+      plot.setPoints(accelPointsX, "layer 1");
+      plot.setPoints(accelPointsY, "layer 2");
+      plot.setPoints(accelPointsZ, "layer 3");
     }
-    plot.setPoints(accelPointsX, "layer 1");
-    plot.setPoints(accelPointsY, "layer 2");
-    plot.setPoints(accelPointsZ, "layer 3");
   }
 
   void adjustVertScale(int _vertScaleValue){
