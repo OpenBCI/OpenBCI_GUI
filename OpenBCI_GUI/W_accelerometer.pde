@@ -1,25 +1,23 @@
 
 ////////////////////////////////////////////////////
 //
-//  W_accelerometer is used to visualize accelerometer data
+// W_accelerometer is used to visualize accelerometer data
 //
-//  Created: Joel Murphy
-//  Modified: Colin Fausnaught, September 2016
-//  Modified: Wangshu Sun, November 2016
-//  Modified: Richard Waltman, November 2018
+// Created: Joel Murphy
+// Modified: Colin Fausnaught, September 2016
+// Modified: Wangshu Sun, November 2016
+// Modified: Richard Waltman, November 2018
 //
 //
 ////////////////////////////////////////////////////
 
-
+//Use the same colors for X,Y,Z throughout Accelerometer widget
 final color ACCEL_X_COLOR = color(224, 56, 45);
 final color ACCEL_Y_COLOR = color(49, 113, 89);
 final color ACCEL_Z_COLOR = color(54, 87, 158);
 
-float[] accelArrayX;
-float[] accelArrayY;
-float[] accelArrayZ;
-float accelXyzLimit = 4.0;
+float[][] accelArray; //holds X,Y,Z values for up to 20s
+float accelXyzLimit = 4.0; //hard limit on all accel values
 
 class W_accelerometer extends Widget {
   //To see all core variables/methods of the Widget class, refer to Widget.pde
@@ -29,8 +27,8 @@ class W_accelerometer extends Widget {
   color strokeColor = color(138, 146, 153);
   color eggshell = color(255, 253, 248);
 
-  // Graphing variables
-  int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+  //Graphing variables
+  int[] xLimOptions = {0, 1, 3, 5, 10, 20}; //number of seconds (x axis of graph)
   int[] yLimOptions = {0, 1, 2, 4};
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
   int accelHorizLimit = 20;
@@ -54,14 +52,13 @@ class W_accelerometer extends Widget {
 
   float yMaxMin;
 
-  float currentXvalue;
-  float currentYvalue;
-  float currentZvalue;
+  float[] currentAccelVals;
 
   //For synthesizing values
-  boolean Xrising = false;
-  boolean Yrising = true;
-  boolean Zrising = true;
+  boolean[] accelRising;
+  //boolean Xrising = false;
+  //boolean Yrising = true;
+  //boolean Zrising = true;
   float accelSynthRate = 0.23/sqrt(6);
   boolean OBCI_inited= true;
   private boolean visible = true;
@@ -84,13 +81,12 @@ class W_accelerometer extends Widget {
     setGraphDimensions();
     yMaxMin = adjustYMaxMinBasedOnSource();
 
-    // XYZ buffer for bottom graph
+    //XYZ buffer for bottom graph
     accelBuffSize = nPointsBasedOnDataSource();   //accelBuffSize = 20 seconds * 25 Hz
-    accelArrayX = new float[accelBuffSize];
-    accelArrayY = new float[accelBuffSize];
-    accelArrayZ = new float[accelBuffSize];
-
+    accelArray = new float[NUM_ACCEL_DIMS][accelBuffSize];
+    accelRising = new boolean[NUM_ACCEL_DIMS];
     initAccelData();
+    currentAccelVals = new float[NUM_ACCEL_DIMS];
 
     //create our channel bar and populate our accelerometerBar array!
     println("init accelerometer bar");
@@ -122,19 +118,22 @@ class W_accelerometer extends Widget {
   }
 
   void initAccelData() {
-    // initialize data
-    for(int i = 0; i < accelArrayX.length; i++) {  // initialize the accelerometer data
-      accelArrayX[i] = accelXyzLimit/2;
-      accelArrayY[i] = 0;
-      accelArrayZ[i] = -accelXyzLimit/2;
+    //initialize data
+    for (int i = 0; i < accelArray[0].length; i++) {  //initialize the accelerometer data
+      accelArray[0][i] = accelXyzLimit/2;
+      accelArray[1][i] = 0;
+      accelArray[2][i] = -accelXyzLimit/2;
     }
+    accelRising[0] = false;
+    accelRising[1] = true;
+    accelRising[2] = true;
   }
 
   float adjustYMaxMinBasedOnSource() {
     float _yMaxMin;
-    if(eegDataSource == DATASOURCE_CYTON) {
+    if (eegDataSource == DATASOURCE_CYTON) {
       _yMaxMin = 4.0;
-    }else if(eegDataSource == DATASOURCE_GANGLION || nchan == 4) {
+    }else if (eegDataSource == DATASOURCE_GANGLION || nchan == 4) {
       _yMaxMin = 2.0;
       accelXyzLimit = 2.0;
     }else{
@@ -173,20 +172,16 @@ class W_accelerometer extends Widget {
   }
 
   void updateAccelPoints() {
-    if (eegDataSource == DATASOURCE_SYNTHETIC) {
-      synthesizeAccelData();
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-      currentXvalue = hub.validAccelValues[0] * cyton.get_scale_fac_accel_G_per_count();
-      currentYvalue = hub.validAccelValues[1] * cyton.get_scale_fac_accel_G_per_count();
-      currentZvalue = hub.validAccelValues[2] * cyton.get_scale_fac_accel_G_per_count();
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-      currentXvalue = hub.validAccelValues[0] * ganglion.get_scale_fac_accel_G_per_count();
-      currentYvalue = hub.validAccelValues[1] * ganglion.get_scale_fac_accel_G_per_count();
-      currentZvalue = hub.validAccelValues[2] * ganglion.get_scale_fac_accel_G_per_count();
-    } else {  // playback data
-      currentXvalue = accelerometerBuff[0][accelerometerBuff[0].length-1];
-      currentYvalue = accelerometerBuff[1][accelerometerBuff[1].length-1];
-      currentZvalue = accelerometerBuff[2][accelerometerBuff[2].length-1];
+    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+      if (eegDataSource == DATASOURCE_SYNTHETIC) {
+        synthesizeAccelData();
+      } else if (eegDataSource == DATASOURCE_CYTON) {
+        currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
+      } else if (eegDataSource == DATASOURCE_GANGLION) {
+        currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
+      } else {  //playback data
+        currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
+      }
     }
   }
 
@@ -204,7 +199,7 @@ class W_accelerometer extends Widget {
     text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
     text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
 
-    fill(graphBG);  // pulse window background
+    fill(graphBG);  //pulse window background
     stroke(graphStroke);
     ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
 
@@ -216,7 +211,7 @@ class W_accelerometer extends Widget {
     fill(50);
     textFont(p3, 16);
 
-    if (eegDataSource == DATASOURCE_CYTON) {  // LIVE
+    if (eegDataSource == DATASOURCE_CYTON) {  //LIVE CYTON
       drawAccValues();
       draw3DGraph();
       if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
@@ -225,19 +220,14 @@ class W_accelerometer extends Widget {
       } else {
         accelerometerBar.draw();
       }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
+    } else if (eegDataSource == DATASOURCE_GANGLION) {  //LIVE GANGLION
       if (accelerometerModeOn) {
         drawAccValues();
         draw3DGraph();
         accelerometerBar.draw();
       }
       if (ganglion.isBLE()) accelModeButton.draw();
-    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-      drawAccValues();
-      draw3DGraph();
-      accelerometerBar.draw();
-    }
-    else {  // PLAYBACK
+    } else {  //SYNTHETIC and PLAYBACK
       drawAccValues();
       draw3DGraph();
       accelerometerBar.draw();
@@ -256,8 +246,8 @@ class W_accelerometer extends Widget {
     accelGraphX = x + accPadding/3;
     accelGraphY = y + h - accelGraphHeight - int(accPadding*2) + accPadding/6;
 
-    // PolarWindowWidth = 155;
-    // PolarWindowHeight = 155;
+    //PolarWindowWidth = 155;
+    //PolarWindowHeight = 155;
     PolarWindowWidth = accelGraphHeight;
     PolarWindowHeight = accelGraphHeight;
     PolarWindowX = x + w - accPadding - PolarWindowWidth/2;
@@ -281,7 +271,7 @@ class W_accelerometer extends Widget {
   void mousePressed() {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-    if(eegDataSource == DATASOURCE_GANGLION) {
+    if (eegDataSource == DATASOURCE_GANGLION) {
       if (ganglion.isBLE()) {
         if (accelModeButton.isMouseHere()) {
           accelModeButton.setIsActive(true);
@@ -297,9 +287,9 @@ class W_accelerometer extends Widget {
   void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-    if(eegDataSource == DATASOURCE_GANGLION) {
-      if(accelModeButton.isActive && accelModeButton.isMouseHere()) {
-        if(ganglion.isAccelModeActive()) {
+    if (eegDataSource == DATASOURCE_GANGLION) {
+      if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
+        if (ganglion.isAccelModeActive()) {
           ganglion.accelStop();
           accelModeButton.setString("Turn Accel. On");
           accelerometerModeOn = false;
@@ -312,7 +302,7 @@ class W_accelerometer extends Widget {
       }
       accelModeButton.setIsActive(false);
     } else if (eegDataSource == DATASOURCE_CYTON) {
-      if(accelModeButton.isActive && accelModeButton.isMouseHere()) {
+      if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
         cyton.setBoardMode(BOARD_MODE_DEFAULT);
         output("Starting to read accelerometer");
         accelerometerModeOn = true;
@@ -331,11 +321,11 @@ class W_accelerometer extends Widget {
     textAlign(LEFT,CENTER);
     textFont(h1,20);
     fill(ACCEL_X_COLOR);
-    text("X = " + nf(currentXvalue, 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
+    text("X = " + nf(currentAccelVals[0], 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
     fill(ACCEL_Y_COLOR);
-    text("Y = " + nf(currentYvalue, 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
+    text("Y = " + nf(currentAccelVals[1], 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
     fill(ACCEL_Z_COLOR);
-    text("Z = " + nf(currentZvalue, 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
+    text("Z = " + nf(currentAccelVals[2], 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
   }
 
   //Draw the current accelerometer values as a 3D graph
@@ -343,52 +333,26 @@ class W_accelerometer extends Widget {
     noFill();
     strokeWeight(3);
     stroke(ACCEL_X_COLOR);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentXvalue, -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentAccelVals[0], -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
     stroke(ACCEL_Y_COLOR);
-    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentYvalue/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
+    line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentAccelVals[1]/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentAccelVals[1]/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
     stroke(ACCEL_Z_COLOR);
-    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentZvalue, -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
+    line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentAccelVals[2], -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
     strokeWeight(1);
   }
 
   //Used during Synthetic data mode
   void synthesizeAccelData() {
-    float lastXval = accelArrayX[accelArrayX.length-1];
-    float lastYval = accelArrayY[accelArrayY.length-1];
-    float lastZval = accelArrayZ[accelArrayZ.length-1];
-    if (Xrising) {  // MAKE A SAW WAVE FOR TESTING
-      currentXvalue = lastXval + accelSynthRate;// place the new raw datapoint at the end of the array
-      if (currentXvalue >= accelXyzLimit) {
-        Xrising = false;
-      }
-    } else {
-      currentXvalue = lastXval - accelSynthRate;// place the new raw datapoint at the end of the array
-      if (currentXvalue <= -accelXyzLimit) {
-        Xrising = true;
-      }
-    }
+    float[] lastAccelVal = new float[NUM_ACCEL_DIMS];
 
-    if (Yrising) {  // MAKE A SAW WAVE FOR TESTING
-      currentYvalue = lastYval + accelSynthRate;
-      if (currentYvalue >= accelXyzLimit) {
-        Yrising = false;
-      }
-    } else {
-      currentYvalue = lastYval - accelSynthRate;
-      if (currentYvalue <= -accelXyzLimit) {
-        Yrising = true;
-      }
-    }
-
-    if (Zrising) {  // MAKE A SAW WAVE FOR TESTING
-      currentZvalue = lastZval + accelSynthRate;
-      if (currentZvalue >= accelXyzLimit) {
-        Zrising = false;
-      }
-    } else {
-      currentZvalue = lastZval - accelSynthRate;
-      if (currentZvalue <= -accelXyzLimit) {
-        Zrising = true;
+    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+      lastAccelVal[i] = accelArray[i][accelArray[i].length-1];
+      if (accelRising[i]) {  //MAKE A SAW WAVE FOR TESTING
+        currentAccelVals[i] = lastAccelVal[i] + accelSynthRate;//place the new raw datapoint at the end of the array
+        if (currentAccelVals[i] >= accelXyzLimit) accelRising[i] = false;
+      } else {
+        currentAccelVals[i] = lastAccelVal[i] - accelSynthRate;//place the new raw datapoint at the end of the array
+        if (currentAccelVals[i] <= -accelXyzLimit) accelRising[i] = true;
       }
     }
   }//end void synthesizeAccelData
@@ -416,7 +380,7 @@ void accelDuration(int n) {
 }
 
 //========================================================================================================================
-//                      Accelerometer Graph Class -- Implemented by Accelerometer Widget Class
+//                     Accelerometer Graph Class -- Implemented by Accelerometer Widget Class
 //========================================================================================================================
 //this class contains the plot for the 2d graph of accelerometer data
 class AccelerometerBar{
@@ -442,7 +406,7 @@ class AccelerometerBar{
   int autoScaleYLim = 0;
   int lastProcessedDataPacketInd = 0;
 
-  AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+  AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
 
     isOn = true;
 
@@ -477,16 +441,16 @@ class AccelerometerBar{
       accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
     }
     //make a GPoint array using float arrays x[] and y[] instead of plain index points
-    accelPointsX = new GPointsArray(accelTimeArray, accelArrayX);
-    accelPointsY = new GPointsArray(accelTimeArray, accelArrayY);
-    accelPointsZ = new GPointsArray(accelTimeArray, accelArrayZ);
+    accelPointsX = new GPointsArray(accelTimeArray, accelArray[0]);
+    accelPointsY = new GPointsArray(accelTimeArray, accelArray[1]);
+    accelPointsZ = new GPointsArray(accelTimeArray, accelArray[2]);
 
     //int accelBuffDiff = accelArrayX.length - nPoints;
     for (int i = 0; i < nPoints; i++) {
       //float time = -(float)numSeconds + (float)(i-accelBuffDiff)*timeBetweenPoints;
-      GPoint tempPointX = new GPoint(accelTimeArray[i], accelArrayX[i]);
-      GPoint tempPointY = new GPoint(accelTimeArray[i], accelArrayY[i]);
-      GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArrayZ[i]);
+      GPoint tempPointX = new GPoint(accelTimeArray[i], accelArray[0][i]);
+      GPoint tempPointY = new GPoint(accelTimeArray[i], accelArray[1][i]);
+      GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArray[2][i]);
       //println(accelTimeArray[i]);
       accelPointsX.set(i, tempPointX);
       accelPointsY.set(i, tempPointY);
@@ -505,7 +469,7 @@ class AccelerometerBar{
   //Used to update the accelerometerBar class
   void update() {
     updateGPlotPoints();
-    if(isAutoscale) {
+    if (isAutoscale) {
       autoScale();
     }
   }
@@ -513,7 +477,7 @@ class AccelerometerBar{
   void draw() {
     pushStyle();
     plot.beginDraw();
-    plot.drawBox(); // we won't draw this eventually ...
+    plot.drawBox(); //we won't draw this eventually ...
     plot.drawGridLines(0);
     plot.drawLines(); //Draw a Line graph!
     //plot.drawPoints(); //Used to draw Points instead of Lines
@@ -536,6 +500,7 @@ class AccelerometerBar{
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
     //println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
 
+    //Calculate the array for GPlot X axis (Time)
     accelTimeArray = new float[nPoints];
     for (int i = 0; i < accelTimeArray.length; i++) {
       accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
@@ -547,8 +512,9 @@ class AccelerometerBar{
     accelPointsY = new GPointsArray(nPoints);
     accelPointsZ = new GPointsArray(nPoints);
 
-    if(_newTimeSize > 1) {
-      plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
+    //Set the number of axis divisions...
+    if (_newTimeSize > 1) {
+      plot.getXAxis().setNTicks(_newTimeSize);
     }else{
       plot.getXAxis().setNTicks(10);
     }
@@ -564,35 +530,35 @@ class AccelerometerBar{
   void updateGPlotPoints() {
     int accelBuffSize = w_accelerometer.accelBuffSize;
 
-    // update data in plot
+    //Update data in plot
     numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
     if (numSamplesToProcess < 0) {
       numSamplesToProcess += dataPacketBuff.length;
     }
 
-    // Shift internal ring buffer numSamplesToProcess
+    //Shift internal ring buffer numSamplesToProcess
     if (numSamplesToProcess > 0) {
-      for(int i = 0; i < accelArrayX.length - numSamplesToProcess; i++) {
-        accelArrayX[i] = accelArrayX[i + numSamplesToProcess];
-        accelArrayY[i] = accelArrayY[i + numSamplesToProcess];
-        accelArrayZ[i] = accelArrayZ[i + numSamplesToProcess];
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        for (int j = 0; j < accelArray[0].length - numSamplesToProcess; j++) {
+          accelArray[i][j] = accelArray[i][j + numSamplesToProcess] ;
+        }
       }
     }
 
-    // for each new sample
+    //for each new sample
     int samplesProcessed = 0;
     while (samplesProcessed < numSamplesToProcess) {
       lastProcessedDataPacketInd++;
 
-      // Watch for wrap around
+      //Watch for wrap around
       if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
         lastProcessedDataPacketInd = 0;
       }
 
       int curArrayInd = accelBuffSize - numSamplesToProcess + samplesProcessed;
-      accelArrayX[curArrayInd] = w_accelerometer.currentXvalue;
-      accelArrayY[curArrayInd] = w_accelerometer.currentYvalue;
-      accelArrayZ[curArrayInd] = w_accelerometer.currentZvalue;
+      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
+      }
 
       samplesProcessed++;
     }
@@ -607,9 +573,9 @@ class AccelerometerBar{
     if (numSamplesToProcess > 0) {
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
         //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
-        GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayX[i]);
-        GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayY[i]);
-        GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArrayZ[i]);
+        GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
+        GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
+        GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
         accelPointsX.set(i-accelBuffDiff, tempPointX);
         accelPointsY.set(i-accelBuffDiff, tempPointY);
         accelPointsZ.set(i-accelBuffDiff, tempPointZ);
@@ -622,7 +588,7 @@ class AccelerometerBar{
   }
 
   void adjustVertScale(int _vertScaleValue) {
-    if(_vertScaleValue == 0) {
+    if (_vertScaleValue == 0) {
       isAutoscale = true;
     } else {
       isAutoscale = false;
@@ -632,8 +598,8 @@ class AccelerometerBar{
 
   void autoScale() {
     autoScaleYLim = 0;
-    for(int i = 0; i < nPoints; i++) {
-      if(int(abs(accelPointsX.getY(i))) > autoScaleYLim) {
+    for (int i = 0; i < nPoints; i++) {
+      if (int(abs(accelPointsX.getY(i))) > autoScaleYLim) {
         autoScaleYLim = int(abs(accelPointsX.getY(i)));
       }
     }
