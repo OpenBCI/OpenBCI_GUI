@@ -56,6 +56,7 @@ class W_accelerometer extends Widget {
 
   //For synthesizing values
   boolean[] accelRising;
+  float[] lastAccelVal;
   //boolean Xrising = false;
   //boolean Yrising = true;
   //boolean Zrising = true;
@@ -87,6 +88,7 @@ class W_accelerometer extends Widget {
     accelRising = new boolean[NUM_ACCEL_DIMS];
     initAccelData();
     currentAccelVals = new float[NUM_ACCEL_DIMS];
+    lastAccelVal = new float[NUM_ACCEL_DIMS];
 
     //create our channel bar and populate our accelerometerBar array!
     println("init accelerometer bar");
@@ -174,13 +176,13 @@ class W_accelerometer extends Widget {
   void updateAccelPoints() {
     for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
-        synthesizeAccelData();
+        //synthesizeAccelData();
       } else if (eegDataSource == DATASOURCE_CYTON) {
         currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
       } else {  //playback data
-        currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
+        //currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
       }
     }
   }
@@ -343,8 +345,6 @@ class W_accelerometer extends Widget {
 
   //Used during Synthetic data mode
   void synthesizeAccelData() {
-    float[] lastAccelVal = new float[NUM_ACCEL_DIMS];
-
     for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
       lastAccelVal[i] = accelArray[i][accelArray[i].length-1];
       if (accelRising[i]) {  //MAKE A SAW WAVE FOR TESTING
@@ -478,7 +478,7 @@ class AccelerometerBar{
     pushStyle();
     plot.beginDraw();
     plot.drawBox(); //we won't draw this eventually ...
-    plot.drawGridLines(0);
+    plot.drawGridLines(2);
     plot.drawLines(); //Draw a Line graph!
     //plot.drawPoints(); //Used to draw Points instead of Lines
     plot.drawYAxis();
@@ -529,48 +529,97 @@ class AccelerometerBar{
   //Used to update the Points within the graph
   void updateGPlotPoints() {
     int accelBuffSize = w_accelerometer.accelBuffSize;
+    if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+      //Update data in plot
+      numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
+      if (numSamplesToProcess < 0) {
+        numSamplesToProcess += dataPacketBuff.length;
+      }
 
-    //Update data in plot
-    numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
-    if (numSamplesToProcess < 0) {
-      numSamplesToProcess += dataPacketBuff.length;
-    }
-
-    //Shift internal ring buffer numSamplesToProcess
-    if (numSamplesToProcess > 0) {
-      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-        for (int j = 0; j < accelArray[0].length - numSamplesToProcess; j++) {
-          accelArray[i][j] = accelArray[i][j + numSamplesToProcess] ;
+      //Shift internal ring buffer numSamplesToProcess
+      if (numSamplesToProcess > 0) {
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+          for (int j = 0; j < accelArray[0].length - numSamplesToProcess; j++) {
+            accelArray[i][j] = accelArray[i][j + numSamplesToProcess] ;
+          }
         }
       }
-    }
 
-    //for each new sample
-    int samplesProcessed = 0;
-    while (samplesProcessed < numSamplesToProcess) {
-      lastProcessedDataPacketInd++;
+      //for each new sample
+      int samplesProcessed = 0;
+      while (samplesProcessed < numSamplesToProcess) {
+        lastProcessedDataPacketInd++;
 
-      //Watch for wrap around
-      if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-        lastProcessedDataPacketInd = 0;
+        //Watch for wrap around
+        if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
+          lastProcessedDataPacketInd = 0;
+        }
+
+        int curArrayInd = accelBuffSize - numSamplesToProcess + samplesProcessed;
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+          accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
+        }
+
+        samplesProcessed++;
+      }
+    } else {
+
+      //currentTableRowIndex is used for playback
+      numSamplesToProcess = currentTableRowIndex - lastProcessedDataPacketInd;
+      println("NumSAMPLES = " + numSamplesToProcess);
+      if (numSamplesToProcess < 0) {
+        numSamplesToProcess += dataPacketBuff.length;
+      }
+      println("NumSAMPLES = " + numSamplesToProcess);
+
+      //Shift internal ring buffer numSamplesToProcess
+      if (numSamplesToProcess > 0) {
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+          for (int j = 0; j < accelArray[0].length - numSamplesToProcess; j++) {
+            accelArray[i][j] = accelArray[i][j + numSamplesToProcess] ;
+          }
+        }
       }
 
-      int curArrayInd = accelBuffSize - numSamplesToProcess + samplesProcessed;
-      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-        accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
+      //for each new sample
+      int samplesProcessed = 0;
+      while (samplesProcessed < numSamplesToProcess) {
+        lastProcessedDataPacketInd++;
+
+        //Watch for wrap around
+        if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
+          lastProcessedDataPacketInd = 0;
+        }
+
+
+        switch (eegDataSource) {
+        case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
+          w_accelerometer.synthesizeAccelData();
+          break;
+        case DATASOURCE_PLAYBACKFILE:
+          for (int j = 0; j < NUM_ACCEL_DIMS; j++) {
+            w_accelerometer.currentAccelVals[j] = accelerometerBuff[j][accelerometerBuff[j].length-1];
+          }
+          break;
+        default:
+          //no action
+        }
+        samplesProcessed++;
       }
-
-      samplesProcessed++;
     }
-
     //set all of the Gplot points
     setGPlotPoints(accelBuffSize);
   }
 
+
+  ///////////////////////
+
+
+
   void setGPlotPoints(int accelBuffSize) {
     //println("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
-    if (numSamplesToProcess > 0) {
+    if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
         //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
         GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
