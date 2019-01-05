@@ -538,13 +538,8 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  if (!isWindows()) {
-    hubStart();
-    prepareExitHandler();
-  } else {
-    hubStart();
-    prepareExitHandler();
-  }
+  hubStart();
+  prepareExitHandler();
 }
 
 /**
