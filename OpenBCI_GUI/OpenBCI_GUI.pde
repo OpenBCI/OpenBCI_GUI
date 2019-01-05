@@ -585,7 +585,14 @@ void hubStart() {
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
       //nodeHubby = launch(dataPath("OpenBCIHub.exe"));
-      String winCmdLineHubString = "C:"+File.separator+"Program Files"+File.separator+"OpenBCIHub"+File.separator+"OpenBCIHub.exe";
+      //find system drive
+      String winSysDriveString = System.getenv("SystemDrive");
+      //make a string to run as a command line prompt
+      String winCmdLineHubString =
+        winSysDriveString + File.separator +
+        "Program Files" + File.separator +
+        "OpenBCIHub" + File.separator +
+        "OpenBCIHub.exe";
       nodeHubby = exec(winCmdLineHubString);
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
