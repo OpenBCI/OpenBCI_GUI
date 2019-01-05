@@ -11,10 +11,12 @@
                        Created: Richard Waltman - May/June 2018
 
     -- Start System first!
-    -- Capital 'S' to Save
-    -- Capital 'L' to Load
-    -- Functions SaveGUIsettings() and loadGUISettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
-    -- Functions are also called in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
+    -- Lowercase 'n' to Save
+    -- Capital 'N' to Load
+    -- Functions saveGUIsettings() and loadGUISettings() are called:
+        - during system initialization between checkpoints 4 and 5
+        - in Interactivty.pde with the rest of the keyboard shortcuts
+        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
     -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
     -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
 */
@@ -223,13 +225,9 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
     for (int i = 0; i < slnchan; i++) { //For all channels...
       //Make a JSON Object for each of the Time Series Channels
       JSONObject saveTimeSeriesSettings = new JSONObject();
-      for (int j = 0; j < 1; j++) {
-        switch(j) {
-          case 0: //Just save what channels are active
-            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Get integer value from char array channelSettingValues
-            break;
-          }
-      }
+      //Get integer value from char array channelSettingValues
+      tsActiveSetting = Character.getNumericValue(channelSettingValues[i][0]);
+      tsActiveSetting ^= 1;
       saveTimeSeriesSettings.setInt("Channel_Number", (i+1));
       saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
       saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
@@ -436,12 +434,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loadGUISettings (String loadGUISettingsFileLocation) {
   //Load all saved User Settings from a JSON file if it exists
-  if (!errorUserSettingsNotFound) {
-    loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
-  } else {
-    outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
-    return;
-  }
+  loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
   //Check the number of channels saved to json first!
   JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject("dataInfo");
@@ -1002,11 +995,15 @@ void loadApplyTimeSeriesSettings() {
       //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
       channelSettingValues[i][0] = (char)(active + '0');
       if (active == 0) {
-        activateChannel(channel);// power down == false, set color to vibrant
+        if (eegDataSource == DATASOURCE_GANGLION) {
+          activateChannel(channel);// power down == false, set color to vibrant
+        }
         w_timeSeries.channelBars[i].isOn = true;
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
       } else {
-        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
+        if (eegDataSource == DATASOURCE_GANGLION) {
+          deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
+        }
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
@@ -1022,25 +1019,32 @@ void loadApplyTimeSeriesSettings() {
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
 
-    for (int i = 0; i < slnchan;) { //For all time series channels...
-      cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-      if (checkForSuccessTS != null) { // If we receive a return code...
-        println("Return code:" + checkForSuccessTS);
-        String[] list = split(checkForSuccessTS, ',');
-        int successcode = Integer.parseInt(list[1]);
-        if (successcode == RESP_SUCCESS) {i++; checkForSuccessTS = null;} //when successful, iterate to next channel(i++) and set Check to null
+    for (int i = 0; i < slnchan; i++) { //For all time series channels...
+      try {
+        cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
+      } catch (RuntimeException e) {
+        verbosePrint("Runtime Error when trying to write channel settings to cyton...");
+      }
+      if (checkForSuccessTS > 0) { // If we receive a return code...
+        println("Return code: " + checkForSuccessTS);
+        //when successful, iterate to next channel(i++) and set Check to null
+        if (checkForSuccessTS == RESP_SUCCESS) {
+          // i++;
+          checkForSuccessTS = 0;
+        }
 
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
-        if (timeElapsed >= loadErrorTimeWindow) {
-          println("FATAL ERROR: FAILED TO APPLY SETTINGS TO CYTON");
-          loadErrorCytonEvent = true;
-          haltSystem();
+        if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
+          println("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
+          loadErrorCytonEvent = true; //Set true because an error has occured
+          haltSystem(); //Halt the system to stop the initialization process
           return;
         }
       }
       //delay(10);// Works on 8 chan sometimes
-      delay(100); // Works on 8 and 16 channels 3/3 trials applying settings to all channels. Tested by setting gain 1x and loading 24x.
+      delay(250); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
+      //Tested by setting gain 1x and loading 24x.
     }
     loadErrorCytonEvent = false;
   } //end Cyton case
@@ -1051,24 +1055,26 @@ void loadApplyTimeSeriesSettings() {
     if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
+      //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
       int active = loadTSChannelSettings.getInt("Active");
       //println("Ch " + channel + ", " + channelsActiveArray[active]);
-      if (active == 0) {
+      if (active == 1) {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[channel]);
-          hub.sendCommand(command_activate_channel[channel]);
-          w_timeSeries.hsc.powerUpChannel(channel);
+          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
+          hub.sendCommand(command_activate_channel[i]);
+          w_timeSeries.hsc.powerUpChannel(i);
         }
         w_timeSeries.channelBars[i].isOn = true;
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
+        channelSettingValues[i][0] = '0';
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
       } else {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[channel]);
-          hub.sendCommand(command_deactivate_channel[channel]);
-          w_timeSeries.hsc.powerDownChannel(channel);
+          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
+          hub.sendCommand(command_deactivate_channel[i]);
+          w_timeSeries.hsc.powerDownChannel(i);
         }
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
+        channelSettingValues[i][0] = '1';
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
     }

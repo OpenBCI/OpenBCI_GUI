@@ -29,10 +29,10 @@ void process_input_file() throws Exception {
   index_of_times = new HashMap<Integer, String>();
   index_of_times_rev = new HashMap<String, Integer>();
   float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
-
+  indices = 0;
   try {
     while (!hasRepeated) {
-      currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+      currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
 
       for (int Ichan=0; Ichan < nchan; Ichan++) {
         //scale the data into engineering units..."microvolts"
@@ -47,6 +47,14 @@ void process_input_file() throws Exception {
   catch (Exception e) {
     throw new Exception();
   }
+  println("number of indexes "+indices);
+
+  /*
+  //print index of times for use in playback
+  for (Map.Entry val : index_of_times.entrySet()) {
+    println(val.getKey() + " is " + val);
+  }
+  */
 
   println("Finished filling hashmap");
   has_processed = true;
@@ -336,12 +344,12 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       }
     }
 
-    // get time stamp
-    // try{
-    //   if (!isOldData) curTimestamp = row.getString(nchan+3);
-    // } catch (ArrayIndexOutOfBoundsException e){
-    // // println("Data does not exist... possibly an old file.");
-    // }
+    // get time stamp for use in playback
+    try{
+      if (!isOldData) curTimestamp = row.getString(nchan+3);
+      } catch (ArrayIndexOutOfBoundsException e){
+        println("Data does not exist... possibly an old file.");
+      }
 
     //int localnchan = nchan;
 

@@ -17,49 +17,9 @@
 //------------------------------------------------------------------------
 
 class Ganglion {
-  final static String TCP_CMD_ACCEL = "a";
-  final static String TCP_CMD_CONNECT = "c";
-  final static String TCP_CMD_COMMAND = "k";
-  final static String TCP_CMD_DISCONNECT = "d";
-  final static String TCP_CMD_DATA= "t";
-  final static String TCP_CMD_ERROR = "e"; //<>// //<>//
-  final static String TCP_CMD_IMPEDANCE = "i";
-  final static String TCP_CMD_LOG = "l";
-  final static String TCP_CMD_SCAN = "s";
-  final static String TCP_CMD_STATUS = "q";
-  final static String TCP_STOP = ",;\n";
-
-  final static String TCP_ACTION_START = "start";
-  final static String TCP_ACTION_STATUS = "status";
-  final static String TCP_ACTION_STOP = "stop";
-
   final static String GANGLION_BOOTLOADER_MODE = ">";
 
   final static int NUM_ACCEL_DIMS = 3;
-
-  final static int RESP_ERROR_UNKNOWN = 499;
-  final static int RESP_ERROR_BAD_PACKET = 500;
-  final static int RESP_ERROR_BAD_NOBLE_START = 501;
-  final static int RESP_ERROR_ALREADY_CONNECTED = 408;
-  final static int RESP_ERROR_COMMAND_NOT_RECOGNIZED = 406;
-  final static int RESP_ERROR_DEVICE_NOT_FOUND = 405;
-  final static int RESP_ERROR_NO_OPEN_BLE_DEVICE = 400;
-  final static int RESP_ERROR_UNABLE_TO_CONNECT = 402;
-  final static int RESP_ERROR_UNABLE_TO_DISCONNECT = 401;
-  final static int RESP_ERROR_SCAN_ALREADY_SCANNING = 409;
-  final static int RESP_ERROR_SCAN_NONE_FOUND = 407;
-  final static int RESP_ERROR_SCAN_NO_SCAN_TO_STOP = 410;
-  final static int RESP_ERROR_SCAN_COULD_NOT_START = 412;
-  final static int RESP_ERROR_SCAN_COULD_NOT_STOP = 411;
-  final static int RESP_GANGLION_FOUND = 201;
-  final static int RESP_SUCCESS = 200;
-  final static int RESP_SUCCESS_DATA_ACCEL = 202;
-  final static int RESP_SUCCESS_DATA_IMPEDANCE = 203;
-  final static int RESP_SUCCESS_DATA_SAMPLE = 204;
-  final static int RESP_STATUS_CONNECTED = 300;
-  final static int RESP_STATUS_DISCONNECTED = 301;
-  final static int RESP_STATUS_SCANNING = 302;
-  final static int RESP_STATUS_NOT_SCANNING = 303;
 
   private int nEEGValuesPerPacket = NCHAN_GANGLION; // Defined by the data format sent by cyton boards
   private int nAuxValuesPerPacket = NUM_ACCEL_DIMS; // Defined by the arduino code
@@ -167,18 +127,15 @@ class Ganglion {
     println("Code " + code + "Error: " + msg);
   }
 
-  public void processImpedance(String msg) {
-    String[] list = split(msg, ',');
-    if (Integer.parseInt(list[1]) == RESP_SUCCESS_DATA_IMPEDANCE) {
-      int channel = Integer.parseInt(list[2]);
-      if (channel < 5) { //<>// //<>//
-        int value = Integer.parseInt(list[3]);
+  public void processImpedance(JSONObject json) {
+    int code = json.getInt(TCP_JSON_KEY_CODE);
+    if (code == RESP_SUCCESS_DATA_IMPEDANCE) {
+      int channel = json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER);
+      if (channel < 5) {
+        int value = json.getInt(TCP_JSON_KEY_IMPEDANCE_VALUE);
         impedanceArray[channel] = value;
         if (channel == 0) {
           impedanceUpdated = true;
-          println("Impedance for channel reference is " + value + " ohms.");
-        } else {
-          println("Impedance for channel " + channel + " is " + value + " ohms.");
         }
       }
     }
@@ -271,8 +228,11 @@ class Ganglion {
    * Used to start accel data mode. Accel arrays will arrive asynchronously!
    */
   public void accelStart() {
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_ACCEL);
+    hub.writeJSON(json);
     println("Ganglion: accell: START");
-    hub.write(TCP_CMD_ACCEL + "," + TCP_ACTION_START + TCP_STOP);
     accelModeActive = true;
   }
 
@@ -282,7 +242,10 @@ class Ganglion {
    */
   public void accelStop() {
     println("Ganglion: accel: STOP");
-    hub.write(TCP_CMD_ACCEL + "," + TCP_ACTION_STOP + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_STOP);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_ACCEL);
+    hub.writeJSON(json);
     accelModeActive = false;
   }
 
@@ -291,7 +254,10 @@ class Ganglion {
    */
   public void impedanceStart() {
     println("Ganglion: impedance: START");
-    hub.write(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_START + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
+    hub.writeJSON(json);
     checkingImpedance = true;
   }
 
@@ -301,7 +267,10 @@ class Ganglion {
    */
   public void impedanceStop() {
     println("Ganglion: impedance: STOP");
-    hub.write(TCP_CMD_IMPEDANCE + "," + TCP_ACTION_STOP + TCP_STOP);
+    JSONObject json = new JSONObject();
+    json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_STOP);
+    json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
+    hub.writeJSON(json);
     checkingImpedance = false;
   }
 

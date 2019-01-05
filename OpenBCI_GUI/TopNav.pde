@@ -3,6 +3,8 @@
 //  Created by Conor Russomanno, 11/3/16
 //  Extracting old code Gui_Manager.pde, adding new features for GUI v2 launch
 //
+//  Edited by Richard Waltman 9/24/18
+//  Added feature to check GUI version using "latest version" tag on Github
 ///////////////////////////////////////////////////////////////////////////////////////
 
 import java.awt.Desktop;
@@ -14,7 +16,6 @@ TopNav topNav;
 class TopNav {
 
   // PlotFontInfo fontInfo;
-
   Button controlPanelCollapser;
 
   Button fpsButton;
@@ -28,8 +29,7 @@ class TopNav {
   Button tutorialsButton;
   Button shopButton;
   Button issuesButton;
-
-
+  Button updateGuiVersionButton;
   Button layoutButton;
   Button configButton;
 
@@ -38,6 +38,12 @@ class TopNav {
   configSelector configSelector;
 
   boolean finishedInit = false;
+
+  String webGUIVersionString;
+  int webGUIVersionInt;
+  int localGUIVersionInt;
+  Boolean guiVersionIsUpToDate;
+  Boolean unableToFindPlistFile;
 
   //constructor
   TopNav() {
@@ -85,6 +91,29 @@ class TopNav {
     shopButton.setURL("http://shop.openbci.com/");
     shopButton.setFont(h3, 16);
 
+    butNum = 4;
+    updateGuiVersionButton = new Button(width - 3*(butNum) - 80 - issuesButton.but_dx - tutorialsButton.but_dx - shopButton.but_dx, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
+    //Lookup and check the local GUI version against the latest Github release
+    try {
+      loadGUIVersionData();
+      //Print the message to the button help text that appears when mouse hovers over button
+      if (!guiVersionCheckHasOccured) {
+        if (guiVersionIsUpToDate) {
+          updateGuiVersionButton.setHelpText("GUI is up to date!");
+        } else {
+          updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
+        }
+        guiVersionCheckHasOccured = true;
+      }
+    } catch (NullPointerException e)  {
+      //e.printStackTrace();
+      //If github is unreachable, catch the error update button help text
+      updateGuiVersionButton.setHelpText("Connect to internet to check GUI version.");
+    }
+    //Pressing the button opens web browser to Github latest release page
+    updateGuiVersionButton.setURL(guiLatestReleaseLocation);
+    updateGuiVersionButton.setFont(h3, 16);
+
 
 
     layoutSelector = new LayoutSelector();
@@ -127,6 +156,7 @@ class TopNav {
       issuesButton.setColorNotPressed(color(255));
       shopButton.setColorNotPressed(color(255));
       tutorialsButton.setColorNotPressed(color(255));
+      updateGuiVersionButton.setColorNotPressed(color(255));
 
       controlPanelCollapser.textColorNotActive = color(bgColor);
       fpsButton.textColorNotActive = color(bgColor);
@@ -134,6 +164,7 @@ class TopNav {
       issuesButton.textColorNotActive = color(bgColor);
       shopButton.textColorNotActive = color(bgColor);
       tutorialsButton.textColorNotActive = color(bgColor);
+      updateGuiVersionButton.textColorNotActive = color(bgColor);
     } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
       // controlPanelCollapser.setColorNotPressed(color(150));
       // issuesButton.setColorNotPressed(color(150));
@@ -151,6 +182,7 @@ class TopNav {
       issuesButton.setColorNotPressed(openbciBlue);
       shopButton.setColorNotPressed(openbciBlue);
       tutorialsButton.setColorNotPressed(openbciBlue);
+      updateGuiVersionButton.setColorNotPressed(openbciBlue);
 
       controlPanelCollapser.textColorNotActive = color(255);
       fpsButton.textColorNotActive = color(255);
@@ -158,6 +190,7 @@ class TopNav {
       issuesButton.textColorNotActive = color(255);
       shopButton.textColorNotActive = color(255);
       tutorialsButton.textColorNotActive = color(255);
+      updateGuiVersionButton.textColorNotActive = color(255);
 
       // controlPanelCollapser.textColorNotActive = color(openbciBlue);
       // issuesButton.textColorNotActive = color(openbciBlue);
@@ -250,6 +283,7 @@ class TopNav {
     tutorialsButton.draw();
     issuesButton.draw();
     shopButton.draw();
+    updateGuiVersionButton.draw();
 
     // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
 
@@ -262,6 +296,7 @@ class TopNav {
     tutorialsButton.but_x = width - 3 - tutorialsButton.but_dx;
     issuesButton.but_x = width - 3*2 - issuesButton.but_dx - tutorialsButton.but_dx;
     shopButton.but_x = width - 3*3 - shopButton.but_dx - issuesButton.but_dx - tutorialsButton.but_dx;
+    updateGuiVersionButton.but_x = width - 3*3 - shopButton.but_dx - issuesButton.but_dx - tutorialsButton.but_dx - shopButton.but_dx;
 
     if (systemMode == SYSTEMMODE_POSTINIT) {
       layoutButton.but_x = width - 3 - layoutButton.but_dx;
@@ -338,6 +373,11 @@ class TopNav {
       shopButton.setIsActive(true);
       //toggle help/tutorial dropdown menu
     }
+    if (updateGuiVersionButton.isMouseHere()) {
+      updateGuiVersionButton.setIsActive(true);
+      //toggle help/tutorial dropdown menu
+    }
+
 
     layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
     tutorialSelector.mousePressed();
@@ -370,6 +410,11 @@ class TopNav {
       shopButton.goToURL();
     }
 
+    if (updateGuiVersionButton.isMouseHere() && updateGuiVersionButton.isActive()) {
+      //go to OpenBCI Shop
+      updateGuiVersionButton.goToURL();
+    }
+
 
 
     if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -382,7 +427,7 @@ class TopNav {
         }
         if (configButton.isMouseHere() && configButton.isActive()) {
           //layoutSelector.toggleVisibility();
-          configSelector.toggleVisibility();         
+          configSelector.toggleVisibility();
           configButton.setIsActive(true);
         }
       }
@@ -399,11 +444,101 @@ class TopNav {
     tutorialsButton.setIsActive(false);
     issuesButton.setIsActive(false);
     shopButton.setIsActive(false);
+    updateGuiVersionButton.setIsActive(false);
 
 
     layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
     tutorialSelector.mouseReleased();
     configSelector.mouseReleased();
+  } //end mouseReleased
+
+  //Load data from the latest release page from Github and the info.plist file
+  void loadGUIVersionData() {
+
+    /////////////////////////////////////////////
+    //Get the latest release version from Github
+    String webTitle;
+    String[] version;
+    // Get the raw HTML source into an array of strings (each line is one element in the array).
+    // The next step is to turn array into one long string with join().
+    String[] lines = loadStrings(guiLatestReleaseLocation);
+    String html = join(lines, "");
+    String start = "<title>";
+    String end = "</title>";
+    webTitle = giveMeTextBetween(html, start, end);
+    version = split(webTitle, '·'); //split the string in the html title
+    String[] webVersionNumberArray = split(version[0], ' ');
+    //printArray(webVersionNumberArray);
+    ///Parse the string from Github
+    //remove 'v' character if nedded
+    if (webVersionNumberArray[1].charAt(0) == 'v') {
+      String[] splitV = split(webVersionNumberArray[1], 'v');
+      webGUIVersionString = splitV[1];
+    } else {
+      webGUIVersionString = webVersionNumberArray[1];
+    }
+    //then remove "-alpha" or "-beta" as needed
+    //println(webGUIVersionString);
+    if (webGUIVersionString.length() > 5) {
+     String[] webGUIVersionStringArray = split(webGUIVersionString, '-');
+     //printArray(webGUIVersionStringArray);
+     webGUIVersionString = webGUIVersionStringArray[0];
+    }
+    //webGUIVersionString is the current version, fetched from Github
+
+    /////////////////////////////////////////////////////////////////////////////
+    //Copy the local GUI version from the string that appears in OpenBCI_GUI.pde
+    //Then, format it just as we did above removing 'v' and splitting before any -alpha -beta
+    String localVersionString = localGUIVersionString;
+    //remove 'v' character if needed
+    if (localVersionString.charAt(0) == 'v') {
+     String[] splitV = split(localVersionString, 'v');
+     localVersionString = splitV[1];
+    }
+    //then remove "-alpha" or "-beta" as needed
+    if (localVersionString.length() > 5) {
+     String[] localGUIVersionStringArray = split(localVersionString, '-');
+     localVersionString = localGUIVersionStringArray[0];
+    }
+    /////////////////////////////////////////////////
+    ///////Perform Comparison (000-1000 format)
+    int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
+    int[] localVersionCompareArray = int(split(localVersionString, '.'));
+    webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
+    localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
+    //Print the results to console
+    println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
+    //compare the versions using the three digit integers and print to console
+    if (localGUIVersionInt < webGUIVersionInt) {
+      guiVersionIsUpToDate = false;
+      println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
+    } else if (localGUIVersionInt >= webGUIVersionInt) {
+      guiVersionIsUpToDate = true;
+      println("GUI is up to date!");
+    }
+
+
+  }
+
+  // This function returns a substring between two substrings (before and after).
+  String giveMeTextBetween(String s, String before, String after) {
+
+    // Find the index of before
+    int start = s.indexOf(before);
+    if (start == -1) {
+      return "";
+    }
+
+    // Move to the end of the beginning tag
+    // and find the index of the "after" String
+    start += before.length();
+    int end = s.indexOf(after, start);
+    if (end == -1) {
+      return "";
+    }
+
+    // Return the text in between
+    return s.substring(start, end);
   }
 }
 
@@ -713,11 +848,11 @@ class configSelector {
               case DATASOURCE_SYNTHETIC:
                 userSettingsFileToSave = syntheticUserSettingsFile;
                 break;
-            }     
+            }
             if (saveSettingsDialogName == null) {
               selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileToSave)); //open dialog box to save settings as json
             } else {
-              println(saveSettingsDialogName); 
+              println(saveSettingsDialogName);
               saveSettingsDialogName = null;
             }
           } else if (configSelected == 1) {
@@ -726,9 +861,9 @@ class configSelector {
               selectInput("Load a custom settings file from JSON:", "loadConfigFile");
               saveSettingsDialogName = null;
             } else {
-              println(loadSettingsDialogName); 
-            }         
-          } else if (configSelected == 2) {           
+              println(loadSettingsDialogName);
+            }
+          } else if (configSelected == 2) {
             //Revert GUI to default settings that were flashed on system start!
             String defaultSettingsFileToLoad = null;
             switch(eegDataSource) {
@@ -745,9 +880,9 @@ class configSelector {
                 defaultSettingsFileToLoad = syntheticDefaultSettingsFile;
                 break;
             }
-            loadGUISettings(defaultSettingsFileToLoad);            
+            loadGUISettings(defaultSettingsFileToLoad);
             outputSuccess("Default Settings Loaded!");
-          }                  
+          }
           toggleVisibility(); //shut configSelector if something is selected
         }
       }
@@ -801,7 +936,7 @@ class configSelector {
     tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
     tempConfigButton.setFont(p5, 12);
     configOptions.add(tempConfigButton);
-    
+
     //setup button 3 -- Default Settings
     buttonNumber = 2;
     h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
@@ -813,7 +948,7 @@ class configSelector {
   void updateConfigOptionButtons() {
     //dropdown is static, so no need to update
   }
-}  
+}
 
 class TutorialSelector {
 

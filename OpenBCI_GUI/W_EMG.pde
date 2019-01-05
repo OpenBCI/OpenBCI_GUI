@@ -12,16 +12,6 @@
 //  TODO: Add dynamic threshold functionality
 ////////////////////////////////////////////////////////////////////////////////
 
-// addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "1.0 s", "2.0 s"), 0);
-// addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), 0);
-// addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), 0);
-// addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), 0);
-//
-// int averagePeriod = 125;          //number of data packets to average over (250 = 1 sec)
-// float acceptableLimitUV = 200.0;    //uV values above this limit are excluded, as a result of them almost certainly being noise...
-// float creepSpeed = 0.99;
-// float minRange = 20.0;
-
 void SmoothEMG(int n){
 
   float samplesPerSecond;
@@ -146,33 +136,13 @@ class W_emg extends Widget {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
     parent = _parent;
 
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
-    //use these as new configuration widget
-    motorWidgets = new Motor_Widget[nchan];
-
-    for (int i = 0; i < nchan; i++) {
-      motorWidgets[i] = new Motor_Widget();
-      motorWidgets[i].ourChan = i;
-      if(eegDataSource == DATASOURCE_GANGLION){
-        motorWidgets[i].averagePeriod = 200 * 0.5;
-      } else {
-        motorWidgets[i].averagePeriod = 250 * 0.5;
-      }
-    }
-
-    events = new boolean[nchan];
-
-    for (int i = 0; i < nchan; i++) {
-      events[i] = true;
-    }
-
+    //Add dropdowns
     addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"), 4);
     addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), 2);
     addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), 3);
     addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), 1);
+
+    updateEMGMotorWidgets(nchan);
 
     if (emgAdvanced) {
       channelList = new ArrayList<String>();
@@ -246,6 +216,24 @@ class W_emg extends Widget {
     }
   }
 
+  void updateEMGMotorWidgets(int _nchan) {
+    //setup EMG motor widgets using the number of channels selected
+    motorWidgets = new Motor_Widget[_nchan];
+    for (int i = 0; i < _nchan; i++) {
+      motorWidgets[i] = new Motor_Widget();
+      motorWidgets[i].ourChan = i;
+      if(eegDataSource == DATASOURCE_GANGLION){
+        motorWidgets[i].averagePeriod = 200 * 0.5;
+      } else {
+        motorWidgets[i].averagePeriod = 250 * 0.5;
+      }
+    }
+    events = new boolean[_nchan];
+    for (int i = 0; i < _nchan; i++) {
+      events[i] = true;
+    }
+  }
+
   void update() {
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
@@ -277,7 +265,6 @@ class W_emg extends Widget {
       }
     }
 
-
     // float rx = x, ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
     float rx = x, ry = y, rw = w, rh = h;
     float scaleFactor = 1.0;
@@ -299,7 +286,6 @@ class W_emg extends Widget {
         translate(currx, curry);
 
         //draw visualizer
-
         // (int)color(129, 129, 129),
         // (int)color(124, 75, 141),
         // (int)color(54, 87, 158),
@@ -424,7 +410,6 @@ class W_emg extends Widget {
     }
   }
 
-
   public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
     float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
     float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
@@ -477,8 +462,6 @@ class W_emg extends Widget {
         cfc.output_normalized = 0; //always make sure this value is >= 0
       }
       cfc.output_adjusted = ((-0.1/(cfc.output_normalized*255.0)) + 255.0);
-
-
 
       //=============== TRIPPIN ==================
       //= Just calls all the trip events         =
@@ -779,7 +762,6 @@ class W_emg extends Widget {
       return  min(max(val, minv), maxv);
     }
   };
-
 
   //===================== DIGITAL EVENTS =============================
   //=  Digital Events work by tripping certain thresholds, and then  =
@@ -1180,7 +1162,6 @@ class W_emg extends Widget {
     }
   }
 
-
   //===================== ANALOG EVENTS ===========================
   //=  Analog events are a big more complicated than digital      =
   //=  events. In order to use analog events you must map the     =
@@ -1361,7 +1342,6 @@ class W_emg extends Widget {
     float timeOfLastTrip = cfc.timeOfLastTrip;
   }
 };
-
 
 void ChannelSelection(int n) {
   w_emg.currChannel = n;
