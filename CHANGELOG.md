@@ -12,6 +12,7 @@ Use OpenBCIHub v2.0.3 please.
 ### Bug Fixes
 
 * Fixed bug where cyton (and cyton daisy) did not work for auxData #414
+* Fixed bug where GUI does not start hub on Windows #300
 
 ## Beta 0
 
