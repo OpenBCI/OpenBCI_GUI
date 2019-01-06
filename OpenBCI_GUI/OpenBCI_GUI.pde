@@ -584,16 +584,7 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      //nodeHubby = launch(dataPath("OpenBCIHub.exe"));
-      //find system drive
-      String winSysDriveString = System.getenv("SystemDrive");
-      //make a string to run as a command line prompt
-      String winCmdLineHubString =
-        winSysDriveString + File.separator +
-        "Program Files" + File.separator +
-        "OpenBCIHub" + File.separator +
-        "OpenBCIHub.exe";
-      nodeHubby = exec(winCmdLineHubString);
+      nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
       nodeHubby = exec(dataPath("OpenBCIHub"));
