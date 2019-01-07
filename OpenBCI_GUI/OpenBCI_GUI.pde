@@ -571,10 +571,8 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  if (!isWindows()) {
-    hubStart();
-    prepareExitHandler();
-  }
+  hubStart();
+  prepareExitHandler();
 }
 
 /**
@@ -586,7 +584,7 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("OpenBCIHub.exe"));
+      nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
       nodeHubby = exec(dataPath("OpenBCIHub"));
