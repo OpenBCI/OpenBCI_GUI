@@ -53,7 +53,7 @@ void parseKey(char val) {
       else if(drawAccel){
         drawAccel = false;
         drawPulse = true;
-        drawHead = false; 
+        drawHead = false;
         drawEMG = false;
       }
       else if(drawPulse){
@@ -236,13 +236,13 @@ void parseKey(char val) {
       }
       break;
 
-    //other controls   
+    //other controls
     case 's':
       println("case s...");
       stopRunning();
       //stopButtonWasPressed();
       break;
-     
+
     case 'b':
       println("case b...");
       startRunning();
@@ -324,7 +324,7 @@ void parseKey(char val) {
       } else {
         outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
       }
-      break;  
+      break;
 
     case '?':
       cyton.printRegisters();
@@ -337,7 +337,7 @@ void parseKey(char val) {
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
       break;
- 
+
     // //change the state of the impedance measurements...activate the N-channels
     // case 'A':
     //   Ichan = 1; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
@@ -1104,7 +1104,7 @@ boolean isNetworkingTextActive(){
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
 
   //isFocus(); returns true if active for textField...
-  println("Text Field Active?" + isAFieldActive);
+  println("Text Field Active? " + isAFieldActive);
   return isAFieldActive; //if not, return false
 }
 
