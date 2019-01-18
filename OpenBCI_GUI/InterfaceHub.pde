@@ -593,8 +593,14 @@ class Hub {
     int code = json.getInt(TCP_JSON_KEY_CODE);
     if (code == RESP_SUCCESS_DATA_ACCEL) {
       JSONArray accelDataCounts = json.getJSONArray(TCP_JSON_KEY_ACCEL_DATA_COUNTS);
-      for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-          accelArray[i] = accelDataCounts.getInt(i);
+      if(eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398 in Ganglion Firmware
+        accelArray[0] = accelDataCounts.getInt(0);
+        accelArray[1] = accelDataCounts.getInt(1);
+        accelArray[2] = accelDataCounts.getInt(2);
+      } else {
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+            accelArray[i] = accelDataCounts.getInt(i);
+        }
       }
       newAccelData = true;
       if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
