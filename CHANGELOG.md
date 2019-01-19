@@ -1,3 +1,28 @@
+# v4.0.3
+
+Use OpenBCIHub v2.0.3 please.
+
+### New Features
+
+* On Windows, it is no longer necessary to launch the HUB separately.
+* The HUB is packaged within the GUI on Windows, just like on Mac and Linux.
+
+### Bug Fixes
+
+* Ganglion did not work for Mojave #402
+* Ganglion could not do playback file #399
+
+## Beta 1
+
+### Bug Fixes
+
+* Fixed bug where cyton (and cyton daisy) did not work for auxData #414
+* Fixed bug where GUI does not start hub on Windows #300
+
+## Beta 0
+
+* Initial Release
+
 # v4.0.2
 
 Use OpenBCIHub v2.0.2 please.

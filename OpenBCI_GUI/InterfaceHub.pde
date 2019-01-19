@@ -89,11 +89,13 @@ final static String TCP_JSON_KEY_CHANNEL_SET_SRB2 = "srb2";
 final static String TCP_JSON_KEY_CHANNEL_SET_SRB1 = "srb1";
 final static String TCP_JSON_KEY_CODE = "code";
 final static String TCP_JSON_KEY_COMMAND = "command";
+final static String TCP_JSON_KEY_DATA = "data";
 final static String TCP_JSON_KEY_FIRMWARE = "firmware";
 final static String TCP_JSON_KEY_IMPEDANCE_VALUE = "impedanceValue";
 final static String TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT = "pInputApplied";
 final static String TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT = "nInputApplied";
 final static String TCP_JSON_KEY_LATENCY = "latency";
+final static String TCP_JSON_KEY_LOWER = "lower";
 final static String TCP_JSON_KEY_MESSAGE = "message";
 final static String TCP_JSON_KEY_NAME = "name";
 final static String TCP_JSON_KEY_PROTOCOL = "protocol";
@@ -656,16 +658,25 @@ class Hub {
                 }
               }
             } else {
-              JSONArray auxDataValues = json.getJSONArray(TCP_JSON_KEY_AUX_DATA);
+              JSONObject auxData = json.getJSONObject(TCP_JSON_KEY_AUX_DATA);
+              JSONArray auxDataValues;
+              if (nchan == NCHAN_CYTON_DAISY) {
+                JSONObject lowerAuxData = auxData.getJSONObject(TCP_JSON_KEY_LOWER);
+                auxDataValues = lowerAuxData.getJSONArray(TCP_JSON_KEY_DATA);
+              } else {
+                auxDataValues = auxData.getJSONArray(TCP_JSON_KEY_DATA);
+              }
+              int j = 0;
               for (int i = 0; i < auxDataValues.size(); i+=2) {
                 int val1 = auxDataValues.getInt(i);
                 int val2 = auxDataValues.getInt(i+1);
 
-                dataPacket.auxValues[i] = (val1 << 8) | val2;
-                validAccelValues[i] = (val1 << 8) | val2;
+                dataPacket.auxValues[j] = (val1 << 8) | val2;
+                validAccelValues[j] = (val1 << 8) | val2;
 
-                dataPacket.rawAuxValues[i][0] = byte(val2);
-                dataPacket.rawAuxValues[i][1] = byte(val1 << 8);
+                dataPacket.rawAuxValues[j][0] = byte(val2);
+                dataPacket.rawAuxValues[j][1] = byte(val1 << 8);
+                j++;
               }
             }
           }

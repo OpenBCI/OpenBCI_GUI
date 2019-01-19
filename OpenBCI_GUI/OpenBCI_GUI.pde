@@ -249,7 +249,7 @@ boolean isOldData = false;
 //Used for playback file
 int indices = 0;
 //# columns used by a playback file determines number of channels
-final int totalColumns4ChanThresh = 8;
+final int totalColumns4ChanThresh = 10;
 final int totalColumns16ChanThresh = 16;
 
 boolean synthesizeData = false;
@@ -352,8 +352,8 @@ Boolean settingsLoadedCheck = false; //Used to determine if settings are done lo
 final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.0.2";
-String localGUIVersionDate = "November 2018";
+String localGUIVersionString = "v4.0.3";
+String localGUIVersionDate = "January 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -571,10 +571,8 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  if (!isWindows()) {
-    hubStart();
-    prepareExitHandler();
-  }
+  hubStart();
+  prepareExitHandler();
 }
 
 /**
@@ -586,7 +584,7 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("OpenBCIHub.exe"));
+      nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
       nodeHubby = exec(dataPath("OpenBCIHub"));
@@ -895,7 +893,8 @@ void initSystem() {
   }
   saveGUISettings(defaultSettingsFileToSave);
 
-  //Try Auto-load GUI settings between checkpoints 4 and 5 during GUI initialization. Otherwise, load default settings.
+  //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
+  //Otherwise, load default settings.
   loadErrorTimerStart = millis();
   try {
     switch(eegDataSource) {
