@@ -2,6 +2,11 @@
 
 Use OpenBCIHub v2.0.3 please.
 
+### New Features
+
+* On Windows, it is no longer necessary to launch the HUB separately.
+* The HUB is packaged within the GUI on Windows, just like on Mac and Linux.
+
 ### Bug Fixes
 
 * Ganglion did not work for Mojave #402
