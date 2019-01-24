@@ -54,13 +54,6 @@ class W_accelerometer extends Widget {
 
   float[] currentAccelVals;
 
-  //For synthesizing values
-  boolean[] accelRising;
-  float[] lastAccelVal;
-  //boolean Xrising = false;
-  //boolean Yrising = true;
-  //boolean Zrising = true;
-  float accelSynthRate = 0.23/sqrt(6);
   boolean OBCI_inited= true;
   private boolean visible = true;
   private boolean updating = true;
@@ -85,10 +78,8 @@ class W_accelerometer extends Widget {
     //XYZ buffer for bottom graph
     accelBuffSize = nPointsBasedOnDataSource();   //accelBuffSize = 20 seconds * 25 Hz
     accelArray = new float[NUM_ACCEL_DIMS][accelBuffSize];
-    accelRising = new boolean[NUM_ACCEL_DIMS];
     initAccelData();
     currentAccelVals = new float[NUM_ACCEL_DIMS];
-    lastAccelVal = new float[NUM_ACCEL_DIMS];
 
     //create our channel bar and populate our accelerometerBar array!
     println("init accelerometer bar");
@@ -126,9 +117,6 @@ class W_accelerometer extends Widget {
       accelArray[1][i] = 0;
       accelArray[2][i] = -accelXyzLimit/2;
     }
-    accelRising[0] = false;
-    accelRising[1] = true;
-    accelRising[2] = true;
   }
 
   float adjustYMaxMinBasedOnSource() {
@@ -176,7 +164,7 @@ class W_accelerometer extends Widget {
   void updateAccelPoints() {
     for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
       if (eegDataSource == DATASOURCE_SYNTHETIC) {
-        //synthesizeAccelData();
+        synthesizeAccelData();
       } else if (eegDataSource == DATASOURCE_CYTON) {
         currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
       } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -346,14 +334,10 @@ class W_accelerometer extends Widget {
   //Used during Synthetic data mode
   void synthesizeAccelData() {
     for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-      lastAccelVal[i] = accelArray[i][accelArray[i].length-1];
-      if (accelRising[i]) {  //MAKE A SAW WAVE FOR TESTING
-        currentAccelVals[i] = lastAccelVal[i] + accelSynthRate;//place the new raw datapoint at the end of the array
-        if (currentAccelVals[i] >= accelXyzLimit) accelRising[i] = false;
-      } else {
-        currentAccelVals[i] = lastAccelVal[i] - accelSynthRate;//place the new raw datapoint at the end of the array
-        if (currentAccelVals[i] <= -accelXyzLimit) accelRising[i] = true;
-      }
+      // simple sin wave tied to current time.
+      // offset each axis by its index * 2
+      // multiply by accelXyzLimit to fill the height of the plot
+      currentAccelVals[i] = sin(millis()/1000.f + i*2.f) * accelXyzLimit;
     }
   }//end void synthesizeAccelData
 };//end W_accelerometer class
@@ -564,8 +548,18 @@ class AccelerometerBar{
       }
     } else {
 
-      //currentTableRowIndex is used for playback
-      numSamplesToProcess = currentTableRowIndex - lastProcessedDataPacketInd;
+      switch (eegDataSource) {
+      case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
+        numSamplesToProcess = 1;
+        break;
+      case DATASOURCE_PLAYBACKFILE:
+        //currentTableRowIndex is used for playback
+        numSamplesToProcess = currentTableRowIndex - lastProcessedDataPacketInd;
+        break;
+      default:
+        numSamplesToProcess = 0;
+      }
+
       println("NumSAMPLES = " + numSamplesToProcess);
       if (numSamplesToProcess < 0) {
         numSamplesToProcess += dataPacketBuff.length;
@@ -594,7 +588,9 @@ class AccelerometerBar{
 
         switch (eegDataSource) {
         case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-          w_accelerometer.synthesizeAccelData();
+          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+            accelArray[i][accelBuffSize - 1] = w_accelerometer.currentAccelVals[i];
+          }
           break;
         case DATASOURCE_PLAYBACKFILE:
           for (int j = 0; j < NUM_ACCEL_DIMS; j++) {
