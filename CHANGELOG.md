@@ -1,3 +1,11 @@
+# v4.0.4
+
+Use OpenBCIHub v2.0.3 please.
+
+### Bug Fix
+
+* Cyton impedance check did not work #427
+
 # v4.0.3
 
 Use OpenBCIHub v2.0.3 please.
