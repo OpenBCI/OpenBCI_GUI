@@ -11,6 +11,7 @@ Use OpenBCIHub v2.0.3 please.
 
 * Ganglion did not work for Mojave #402
 * Ganglion could not do playback file #399
+* Cyton impedance check did not work #427
 
 ## Beta 1
 
