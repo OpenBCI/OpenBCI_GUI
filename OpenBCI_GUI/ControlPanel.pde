@@ -88,6 +88,7 @@ Button outputBDFGanglion;
 
 Button chanButton8;
 Button chanButton16;
+Button selectRecentFile;
 Button selectPlaybackFile;
 Button selectSDFile;
 Button popOutRadioConfigButton;
@@ -291,6 +292,7 @@ class ControlPanel {
   InitBox initBox;
   SyntheticChannelCountBox synthChannelCountBox;
 
+  RecentPlaybackBox recentPlaybackBox;
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
 
@@ -363,7 +365,8 @@ class ControlPanel {
     wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
-    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    recentPlaybackBox = new RecentPlaybackBox(x + w, dataSourceBox.y, w, h, globalPadding);
+    playbackFileBox = new PlaybackFileBox(x + w, (recentPlaybackBox.y + recentPlaybackBox.h), w, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
 
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
@@ -392,6 +395,8 @@ class ControlPanel {
   public void open(){
     isOpen = true;
     topNav.controlPanelCollapser.setIsActive(true);
+    //update recentPlaybackBox button once when control panel is opened
+    recentPlaybackBox.update();
   }
 
   public void close(){
@@ -585,6 +590,7 @@ class ControlPanel {
           cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         }
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
+        recentPlaybackBox.draw();
         playbackFileBox.draw();
         sdConverterBox.draw();
 
@@ -1066,11 +1072,14 @@ class ControlPanel {
 
       //active buttons during DATASOURCE_PLAYBACKFILE
       if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        if (selectRecentFile.isMouseHere()) {
+          selectRecentFile.setIsActive(true);
+          selectRecentFile.wasPressed = true;
+        }
         if (selectPlaybackFile.isMouseHere()) {
           selectPlaybackFile.setIsActive(true);
           selectPlaybackFile.wasPressed = true;
         }
-
         if (selectSDFile.isMouseHere()) {
           selectSDFile.setIsActive(true);
           selectSDFile.wasPressed = true;
@@ -1471,6 +1480,13 @@ class ControlPanel {
       hub.setWifiInternetProtocol(UDP_BURST);
     }
 
+    if (selectRecentFile.isMouseHere() && selectRecentFile.wasPressed) {
+      output("Selecting most recent file for playback.");
+      println("Selecting most recent file for playback.");
+      //selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
+      playbackFileSelectedCP(recentPlaybackBox.longFilePath, recentPlaybackBox.shortFileName);
+    }
+
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
@@ -1561,6 +1577,8 @@ class ControlPanel {
     synthChanButton16.wasPressed = false;
     chanButton16.setIsActive(false);
     chanButton16.wasPressed  = false;
+    selectRecentFile.setIsActive(false);
+    selectRecentFile.wasPressed = false;
     selectPlaybackFile.setIsActive(false);
     selectPlaybackFile.wasPressed = false;
     selectSDFile.setIsActive(false);
@@ -2550,6 +2568,57 @@ class SyntheticChannelCountBox {
     synthChanButton4.draw();
     synthChanButton8.draw();
     synthChanButton16.draw();
+  }
+};
+
+class RecentPlaybackBox {
+  int x, y, w, h, padding; //size and position
+  String shortFileName;
+  String longFilePath;
+
+  RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 67;
+    padding = _padding;
+
+    selectRecentFile = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, getRecentPlaybackFile(), fontInfo.buttonLabel_size);
+  }
+
+  //update occurs when control panel is opened via click or stopping the system
+  public void update() {
+    selectRecentFile.setString(getRecentPlaybackFile());
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("RECENT", x + padding, y + padding);
+    popStyle();
+
+    selectRecentFile.draw();
+  }
+
+  private String getRecentPlaybackFile() {
+    try {
+      JSONObject playbackHistory = loadJSONObject(userPlaybackHistoryFile);
+      JSONArray recentFilesArray = playbackHistory.getJSONArray("playbackFileHistory");
+      JSONObject playbackFile = recentFilesArray.getJSONObject(recentFilesArray.size()-1);
+      shortFileName = playbackFile.getString("id");
+      longFilePath = playbackFile.getString("filePath");
+      println("Playback history file found!!!");
+      return shortFileName;
+    } catch (NullPointerException e) {
+      println("Playback history file not found.");
+      return "History not found.";
+    }
   }
 };
 
