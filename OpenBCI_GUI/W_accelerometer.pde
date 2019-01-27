@@ -61,6 +61,9 @@ class W_accelerometer extends Widget {
   boolean accelerometerModeOn = true;
   Button accelModeButton;
 
+  // Synthetic data timer. Track frame count for synthetic data.
+  int synthTime;
+
   W_accelerometer(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -103,6 +106,8 @@ class W_accelerometer extends Widget {
     accelModeButton.textColorNotActive = color(255);
     accelModeButton.hasStroke(false);
     accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
+
+    synthTime = 0;
 
   }
 
@@ -170,7 +175,7 @@ class W_accelerometer extends Widget {
       } else if (eegDataSource == DATASOURCE_GANGLION) {
         currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
       } else {  //playback data
-        //currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
+        currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
       }
     }
   }
@@ -337,8 +342,9 @@ class W_accelerometer extends Widget {
       // simple sin wave tied to current time.
       // offset each axis by its index * 2
       // multiply by accelXyzLimit to fill the height of the plot
-      currentAccelVals[i] = sin(millis()/1000.f + i*2.f) * accelXyzLimit;
+      currentAccelVals[i] = sin(synthTime/100.f + i*2.f) * accelXyzLimit;
     }
+    synthTime ++;
   }//end void synthesizeAccelData
 };//end W_accelerometer class
 
@@ -553,18 +559,16 @@ class AccelerometerBar{
         numSamplesToProcess = 1;
         break;
       case DATASOURCE_PLAYBACKFILE:
+        // handle wrap-around
+        lastProcessedDataPacketInd = min(lastProcessedDataPacketInd, currentTableRowIndex);
         //currentTableRowIndex is used for playback
         numSamplesToProcess = currentTableRowIndex - lastProcessedDataPacketInd;
+        // we can't process more samples than we have a buffer for
+        numSamplesToProcess = min(numSamplesToProcess, accelBuffSize);
         break;
       default:
         numSamplesToProcess = 0;
       }
-
-      println("NumSAMPLES = " + numSamplesToProcess);
-      if (numSamplesToProcess < 0) {
-        numSamplesToProcess += dataPacketBuff.length;
-      }
-      println("NumSAMPLES = " + numSamplesToProcess);
 
       //Shift internal ring buffer numSamplesToProcess
       if (numSamplesToProcess > 0) {
@@ -580,26 +584,11 @@ class AccelerometerBar{
       while (samplesProcessed < numSamplesToProcess) {
         lastProcessedDataPacketInd++;
 
-        //Watch for wrap around
-        if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-          lastProcessedDataPacketInd = 0;
+        int curArrayInd = accelBuffSize - numSamplesToProcess + samplesProcessed;
+        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+          accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
         }
 
-
-        switch (eegDataSource) {
-        case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-          for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-            accelArray[i][accelBuffSize - 1] = w_accelerometer.currentAccelVals[i];
-          }
-          break;
-        case DATASOURCE_PLAYBACKFILE:
-          for (int j = 0; j < NUM_ACCEL_DIMS; j++) {
-            w_accelerometer.currentAccelVals[j] = accelerometerBuff[j][accelerometerBuff[j].length-1];
-          }
-          break;
-        default:
-          //no action
-        }
         samplesProcessed++;
       }
     }
