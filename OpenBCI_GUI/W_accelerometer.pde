@@ -61,6 +61,9 @@ class W_accelerometer extends Widget {
   boolean accelerometerModeOn = true;
   Button accelModeButton;
 
+  // Synthetic data timer. Track frame count for synthetic data.
+  int synthTime;
+
   W_accelerometer(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -103,6 +106,8 @@ class W_accelerometer extends Widget {
     accelModeButton.textColorNotActive = color(255);
     accelModeButton.hasStroke(false);
     accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
+
+    synthTime = 0;
 
   }
 
@@ -337,8 +342,9 @@ class W_accelerometer extends Widget {
       // simple sin wave tied to current time.
       // offset each axis by its index * 2
       // multiply by accelXyzLimit to fill the height of the plot
-      currentAccelVals[i] = sin(millis()/1000.f + i*2.f) * accelXyzLimit;
+      currentAccelVals[i] = sin(synthTime/100.f + i*2.f) * accelXyzLimit;
     }
+    synthTime ++;
   }//end void synthesizeAccelData
 };//end W_accelerometer class
 
