@@ -1,6 +1,6 @@
 # v4.0.4
 
-Use OpenBCIHub v2.0.3 please.
+Use OpenBCIHub v2.0.5 please.
 
 ### Bug Fix
 
