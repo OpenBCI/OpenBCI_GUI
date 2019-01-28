@@ -293,9 +293,6 @@ class ControlPanel {
   SyntheticChannelCountBox synthChannelCountBox;
 
   RecentPlaybackBox recentPlaybackBox;
-  boolean flexDropdownWindow = false;
-  boolean recentFileSelected = false;
-  int flexWindowY = 0;
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
 
@@ -369,9 +366,9 @@ class ControlPanel {
 
     //boxes active when eegDataSource = Playback
     int playbackWidth = int(w * 1.4);
-    recentPlaybackBox = new RecentPlaybackBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
-    playbackFileBox = new PlaybackFileBox(x + w, (recentPlaybackBox.y + recentPlaybackBox.h), playbackWidth, h, globalPadding);
+    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
+    recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
 
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
@@ -1084,24 +1081,6 @@ class ControlPanel {
 
       //active buttons during DATASOURCE_PLAYBACKFILE
       if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        //Check if list item was clicked
-        if (!flexDropdownWindow && recentPlaybackBox.cp5_controlPanel_dropdown.getController("recentFiles").isMouseOver()){
-          if (recentPlaybackBox.cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").isOpen()){
-            flexWindowY = 0;
-            println("FLEX THE DROPDOWN MENU ONCE --");
-            flexDropdownWindow = true;
-            recentFileSelected = true;
-          }
-          //Check if root item was clicked
-          if (!recentPlaybackBox.cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").isOpen()){
-            flexWindowY = 3 * recentPlaybackBox.h +
-                recentPlaybackBox.cp5_controlPanel_dropdown.getController("recentFiles").getHeight() +
-                globalPadding;
-            println("FLEX THE DROPDOWN MENU ONCE ++");
-            flexDropdownWindow = true;
-          }
-        }
-
         if (selectPlaybackFile.isMouseHere()) {
           selectPlaybackFile.setIsActive(true);
           selectPlaybackFile.wasPressed = true;
@@ -2602,10 +2581,10 @@ class RecentPlaybackBox {
   String[] previousFileNames = new String[1];
   String[] shortFileNames = new String[1];
   String[] longFilePaths = new String[1];
+  String filePicked = "";
+  String newFilePicked = "";
 
   ControlP5 cp5_controlPanel_dropdown;
-
-
 
   RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x;
@@ -2626,20 +2605,24 @@ class RecentPlaybackBox {
     cp5_controlPanel_dropdown.setAutoDraw(false);
   }
 
-  //update occurs when control panel is open
+  /////*Update occurs while control panel is open*/////
   public void update() {
     //selectRecentFile.setString(getRecentPlaybackFile());
+    //Update the dropdown list if it has not already been done
     if (!recentPlaybackFilesHaveUpdated) {
       previousFileNames = shortFileNames;
       cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").removeItems(Arrays.asList(previousFileNames));
       getRecentPlaybackFiles();
-      println("CONTROL PANEL OPENED... PLAYBACK FILES UPDATE CALLED");
+      //println("CONTROL PANEL OPENED... PLAYBACK FILES UPDATE CALLED");
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2,(shortFileNames.length+1)*24);
     }
-
-    if (playbackHistoryFileExists && controlPanel.recentFileSelected) {
-      int filePicked = (int)cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").getValue();
+    //Keep updating to see if User has selected a new recent playback file
+    newFilePicked = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
+    if (newFilePicked.equals(filePicked) == false) {
+      filePicked = newFilePicked;
+      //println("VALUE OF RECENT DROPDOWN " + filePicked);
       //playbackFileSelectedCP(longFilePaths[filePicked], shortFileNames[filePicked]);
-      controlPanel.recentFileSelected = false;
     }
   }
 
@@ -2681,15 +2664,19 @@ class RecentPlaybackBox {
             String shortFileName = playbackFile.getString("id");
             String longFilePath = playbackFile.getString("filePath");
             //store to arrays to set recent playback buttons text and function
-            shortFileNames[fileNumber-1] = shortFileName;
-            longFilePaths[fileNumber-1] = longFilePath;
+            shortFileNames[fileNumber - 1] = shortFileName;
+            longFilePaths[fileNumber - 1] = longFilePath;
+            //println(shortFileName + " " + longFilePath);
             }
+      //For debugging
       println("Playback history file found!!!");
       printArray(shortFileNames);
-      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
+      //println("TEST!!!!!!" + cp5_controlPanel_dropdown.getController("recentFiles").getItems());
+
       playbackHistoryFileExists = true;
-    } catch (NullPointerException e) {
-      println("Playback history file not found.");
+    } catch (Exception e) {
+      e.printStackTrace();
+      println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
       playbackHistoryFileExists = false;
     }
     recentPlaybackFilesHaveUpdated = true;
@@ -2720,7 +2707,7 @@ class RecentPlaybackBox {
     cp5_controlPanel_dropdown.getController(name)
       .getCaptionLabel() //the caption label is the text object in the primary bar
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText("None")
+      .setText("Select Recent Playback File")
       .setFont(h4)
       .setSize(14)
       .getStyle() //need to grab style before affecting the paddingTop
@@ -2729,7 +2716,7 @@ class RecentPlaybackBox {
     cp5_controlPanel_dropdown.getController(name)
       .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
       .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-      .setText("None")
+      .setText("Select Recent Playback File")
       .setFont(h5)
       .setSize(12) //set the font size of the item bars to 14pt
       .getStyle() //need to grab style before affecting the paddingTop
@@ -2757,16 +2744,6 @@ class PlaybackFileBox {
   }
 
   public void update() {
-    //Flex the box and button location with dropdown
-    if (controlPanel.flexDropdownWindow) {
-      int flexPadding = padding*2 + 13;
-      if (controlPanel.flexWindowY > 0) {
-        y = y + controlPanel.flexWindowY;
-      } else {
-        y = initY;
-      }
-      selectPlaybackFile.setY(y + flexPadding);
-    }
   }
 
   public void draw() {
@@ -2986,7 +2963,6 @@ class WifiConfigBox {
 
 class SDConverterBox {
   int x, y, w, h, padding, initY; //size and position
-  RecentPlaybackBox recentPlaybackBox;
 
   SDConverterBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x;
@@ -3000,17 +2976,6 @@ class SDConverterBox {
   }
 
   public void update() {
-    //Flex the box and button location with dropdown
-    if (controlPanel.flexDropdownWindow) {
-      int flexPadding = padding*2 + 13;
-      if (controlPanel.flexWindowY > 0) {
-        y = y + controlPanel.flexWindowY;
-      } else {
-        y = initY;
-      }
-      selectSDFile.setY(y + flexPadding);
-      controlPanel.flexDropdownWindow = false;
-    }
   }
 
   public void draw() {
