@@ -364,6 +364,7 @@ int fileSelectTabsInt = 1;
 int rangePlaybackSelected = 0; //this var is the range the user has selected
 int maxRangePlaybackSelect = 1; //max number of range tabs
 String[] rangePlaybackSelectArray = {};
+boolean recentPlaybackFilesHaveUpdated = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -1124,6 +1125,8 @@ void haltSystem() {
   systemMode = SYSTEMMODE_PREINIT;
   hub.changeState(STATE_NOCOM);
   abandonInit = false;
+
+  recentPlaybackFilesHaveUpdated = false;
 
   // bleList.items.clear();
   // wifiList.items.clear();

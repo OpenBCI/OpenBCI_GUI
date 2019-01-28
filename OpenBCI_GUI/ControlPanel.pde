@@ -2599,7 +2599,7 @@ class SyntheticChannelCountBox {
 
 class RecentPlaybackBox {
   int x, y, w, h, padding; //size and position
-  boolean recentFilesHaveUpdated = false;
+  String[] previousFileNames = new String[1];
   String[] shortFileNames = new String[1];
   String[] longFilePaths = new String[1];
 
@@ -2629,14 +2629,16 @@ class RecentPlaybackBox {
   //update occurs when control panel is open
   public void update() {
     //selectRecentFile.setString(getRecentPlaybackFile());
-    if (controlPanel.isOpen && !recentFilesHaveUpdated) {
+    if (!recentPlaybackFilesHaveUpdated) {
+      previousFileNames = shortFileNames;
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").removeItems(Arrays.asList(previousFileNames));
       getRecentPlaybackFiles();
-      recentFilesHaveUpdated = true;
+      println("CONTROL PANEL OPENED... PLAYBACK FILES UPDATE CALLED");
     }
 
     if (playbackHistoryFileExists && controlPanel.recentFileSelected) {
       int filePicked = (int)cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").getValue();
-      playbackFileSelectedCP(longFilePaths[filePicked], shortFileNames[filePicked]);
+      //playbackFileSelectedCP(longFilePaths[filePicked], shortFileNames[filePicked]);
       controlPanel.recentFileSelected = false;
     }
   }
@@ -2666,12 +2668,11 @@ class RecentPlaybackBox {
       JSONObject playbackHistory = loadJSONObject(userPlaybackHistoryFile);
       JSONArray recentFilesArray = playbackHistory.getJSONArray("playbackFileHistory");
       if (recentFilesArray.size() < 10) {
-        //println("History Size = " + loadPlaybackHistoryJSONArray.size());
-        //fileSelectTabsInt changes when user selects playback range from dropdown
+        println("History Size = " + recentFilesArray.size());
         numFilesToShow = recentFilesArray.size();
-        shortFileNames = new String[numFilesToShow];
-        longFilePaths = new String[numFilesToShow];
       }
+      shortFileNames = new String[numFilesToShow];
+      longFilePaths = new String[numFilesToShow];
       for (int i = recentFilesArray.size() - 1; //minimum
        i > recentFilesArray.size() - numFilesToShow - 1;  //maximum
        i--) { //go through array in reverse since using append
@@ -2685,11 +2686,13 @@ class RecentPlaybackBox {
             }
       println("Playback history file found!!!");
       printArray(shortFileNames);
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
       playbackHistoryFileExists = true;
     } catch (NullPointerException e) {
       println("Playback history file not found.");
       playbackHistoryFileExists = false;
     }
+    recentPlaybackFilesHaveUpdated = true;
   }
 
   void closeAllDropdowns(){
