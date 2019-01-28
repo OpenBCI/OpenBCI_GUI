@@ -88,7 +88,6 @@ Button outputBDFGanglion;
 
 Button chanButton8;
 Button chanButton16;
-//Button selectRecentFile;
 Button selectPlaybackFile;
 Button selectSDFile;
 Button popOutRadioConfigButton;
@@ -365,7 +364,7 @@ class ControlPanel {
     wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
-    int playbackWidth = int(w * 1.4);
+    int playbackWidth = int(w * 1.35);
     playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
     sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
     recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
@@ -1485,15 +1484,6 @@ class ControlPanel {
       hub.setWifiInternetProtocol(UDP_BURST);
     }
 
-    /*
-    if (selectRecentFile.isMouseHere() && selectRecentFile.wasPressed) {
-      output("Selecting most recent file for playback.");
-      println("Selecting most recent file for playback.");
-      //selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
-      playbackFileSelectedCP(recentPlaybackBox.longFilePath, recentPlaybackBox.shortFileName);
-    }
-    */
-
     if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
       output("select a file for playback");
       selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
@@ -2581,8 +2571,8 @@ class RecentPlaybackBox {
   String[] previousFileNames = new String[1];
   String[] shortFileNames = new String[1];
   String[] longFilePaths = new String[1];
-  String filePicked = "";
-  String newFilePicked = "";
+  String filePickedShort = "Select Recent Playback File";
+  String newFilePickedShort = "";
 
   ControlP5 cp5_controlPanel_dropdown;
 
@@ -2593,7 +2583,6 @@ class RecentPlaybackBox {
     h = 67;
     padding = _padding;
 
-    //selectRecentFile = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, getRecentPlaybackFile(), fontInfo.buttonLabel_size);
     cp5_controlPanel_dropdown = new ControlP5(ourApplet);
     getRecentPlaybackFiles();
     if (!playbackHistoryFileExists) {
@@ -2607,22 +2596,29 @@ class RecentPlaybackBox {
 
   /////*Update occurs while control panel is open*/////
   public void update() {
-    //selectRecentFile.setString(getRecentPlaybackFile());
     //Update the dropdown list if it has not already been done
     if (!recentPlaybackFilesHaveUpdated) {
       previousFileNames = shortFileNames;
       cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").removeItems(Arrays.asList(previousFileNames));
       getRecentPlaybackFiles();
-      //println("CONTROL PANEL OPENED... PLAYBACK FILES UPDATE CALLED");
       cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
       cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2,(shortFileNames.length+1)*24);
     }
     //Keep updating to see if User has selected a new recent playback file
-    newFilePicked = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
-    if (newFilePicked.equals(filePicked) == false) {
-      filePicked = newFilePicked;
-      //println("VALUE OF RECENT DROPDOWN " + filePicked);
-      //playbackFileSelectedCP(longFilePaths[filePicked], shortFileNames[filePicked]);
+    newFilePickedShort = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
+    if (newFilePickedShort.equals(filePickedShort) == false) {
+      if (newFilePickedShort.equals("None") == false) {
+        filePickedShort = newFilePickedShort;
+        int filePickedInt = -1;
+        //Find the corresponding array index
+        for (int i = 0; i < shortFileNames.length; i++) {
+          if (filePickedShort.equals(shortFileNames[i]) == true) {
+            filePickedInt = i;
+          }
+        }
+        //Load the playback file!
+        playbackFileSelectedCP(longFilePaths[filePickedInt], filePickedShort);
+      }
     }
   }
 
@@ -2638,7 +2634,6 @@ class RecentPlaybackBox {
     text("RECENT", x + padding, y + padding);
     popStyle();
 
-    //selectRecentFile.draw();
     cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
     pushStyle();
     cp5_controlPanel_dropdown.draw();
@@ -2669,13 +2664,12 @@ class RecentPlaybackBox {
             //println(shortFileName + " " + longFilePath);
             }
       //For debugging
-      println("Playback history file found!!!");
-      printArray(shortFileNames);
-      //println("TEST!!!!!!" + cp5_controlPanel_dropdown.getController("recentFiles").getItems());
+      //println("OpenBCI_GUI::Control Panel: Playback history file found!!!");
+      //printArray(shortFileNames);
 
       playbackHistoryFileExists = true;
     } catch (Exception e) {
-      e.printStackTrace();
+      //e.printStackTrace();
       println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
       playbackHistoryFileExists = false;
     }
