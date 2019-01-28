@@ -3,7 +3,7 @@
 ### New Features
 * Sync Time Series and Accelerometer functionality and appearance #410
 * Option to sync time window in Accelerometer and Analog Read #410
-* Add recent playback file button in the Control Panel
+* Choose recent playback files from a dropdown in the Control Panel
 
 ### Bug Fixes
 * Add GUI version info to Update button help text #407
