@@ -7,6 +7,7 @@
 //   Modified: Conor Russomanno & Joel Murphy, August 2014 - Dec 2014
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
+//   Modified (v4.0) AJ Keller (Richard Waltman), September 2018
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -568,10 +569,8 @@ private void prepareExitHandler () {
  */
 void hubInit() {
   isHubInitialized = true;
-  if (!isWindows()) {
-    hubStart();
-    prepareExitHandler();
-  }
+  hubStart();
+  prepareExitHandler();
 }
 
 /**
@@ -583,7 +582,7 @@ void hubStart() {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-      nodeHubby = launch(dataPath("OpenBCIHub.exe"));
+      nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
       nodeHubby = exec(dataPath("OpenBCIHub"));
