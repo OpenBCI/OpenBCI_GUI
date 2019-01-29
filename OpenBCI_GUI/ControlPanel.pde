@@ -481,10 +481,6 @@ class ControlPanel {
     // }
   }
 
-  void mouseReleased() {
-    println("MOUSE HAS BEEN RELEASED!!!!!");
-  }
-
   public void draw() {
 
     pushStyle();
@@ -2627,7 +2623,7 @@ class RecentPlaybackBox {
     fill(boxColor);
     stroke(boxStrokeColor);
     strokeWeight(1);
-    rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight());
+    rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight() - 2*padding);
     fill(bgColor);
     textFont(h3, 16);
     textAlign(LEFT, TOP);
@@ -2724,7 +2720,7 @@ class RecentPlaybackBox {
 };
 
 class PlaybackFileBox {
-  int x, y, w, h, padding, initY; //size and position
+  int x, y, w, h, padding; //size and position
 
   PlaybackFileBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x;
@@ -2956,7 +2952,7 @@ class WifiConfigBox {
 };
 
 class SDConverterBox {
-  int x, y, w, h, padding, initY; //size and position
+  int x, y, w, h, padding; //size and position
 
   SDConverterBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x;
