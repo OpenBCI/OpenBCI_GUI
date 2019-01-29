@@ -468,38 +468,16 @@ class TopNav {
     webTitle = giveMeTextBetween(html, start, end);
     version = split(webTitle, '·'); //split the string in the html title
     String[] webVersionNumberArray = split(version[0], ' ');
-    //printArray(webVersionNumberArray);
-    ///Parse the string from Github
-    //remove 'v' character if nedded
-    if (webVersionNumberArray[1].charAt(0) == 'v') {
-      String[] splitV = split(webVersionNumberArray[1], 'v');
-      webGUIVersionString = splitV[1];
-    } else {
-      webGUIVersionString = webVersionNumberArray[1];
-    }
-    //then remove "-alpha" or "-beta" as needed
-    //println(webGUIVersionString);
-    if (webGUIVersionString.length() > 5) {
-     String[] webGUIVersionStringArray = split(webGUIVersionString, '-');
-     //printArray(webGUIVersionStringArray);
-     webGUIVersionString = webGUIVersionStringArray[0];
-    }
-    //webGUIVersionString is the current version, fetched from Github
 
-    /////////////////////////////////////////////////////////////////////////////
-    //Copy the local GUI version from the string that appears in OpenBCI_GUI.pde
-    //Then, format it just as we did above removing 'v' and splitting before any -alpha -beta
+    webGUIVersionString = removeV(webVersionNumberArray[1]);
+    webGUIVersionString = removeAlphaBeta(webGUIVersionString);
+
+    //////////////////////////////////////////////////
+    //Copy the local GUI version from OpenBCI_GUI.pde
     String localVersionString = localGUIVersionString;
-    //remove 'v' character if needed
-    if (localVersionString.charAt(0) == 'v') {
-     String[] splitV = split(localVersionString, 'v');
-     localVersionString = splitV[1];
-    }
-    //then remove "-alpha" or "-beta" as needed
-    if (localVersionString.length() > 5) {
-     String[] localGUIVersionStringArray = split(localVersionString, '-');
-     localVersionString = localGUIVersionStringArray[0];
-    }
+    localVersionString = removeV(localVersionString);
+    localVersionString = removeAlphaBeta(localVersionString);
+
     /////////////////////////////////////////////////
     ///////Perform Comparison (000-1000 format)
     int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
@@ -516,13 +494,10 @@ class TopNav {
       guiVersionIsUpToDate = true;
       println("GUI is up to date!");
     }
-
-
   }
 
   // This function returns a substring between two substrings (before and after).
   String giveMeTextBetween(String s, String before, String after) {
-
     // Find the index of before
     int start = s.indexOf(before);
     if (start == -1) {
@@ -539,6 +514,22 @@ class TopNav {
 
     // Return the text in between
     return s.substring(start, end);
+  }
+
+  String removeV(String s) {
+    if (s.charAt(0) == 'v') {
+      String[] tempArr = split(s, 'v');
+      s = tempArr[1];
+    }
+    return s;
+  }
+
+  String removeAlphaBeta(String s) {
+    if (s.length() > 5) {
+      String[] tempArr = split(s, '-');
+      s = tempArr[0];
+    }
+    return s;
   }
 }
 

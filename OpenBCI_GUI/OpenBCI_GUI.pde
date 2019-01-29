@@ -348,7 +348,7 @@ Boolean settingsLoadedCheck = false; //Used to determine if settings are done lo
 final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.0-beta.0";
+String localGUIVersionString = "4.1.0-beta.0";
 String localGUIVersionDate = "February 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
