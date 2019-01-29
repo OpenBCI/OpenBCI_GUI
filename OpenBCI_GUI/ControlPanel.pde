@@ -2725,7 +2725,6 @@ class PlaybackFileBox {
   PlaybackFileBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x;
     y = _y;
-    initY = _y;
     w = _w;
     h = 67;
     padding = _padding;
@@ -2957,7 +2956,6 @@ class SDConverterBox {
   SDConverterBox(int _x, int _y, int _w, int _h, int _padding) {
     x = _x;
     y = _y;
-    initY = _y;
     w = _w;
     h = 67;
     padding = _padding;
