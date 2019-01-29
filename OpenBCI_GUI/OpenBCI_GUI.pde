@@ -48,9 +48,13 @@ import gifAnimation.*;
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
+//Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
+String localGUIVersionString = "4.1.0-beta.0";
+String localGUIVersionDate = "February 2019";
+String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+Boolean guiVersionCheckHasOccured = false;
 
 //used to switch between application states
-
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
 final int SYSTEMMODE_MIDINIT = 5;
@@ -346,12 +350,6 @@ int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel s
 Boolean loadErrorCytonEvent = false;
 Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
 final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
-
-//Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "4.1.0-beta.0";
-String localGUIVersionDate = "February 2019";
-String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
-Boolean guiVersionCheckHasOccured = false;
 
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
