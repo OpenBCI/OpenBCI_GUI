@@ -455,12 +455,9 @@ class TopNav {
   //Load data from the latest release page from Github and the info.plist file
   void loadGUIVersionData() {
 
-    /////////////////////////////////////////////
     //Get the latest release version from Github
     String webTitle;
     String[] version;
-    // Get the raw HTML source into an array of strings (each line is one element in the array).
-    // The next step is to turn array into one long string with join().
     String[] lines = loadStrings(guiLatestReleaseLocation);
     String html = join(lines, "");
     String start = "<title>";
@@ -472,21 +469,17 @@ class TopNav {
     webGUIVersionString = removeV(webVersionNumberArray[1]);
     webGUIVersionString = removeAlphaBeta(webGUIVersionString);
 
-    //////////////////////////////////////////////////
     //Copy the local GUI version from OpenBCI_GUI.pde
     String localVersionString = localGUIVersionString;
     localVersionString = removeV(localVersionString);
     localVersionString = removeAlphaBeta(localVersionString);
 
-    /////////////////////////////////////////////////
     ///////Perform Comparison (000-1000 format)
     int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
     int[] localVersionCompareArray = int(split(localVersionString, '.'));
     webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
     localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-    //Print the results to console
     println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
-    //compare the versions using the three digit integers and print to console
     if (localGUIVersionInt < webGUIVersionInt) {
       guiVersionIsUpToDate = false;
       println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
