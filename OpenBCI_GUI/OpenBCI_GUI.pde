@@ -504,7 +504,9 @@ void delayedSetup() {
   println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
   println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
-  setupComplete = true; // signal that the setup thread has finished
+  synchronized(this) {
+    setupComplete = true; // signal that the setup thread has finished
+  }
 }
 
 //====================== END-OF-SETUP ==========================//
@@ -548,7 +550,7 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
 
 //======================== DRAW LOOP =============================//
 
-void draw() {
+synchronized void draw() {
   if(setupComplete) {
     drawLoop_counter++; //signPost("10");
     systemUpdate(); //signPost("20");
