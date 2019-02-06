@@ -695,7 +695,7 @@ class ChannelBar{
     if(eegDataSource == DATASOURCE_CYTON){
       if(impCheckButton.isMouseHere() && impCheckButton.isActive()){
         println("[" + channelNumber + "] imp released");
-        w_timeSeries.hsc.toggleImpedanceCheck(channelNumber-1);  // 'n' indicates the N inputs and '1' indicates test impedance
+        w_timeSeries.hsc.toggleImpedanceCheck(channelNumber);  // 'n' indicates the N inputs and '1' indicates test impedance
         if(drawImpValue){
           drawImpValue = false;
           impCheckButton.setColorNotPressed(color(255)); //White background
