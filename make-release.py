@@ -98,7 +98,7 @@ if LOCAL_OS == MAC:
     try:
         shutil.copy2(icon_dir, icon_dest)
     except IOError:
-        print "WARNING: Filed to copy sketch.icns"
+        print "WARNING: Failed to copy sketch.icns"
     else:
         print "Successfully copied sketch.icns"
 
