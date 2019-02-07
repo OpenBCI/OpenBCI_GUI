@@ -108,14 +108,18 @@ if LOCAL_OS == MAC:
 # zip the file
 print "Zipping ..."
 zip_dir = build_dir + ".zip"
-# windows print "Done: " + shutil.make_archive(build_dir, 'zip', build_dir)
-try:
-    os.chdir(sketch_dir)
-    subprocess.check_output(["zip", "-ry", zip_dir, build_dir_names[LOCAL_OS]])
-except subprocess.CalledProcessError as err:
-    sys.exit("ERROR: could not zip " + build_dir)
+
+# mac app uses symlinks, and shutil does not handle symlinks, so we have to use the zip command
+if LOCAL_OS == MAC:
+    try:
+        os.chdir(sketch_dir)
+        subprocess.check_call(["zip", "-ry", zip_dir, build_dir_names[LOCAL_OS]])
+    except subprocess.CalledProcessError as err:
+        sys.exit("ERROR: could not zip " + build_dir)
+    else:
+        print "Zip successful: " + zip_dir
 else:
-    print "Zip successful: " + zip_dir
+    print "Done: " + shutil.make_archive(build_dir, 'zip', build_dir)
 
 # clean up build dirs
 build_dirs = ["application.windows32", "application.windows64", "application.macosx"]
