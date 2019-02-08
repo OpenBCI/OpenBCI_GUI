@@ -25,6 +25,22 @@ hub_dir_names = {
 cwd = os.getcwd()
 sketch_dir = os.path.join(cwd, "OpenBCI_GUI")
 
+def cleanup_build_dirs(zips = False):
+    build_dirs = ["application.windows32", "application.windows64", "application.macosx"]
+    print "Cleanup ..."
+    for dir in build_dirs:
+        full_dir = os.path.join(sketch_dir, dir)
+        full_zip_dir = full_dir + ".zip"
+        if os.path.isdir(full_dir):
+            shutil.rmtree(full_dir)
+            print "Successfully deleted " + full_dir
+        if zips and os.path.isfile(full_zip_dir):
+            os.remove(full_zip_dir)
+            print "Successfully deleted " + full_zip_dir
+
+#cleanup before we begin, including zips
+cleanup_build_dirs(True)
+
 # check that we are in the right directory to build
 main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
 if not os.path.isfile(main_file_dir):
@@ -59,8 +75,8 @@ source_dir = os.path.join(build_dir, "source")
 try:
     shutil.rmtree(source_dir)
 except OSError as err:
-    print "WARNING: Could not delete source dir: " + source_dir
     print err
+    print "WARNING: Could not delete source dir: " + source_dir
 else:
     print "Successfully deleted source dir."
 
@@ -76,9 +92,6 @@ try:
 except shutil.Error as err:
     print err
     sys.exit("ERROR: Failed to copy the Hub to the data dir.")
-except OSError as err:
-    print err
-    sys.exit("ERROR: Failed to copy the Hub to the data dir.")
 else:
     print "Successfully copied Hub to the data dir."
 
@@ -87,7 +100,7 @@ saved_data_dir = os.path.join(build_dir, "SavedData")
 try:
     os.mkdir(saved_data_dir)
 except OSError:
-    print "ERROR: failed to create directory: " +  saved_data_dir
+    print "WARNING: failed to create directory: " +  saved_data_dir
 else:
     print "Successfully created 'SavedData' directory"
 
@@ -103,7 +116,6 @@ if LOCAL_OS == MAC:
         print "Successfully copied sketch.icns"
 
 # TODO: Sign app!
-# TODO: Delete existing zip!
 
 # zip the file
 print "Zipping ..."
@@ -111,23 +123,18 @@ zip_dir = build_dir + ".zip"
 
 # mac app uses symlinks, and shutil does not handle symlinks, so we have to use the zip command
 if LOCAL_OS == MAC:
-    try:
-        os.chdir(sketch_dir)
-        subprocess.check_call(["zip", "-ry", zip_dir, build_dir_names[LOCAL_OS]])
-    except subprocess.CalledProcessError as err:
-        sys.exit("ERROR: could not zip " + build_dir)
-    else:
-        print "Zip successful: " + zip_dir
+    os.chdir(sketch_dir)
+    subprocess.check_call(["zip", "-ry", zip_dir, build_dir_names[LOCAL_OS]])
+    print "Zip successful: " + zip_dir
 else:
+    # fix the directory structure: application.windows64/OpenBCI_GUI/OpenBCI_GUI.exe
+    files = os.listdir(build_dir)
+    # move everything under "OpenBCI_GUI"
+    dest_dir = os.path.join(build_dir, "OpenBCI_GUI")
+    os.mkdir(dest_dir)
+    for f in files:
+        shutil.move(os.path.join(build_dir, f), dest_dir)
     print "Done: " + shutil.make_archive(build_dir, 'zip', build_dir)
 
-# clean up build dirs
-build_dirs = ["application.windows32", "application.windows64", "application.macosx"]
-print "Cleanup ..."
-for dir in build_dirs:
-    try:
-        shutil.rmtree(os.path.join(sketch_dir, dir))
-    except OSError:
-        pass
-    else:
-        print "Successfully deleted " + dir
+#cleanup to finish
+cleanup_build_dirs()
