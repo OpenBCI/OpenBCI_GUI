@@ -4,29 +4,42 @@ import sys, os, shutil, platform, subprocess
 
 WINDOWS = 'Windows'
 MAC = 'Darwin'
+LINUX = 'Linux'
 LOCAL_OS = platform.system()
 
 build_dir_names = {
     WINDOWS : "application.windows64",
+    LINUX : "application.linux64",
     MAC : "application.macosx"
 }
 
 data_dir_names = {
     WINDOWS : "data",
+    LINUX : "data",
     MAC : os.path.join("OpenBCI_GUI.app", "Contents", "Java", "data")
 }
 
 hub_dir_names = {
     WINDOWS : "OpenBCIHub",
+    LINUX : "OpenBCIHub",
     MAC : "OpenBCIHub.app"
 }
+
+build_dirs = [
+    "application.windows32",
+    "application.windows64",
+    "application.macosx",
+    "application.linux32",
+    "application.linux64",
+    "application.linux-arm64",
+    "application.linux-armv6hf"
+]
 
 # processing-java requires the cwd to build a release
 cwd = os.getcwd()
 sketch_dir = os.path.join(cwd, "OpenBCI_GUI")
 
 def cleanup_build_dirs(zips = False):
-    build_dirs = ["application.windows32", "application.windows64", "application.macosx"]
     print "Cleanup ..."
     for dir in build_dirs:
         full_dir = os.path.join(sketch_dir, dir)
@@ -37,9 +50,6 @@ def cleanup_build_dirs(zips = False):
         if zips and os.path.isfile(full_zip_dir):
             os.remove(full_zip_dir)
             print "Successfully deleted " + full_zip_dir
-
-#cleanup before we begin, including zips
-cleanup_build_dirs(True)
 
 # check that we are in the right directory to build
 main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
@@ -55,10 +65,18 @@ if LOCAL_OS == WINDOWS:
     while not os.path.isfile(hub_exe):
         hub_dir = raw_input("OpenBCIHub.exe not found in this directory, please re-enter: ")
         hub_exe = os.path.join(hub_dir, "OpenBCIHub.exe")
-
+if LOCAL_OS == LINUX:
+    # sanity check: does this directory contain the hub executable?
+    hub_exe = os.path.join(hub_dir, "OpenBCIHub")
+    while not os.path.isfile(hub_exe):
+        hub_dir = raw_input("OpenBCIHub executable not found in this directory, please re-enter: ")
+        hub_exe = os.path.join(hub_dir, "OpenBCIHub")
 elif LOCAL_OS == MAC:
     while not hub_dir.endswith("OpenBCIHub.app"):
         hub_dir = raw_input("Expected a path to OpenBCIHub.app, please re-enter:")
+
+#cleanup before we begin, including zips
+cleanup_build_dirs(True)
 
 # unfortunately, processing-java always returns exit code 1,
 # so we can't reliably check for success or failure
@@ -128,12 +146,10 @@ if LOCAL_OS == MAC:
     print "Zip successful: " + zip_dir
 else:
     # fix the directory structure: application.windows64/OpenBCI_GUI/OpenBCI_GUI.exe
-    files = os.listdir(build_dir)
-    # move everything under "OpenBCI_GUI"
-    dest_dir = os.path.join(build_dir, "OpenBCI_GUI")
-    os.mkdir(dest_dir)
-    for f in files:
-        shutil.move(os.path.join(build_dir, f), dest_dir)
+    temp_dir = os.path.join(sketch_dir, "OpenBCI_GUI")
+    os.rename(build_dir, temp_dir)
+    os.mkdir(build_dir)
+    shutil.move(temp_dir, build_dir)
     print "Done: " + shutil.make_archive(build_dir, 'zip', build_dir)
 
 #cleanup to finish
