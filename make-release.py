@@ -135,10 +135,11 @@ except OSError:
 else:
     print "Successfully created 'SavedData' directory"
 
-# on mac, copy the icon file
+# on mac, copy the icon file and sign the app
 if LOCAL_OS == MAC:
+    app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
     icon_dir = os.path.join(sketch_dir, "sketch.icns")
-    icon_dest = os.path.join(build_dir, "OpenBCI_GUI.app", "Contents", "Resources", "sketch.icns")
+    icon_dest = os.path.join(app_dir, "Contents", "Resources", "sketch.icns")
     try:
         shutil.copy2(icon_dir, icon_dest)
     except IOError:
@@ -146,7 +147,16 @@ if LOCAL_OS == MAC:
     else:
         print "Successfully copied sketch.icns"
 
-# TODO: Sign app!
+    # sign the app
+    try:
+        subprocess.check_call(["codesign", "-s",\
+            "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)",\
+            "-v", app_dir, "--force"])
+    except CalledProcessError as err:
+        print err
+        print "WARNING: Failed to sign app."
+    else:
+        print "Successfully signed app."
 
 # zip the file
 print "Zipping ..."
@@ -155,8 +165,8 @@ zip_dir = build_dir + ".zip"
 # mac app uses symlinks, and shutil does not handle symlinks, so we have to use the zip command
 if LOCAL_OS == MAC:
     os.chdir(sketch_dir)
-    subprocess.check_call(["zip", "-ry", zip_dir, build_dir_names[LOCAL_OS]])
-    print "Zip successful: " + zip_dir
+    subprocess.check_output(["zip", "-ry", zip_dir, build_dir_names[LOCAL_OS]])
+    print "Done: " + zip_dir
 else:
     # fix the directory structure: application.windows64/OpenBCI_GUI/OpenBCI_GUI.exe
     temp_dir = os.path.join(sketch_dir, "OpenBCI_GUI")
