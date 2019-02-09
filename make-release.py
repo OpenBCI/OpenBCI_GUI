@@ -1,4 +1,17 @@
-# Written for python 2.7, but could easily be adapted to python 3.
+#########################################################################################
+#
+#   Python script for building and packaging a release of the GUI software
+#
+#   Created: Daniel Lasry, Feb 2019
+#
+#   This is meant for members of the OpenBCI organization to quickly build new releases:
+#   https://github.com/OpenBCI/OpenBCI_GUI/releases
+
+#   Usage: > python make-release.py
+#   Written for python 2.7, but could easily be adapted to python 3.
+#   No warranty. Use at your own risk. 
+#
+#########################################################################################
 
 import sys, os, shutil, platform, subprocess
 
