@@ -255,7 +255,7 @@ final int totalColumns16ChanThresh = 16;
 
 boolean synthesizeData = false;
 
-int timeOfSetup = 0;
+boolean setupComplete = false;
 boolean isHubInitialized = false;
 boolean isHubObjectInitialized = false;
 color bgColor = color(1, 18, 41);
@@ -391,11 +391,9 @@ void settings() {
 }
 
 void setup() {
-  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
-  hubInit(); // putting down here gives windows time to close any open apps
-
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+  
   //open window
   ourApplet = this;
 
@@ -412,6 +410,17 @@ void setup() {
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
 
+  // Bug #426: If setup takes too long, JOGL will time out waiting for the GUI to draw something.
+  // moving the setup to a separate thread solves this. We just have to make sure not to 
+  // start drawing until delayed setup is done.
+  thread("delayedSetup");
+}
+
+void delayedSetup() {
+
+  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
+  hubInit(); // putting down here gives windows time to close any open apps
+  
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -495,8 +504,11 @@ void setup() {
   println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
   println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
-  timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
+  synchronized(this) {
+    setupComplete = true; // signal that the setup thread has finished
+  }
 }
+
 //====================== END-OF-SETUP ==========================//
 
 //====================UDP Packet Handler==========================//
@@ -538,10 +550,12 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
 
 //======================== DRAW LOOP =============================//
 
-void draw() {
-  drawLoop_counter++; //signPost("10");
-  systemUpdate(); //signPost("20");
-  systemDraw();   //signPost("30");
+synchronized void draw() {
+  if(setupComplete) {
+    drawLoop_counter++; //signPost("10");
+    systemUpdate(); //signPost("20");
+    systemDraw();   //signPost("30");
+  }
 }
 
 //====================== END-OF-DRAW ==========================//
@@ -1173,7 +1187,7 @@ void delayedInit() {
 
 void systemUpdate() { // for updating data values and variables
 
-  if (isHubInitialized && isHubObjectInitialized == false && millis() - timeOfSetup >= 1500) {
+  if (isHubInitialized && isHubObjectInitialized == false) {
     hub = new Hub(this);
     println("Instantiating hub object...");
     isHubObjectInitialized = true;
