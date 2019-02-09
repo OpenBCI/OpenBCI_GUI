@@ -2,6 +2,8 @@
 
 Use OpenBCIHub v2.0.5 please.
 
+## Beta 0
+
 ### New Features
 * Sync Time Series and Accelerometer functionality and appearance #410
 * Option to sync time window in Accelerometer and Analog Read #410
@@ -11,6 +13,7 @@ Use OpenBCIHub v2.0.5 please.
 * Add GUI version info to Update button help text #407
 * Fix Time Series graph display issue #247
 * Align Ganglion accelerometer data to match Cyton #398
+* Fixed the GUI freezing on launch with a grey screen #409 #406 #426
 
 # v4.0.4	
 
