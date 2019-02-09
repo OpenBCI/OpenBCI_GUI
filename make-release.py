@@ -15,6 +15,8 @@
 
 import sys, os, shutil, platform, subprocess
 
+### Define platform-specific strings
+###########################################################
 WINDOWS = 'Windows'
 MAC = 'Darwin'
 LINUX = 'Linux'
@@ -48,10 +50,19 @@ build_dirs = [
     "application.linux-armv6hf"
 ]
 
+### Find the sketch directory
+###########################################################
 # processing-java requires the cwd to build a release
 cwd = os.getcwd()
 sketch_dir = os.path.join(cwd, "OpenBCI_GUI")
 
+# check that we are in the right directory to build
+main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
+if not os.path.isfile(main_file_dir):
+    sys.exit("ERROR: Could not find sketch file: " + main_file_dir)
+
+### Function: Clean up any old build directories or .zips
+###########################################################
 def cleanup_build_dirs(zips = False):
     print "Cleanup ..."
     for dir in build_dirs:
@@ -64,12 +75,8 @@ def cleanup_build_dirs(zips = False):
             os.remove(full_zip_dir)
             print "Successfully deleted " + full_zip_dir
 
-# check that we are in the right directory to build
-main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
-if not os.path.isfile(main_file_dir):
-    sys.exit("ERROR: Could not find sketch file: " + main_file_dir)
-
-# ask user for the hub directory
+### Ask user for the hub directory
+###########################################################
 hub_dir = raw_input("Enter path to the HUB: ")
 
 if LOCAL_OS == WINDOWS:
@@ -88,9 +95,9 @@ elif LOCAL_OS == MAC:
     while not hub_dir.endswith("OpenBCIHub.app"):
         hub_dir = raw_input("Expected a path to OpenBCIHub.app, please re-enter:")
 
-#cleanup before we begin, including zips
+### Run a build using processing-java
+###########################################################
 cleanup_build_dirs(True)
-
 # unfortunately, processing-java always returns exit code 1,
 # so we can't reliably check for success or failure
 print "Using sketch: " + sketch_dir
@@ -111,6 +118,17 @@ except OSError as err:
 else:
     print "Successfully deleted source dir."
 
+# create SavedData dir
+saved_data_dir = os.path.join(build_dir, "SavedData")
+try:
+    os.mkdir(saved_data_dir)
+except OSError:
+    print "WARNING: failed to create directory: " +  saved_data_dir
+else:
+    print "Successfully created 'SavedData' directory"
+
+### Copy the Hub to the data directory
+###########################################################
 # sanity check: data directory?
 data_dir = os.path.join(build_dir, data_dir_names[LOCAL_OS])
 if not os.path.isdir(data_dir):
@@ -126,16 +144,8 @@ except shutil.Error as err:
 else:
     print "Successfully copied Hub to the data dir."
 
-# create SavedData dir
-saved_data_dir = os.path.join(build_dir, "SavedData")
-try:
-    os.mkdir(saved_data_dir)
-except OSError:
-    print "WARNING: failed to create directory: " +  saved_data_dir
-else:
-    print "Successfully created 'SavedData' directory"
-
-# on mac, copy the icon file and sign the app
+### On mac, copy the icon file and sign the app
+###########################################################
 if LOCAL_OS == MAC:
     app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
     icon_dir = os.path.join(sketch_dir, "sketch.icns")
@@ -158,7 +168,8 @@ if LOCAL_OS == MAC:
     else:
         print "Successfully signed app."
 
-# zip the file
+### Zip the file
+###########################################################
 print "Zipping ..."
 zip_dir = build_dir + ".zip"
 
@@ -175,5 +186,5 @@ else:
     shutil.move(temp_dir, build_dir)
     print "Done: " + shutil.make_archive(build_dir, 'zip', build_dir)
 
-#cleanup to finish
+# Cleanup to finish
 cleanup_build_dirs()
