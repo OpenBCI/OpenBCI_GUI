@@ -162,7 +162,7 @@ if LOCAL_OS == MAC:
         subprocess.check_call(["codesign", "-s",\
             "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)",\
             "-v", app_dir, "--force"])
-    except CalledProcessError as err:
+    except subprocess.CalledProcessError as err:
         print err
         print "WARNING: Failed to sign app."
     else:
