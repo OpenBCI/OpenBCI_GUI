@@ -588,7 +588,7 @@ void hubStart() {
       nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = exec(dataPath("OpenBCIHub"));
+      nodeHubby = exec(dataPath("/OpenBCIHub/OpenBCIHub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("OpenBCIHub.app"));
