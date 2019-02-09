@@ -27,14 +27,19 @@ class W_headPlot extends Widget {
   W_headPlot(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+    //Headplot settings
+    hpIntensitySave = 2;
+    hpPolaritySave = 0;
+    hpContoursSave = 0;
+    hpSmoothingSave = 3;
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
     // addDropdown("Ten20", "Layout", Arrays.asList("10-20", "5-10"), 0);
     // addDropdown("Headset", "Headset", Arrays.asList("None", "Mark II", "Mark III", "Mark IV "), 0);
     addDropdown("Intensity", "Intensity", Arrays.asList("4x", "2x", "1x", "0.5x", "0.2x", "0.02x"), vertScaleFactor_ind);
-    addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), 0);
-    addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), 0);
+    addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), hpPolaritySave);
+    addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), hpContoursSave);
     addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
     //Initialize the headplot
     updateHeadPlot(nchan);

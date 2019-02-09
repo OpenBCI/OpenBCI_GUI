@@ -30,7 +30,7 @@ class W_timeSeries extends Widget {
   ChannelBar[] channelBars;
   PlaybackScrollbar scrollbar;
 
-  int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   int xLim = xLimOptions[1];  //start at 5s
@@ -54,16 +54,6 @@ class W_timeSeries extends Widget {
   W_timeSeries(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
-    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList("Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), tsVertScaleSave);
-    addDropdown("Duration", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), tsHorizScaleSave);
-    // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
-
-    numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
-
     xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
     yF = float(y);
     wF = float(w);
@@ -75,6 +65,20 @@ class W_timeSeries extends Widget {
     ts_y = yF + (ts_padding);
     ts_w = wF - ts_padding*2;
     ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
+    numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
+
+    //Time Series settings
+    tsVertScaleSave = 3;
+    tsHorizScaleSave = 2;
+    //checkForSuccessTS = 0;
+
+    //This is the protocol for setting up dropdowns.
+    //Note that these 3 dropdowns correspond to the 3 global functions below
+    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+
+    addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(tsVertScaleArray), tsVertScaleSave);
+    addDropdown("Duration", "Window", Arrays.asList(tsHorizScaleArray), tsHorizScaleSave);
+    // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
     //Instantiate scrollbar if using playback mode and scrollbar feature in use
     if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
@@ -315,59 +319,35 @@ class W_timeSeries extends Widget {
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
   tsVertScaleSave = n;
-  if (n==0) { //autoscale
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(0);
-    }
-  } else if(n==1) { //50uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(50);
-    }
-  } else if(n==2) { //100uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(100);
-    }
-  } else if(n==3) { //200uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(200);
-    }
-  } else if(n==4) { //400uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(400);
-    }
-  } else if(n==5) { //1000uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(1000);
-    }
-  } else if(n==6) { //10000uV
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustVertScale(10000);
-    }
+  for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
   }
+  //closeAllDropdowns();
 }
 
-//triggered when there is an event in the LogLin Dropdown
+//triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
   tsHorizScaleSave = n;
-  // println("adjust duration to: ");
-  if(n==0){ //set time series x axis to 1 secconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(1);
-    }
-  } else if(n==1){ //set time series x axis to 3 secconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(3);
-    }
-  } else if(n==2){ //set to 5 seconds
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(5);
-    }
-  } else if(n==3){ //set to 7 seconds (max due to arry size ... 2000 total packets saved)
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].adjustTimeAxis(7);
+  // println("adjust duration to: " + xLimOptions[n]);
+  //set time series x axis to the duration selected from dropdown
+  int newDuration = w_timeSeries.xLimOptions[tsHorizScaleSave];
+  for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
+  }
+  //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
+  if (accHorizScaleSave == 0) {
+    //set accelerometer x axis to the duration selected from dropdown
+    w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+  }
+  if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
+    if (arHorizScaleSave == 0){
+      //set analog read x axis to the duration selected from dropdown
+      for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+        w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
+      }
     }
   }
-  closeAllDropdowns();
+  //closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -379,8 +359,6 @@ void Spillover(int n) {
   }
   closeAllDropdowns();
 }
-
-
 
 
 //========================================================================================================================
@@ -615,7 +593,6 @@ class ChannelBar{
     plot.setXLim(-_newTimeSize,0);
 
     nPoints = nPointsBasedOnDataSource();
-
     channelPoints = new GPointsArray(nPoints);
     if(_newTimeSize > 1){
       plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
@@ -847,10 +824,11 @@ class PlaybackScrollbar {
       indicatorAtStart = false;
     }
 
-    if(mousePressed && skipToStartButton.isMouseHere()){
-      println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
+    if(mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
+      //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
       skipToStartButton.setIsActive(true);
       skipToStartButtonAction(); //skip to start
+      indicatorAtStart = true;
     } else if (!mousePressed && !skipToStartButton.isMouseHere()) {
       skipToStartButton.setIsActive(false); //set button to not active
     }
@@ -1049,6 +1027,17 @@ class PlaybackScrollbar {
       indexPosition = 0; //set index position to 0
       currentTableRowIndex = 0; //set playback position to 0
       indicatorAtStart = true;
+
+      //clear Time Series, FFT, and Accelerometer data and update all plots
+      prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+      processNewData();
+      reinitializeCoreDataAndFFTBuffer();
+      for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+        w_timeSeries.updating = true;
+        w_timeSeries.update();
+      }
+      w_accelerometer.initAccelData();
+      w_accelerometer.accelerometerBar.update();
 
       if (!isRunning) { //if the system is not running
         //Success print detailed position to bottom of GUI

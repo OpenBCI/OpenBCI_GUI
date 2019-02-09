@@ -1,18 +1,32 @@
-# v4.0.4
+# v4.1.0
 
 Use OpenBCIHub v2.0.5 please.
 
-### Bug Fix
+### New Features
+* Sync Time Series and Accelerometer functionality and appearance #410
+* Option to sync time window in Accelerometer and Analog Read #410
+* Choose recent playback files from a dropdown in the Control Panel
 
-* Cyton impedance check did not work #427
+### Bug Fixes
+* Add GUI version info to Update button help text #407
+* Fix Time Series graph display issue #247
+* Align Ganglion accelerometer data to match Cyton #398
+
+# v4.0.4	
+
+Use OpenBCIHub v2.0.5 please.	
+
+### Bug Fix	
+
+* Cyton impedance check did not work #427	
 
 # v4.0.3
 
 Use OpenBCIHub v2.0.3 please.
 
-### New Features
+### New Features	
 
-* On Windows, it is no longer necessary to launch the HUB separately.
+* On Windows, it is no longer necessary to launch the HUB separately.	
 * The HUB is packaged within the GUI on Windows, just like on Mac and Linux.
 
 ### Bug Fixes

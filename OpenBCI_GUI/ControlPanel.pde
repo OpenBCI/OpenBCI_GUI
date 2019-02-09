@@ -287,6 +287,7 @@ class ControlPanel {
   InitBox initBox;
   SyntheticChannelCountBox synthChannelCountBox;
 
+  RecentPlaybackBox recentPlaybackBox;
   PlaybackFileBox playbackFileBox;
   SDConverterBox sdConverterBox;
 
@@ -359,8 +360,10 @@ class ControlPanel {
     wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
 
     //boxes active when eegDataSource = Playback
-    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, w, h, globalPadding);
-    sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), w, h, globalPadding);
+    int playbackWidth = int(w * 1.35);
+    playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
+    sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
+    recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
 
     rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
     channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
@@ -422,6 +425,12 @@ class ControlPanel {
     dataLogBox.update();
     channelCountBox.update();
     synthChannelCountBox.update();
+
+    //update playback box sizes when dropdown is selected
+    recentPlaybackBox.update();
+    playbackFileBox.update();
+    sdConverterBox.update();
+
     sdBox.update();
     rcBox.update();
     wcBox.update();
@@ -581,6 +590,7 @@ class ControlPanel {
           cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
         }
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
+        recentPlaybackBox.draw();
         playbackFileBox.draw();
         sdConverterBox.draw();
 
@@ -1066,7 +1076,6 @@ class ControlPanel {
           selectPlaybackFile.setIsActive(true);
           selectPlaybackFile.wasPressed = true;
         }
-
         if (selectSDFile.isMouseHere()) {
           selectSDFile.setIsActive(true);
           selectSDFile.wasPressed = true;
@@ -2546,6 +2555,163 @@ class SyntheticChannelCountBox {
     synthChanButton4.draw();
     synthChanButton8.draw();
     synthChanButton16.draw();
+  }
+};
+
+class RecentPlaybackBox {
+  int x, y, w, h, padding; //size and position
+  String[] previousFileNames = new String[1];
+  String[] shortFileNames = new String[1];
+  String[] longFilePaths = new String[1];
+  String filePickedShort = "Select Recent Playback File";
+  String newFilePickedShort = "";
+
+  ControlP5 cp5_controlPanel_dropdown;
+
+  RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
+    x = _x;
+    y = _y;
+    w = _w;
+    h = 67;
+    padding = _padding;
+
+    cp5_controlPanel_dropdown = new ControlP5(ourApplet);
+    getRecentPlaybackFiles();
+    if (!playbackHistoryFileExists) {
+      shortFileNames[0] = "None";
+    }
+    createDropdown("recentFiles", Arrays.asList(shortFileNames));
+    cp5_controlPanel_dropdown.setGraphics(ourApplet, 0,0);
+    cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
+    cp5_controlPanel_dropdown.setAutoDraw(false);
+  }
+
+  /////*Update occurs while control panel is open*/////
+  public void update() {
+    //Update the dropdown list if it has not already been done
+    if (!recentPlaybackFilesHaveUpdated) {
+      previousFileNames = shortFileNames;
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").removeItems(Arrays.asList(previousFileNames));
+      getRecentPlaybackFiles();
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
+      cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2,(shortFileNames.length+1)*24);
+    }
+    //Keep updating to see if User has selected a new recent playback file
+    newFilePickedShort = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
+    if (newFilePickedShort.equals(filePickedShort) == false) {
+      if (newFilePickedShort.equals("None") == false) {
+        filePickedShort = newFilePickedShort;
+        int filePickedInt = -1;
+        //Find the corresponding array index
+        for (int i = 0; i < shortFileNames.length; i++) {
+          if (filePickedShort.equals(shortFileNames[i]) == true) {
+            filePickedInt = i;
+          }
+        }
+        //Load the playback file!
+        playbackFileSelectedCP(longFilePaths[filePickedInt], filePickedShort);
+      }
+    }
+  }
+
+  public void draw() {
+    pushStyle();
+    fill(boxColor);
+    stroke(boxStrokeColor);
+    strokeWeight(1);
+    rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight() - 2*padding);
+    fill(bgColor);
+    textFont(h3, 16);
+    textAlign(LEFT, TOP);
+    text("RECENT", x + padding, y + padding);
+    popStyle();
+
+    cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
+    pushStyle();
+    cp5_controlPanel_dropdown.draw();
+    pushStyle();
+  }
+
+  private void getRecentPlaybackFiles() {
+    int numFilesToShow = 10;
+    try {
+      JSONObject playbackHistory = loadJSONObject(userPlaybackHistoryFile);
+      JSONArray recentFilesArray = playbackHistory.getJSONArray("playbackFileHistory");
+      if (recentFilesArray.size() < 10) {
+        println("History Size = " + recentFilesArray.size());
+        numFilesToShow = recentFilesArray.size();
+      }
+      shortFileNames = new String[numFilesToShow];
+      longFilePaths = new String[numFilesToShow];
+      for (int i = recentFilesArray.size() - 1; //minimum
+       i > recentFilesArray.size() - numFilesToShow - 1;  //maximum
+       i--) { //go through array in reverse since using append
+            JSONObject playbackFile = recentFilesArray.getJSONObject(i);
+            int fileNumber = playbackFile.getInt("recentFileNumber");
+            String shortFileName = playbackFile.getString("id");
+            String longFilePath = playbackFile.getString("filePath");
+            //store to arrays to set recent playback buttons text and function
+            shortFileNames[fileNumber - 1] = shortFileName;
+            longFilePaths[fileNumber - 1] = longFilePath;
+            //println(shortFileName + " " + longFilePath);
+            }
+      //For debugging
+      //println("OpenBCI_GUI::Control Panel: Playback history file found!!!");
+      //printArray(shortFileNames);
+
+      playbackHistoryFileExists = true;
+    } catch (Exception e) {
+      //e.printStackTrace();
+      println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
+      playbackHistoryFileExists = false;
+    }
+    recentPlaybackFilesHaveUpdated = true;
+  }
+
+  void closeAllDropdowns(){
+    cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").close();
+  }
+
+  void createDropdown(String name, List<String> _items){
+
+    cp5_controlPanel_dropdown.addScrollableList(name)
+      .setOpen(false)
+
+      .setColorBackground(color(31,69,110)) // text field bg color
+      .setColorValueLabel(color(255))       // text color
+      .setColorCaptionLabel(color(255))
+      .setColorForeground(color(125))    // border color when not selected
+      .setColorActive(color(150, 170, 200))       // border color when selected
+      // .setColorCursor(color(26,26,26))
+
+      .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
+      .setBarHeight(24) //height of top/primary bar
+      .setItemHeight(24) //height of all item/dropdown bars
+      .addItems(_items) // used to be .addItems(maxFreqList)
+      .setVisible(false)
+      ;
+    cp5_controlPanel_dropdown.getController(name)
+      .getCaptionLabel() //the caption label is the text object in the primary bar
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("Select Recent Playback File")
+      .setFont(h4)
+      .setSize(14)
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(4)
+      ;
+    cp5_controlPanel_dropdown.getController(name)
+      .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+      .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+      .setText("Select Recent Playback File")
+      .setFont(h5)
+      .setSize(12) //set the font size of the item bars to 14pt
+      .getStyle() //need to grab style before affecting the paddingTop
+      .setPaddingTop(3) //4-pixel vertical offset to center text
+      ;
+  }
+
+  void recentFiles(int n){
+    closeAllDropdowns();
   }
 };
 

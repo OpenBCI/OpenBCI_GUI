@@ -69,9 +69,13 @@ class W_Focus extends Widget {
     sliderAlphaTop = new FocusSlider_Static(x + xg1 + wg * 0.8, y + yg1 + hg/2, y + yg1 - hg/2);
     sliderBetaMid = new FocusSlider(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2, beta_thresh / beta_upper);
 
+    ///Focus widget settings
+    int focusThemeSave = 0;
+    int focusKeySave = 0;
+
     //Dropdowns.
-    addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), 0);
-    addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), 0);
+    addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), focusThemeSave);
+    addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), focusKeySave);
     //addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0); //Users can stream Focus state using Networking Widget
 
     // prepare simulate keystroking

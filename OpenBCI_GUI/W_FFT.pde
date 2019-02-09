@@ -57,14 +57,21 @@ class W_fft extends Widget {
   W_fft(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+    //FFT plot settings,
+    fftMaxFrqSave = 2;
+    fftMaxuVSave = 2;
+    fftLogLinSave = 0;
+    fftSmoothingSave = 3;
+    fftFilterSave = 0;
+
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    addDropdown("MaxFreq", "Max Freq", Arrays.asList("20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"), 2);
-    addDropdown("VertScale", "Max uV", Arrays.asList("10 uV", "50 uV", "100 uV", "1000 uV"), 2);
-    addDropdown("LogLin", "Log/Lin", Arrays.asList("Log", "Linear"), 0);
-    addDropdown("Smoothing", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
-    addDropdown("UnfiltFilt", "Filters?", Arrays.asList("Filtered", "Unfilt."), 0);
+    addDropdown("MaxFreq", "Max Freq", Arrays.asList(fftMaxFrqArray), fftMaxFrqSave);
+    addDropdown("VertScale", "Max uV", Arrays.asList(fftVertScaleArray), fftMaxuVSave);
+    addDropdown("LogLin", "Log/Lin", Arrays.asList(fftLogLinArray), fftLogLinSave);
+    addDropdown("Smoothing", "Smooth", Arrays.asList(fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
+    addDropdown("UnfiltFilt", "Filters?", Arrays.asList(fftFilterArray), fftFilterSave);
 
     fft_points = new GPointsArray[nchan];
     // println("fft_points.length: " + fft_points.length);
