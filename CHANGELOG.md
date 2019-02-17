@@ -11,6 +11,7 @@ Use OpenBCIHub v2.0.5 please.
 * Add GUI version info to Update button help text #407
 * Fix Time Series graph display issue #247
 * Align Ganglion accelerometer data to match Cyton #398
+* Cyton impedance check did not work for Ch16 #427    
 
 # v4.0.4	
 
