@@ -197,10 +197,6 @@ public void controlEvent(ControlEvent theEvent) {
       wifiIPAddressStatic.color_notPressed = autoFileName.color_notPressed;
     } else if(newDataSource == DATASOURCE_GANGLION){
       updateToNChan(4);
-      if (isWindows() && isHubInitialized == false) {
-        hubInit();
-        timeOfSetup = millis();
-      }
       latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed;
       latencyGanglion10ms.color_notPressed = isSelected_color;
       latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed;
