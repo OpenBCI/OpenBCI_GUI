@@ -235,7 +235,7 @@ void initSoftwareSettings() {
     loadGUISettings(userSettingsFileToLoad);
     errorUserSettingsNotFound = false;
   } catch (Exception e) {
-    e.printStackTrace();
+    //e.printStackTrace();
     println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
     errorUserSettingsNotFound = true;
   }

@@ -75,6 +75,20 @@ def cleanup_build_dirs(zips = False):
             os.remove(full_zip_dir)
             print "Successfully deleted " + full_zip_dir
 
+### Ask user for windows signing info
+###########################################################
+windows_signing = False
+windows_pfx_path = ''
+windows_pfx_password = ''
+if LOCAL_OS == WINDOWS:
+    is_signing = raw_input("Will you be signing the app? (Y/n): ")
+    if is_signing.lower() != 'n':
+        windows_signing = True
+        windows_pfx_path = raw_input("Path to PFX file: ")
+        while not os.path.isfile(windows_pfx_path):
+            windows_pfx_path = raw_input("PFX file not found. Re-enter: ")
+        windows_pfx_password = raw_input("Password for the PFX file: ")
+
 ### Ask user for the hub directory
 ###########################################################
 hub_dir = raw_input("Enter path to the HUB: ")
@@ -167,6 +181,18 @@ if LOCAL_OS == MAC:
         print "WARNING: Failed to sign app."
     else:
         print "Successfully signed app."
+
+### On Windows, just sign the app
+###########################################################
+if windows_signing:
+    exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
+    assert(os.path.isfile(exe_dir))
+    try:
+        subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+            windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+    except subprocess.CalledProcessError as err:
+        print err
+        print "WARNING: Failed to sign app."
 
 ### Zip the file
 ###########################################################

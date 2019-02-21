@@ -381,12 +381,12 @@ class HardwareSettingsController{
   }
 
   public void initImpWrite(int _numChannel, char pORn, char onORoff) {
-    verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
+    verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel) + " to OpenBCI!");
     if (pORn == 'p') {
-      impedanceCheckValues[_numChannel][0] = onORoff;
+      impedanceCheckValues[_numChannel-1][0] = onORoff;
     }
     if (pORn == 'n') {
-      impedanceCheckValues[_numChannel][1] = onORoff;
+      impedanceCheckValues[_numChannel-1][1] = onORoff;
     }
     cyton.writeImpedanceSettings(_numChannel, impedanceCheckValues);
     // impChannelToWrite = _numChannel;
@@ -529,10 +529,10 @@ class HardwareSettingsController{
     }
   }
 
-  void toggleImpedanceCheck(int _channelNumber){
+  void toggleImpedanceCheck(int _channelNumber){ //Channel Numbers start at 1
 
-    if(channelSettingValues[_channelNumber][4] == '1'){     //is N pin being used...
-      if (impedanceCheckValues[_channelNumber][1] < '1') { //if not checking/drawing impedance
+    if(channelSettingValues[_channelNumber-1][4] == '1'){     //is N pin being used...
+      if (impedanceCheckValues[_channelNumber-1][1] < '1') { //if not checking/drawing impedance
         initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
         println("Imp[" + _channelNumber + "] is on.");
       } else {
@@ -541,8 +541,8 @@ class HardwareSettingsController{
       }
     }
 
-    if(channelSettingValues[_channelNumber][4] == '0'){     //is P pin being used
-      if (impedanceCheckValues[_channelNumber][0] < '1') {    //is channel on
+    if(channelSettingValues[_channelNumber-1][4] == '0'){     //is P pin being used
+      if (impedanceCheckValues[_channelNumber-1][0] < '1') {    //is channel on
         // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
         // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
         // writeImpedanceSettings(i);
