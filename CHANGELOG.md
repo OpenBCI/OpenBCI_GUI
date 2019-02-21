@@ -1,6 +1,11 @@
 # v4.1.0
 
-Use OpenBCIHub v2.0.5 please.
+Use OpenBCIHub v2.0.6 please.
+
+## Beta 1
+
+### Bug Fixes
+* Cyton impedance check did not work for Ch16 #427
 
 ## Beta 0
 
@@ -15,21 +20,21 @@ Use OpenBCIHub v2.0.5 please.
 * Align Ganglion accelerometer data to match Cyton #398
 * Fixed the GUI freezing on launch with a grey screen #409 #406 #426
 
-# v4.0.4	
+# v4.0.4
 
-Use OpenBCIHub v2.0.5 please.	
+Use OpenBCIHub v2.0.5 please.
 
-### Bug Fix	
+### Bug Fix
 
-* Cyton impedance check did not work #427	
+* Cyton impedance check did not work #427
 
 # v4.0.3
 
 Use OpenBCIHub v2.0.3 please.
 
-### New Features	
+### New Features
 
-* On Windows, it is no longer necessary to launch the HUB separately.	
+* On Windows, it is no longer necessary to launch the HUB separately.
 * The HUB is packaged within the GUI on Windows, just like on Mac and Linux.
 
 ### Bug Fixes
