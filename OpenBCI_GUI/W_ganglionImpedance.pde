@@ -14,19 +14,11 @@ class W_ganglionImpedance extends Widget {
 
   //to see all core variables/methods of the Widget class, refer to Widget.pde
   //put your custom variables here...
-
   Button startStopCheck;
   int padding = 24;
 
   W_ganglionImpedance(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-    //This is the protocol for setting up dropdowns.
-    //Note that these 3 dropdowns correspond to the 3 global functions below
-    //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-    // addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-    // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-    // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
     startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
     startStopCheck.setFont(p4, 14);
@@ -35,9 +27,7 @@ class W_ganglionImpedance extends Widget {
 
   void update(){
     super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
     //put your code here...
-
   }
 
   void draw(){
@@ -48,16 +38,6 @@ class W_ganglionImpedance extends Widget {
 
     startStopCheck.draw();
 
-    // //without dividing by 2
-    // for(int i = 0; i < ganglion.impedanceArray.length; i++){
-    //   String toPrint;
-    //   if(i == 0){
-    //     toPrint = "Reference Impedance = " + ganglion.impedanceArray[i] + " k\u2126";
-    //   } else {
-    //     toPrint = "Channel[" + i + "] Impedance = " + ganglion.impedanceArray[i] + " k\u2126";
-    //   }
-    //   text(toPrint, x + 10, y + 60 + 20*(i));
-    // }
 
     //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
     fill(bgColor);
@@ -98,18 +78,6 @@ class W_ganglionImpedance extends Widget {
         image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
       }
     }
-
-    // // no longer need to do this because the math was moved to the firmware...
-    // for(int i = 0; i < ganglion.impedanceArray.length; i++){
-    //   String toPrint;
-    //   float target = convertRawGanglionImpedanceToTarget(ganglion.impedanceArray[i]/1000.0);
-    //   if(i == 0){
-    //     toPrint = "Reference Impedance = " + target + " k\u2126";
-    //   } else {
-    //     toPrint = "Channel[" + i + "] Impedance = " + target + " k\u2126";
-    //   }
-    //   text(toPrint, x + 10, y + 220 + 20*(i));
-    // }
 
     popStyle();
 
@@ -155,14 +123,7 @@ class W_ganglionImpedance extends Widget {
       }
     }
     startStopCheck.setIsActive(false);
-
   }
-
-  //add custom classes functions here
-  void customFunction(){
-    //this is a fake function... replace it with something relevant to this widget
-  }
-
 };
 
 public float convertRawGanglionImpedanceToTarget(float _actual){
@@ -181,27 +142,4 @@ public float convertRawGanglionImpedanceToTarget(float _actual){
   }
 
   return _target;
-
 }
-
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-// void Dropdown1(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 1");
-//   if(n==0){
-//     //do this
-//   } else if(n==1){
-//     //do this instead
-//   }
-//
-//   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-// }
-//
-// void Dropdown2(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 2");
-//   closeAllDropdowns();
-// }
-//
-// void Dropdown3(int n){
-//   println("Item " + (n+1) + " selected from Dropdown 3");
-//   closeAllDropdowns();
-// }
