@@ -954,20 +954,18 @@ class PlaybackScrollbar {
   // Gets called when the playback slider position is moved by the user //
   // This function should scrub the file using the slider position      //
   void playbackScrubbing() {
-
     num_indices = indices;
     //println("INDEXES: "+num_indices);
     if(has_processed){
       //This updates Time Series playback position and the value at the top of the GUI in title bar
       currentTableRowIndex = getIndex();
-      String newTimeStamp = index_of_times.get(currentTableRowIndex);
-
+      String[] newTimeStamp = split(index_of_times.get(currentTableRowIndex), '.');
       if (!isRunning) {
         //Success print detailed position to bottom of GUI
         outputSuccess("New Position{ " + getPos() + "/" + sposMax
         + " Index: " + currentTableRowIndex
-        + " } --- Time: " + newTimeStamp
-        + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+        + " } --- Time: " + newTimeStamp[0]
+        + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
         + " seconds" );
       }
     }
@@ -1007,9 +1005,26 @@ class PlaybackScrollbar {
         outputSuccess("New Position{ " + getPos() + "/" + sposMax
         + " Index: " + getIndex()
         + " } --- Time: " +  getCurrentTimeStamp()
-        + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
+        + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
         + " seconds" );
       }
     }
   }// end skipToStartButtonAction
 };//end PlaybackScrollbar class
+
+//Used in the above PlaybackScrollbar class
+//Also used in OpenBCI_GUI in the app's title bar
+int getElapsedTimeInSeconds(int tableRowIndex) {
+  String startTime = index_of_times.get(0);
+  String currentTime = index_of_times.get(tableRowIndex);
+  DateFormat df = new SimpleDateFormat("hh:mm:ss");
+  long time1 = 0;
+  long time2 = 0;
+  try {
+    time1 = df.parse(startTime).getTime();
+    time2 = df.parse(currentTime).getTime();
+  } catch (Exception e) {
+  }
+  int delta = int((time2 - time1)*0.001);
+  return delta;
+}

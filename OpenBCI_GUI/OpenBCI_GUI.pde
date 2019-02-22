@@ -1319,7 +1319,7 @@ void systemDraw() { //for drawing to the screen
         surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
         break;
       case DATASOURCE_PLAYBACKFILE:
-        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/getSampleRateSafe()) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
+        surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
         break;
       case DATASOURCE_GANGLION:
         surface.setTitle(int(frameRate) + " fps, Ganglion!");
