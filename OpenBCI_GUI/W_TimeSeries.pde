@@ -978,7 +978,8 @@ class PlaybackScrollbar {
     //update the value for the number of indices
     num_indices = indices;
     //return current playback time
-    return curTimestamp;
+    String[] timeStamp = split(curTimestamp, '.');
+    return timeStamp[0];
   }
 
   //This function scrubs to the beginning of the playback file
