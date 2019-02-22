@@ -103,7 +103,7 @@ void playbackFileSelectedCP (String longName, String shortName) {
     maxRangePlaybackSelect = recentFilesArray.size()/10;
 
     for (int i = 0; i <= maxRangePlaybackSelect; i++) {
-      rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[i]);
+      rangePlaybackStringList.append(rangeSelectStringArray[i]);
     }
     playbackHistoryFileExists = true;
   } catch (NullPointerException e) {

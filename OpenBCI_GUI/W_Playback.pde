@@ -28,7 +28,8 @@ class W_playback extends Widget {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //make a dropdown menu to select the rang
-    addDropdown("pbRecentRange", "Range", Arrays.asList(rangePlaybackSelectArray), 0);
+    String[] temp = rangePlaybackStringList.array();
+    addDropdown("pbRecentRange", "Range", Arrays.asList(temp), 0);
     //make a button to load new files
     selectPlaybackFileButton = new Button (
       x + w/2 - (padding*2),
@@ -497,7 +498,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
     saveJSONObject(newHistoryFile, userPlaybackHistoryFile);
 
     //set the dropdown menu array for range select
-    rangePlaybackSelectArray = append(rangePlaybackSelectArray, rangeSelectStringArray[0]);
+    rangePlaybackStringList.append(rangeSelectStringArray[0]);
 
     //now the file exists!
     println("Playback history JSON has been made!");
