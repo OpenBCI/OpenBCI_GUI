@@ -734,7 +734,6 @@ class PlaybackScrollbar {
   int skipToStart_diameter;
   Boolean indicatorAtStart; //true means the indicator is at index 0
   float ps_Padding = 50.0; //used to make room for skip to start button
-  String timeToFind = "";
 
   PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
     swidth = sw;
@@ -807,10 +806,9 @@ class PlaybackScrollbar {
       }
       //Set the new position of playback indicator using mapped value
       newspos = updatePos();
-      //Find time to display for playback indicator position
-      findTimesToDisplay();
+
       //Print current position to bottom of GUI
-      output("Time: " + timeToFind
+      output("Time: " + getCurrentTimeStamp()
       + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
       + " seconds" );
     }
@@ -957,67 +955,31 @@ class PlaybackScrollbar {
   // This function should scrub the file using the slider position      //
   void playbackScrubbing() {
 
-    num_indices = indices; //update the value for the number of indices
-
-    if(has_processed){ //if playback file has been processed successfully
-      //println("INDEXES: "+num_indices);
-
-      findTimesToDisplay();
-
-      //Copy the index of the slider to the backend value
+    num_indices = indices;
+    //println("INDEXES: "+num_indices);
+    if(has_processed){
       //This updates Time Series playback position and the value at the top of the GUI in title bar
       currentTableRowIndex = getIndex();
+      String newTimeStamp = index_of_times.get(currentTableRowIndex);
 
       if (!isRunning) {
         //Success print detailed position to bottom of GUI
         outputSuccess("New Position{ " + getPos() + "/" + sposMax
-        + " Index: " + getIndex()
-        + " } --- Time: " + timeToFind
+        + " Index: " + currentTableRowIndex
+        + " } --- Time: " + newTimeStamp
         + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
         + " seconds" );
       }
-
-      //This shows top of gui during playback
-      //println(int(float(currentTableRowIndex)/getSampleRateSafe()));
-
-    }//end case for has_processed
-  }//end playback scrubbing
+    }
+  }
 
   //Find times to display for playback position
-  void findTimesToDisplay() {
+  String getCurrentTimeStamp() {
     //update the value for the number of indices
     num_indices = indices;
-    //Set date format to exclude milliseconds
-    SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-    //current playback time
-    timeToFind = "";
-    //time window size X seconds before current playback time
-    String timeWindowString = ""; //not necessary, here if needed for debugging
-
-    //Try to set some times that will output to the bottom of the screen when scrubbing
-    try{
-      Date startIndexDate = format.parse(index_of_times.get(indexStartPosition));
-      Date timeIndex = format.parse(index_of_times.get(getIndex()));
-      //Fetch the time window from the dropdown text, split string, *1000, subtract from current time
-      String currentDurationWindow = w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().getText();
-      String[] list = split(currentDurationWindow, ' ');
-      Date timeWindow = new Date(timeIndex.getTime() - int(list[0])*1000);
-
-      //If the Time window has not elapsed...
-      if (timeWindow.before(startIndexDate)) {
-        //Display start time
-        timeWindowString = format.format(startIndexDate).toString();
-        //to current time
-        timeToFind = format.format(timeIndex).toString();
-        //println(list[0] + " seconds have not passed yet");
-      } else {
-        //Otherwise, diplay time X seconds before current time
-        timeWindowString = format.format(timeWindow).toString();
-        //to current time
-        timeToFind = format.format(timeIndex).toString();
-      }
-    } catch(Exception e) {} //end of trying to set dates/times
-  }//end findTimesToDisplay
+    //return current playback time
+    return curTimestamp;
+  }
 
   //This function scrubs to the beginning of the playback file
   //Useful to 'reset' the scrollbar before loading a new playback file
@@ -1043,7 +1005,7 @@ class PlaybackScrollbar {
         //Success print detailed position to bottom of GUI
         outputSuccess("New Position{ " + getPos() + "/" + sposMax
         + " Index: " + getIndex()
-        + " } --- Time: " + timeToFind
+        + " } --- Time: " +  getCurrentTimeStamp()
         + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
         + " seconds" );
       }
