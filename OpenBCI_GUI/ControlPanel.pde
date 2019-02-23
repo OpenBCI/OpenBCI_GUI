@@ -483,37 +483,6 @@ class ControlPanel {
 
     noStroke();
 
-    // //dark overlay of rest of interface to indicate it's not clickable
-    // fill(0, 0, 0, 185);
-    // rect(0, 0, width, height);
-
-    // pushStyle();
-    // noStroke();
-    // // fill(255);
-    // fill(31,69,110);
-    // rect(0, 0, width, navBarHeight);
-    // popStyle();
-    // // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
-    // image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
-
-    // if(colorScheme == COLOR_SCHEME_DEFAULT){
-    //   noStroke();
-    //   fill(229);
-    //   rect(0, 0, width, topNav_h);
-    //   stroke(bgColor);
-    //   fill(255);
-    //   rect(-1, 0, width+2, navBarHeight);
-    //   image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
-    // } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
-    //   noStroke();
-    //   fill(100);
-    //   rect(0, 0, width, topNav_h);
-    //   stroke(bgColor);
-    //   fill(31,69,110);
-    //   rect(-1, 0, width+2, navBarHeight);
-    //   image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
-    // }
-
     initBox.draw();
 
     if (systemMode == 10) {

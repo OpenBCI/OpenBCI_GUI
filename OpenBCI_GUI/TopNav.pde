@@ -19,7 +19,9 @@ class TopNav {
   Button controlPanelCollapser;
 
   Button fpsButton;
-  Button highRezButton;
+  Button debugButton;
+  ConsoleWindow consoleWindow;
+  //Button highRezButton;
 
   Button stopButton;
 
@@ -47,13 +49,13 @@ class TopNav {
 
   //constructor
   TopNav() {
-
-    controlPanelCollapser = new Button(3, 3, 256, 26, "System Control Panel", fontInfo.buttonLabel_size);
+    int w = 256;
+    controlPanelCollapser = new Button(3, 3, w, 26, "System Control Panel", fontInfo.buttonLabel_size);
     controlPanelCollapser.setFont(h3, 16);
     controlPanelCollapser.setIsActive(true);
     controlPanelCollapser.isDropdownButton = true;
 
-    fpsButton = new Button(3+3+256, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
+    fpsButton = new Button(controlPanelCollapser.but_x + controlPanelCollapser.but_dx + 3, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
     if (frameRateCounter==0) {
       fpsButton.setString("24 fps");
     }
@@ -69,30 +71,27 @@ class TopNav {
 
     fpsButton.setFont(h3, 16);
     fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate and see if it helps!");
-
-    highRezButton = new Button(3+3+256+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
+    //highRezButton = new Button(3+3+w+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
     controlPanelCollapser.setFont(h3, 16);
 
     //top right buttons from right to left
-    int butNum = 1;
-    tutorialsButton = new Button(width - 3*(butNum) - 80, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
+    debugButton = new Button(width - 33 - 3, 3, 33, 26, " ", fontInfo.buttonLabel_size);
+
+    tutorialsButton = new Button(debugButton.but_x - 80 - 3, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
     tutorialsButton.setFont(h3, 16);
     tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
 
-    butNum = 2;
-    issuesButton = new Button(width - 3*(butNum) - 80 - tutorialsButton.but_dx, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
+    issuesButton = new Button(tutorialsButton.but_x - 80 - 3, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
     issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
     issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/issues");
     issuesButton.setFont(h3, 16);
 
-    butNum = 3;
-    shopButton = new Button(width - 3*(butNum) - 80 - issuesButton.but_dx - tutorialsButton.but_dx, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
+    shopButton = new Button(issuesButton.but_x - 80 - 3, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
     shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
     shopButton.setURL("http://shop.openbci.com/");
     shopButton.setFont(h3, 16);
 
-    butNum = 4;
-    updateGuiVersionButton = new Button(width - 3*(butNum) - 80 - issuesButton.but_dx - tutorialsButton.but_dx - shopButton.but_dx, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
+    updateGuiVersionButton = new Button(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
     //Lookup and check the local GUI version against the latest Github release
     try {
       loadGUIVersionData();
@@ -152,7 +151,8 @@ class TopNav {
     if (colorScheme == COLOR_SCHEME_DEFAULT) {
       controlPanelCollapser.setColorNotPressed(color(255));
       fpsButton.setColorNotPressed(color(255));
-      highRezButton.setColorNotPressed(color(255));
+      debugButton.setColorNotPressed(color(255));
+      //highRezButton.setColorNotPressed(color(255));
       issuesButton.setColorNotPressed(color(255));
       shopButton.setColorNotPressed(color(255));
       tutorialsButton.setColorNotPressed(color(255));
@@ -160,25 +160,17 @@ class TopNav {
 
       controlPanelCollapser.textColorNotActive = color(bgColor);
       fpsButton.textColorNotActive = color(bgColor);
-      highRezButton.textColorNotActive = color(bgColor);
+      debugButton.textColorNotActive = color(bgColor);
+      //highRezButton.textColorNotActive = color(bgColor);
       issuesButton.textColorNotActive = color(bgColor);
       shopButton.textColorNotActive = color(bgColor);
       tutorialsButton.textColorNotActive = color(bgColor);
       updateGuiVersionButton.textColorNotActive = color(bgColor);
     } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-      // controlPanelCollapser.setColorNotPressed(color(150));
-      // issuesButton.setColorNotPressed(color(150));
-      // shopButton.setColorNotPressed(color(150));
-      // tutorialsButton.setColorNotPressed(color(150));
-
-      // controlPanelCollapser.setColorNotPressed(bgColor);
-      // issuesButton.setColorNotPressed(bgColor);
-      // shopButton.setColorNotPressed(bgColor);
-      // tutorialsButton.setColorNotPressed(bgColor);
-
       controlPanelCollapser.setColorNotPressed(openbciBlue);
       fpsButton.setColorNotPressed(openbciBlue);
-      highRezButton.setColorNotPressed(openbciBlue);
+      debugButton.setColorNotPressed(openbciBlue);
+      //highRezButton.setColorNotPressed(openbciBlue);
       issuesButton.setColorNotPressed(openbciBlue);
       shopButton.setColorNotPressed(openbciBlue);
       tutorialsButton.setColorNotPressed(openbciBlue);
@@ -186,21 +178,12 @@ class TopNav {
 
       controlPanelCollapser.textColorNotActive = color(255);
       fpsButton.textColorNotActive = color(255);
-      highRezButton.textColorNotActive = color(255);
+      debugButton.textColorNotActive = color(255);
+      //highRezButton.textColorNotActive = color(255);
       issuesButton.textColorNotActive = color(255);
       shopButton.textColorNotActive = color(255);
       tutorialsButton.textColorNotActive = color(255);
       updateGuiVersionButton.textColorNotActive = color(255);
-
-      // controlPanelCollapser.textColorNotActive = color(openbciBlue);
-      // issuesButton.textColorNotActive = color(openbciBlue);
-      // shopButton.textColorNotActive = color(openbciBlue);
-      // tutorialsButton.textColorNotActive = color(openbciBlue);
-      //
-      // controlPanelCollapser.textColorNotActive = color(bgColor);
-      // issuesButton.textColorNotActive = color(bgColor);
-      // shopButton.textColorNotActive = color(bgColor);
-      // tutorialsButton.textColorNotActive = color(bgColor);
     }
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
@@ -249,6 +232,7 @@ class TopNav {
       stroke(bgColor);
       fill(255);
       rect(-1, 0, width+2, navBarHeight);
+      //this is the center logo
       image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
     } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
       noStroke();
@@ -260,12 +244,6 @@ class TopNav {
       rect(-1, 0, width+2, navBarHeight);
       image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
     }
-
-    // if (colorScheme == COLOR_SCHEME_DEFAULT){
-    //
-    // } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
-    //
-    // }
 
     popStyle();
 
@@ -279,13 +257,17 @@ class TopNav {
 
     controlPanelCollapser.draw();
     fpsButton.draw();
+    debugButton.draw();
+    if (colorScheme == COLOR_SCHEME_DEFAULT) {
+      image(cog_blue, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
+    } else {
+      image(cog_white, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
+    }
     // highRezButton.draw();
     tutorialsButton.draw();
     issuesButton.draw();
     shopButton.draw();
     updateGuiVersionButton.draw();
-
-    // image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
 
     layoutSelector.draw();
     tutorialSelector.draw();
@@ -356,6 +338,10 @@ class TopNav {
       fpsButton.setIsActive(true);
     }
 
+    if (debugButton.isMouseHere()) {
+      debugButton.setIsActive(true);
+    }
+
     // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
     // if (highRezButton.isMouseHere()){
     //   highRezButton.setIsActive(true);
@@ -388,6 +374,10 @@ class TopNav {
 
     if (fpsButton.isMouseHere() && fpsButton.isActive()) {
       toggleFrameRate();
+    }
+
+    if (debugButton.isMouseHere() && debugButton.isActive()) {
+      consoleWindow = new ConsoleWindow();
     }
 
     // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
@@ -440,7 +430,8 @@ class TopNav {
     }
 
     fpsButton.setIsActive(false);
-    highRezButton.setIsActive(false);
+    debugButton.setIsActive(false);
+    //highRezButton.setIsActive(false);
     tutorialsButton.setIsActive(false);
     issuesButton.setIsActive(false);
     shopButton.setIsActive(false);
