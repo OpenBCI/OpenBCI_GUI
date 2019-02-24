@@ -20,8 +20,6 @@ ConsoleData consoleData = new ConsoleData();
 
 class ConsoleWindow extends PApplet {
 
-  int myTimer;
-  int timerInterval = 1500;
   ScrollRect scrollRect;
   float heightOfConsoleCanvas = 500;  // realHeight of the entire scene
 
@@ -40,8 +38,11 @@ class ConsoleWindow extends PApplet {
     background(150);
     println("This goes to the console.");
 
+    //This function may need to be called when the GUI starts
+    //After this point all println() goes to file
     consoleData.setupConsoleOutput();
 
+    //Thats why we use the new consolePrint()
     consolePrint("This goes to the file and the console.");
     consolePrint("Hello Major Tom!");
 
@@ -51,14 +52,6 @@ class ConsoleWindow extends PApplet {
 
   void draw() {
     clear();
-
-    /*
-    if (millis() > myTimer + timerInterval) {
-      consolePrint(Integer.toString(++consoleData.outputLine));
-      myTimer = millis();
-    }
-    */
-    //text("End of virtual canvas", width-130, heightOfConsoleCanvas-16);
 
     scene();
     scrollRect.display();
