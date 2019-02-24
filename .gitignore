@@ -13,3 +13,5 @@ OpenBCI_GUI/data/OpenBCIHub/*
 OpenBCI_GUI/application.*.zip
 OpenBCI_GUI/application.*
 *.autosave
+Feature_Tests/consoleLogTest/data
+Feature_Tests/consoleLogTest/build
