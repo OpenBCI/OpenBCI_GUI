@@ -4,6 +4,8 @@
 //      -- to console                                     //
 //      -- to a file                                      //
 //      -- to the screen with scrolling                   //
+//                                                        //
+//           Use consolePrint() over println()            //
 ////////////////////////////////////////////////////////////
 
 import java.io.PrintStream;
@@ -23,8 +25,11 @@ ClipHelper clipboardCopy = new ClipHelper();
 
 void setup() {
   size(500,500);
+
   println("This goes to the console.");
+
   consoleData.setupConsoleOutput();
+  
   consolePrint("This goes to the file and the console.");
   consolePrint("Hello Major Tom!");
 
@@ -62,11 +67,15 @@ void mouseReleased() {
   scrollRect.mouseReleasedRect();
 }
 
+// --------------------------------------------------------------
+
 void consolePrint(String _output) {
   println(_output);
   original.println(_output);
   consoleData.data.append(_output);
 }
+
+// --------------------------------------------------------------
 
 class ConsoleData {
 
@@ -75,7 +84,7 @@ class ConsoleData {
 
   void setupConsoleOutput() {
     try {
-      String file = dataPath("dataConsole.txt");
+      String file = dataPath("console-data.txt");
       if (!new File(dataPath("")).isDirectory()) {
         if (!new File(dataPath("")).mkdirs()) {
           System.err.println("Directory creation failed!");
