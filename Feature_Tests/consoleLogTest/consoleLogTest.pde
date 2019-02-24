@@ -1,7 +1,16 @@
+////////////////////////////////////////////////////////////
+//                 consoleLogTest.pde                     //
+//  This is an example of how to print console messages:  //
+//      -- to console                                     //
+//      -- to a file                                      //
+//      -- to the screen with scrolling                   //
+////////////////////////////////////////////////////////////
+
 import java.io.PrintStream;
 import java.io.FileOutputStream;
 
 int myTimer;
+int timerInterval = 100;
 
 ScrollRect scrollRect;        // the vertical scroll bar
 float heightOfCanvas = 500;  // realHeight of the entire scene
@@ -13,7 +22,7 @@ void setup() {
   size(500,500);
   println("This goes to the console.");
   consoleData.setupConsoleOutput();
-  consolePrint("This goes to the file and the Console");
+  consolePrint("This goes to the file and the console.");
   consolePrint("Hello Major Tom!");
 
   scrollRect = new ScrollRect();
@@ -23,7 +32,7 @@ void setup() {
 void draw() {
   clear();
 
-  if (millis() > myTimer + 100) {
+  if (millis() > myTimer + timerInterval) {
     consolePrint(Integer.toString(++consoleData.outputLine));
     myTimer = millis();
   }
