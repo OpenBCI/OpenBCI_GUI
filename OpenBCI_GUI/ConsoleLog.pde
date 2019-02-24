@@ -1,7 +1,30 @@
+////////////////////////////////////////////////////////////
+//                 consoleLogTest.pde                     //
+//  This is an example of how to print console messages:  //
+//      -- to console                                     //
+//      -- to a file                                      //
+//      -- to the screen with scrolling                   //
+//                                                        //
+//           Use consolePrint() over println()            //
+////////////////////////////////////////////////////////////
+
+
+import java.io.PrintStream;
+import java.io.FileOutputStream;
 import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 
+
+PrintStream original = new PrintStream(System.out);
+ConsoleData consoleData = new ConsoleData();
+
 class ConsoleWindow extends PApplet {
+
+  int myTimer;
+  int timerInterval = 1500;
+  ScrollRect scrollRect;
+  float heightOfConsoleCanvas = 500;  // realHeight of the entire scene
+
   ClipHelper clipboardCopy = new ClipHelper();
 
   ConsoleWindow() {
@@ -10,85 +33,257 @@ class ConsoleWindow extends PApplet {
   }
 
   void settings() {
-    size(500, 200);
+    size(500, 500);
   }
 
   void setup() {
     background(150);
+    println("This goes to the console.");
+
+    consoleData.setupConsoleOutput();
+
+    consolePrint("This goes to the file and the console.");
+    consolePrint("Hello Major Tom!");
+
+    scrollRect = new ScrollRect();
+    background(90);
   }
 
   void draw() {
-    //ellipse(random(width), random(height), random(50), random(50));
+    clear();
+
+    /*
+    if (millis() > myTimer + timerInterval) {
+      consolePrint(Integer.toString(++consoleData.outputLine));
+      myTimer = millis();
+    }
+    */
+    //text("End of virtual canvas", width-130, heightOfConsoleCanvas-16);
+
+    scene();
+    scrollRect.display();
+    scrollRect.update();
+  }
+
+  void keyReleased() {
+    if (key == 'c' || key == 'C') {
+      consolePrint("Copying console log to clipboard!");
+      String stringToCopy = join(consoleData.data.array(), "\n");
+      String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
+      clipboardCopy.copyString(formattedCodeBlock);
+    }
   }
 
   void mousePressed() {
     println("mousePressed in secondary window");
-    String stringToCopy = "This is multi-line data \n Then a new line \n and another new ling \n how many moar lines?";
-    clipboardCopy.copyString(stringToCopy);
+    scrollRect.mousePressedRect();
   }
+
+  void mouseReleased() {
+    scrollRect.mouseReleasedRect();
+  }
+
 
   void exit() {
     dispose();
   }
+
+  // --------------------------------------------------------------
+
+  void scene() {
+    pushStyle();
+
+    int fontHeight = 12;
+    // reading scroll bar
+    float newYValue = scrollRect.scrollValue();
+    translate (0, newYValue);
+
+    if ((fontHeight*(consoleData.data.size() - 1) + 4) > heightOfConsoleCanvas) {
+      heightOfConsoleCanvas += 80;
+    }
+
+    fill(255);
+    for (int i = 0; i < consoleData.data.size(); i++) {
+      text(consoleData.data.get(i), 10, fontHeight * i + 4, 255, 80);
+    }
+
+    text("End of virtual canvas", width-130, heightOfConsoleCanvas-16);
+    fill(122);
+    popStyle();
+  }
+
+  // ===============================================================
+
+  class ScrollRect {
+
+    float rectPosX=0;
+    float rectPosY=0;
+    float rectWidth=14;
+    float rectHeight=30;
+
+    boolean holdScrollRect=false;
+
+    float offsetMouseY;
+
+    //constr
+    ScrollRect() {
+      // you have to make a scrollRect in setup after size()
+      rectPosX=width-rectWidth-1;
+    }//constr
+
+    void display() {
+      fill(122);
+      stroke(0);
+      line (rectPosX-1, 0,
+        rectPosX-1, height);
+      rect(rectPosX, rectPosY,
+        rectWidth, rectHeight);
+
+      // Three small lines in the center
+      centerLine(-3);
+      centerLine(0);
+      centerLine(3);
+    }
+
+    void centerLine(float offset) {
+      line(rectPosX+3, rectPosY+rectHeight/2+offset,
+        rectPosX+rectWidth-3, rectPosY+rectHeight/2+offset);
+    }
+
+    void mousePressedRect() {
+      if (mouseOver()) {
+        holdScrollRect=true;
+        offsetMouseY=mouseY-rectPosY;
+      }
+    }
+
+    void mouseReleasedRect() {
+      scrollRect.holdScrollRect=false;
+    }
+
+    void update() {
+      // dragging of the mouse
+      if (holdScrollRect) {
+        rectPosY=mouseY-offsetMouseY;
+        if (rectPosY<0)
+          rectPosY=0;
+        if (rectPosY+rectHeight>height-1)
+          rectPosY=height-rectHeight-1;
+      }
+    }
+
+    float scrollValue() {
+      return
+        map(rectPosY,
+        0, height-rectHeight,
+        0, - (heightOfConsoleCanvas - height));
+    }
+
+    boolean mouseOver() {
+      return mouseX>rectPosX&&
+        mouseX<rectPosX+rectWidth&&
+        mouseY>rectPosY&&
+        mouseY<rectPosY+rectHeight;
+    }//function
+    //
+  }//class
+
+  // ===============================================================
+  // CLIPHELPER OBJECT CLASS
+  class ClipHelper {
+    Clipboard clipboard;
+
+    ClipHelper() {
+      getClipboard();
+    }
+
+    void getClipboard () {
+      // this is our simple thread that grabs the clipboard
+      Thread clipThread = new Thread() {
+    public void run() {
+      clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    }
+      };
+
+      // start the thread as a daemon thread and wait for it to die
+      if (clipboard == null) {
+    try {
+      clipThread.setDaemon(true);
+      clipThread.start();
+      clipThread.join();
+    }
+    catch (Exception e) {}
+      }
+    }
+
+    void copyString (String data) {
+      copyTransferableObject(new StringSelection(data));
+    }
+
+    void copyTransferableObject (Transferable contents) {
+      getClipboard();
+      clipboard.setContents(contents, null);
+    }
+
+    String pasteString () {
+      String data = null;
+      try {
+    data = (String)pasteObject(DataFlavor.stringFlavor);
+      }
+      catch (Exception e) {
+    System.err.println("Error getting String from clipboard: " + e);
+      }
+      return data;
+    }
+
+    Object pasteObject (DataFlavor flavor)
+    throws UnsupportedFlavorException, IOException
+    {
+      Object obj = null;
+      getClipboard();
+
+      Transferable content = clipboard.getContents(null);
+      if (content != null)
+      obj = content.getTransferData(flavor);
+
+      return obj;
+    }
+  }
+}//end class
+
+
+// --------------------------------------------------------------
+
+void consolePrint(String _output) {
+  println(_output);
+  original.println(_output);
+  consoleData.data.append(_output);
 }
 
-// CLIPHELPER OBJECT CLASS
-class ClipHelper {
-  Clipboard clipboard;
+// --------------------------------------------------------------
 
-  ClipHelper() {
-    getClipboard();
-  }
+class ConsoleData {
 
-  void getClipboard () {
-    // this is our simple thread that grabs the clipboard
-    Thread clipThread = new Thread() {
-  public void run() {
-    clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-  }
-    };
+  StringList data = new StringList();
+  int outputLine = 0;
 
-    // start the thread as a daemon thread and wait for it to die
-    if (clipboard == null) {
-  try {
-    clipThread.setDaemon(true);
-    clipThread.start();
-    clipThread.join();
-  }
-  catch (Exception e) {}
-    }
-  }
-
-  void copyString (String data) {
-    copyTransferableObject(new StringSelection(data));
-  }
-
-  void copyTransferableObject (Transferable contents) {
-    getClipboard();
-    clipboard.setContents(contents, null);
-  }
-
-  String pasteString () {
-    String data = null;
+  void setupConsoleOutput() {
     try {
-  data = (String)pasteObject(DataFlavor.stringFlavor);
+      String file = dataPath("console-data.txt");
+      if (!new File(dataPath("")).isDirectory()) {
+        if (!new File(dataPath("")).mkdirs()) {
+          System.err.println("Directory creation failed!");
+          exit();
+        }
+      }
+      FileOutputStream outStr = new FileOutputStream(file, false);
+      PrintStream printStream = new PrintStream(outStr);
+      System.setOut(printStream);
+      System.setErr(printStream);
     }
-    catch (Exception e) {
-  System.err.println("Error getting String from clipboard: " + e);
+    catch (IOException e) {
+      System.err.println("Error! Check path, or filename, or security manager! "+e);
     }
-    return data;
   }
 
-  Object pasteObject (DataFlavor flavor)
-  throws UnsupportedFlavorException, IOException
-  {
-    Object obj = null;
-    getClipboard();
-
-    Transferable content = clipboard.getContents(null);
-    if (content != null)
-    obj = content.getTransferData(flavor);
-
-    return obj;
-  }
 }

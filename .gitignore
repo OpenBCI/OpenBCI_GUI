@@ -15,3 +15,4 @@ OpenBCI_GUI/application.*
 *.autosave
 Feature_Tests/consoleLogTest/data
 Feature_Tests/consoleLogTest/build
+OpenBCI_GUI/data/console-data.txt

@@ -29,7 +29,7 @@ void setup() {
   println("This goes to the console.");
 
   consoleData.setupConsoleOutput();
-  
+
   consolePrint("This goes to the file and the console.");
   consolePrint("Hello Major Tom!");
 
@@ -106,7 +106,7 @@ class ConsoleData {
 // --------------------------------------------------------------
 
 void scene() {
-  pushMatrix();
+  pushStyle();
 
   int fontHeight = 12;
   // reading scroll bar
@@ -124,7 +124,7 @@ void scene() {
 
   text("End of virtual canvas", width-130, heightOfCanvas-16);
   fill(122);
-  popMatrix();
+  popStyle();
 }
 
 // ===============================================================
