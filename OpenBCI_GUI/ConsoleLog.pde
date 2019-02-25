@@ -68,7 +68,7 @@ class ConsoleWindow extends PApplet {
   }
 
   void mousePressed() {
-    println("mousePressed in secondary window");
+    consolePrint"mousePressed in secondary window");
     scrollRect.mousePressedRect();
   }
 
@@ -224,7 +224,7 @@ class ConsoleWindow extends PApplet {
     data = (String)pasteObject(DataFlavor.stringFlavor);
       }
       catch (Exception e) {
-    System.err.println("Error getting String from clipboard: " + e);
+        consolePrint("Error getting String from clipboard: " + e);
       }
       return data;
     }
@@ -256,7 +256,7 @@ class ConsoleData {
       String file = dataPath("console-data.txt");
       if (!new File(dataPath("")).isDirectory()) {
         if (!new File(dataPath("")).mkdirs()) {
-          System.err.println("Directory creation failed!");
+          consolePrint("Directory creation failed!");
           exit();
         }
       }
@@ -266,7 +266,7 @@ class ConsoleData {
       System.setErr(printStream);
     }
     catch (IOException e) {
-      System.err.println("Error! Check path, or filename, or security manager! "+e);
+      consolePrint("Error! Check path, or filename, or security manager! "+e);
     }
   }
 }//end class
