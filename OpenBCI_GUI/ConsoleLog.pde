@@ -68,7 +68,7 @@ class ConsoleWindow extends PApplet {
   }
 
   void mousePressed() {
-    consolePrint("mousePressed in secondary window");
+    //consolePrint("mousePressed in secondary window");
     scrollRect.mousePressedRect();
   }
 
@@ -92,15 +92,20 @@ class ConsoleWindow extends PApplet {
     translate (0, newYValue);
 
     if ((fontHeight*(consoleData.data.size() - 1) + 4) > heightOfConsoleCanvas) {
-      heightOfConsoleCanvas += 80;
+      heightOfConsoleCanvas += fontHeight + 4;
     }
 
     fill(255);
-    for (int i = 0; i < consoleData.data.size(); i++) {
-      text(consoleData.data.get(i), 10, fontHeight * i + 4, 500, 80);
-    }
 
-    text("End of virtual canvas", width-130, heightOfConsoleCanvas-16);
+    for (int i = 0; i < consoleData.data.size(); i++) {
+      String[] lines = split(consoleData.data.get(i), "\n");
+      for (int j = 0; j < lines.length; j++) {
+        text(lines[j], 10, fontHeight * i + fontHeight * j + 4 * 2, 500, fontHeight+4);
+      }
+    }
+    text("mouseY = " + mouseY, width-130, heightOfConsoleCanvas-48);
+    text("End of virtual canvas", width-130, heightOfConsoleCanvas-32);
+
     fill(122);
     popStyle();
   }
@@ -127,11 +132,9 @@ class ConsoleWindow extends PApplet {
     void display() {
       fill(122);
       stroke(0);
-      line (rectPosX-1, 0,
-        rectPosX-1, height);
-      rect(rectPosX, rectPosY,
-        rectWidth, rectHeight);
-
+      line (rectPosX-1, 0, rectPosX-1, height);
+      rect(rectPosX, rectPosY, rectWidth, rectHeight);
+      text("rectPosY = " + scrollRect.rectPosY, width-130, height-16);
       // Three small lines in the center
       centerLine(-3);
       centerLine(0);
