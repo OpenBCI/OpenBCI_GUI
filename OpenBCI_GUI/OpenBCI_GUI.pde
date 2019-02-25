@@ -394,7 +394,7 @@ void setup() {
   consoleData.setupConsoleOutput();
   consolePrint("Screen Resolution: " + displayWidth + " X " + displayHeight);
   consolePrint("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  consolePrint("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+  consolePrint("For more information, please visit: http://docs.openbci.com/OpenBCI%20Software/");
 
   //open window
   ourApplet = this;

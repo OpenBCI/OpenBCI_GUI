@@ -31,12 +31,12 @@ class ConsoleWindow extends PApplet {
   }
 
   void settings() {
-    size(500, 500);
+    size(620, 500);
   }
 
   void setup() {
     background(150);
-    println("This goes to the console.");
+    //println("This goes to the console.");
 
     //This function may need to be called when the GUI starts
     //After this point all println() goes to file
@@ -97,7 +97,7 @@ class ConsoleWindow extends PApplet {
 
     fill(255);
     for (int i = 0; i < consoleData.data.size(); i++) {
-      text(consoleData.data.get(i), 10, fontHeight * i + 4, 255, 80);
+      text(consoleData.data.get(i), 10, fontHeight * i + 4, 500, 80);
     }
 
     text("End of virtual canvas", width-130, heightOfConsoleCanvas-16);
