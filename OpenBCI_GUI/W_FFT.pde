@@ -74,7 +74,7 @@ class W_fft extends Widget {
     addDropdown("UnfiltFilt", "Filters?", Arrays.asList(fftFilterArray), fftFilterSave);
 
     fft_points = new GPointsArray[nchan];
-    // println("fft_points.length: " + fft_points.length);
+    // consolePrint("fft_points.length: " + fft_points.length);
     initializeFFTPlot(_parent);
 
   }
@@ -105,7 +105,7 @@ class W_fft extends Widget {
     for (int i = 0; i < fft_points.length; i++) { //loop through each channel
       for (int j = 0; j < FFT_indexLim; j++) {
         //GPoint temp = new GPoint(i, 15*noise(0.1*i));
-        //println(i + " " + j);
+        //consolePrint(i + " " + j);
         GPoint temp = new GPoint(j, 0);
         fft_points[i].set(j, temp);
       }
@@ -124,29 +124,29 @@ class W_fft extends Widget {
     //put your code here...
     //update the points of the FFT channel arrays
     //update fft point arrays
-    // println("LENGTH = " + fft_points.length);
-    // println("LENGTH = " + fftBuff.length);
-    // println("LENGTH = " + FFT_indexLim);
+    // consolePrint("LENGTH = " + fft_points.length);
+    // consolePrint("LENGTH = " + fftBuff.length);
+    // consolePrint("LENGTH = " + FFT_indexLim);
     for (int i = 0; i < fft_points.length; i++) {
       for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
         //GPoint powerAtBin = new GPoint(j, 15*random(0.1*j));
         GPoint powerAtBin;
 
-        // println("i = " + i);
+        // consolePrint("i = " + i);
         // float a = getSampleRateSafe();
         // float aa = fftBuff[i].getBand(j);
         // float b = fftBuff[i].getBand(j);
         // float c = Nfft;
 
-        //println("Sample rate: "+ sr + " -- Nfft: " + nfft);
+        //consolePrint("Sample rate: "+ sr + " -- Nfft: " + nfft);
         powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
         fft_points[i].set(j, powerAtBin);
         // GPoint powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
 
-        //println("=========================================");
-        //println(j);
-        //println(fftBuff[i].getBand(j) + " :: " + fft_points[i].getX(j) + " :: " + fft_points[i].getY(j));
-        //println("=========================================");
+        //consolePrint("=========================================");
+        //consolePrint(j);
+        //consolePrint(fftBuff[i].getBand(j) + " :: " + fft_points[i].getX(j) + " :: " + fft_points[i].getY(j));
+        //consolePrint("=========================================");
       }
     }
 

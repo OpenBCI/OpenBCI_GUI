@@ -59,7 +59,7 @@ void serialEvent(Serial port){
     iSerial.read(echoBytes);
     openBCI_byteCount++;
     if (iSerial.get_isNewDataPacketAvailable()) {
-      println("woo got a new packet");
+      consolePrint("woo got a new packet");
       //copy packet into buffer of data packets
       curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
 
@@ -130,7 +130,7 @@ void serialEvent(Serial port){
         }
       }
     } else {
-      //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
+      //consolePrint("Recieved serial data not from OpenBCI"); //this is a bit of a lie
       inByte = byte(port.read());
       if (isOpenBCI) {
 
@@ -244,13 +244,13 @@ class InterfaceSerial {
   };  //only use this if you simply want access to some of the constants
   InterfaceSerial(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI) {
     //choose data mode
-    println("InterfaceSerial: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket = " + nEEGValuesPerPacket);
+    consolePrint("InterfaceSerial: prefered_datamode = " + prefered_datamode + ", nValuesPerPacket = " + nEEGValuesPerPacket);
     if (prefered_datamode == DATAMODE_BIN_WAUX) {
       if (!useAux) {
         //must be requesting the aux data, so change the referred data mode
         prefered_datamode = DATAMODE_BIN;
         nAuxValues = 0;
-        //println("InterfaceSerial: nAuxValuesPerPacket = " + nAuxValuesPerPacket + " so setting prefered_datamode to " + prefered_datamode);
+        //consolePrint("InterfaceSerial: nAuxValuesPerPacket = " + nAuxValuesPerPacket + " so setting prefered_datamode to " + prefered_datamode);
       }
     }
 
@@ -273,7 +273,7 @@ class InterfaceSerial {
       //prevDataPacket.values[i] = 0;
     }
     for (int i=0; i < nEEGValuesPerPacket; i++) {
-      // println("i = " + i);
+      // consolePrint("i = " + i);
       dataPacket.values[i] = 0;
       missedDataPacket.values[i] = 0;
     }
@@ -290,21 +290,21 @@ class InterfaceSerial {
 
     output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {
-      println("InterfaceSerial: openSerialPort: attempting to open serial port: " + openBCI_portName);
+      consolePrint("InterfaceSerial: openSerialPort: attempting to open serial port: " + openBCI_portName);
       serial_openBCI = new Serial(applet, comPort, baud); //open the com port
       serial_openBCI.clear(); // clear anything in the com port's buffer
       portIsOpen = true;
-      println("InterfaceSerial: openSerialPort: port is open (t)? ... " + portIsOpen);
+      consolePrint("InterfaceSerial: openSerialPort: port is open (t)? ... " + portIsOpen);
       changeState(STATE_COMINIT);
       return 0;
     }
     catch (RuntimeException e) {
       if (e.getMessage().contains("<init>")) {
         serial_openBCI = null;
-        System.out.println("InterfaceSerial: openSerialPort: port in use, trying again later...");
+        consolePrint("InterfaceSerial: openSerialPort: port in use, trying again later...");
         portIsOpen = false;
       } else {
-        println("RunttimeException: " + e);
+        consolePrint("RunttimeException: " + e);
         output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
         abandonInit = true; //global variable in OpenBCI_GUI.pde
       }
@@ -319,16 +319,7 @@ class InterfaceSerial {
   }
 
   int finalizeCOMINIT() {
-    // //wait specified time for COM/serial port to initialize
-    // if (state == STATE_COMINIT) {
-    //   // println("InterfaceSerial: finalizeCOMINIT: Initializing Serial: millis() = " + millis());
-    //   if ((millis() - prevState_millis) > COM_INIT_MSEC) {
-    //     //serial_openBCI.write(command_activates + "\n"); println("Processing: Serial: activating filters");
-    //     println("InterfaceSerial: finalizeCOMINIT: State = NORMAL");
     changeState(STATE_NORMAL);
-    //     // startRunning();
-    //   }
-    // }
     return 0;
   }
 
@@ -346,20 +337,19 @@ class InterfaceSerial {
   }
 
   public int closeSerialPort() {
-    // if (serial_openBCI != null) {
     portIsOpen = false;
     if (serial_openBCI != null) {
       serial_openBCI.stop();
     }
     serial_openBCI = null;
     state = STATE_NOCOM;
-    println("InterfaceSerial: closeSerialPort: closed");
+    consolePrint("InterfaceSerial: closeSerialPort: closed");
     return 0;
   }
 
   public void updateSyncState(int sdSetting) {
-    //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-    // println("0");
+    //Has it been 3000 milliseconds since we initiated the serial port?
+    //We want to make sure we wait for the OpenBCI board to finish its setup()
 
     if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
       state = STATE_SYNCWITHHARDWARE;
@@ -368,14 +358,14 @@ class InterfaceSerial {
       cyton.potentialFailureMessage = "";
       cyton.defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
       cyton.daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
-      println("InterfaceSerial: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
+      consolePrint("InterfaceSerial: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
       serial_openBCI.write('v');
     }
 
     //if we are in SYNC WITH HARDWARE state ... trigger a command
     if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
       if (millis() - timeOfLastCommand > 200 && readyToSend == true) {
-        println("sdSetting: " + sdSetting);
+        consolePrint("sdSetting: " + sdSetting);
         timeOfLastCommand = millis();
         cyton.hardwareSyncStep++;
         cyton.syncWithHardware(sdSetting);
@@ -385,10 +375,10 @@ class InterfaceSerial {
 
   public void sendChar(char val) {
     if (isSerialPortOpen()) {
-      println("sending out: " + val);
+      consolePrint("sending out: " + val);
       serial_openBCI.write(val);//send the value as ascii (with a newline character?)
     } else {
-      println("nope no out: " + val);
+      consolePrint("nope no out: " + val);
 
     }
   }
@@ -425,13 +415,13 @@ class InterfaceSerial {
     return read(false);
   }
   public int read(boolean echoChar) {
-    //println("InterfaceSerial: read(): State: " + state);
+    //consolePrint("InterfaceSerial: read(): State: " + state);
     //get the byte
     byte inByte;
     if (isSerialPortOpen()) {
       inByte = byte(serial_openBCI.read());
     } else {
-      println("InterfaceSerial port not open aborting.");
+      consolePrint("InterfaceSerial port not open aborting.");
       return 0;
     }
     print(inByte);
@@ -459,8 +449,8 @@ class InterfaceSerial {
         //if hardware returns 8 because daisy is not attached, switch the GUI mode back to 8 channels
         // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
         if (nchan == 16 && cyton.daisyOrNot.charAt(cyton.daisyOrNot.length() - 1) == '8') {
-          // verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
-          verbosePrint(" received from OpenBCI... Abandoning hardware initiation.");
+          // consolePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
+          consolePrint(" received from OpenBCI... Abandoning hardware initiation.");
           abandonInit = true;
           // haltSystem();
 
@@ -468,7 +458,7 @@ class InterfaceSerial {
           //
           // //initialize the FFT objects
           // for (int Ichan=0; Ichan < nchan; Ichan++) {
-          //   verbosePrint("Init FFT Buff – "+Ichan);
+          //   consolePrint("Init FFT Buff – "+Ichan);
           //   fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
           // }  //make the FFT objects
           //
@@ -483,7 +473,7 @@ class InterfaceSerial {
 
       //if the last three chars are $$$, it means we are moving on to the next stage of initialization
       if (prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]) {
-        verbosePrint(" > EOT detected...");
+        consolePrint(" > EOT detected...");
         // Added for V2 system down rejection line
         if (cyton.hardwareSyncStep == 0) {
           // Failure: Communications timeout - Device failed to poll Host$$$
@@ -495,16 +485,14 @@ class InterfaceSerial {
         // hardwareSyncStep++;
         prev3chars[2] = '#';
         if (cyton.hardwareSyncStep == 3) {
-          println("InterfaceSerial: read(): x");
-          println(cyton.defaultChannelSettings);
-          println("InterfaceSerial: read(): y");
-          // gui.cc.loadDefaultChannelSettings();
+          consolePrint("InterfaceSerial: read(): x");
+          consolePrint(cyton.defaultChannelSettings);
+          consolePrint("InterfaceSerial: read(): y");
           w_timeSeries.hsc.loadDefaultChannelSettings();
-          println("InterfaceSerial: read(): z");
+          consolePrint("InterfaceSerial: read(): z");
         }
         readyToSend = true;
-        // println(hardwareSyncStep);
-        // syncWithHardware(); //haha, I'm getting very verbose with my naming... it's late...
+        // consolePrint(hardwareSyncStep);
       }
     }
 
@@ -514,7 +502,7 @@ class InterfaceSerial {
         output.write(inByte);   //for debugging  WEA 2014-01-26
       }
       catch (IOException e) {
-        System.err.println("InterfaceSerial: read(): Caught IOException: " + e.getMessage());
+        consolePrint("InterfaceSerial: read(): Caught IOException: " + e.getMessage());
         //do nothing
       }
     }
@@ -549,18 +537,18 @@ class InterfaceSerial {
   void interpretBinaryStream(byte actbyte) {
     boolean flag_copyRawDataToFullData = false;
 
-    //println("InterfaceSerial: interpretBinaryStream: PACKET_readstate " + PACKET_readstate);
+    //consolePrint("InterfaceSerial: interpretBinaryStream: PACKET_readstate " + PACKET_readstate);
     switch (PACKET_readstate) {
     case 0:
       //look for header byte
       if (actbyte == byte(0xA0)) {          // look for start indicator
-        // println("InterfaceSerial: interpretBinaryStream: found 0xA0");
+        // consolePrint("InterfaceSerial: interpretBinaryStream: found 0xA0");
         PACKET_readstate++;
       }
       break;
     case 1:
       //check the packet counter
-      // println("case 1");
+      // consolePrint("case 1");
       byte inByte = actbyte;
       rawReceivedDataPacket.sampleIndex = int(inByte); //changed by JAM
       if ((rawReceivedDataPacket.sampleIndex-prevSampleIndex) != 1) {
@@ -574,13 +562,13 @@ class InterfaceSerial {
             numPacketsDroppedSerial = rawReceivedDataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
           }
 
-          println("InterfaceSerial: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
+          consolePrint("InterfaceSerial: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
           if (outputDataSource == OUTPUT_SOURCE_BDF) {
             int fakePacketsToWrite = (rawReceivedDataPacket.sampleIndex - prevSampleIndex) - 1;
             for (int i = 0; i < fakePacketsToWrite; i++) {
               fileoutput_bdf.writeRawData_dataPacket(missedDataPacket);
             }
-            println("InterfaceSerial: because BDF, wrote " + fakePacketsToWrite + " empty data packet(s)");
+            consolePrint("InterfaceSerial: because BDF, wrote " + fakePacketsToWrite + " empty data packet(s)");
           }
         }
       }
@@ -591,7 +579,7 @@ class InterfaceSerial {
       break;
     case 2:
       // get ADS channel values
-      // println("case 2");
+      // consolePrint("case 2");
       localAdsByteBuffer[localByteCounter] = actbyte;
       localByteCounter++;
       if (localByteCounter==3) {
@@ -600,7 +588,7 @@ class InterfaceSerial {
         localChannelCounter++;
         if (localChannelCounter==8) { //nDataValuesInPacket) {
           // all ADS channels arrived !
-          // println("InterfaceSerial: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
+          // consolePrint("InterfaceSerial: interpretBinaryStream: localChannelCounter = " + localChannelCounter);
           PACKET_readstate++;
           if (prefered_datamode != DATAMODE_BIN_WAUX) PACKET_readstate++;  //if not using AUX, skip over the next readstate
           localByteCounter = 0;
@@ -614,7 +602,7 @@ class InterfaceSerial {
       break;
     case 3:
       // get LIS3DH channel values 2 bytes times 3 axes
-      // println("case 3");
+      // consolePrint("case 3");
       localAccelByteBuffer[localByteCounter] = actbyte;
       localByteCounter++;
       if (localByteCounter==2) {
@@ -628,7 +616,7 @@ class InterfaceSerial {
         localChannelCounter++;
         if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {
           // all Accelerometer channels arrived !
-          // println("InterfaceSerial: interpretBinaryStream: Accel Data: " + rawReceivedDataPacket.auxValues[0] + ", " + rawReceivedDataPacket.auxValues[1] + ", " + rawReceivedDataPacket.auxValues[2]);
+          // consolePrint("InterfaceSerial: interpretBinaryStream: Accel Data: " + rawReceivedDataPacket.auxValues[0] + ", " + rawReceivedDataPacket.auxValues[1] + ", " + rawReceivedDataPacket.auxValues[2]);
           PACKET_readstate++;
           localByteCounter = 0;
           //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
@@ -640,21 +628,21 @@ class InterfaceSerial {
       break;
     case 4:
       //look for end byte
-      // println("case 4");
+      // consolePrint("case 4");
       if (actbyte == byte(0xC0) || actbyte == byte(0xC1)) {    // if correct end delimiter found:
-        // println("... 0xCx found");
-        // println("InterfaceSerial: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
+        // consolePrint("... 0xCx found");
+        // consolePrint("InterfaceSerial: interpretBinaryStream: found end byte. Setting isNewDataPacketAvailable to TRUE");
         isNewDataPacketAvailable = true; //original place for this.  but why not put it in the previous case block
         flag_copyRawDataToFullData = true;  //time to copy the raw data packet into the full data packet (mainly relevant for 16-chan OpenBCI)
       } else {
         serialErrorCounter++;
-        println("InterfaceSerial: interpretBinaryStream: Actbyte = " + actbyte);
-        println("InterfaceSerial: interpretBinaryStream: expecteding end-of-packet byte is missing.  Discarding packet. (" + serialErrorCounter + ")");
+        consolePrint("InterfaceSerial: interpretBinaryStream: Actbyte = " + actbyte);
+        consolePrint("InterfaceSerial: interpretBinaryStream: expecteding end-of-packet byte is missing.  Discarding packet. (" + serialErrorCounter + ")");
       }
       PACKET_readstate=0;  // either way, look for next packet
       break;
     default:
-      println("InterfaceSerial: interpretBinaryStream: Unknown byte: " + actbyte + " .  Continuing...");
+      consolePrint("InterfaceSerial: interpretBinaryStream: Unknown byte: " + actbyte + " .  Continuing...");
       PACKET_readstate=0;  // look for next packet
     }
 

@@ -32,19 +32,19 @@ W_playback w_playback;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
-  // println("  setupWidgets start -- " + millis());
+  // consolePrint("  setupWidgets start -- " + millis());
 
   //Widget_0
   w_timeSeries = new W_timeSeries(_this);
   w_timeSeries.setTitle("Time Series");
   addWidget(w_timeSeries, w);
-  // println("  setupWidgets time series -- " + millis());
+  // consolePrint("  setupWidgets time series -- " + millis());
 
   //Widget_1
   w_fft = new W_fft(_this);
   w_fft.setTitle("FFT Plot");
   addWidget(w_fft, w);
-  // println("  setupWidgets fft -- " + millis());
+  // consolePrint("  setupWidgets fft -- " + millis());
 
   //Widget_2
   w_accelerometer = new W_accelerometer(_this);
@@ -75,25 +75,25 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
   w_bandPower = new W_BandPower(_this);
   w_bandPower.setTitle("Band Power");
   addWidget(w_bandPower, w);
-  // println("  setupWidgets band power -- " + millis());
+  // consolePrint("  setupWidgets band power -- " + millis());
 
   //Cyton/Synthetic Widget_5, Ganglion/Playback Widget_6
   w_headPlot = new W_headPlot(_this);
   w_headPlot.setTitle("Head Plot");
   addWidget(w_headPlot, w);
-  // println("  setupWidgets head plot -- " + millis());
+  // consolePrint("  setupWidgets head plot -- " + millis());
 
   //Cyton/Synthetic Widget_6, Ganglion/Playback Widget_7
   w_emg = new W_emg(_this);
   w_emg.setTitle("EMG");
   addWidget(w_emg, w);
-  // println("  setupWidgets emg -- " + millis());
+  // consolePrint("  setupWidgets emg -- " + millis());
 
   //Cyton/Synthetic Widget_7, Ganglion/Playback Widget_8
   w_focus = new W_Focus(_this);
   w_focus.setTitle("Focus Widget");
   addWidget(w_focus, w);
-  // println("  setupWidgets focus widget -- " + millis());
+  // consolePrint("  setupWidgets focus widget -- " + millis());
 
   //only instantiate these widgets if you are using a Cyton board for live streaming
   if(eegDataSource == DATASOURCE_CYTON){
@@ -101,7 +101,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_pulsesensor = new W_PulseSensor(_this);
     w_pulsesensor.setTitle("Pulse Sensor");
     addWidget(w_pulsesensor, w);
-    // println("  setupWidgets pulse sensor -- " + millis());
+    // consolePrint("  setupWidgets pulse sensor -- " + millis());
 
     //Cyton Widget_9
     w_digitalRead = new W_DigitalRead(_this);
@@ -216,18 +216,20 @@ class WidgetManager{
   }
   void setupWidgetSelectorDropdowns(){
       //create the widgetSelector dropdown of each widget
-      println("widgets.size() = " + widgets.size());
+      consolePrint("widgets.size() = " + widgets.size());
       //create list of WidgetTitles.. we will use this to populate the dropdown (widget selector) of each widget
       for(int i = 0; i < widgets.size(); i++){
         widgetOptions.add(widgets.get(i).widgetTitle);
       }
-      println("widgetOptions.size() = " + widgetOptions.size());
+      consolePrint("widgetOptions.size() = " + widgetOptions.size());
       for(int i = 0; i <widgetOptions.size(); i++){
         widgets.get(i).setupWidgetSelectorDropdown(widgetOptions);
         widgets.get(i).setupNavDropdowns();
       }
-      println("widgetOptions:");
-      println(widgetOptions);
+      consolePrint("widgetOptions:");
+      for (int i = 0; i < widgetOptions.size(); i++) {
+        consolePrint(widgetOptions.get(i));
+      }
   }
 
   void update(){
@@ -240,7 +242,7 @@ class WidgetManager{
           // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
           if(widgets.get(i).x0 != (int)container[widgets.get(i).currentContainer].x || widgets.get(i).y0 != (int)container[widgets.get(i).currentContainer].y || widgets.get(i).w0 != (int)container[widgets.get(i).currentContainer].w || widgets.get(i).h0 != (int)container[widgets.get(i).currentContainer].h){
             screenResized();
-            println("WidgetManager.pde: Remapping widgets to container layout...");
+            consolePrint("WidgetManager.pde: Remapping widgets to container layout...");
           }
         }
       }
@@ -260,7 +262,7 @@ class WidgetManager{
             try{
               w_networking.shutDown();
             }catch (NullPointerException e){
-              println(e);
+              consolePrint("WM:Networking_shutDown_Error: " + e);
             }
           }
         }
@@ -318,15 +320,16 @@ class WidgetManager{
 
   void printLayouts(){
     for(int i = 0; i < layouts.size(); i++){
-      println(layouts.get(i));
+      consolePrint("WM:printLayouts: " + layouts.get(i));
+      String layoutString = "";
       for(int j = 0; j < layouts.get(i).myContainers.length; j++){
-        // println(layouts.get(i).myContainers[j]);
-        print(layouts.get(i).myContainers[j].x + ", ");
-        print(layouts.get(i).myContainers[j].y + ", ");
-        print(layouts.get(i).myContainers[j].w + ", ");
-        println(layouts.get(i).myContainers[j].h);
+        // consolePrint("WM:layoutContainers: " + layouts.get(i).myContainers[j]);
+        layoutString += layouts.get(i).myContainers[j].x + ", ";
+        layoutString += layouts.get(i).myContainers[j].y + ", ";
+        layoutString += layouts.get(i).myContainers[j].w + ", ";
+        layoutString += layouts.get(i).myContainers[j].h;
       }
-      println();
+      consolePrint(layoutString);
     }
   }
 
@@ -348,10 +351,10 @@ class WidgetManager{
       //shut some down
       int numToShutDown = numActiveWidgets - numActiveWidgetsNeeded;
       int counter = 0;
-      println("Powering " + numToShutDown + " widgets down, and remapping.");
+      consolePrint("WM: Powering " + numToShutDown + " widgets down, and remapping.");
       for(int i = widgets.size()-1; i >= 0; i--){
         if(widgets.get(i).isActive && counter < numToShutDown){
-          println("Deactivating widget [" + i + "]");
+          consolePrint("WM: Deactivating widget [" + i + "]");
           widgets.get(i).isActive = false;
           counter++;
         }
@@ -370,10 +373,10 @@ class WidgetManager{
       //power some up
       int numToPowerUp = numActiveWidgetsNeeded - numActiveWidgets;
       int counter = 0;
-      println("Powering " + numToPowerUp + " widgets up, and remapping.");
+      consolePrint("WM: Powering " + numToPowerUp + " widgets up, and remapping.");
       for(int i = 0; i < widgets.size(); i++){
         if(!widgets.get(i).isActive && counter < numToPowerUp){
-          println("Activating widget [" + i + "]");
+          consolePrint("WM: Activating widget [" + i + "]");
           widgets.get(i).isActive = true;
           counter++;
         }
@@ -391,7 +394,7 @@ class WidgetManager{
 
     } else{ //if there are the same amount
       //simply remap active widgets
-      println("Remapping widgets.");
+      consolePrint("WM: Remapping widgets.");
       int counter = 0;
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
@@ -428,7 +431,7 @@ class Layout{
     if(_numContainer < myContainers.length){
       return myContainers[_numContainer];
     } else{
-      println("tried to return a non-existant container...");
+      consolePrint("WM: Tried to return a non-existant container...");
       return myContainers[myContainers.length-1];
     }
   }

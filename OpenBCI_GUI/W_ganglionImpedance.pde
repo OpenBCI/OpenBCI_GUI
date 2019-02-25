@@ -116,6 +116,7 @@ class W_ganglionImpedance extends Widget {
           stopRunning();
           topNav.stopButton.setString(stopButton_pressToStart_txt);
           topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+          consolePrint("Starting Ganlgion impedance check...");
           //Start impedance check
           ganglion.impedanceStart();
           startStopCheck.but_txt = "Stop Impedance Check";

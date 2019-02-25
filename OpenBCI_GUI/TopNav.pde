@@ -471,13 +471,13 @@ class TopNav {
     int[] localVersionCompareArray = int(split(localVersionString, '.'));
     webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
     localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-    println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
+    consolePrint("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
     if (localGUIVersionInt < webGUIVersionInt) {
       guiVersionIsUpToDate = false;
-      println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
+      consolePrint("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
     } else if (localGUIVersionInt >= webGUIVersionInt) {
       guiVersionIsUpToDate = true;
-      println("GUI is up to date!");
+      consolePrint("GUI is up to date!");
     }
   }
 
@@ -572,7 +572,6 @@ class LayoutSelector {
     if (isVisible) { //only draw if visible
       pushStyle();
 
-      // println("it's happening");
       stroke(bgColor);
       // fill(229); //bg
       fill(57, 128, 204); //bg
@@ -614,7 +613,7 @@ class LayoutSelector {
       for (int i = 0; i < layoutOptions.size(); i++) {
         if (layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()) {
           int layoutSelected = i+1;
-          println("Layout [" + layoutSelected + "] selected.");
+          consolePrint("Layout [" + layoutSelected + "] selected.");
           output("Layout [" + layoutSelected + "] selected.");
           layoutOptions.get(i).setIsActive(false);
           toggleVisibility(); //shut layoutSelector if something is selected
@@ -765,7 +764,6 @@ class configSelector {
     if (isVisible == true) { //only draw if visible
       pushStyle();
 
-      //println("it's happening");
       stroke(bgColor);
       // fill(229); //bg
       fill(57, 128, 204); //bg
@@ -793,7 +791,7 @@ class configSelector {
       for (int i = 0; i < configOptions.size(); i++) {
         if (configOptions.get(i).isMouseHere()) {
           configOptions.get(i).setIsActive(true);
-          println("config pressed");
+          consolePrint("config pressed");
         }
       }
     }
@@ -828,7 +826,7 @@ class configSelector {
             if (saveSettingsDialogName == null) {
               selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileToSave)); //open dialog box to save settings as json
             } else {
-              println(saveSettingsDialogName);
+              consolePrint("saveSettingsFileName = " + saveSettingsDialogName);
               saveSettingsDialogName = null;
             }
           } else if (configSelected == 1) {
@@ -837,7 +835,7 @@ class configSelector {
               selectInput("Load a custom settings file from JSON:", "loadConfigFile");
               saveSettingsDialogName = null;
             } else {
-              println(loadSettingsDialogName);
+              consolePrint("loadSettingsFileName = " + loadSettingsDialogName);
             }
           } else if (configSelected == 2) {
             //Revert GUI to default settings that were flashed on system start!
@@ -962,7 +960,6 @@ class TutorialSelector {
     if (isVisible) { //only draw if visible
       pushStyle();
 
-      // println("it's happening");
       stroke(bgColor);
       // fill(229); //bg
       fill(31, 69, 110); //bg
@@ -1006,7 +1003,7 @@ class TutorialSelector {
           int tutorialSelected = i+1;
           tutorialOptions.get(i).setIsActive(false);
           tutorialOptions.get(i).goToURL();
-          println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
+          consolePrint("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
           output("Layout [" + tutorialSelected + "] selected.");
           toggleVisibility(); //shut layoutSelector if something is selected
           //open corresponding link
@@ -1083,9 +1080,9 @@ class TutorialSelector {
 // Select file to save custom settings using dropdown in TopNav.pde
 void saveConfigFile(File selection) {
   if (selection == null) {
-    println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
+    consolePrint("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
   } else {
-    println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
+    consolePrint("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
     output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
     saveSettingsDialogName = selection.getAbsolutePath();
     saveGUISettings(saveSettingsDialogName); //save current settings to JSON file in SavedData
@@ -1096,9 +1093,9 @@ void saveConfigFile(File selection) {
 // Select file to load custom settings using dropdown in TopNav.pde
 void loadConfigFile(File selection) {
   if (selection == null) {
-    println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
+    consolePrint("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
   } else {
-    println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
+    consolePrint("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
     output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
     loadSettingsDialogName = selection.getAbsolutePath();
     loadGUISettings(loadSettingsDialogName); //load settings from JSON file in /data/

@@ -76,7 +76,7 @@ class W_MarkerMode extends Widget {
 
     // for synthesizing values
     synthTime = 0.0;
-    
+
     markerModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn MarkerMode On", 12);
     markerModeButton.setCornerRoundess((int)(navHeight-6));
     markerModeButton.setFont(p6,10);
@@ -103,7 +103,7 @@ class W_MarkerMode extends Widget {
       if (isRunning && cyton.getBoardMode() == BOARD_MODE_MARKER) {
         if (localValidLastMarker > 0){
           lastMarker = localValidLastMarker;  // this holds the last marker for the display
-        } 
+        }
         X[X.length-1] =
           int(map(logScaleMarker(localValidLastMarker), 0, yMaxMin, float(MarkerWindowY+MarkerWindowHeight), float(MarkerWindowY)));
         X[X.length-1] = constrain(X[X.length-1], MarkerWindowY, MarkerWindowY+MarkerWindowHeight);
@@ -147,9 +147,9 @@ class W_MarkerMode extends Widget {
 
       fill(50);
       textFont(p3, 16);
-    
+
       if (eegDataSource == DATASOURCE_CYTON && cyton.getBoardMode() != BOARD_MODE_MARKER) {
-        markerModeButton.setString("Turn Marker On"); 
+        markerModeButton.setString("Turn Marker On");
         markerModeButton.draw();
       } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
         markerModeButton.draw();
@@ -158,7 +158,7 @@ class W_MarkerMode extends Widget {
       } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {  // PLAYBACK
         drawMarkerValues();
         drawMarkerWave2();
-      } else {    
+      } else {
         markerModeButton.setString("Turn Marker Off");
         markerModeButton.draw();
         drawMarkerValues();
@@ -185,10 +185,10 @@ class W_MarkerMode extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     int dy = y - prevY;
-    println("dy = " + dy);
+    consolePrint("dy = " + dy);
 
     //put your code here...
-    println("Acc Widget -- Screen Resized.");
+    consolePrint("Acc Widget -- Screen Resized.");
 
     setGraphDimensions();
 
@@ -213,7 +213,7 @@ class W_MarkerMode extends Widget {
 
     //put your code here...
     if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-      // println("markerModeButton...");
+      // consolePrint("markerModeButton...");
       if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
         if (cyton.getBoardMode() != BOARD_MODE_MARKER) {
           cyton.setBoardMode(BOARD_MODE_MARKER);
@@ -233,7 +233,7 @@ class W_MarkerMode extends Widget {
           w_digitalRead.digitalReadOn = false;
         }
         markerModeOn = !markerModeOn;
-      } 
+      }
     }
     markerModeButton.setIsActive(false);
   }
@@ -284,8 +284,8 @@ class W_MarkerMode extends Widget {
   int synthesizeMarkerData() {
     synthTime += 0.02;
     int valueMarker;
-    
-    if (synthCount++ > 10){      
+
+    if (synthCount++ > 10){
       valueMarker =  int((sin(synthTime) +1.0)*127.);
       synthCount = 0;
     } else {

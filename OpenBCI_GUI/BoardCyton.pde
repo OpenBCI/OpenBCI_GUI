@@ -176,20 +176,20 @@ class Cyton {
   public void setBoardMode(int boardMode) {
     hub.sendCommand("/" + boardMode);
     curBoardMode = boardMode;
-    print("Cyton: setBoardMode to :" + curBoardMode);
+    consolePrint("Cyton: setBoardMode to :" + curBoardMode);
   }
 
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
     // output("Setting sample rate for Cyton to " + sampleRate + "Hz");
-    println("Setting sample rate for Cyton to " + sampleRate + "Hz");
+    consolePrint("Setting sample rate for Cyton to " + sampleRate + "Hz");
     hub.setSampleRate(sampleRate);
   }
 
   public boolean setInterface(int _interface) {
     curInterface = _interface;
-    // println("current interface: " + curInterface);
-    println("setInterface: curInterface: " + getInterface());
+    // consolePrint("current interface: " + curInterface);
+    consolePrint("setInterface: curInterface: " + getInterface());
     if (isWifi()) {
       setSampleRate((int)fsHzWifi);
       hub.setProtocol(PROTOCOL_WIFI);
@@ -255,7 +255,7 @@ class Cyton {
   }
 
   public int closeSDFile() {
-    println("Closing any open SD file. Writing 'j' to OpenBCI.");
+    consolePrint("Closing any open SD file. Writing 'j' to OpenBCI.");
     if (isPortOpen()) write('j'); // tell the SD file to close if one is open...
     delay(100); //make sure 'j' gets sent to the board
     return 0;
@@ -264,7 +264,7 @@ class Cyton {
   public void syncWithHardware(int sdSetting) {
     switch (hardwareSyncStep) {
       case 1: //send # of channels (8 or 16) ... (regular or daisy setup)
-        println("Cyton: syncWithHardware: [1] Sending channel count (" + nchan + ") to OpenBCI...");
+        consolePrint("Cyton: syncWithHardware: [1] Sending channel count (" + nchan + ") to OpenBCI...");
         if (nchan == 8) {
           write('c');
         }
@@ -273,15 +273,15 @@ class Cyton {
         }
         break;
       case 2: //reset hardware to default registers
-        println("Cyton: syncWithHardware: [2] Reseting OpenBCI registers to default... writing \'d\'...");
+        consolePrint("Cyton: syncWithHardware: [2] Reseting OpenBCI registers to default... writing \'d\'...");
         write('d'); // TODO: Why does this not get a $$$ readyToSend = false?
         break;
       case 3: //ask for series of channel setting ASCII values to sync with channel setting interface in GUI
-        println("Cyton: syncWithHardware: [3] Retrieving OpenBCI's channel settings to sync with GUI... writing \'D\'... waiting for $$$...");
+        consolePrint("Cyton: syncWithHardware: [3] Retrieving OpenBCI's channel settings to sync with GUI... writing \'D\'... waiting for $$$...");
         write('D', false); //wait for $$$ to iterate... applies to commands expecting a response
         break;
       case 4: //check existing registers
-        println("Cyton: syncWithHardware: [4] Retrieving OpenBCI's full register map for verification... writing \'?\'... waiting for $$$...");
+        consolePrint("Cyton: syncWithHardware: [4] Retrieving OpenBCI's full register map for verification... writing \'?\'... waiting for $$$...");
         write('?', false); //wait for $$$ to iterate... applies to commands expecting a response
         break;
       case 5:
@@ -314,7 +314,7 @@ class Cyton {
           default:
             break; // Do Nothing
         }
-        println("Cyton: syncWithHardware: [5] Writing selected SD setting (" + sdSettingString + ") to OpenBCI...");
+        consolePrint("Cyton: syncWithHardware: [5] Writing selected SD setting (" + sdSettingString + ") to OpenBCI...");
         //final hacky way of abandoning initiation if someone selected daisy but doesn't have one connected.
         if(abandonInit){
           haltSystem();
@@ -324,7 +324,7 @@ class Cyton {
         }
         break;
       case 6:
-        println("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
+        consolePrint("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
         hub.changeState(STATE_STOPPED);
         systemMode = 10;
         controlPanel.close();
@@ -371,7 +371,7 @@ class Cyton {
   }
 
   private boolean isSerial () {
-    // println("My interface is " + curInterface);
+    // consolePrint("My interface is " + curInterface);
     return curInterface == INTERFACE_SERIAL;
   }
 
@@ -384,30 +384,30 @@ class Cyton {
       // Now give the command to start binary data transmission
       if (isSerial()) {
         hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
-        println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
+        consolePrint("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
         // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
         write(command_startBinary);
       } else if (isWifi()) {
-        println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
+        consolePrint("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
         write(command_startBinary);
       }
 
     } else {
-      println("port not open");
+      consolePrint("port not open");
     }
   }
 
   public void stopDataTransfer() {
     if (isPortOpen()) {
       hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
-      println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
+      consolePrint("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
       write(command_stop);// + "\n");
     }
   }
 
   public void printRegisters() {
     if (isPortOpen()) {
-      println("Cyton: printRegisters(): Writing ? to OpenBCI...");
+      consolePrint("Cyton: printRegisters(): Writing ? to OpenBCI...");
       write('?');
     }
   }
@@ -666,7 +666,7 @@ class Cyton {
     json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB2, channelSettingValues[_numChannel][4] == '1');
     json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB1, channelSettingValues[_numChannel][5] == '1');
     hub.writeJSON(json);
-    verbosePrint("done writing channel." + json); //debugging
+    consolePrint("done writing channel." + json); //debugging
     isWritingChannel = false;
   }
 

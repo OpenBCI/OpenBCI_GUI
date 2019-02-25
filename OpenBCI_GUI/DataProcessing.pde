@@ -47,16 +47,16 @@ void process_input_file() throws Exception {
   catch (Exception e) {
     throw new Exception();
   }
-  println("number of indexes "+indices);
+  consolePrint("number of indexes "+indices);
 
   /*
   //print index of times for use in playback
   for (Map.Entry val : index_of_times.entrySet()) {
-    println(val.getKey() + " is " + val);
+    consolePrint(val.getKey() + " is " + val);
   }
   */
 
-  println("Finished filling hashmap");
+  consolePrint("Finished filling hashmap");
   has_processed = true;
 }
 
@@ -102,7 +102,6 @@ int getDataIfAvailable(int pointCounter) {
       // generate or read the data
       lastReadDataPacketInd = 0;
       for (int i = 0; i < nPointsPerUpdate; i++) {
-        // println();
         dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
         switch (eegDataSource) {
         case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
@@ -122,8 +121,8 @@ int getDataIfAvailable(int pointCounter) {
 
         pointCounter++;
       } //close the loop over data points
-      //if (eegDataSource==DATASOURCE_PLAYBACKFILE) println("OpenBCI_GUI: getDataIfAvailable: currentTableRowIndex = " + currentTableRowIndex);
-      //println("OpenBCI_GUI: getDataIfAvailable: pointCounter = " + pointCounter);
+      //if (eegDataSource==DATASOURCE_PLAYBACKFILE) consolePrint("OpenBCI_GUI: getDataIfAvailable: currentTableRowIndex = " + currentTableRowIndex);
+      //consolePrint("OpenBCI_GUI: getDataIfAvailable: pointCounter = " + pointCounter);
     } // close "has enough time passed"
     else{
     }
@@ -290,7 +289,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
   //check to see if we can load a value from the table
   if (currentTableRowIndex >= datatable.getRowCount()) {
     //end of file
-    println("OpenBCI_GUI: getPlaybackDataFromTable: hit the end of the playback data file.  starting over...");
+    consolePrint("OpenBCI_GUI: getPlaybackDataFromTable: End of playback data file.  Starting over...");
     hasRepeated = true;
     //if (isRunning) stopRunning();
     currentTableRowIndex = 0;
@@ -336,7 +335,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         }
       }
     } catch (ArrayIndexOutOfBoundsException e){
-    // println("Data does not exist... possibly an old file.");
+    // consolePrint("Data does not exist... possibly an old file.");
     }
     if (acc_newData) {
       for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
@@ -348,7 +347,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
     try{
       if (!isOldData) curTimestamp = row.getString(nchan+3);
       } catch (ArrayIndexOutOfBoundsException e){
-        println("Data does not exist... possibly an old file.");
+        consolePrint("Data does not exist... possibly an old file.");
       }
 
     //int localnchan = nchan;
@@ -360,8 +359,8 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         // nchan = 16; AJK 5/31/17 see issue #151
       }
       catch (ArrayIndexOutOfBoundsException e){
-        println(e);
-        println("8 Channel");
+        //consolePrint(e.getMessage());
+        consolePrint("OpenBCI_GUI: getPlaybackDataFromTable: 8 Channel");
       }
     }
 
@@ -448,7 +447,7 @@ class DataProcessing {
               a2 = new double[] { 1, -3.87870938463296, 5.75001836883538, -3.85722810877252, 0.988954249933128 };
               break;
             default:
-              println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
+              consolePrint("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
               b2 = new double[] { 1.0 };
               a2 = new double[] { 1.0 };
           }
@@ -482,7 +481,7 @@ class DataProcessing {
               a2 = new double[] { 1, -3.91227761329151, 5.81540127844733, -3.89061042807090, 0.988954249933127 };
               break;
             default:
-              println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
+              consolePrint("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
               b2 = new double[] { 1.0 };
               a2 = new double[] { 1.0 };
           }
@@ -530,7 +529,7 @@ class DataProcessing {
               a = new double[] { 1, -3.72780746887970, 5.21756471024747, -3.25152171857009, 0.761764999239264 };
               break;
             default:
-              println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
+              consolePrint("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
               b = new double[] { 1.0 };
               a = new double[] { 1.0 };
           }
@@ -565,7 +564,7 @@ class DataProcessing {
               a = new double[] { 1, -3.96389829181139, 5.89507193593518, -3.89839913574117, 0.967227428151860 };
               break;
             default:
-              println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
+              consolePrint("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
               b = new double[] { 1.0 };
               a = new double[] { 1.0 };
           }
@@ -600,7 +599,7 @@ class DataProcessing {
               a = new double[] { 1, -3.78412985599134, 5.39377521548486, -3.43287342581222, 0.823349595537562 };
               break;
             default:
-              println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
+              consolePrint("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
               b = new double[] { 1.0 };
               a = new double[] { 1.0 };
           }
@@ -635,7 +634,7 @@ class DataProcessing {
               a = new double[] { 1, -3.74392328264678, 5.26758817627966, -3.30252568902969, 0.778873972655117 };
               break;
             default:
-              println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
+              consolePrint("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
               b = new double[] { 1.0 };
               a = new double[] { 1.0 };
           }
@@ -701,12 +700,12 @@ class DataProcessing {
 
     // calculate FFT after filter
 
-    //println("PPP" + fftBuff[0].specSize());
+    //consolePrint("PPP" + fftBuff[0].specSize());
     float prevFFTdata[] = new float[fftBuff[0].specSize()];
     double foo;
 
     //update the FFT (frequency spectrum)
-    // println("nchan = " + nchan);
+    // consolePrint("nchan = " + nchan);
     for (int Ichan=0; Ichan < nchan; Ichan++) {
 
       //copy the previous FFT data...enables us to apply some smoothing to the FFT data
@@ -788,7 +787,7 @@ class DataProcessing {
           }
         }
         avgPowerInBins[Ichan][i] = sum;   // total power in a band
-        // println(i, binNum, sum);
+        // consolePrint(i, binNum, sum);
       }
     } //end the loop over channels.
     for (int i = 0; i < processing_band_low_Hz.length; i++) {
@@ -805,7 +804,7 @@ class DataProcessing {
 
     //find strongest channel
     int refChanInd = findMax(data_std_uV);
-    //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
+    //consolePrint("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
     float[] refData_uV = dataBuffY_filtY_uV[refChanInd];  //use the filtered data
     refData_uV = Arrays.copyOfRange(refData_uV, refData_uV.length-((int)fs_Hz), refData_uV.length);   //just grab the most recent second of data
 
@@ -822,11 +821,11 @@ class DataProcessing {
       }
     }
 
-    // println("Brain Wide DELTA = " + headWidePower[DELTA]);
-    // println("Brain Wide THETA = " + headWidePower[THETA]);
-    // println("Brain Wide ALPHA = " + headWidePower[ALPHA]);
-    // println("Brain Wide BETA  = " + headWidePower[BETA]);
-    // println("Brain Wide GAMMA = " + headWidePower[GAMMA]);
+    // consolePrint("Brain Wide DELTA = " + headWidePower[DELTA]);
+    // consolePrint("Brain Wide THETA = " + headWidePower[THETA]);
+    // consolePrint("Brain Wide ALPHA = " + headWidePower[ALPHA]);
+    // consolePrint("Brain Wide BETA  = " + headWidePower[BETA]);
+    // consolePrint("Brain Wide GAMMA = " + headWidePower[GAMMA]);
 
   }
 }

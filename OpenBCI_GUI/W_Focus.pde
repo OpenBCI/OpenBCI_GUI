@@ -76,7 +76,6 @@ class W_Focus extends Widget {
     //Dropdowns.
     addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), focusThemeSave);
     addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), focusKeySave);
-    //addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0); //Users can stream Focus state using Networking Widget
 
     // prepare simulate keystroking
     try {
@@ -208,7 +207,7 @@ class W_Focus extends Widget {
         serial_output.write('\n');
       }
       catch(RuntimeException e) {
-        if (isVerbose) println("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
+        consolePrint("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
       }
     }
   }
@@ -486,7 +485,7 @@ public class FocusSlider extends BasicSlider {
       float newVal = map(mouseY, yBot, yTop, 0, 1);
       val = constrain(newVal, valMin, valMax);
       y = map(val, 0, 1, yBot, yTop);
-      println(val);
+      consolePrint("FocusSlider: " + val);
     }
   }
 
@@ -522,7 +521,7 @@ public class FocusSlider_Static extends BasicSlider {
     if (isPressed) {
       float diff = map(mouseY, yBot, yTop, -0.07, 0);
       val = constrain(val + diff, valMin, valMax);
-      println(val);
+      consolePrint("FocusSlider_Static: " + val);
     }
   }
 
@@ -547,42 +546,25 @@ public class FocusSlider_Static extends BasicSlider {
 
 // //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void StrokeKeyWhenFocused(int n){
-  // println("Item " + (n+1) + " selected from Dropdown 1");
+  // consolePrint("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0){
     //do this
     w_focus.enableKey = false;
-    println("The robot ignores focused state and will not press any key.");
+    consolePrint("The robot ignores focused state and will not press any key.");
   } else if(n==1){
     //do this instead
     w_focus.enableKey = true;
     w_focus.keyNum = 0;
-    println("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
+    consolePrint("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
   } else if(n==2){
     //do this instead
     w_focus.enableKey = true;
     w_focus.keyNum = 1;
-    println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
+    consolePrint("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
   }
   focusKeySave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
-
-/*
-void SerialSendFocused(int n){
-  if(n==0){
-    //do this
-    w_focus.enableSerial = false;
-    println("Serial write off.");
-  } else if(n==1){
-    //do this instead
-    w_focus.enableSerial = true;
-    println("Serial write on, writing character 1 (int 49) when focused, and character 0 (int 48) when losing focus.");
-    println("Current output port name: " + serial_output_portName + ". Current baud rate: " + serial_output_baud + ".");
-    println("You can change serial settings in OpenBCI_GUI.pde by searching serial_output.");
-  }
-  closeAllDropdowns();
-}
-*/
 
 void ChooseFocusColor(int n){
   if(n==0){

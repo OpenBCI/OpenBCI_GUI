@@ -80,7 +80,7 @@ class W_AnalogRead extends Widget {
 
     //create our channel bars and populate our analogReadBars array!
     for(int i = 0; i < numAnalogReadBars; i++) {
-      println("init analog read bar " + i);
+      consolePrint("init analog read bar " + i);
       int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
       AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
@@ -188,7 +188,7 @@ class W_AnalogRead extends Widget {
 
     //put your code here...
     if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
-      // println("analogModeButton...");
+      // consolePrint("analogModeButton...");
       if(cyton.isPortOpen()) {
         if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
           cyton.setBoardMode(BOARD_MODE_ANALOG);
@@ -224,7 +224,7 @@ void VertScale_AR(int n) {
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration_AR(int n) {
-  // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
+  // consolePrint("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
   //set analog read x axis to the duration selected from dropdown
   arHorizScaleSave = n;
 
@@ -483,7 +483,7 @@ class AnalogReadBar{
         updatePlotPoints();
       }
     }
-    // println("New X axis = " + _newTimeSize);
+    // consolePrint("New X axis = " + _newTimeSize);
     //closeAllDropdowns();
   }
 

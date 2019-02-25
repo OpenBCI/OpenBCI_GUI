@@ -19,7 +19,7 @@
 void keyPressed() {
   //note that the Processing variable "key" is the keypress as an ASCII character
   //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
-  //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
+  //consolePrint("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
   if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
     if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
@@ -88,7 +88,7 @@ void parseKey(char val) {
         colorScheme = COLOR_SCHEME_DEFAULT;
       }
       topNav.updateNavButtonsBasedOnColorScheme();
-      println("Changing color scheme.");
+      consolePrint("Changing color scheme.");
       break;
     case '/':
       drawAccel = !drawAccel;
@@ -164,7 +164,7 @@ void parseKey(char val) {
       }
       break;
     case ':':
-      println("test..."); //@@@@@
+      consolePrint("Networking test...");
       boolean test = isNetworkingTextActive();
       break;
 
@@ -238,13 +238,13 @@ void parseKey(char val) {
 
     //other controls
     case 's':
-      println("case s...");
+      consolePrint("case s...");
       stopRunning();
       //stopButtonWasPressed();
       break;
 
     case 'b':
-      println("case b...");
+      consolePrint("case b...");
       startRunning();
       //stopButtonWasPressed();
       break;
@@ -269,7 +269,7 @@ void parseKey(char val) {
 
     ///////////////////// Save settings lowercase n
     case 'n':
-      println("Save key pressed!");
+      consolePrint("Save key pressed!");
       switch(eegDataSource) {
         case DATASOURCE_CYTON:
           userSettingsFileToSave = cytonUserSettingsFile;
@@ -290,7 +290,7 @@ void parseKey(char val) {
 
     ///////////////////// Load settings uppercase N
     case 'N':
-      println("Load key pressed!");
+      consolePrint("Load key pressed!");
       loadErrorTimerStart = millis();
       try {
         switch(eegDataSource) {
@@ -310,8 +310,8 @@ void parseKey(char val) {
         loadGUISettings(userSettingsFileToLoad);
         errorUserSettingsNotFound = false;
       } catch (Exception e) {
-        println(e.getMessage());
-        println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+        //consolePrint(e.getMessage());
+        consolePrint(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
         errorUserSettingsNotFound = true;
       }
       //Output message when Loading settings is complete
@@ -331,8 +331,7 @@ void parseKey(char val) {
       break;
 
     case 'd':
-      verbosePrint("Updating GUI's channel settings to default...");
-      // gui.cc.loadDefaultChannelSettings();
+      consolePrint("Updating GUI's channel settings to default...");
       w_timeSeries.hsc.loadDefaultChannelSettings();
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
@@ -392,16 +391,16 @@ void parseKey(char val) {
 
     case 'm':
      String picfname = "OpenBCI-" + getDateString() + ".jpg";
-     println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
+     consolePrint("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
      saveFrame("./SavedData/Screenshots/" + picfname);    // take a shot of that!
      break;
 
     default:
       if (eegDataSource == DATASOURCE_CYTON) {
-        println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
+        consolePrint("Interactivity: '" + key + "' Pressed...sending to Cyton...");
         cyton.write(key);
       } else if (eegDataSource == DATASOURCE_GANGLION) {
-        println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
+        consolePrint("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
         hub.sendCommand(key);
       }
       break;
@@ -412,44 +411,44 @@ void parseKeycode(int val) {
   //assumes that val is Java keyCode
   switch (val) {
     case 8:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received BACKSPACE keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received BACKSPACE keypress.  Ignoring...");
       break;
     case 9:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received TAB keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received TAB keypress.  Ignoring...");
       //gui.showImpedanceButtons = !gui.showImpedanceButtons;
       // gui.incrementGUIpage(); //deprecated with new channel controller
       break;
     case 10:
-      println("Enter was pressed.");
+      consolePrint("Enter was pressed.");
       drawPresentation = !drawPresentation;
       break;
     case 16:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
       break;
     case 17:
-      //println("OpenBCI_GUI: parseKeycode(" + val + "): received CTRL keypress.  Ignoring...");
+      //consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received CTRL keypress.  Ignoring...");
       break;
     case 18:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received ALT keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received ALT keypress.  Ignoring...");
       break;
     case 20:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received CAPS LOCK keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received CAPS LOCK keypress.  Ignoring...");
       break;
     case 27:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Stopping OpenBCI...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Stopping OpenBCI...");
       //stopRunning();
       break;
     case 33:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE UP keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE UP keypress.  Ignoring...");
       break;
     case 34:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE DOWN keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE DOWN keypress.  Ignoring...");
       break;
     case 35:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received END keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received END keypress.  Ignoring...");
       break;
     case 36:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
       break;
     case 37:
       if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
@@ -460,7 +459,7 @@ void parseKeycode(int val) {
       }
       break;
     case 38:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
       dataProcessing_user.switchesActive = true;
       break;
     case 39:
@@ -472,53 +471,53 @@ void parseKeycode(int val) {
       }
       break;
     case 40:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
       dataProcessing_user.switchesActive = false;
       break;
     case 112:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F1 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F1 keypress.  Ignoring...");
       break;
     case 113:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F2 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F2 keypress.  Ignoring...");
       break;
     case 114:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F3 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F3 keypress.  Ignoring...");
       break;
     case 115:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F4 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F4 keypress.  Ignoring...");
       break;
     case 116:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F5 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F5 keypress.  Ignoring...");
       break;
     case 117:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F6 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F6 keypress.  Ignoring...");
       break;
     case 118:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F7 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F7 keypress.  Ignoring...");
       break;
     case 119:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F8 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F8 keypress.  Ignoring...");
       break;
     case 120:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F9 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F9 keypress.  Ignoring...");
       break;
     case 121:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F10 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F10 keypress.  Ignoring...");
       break;
     case 122:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F11 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F11 keypress.  Ignoring...");
       break;
     case 123:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received F12 keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received F12 keypress.  Ignoring...");
       break;
     case 127:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received DELETE keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received DELETE keypress.  Ignoring...");
       break;
     case 155:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): received INSERT keypress.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): received INSERT keypress.  Ignoring...");
       break;
     default:
-      println("OpenBCI_GUI: parseKeycode(" + val + "): value is not known.  Ignoring...");
+      consolePrint("OpenBCI_GUI: parseKeycode(" + val + "): value is not known.  Ignoring...");
       break;
   }
 }
@@ -536,8 +535,8 @@ void mouseDragged() {
 //swtich yard if a click is detected
 void mousePressed() {
 
-  // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
-  // println("systemMode" + systemMode);
+  // consolePrint("OpenBCI_GUI: mousePressed: mouse pressed");
+  // consolePrint("systemMode" + systemMode);
   // controlPanel.CPmousePressed();
 
   //if not before "Start System" ... i.e. after initial setup
@@ -547,48 +546,10 @@ void mousePressed() {
     if (controlPanel.isOpen == false) {
       //was the stopButton pressed?
 
-      // gui.mousePressed(); // trigger mousePressed function in GUI
-      // GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
       wm.mousePressed();
 
-      //check the graphs
-      // if (gui.isMouseOnFFT(mouseX, mouseY)) {
-      //   GraphDataPoint dataPoint = new GraphDataPoint();
-      //   gui.getFFTdataPoint(mouseX, mouseY, dataPoint);
-      //   println("OpenBCI_GUI: FFT data point: " + String.format("%4.2f", dataPoint.x) + " " + dataPoint.x_units + ", " + String.format("%4.2f", dataPoint.y) + " " + dataPoint.y_units);
-      // } else if (gui.headPlot1.isPixelInsideHead(mouseX, mouseY)) {
-      //   //toggle the head plot contours
-      //   gui.headPlot1.drawHeadAsContours = !gui.headPlot1.drawHeadAsContours;
-      // } else if (gui.isMouseOnMontage(mouseX, mouseY)) {
-      //   //toggle the display of the montage values
-      //   gui.showMontageValues  = !gui.showMontageValues;
-      // }
-
-      // if (gui.isMouseOnMontage(mouseX, mouseY)) {
-      //   //toggle the display of the montage values
-      //   gui.showMontageValues  = !gui.showMontageValues;
-      // }
     }
   }
-
-  //=============================//
-  // CONTROL PANEL INTERACTIVITY //
-  //=============================//
-
-  // //was control panel button pushed
-  // if (controlPanelCollapser.isMouseHere()) {
-  //   if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
-  //     controlPanelCollapser.setIsActive(false);
-  //     controlPanel.isOpen = false;
-  //   } else {
-  //     controlPanelCollapser.setIsActive(true);
-  //     controlPanel.isOpen = true;
-  //   }
-  // } else {
-  //   if (controlPanel.isOpen) {
-  //     controlPanel.CPmousePressed();
-  //   }
-  // }
 
   //topNav is always clickable
   topNav.mousePressed();
@@ -598,12 +559,12 @@ void mousePressed() {
     //close control panel if you click outside...
     if (systemMode == SYSTEMMODE_POSTINIT) {
       if (mouseX > 0 && mouseX < controlPanel.w && mouseY > 0 && mouseY < controlPanel.initBox.y+controlPanel.initBox.h) {
-        println("OpenBCI_GUI: mousePressed: clicked in CP box");
+        consolePrint("OpenBCI_GUI: mousePressed: clicked in CP box");
         controlPanel.CPmousePressed();
       }
       //if clicked out of panel
       else {
-        println("OpenBCI_GUI: mousePressed: outside of CP clicked");
+        consolePrint("OpenBCI_GUI: mousePressed: outside of CP clicked");
         controlPanel.isOpen = false;
         topNav.controlPanelCollapser.setIsActive(false);
         output("Press the \"Press to Start\" button to initialize the data stream.");
@@ -621,30 +582,6 @@ void mousePressed() {
     playground.toggleWindow();
   }
 
-
-  //if (accelWidget.isMouseHere()) {
-  //  accelWidget.mousePressed();
-  //}
-
-  //if (accelWidget.isMouseInButton()) {
-  //  accelWidget.toggleWindow();
-  //}
-
-  //if (pulseWidget.isMouseHere()) {
-  //  pulseWidget.mousePressed();
-  //}
-
-  //if (accelWidget.isMouseInButton()) {
-  //  accelWidget.toggleWindow();
-  //}
-
-  //if (pulseWidget.isMouseHere()) {
-  //  pulseWidget.mousePressed();
-  //}
-
-  //if (pulseWidget.isMouseInButton()) {
-  //  pulseWidget.toggleWindow();
-  //}
 }
 
 void mouseReleased() {
@@ -670,7 +607,7 @@ void mouseReleased() {
   }
 
   if (screenHasBeenResized) {
-    println("OpenBCI_GUI: mouseReleased: screen has been resized...");
+    consolePrint("OpenBCI_GUI: mouseReleased: screen has been resized...");
     screenHasBeenResized = false;
   }
 
@@ -744,10 +681,10 @@ class Button {
     setup(x, y, w, h, txt);
     buttonFont = p5;
     buttonTextSize = 12;
-    //println(PFont.list()); //see which fonts are available
+    //consolePrint(PFont.list()); //see which fonts are available
     //font = createFont("SansSerif.plain",fontSize);
     //font = createFont("Lucida Sans Regular",fontSize);
-    // font = createFont("Arial",fontSize);
+    //font = createFont("Arial",fontSize);
     //font = loadFont("SansSerif.plain.vlw");
   }
 
@@ -796,7 +733,7 @@ class Button {
 
   public void setString(String txt) {
     but_txt = txt;
-    //println("Button: setString: string = " + txt);
+    //consolePrint("Button: setString: string = " + txt);
   }
 
   public void setHelpText(String _helpText){
@@ -987,18 +924,19 @@ class Button {
       popStyle();
     }
 
+    //This could be utilized at a later date
     //cursor = funny looking finger thing when hovering over buttons...
     // if (true) {
     //   if (!isMouseHere() && drawHand) {
     //     cursor(ARROW);
     //     drawHand = false;
-    //     //verbosePrint("don't draw hand");
+    //     //consolePrint("don't draw hand");
     //   }
     //   //if cursor is over button change cursor icon to hand!
     //   if (isMouseHere() && !drawHand) {
     //     cursor(HAND);
     //     drawHand = true;
-    //     //verbosePrint("draw hand");
+    //     //consolePrint("draw hand");
     //   }
     // }
 
@@ -1029,7 +967,6 @@ class ButtonHelpText{
   }
 
   public void draw(){
-    // println("4");
     if(isVisible){
       pushStyle();
       textAlign(CENTER, TOP);
@@ -1039,7 +976,7 @@ class ButtonHelpText{
       stroke(31,69,110);
       fill(255);
       numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
-      // println("numLines: " + numLines);
+      // consolePrint("numLines: " + numLines);
       //if on left side of screen, draw box brightness to prevent box off screen
       if(x <= width/2){
         rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
@@ -1058,12 +995,12 @@ class ButtonHelpText{
 void openURLInBrowser(String _url){
   try {
     //Set your page url in this string. For eg, I m using URL for Google Search engine
-    String url = _url;
-    java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-    output("Attempting to use your default browser to launch: " + url);
+    java.awt.Desktop.getDesktop().browse(java.net.URI.create(_url));
+    output("Attempting to use your default browser to launch: " + _url);
   }
   catch (java.io.IOException e) {
-      System.out.println(e.getMessage());
+      //consolePrint(e.getMessage());
+      consolePrint("Error launching url in browser: " + _url);
   }
 }
 
@@ -1078,19 +1015,20 @@ void toggleFrameRate(){
     topNav.fpsButton.setString("24 fps");
   }
   if(frameRateCounter==1){
-    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(30);
     topNav.fpsButton.setString("30 fps");
   }
   if(frameRateCounter==2){
-    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(45);
     topNav.fpsButton.setString("45 fps");
   }
   if(frameRateCounter==3){
-    frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(60);
     topNav.fpsButton.setString("60 fps");
   }
 }
 
+//loop through networking textfields and find out if any are active
 boolean isNetworkingTextActive(){
   boolean isAFieldActive = false;
   if (w_networking != null) {
@@ -1101,15 +1039,14 @@ boolean isNetworkingTextActive(){
       }
     }
   }
-  // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
 
-  //isFocus(); returns true if active for textField...
-  println("Text Field Active? " + isAFieldActive);
+  // consolePrint("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
+  consolePrint("Networking Text Field Active? " + isAFieldActive);
   return isAFieldActive; //if not, return false
 }
 
 boolean highDPI = false;
 void toggleHighDPI(){
   highDPI = !highDPI;
-  println("High DPI? " + highDPI);
+  consolePrint("High DPI? " + highDPI);
 }

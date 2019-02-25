@@ -52,16 +52,15 @@ class Playground {
   }
 
   public void update() {
-    // verbosePrint("uh huh");
     if (collapsing) {
       collapse();
     } else {
       expand();
     }
-    
+
     // if(accelWidget.collapsing) accelWidget.collapse();
     // else accelWidget.expand();
-    
+
     //if(pulseWidget.collapsing) pulseWidget.collapse();
     //else pulseWidget.expand();
 
@@ -71,7 +70,6 @@ class Playground {
   }
 
   public void draw() {
-    // verbosePrint("yeaaa");
     pushStyle();
     fill(boxBG);
     stroke(strokeColor);
@@ -95,7 +93,7 @@ class Playground {
   }
 
   boolean isMouseInButton() {
-    //verbosePrint("Playground: isMouseInButton: attempting");
+    //consolePrint("Playground: isMouseInButton: attempting");
     if (mouseX >= collapser.but_x && mouseX <= collapser.but_x+collapser.but_dx && mouseY >= collapser.but_y && mouseY <= collapser.but_y + collapser.but_dy) {
       return true;
     } else {
@@ -104,56 +102,15 @@ class Playground {
   }
 
   public void toggleWindow() {
-    
-    //Uncomment if you'd like to open the playground
-    //if (isOpen) {//if open
-    //  verbosePrint("close");
-    //  collapsing = true;//collapsing = true;
-    //  isOpen = false;
-    //  collapser.but_txt = "<";
-    //} else {//if closed
-    //  verbosePrint("open");
-    //  collapsing = false;//expanding = true;
-    //  isOpen = true;
-    //  collapser.but_txt = ">";
-    //}
-    
-    //if(drawAccel){
-    //  if (accelWidget.isOpen) {//if open
-    //    verbosePrint("close");
-    //    accelWidget.collapsing = true;//collapsing = true;
-    //    accelWidget.isOpen = false;
-    //    accelWidget.collapser.but_txt = "<";
-    //  } else {//if closed
-    //    verbosePrint("open");
-    //    accelWidget.collapsing = false;//expanding = true;
-    //    accelWidget.isOpen = true;
-    //    accelWidget.collapser.but_txt = ">";
-    //  }
-    //}
-    
-    //if(drawPulse){
-    //  if (pulseWidget.isOpen) {//if open
-    //    verbosePrint("close");
-    //    pulseWidget.collapsing = true;//collapsing = true;
-    //    pulseWidget.isOpen = false;
-    //    pulseWidget.collapser.but_txt = "<";
-    //  } else {//if closed
-    //    verbosePrint("open");
-    //    pulseWidget.collapsing = false;//expanding = true;
-    //    pulseWidget.isOpen = true;
-    //    pulseWidget.collapser.but_txt = ">";
-    //  }
-    //}
-    
+    //consolePrint("Playground >> toggleWindow()");
   }
 
   public void mousePressed() {
-    //verbosePrint("Playground >> mousePressed()");
+    //consolePrint("Playground >> mousePressed()");
   }
 
   public void mouseReleased() {
-    //verbosePrint("Playground >> mouseReleased()");
+    //consolePrint("Playground >> mouseReleased()");
   }
 
   public void expand() {

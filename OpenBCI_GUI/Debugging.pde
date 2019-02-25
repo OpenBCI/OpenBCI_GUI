@@ -14,9 +14,6 @@
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
-//set true if you want more verbosity in console.. verbosePrint("print_this_thing") is used to output feedback when isVerbose = true
-boolean isVerbose = true;
-
 //Help Widget initiation
 HelpWidget helpWidget;
 
@@ -35,10 +32,16 @@ final static int OUTPUT_LEVEL_ERROR = 4;
 //                       Global Functions
 //------------------------------------------------------------------------
 
-void verbosePrint(String _string) {
-  if (isVerbose) {
-    println(_string);
-  }
+void consolePrint(String _output) {
+  println(_output);
+  original.println(_output);
+  consoleData.data.append(_output);
+}
+
+void consolePrint(StringList _list) {
+  String[] list = _list.array();
+  String s = join(list, "\n");
+  consolePrint(s);
 }
 
 void delay(int delay)
@@ -208,7 +211,7 @@ public void outputWarn(String _output) {
 void signPost(String identifier) {
   if (printSignPosts) {
     millisSinceLastSignPost = millis() - millisOfLastSignPost;
-    println("SIGN POST: [" + identifier + "][" + millisSinceLastSignPost + "]");
+    consolePrint("SIGN POST: [" + identifier + "][" + millisSinceLastSignPost + "]");
     millisOfLastSignPost = millis();
   }
 }

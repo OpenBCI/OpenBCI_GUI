@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////
-//                 consoleLogTest.pde                     //
+//                 ConsoleLog.pde                     //
 //  This is an example of how to print console messages:  //
 //      -- to console                                     //
 //      -- to a file                                      //
@@ -179,7 +179,7 @@ class ConsoleWindow extends PApplet {
         mouseY<rectPosY+rectHeight;
     }//function
     //
-  }//class
+  }//end class
 
   // ===============================================================
   // CLIPHELPER OBJECT CLASS
@@ -269,13 +269,4 @@ class ConsoleData {
       System.err.println("Error! Check path, or filename, or security manager! "+e);
     }
   }
-
-}
-
-// --------------------------------------------------------------
-
-void consolePrint(String _output) {
-  println(_output);
-  original.println(_output);
-  consoleData.data.append(_output);
-}
+}//end class

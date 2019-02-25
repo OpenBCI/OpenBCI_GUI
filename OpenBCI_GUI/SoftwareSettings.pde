@@ -201,7 +201,7 @@ void initSoftwareSettings() {
     defaultNumChanLoaded = loadDataSettings.getInt("Channels");
     //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
     defaultLoadedDataSource = loadDataSettings.getInt("Data Source");
-    //println("Data source loaded: " + defaultLoadedDatasource + ". Current data source: " + eegDataSource);
+    //consolePrint("Data source loaded: " + defaultLoadedDatasource + ". Current data source: " + eegDataSource);
     defaultSettingsFileExists = true;
   } catch (Exception e) {
     defaultSettingsFileExists = false;
@@ -210,7 +210,7 @@ void initSoftwareSettings() {
     (!defaultSettingsFileExists) ||
     (defaultLoadedDataSource != eegDataSource) ||
     (defaultNumChanLoaded != slnchan)) {
-      println("Default user settings file saved!");
+      consolePrint("Default user settings file saved!");
       saveGUISettings(defaultSettingsFileToSave);
   }
 
@@ -236,7 +236,7 @@ void initSoftwareSettings() {
     errorUserSettingsNotFound = false;
   } catch (Exception e) {
     //e.printStackTrace();
-    println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+    consolePrint(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
     errorUserSettingsNotFound = true;
   }
 }
@@ -253,7 +253,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   JSONObject saveNumChannelsData = new JSONObject();
   saveNumChannelsData.setInt("Channels", slnchan);
   saveNumChannelsData.setInt("Data Source", eegDataSource);
-  //println(slnchan);
+  //consolePrint(slnchan);
   saveSettingsJSONData.setJSONObject(kJSONKeyDataInfo, saveNumChannelsData);
 
   ////////////////////////////////////////////////////////////////////////////////////
@@ -492,21 +492,21 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   for (int i = 0; i < wm.widgets.size(); i++) { //increment through all widgets
     if (wm.widgets.get(i).isActive) { //If a widget is active...
       numActiveWidgets++; //increment numActiveWidgets
-      //println("Widget" + i + " is active");
+      //consolePrint("Widget" + i + " is active");
       // activeWidgets.add(i); //keep track of the active widget
       int containerCountsave = wm.widgets.get(i).currentContainer;
-      //println("Widget " + i + " is in Container " + containerCountsave);
+      //consolePrint("Widget " + i + " is in Container " + containerCountsave);
       saveWidgetSettings.setInt("Widget_"+i, containerCountsave);
     } else if (!wm.widgets.get(i).isActive) { //If a widget is not active...
       saveWidgetSettings.remove("Widget_"+i); //remove non-active widget from JSON
-      //println("widget"+i+" is not active");
+      //consolePrint("widget"+i+" is not active");
     }
   }
-  println(numActiveWidgets + " active widgets saved!");
+  consolePrint(numActiveWidgets + " active widgets saved!");
   //Print what widgets are in the containers used by current layout for only the number of active widgets
   //for (int i = 0; i < numActiveWidgets; i++) {
     //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
-    //println("Container " + containerCounter + " is available"); //For debugging
+    //consolePrint("Container " + containerCounter + " is available"); //For debugging
   //}
   saveSettingsJSONData.setJSONObject(kJSONKeyWidget, saveWidgetSettings);
 
@@ -530,7 +530,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   numChanloaded = loadDataSettings.getInt("Channels");
   //Print error if trying to load a different number of channels
   if (numChanloaded != slnchan) {
-    println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
+    consolePrint("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
     chanNumError = true;
     return;
   } else {
@@ -538,10 +538,10 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   }
   //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
   loadDatasource = loadDataSettings.getInt("Data Source");
-  println("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
+  consolePrint("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
   //Print error if trying to load a different data source (ex. Live != Synthetic)
   if (loadDatasource != eegDataSource) {
-    println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
+    consolePrint("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
     dataSourceError = true;
     return;
   } else {
@@ -726,14 +726,14 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
   //Apply Layout directly before loading and applying widgets to containers
   wm.setNewContainerLayout(loadLayoutSetting);
-  println("Layout " + loadLayoutSetting + " Loaded!");
+  consolePrint("Layout " + loadLayoutSetting + " Loaded!");
   numLoadedWidgets = loadWidgetSettings.size();
 
 
   //int numActiveWidgets = 0; //reset the counter
   for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
     if (wm.widgets.get(w).isActive) { //If a widget is active...
-      println("Deactivating widget [" + w + "]");
+      consolePrint("Deactivating widget [" + w + "]");
       wm.widgets.get(w).isActive = false;
       //numActiveWidgets++; //counter the number of de-activated widgets
     }
@@ -752,7 +752,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
 
       wm.widgets.get(widgetToActivate).isActive = true;//activate the new widget
       wm.widgets.get(widgetToActivate).setContainer(containerToApply);//map it to the container that was loaded!
-      println("Applied Widget " + widgetToActivate + " to Container " + containerToApply);
+      consolePrint("Applied Widget " + widgetToActivate + " to Container " + containerToApply);
   }//end case for all widget/container settings
 
   /////////////////////////////////////////////////////////////
@@ -808,7 +808,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   }
   if (wm.widgets.get(hpWidgetNumber).isActive) {
     w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-    println("Headplot is active: Redrawing");
+    consolePrint("Headplot is active: Redrawing");
   }
 
   //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
@@ -1021,7 +1021,7 @@ void loadApplyWidgetDropdownText() {
       w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(nwOscFilter4Load);
       break;
     case 1:  //Apply UDP if loaded
-      println("apply UDP nw mode");
+      consolePrint("apply UDP nw mode");
       w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
       w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
       w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1039,7 +1039,7 @@ void loadApplyWidgetDropdownText() {
       w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwUdpFilter3Load);
       break;
     case 2:  //Apply LSL if loaded
-      println("apply LSL nw mode");
+      consolePrint("apply LSL nw mode");
       w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
       w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
       w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1060,7 +1060,7 @@ void loadApplyWidgetDropdownText() {
       w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwLSLFilter3Load);
       break;
     case 3:  //Apply Serial if loaded
-      println("apply Serial nw mode");
+      consolePrint("apply Serial nw mode");
       w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
       w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
       w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //Set text
@@ -1090,7 +1090,7 @@ void loadApplyTimeSeriesSettings() {
       int biasSetting = loadTSChannelSettings.getInt("Bias");
       int srb2Setting = loadTSChannelSettings.getInt("SRB2");
       int srb1Setting = loadTSChannelSettings.getInt("SRB1");
-      println("Ch " + channel + ", " +
+      consolePrint("Ch " + channel + ", " +
         channelsActiveArray[active] + ", " +
         gainSettingsArray[gainSetting] + ", " +
         inputTypeArray[inputType] + ", " +
@@ -1129,10 +1129,10 @@ void loadApplyTimeSeriesSettings() {
       try {
         cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
       } catch (RuntimeException e) {
-        verbosePrint("Runtime Error when trying to write channel settings to cyton...");
+        consolePrint("Runtime Error when trying to write channel settings to cyton...");
       }
       if (checkForSuccessTS > 0) { // If we receive a return code...
-        println("Return code: " + checkForSuccessTS);
+        consolePrint("Return code: " + checkForSuccessTS);
         //when successful, iterate to next channel(i++) and set Check to null
         if (checkForSuccessTS == RESP_SUCCESS) {
           // i++;
@@ -1142,7 +1142,7 @@ void loadApplyTimeSeriesSettings() {
         //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
         int timeElapsed = millis() - loadErrorTimerStart;
         if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
-          println("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
+          consolePrint("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
           loadErrorCytonEvent = true; //Set true because an error has occured
           haltSystem(); //Halt the system to stop the initialization process
           return;
@@ -1163,10 +1163,10 @@ void loadApplyTimeSeriesSettings() {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
       //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
       int active = loadTSChannelSettings.getInt("Active");
-      //println("Ch " + channel + ", " + channelsActiveArray[active]);
+      //consolePrint("Ch " + channel + ", " + channelsActiveArray[active]);
       if (active == 1) {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
+          consolePrint("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
           hub.sendCommand(command_activate_channel[i]);
           w_timeSeries.hsc.powerUpChannel(i);
         }
@@ -1175,7 +1175,7 @@ void loadApplyTimeSeriesSettings() {
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
       } else {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
+          consolePrint("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
           hub.sendCommand(command_deactivate_channel[i]);
           w_timeSeries.hsc.powerDownChannel(i);
         }

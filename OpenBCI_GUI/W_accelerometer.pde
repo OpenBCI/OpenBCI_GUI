@@ -85,7 +85,7 @@ class W_accelerometer extends Widget {
     currentAccelVals = new float[NUM_ACCEL_DIMS];
 
     //create our channel bar and populate our accelerometerBar array!
-    println("init accelerometer bar");
+    consolePrint("init accelerometer bar");
     int analogReadBarY = int(accelGraphY) + (accelGraphHeight); //iterate through bar locations
     AccelerometerBar tempBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //int _channelNumber, int _x, int _y, int _w, int _h
     accelerometerBar = tempBar;
@@ -232,10 +232,10 @@ class W_accelerometer extends Widget {
   }
 
   void setGraphDimensions() {
-    //println("accel w "+w);
-    //println("accel h "+h);
-    //println("accel x "+x);
-    //println("accel y "+y);
+    //consolePrint("accel w "+w);
+    //consolePrint("accel h "+h);
+    //consolePrint("accel x "+x);
+    //consolePrint("accel y "+y);
     accelGraphWidth = w - accPadding*2;
     accelGraphHeight = int((float(h) - float(accPadding*3))/2.0);
     accelGraphX = x + accPadding/3;
@@ -441,7 +441,7 @@ class AccelerometerBar{
       GPoint tempPointX = new GPoint(accelTimeArray[i], accelArray[0][i]);
       GPoint tempPointY = new GPoint(accelTimeArray[i], accelArray[1][i]);
       GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArray[2][i]);
-      //println(accelTimeArray[i]);
+      //consolePrint(accelTimeArray[i]);
       accelPointsX.set(i, tempPointX);
       accelPointsY.set(i, tempPointY);
       accelPointsZ.set(i, tempPointZ);
@@ -488,7 +488,7 @@ class AccelerometerBar{
 
     nPoints = nPointsBasedOnDataSource();
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
-    //println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
+    //consolePrint("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
 
     //Calculate the array for GPlot X axis (Time)
     accelTimeArray = new float[nPoints];
@@ -602,7 +602,7 @@ class AccelerometerBar{
 
 
   void setGPlotPoints(int accelBuffSize) {
-    //println("UPDATING ACCEL GRAPH");
+    //consolePrint("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
     if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
