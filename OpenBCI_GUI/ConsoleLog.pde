@@ -15,8 +15,8 @@ import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 
 
-PrintStream original = new PrintStream(System.out);
-ConsoleData consoleData = new ConsoleData();
+//PrintStream original = new PrintStream(System.out);
+//ConsoleData consoleData = new ConsoleData();
 
 class ConsoleWindow extends PApplet {
 
@@ -40,7 +40,7 @@ class ConsoleWindow extends PApplet {
 
     //This function may need to be called when the GUI starts
     //After this point all println() goes to file
-    consoleData.setupConsoleOutput();
+    //consoleData.setupConsoleOutput();
 
     //Thats why we use the new consolePrint()
     consolePrint("This goes to the file and the console.");
@@ -244,15 +244,6 @@ class ConsoleWindow extends PApplet {
   }
 }//end class
 
-
-// --------------------------------------------------------------
-
-void consolePrint(String _output) {
-  println(_output);
-  original.println(_output);
-  consoleData.data.append(_output);
-}
-
 // --------------------------------------------------------------
 
 class ConsoleData {
@@ -279,4 +270,12 @@ class ConsoleData {
     }
   }
 
+}
+
+// --------------------------------------------------------------
+
+void consolePrint(String _output) {
+  println(_output);
+  original.println(_output);
+  consoleData.data.append(_output);
 }

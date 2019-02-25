@@ -278,6 +278,9 @@ Robot rob3115;
 
 PApplet ourApplet;
 
+PrintStream original = new PrintStream(System.out);
+ConsoleData consoleData = new ConsoleData();
+
 //Variables from TopNav.pde. Used to set text when stopping/starting data stream.
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
@@ -376,7 +379,6 @@ boolean recentPlaybackFilesHaveUpdated = false;
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
-  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
   //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
   //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
   if (displayWidth == 1366 && displayHeight == 768) {
@@ -388,8 +390,11 @@ void settings() {
 }
 
 void setup() {
-  println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+  //After this point all println() goes to file, so use consolePrint()
+  consoleData.setupConsoleOutput();
+  consolePrint("Screen Resolution: " + displayWidth + " X " + displayHeight);
+  consolePrint("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
+  consolePrint("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
 
   //open window
   ourApplet = this;
@@ -451,7 +456,7 @@ void delayedSetup() {
   frame.addComponentListener(new ComponentAdapter() {
     public void componentResized(ComponentEvent e) {
       if (e.getSource()==frame) {
-        println("OpenBCI_GUI: setup: RESIZED");
+        consolePrint("OpenBCI_GUI: setup: RESIZED");
         screenHasBeenResized = true;
         timeOfLastScreenResize = millis();
         // initializeGUI();
@@ -467,7 +472,7 @@ void delayedSetup() {
   topNav = new TopNav();
 
   //from the user's perspective, the program hangs out on the ControlPanel until the user presses "Start System".
-  print("Graphics & GUI Library: ");
+  consolePrint("Graphics & GUI Library: ControlP5");
   controlPanel = new ControlPanel(this);
   //The effect of "Start System" is that initSystem() gets called, which starts up the connection to the OpenBCI
   //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.
@@ -500,8 +505,8 @@ void delayedSetup() {
   udpRX.log(true);
   udpRX.listen(true);
   // Print some useful diagnostics
-  println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
-  println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
+  consolePrint("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
+  consolePrint("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
   synchronized(this) {
     setupComplete = true; // signal that the setup thread has finished
@@ -520,13 +525,13 @@ String udpReceiveString = null;
 void udpReceiveHandler(byte[] data, String ip, int portRX) {
 
   String udpString = new String(data);
-  println(udpString+" from: "+ip+" and port: "+portRX);
+  consolePrint(udpString+" from: "+ip+" and port: "+portRX);
   if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
 
     /*  Old version with 10 markers
     char c = value.charAt(4);
   if ( c>= '0' && c <= '9') {
-      println("Found a valid UDP STIM of value: "+int(c)+" chr: "+c);
+      consolePrint("Found a valid UDP STIM of value: "+int(c)+" chr: "+c);
       hub.sendCommand("`"+char(c-(int)'0'));
       */
     int intValue = Integer.parseInt(udpString.substring(4));
@@ -535,14 +540,14 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
 
       String sendString = "`"+char(intValue+31);
 
-      println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
+      consolePrint("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
       hub.sendCommand(sendString);
 
     } else {
-      println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
+      consolePrint("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
     }
   } else {
-      println("udpReceiveHandler::Warning:invalid UDP marker packet: "+udpString);
+      consolePrint("udpReceiveHandler::Warning:invalid UDP marker packet: "+udpString);
 
   }
 }
@@ -565,12 +570,12 @@ synchronized void draw() {
 private void prepareExitHandler () {
   Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
     public void run () {
-      System.out.println("SHUTDOWN HOOK");
+      consolePrint("SHUTDOWN HOOK");
       try {
         if (hubStop()) {
-          System.out.println("SHUTDOWN HUB");
+          consolePrint("SHUTDOWN HUB");
         } else {
-          System.out.println("FAILED TO SHUTDOWN HUB");
+          consolePrint("FAILED TO SHUTDOWN HUB");
         }
       } catch (Exception ex) {
         ex.printStackTrace(); // not much else to do at this point
@@ -593,23 +598,23 @@ void hubInit() {
  * Starts the node hub working, tested on mac and windows.
  */
 void hubStart() {
-  println("Launching application from local data dir");
+  consolePrint("Launching application from local data dir");
   try {
     // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
     if (isWindows()) {
-      println("OpenBCI_GUI: hubStart: OS Detected: Windows");
+      consolePrint("OpenBCI_GUI: hubStart: OS Detected: Windows");
       nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
-      println("OpenBCI_GUI: hubStart: OS Detected: Linux");
+      consolePrint("OpenBCI_GUI: hubStart: OS Detected: Linux");
       nodeHubby = exec(dataPath("./OpenBCIHub/OpenBCIHub"));
     } else {
-      println("OpenBCI_GUI: hubStart: OS Detected: Mac");
+      consolePrint("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("OpenBCIHub.app"));
     }
     // hubRunning = true;
   }
   catch (Exception e) {
-    println("hubStart: " + e);
+    consolePrint("hubStart: " + e);
   }
 }
 
@@ -663,10 +668,10 @@ void killRunningProcessMac() {
       if (line.contains(nodeHubName)) {
         try {
           endProcess(getProcessIdFromLineMac(line));
-          println("Killed: " + line);
+          consolePrint("Killed: " + line);
         }
         catch (Exception err) {
-          println("Failed to stop process: " + line + "\n\n");
+          consolePrint("Failed to stop process: " + line + "\n\n");
           err.printStackTrace();
         }
       }
@@ -727,43 +732,43 @@ void setupWidgetManager() {
 
 //Initialize the system
 void initSystem() {
-  println();
-  println();
-  println("=================================================");
-  println("||             INITIALIZING SYSTEM             ||");
-  println("=================================================");
-  println();
+  consolePrint("");
+  consolePrint("");
+  consolePrint("=================================================");
+  consolePrint("||             INITIALIZING SYSTEM             ||");
+  consolePrint("=================================================");
+  consolePrint("");
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + millis());
+  consolePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + millis());
   timeOfInit = millis(); //store this for timeout in case init takes too long
-  verbosePrint("timeOfInit = " + timeOfInit);
+  consolePrint("timeOfInit = " + timeOfInit);
 
   //prepare data variables
-  verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
+  consolePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
 
   //initialize playback file if necessary
   if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
     initPlaybackFileToTable(); //found in W_Playback.pde
   }
 
-  verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
+  consolePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
   initCoreDataObjects();
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
-  verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
+  consolePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
+  consolePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
 
   initFFTObjectsAndBuffer();
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
-  verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
+  consolePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
+  consolePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
 
   controlPanel.close();
   topNav.controlPanelCollapser.setIsActive(false);
-  verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
+  consolePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
   hub.changeState(STATE_COMINIT);
   // hub.searchDeviceStop();
 
@@ -802,28 +807,28 @@ void initSystem() {
       break;
     }
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
+  consolePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
   if (abandonInit) {
     haltSystem();
-    println("Failed to connect to data source... 1");
+    consolePrint("Failed to connect to data source... 1");
     outputError("Failed to connect to data source fail point 1");
   } else {
-    println("  3a -- " + millis());
+    consolePrint("  3a -- " + millis());
     //initilize the GUI
     // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
     topNav.initSecondaryNav();
-    println("  3b -- " + millis());
+    consolePrint("  3b -- " + millis());
 
     //open data file
     if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
-    if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
+    if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // consolePrint("open ganglion output file");
 
     // wm = new WidgetManager(this);
     setupWidgetManager();
 
     if (!abandonInit) {
-      println("  3c -- " + millis());
+      consolePrint("  3c -- " + millis());
       // setupGUIWidgets(); //####
 
       nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
@@ -836,17 +841,17 @@ void initSystem() {
         controlPanel.close();
       } else {
         haltSystem();
-        println("Failed to connect to data source... 2");
+        consolePrint("Failed to connect to data source... 2");
         // output("Failed to connect to data source...");
       }
     } else {
       haltSystem();
-      println("Failed to connect to data source... 3");
+      consolePrint("Failed to connect to data source... 3");
       // output("Failed to connect to data source...");
     }
   }
 
-  verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
+  consolePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
   //Init software settings: create default settings files, load user settings, etc.
   initSoftwareSettings();
@@ -866,21 +871,21 @@ void initSystem() {
 
   //Output messages when Loading settings is complete
   if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
+    consolePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
     if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
       outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
     }
   } else if (chanNumError) {
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
+    consolePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
     output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
   } else if (dataSourceError) {
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
+    consolePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
     output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
   } else if (errorUserSettingsNotFound) {
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileToLoad + " not found. " + millis()); //Print the error to console
+    consolePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileToLoad + " not found. " + millis()); //Print the error to console
     output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
   } else {
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
+    consolePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
     outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
   }
 
@@ -961,7 +966,7 @@ void initCoreDataObjects() {
 void initFFTObjectsAndBuffer() {
   //initialize the FFT objects
   for (int Ichan=0; Ichan < nchan; Ichan++) {
-    // verbosePrint("Init FFT Buff – " + Ichan);
+    // consolePrint("Init FFT Buff – " + Ichan);
     fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
   }  //make the FFT objects
 
@@ -977,7 +982,7 @@ void initFFTObjectsAndBuffer() {
 }
 
 void startRunning() {
-  verbosePrint("startRunning...");
+  consolePrint("startRunning...");
   output("Data stream started.");
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
@@ -985,7 +990,7 @@ void startRunning() {
     }
   } else {
     if (cyton != null) {
-      println("DEBUG: start data transfer");
+      consolePrint("DEBUG: start data transfer");
       cyton.startDataTransfer();
     }
   }
@@ -994,7 +999,7 @@ void startRunning() {
 
 void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
-  verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
+  consolePrint("OpenBCI_GUI: stopRunning: stop running...");
   if (isRunning) {
     //Dont print this message for playback mode.
     //Allows user to see current playback time
@@ -1023,7 +1028,7 @@ void stopRunning() {
 void stopButtonWasPressed() {
   //toggle the data transfer state of the ADS1299...stop it or start it...
   if (isRunning) {
-    verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
+    consolePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
     wm.setUpdating(false);
     stopRunning();
     topNav.stopButton.setString(stopButton_pressToStart_txt);
@@ -1033,7 +1038,7 @@ void stopButtonWasPressed() {
       w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
     }
   } else { //not running
-    verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
+    consolePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     wm.setUpdating(true);
     startRunning();
     topNav.stopButton.setString(stopButton_pressToStop_txt);
@@ -1049,7 +1054,7 @@ void stopButtonWasPressed() {
 
 //halt the data collection
 void haltSystem() {
-  println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
+  consolePrint("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
   if (initSystemButton.but_txt == "STOP SYSTEM") {
     initSystemButton.but_txt = "START SYSTEM";
   }
@@ -1162,7 +1167,7 @@ void systemUpdate() { // for updating data values and variables
 
   if (isHubInitialized && isHubObjectInitialized == false) {
     hub = new Hub(this);
-    println("Instantiating hub object...");
+    consolePrint("Instantiating hub object...");
     isHubObjectInitialized = true;
     thread("delayedInit");
   }
@@ -1214,12 +1219,12 @@ void systemUpdate() { // for updating data values and variables
             //-----------------------------------------------------------
           }
           catch (Exception e) {
-            println(e.getMessage());
+            //consolePrint(e.getMessage());
             reinitializeGUIdelay = reinitializeGUIdelay * 2;
-            println("OpenBCI_GUI: systemUpdate: New GUI reinitialize delay = " + reinitializeGUIdelay);
+            consolePrint("OpenBCI_GUI: systemUpdate: New GUI reinitialize delay = " + reinitializeGUIdelay);
           }
         } else {
-          println("OpenBCI_GUI: systemUpdate: reinitializing GUI after resize... not updating GUI");
+          consolePrint("OpenBCI_GUI: systemUpdate: reinitializing GUI after resize... not updating GUI");
         }
 
         redrawScreenNow=true;
@@ -1231,11 +1236,11 @@ void systemUpdate() { // for updating data values and variables
       pointCounter = 0;
       try {
         process_input_file();
-        println("^^^GUI update process file has occurred");
+        consolePrint("^^^GUI update process file has occurred");
       }
       catch(Exception e) {
         isOldData = true;
-        println("^^^Error processing timestamps");
+        consolePrint("^^^Error processing timestamps");
         output("Error processing timestamps, are you using old data?");
       }
     }
@@ -1244,7 +1249,7 @@ void systemUpdate() { // for updating data values and variables
 
     //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
     if (widthOfLastScreen != width || heightOfLastScreen != height) {
-      println("OpenBCI_GUI: setup: RESIZED");
+      consolePrint("OpenBCI_GUI: setup: RESIZED");
       screenHasBeenResized = true;
       timeOfLastScreenResize = millis();
       widthOfLastScreen = width;
@@ -1260,7 +1265,7 @@ void systemUpdate() { // for updating data values and variables
     }
     if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
       screenHasBeenResized = false;
-      println("systemUpdate: reinitializing GUI");
+      consolePrint("systemUpdate: reinitializing GUI");
       timeOfGUIreinitialize = millis();
       // initializeGUI();
       // GUIWidgets_screenResized(width, height);
@@ -1299,7 +1304,7 @@ void systemDraw() { //for drawing to the screen
   if (systemMode >= SYSTEMMODE_POSTINIT && !initSystemThreadLock) {
     int drawLoopCounter_thresh = 100;
     if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
-      //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
+      //if (drawLoop_counter >= drawLoopCounter_thresh) consolePrint("OpenBCI_GUI: redrawing based on loop counter...");
       drawLoop_counter=0; //reset for next time
       redrawScreenNow = false;  //reset for next time
 
@@ -1333,9 +1338,9 @@ void systemDraw() { //for drawing to the screen
 
     //wait 1 second for GUI to reinitialize
     if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) {
-      // println("attempting to draw GUI...");
+      // consolePrint("attempting to draw GUI...");
       try {
-        // println("GUI DRAW!!! " + millis());
+        // consolePrint("GUI DRAW!!! " + millis());
 
         //----------------------------
         // gui.draw(); //draw the GUI
@@ -1351,13 +1356,13 @@ void systemDraw() { //for drawing to the screen
         // playground.draw();
       }
       catch (Exception e) {
-        println(e.getMessage());
+        consolePrint(e.getMessage());
         reinitializeGUIdelay = reinitializeGUIdelay * 2;
-        println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + reinitializeGUIdelay);
+        consolePrint("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + reinitializeGUIdelay);
       }
     } else {
       //reinitializing GUI after resize
-      println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
+      consolePrint("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
     }
 
     //dataProcessing_user.draw();
@@ -1416,7 +1421,7 @@ void systemDraw() { //for drawing to the screen
   }
 
   // use commented code below to verify frameRate and check latency
-  // println("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
+  // consolePrint("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
   // timeOfLastFrame = millis();
 
   buttonHelpText.draw();
@@ -1479,12 +1484,12 @@ void mouseOutOfBounds() {
         MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
         mouseX = 0;
         mouseY = 0;
-        // println("Mouse out of bounds!");
+        // consolePrint("Mouse out of bounds!");
         mouseInFrame = false;
       }
     }
     catch (RuntimeException e) {
-      verbosePrint("Error happened while cursor left application...");
+      consolePrint("Error happened while cursor left application...");
     }
   } else {
     if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
