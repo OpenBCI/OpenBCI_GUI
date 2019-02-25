@@ -68,7 +68,7 @@ class ConsoleWindow extends PApplet {
   }
 
   void mousePressed() {
-    consolePrint"mousePressed in secondary window");
+    consolePrint("mousePressed in secondary window");
     scrollRect.mousePressedRect();
   }
 
