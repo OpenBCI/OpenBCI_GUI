@@ -43,8 +43,7 @@ class ConsoleWindow extends PApplet {
     //consoleData.setupConsoleOutput();
 
     //Thats why we use the new consolePrint()
-    consolePrint("This goes to the file and the console.");
-    consolePrint("Hello Major Tom!");
+    consolePrint("ConsoleWindow: Console opened!");
 
     scrollRect = new ScrollRect();
     background(90);
@@ -78,21 +77,23 @@ class ConsoleWindow extends PApplet {
 
 
   void exit() {
+    consolePrint("ConsoleWindow: Console closed!");
     dispose();
   }
 
   // --------------------------------------------------------------
 
   void scene() {
-    pushStyle();
+    pushMatrix();
 
     int fontHeight = 12;
     // reading scroll bar
     float newYValue = scrollRect.scrollValue();
     translate (0, newYValue);
 
-    if ((fontHeight*(consoleData.data.size() - 1) + 4) > heightOfConsoleCanvas) {
-      heightOfConsoleCanvas += fontHeight + 4;
+    // if the text would draw past the scren, increase the heightOfCanvas
+    if ((fontHeight*(consoleData.data.size()) + 4) > (heightOfConsoleCanvas - fontHeight*2)) {
+      heightOfConsoleCanvas += fontHeight*4;
     }
 
     fill(255);
@@ -107,7 +108,7 @@ class ConsoleWindow extends PApplet {
     text("End of virtual canvas", width-130, heightOfConsoleCanvas-32);
 
     fill(122);
-    popStyle();
+    popMatrix();
   }
 
   // ===============================================================

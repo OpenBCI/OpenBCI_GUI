@@ -106,15 +106,15 @@ class ConsoleData {
 // --------------------------------------------------------------
 
 void scene() {
-  pushStyle();
+  pushMatrix();
 
   int fontHeight = 12;
   // reading scroll bar
   float newYValue = scrollRect.scrollValue();
   translate (0, newYValue);
-
-  if ((fontHeight*(consoleData.data.size() - 1) + 4) > heightOfCanvas) {
-    heightOfCanvas += 80;
+  // if the text would draw past the scren, increase the heightOfCanvas
+  if ((fontHeight*(consoleData.data.size()) + 4) > (heightOfCanvas - fontHeight*2)) {
+    heightOfCanvas += fontHeight*4;
   }
 
   fill(255);
@@ -124,7 +124,7 @@ void scene() {
 
   text("End of virtual canvas", width-130, heightOfCanvas-16);
   fill(122);
-  popStyle();
+  popMatrix();
 }
 
 // ===============================================================
