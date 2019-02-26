@@ -481,8 +481,8 @@ void delayedSetup() {
   logo_blue = loadImage("logo_blue.png");
   logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
-  cog_blue = loadImage("cog_45x45_blue.png");
-  cog_white = loadImage("cog_45x45_white.png");
+  cog_blue = loadImage("cog-8_blue.png");
+  cog_white = loadImage("cog-8_white.png");
   loadingGIF = new Gif(this, "OpenBCI-LoadingGIF-2.gif");
   loadingGIF.loop();
   loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");

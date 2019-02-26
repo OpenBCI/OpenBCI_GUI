@@ -23,6 +23,9 @@ class ConsoleWindow extends PApplet {
   ScrollRect scrollRect;
   float heightOfConsoleCanvas = 500;  // realHeight of the entire scene
 
+  int previousScrollRectY = 0;
+  int previousConsoleDataSize = 0;
+
   ClipHelper clipboardCopy = new ClipHelper();
 
   ConsoleWindow() {
@@ -50,11 +53,16 @@ class ConsoleWindow extends PApplet {
   }
 
   void draw() {
-    clear();
+    //redraw window when user controls scrollbar or console data is updated
+    if (scrollRect.holdScrollRect || (consoleData.data.size() > previousConsoleDataSize) ) {
+      clear();
+      scrollRect.display();
+      scrollRect.update();
 
-    scene();
-    scrollRect.display();
-    scrollRect.update();
+      scene();
+      //consolePrint("ConsoleWindow: Console Window redrawn!");
+      previousConsoleDataSize =  consoleData.data.size();
+    }
   }
 
   void keyReleased() {
