@@ -23,8 +23,11 @@ class ConsoleWindow extends PApplet {
   ScrollRect scrollRect;
   float heightOfConsoleCanvas = 500;  // realHeight of the entire scene
 
-  int previousScrollRectY = 0;
+  int previousMouseY = 0;
   int previousConsoleDataSize = 0;
+
+  private boolean visible = true;
+  private boolean updating = false;
 
   ClipHelper clipboardCopy = new ClipHelper();
 
@@ -50,19 +53,40 @@ class ConsoleWindow extends PApplet {
 
     scrollRect = new ScrollRect();
     background(90);
+    setVisible(true);
   }
 
   void draw() {
     //redraw window when user controls scrollbar or console data is updated
-    if (scrollRect.holdScrollRect || (consoleData.data.size() > previousConsoleDataSize) ) {
+    if ((scrollRect.holdScrollRect && (mouseY != previousMouseY))
+      || (consoleData.data.size() > previousConsoleDataSize)) {
+      setUpdating(true);
+    } else {
+      setUpdating(false);
+    }
+    if (updating) {
       clear();
       scrollRect.display();
       scrollRect.update();
-
       scene();
       //consolePrint("ConsoleWindow: Console Window redrawn!");
       previousConsoleDataSize =  consoleData.data.size();
     }
+    previousMouseY = mouseY;
+  }
+
+  public boolean isVisible() {
+    return visible;
+  }
+  public boolean isUpdating() {
+    return updating;
+  }
+
+  public void setVisible(boolean _visible) {
+    visible = _visible;
+  }
+  public void setUpdating(boolean _updating) {
+    updating = _updating;
   }
 
   void keyReleased() {

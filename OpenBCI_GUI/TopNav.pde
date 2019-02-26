@@ -377,7 +377,7 @@ class TopNav {
       toggleFrameRate();
     }
 
-    if (debugButton.isMouseHere() && debugButton.isActive()) {
+    if (debugButton.isMouseHere() && debugButton.isActive() && (consoleWindow == null)) {
       consoleWindow = new ConsoleWindow();
     }
 
