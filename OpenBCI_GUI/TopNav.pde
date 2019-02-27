@@ -376,9 +376,9 @@ class TopNav {
     if (fpsButton.isMouseHere() && fpsButton.isActive()) {
       toggleFrameRate();
     }
-
-    if (debugButton.isMouseHere() && debugButton.isActive() && (consoleWindow == null)) {
+    if (debugButton.isMouseHere() && debugButton.isActive() && (!consoleWindowExists)) {
       consoleWindow = new ConsoleWindow();
+      consoleWindowExists = true;
     }
 
     // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed

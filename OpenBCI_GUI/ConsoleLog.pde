@@ -19,6 +19,7 @@ import java.awt.Toolkit;
 //ConsoleData consoleData = new ConsoleData();
 
 class ConsoleWindow extends PApplet {
+  TopNav topNav;
 
   ScrollRect scrollRect;
   float heightOfConsoleCanvas = 500;  // realHeight of the entire scene
@@ -41,9 +42,8 @@ class ConsoleWindow extends PApplet {
   }
 
   void setup() {
-    background(150);
     //println("This goes to the console.");
-
+    surface.setAlwaysOnTop(true);
     //This function may need to be called when the GUI starts
     //After this point all println() goes to file
     //consoleData.setupConsoleOutput();
@@ -52,7 +52,6 @@ class ConsoleWindow extends PApplet {
     consolePrint("ConsoleWindow: Console opened!");
 
     scrollRect = new ScrollRect();
-    background(90);
     setVisible(true);
   }
 
@@ -66,6 +65,7 @@ class ConsoleWindow extends PApplet {
     }
     if (updating) {
       clear();
+      background(41);
       scrollRect.display();
       scrollRect.update();
       scene();
@@ -110,6 +110,7 @@ class ConsoleWindow extends PApplet {
 
   void exit() {
     consolePrint("ConsoleWindow: Console closed!");
+    consoleWindowExists = false;
     dispose();
   }
 
@@ -119,6 +120,8 @@ class ConsoleWindow extends PApplet {
     pushMatrix();
 
     int fontHeight = 12;
+    float fontSpacing = 1.2;
+    int textY = 4;
     // reading scroll bar
     float newYValue = scrollRect.scrollValue();
     translate (0, newYValue);
@@ -129,17 +132,17 @@ class ConsoleWindow extends PApplet {
     }
 
     fill(255);
-
     for (int i = 0; i < consoleData.data.size(); i++) {
       String[] lines = split(consoleData.data.get(i), "\n");
       for (int j = 0; j < lines.length; j++) {
-        text(lines[j], 10, fontHeight * i + fontHeight * j + 4 * 2, 500, fontHeight+4);
+        textY += (int)(fontHeight*fontSpacing);
+        text(lines[j], 10, textY, (int)textWidth(consoleData.data.get(i))+1, fontHeight+4);
       }
     }
+
     text("mouseY = " + mouseY, width-130, heightOfConsoleCanvas-48);
     text("End of virtual canvas", width-130, heightOfConsoleCanvas-32);
 
-    fill(122);
     popMatrix();
   }
 
@@ -167,11 +170,12 @@ class ConsoleWindow extends PApplet {
       stroke(0);
       line (rectPosX-1, 0, rectPosX-1, height);
       rect(rectPosX, rectPosY, rectWidth, rectHeight);
-      text("rectPosY = " + scrollRect.rectPosY, width-130, height-16);
       // Three small lines in the center
       centerLine(-3);
       centerLine(0);
       centerLine(3);
+      fill(255);
+      text("rectPosY = " + scrollRect.rectPosY, width-130, height-16);
     }
 
     void centerLine(float offset) {

@@ -13,18 +13,34 @@ import java.io.FileOutputStream;
 import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 
+
 int myTimer;
-int timerInterval = 100;
+int secondTimer;
+int timerInterval = 1500;
+Boolean timerRunning = true;
 
 ScrollRect scrollRect;        // the vertical scroll bar
 float heightOfCanvas = 500;  // realHeight of the entire scene
+
+int previousMouseY = 0;
+int previousConsoleDataSize = 0;
+
+private boolean visible = true;
+private boolean updating = false;
 
 PrintStream original = new PrintStream(System.out);
 ConsoleData consoleData = new ConsoleData();
 ClipHelper clipboardCopy = new ClipHelper();
 
+void settings() {
+  size(620, 500);
+}
+
 void setup() {
-  size(500,500);
+  //set the window to be on top of all other windows, always!
+  surface.setAlwaysOnTop(true);
+  //requestFocus makes the app look like there is a notification
+  //((java.awt.Canvas) surface.getNative()).requestFocus();
 
   println("This goes to the console.");
 
@@ -34,20 +50,55 @@ void setup() {
   consolePrint("Hello Major Tom!");
 
   scrollRect = new ScrollRect();
-  background(90);
+  setVisible(true);
 }
 
 void draw() {
-  clear();
-
-  if (millis() > myTimer + timerInterval) {
-    consolePrint(Integer.toString(++consoleData.outputLine));
-    myTimer = millis();
+  if (timerRunning) {
+    if (millis() > myTimer + timerInterval) {
+      consolePrint(Integer.toString(++consoleData.outputLine));
+      myTimer = millis();
+    }
   }
 
-  scene();
-  scrollRect.display();
-  scrollRect.update();
+  if (millis() > secondTimer + timerInterval*50 ) {
+     ((java.awt.Canvas) surface.getNative()).requestFocus();
+     consolePrint("Focus requested");
+     secondTimer= millis();
+     consolePrint("//redraw window when user controls scrollbar or console data is updated//redraw window when user controls scrollbar or console data is updated//redraw window when user controls scrollbar or console data is updated");
+  }
+
+  //redraw window when user controls scrollbar or console data is updated
+  if ((scrollRect.holdScrollRect && (mouseY != previousMouseY))
+    || (consoleData.data.size() > previousConsoleDataSize)) {
+    setUpdating(true);
+  } else {
+    setUpdating(false);
+  }
+  if (updating) {
+    clear();
+    background(41);
+    scrollRect.display();
+    scrollRect.update();
+    scene();
+    //consolePrint("ConsoleWindow: Console Window redrawn!");
+    previousConsoleDataSize =  consoleData.data.size();
+  }
+  previousMouseY = mouseY;
+}
+
+public boolean isVisible() {
+  return visible;
+}
+public boolean isUpdating() {
+  return updating;
+}
+
+public void setVisible(boolean _visible) {
+  visible = _visible;
+}
+public void setUpdating(boolean _updating) {
+  updating = _updating;
 }
 
 void keyReleased() {
@@ -56,6 +107,15 @@ void keyReleased() {
     String stringToCopy = join(consoleData.data.array(), "\n");
     String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
     clipboardCopy.copyString(formattedCodeBlock);
+  }
+
+  if (key == 's' || key == 'S') {
+    if (!timerRunning) {
+      consolePrint("Starting the timer.. \n \n new line \n \n \n \n \n \n HEYTHISISANEWLINE");
+    } else {
+      consolePrint("Stopping the timer..");
+    }
+    timerRunning = !timerRunning;
   }
 }
 
@@ -109,6 +169,8 @@ void scene() {
   pushMatrix();
 
   int fontHeight = 12;
+  float fontSpacing = 1.2;
+  int textY = 4;
   // reading scroll bar
   float newYValue = scrollRect.scrollValue();
   translate (0, newYValue);
@@ -116,14 +178,17 @@ void scene() {
   if ((fontHeight*(consoleData.data.size()) + 4) > (heightOfCanvas - fontHeight*2)) {
     heightOfCanvas += fontHeight*4;
   }
-
+  //draw the text to the screen in white, adjust font and spacing as needed
   fill(255);
   for (int i = 0; i < consoleData.data.size(); i++) {
-    text(consoleData.data.get(i), 10, fontHeight * i + 4, 255, 80);
+    String[] lines = split(consoleData.data.get(i), "\n");
+    for (int j = 0; j < lines.length; j++) {
+      textY += (int)(fontHeight*fontSpacing);
+      text(lines[j], 10, textY, (int)textWidth(consoleData.data.get(i))+1, fontHeight+4);
+    }
   }
 
   text("End of virtual canvas", width-130, heightOfCanvas-16);
-  fill(122);
   popMatrix();
 }
 

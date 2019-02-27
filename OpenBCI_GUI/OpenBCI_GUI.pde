@@ -280,6 +280,7 @@ PApplet ourApplet;
 
 PrintStream original = new PrintStream(System.out);
 ConsoleData consoleData = new ConsoleData();
+boolean consoleWindowExists = false;
 
 //Variables from TopNav.pde. Used to set text when stopping/starting data stream.
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
