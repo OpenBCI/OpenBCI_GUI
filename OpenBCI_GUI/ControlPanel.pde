@@ -3239,7 +3239,7 @@ public class MenuList extends controlP5.Controller {
    * otherwise do whatever this item of the list is supposed to do.
    */
   public void onClick() {
-    consolePrint("click");
+    consolePrint("Control Panel: click!");
     try{
       if (getPointer().x()>getWidth()-scrollerWidth) {
         if(getHeight() != 0){
