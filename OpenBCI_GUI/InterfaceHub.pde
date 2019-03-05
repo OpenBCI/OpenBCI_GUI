@@ -987,7 +987,7 @@ class Hub {
             break;
           case TCP_ACTION_STOP:
             message = json.getString(TCP_JSON_KEY_MESSAGE);
-            consolePrint("ProcessSDcard::Stop: " + message);
+            consolePrint("ProcessSDcard::Success:Stop: " + message);
             break;
         }
         break;
@@ -999,7 +999,7 @@ class Hub {
             break;
           case TCP_ACTION_STOP:
             message = json.getString(TCP_JSON_KEY_MESSAGE);
-            consolePrint("ProcessSDcard::Stop: " + message);
+            consolePrint("ProcessSDcard::Unknown:Stop: " + message);
             break;
         }
         break;
