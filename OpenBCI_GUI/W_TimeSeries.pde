@@ -733,6 +733,7 @@ class PlaybackScrollbar {
   Button skipToStartButton;
   int skipToStart_diameter;
   Boolean indicatorAtStart; //true means the indicator is at index 0
+  int clearBufferThreshold = 5;
   float ps_Padding = 50.0; //used to make room for skip to start button
 
   PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
@@ -782,15 +783,18 @@ class PlaybackScrollbar {
       locked = false;
     }
     //if the slider is being used, update new position based on user mouseX
-    if (locked && (!isRunning || isRunning)) {
+    if (locked) {
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
       try {
+        clearAllTimeSeriesGPlots();
+        clearAllAccelGPlots();
         playbackScrubbing(); //perform scrubbing
       } catch (Exception e) {
         //e.printStackTrace();
         consolePrint("PlaybackScrollbar: Error: " + e);
       }
     }
+
     //if the slider is not being used, let playback control it when (isRunning)
     if (!locked && isRunning){
       //process the file
@@ -815,7 +819,6 @@ class PlaybackScrollbar {
     }
     if (abs(newspos - spos) > 1) { //if the slider has been moved
       spos = spos + (newspos-spos); //update position
-
     }
     if (getIndex() == 0) { //if the current index is 0, the indicator is at start
       indicatorAtStart = true;
@@ -832,7 +835,6 @@ class PlaybackScrollbar {
       skipToStartButton.setIsActive(false); //set button to not active
     }
 
-    //end case for skipToStartButton pressed
   } //end update loop for PlaybackScrollbar
 
   float constrain(float val, float minv, float maxv) {
@@ -961,8 +963,8 @@ class PlaybackScrollbar {
       //This updates Time Series playback position and the value at the top of the GUI in title bar
       currentTableRowIndex = getIndex();
       String[] newTimeStamp = split(index_of_times.get(currentTableRowIndex), '.');
+      //If system is stopped, success print detailed position to bottom of GUI
       if (!isRunning) {
-        //Success print detailed position to bottom of GUI
         outputSuccess("New Position{ " + getPos() + "/" + sposMax
         + " Index: " + currentTableRowIndex
         + " } --- Time: " + newTimeStamp[0]
@@ -990,16 +992,8 @@ class PlaybackScrollbar {
       currentTableRowIndex = 0; //set playback position to 0
       indicatorAtStart = true;
 
-      //clear Time Series, FFT, and Accelerometer data and update all plots
-      prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
-      processNewData();
-      reinitializeCoreDataAndFFTBuffer();
-      for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-        w_timeSeries.updating = true;
-        w_timeSeries.update();
-      }
-      w_accelerometer.initAccelData();
-      w_accelerometer.accelerometerBar.update();
+      clearAllTimeSeriesGPlots();
+      clearAllAccelGPlots();
 
       if (!isRunning) { //if the system is not running
         //Success print detailed position to bottom of GUI
@@ -1028,4 +1022,16 @@ int getElapsedTimeInSeconds(int tableRowIndex) {
   }
   int delta = int((time2 - time1)*0.001);
   return delta;
+}
+
+void clearAllTimeSeriesGPlots() {
+  dataBuffY_uV = new float[nchan][dataBuffX.length];
+  dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int j = 0; j < dataBuffY_filtY_uV[i].length; j++) {
+      dataBuffY_uV[i][j] = 0.0;
+      dataBuffY_filtY_uV[i][j] = 0.0;
+    }
+    w_timeSeries.channelBars[i].update();
+  }
 }

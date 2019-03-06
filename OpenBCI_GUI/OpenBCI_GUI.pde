@@ -50,8 +50,8 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "4.1.0-beta.1";
-String localGUIVersionDate = "February 2019";
+String localGUIVersionString = "4.1.0-beta.2";
+String localGUIVersionDate = "March 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -1041,6 +1041,11 @@ void stopButtonWasPressed() {
   } else { //not running
     consolePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     wm.setUpdating(true);
+    // Clear plots when start button is pressed in playback mode
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+      clearAllTimeSeriesGPlots();
+      clearAllAccelGPlots();
+    }
     startRunning();
     topNav.stopButton.setString(stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));

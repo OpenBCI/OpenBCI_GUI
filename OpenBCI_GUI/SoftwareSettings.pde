@@ -216,7 +216,6 @@ void initSoftwareSettings() {
 
   //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
   //Otherwise, load default settings.
-  loadErrorTimerStart = millis();
   try {
     switch(eegDataSource) {
       case DATASOURCE_CYTON:
@@ -1125,6 +1124,7 @@ void loadApplyTimeSeriesSettings() {
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
 
+    loadErrorTimerStart = millis();
     for (int i = 0; i < slnchan; i++) { //For all time series channels...
       try {
         cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
