@@ -389,11 +389,15 @@ class AccelerometerBar{
   float timeBetweenPoints;
   float[] accelTimeArray;
   int numSamplesToProcess;
+  float minX, minY, minZ;
+  float maxX, maxY, maxZ;
+  float minVal;
+  float maxVal;
+  final float autoScaleSpacing = 0.1;
 
   color channelColor; //color of plot trace
 
   boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
-  int autoScaleYLim = 0;
   int lastProcessedDataPacketInd = 0;
 
   AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
@@ -631,13 +635,20 @@ class AccelerometerBar{
   }
 
   void autoScale() {
-    autoScaleYLim = 0;
-    for (int i = 0; i < nPoints; i++) {
-      if (int(abs(accelPointsX.getY(i))) > autoScaleYLim) {
-        autoScaleYLim = int(abs(accelPointsX.getY(i)));
-      }
+   //update this to happen once a second instead?
+   float[] minMaxVals = minMax(accelPointsX, accelPointsY, accelPointsZ);
+   plot.setYLim(minMaxVals[0] - autoScaleSpacing, minMaxVals[1] + autoScaleSpacing);
+ }
+
+ float[] minMax(GPointsArray arrX, GPointsArray arrY, GPointsArray arrZ) {
+   //go through the XYZ GPpointArrays for on-screen values
+    float[] minMaxVals = {0.f, 0.f};
+    for (int i = 0; i < arrX.getNPoints(); i++) {
+      float[] vals = {arrX.getY(i), arrY.getY(i), arrZ.getY(i)};
+      minMaxVals[0] = min(minMaxVals[0], min(vals)); //make room to see
+      minMaxVals[1] = max(minMaxVals[1], max(vals));
     }
-    plot.setYLim(-autoScaleYLim, autoScaleYLim);
+    return minMaxVals;
   }
 
   void screenResized(int _x, int _y, int _w, int _h) {
