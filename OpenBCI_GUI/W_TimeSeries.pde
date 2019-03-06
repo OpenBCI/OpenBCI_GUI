@@ -1011,8 +1011,7 @@ class PlaybackScrollbar {
     processNewData();
     reinitializeCoreDataAndFFTBuffer();
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.updating = true;
-      w_timeSeries.update();
+      w_timeSeries.channelBars[i].update();
     }
     w_accelerometer.initAccelData();
     w_accelerometer.accelerometerBar.update();
@@ -1035,4 +1034,16 @@ int getElapsedTimeInSeconds(int tableRowIndex) {
   }
   int delta = int((time2 - time1)*0.001);
   return delta;
+}
+
+void clearAllTimeSeriesGPlots() {
+  dataBuffY_uV = new float[nchan][dataBuffX.length];
+  dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int j = 0; j < dataBuffY_filtY_uV[i].length; j++) {
+      dataBuffY_uV[i][j] = 0.0;
+      dataBuffY_filtY_uV[i][j] = 0.0;
+    }
+    w_timeSeries.channelBars[i].update();
+  }
 }

@@ -1024,6 +1024,13 @@ void stopButtonWasPressed() {
     stopRunning();
     topNav.stopButton.setString(stopButton_pressToStart_txt);
     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+
+    // Clear plots when stop button is pressed in playback mode
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+      clearAllTimeSeriesGPlots();
+      clearAllAccelGPlots();
+    }
+
     if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();
       w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
