@@ -11,10 +11,12 @@
                        Created: Richard Waltman - May/June 2018
 
     -- Start System first!
-    -- Capital 'S' to Save
-    -- Capital 'L' to Load
-    -- Functions SaveGUIsettings() and loadGUISettings() are called in Interactivty.pde with the rest of the keyboard shortcuts
-    -- Functions are also called in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
+    -- Lowercase 'n' to Save
+    -- Capital 'N' to Load
+    -- Functions saveGUIsettings() and loadGUISettings() are called:
+        - during system initialization between checkpoints 4 and 5
+        - in Interactivty.pde with the rest of the keyboard shortcuts
+        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
     -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
     -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
 */
@@ -27,6 +29,7 @@ final String kJSONKeyDataInfo = "dataInfo";
 final String kJSONKeyChannelSettings = "channelSettings";
 final String kJSONKeySettings = "settings";
 final String kJSONKeyFFT = "fft";
+final String kJSONKeyAccel = "accelerometer";
 final String kJSONKeyNetworking = "networking";
 final String kJSONKeyHeadplot = "headplot";
 final String kJSONKeyEMG = "emg";
@@ -39,7 +42,7 @@ String [] dataProcessingBPArray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", 
 
 // Used to set text in Time Series dropdown settings
 String[] tsVertScaleArray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
-String[] tsHorizScaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+String[] tsHorizScaleArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //Used to print the status of each channel in the console when loading settings
 String[] channelsActiveArray = {"Active", "Not Active"};
@@ -56,14 +59,18 @@ String[] fftLogLinArray = {"Log", "Linear"};
 String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 String[] fftFilterArray = {"Filtered", "Unfilt."};
 
+//Used to set text in dropdown menus when loading Accelerometer settings
+String[] accVertScaleArray = {"Auto","1 g", "2 g", "4 g"};
+String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
+
 //Used to set text in dropdown menus when loading Networking settings
 String[] nwProtocolArray = {"OSC", "UDP", "LSL", "Serial"};
-String[] nwDataTypesArray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse", "Widget"};
+String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"};
 String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
 //Used to set text in dropdown menus when loading Analog Read settings
 String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
-String[] arHorizScaleArray = {"1 sec", "3 sec", "5 sec", "7 sec"};
+String[] arHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //Used to set text in dropdown menus when loading Head Plot settings
 String[] hpIntensityArray = {"4x", "2x", "1x", "0.5x", "0.2x", "0.02x"};
@@ -98,6 +105,10 @@ int loadBoardMode;
 //Load TS dropdown variables
 int loadTimeSeriesVertScale;
 int loadTimeSeriesHorizScale;
+
+//Load Accel. dropdown variables
+int loadAccelVertScale;
+int loadAccelHorizScale;
 
 //Load Analog Read dropdown variables
 int loadAnalogReadVertScale;
@@ -155,6 +166,79 @@ String [] loadedWidgetsArray;
 int loadFramerate;
 int loadDatasource;
 Boolean dataSourceError = false;
+
+////////////////////////////////////////////////////////////////
+//               Init GUI Software Settings                   //
+//                                                            //
+//  - Called during system initialization in OpenBCI_GUI.pde  //
+////////////////////////////////////////////////////////////////
+void initSoftwareSettings() {
+  String defaultSettingsFileToSave = null;
+  boolean defaultSettingsFileExists;
+  boolean defaultFileDataSourceError;
+  boolean defaultFileChanNumError;
+  int defaultNumChanLoaded = 0;
+  int defaultLoadedDataSource = 0;
+  switch(eegDataSource) {
+    case DATASOURCE_CYTON:
+      defaultSettingsFileToSave = cytonDefaultSettingsFile;
+      break;
+    case DATASOURCE_GANGLION:
+      defaultSettingsFileToSave = ganglionDefaultSettingsFile;
+      break;
+    case DATASOURCE_PLAYBACKFILE:
+      defaultSettingsFileToSave = playbackDefaultSettingsFile;
+      break;
+    case DATASOURCE_SYNTHETIC:
+      defaultSettingsFileToSave = syntheticDefaultSettingsFile;
+      break;
+  }
+  try {
+    //Load all saved User Settings from a JSON file if it exists
+    JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToSave);
+    //Check the number of channels saved to json first!
+    JSONObject loadDataSettings = loadDefaultSettingsJSONData.getJSONObject("dataInfo");
+    defaultNumChanLoaded = loadDataSettings.getInt("Channels");
+    //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
+    defaultLoadedDataSource = loadDataSettings.getInt("Data Source");
+    //println("Data source loaded: " + defaultLoadedDatasource + ". Current data source: " + eegDataSource);
+    defaultSettingsFileExists = true;
+  } catch (Exception e) {
+    defaultSettingsFileExists = false;
+  }
+  if ( //Take a snapshot of the default GUI settings if needed
+    (!defaultSettingsFileExists) ||
+    (defaultLoadedDataSource != eegDataSource) ||
+    (defaultNumChanLoaded != slnchan)) {
+      println("Default user settings file saved!");
+      saveGUISettings(defaultSettingsFileToSave);
+  }
+
+  //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
+  //Otherwise, load default settings.
+  try {
+    switch(eegDataSource) {
+      case DATASOURCE_CYTON:
+        userSettingsFileToLoad = cytonUserSettingsFile;
+        break;
+      case DATASOURCE_GANGLION:
+        userSettingsFileToLoad = ganglionUserSettingsFile;
+        break;
+      case DATASOURCE_PLAYBACKFILE:
+        userSettingsFileToLoad = playbackUserSettingsFile;
+        break;
+      case DATASOURCE_SYNTHETIC:
+        userSettingsFileToLoad = syntheticUserSettingsFile;
+        break;
+    }
+    loadGUISettings(userSettingsFileToLoad);
+    errorUserSettingsNotFound = false;
+  } catch (Exception e) {
+    //e.printStackTrace();
+    println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+    errorUserSettingsNotFound = true;
+  }
+}
 
 ///////////////////////////////
 //      Save GUI Settings    //
@@ -223,13 +307,9 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
     for (int i = 0; i < slnchan; i++) { //For all channels...
       //Make a JSON Object for each of the Time Series Channels
       JSONObject saveTimeSeriesSettings = new JSONObject();
-      for (int j = 0; j < 1; j++) {
-        switch(j) {
-          case 0: //Just save what channels are active
-            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Get integer value from char array channelSettingValues
-            break;
-          }
-      }
+      //Get integer value from char array channelSettingValues
+      tsActiveSetting = Character.getNumericValue(channelSettingValues[i][0]);
+      tsActiveSetting ^= 1;
       saveTimeSeriesSettings.setInt("Channel_Number", (i+1));
       saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
       saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
@@ -245,7 +325,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
   saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
   saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
-  if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+  if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
     saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
     saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
     saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
@@ -274,12 +354,18 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   //Set the FFT JSON Object
   saveSettingsJSONData.setJSONObject(kJSONKeyFFT, saveFFTSettings); //next object will be set to slnchan+3, etc.
 
+  ///////////////////////////////////////////////Setup new JSON object to save Accelerometer settings
+  JSONObject saveAccSettings = new JSONObject();
+  saveAccSettings.setInt("Accelerometer Vert Scale", accVertScaleSave);
+  saveAccSettings.setInt("Accelerometer Horiz Scale", accHorizScaleSave);
+  saveSettingsJSONData.setJSONObject(kJSONKeyAccel, saveAccSettings);
+
   ///////////////////////////////////////////////Setup new JSON object to save Networking settings
   JSONObject saveNetworkingSettings = new JSONObject();
   //Save Protocol
   saveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
 
-  switch(nwProtocolSave){
+  switch(nwProtocolSave) {
     case 0:
       //Save Data Types for OSC
       saveNetworkingSettings.setInt("OSC_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
@@ -402,8 +488,8 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
 
   int numActiveWidgets = 0;
   //Save what Widgets are active and respective Container number (see Containers.pde)
-  for (int i = 0; i < wm.widgets.size(); i++){ //increment through all widgets
-    if (wm.widgets.get(i).isActive){ //If a widget is active...
+  for (int i = 0; i < wm.widgets.size(); i++) { //increment through all widgets
+    if (wm.widgets.get(i).isActive) { //If a widget is active...
       numActiveWidgets++; //increment numActiveWidgets
       //println("Widget" + i + " is active");
       // activeWidgets.add(i); //keep track of the active widget
@@ -417,7 +503,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
   }
   println(numActiveWidgets + " active widgets saved!");
   //Print what widgets are in the containers used by current layout for only the number of active widgets
-  //for (int i = 0; i < numActiveWidgets; i++){
+  //for (int i = 0; i < numActiveWidgets; i++) {
     //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
     //println("Container " + containerCounter + " is available"); //For debugging
   //}
@@ -451,7 +537,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   }
   //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
   loadDatasource = loadDataSettings.getInt("Data Source");
-  println("Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
+  println("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
   //Print error if trying to load a different data source (ex. Live != Synthetic)
   if (loadDatasource != eegDataSource) {
     println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
@@ -461,7 +547,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     dataSourceError = false;
   }
 
-  //parse the global settings
+  //get the global settings JSON object
   JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject("settings");
   loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
   loadNotchSetting = loadGlobalSettings.getInt("Notch");
@@ -470,7 +556,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
   loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
   Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
-  if (eegDataSource == DATASOURCE_CYTON){ //Only save these settings if you are using a Cyton board for live streaming
+  if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
     loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
     loadBoardMode = loadGlobalSettings.getInt("Board Mode");
@@ -480,7 +566,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   //Load more global settings after this line, if needed
 
   //Create a string array to print global settings to console
-  final String[] loadedGlobalSettings = {
+  String[] loadedGlobalSettings = {
     "Using Layout Number: " + loadLayoutSetting,
     "Default Notch: " + loadNotchSetting, //default notch
     "Default BP: " + loadBandpassSetting, //default bp
@@ -494,9 +580,9 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     //Add new global settings above this line to print to console
     };
   //Print the global settings that have been loaded to the console
-  printArray(loadedGlobalSettings);
+  //printArray(loadedGlobalSettings);
 
-  //parse the FFT settings that appear after the global settings
+  //get the FFT settings
   JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject("fft");
   fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
   fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
@@ -505,17 +591,26 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
 
   //Create a string array to print to console
-  final String[] loadedFFTSettings = {
+  String[] loadedFFTSettings = {
     "FFT_Max Frequency: " + fftMaxFrqLoad,
     "FFT_Max uV: " + fftMaxuVLoad,
     "FFT_Log/Lin: " + fftLogLinLoad,
     "FFT_Smoothing: " + fftSmoothingLoad,
-    "FFT_Filter: " + fftFilterLoad,
+    "FFT_Filter: " + fftFilterLoad
     };
   //Print the FFT settings that have been loaded to the console
-  printArray(loadedFFTSettings);
+  //printArray(loadedFFTSettings);
 
-  //parse Networking settings that appear after FFT settings
+  //get the Accelerometer settings
+  JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject("accelerometer");
+  loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
+  loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
+  String[] loadedAccSettings = {
+    "Accelerometer Vert Scale: " + loadAccelVertScale,
+    "Accelerometer Horiz Scale: " + loadAccelHorizScale
+  };
+
+  //get the Networking Settings
   JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject("networking");
   nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
   switch (nwProtocolLoad)  {
@@ -579,7 +674,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
       break;
   } //end switch case for all networking types
 
-  //parse the Headplot settings
+  //get the  Headplot settings
   JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject("headplot");
   hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
   hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
@@ -587,16 +682,16 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
 
   //Create a string array to print to console
-  final String[] loadedHPSettings = {
+  String[] loadedHPSettings = {
     "HP_intensity: " + hpIntensityLoad,
     "HP_polarity: " + hpPolarityLoad,
     "HP_contours: " + hpContoursLoad,
-    "HP_smoothing: " + hpSmoothingLoad,
+    "HP_smoothing: " + hpSmoothingLoad
     };
   //Print the Headplot settings
-  printArray(loadedHPSettings);
+  //printArray(loadedHPSettings);
 
-  //parse the EMG settings
+  //get the EMG settings
   JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject("emg");
   emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
   emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
@@ -604,29 +699,29 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
   //Create a string array to print to console
-  final String[] loadedEMGSettings = {
+  String[] loadedEMGSettings = {
     "EMG_smoothing: " + emgSmoothingLoad,
     "EMG_uVlimit: " + emguVLimLoad,
     "EMG_creepspeed: " + emgCreepLoad,
-    "EMG_minuV: " + emgMinDeltauVLoad,
+    "EMG_minuV: " + emgMinDeltauVLoad
     };
   //Print the EMG settings
-  printArray(loadedEMGSettings);
+  //printArray(loadedEMGSettings);
 
-  //parse the Focus settings
+  //get the  Focus settings
   JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject("focus");
   focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
   focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
 
   //Create a string array to print to console
-  final String[] loadedFocusSettings = {
+  String[] loadedFocusSettings = {
     "Focus_theme: " + focusThemeLoad,
-    "Focus_keypress: " + focusKeyLoad,
+    "Focus_keypress: " + focusKeyLoad
     };
   //Print the EMG settings
-  printArray(loadedFocusSettings);
+  //printArray(loadedFocusSettings);
 
-  //parse the Widget/Container settings
+  //get the  Widget/Container settings
   JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
   //Apply Layout directly before loading and applying widgets to containers
   wm.setNewContainerLayout(loadLayoutSetting);
@@ -635,8 +730,8 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
 
 
   //int numActiveWidgets = 0; //reset the counter
-  for (int w = 0; w < wm.widgets.size(); w++){ //increment through all widgets
-    if (wm.widgets.get(w).isActive){ //If a widget is active...
+  for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
+    if (wm.widgets.get(w).isActive) { //If a widget is active...
       println("Deactivating widget [" + w + "]");
       wm.widgets.get(w).isActive = false;
       //numActiveWidgets++; //counter the number of de-activated widgets
@@ -672,13 +767,13 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
   topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
 
   //Apply Board Mode to Cyton Only
-  if (eegDataSource == DATASOURCE_CYTON){
+  if (eegDataSource == DATASOURCE_CYTON) {
     applyBoardMode();
   }
 
   //Apply Framerate
   frameRateCounter = loadFramerate;
-  switch (frameRateCounter){
+  switch (frameRateCounter) {
     case 0:
       topNav.fpsButton.setString("24 fps");
       frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
@@ -724,7 +819,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
       w_accelerometer.accelModeButton.setString("Turn Accel. Off"); //update button text
       w_accelerometer.drawAccValues(); //draw accelerometer
       w_accelerometer.draw3DGraph();
-      w_accelerometer.drawAccWave();
+      w_accelerometer.accelerometerBar.draw();
     } else {
       ganglion.accelStop(); //send message to hub
       w_accelerometer.accelModeButton.setString("Turn Accel. On"); //update button text
@@ -823,7 +918,7 @@ void loadApplyWidgetDropdownText() {
   Duration(loadTimeSeriesHorizScale);
     w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
 
-  //////Apply FFT settings
+  ////////Apply FFT settings
   MaxFreq(fftMaxFrqLoad); //This changes the back-end
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(fftMaxFrqArray[fftMaxFrqLoad]); //This changes front-end... etc.
 
@@ -831,15 +926,23 @@ void loadApplyWidgetDropdownText() {
     w_fft.cp5_widget.getController("VertScale").getCaptionLabel().setText(fftVertScaleArray[fftMaxuVLoad]);
 
   LogLin(fftLogLinLoad);
-     w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(fftLogLinArray[fftLogLinLoad]);
+    w_fft.cp5_widget.getController("LogLin").getCaptionLabel().setText(fftLogLinArray[fftLogLinLoad]);
 
   Smoothing(fftSmoothingLoad);
-     w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(fftSmoothingArray[fftSmoothingLoad]);
+    w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(fftSmoothingArray[fftSmoothingLoad]);
 
   UnfiltFilt(fftFilterLoad);
-     w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
+    w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(fftFilterArray[fftFilterLoad]);
 
-  if (eegDataSource == DATASOURCE_CYTON){ //Apply Anolog Read dropdowns to Live Cyton Only
+  ////////Apply Accelerometer settings;
+  accelVertScale(loadAccelVertScale);
+    w_accelerometer.cp5_widget.getController("accelVertScale").getCaptionLabel().setText(accVertScaleArray[loadAccelVertScale]);
+
+  accelDuration(loadAccelHorizScale);
+    w_accelerometer.cp5_widget.getController("accelDuration").getCaptionLabel().setText(accHorizScaleArray[loadAccelHorizScale]);
+
+  ////////Apply Anolog Read dropdowns to Live Cyton Only
+  if (eegDataSource == DATASOURCE_CYTON) {
     ////////Apply Analog Read settings
     VertScale_AR(loadAnalogReadVertScale);
       w_analogRead.cp5_widget.getController("VertScale_AR").getCaptionLabel().setText(arVertScaleArray[loadAnalogReadVertScale]);
@@ -976,7 +1079,7 @@ void loadApplyTimeSeriesSettings() {
 
  //Case for loading time series settings in Live Data mode
  if (eegDataSource == DATASOURCE_CYTON)  {
-    //parse the channel settings first for only the number of channels being used
+    //get the channel settings first for only the number of channels being used
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
       int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
@@ -1021,6 +1124,7 @@ void loadApplyTimeSeriesSettings() {
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
 
+    loadErrorTimerStart = millis();
     for (int i = 0; i < slnchan; i++) { //For all time series channels...
       try {
         cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
@@ -1053,28 +1157,30 @@ void loadApplyTimeSeriesSettings() {
 
   //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
   if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
-    //parse the channel settings first for only the number of channels being used
+    //get the channel settings first for only the number of channels being used
     if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
     for (int i = 0; i < numChanloaded; i++) {
       JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-      int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
+      //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
       int active = loadTSChannelSettings.getInt("Active");
       //println("Ch " + channel + ", " + channelsActiveArray[active]);
-      if (active == 0) {
+      if (active == 1) {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[channel]);
-          hub.sendCommand(command_activate_channel[channel]);
-          w_timeSeries.hsc.powerUpChannel(channel);
+          println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
+          hub.sendCommand(command_activate_channel[i]);
+          w_timeSeries.hsc.powerUpChannel(i);
         }
         w_timeSeries.channelBars[i].isOn = true;
-        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
+        channelSettingValues[i][0] = '0';
+        w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
       } else {
         if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[channel]);
-          hub.sendCommand(command_deactivate_channel[channel]);
-          w_timeSeries.hsc.powerDownChannel(channel);
+          println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
+          hub.sendCommand(command_deactivate_channel[i]);
+          w_timeSeries.hsc.powerDownChannel(i);
         }
         w_timeSeries.channelBars[i].isOn = false; // deactivate it
+        channelSettingValues[i][0] = '1';
         w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
       }
     }

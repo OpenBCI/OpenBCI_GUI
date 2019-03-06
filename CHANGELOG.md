@@ -1,3 +1,65 @@
+# v4.1.0
+
+Use OpenBCIHub v2.0.7 please.
+
+## Beta 2
+
+### Bug Fixes
+* Time in status line is not updated every seconds #443
+* Playback Mode: Playback slider and start data stream clears graphs #438
+* Load correct default settings for FFT X and Y axis
+
+## Beta 1
+
+### Bug Fixes
+* Cyton impedance check did not work for Ch16 #427
+
+## Beta 0
+
+### New Features
+* Sync Time Series and Accelerometer functionality and appearance #410
+* Option to sync time window in Accelerometer and Analog Read #410
+* Choose recent playback files from a dropdown in the Control Panel
+
+### Bug Fixes
+* Add GUI version info to Update button help text #407
+* Fix Time Series graph display issue #247
+* Align Ganglion accelerometer data to match Cyton #398
+* Fixed the GUI freezing on launch with a grey screen #409 #406 #426
+
+# v4.0.4
+
+Use OpenBCIHub v2.0.5 please.
+
+### Bug Fix
+
+* Cyton impedance check did not work #427
+
+# v4.0.3
+
+Use OpenBCIHub v2.0.3 please.
+
+### New Features
+
+* On Windows, it is no longer necessary to launch the HUB separately.
+* The HUB is packaged within the GUI on Windows, just like on Mac and Linux.
+
+### Bug Fixes
+
+* Ganglion did not work for Mojave #402
+* Ganglion could not do playback file #399
+
+## Beta 1
+
+### Bug Fixes
+
+* Fixed bug where cyton (and cyton daisy) did not work for auxData #414
+* Fixed bug where GUI does not start hub on Windows #300
+
+## Beta 0
+
+* Initial Release
+
 # v4.0.2
 
 Use OpenBCIHub v2.0.2 please.

@@ -161,58 +161,7 @@ class HardwareSettingsController{
             break;
         }
       }
-
-      // needs to be updated to work with single imp button ...
-      // for (int k = 0; k < 2; k++) {
-      //   switch(k) {
-      //     case 0: // P Imp Buttons
-      //       if (impedanceCheckValues[i][k] == '0') {
-      //         impedanceCheckButtons[i][0].setColorNotPressed(color(75));
-      //         impedanceCheckButtons[i][0].setString("");
-      //       }
-      //       if (impedanceCheckValues[i][k] == '1') {
-      //         impedanceCheckButtons[i][0].setColorNotPressed(isSelected_color);
-      //         impedanceCheckButtons[i][0].setString("");
-      //         if (showFullController) {
-      //           drawImpedanceValues[i] = false;
-      //         } else {
-      //           drawImpedanceValues[i] = true;
-      //         }
-      //       }
-      //       break;
-      //     case 1: // N Imp Buttons
-      //       if (impedanceCheckValues[i][k] == '0') {
-      //         impedanceCheckButtons[i][1].setColorNotPressed(color(75));
-      //         impedanceCheckButtons[i][1].setString("");
-      //       }
-      //       if (impedanceCheckValues[i][k] == '1') {
-      //         impedanceCheckButtons[i][1].setColorNotPressed(isSelected_color);
-      //         impedanceCheckButtons[i][1].setString("");
-      //         if (showFullController) {
-      //           drawImpedanceValues[i] = false;
-      //         } else {
-      //           drawImpedanceValues[i] = true;
-      //         }
-      //       }
-      //       break;
-      //   }
-      // }
     }
-    //then reset to 1
-
-    // AJ KELLER
-    // if (cyton.get_isWritingChannel()) {
-    //   cyton.writeChannelSettings(channelToWrite,channelSettingValues);
-    // }
-
-    // if (rewriteChannelWhenDoneWriting == true) {
-    //   initChannelWrite(channelToWriteWhenDoneWriting);
-    //   rewriteChannelWhenDoneWriting = false;
-    // }
-
-    // if (cyton.get_isWritingImp()) {
-    //   cyton.writeImpedanceSettings(impChannelToWrite,impedanceCheckValues);
-    // }
 
     if (rewriteImpedanceWhenDoneWriting == true && cyton.get_isWritingImp() == false) {
       initImpWrite(impChannelToWriteWhenDoneWriting, final_pORn, final_onORoff);
@@ -296,11 +245,6 @@ class HardwareSettingsController{
     update(); //update 1 time to refresh button values based on new loaded settings
   }
 
-  // void updateChannelArrays(int _nchan) {
-  //   channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-  //   impedanceCheckValues = new char [_nchan][2];
-  // }
-
   //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
   void activateChannel(int Ichan) {
     println("OpenBCI_GUI: activating channel " + (Ichan+1));
@@ -381,42 +325,14 @@ class HardwareSettingsController{
   }
 
   public void initImpWrite(int _numChannel, char pORn, char onORoff) {
-    verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
+    verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel) + " to OpenBCI!");
     if (pORn == 'p') {
-      impedanceCheckValues[_numChannel][0] = onORoff;
+      impedanceCheckValues[_numChannel-1][0] = onORoff;
     }
     if (pORn == 'n') {
-      impedanceCheckValues[_numChannel][1] = onORoff;
+      impedanceCheckValues[_numChannel-1][1] = onORoff;
     }
     cyton.writeImpedanceSettings(_numChannel, impedanceCheckValues);
-    // impChannelToWrite = _numChannel;
-    //after clicking any button, write the new settings for that channel to OpenBCI
-    // if (!cyton.get_isWritingChannel()) { //make sure you aren't currently writing imp settings for a channel
-      // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-      // if (!cyton.get_isWritingImp() && rewriteImpedanceWhenDoneWriting == false) {
-      //   verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
-      //   if (pORn == 'p') {
-      //     impedanceCheckValues[_numChannel][0] = onORoff;
-      //   }
-      //   if (pORn == 'n') {
-      //     impedanceCheckValues[_numChannel][1] = onORoff;
-      //   }
-      //   cyton.initImpWrite(_numChannel);
-      //   impChannelToWrite = _numChannel;
-      // } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
-      //   verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
-      //   rewriteImpedanceWhenDoneWriting = true;
-      //   impChannelToWriteWhenDoneWriting = _numChannel;
-      //
-      //   if (pORn == 'p') {
-      //     final_pORn = 'p';
-      //   }
-      //   if (pORn == 'n') {
-      //     final_pORn = 'n';
-      //   }
-      //   final_onORoff = onORoff;
-      // }
-    // }
   }
 
   public void createChannelSettingButtons(int _channelBarHeight) {
@@ -429,19 +345,6 @@ class HardwareSettingsController{
     int buttonY = 0; //variables to be used for button creation below
     String buttonString = "";
     Button tempButton;
-
-    //create all other channel setting buttons... these are only visible when the user toggles to "showFullController = true"
-    // for (int i = 0; i < nchan; i++) {
-    //   for (int j = 1; j < 6; j++) {
-    //     buttonW = int((w2 - (spacer2*6)) / 5);
-    //     buttonX = int((x2 + (spacer2 * (j))) + ((j-1) * buttonW));
-    //     // buttonH = int((h2 / (nchan + 1)) - (spacer2/2));
-    //     buttonY = int(y2 + (((h2-1)/(nchan+1))*(i+1)) - (buttonH/2));
-    //     buttonString = "N/A";
-    //     tempButton = new Button (buttonX, buttonY, buttonW, buttonH, buttonString, 14);
-    //     channelSettingButtons[i][j] = tempButton;
-    //   }
-    // }
 
     for (int i = 0; i < nchan; i++) {
       for (int j = 1; j < 6; j++) {
@@ -482,15 +385,6 @@ class HardwareSettingsController{
               channelSettingValues[i][j] = '0';
             }
             cyton.writeChannelSettings(i, channelSettingValues);
-            // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-            // if (!cyton.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) { AJ KEller
-            // if (rewriteChannelWhenDoneWriting == false) {
-            //   initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
-            // } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
-            //   verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
-            //   rewriteChannelWhenDoneWriting = true;
-            //   channelToWriteWhenDoneWriting = i;
-            // }
           }
 
           // if(!channelSettingButtons[i][j].isMouseHere()){
@@ -529,10 +423,10 @@ class HardwareSettingsController{
     }
   }
 
-  void toggleImpedanceCheck(int _channelNumber){
+  void toggleImpedanceCheck(int _channelNumber){ //Channel Numbers start at 1
 
-    if(channelSettingValues[_channelNumber][4] == '1'){     //is N pin being used...
-      if (impedanceCheckValues[_channelNumber][1] < '1') { //if not checking/drawing impedance
+    if(channelSettingValues[_channelNumber-1][4] == '1'){     //is N pin being used...
+      if (impedanceCheckValues[_channelNumber-1][1] < '1') { //if not checking/drawing impedance
         initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
         println("Imp[" + _channelNumber + "] is on.");
       } else {
@@ -541,8 +435,8 @@ class HardwareSettingsController{
       }
     }
 
-    if(channelSettingValues[_channelNumber][4] == '0'){     //is P pin being used
-      if (impedanceCheckValues[_channelNumber][0] < '1') {    //is channel on
+    if(channelSettingValues[_channelNumber-1][4] == '0'){     //is P pin being used
+      if (impedanceCheckValues[_channelNumber-1][0] < '1') {    //is channel on
         // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
         // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
         // writeImpedanceSettings(i);
@@ -556,102 +450,5 @@ class HardwareSettingsController{
       }
     }
   }
-
-  // public void mousePressed() {
-  //   //if fullChannelController and one of the buttons (other than ON/OFF) is clicked
-  //
-  //     //if dataSource is coming from OpenBCI, allow user to interact with channel controller
-  //   if (eegDataSource == DATASOURCE_CYTON) {
-      // if (showFullController) {
-      //   for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
-      //     for (int j = 1; j < numSettingsPerChannel; j++) {
-      //       if (channelSettingButtons[i][j].isMouseHere()) {
-      //         //increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-      //         channelSettingButtons[i][j].wasPressed = true;
-      //         channelSettingButtons[i][j].isActive = true;
-      //       }
-      //     }
-      //   }
-      // }
-  //   }
-  //   //on/off button and Imp buttons can always be clicked/released
-  //   for (int i = 0; i < nchan; i++) {
-  //     if (channelSettingButtons[i][0].isMouseHere()) {
-  //       channelSettingButtons[i][0].wasPressed = true;
-  //       channelSettingButtons[i][0].isActive = true;
-  //     }
-  //
-  //     //only allow editing of impedance if dataSource == from OpenBCI
-  //     if (eegDataSource == DATASOURCE_CYTON) {
-  //       if (impedanceCheckButtons[i][0].isMouseHere()) {
-  //         impedanceCheckButtons[i][0].wasPressed = true;
-  //         impedanceCheckButtons[i][0].isActive = true;
-  //       }
-  //       if (impedanceCheckButtons[i][1].isMouseHere()) {
-  //         impedanceCheckButtons[i][1].wasPressed = true;
-  //         impedanceCheckButtons[i][1].isActive = true;
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // public void mouseReleased() {
-  //   //if fullChannelController and one of the buttons (other than ON/OFF) is released
-  //   if (showFullController) {
-  //     for (int i = 0; i < nchan; i++) { //When [i][j] button is clicked
-  //       for (int j = 1; j < numSettingsPerChannel; j++) {
-  //         if (channelSettingButtons[i][j].isMouseHere() && channelSettingButtons[i][j].wasPressed == true) {
-  //           if (channelSettingValues[i][j] < maxValuesPerSetting[j]) {
-  //             channelSettingValues[i][j]++;	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-  //           } else {
-  //             channelSettingValues[i][j] = '0';
-  //           }
-  //           // if you're not currently writing a channel and not waiting to rewrite after you've finished mashing the button
-  //           if (!cyton.get_isWritingChannel() && rewriteChannelWhenDoneWriting == false) {
-  //             initChannelWrite(i);//write new ADS1299 channel row values to OpenBCI
-  //           } else { //else wait until a the current write has finished and then write again ... this is to not overwrite the wrong values while writing a channel
-  //             verbosePrint("CONGRATULATIONS, YOU'RE MASHING BUTTONS!");
-  //             rewriteChannelWhenDoneWriting = true;
-  //             channelToWriteWhenDoneWriting = i;
-  //           }
-  //         }
-  //
-  //         // if(!channelSettingButtons[i][j].isMouseHere()){
-  //         channelSettingButtons[i][j].isActive = false;
-  //         channelSettingButtons[i][j].wasPressed = false;
-  //         // }
-  //       }
-  //     }
-  //   }
-  //   //ON/OFF button can always be clicked/released
-  //   for (int i = 0; i < nchan; i++) {
-  //     //was on/off clicked?
-  //     if (channelSettingButtons[i][0].isMouseHere() && channelSettingButtons[i][0].wasPressed == true) {
-  //       if (channelSettingValues[i][0] < maxValuesPerSetting[0]) {
-  //         channelSettingValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-  //         // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
-  //         // powerDownChannel(i);
-  //         deactivateChannel(i);
-  //       } else {
-  //         channelSettingValues[i][0] = '0';
-  //         // channelSettingButtons[i][0].setColorNotPressed(color(255));
-  //         // powerUpChannel(i);
-  //         activateChannel(i);
-  //       }
-  //       // writeChannelSettings(i);//write new ADS1299 channel row values to OpenBCI
-  //     }
-  //
-
-  //
-  //     channelSettingButtons[i][0].isActive = false;
-  //     channelSettingButtons[i][0].wasPressed = false;
-  //     impedanceCheckButtons[i][0].isActive = false;
-  //     impedanceCheckButtons[i][0].wasPressed = false;
-  //     impedanceCheckButtons[i][1].isActive = false;
-  //     impedanceCheckButtons[i][1].wasPressed = false;
-  //   }
-  //
-  //   update(); //update once to refresh button values
-  // }
 
 };

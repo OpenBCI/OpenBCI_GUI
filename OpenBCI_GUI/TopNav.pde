@@ -99,16 +99,16 @@ class TopNav {
       //Print the message to the button help text that appears when mouse hovers over button
       if (!guiVersionCheckHasOccured) {
         if (guiVersionIsUpToDate) {
-          updateGuiVersionButton.setHelpText("GUI is up to date!");
+          updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
         } else {
-          updateGuiVersionButton.setHelpText("GUI needs to be updated. Click to update!");
+          updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
         }
         guiVersionCheckHasOccured = true;
       }
     } catch (NullPointerException e)  {
       //e.printStackTrace();
       //If github is unreachable, catch the error update button help text
-      updateGuiVersionButton.setHelpText("Connect to internet to check GUI version.");
+      updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
     }
     //Pressing the button opens web browser to Github latest release page
     updateGuiVersionButton.setURL(guiLatestReleaseLocation);
@@ -455,12 +455,9 @@ class TopNav {
   //Load data from the latest release page from Github and the info.plist file
   void loadGUIVersionData() {
 
-    /////////////////////////////////////////////
     //Get the latest release version from Github
     String webTitle;
     String[] version;
-    // Get the raw HTML source into an array of strings (each line is one element in the array).
-    // The next step is to turn array into one long string with join().
     String[] lines = loadStrings(guiLatestReleaseLocation);
     String html = join(lines, "");
     String start = "<title>";
@@ -468,47 +465,21 @@ class TopNav {
     webTitle = giveMeTextBetween(html, start, end);
     version = split(webTitle, '·'); //split the string in the html title
     String[] webVersionNumberArray = split(version[0], ' ');
-    //printArray(webVersionNumberArray);
-    ///Parse the string from Github
-    //remove 'v' character if nedded
-    if (webVersionNumberArray[1].charAt(0) == 'v') {
-      String[] splitV = split(webVersionNumberArray[1], 'v');
-      webGUIVersionString = splitV[1];
-    } else {
-      webGUIVersionString = webVersionNumberArray[1];
-    }
-    //then remove "-alpha" or "-beta" as needed
-    //println(webGUIVersionString);
-    if (webGUIVersionString.length() > 5) {
-     String[] webGUIVersionStringArray = split(webGUIVersionString, '-');
-     //printArray(webGUIVersionStringArray);
-     webGUIVersionString = webGUIVersionStringArray[0];
-    }
-    //webGUIVersionString is the current version, fetched from Github
 
-    /////////////////////////////////////////////////////////////////////////////
-    //Copy the local GUI version from the string that appears in OpenBCI_GUI.pde
-    //Then, format it just as we did above removing 'v' and splitting before any -alpha -beta
+    webGUIVersionString = removeV(webVersionNumberArray[1]);
+    webGUIVersionString = removeAlphaBeta(webGUIVersionString);
+
+    //Copy the local GUI version from OpenBCI_GUI.pde
     String localVersionString = localGUIVersionString;
-    //remove 'v' character if needed
-    if (localVersionString.charAt(0) == 'v') {
-     String[] splitV = split(localVersionString, 'v');
-     localVersionString = splitV[1];
-    }
-    //then remove "-alpha" or "-beta" as needed
-    if (localVersionString.length() > 5) {
-     String[] localGUIVersionStringArray = split(localVersionString, '-');
-     localVersionString = localGUIVersionStringArray[0];
-    }
-    /////////////////////////////////////////////////
+    localVersionString = removeV(localVersionString);
+    localVersionString = removeAlphaBeta(localVersionString);
+
     ///////Perform Comparison (000-1000 format)
     int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
     int[] localVersionCompareArray = int(split(localVersionString, '.'));
     webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
     localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-    //Print the results to console
     println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
-    //compare the versions using the three digit integers and print to console
     if (localGUIVersionInt < webGUIVersionInt) {
       guiVersionIsUpToDate = false;
       println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
@@ -516,13 +487,10 @@ class TopNav {
       guiVersionIsUpToDate = true;
       println("GUI is up to date!");
     }
-
-
   }
 
   // This function returns a substring between two substrings (before and after).
   String giveMeTextBetween(String s, String before, String after) {
-
     // Find the index of before
     int start = s.indexOf(before);
     if (start == -1) {
@@ -539,6 +507,22 @@ class TopNav {
 
     // Return the text in between
     return s.substring(start, end);
+  }
+
+  String removeV(String s) {
+    if (s.charAt(0) == 'v') {
+      String[] tempArr = split(s, 'v');
+      s = tempArr[1];
+    }
+    return s;
+  }
+
+  String removeAlphaBeta(String s) {
+    if (s.length() > 5) {
+      String[] tempArr = split(s, '-');
+      s = tempArr[0];
+    }
+    return s;
   }
 }
 
