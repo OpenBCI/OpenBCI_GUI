@@ -113,9 +113,9 @@ class W_accelerometer extends Widget {
   void initAccelData() {
     //initialize data
     for (int i = 0; i < accelArray[0].length; i++) {  //initialize the accelerometer data
-      accelArray[0][i] = 1;
-      accelArray[1][i] = 0;
-      accelArray[2][i] = -1;
+      accelArray[0][i] = 1.0;
+      accelArray[1][i] = 0.f;
+      accelArray[2][i] = -1.f;
     }
   }
 

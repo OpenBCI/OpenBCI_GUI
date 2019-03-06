@@ -733,7 +733,6 @@ class PlaybackScrollbar {
   Button skipToStartButton;
   int skipToStart_diameter;
   Boolean indicatorAtStart; //true means the indicator is at index 0
-  Boolean buffersHaveBeenCleared = false;
   int clearBufferThreshold = 5;
   float ps_Padding = 50.0; //used to make room for skip to start button
 
@@ -787,14 +786,14 @@ class PlaybackScrollbar {
     if (locked) {
       newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
       try {
-        if (!buffersHaveBeenCleared) {
-          clearDataBuffers();
-        }
+        clearAllTimeSeriesGPlots();
+        clearAllAccelGPlots();
         playbackScrubbing(); //perform scrubbing
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
+
     //if the slider is not being used, let playback control it when (isRunning)
     if (!locked && isRunning){
       //process the file
@@ -992,7 +991,8 @@ class PlaybackScrollbar {
       currentTableRowIndex = 0; //set playback position to 0
       indicatorAtStart = true;
 
-      clearDataBuffers();
+      clearAllTimeSeriesGPlots();
+      clearAllAccelGPlots();
 
       if (!isRunning) { //if the system is not running
         //Success print detailed position to bottom of GUI
@@ -1004,19 +1004,6 @@ class PlaybackScrollbar {
       }
     }
   }// end skipToStartButtonAction
-
-  //clear Time Series, FFT, and Accelerometer data and update all plots
-  void clearDataBuffers() {
-    prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
-    processNewData();
-    reinitializeCoreDataAndFFTBuffer();
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
-      w_timeSeries.channelBars[i].update();
-    }
-    w_accelerometer.initAccelData();
-    w_accelerometer.accelerometerBar.update();
-    buffersHaveBeenCleared = true;
-  }
 };//end PlaybackScrollbar class
 
 //Used in the above PlaybackScrollbar class

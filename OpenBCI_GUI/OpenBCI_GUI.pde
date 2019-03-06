@@ -1024,13 +1024,6 @@ void stopButtonWasPressed() {
     stopRunning();
     topNav.stopButton.setString(stopButton_pressToStart_txt);
     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-
-    // Clear plots when stop button is pressed in playback mode
-    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-      clearAllTimeSeriesGPlots();
-      clearAllAccelGPlots();
-    }
-
     if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();
       w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
@@ -1038,6 +1031,11 @@ void stopButtonWasPressed() {
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     wm.setUpdating(true);
+    // Clear plots when start button is pressed in playback mode
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+      clearAllTimeSeriesGPlots();
+      clearAllAccelGPlots();
+    }
     startRunning();
     topNav.stopButton.setString(stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));
