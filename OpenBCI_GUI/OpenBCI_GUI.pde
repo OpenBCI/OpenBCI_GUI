@@ -221,8 +221,8 @@ int win_y = 768; //window height
 
 PImage logo_blue;
 PImage logo_white;
-PImage cog_blue;
-PImage cog_white;
+PImage consoleImgBlue;
+PImage consoleImgWhite;
 
 PFont f1;
 PFont f2;
@@ -482,8 +482,8 @@ void delayedSetup() {
   logo_blue = loadImage("logo_blue.png");
   logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
-  cog_blue = loadImage("cog-8_blue.png");
-  cog_white = loadImage("cog-8_white.png");
+  consoleImgBlue = loadImage("console-45x45-dots_blue.png");
+  consoleImgWhite = loadImage("console-45x45-dots_white.png");
   loadingGIF = new Gif(this, "OpenBCI-LoadingGIF-2.gif");
   loadingGIF.loop();
   loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");

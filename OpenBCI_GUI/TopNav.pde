@@ -260,9 +260,9 @@ class TopNav {
     fpsButton.draw();
     debugButton.draw();
     if (colorScheme == COLOR_SCHEME_DEFAULT) {
-      image(cog_blue, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
+      image(consoleImgBlue, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
     } else {
-      image(cog_white, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
+      image(consoleImgWhite, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
     }
     // highRezButton.draw();
     tutorialsButton.draw();
