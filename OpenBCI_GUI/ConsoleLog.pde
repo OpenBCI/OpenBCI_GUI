@@ -15,6 +15,7 @@ import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 
 
+
 //PrintStream original = new PrintStream(System.out);
 //ConsoleData consoleData = new ConsoleData();
 
@@ -26,6 +27,7 @@ class ConsoleWindow extends PApplet {
 
   int previousMouseY = 0;
   int previousConsoleDataSize = 0;
+  boolean mouseScrollWheelMoved = false;
 
   private boolean visible = true;
   private boolean updating = false;
@@ -58,7 +60,8 @@ class ConsoleWindow extends PApplet {
   void draw() {
     //redraw window when user controls scrollbar or console data is updated
     if ((scrollRect.holdScrollRect && (mouseY != previousMouseY))
-      || (consoleData.data.size() > previousConsoleDataSize)) {
+      || (consoleData.data.size() > previousConsoleDataSize)
+      || (mouseScrollWheelMoved)) {
       setUpdating(true);
     } else {
       setUpdating(false);
@@ -69,10 +72,11 @@ class ConsoleWindow extends PApplet {
       scrollRect.display();
       scrollRect.update();
       scene();
-      //consolePrint("ConsoleWindow: Console Window redrawn!");
+      //consolePrint("ConsoleWindow: Console Window redrawn!" + millis());
       previousConsoleDataSize =  consoleData.data.size();
     }
     previousMouseY = mouseY;
+    mouseScrollWheelMoved = false;
   }
 
   public boolean isVisible() {
@@ -105,6 +109,17 @@ class ConsoleWindow extends PApplet {
 
   void mouseReleased() {
     scrollRect.mouseReleasedRect();
+  }
+
+  void mouseWheel(processing.event.MouseEvent event) {
+    float e = event.getCount();
+    if (e != 0) {
+      mouseScrollWheelMoved = true;
+      scrollRect.rectPosY = scrollRect.rectPosY + e;
+      scrollRect.rectPosY = scrollRect.keepScrollRectOnScreen(scrollRect.rectPosY);
+    } else {
+      mouseScrollWheelMoved = false;
+    }
   }
 
 
@@ -198,10 +213,7 @@ class ConsoleWindow extends PApplet {
       // dragging of the mouse
       if (holdScrollRect) {
         rectPosY=mouseY-offsetMouseY;
-        if (rectPosY<0)
-          rectPosY=0;
-        if (rectPosY+rectHeight>height-1)
-          rectPosY=height-rectHeight-1;
+        rectPosY=keepScrollRectOnScreen(rectPosY);
       }
     }
 
@@ -210,6 +222,14 @@ class ConsoleWindow extends PApplet {
         map(rectPosY,
         0, height-rectHeight,
         0, - (heightOfConsoleCanvas - height));
+    }
+
+    float keepScrollRectOnScreen(float _rectPosY) {
+      if (_rectPosY<0)
+        _rectPosY=0;
+      if (_rectPosY+rectHeight>height-1)
+        _rectPosY=height-rectHeight-1;
+      return _rectPosY;
     }
 
     boolean mouseOver() {
