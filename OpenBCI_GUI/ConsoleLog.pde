@@ -311,13 +311,11 @@ class ConsoleData {
 
   void setupConsoleOutput() {
     try {
-      String file = dataPath("console-data.txt");
-      if (!new File(dataPath("")).isDirectory()) {
-        if (!new File(dataPath("")).mkdirs()) {
-          consolePrint("Directory creation failed!");
-          exit();
-        }
-      }
+      String file = sketchPath() + "/SavedData/Settings/console-data.txt";
+
+      File consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
+      if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
+
       FileOutputStream outStr = new FileOutputStream(file, false);
       PrintStream printStream = new PrintStream(outStr);
       System.setOut(printStream);
