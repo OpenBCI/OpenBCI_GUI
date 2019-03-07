@@ -10,6 +10,8 @@
 //
 /////////////////////////////////////
 
+import java.io.StringWriter;
+
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
@@ -42,6 +44,13 @@ void consolePrint(StringList _list) {
   String[] list = _list.array();
   String s = join(list, "\n");
   consolePrint(s);
+}
+
+void consolePrint(Exception e) {
+  StringWriter sw = new StringWriter();
+  PrintWriter pw = new PrintWriter(sw);
+  e.printStackTrace(pw);
+  consolePrint(sw.toString());
 }
 
 void delay(int delay)

@@ -276,10 +276,11 @@ class TopNav {
   }
 
   void screenHasBeenResized(int _x, int _y) {
-    tutorialsButton.but_x = width - 3 - tutorialsButton.but_dx;
-    issuesButton.but_x = width - 3*2 - issuesButton.but_dx - tutorialsButton.but_dx;
-    shopButton.but_x = width - 3*3 - shopButton.but_dx - issuesButton.but_dx - tutorialsButton.but_dx;
-    updateGuiVersionButton.but_x = width - 3*3 - shopButton.but_dx - issuesButton.but_dx - tutorialsButton.but_dx - shopButton.but_dx;
+    debugButton.but_x = width - debugButton.but_dx - 3;
+    tutorialsButton.but_x = debugButton.but_x - 80 - 3;
+    issuesButton.but_x = tutorialsButton.but_x - 80 - 3;
+    shopButton.but_x = issuesButton.but_x - 80 - 3;
+    updateGuiVersionButton.but_x = shopButton.but_x - 80 - 3;
 
     if (systemMode == SYSTEMMODE_POSTINIT) {
       layoutButton.but_x = width - 3 - layoutButton.but_dx;

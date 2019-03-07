@@ -205,6 +205,7 @@ void initSoftwareSettings() {
     defaultSettingsFileExists = true;
   } catch (Exception e) {
     defaultSettingsFileExists = false;
+    consolePrint(e);
   }
   if ( //Take a snapshot of the default GUI settings if needed
     (!defaultSettingsFileExists) ||

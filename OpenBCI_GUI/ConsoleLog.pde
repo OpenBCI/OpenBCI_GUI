@@ -14,8 +14,6 @@ import java.io.FileOutputStream;
 import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 
-
-
 //PrintStream original = new PrintStream(System.out);
 //ConsoleData consoleData = new ConsoleData();
 
