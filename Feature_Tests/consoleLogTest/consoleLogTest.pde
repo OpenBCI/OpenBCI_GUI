@@ -173,7 +173,7 @@ void scene() {
   int textY = 4;
   // reading scroll bar
   float newYValue = scrollRect.scrollValue();
-  translate (0, newYValue);
+  translate (headerHeight, newYValue);
   // if the text would draw past the scren, increase the heightOfCanvas
   if ((fontHeight*(consoleData.data.size()) + 4) > (heightOfCanvas - fontHeight*2)) {
     heightOfCanvas += fontHeight*4;
@@ -187,6 +187,10 @@ void scene() {
       text(lines[j], 10, textY, (int)textWidth(consoleData.data.get(i))+1, fontHeight+4);
     }
   }
+
+  //draw header bar
+  stroke(155);
+  rect(0, 0, width - scrollRect.rectWidth, 30);
 
   text("End of virtual canvas", width-130, heightOfCanvas-16);
   popMatrix();
