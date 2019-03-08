@@ -13,13 +13,15 @@ import java.io.PrintStream;
 import java.io.FileOutputStream;
 import java.awt.datatransfer.*;
 import java.awt.Toolkit;
+import java.awt.Desktop;
 
 //PrintStream original = new PrintStream(System.out);
 //ConsoleData consoleData = new ConsoleData();
 
 class ConsoleWindow extends PApplet {
 
-  ControlP5 cp5ConsoleWindow;
+  Desktop desktop;
+  ControlP5 cp5;
   Textarea consoleTextArea;
   int headerHeight = 42;
   float heightOfConsoleCanvas = 500 - headerHeight;
@@ -42,10 +44,9 @@ class ConsoleWindow extends PApplet {
   }
 
   void setup() {
-    //println("This goes to the console.");
     surface.setAlwaysOnTop(true);
-    cp5ConsoleWindow = new ControlP5(this);
-    consoleTextArea = cp5ConsoleWindow.addTextarea("ConsoleWindow")
+    cp5 = new ControlP5(this);
+    consoleTextArea = cp5.addTextarea("ConsoleWindow")
       .setPosition(0, headerHeight)
       .setSize(width, height - headerHeight)
       .setFont(createFont("arial", 14))
@@ -57,30 +58,49 @@ class ConsoleWindow extends PApplet {
       .setScrollForeground(color(144, 100))
     ;
 
+    int cW = int(width/3);
+    int bX = int((cW - 150) / 2);
+    createConsoleLogButton("openLogFileTextButton", "Open Log as Text", bX);
+    bX += cW;
+    createConsoleLogButton("copyFullTextButton", "Copy Full Log Text", bX);
+    bX += cW;
+    createConsoleLogButton("copyLastLineButton", "Copy Last Line", bX);
+
     // add all available console info when opening a new console window
     for (int i = 0; i < consoleData.data.size(); i++) {
       consoleTextArea.append(consoleData.data.get(i)+"\n");
     }
 
     consolePrint("ConsoleWindow: Console opened!");
-
     setVisible(true);
     setUpdating(true);
   }
 
+  void createConsoleLogButton (String bName, String bText, int x) {
+    int w = 150;
+    int h = 34;
+    int y = 4;
+    cp5.addButton(bName)
+        .setPosition(x, y)
+        .setSize(w, h)
+        .setColorBackground(color(80, 100));
+    cp5.getController(bName)
+        .getCaptionLabel()
+        .setFont(createFont("Arial",16,true))
+        .toUpperCase(false)
+        .setSize(16)
+        .setText(bText);
+  }
+
   void draw() {
-
     clear();
-
     if (consoleData.data.size() > previousConsoleDataSize) {
       String s = consoleData.data.get(consoleData.data.size()-1);
       consoleTextArea.append(s+"\n");
     }
-
     scene();
-    cp5ConsoleWindow.draw();
+    cp5.draw();
     previousConsoleDataSize =  consoleData.data.size();
-
   }
 
   public boolean isVisible() {
@@ -99,29 +119,54 @@ class ConsoleWindow extends PApplet {
 
   void keyReleased() {
     if (key == 'c' || key == 'C') {
-      consolePrint("Copying console log to clipboard!");
-      String stringToCopy = join(consoleData.data.array(), "\n");
-      String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
-      clipboardCopy.copyString(formattedCodeBlock);
+      copyFullTextToClipboard();
+    }
+
+    if (key == 'f') {
+      openLogFileTextButton();
     }
   }
 
   void mousePressed() {
-    //consolePrint("mousePressed in secondary window");
-    consoleMouseEvent = true;
+
   }
 
   void mouseReleased() {
-    consoleMouseEvent = false;
+
   }
 
-  void exit() {
-    consolePrint("ConsoleWindow: Console closed!");
-    consoleWindowExists = false;
-    dispose();
+  public void openLogFileTextButton() {
+    openLogFileAsText();
   }
 
-  // --------------------------------------------------------------
+  public void copyFullTextButton() {
+    copyFullTextToClipboard();
+  }
+
+  public void copyLastLineButton() {
+    copyLastLineToClipboard();
+  }
+
+  void openLogFileAsText() {
+    try {
+      consolePrint("Opening console log as text file!");
+      File file = new File (consoleData.file);
+      Desktop desktop = Desktop.getDesktop();
+      if(file.exists()) desktop.open(file);
+    } catch (IOException e) {}
+  }
+
+  void copyFullTextToClipboard() {
+    consolePrint("Copying console log to clipboard!");
+    String stringToCopy = join(consoleData.data.array(), "\n");
+    String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
+    clipboardCopy.copyString(formattedCodeBlock);
+  }
+
+  void copyLastLineToClipboard() {
+    clipboardCopy.copyString(consoleData.data.get(consoleData.data.size()-1));
+    consolePrint("Previous line copied to clipboard.");
+  }
 
   void scene() {
     background(42);
@@ -138,6 +183,16 @@ class ConsoleWindow extends PApplet {
     //text("End of virtual canvas", width-130, heightOfConsoleCanvas-32);
 
     popMatrix();
+  }
+
+  void screenResized(){
+    //put your code here...
+  }
+
+  void exit() {
+    consolePrint("ConsoleWindow: Console closed!");
+    consoleWindowExists = false;
+    dispose();
   }
 
   // ===============================================================
@@ -210,10 +265,10 @@ class ConsoleData {
   StringList data = new StringList();
   int outputLine = 0;
 
+  String file = sketchPath() + "/SavedData/Settings/console-data.txt";
+
   void setupConsoleOutput() {
     try {
-      String file = sketchPath() + "/SavedData/Settings/console-data.txt";
-
       File consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
 
