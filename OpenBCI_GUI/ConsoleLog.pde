@@ -264,14 +264,12 @@ class ConsoleData {
 
   StringList data = new StringList();
   int outputLine = 0;
-
-  String file = sketchPath() + "/SavedData/Settings/console-data.txt";
-
+  String file = "";
   void setupConsoleOutput() {
     try {
-      File consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
+      File consoleDataFile = new File(sketchPath("/SavedData/Settings/"));
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
-
+      file = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
       FileOutputStream outStr = new FileOutputStream(file, false);
       PrintStream printStream = new PrintStream(outStr);
       System.setOut(printStream);
