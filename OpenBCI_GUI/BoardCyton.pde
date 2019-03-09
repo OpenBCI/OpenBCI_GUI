@@ -687,8 +687,8 @@ class Cyton {
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
     json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
-    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel][0] == '1');
-    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel][1] == '1');
+    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel-1][0] == '1');
+    json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel-1][1] == '1');
     hub.writeJSON(json);
     isWritingImp = false;
   }

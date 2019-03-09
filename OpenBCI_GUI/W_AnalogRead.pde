@@ -15,15 +15,15 @@ class W_AnalogRead extends Widget {
 
   int numAnalogReadBars;
   float xF, yF, wF, hF;
-  float ts_padding;
-  float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all analogReadBars)
+  float arPadding;
+  float ar_x, ar_y, ar_h, ar_w; //values for actual time series chart (rectangle encompassing all analogReadBars)
   float plotBottomWell;
   float playbackWidgetHeight;
   int analogReadBarHeight;
 
   AnalogReadBar[] analogReadBars;
 
-  int[] xLimOptions = {1, 3, 5, 7}; // number of seconds (x axis of graph)
+  int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
   int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
   boolean allowSpillover = false;
@@ -35,25 +35,28 @@ class W_AnalogRead extends Widget {
   private boolean updating = true;
   boolean analogReadOn = false;
 
- int analogReadStartingVertScaleIndex = 5;
- int analogReadStartingHorizontalScaleIndex = 2;
+ int arInitialVertScaleIndex = 5;
+ int arInitialHorizScaleIndex = 0;
 
   private boolean hasScrollbar = false;
 
   Button analogModeButton;
 
-  W_AnalogRead(PApplet _parent){
+  W_AnalogRead(PApplet _parent) {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+    //Analog Read settings
+    arVertScaleSave = 5; //updates in VertScale_AR()
+    arHorizScaleSave = 0; //updates in Duration_AR()
 
     //This is the protocol for setting up dropdowns.
     //Note that these 3 dropdowns correspond to the 3 global functions below
     //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
-    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList("Auto", "50", "100", "200", "400", "1000", "10000"), analogReadStartingVertScaleIndex);
-    addDropdown("Duration_AR", "Window", Arrays.asList("1 sec", "3 sec", "5 sec", "7 sec"), analogReadStartingHorizontalScaleIndex);
+    addDropdown("VertScale_AR", "Vert Scale", Arrays.asList(arVertScaleArray), arInitialVertScaleIndex);
+    addDropdown("Duration_AR", "Window", Arrays.asList(arHorizScaleArray), arInitialHorizScaleIndex);
     // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
-    //set number of anaolg reads
+    //set number of analog reads
     if (cyton.isWifi()) {
       numAnalogReadBars = 2;
     } else {
@@ -66,23 +69,24 @@ class W_AnalogRead extends Widget {
     hF = float(h);
 
     plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
-    ts_padding = 10.0;
-    ts_x = xF + ts_padding;
-    ts_y = yF + (ts_padding);
-    ts_w = wF - ts_padding*2;
-    ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-    analogReadBarHeight = int(ts_h/numAnalogReadBars);
+    arPadding = 10.0;
+    ar_x = xF + arPadding;
+    ar_y = yF + (arPadding);
+    ar_w = wF - arPadding*2;
+    ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
+    analogReadBarHeight = int(ar_h/numAnalogReadBars);
 
     analogReadBars = new AnalogReadBar[numAnalogReadBars];
 
     //create our channel bars and populate our analogReadBars array!
-    for(int i = 0; i < numAnalogReadBars; i++){
+    for(int i = 0; i < numAnalogReadBars; i++) {
       println("init analog read bar " + i);
-      int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
-      AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+      int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
+      AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
       analogReadBars[i] = tempBar;
-      analogReadBars[i].adjustVertScale(yLimOptions[analogReadStartingVertScaleIndex]);
-      analogReadBars[i].adjustTimeAxis(xLimOptions[analogReadStartingHorizontalScaleIndex]);
+      analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
+      //sync horiz axis to Time Series by default
+      analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
     }
 
     analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
@@ -116,20 +120,20 @@ class W_AnalogRead extends Widget {
     updating = _updating;
   }
 
-  void update(){
-    if(visible && updating){
+  void update() {
+    if(visible && updating) {
       super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
       //put your code here...
       //update channel bars ... this means feeding new EEG data into plots
-      for(int i = 0; i < numAnalogReadBars; i++){
+      for(int i = 0; i < numAnalogReadBars; i++) {
         analogReadBars[i].update();
       }
     }
   }
 
-  void draw(){
-    if(visible){
+  void draw() {
+    if(visible) {
       super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
       //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
@@ -140,7 +144,7 @@ class W_AnalogRead extends Widget {
         analogModeButton.setString("Turn Analog Read On");
       } else {
         analogModeButton.setString("Turn Analog Read Off");
-        for(int i = 0; i < numAnalogReadBars; i++){
+        for(int i = 0; i < numAnalogReadBars; i++) {
           analogReadBars[i].draw();
         }
       }
@@ -148,7 +152,7 @@ class W_AnalogRead extends Widget {
     }
   }
 
-  void screenResized(){
+  void screenResized() {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     //put your code here...
@@ -157,21 +161,21 @@ class W_AnalogRead extends Widget {
     wF = float(w);
     hF = float(h);
 
-    ts_x = xF + ts_padding;
-    ts_y = yF + (ts_padding);
-    ts_w = wF - ts_padding*2;
-    ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-    analogReadBarHeight = int(ts_h/numAnalogReadBars);
+    ar_x = xF + arPadding;
+    ar_y = yF + (arPadding);
+    ar_w = wF - arPadding*2;
+    ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
+    analogReadBarHeight = int(ar_h/numAnalogReadBars);
 
-    for(int i = 0; i < numAnalogReadBars; i++){
-      int analogReadBarY = int(ts_y) + i*(analogReadBarHeight); //iterate through bar locations
-      analogReadBars[i].screenResized(int(ts_x), analogReadBarY, int(ts_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
+    for(int i = 0; i < numAnalogReadBars; i++) {
+      int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
+      analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
     }
 
     analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
   }
 
-  void mousePressed(){
+  void mousePressed() {
     super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
     if (analogModeButton.isMouseHere()) {
@@ -179,11 +183,11 @@ class W_AnalogRead extends Widget {
     }
   }
 
-  void mouseReleased(){
+  void mouseReleased() {
     super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
     //put your code here...
-    if(analogModeButton.isActive && analogModeButton.isMouseHere()){
+    if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
       // println("analogModeButton...");
       if(cyton.isPortOpen()) {
         if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
@@ -211,61 +215,28 @@ class W_AnalogRead extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_AR(int n) {
-  if (n==0) { //autoscale
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(0);
-    }
-  } else if(n==1) { //50uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(50);
-    }
-  } else if(n==2) { //100uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(100);
-    }
-  } else if(n==3) { //200uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(200);
-    }
-  } else if(n==4) { //400uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(400);
-    }
-  } else if(n==5) { //1000uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(1000);
-    }
-  } else if(n==6) { //10000uV
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustVertScale(10000);
-    }
-  }
   arVertScaleSave = n;
-  closeAllDropdowns();
+  for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
+      w_analogRead.analogReadBars[i].adjustVertScale(w_analogRead.yLimOptions[n]);
+  }
+  //closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration_AR(int n) {
-  // println("adjust duration to: ");
-  if(n==0){ //set time series x axis to 1 secconds
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(1);
-    }
-  } else if(n==1){ //set time series x axis to 3 secconds
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(3);
-    }
-  } else if(n==2){ //set to 5 seconds
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(5);
-    }
-  } else if(n==3){ //set to 7 seconds (max due to arry size ... 2000 total packets saved)
-    for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
-      w_analogRead.analogReadBars[i].adjustTimeAxis(7);
+  // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
+  //set analog read x axis to the duration selected from dropdown
+  arHorizScaleSave = n;
+
+  //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
+  for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
+    if (n == 0) {
+      w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+    } else {
+      w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
     }
   }
-  arHorizScaleSave = n;
-  closeAllDropdowns();
+  //closeAllDropdowns();
 }
 
 //========================================================================================================================
@@ -286,6 +257,7 @@ class AnalogReadBar{
   int nPoints;
   int numSeconds;
   float timeBetweenPoints;
+  int arBuffSize;
 
   color channelColor; //color of plot trace
 
@@ -301,7 +273,7 @@ class AnalogReadBar{
 
   int[] analogReadData;
 
-  AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
+  AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
     analogInputPin = _analogInputPin;
     int digitalPinNum = 0;
@@ -325,7 +297,7 @@ class AnalogReadBar{
     w = _w;
     h = _h;
 
-    numSeconds = 5;
+    numSeconds = 20;
     plot = new GPlot(_parent);
     plot.setPos(x + 36 + 4, y);
     plot.setDim(w - 36 - 4, h);
@@ -336,23 +308,23 @@ class AnalogReadBar{
     plot.setPointSize(2);
     plot.setPointColor(0);
     if (cyton.isWifi()) {
-      if(auxValuesPosition == 1){
+      if(auxValuesPosition == 1) {
         plot.getXAxis().setAxisLabelText("Time (s)");
       }
     } else {
-      if(auxValuesPosition == 2){
+      if(auxValuesPosition == 2) {
         plot.getXAxis().setAxisLabelText("Time (s)");
       }
     }
 
-    nPoints = nPointsBasedOnDataSource();
-
+    nPoints = nPointsBasedOnDataSource(); //max duration 20s
+    arBuffSize = nPoints;
     analogReadData = new int[nPoints];
 
     analogReadPoints = new GPointsArray(nPoints);
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
 
-    for (int i = 0; i < nPoints; i++) {
+    for (int i = 0; i < arBuffSize; i++) {
       float time = -(float)numSeconds + (float)i*timeBetweenPoints;
       float analog_value = 0.0; //0.0 for all points to start
       GPoint tempPoint = new GPoint(time, analog_value);
@@ -379,7 +351,7 @@ class AnalogReadBar{
 
   }
 
-  void update(){
+  void update() {
 
     //update the voltage value text string
     String fmt; float val;
@@ -390,7 +362,7 @@ class AnalogReadBar{
 
     // update data in plot
     updatePlotPoints();
-    if(isAutoscale){
+    if(isAutoscale) {
       autoScale();
     }
   }
@@ -407,7 +379,7 @@ class AnalogReadBar{
       return fmt;
   }
 
-  void updatePlotPoints(){
+  void updatePlotPoints() {
     // update data in plot
     int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
     if (numSamplesToProcess < 0) {
@@ -416,7 +388,7 @@ class AnalogReadBar{
 
     // Shift internal ring buffer numSamplesToProcess
     if (numSamplesToProcess > 0) {
-      for(int i = 0; i < analogReadData.length - numSamplesToProcess; i++){
+      for(int i = 0; i < analogReadData.length - numSamplesToProcess; i++) {
         analogReadData[i] = analogReadData[i + numSamplesToProcess];
       }
     }
@@ -438,20 +410,21 @@ class AnalogReadBar{
       samplesProcessed++;
     }
 
+    int arBuffDiff = arBuffSize - nPoints;
     if (numSamplesToProcess > 0) {
-      for (int i = 0; i < nPoints; i++) {
-        float timey = -(float)numSeconds + (float)i*timeBetweenPoints;
+      for (int i = arBuffDiff; i < arBuffSize; i++) {
+        float timey = -(float)numSeconds + (float)(i-arBuffDiff)*timeBetweenPoints;
         float voltage = analogReadData[i];
 
         GPoint tempPoint = new GPoint(timey, voltage);
-        analogReadPoints.set(i, tempPoint);
+        analogReadPoints.set(i-arBuffDiff, tempPoint);
 
       }
       plot.setPoints(analogReadPoints); //reset the plot with updated analogReadPoints
     }
   }
 
-  void draw(){
+  void draw() {
     pushStyle();
 
     //draw plot
@@ -467,12 +440,12 @@ class AnalogReadBar{
     // plot.drawPoints();
     // plot.drawYAxis();
     if (cyton.isWifi()) {
-      if(auxValuesPosition == 1){ //only draw the x axis label on the bottom channel bar
+      if(auxValuesPosition == 1) { //only draw the x axis label on the bottom channel bar
         plot.drawXAxis();
         plot.getXAxis().draw();
       }
     } else {
-      if(auxValuesPosition == 2){ //only draw the x axis label on the bottom channel bar
+      if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
         plot.drawXAxis();
         plot.getXAxis().draw();
       }
@@ -480,7 +453,7 @@ class AnalogReadBar{
 
     plot.endDraw();
 
-    if(drawAnalogValue){
+    if(drawAnalogValue) {
       analogValue.draw();
       analogPin.draw();
       digitalPin.draw();
@@ -489,50 +462,52 @@ class AnalogReadBar{
     popStyle();
   }
 
-  int nPointsBasedOnDataSource(){
+  int nPointsBasedOnDataSource() {
     return numSeconds * (int)getSampleRateSafe();
   }
 
-  void adjustTimeAxis(int _newTimeSize){
+  void adjustTimeAxis(int _newTimeSize) {
     numSeconds = _newTimeSize;
     plot.setXLim(-_newTimeSize,0);
 
     nPoints = nPointsBasedOnDataSource();
 
     analogReadPoints = new GPointsArray(nPoints);
-    if(_newTimeSize > 1){
+    if(_newTimeSize > 1) {
       plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
     }else{
       plot.getXAxis().setNTicks(10);
     }
     if (w_analogRead != null) {
-      if(w_analogRead.isUpdating()){
+      if(w_analogRead.isUpdating()) {
         updatePlotPoints();
       }
     }
     // println("New X axis = " + _newTimeSize);
+    //closeAllDropdowns();
   }
 
-  void adjustVertScale(int _vertScaleValue){
-    if(_vertScaleValue == 0){
+  void adjustVertScale(int _vertScaleValue) {
+    if(_vertScaleValue == 0) {
       isAutoscale = true;
     } else {
       isAutoscale = false;
       plot.setYLim(-_vertScaleValue, _vertScaleValue);
     }
+    //closeAllDropdowns();
   }
 
-  void autoScale(){
+  void autoScale() {
     autoScaleYLim = 0;
-    for(int i = 0; i < nPoints; i++){
-      if(int(abs(analogReadPoints.getY(i))) > autoScaleYLim){
+    for(int i = 0; i < nPoints; i++) {
+      if(int(abs(analogReadPoints.getY(i))) > autoScaleYLim) {
         autoScaleYLim = int(abs(analogReadPoints.getY(i)));
       }
     }
     plot.setYLim(-autoScaleYLim, autoScaleYLim);
   }
 
-  void screenResized(int _x, int _y, int _w, int _h){
+  void screenResized(int _x, int _y, int _w, int _h) {
     x = _x;
     y = _y;
     w = _w;

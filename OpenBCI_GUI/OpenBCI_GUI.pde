@@ -49,9 +49,13 @@ import gifAnimation.*;
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
+//Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
+String localGUIVersionString = "4.1.0-beta.1";
+String localGUIVersionDate = "February 2019";
+String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+Boolean guiVersionCheckHasOccured = false;
 
 //used to switch between application states
-
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
 final int SYSTEMMODE_MIDINIT = 5;
@@ -146,10 +150,10 @@ long timeSinceStopRunning = 1000;
 int prev_time_millis = 0;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
-// @update_millis: update the buffer every 40 milliseconds
+// @UPDATE_MILLIS: update the buffer every 40 milliseconds
 // @nPointsPerUpdate: update the GUI after this many data points have been received.
 // The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
-final int update_millis = 40;
+final int UPDATE_MILLIS = 40;
 int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 // final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
 // final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
@@ -165,7 +169,7 @@ float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
 
-float displayTime_sec = 5f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
@@ -255,7 +259,7 @@ final int totalColumns16ChanThresh = 16;
 
 boolean synthesizeData = false;
 
-int timeOfSetup = 0;
+boolean setupComplete = false;
 boolean isHubInitialized = false;
 boolean isHubObjectInitialized = false;
 color bgColor = color(1, 18, 41);
@@ -291,45 +295,41 @@ int currentLayout;
 //Notch and Bandpass filter variables for save
 int dataProcessingNotchSave = 0;
 int dataProcessingBandpassSave = 3;
-
 //Time Series settings
-int tsVertScaleSave = 3;
-int tsHorizScaleSave = 2;
+int tsVertScaleSave;
+int tsHorizScaleSave;
 int checkForSuccessTS = 0;
-
+//Accelerometer settings
+int accVertScaleSave;
+int accHorizScaleSave;
 //FFT plot settings,
-int fftMaxFrqSave = 2;
-int fftMaxuVSave = 2;
-int fftLogLinSave = 0;
-int fftSmoothingSave = 3;
-int fftFilterSave = 0;
-
+int fftMaxFrqSave;
+int fftMaxuVSave;
+int fftLogLinSave;
+int fftSmoothingSave;
+int fftFilterSave;
 //Analog Read settings
-int arVertScaleSave = 5; //updates in VertScale_AR()
-int arHorizScaleSave = 2; //updates in Duration_AR()
-
+int arVertScaleSave; //updates in VertScale_AR()
+int arHorizScaleSave; //updates in Duration_AR()
 //Headplot settings
-int hpIntensitySave = 2;
-int hpPolaritySave = 0;
-int hpContoursSave = 0;
-int hpSmoothingSave = 3;
-
+int hpIntensitySave;
+int hpPolaritySave;
+int hpContoursSave;
+int hpSmoothingSave;
 //EMG settings
-int emgSmoothingSave = 4;
-int emguVLimSave = 2;
-int emgCreepSave = 3;
-int emgMinDeltauVSave = 1;
-
+int emgSmoothingSave;
+int emguVLimSave;
+int emgCreepSave;
+int emgMinDeltauVSave;
 //Focus widget settings
-int focusThemeSave = 0;
-int focusKeySave = 0;
-
+int focusThemeSave;
+int focusKeySave;
 //default data types for streams 1-4 in Networking widget
-int nwDataType1 = 0;
-int nwDataType2 = 0;
-int nwDataType3 = 0;
-int nwDataType4 = 0;
-int nwProtocolSave = 0;
+int nwDataType1;
+int nwDataType2;
+int nwDataType3;
+int nwDataType4;
+int nwProtocolSave;
 
 //default configuration settings file location and file name variables
 final String cytonUserSettingsFile = "SavedData/Settings/CytonUserSettings.json";
@@ -352,12 +352,6 @@ Boolean loadErrorCytonEvent = false;
 Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
 final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
-//Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.0.4";
-String localGUIVersionDate = "January 2019";
-String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
-Boolean guiVersionCheckHasOccured = false;
-
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
 JSONObject loadPlaybackHistoryJSON;
@@ -369,6 +363,7 @@ int fileSelectTabsInt = 1;
 int rangePlaybackSelected = 0; //this var is the range the user has selected
 int maxRangePlaybackSelect = 1; //max number of range tabs
 String[] rangePlaybackSelectArray = {};
+boolean recentPlaybackFilesHaveUpdated = false;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -391,27 +386,36 @@ void settings() {
 }
 
 void setup() {
-  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
-  hubInit(); // putting down here gives windows time to close any open apps
-
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+  
   //open window
   ourApplet = this;
 
-  if(frameRateCounter==0){
+  if(frameRateCounter==0) {
     frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
-  if(frameRateCounter==1){
+  if(frameRateCounter==1) {
     frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
-  if(frameRateCounter==2){
+  if(frameRateCounter==2) {
     frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
-  if(frameRateCounter==3){
+  if(frameRateCounter==3) {
     frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
   }
 
+  // Bug #426: If setup takes too long, JOGL will time out waiting for the GUI to draw something.
+  // moving the setup to a separate thread solves this. We just have to make sure not to 
+  // start drawing until delayed setup is done.
+  thread("delayedSetup");
+}
+
+void delayedSetup() {
+
+  if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
+  hubInit(); // putting down here gives windows time to close any open apps
+  
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -463,7 +467,7 @@ void setup() {
   //from the user's perspective, the program hangs out on the ControlPanel until the user presses "Start System".
   print("Graphics & GUI Library: ");
   controlPanel = new ControlPanel(this);
-  //The effect of "Start System" is that initSystem() gets called, which starts up the conneciton to the OpenBCI
+  //The effect of "Start System" is that initSystem() gets called, which starts up the connection to the OpenBCI
   //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.
   //Once the hardware is synchronized, the main GUI is drawn and the user switches over to the main GUI.
 
@@ -495,8 +499,11 @@ void setup() {
   println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
   println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
-  timeOfSetup = millis(); //keep track of time when setup is finished... used to make sure enough time has passed before creating some other objects (such as the Ganglion instance)
+  synchronized(this) {
+    setupComplete = true; // signal that the setup thread has finished
+  }
 }
+
 //====================== END-OF-SETUP ==========================//
 
 //====================UDP Packet Handler==========================//
@@ -506,21 +513,21 @@ void setup() {
 
 String udpReceiveString = null;
 
-void udpReceiveHandler(byte[] data, String ip, int portRX){
+void udpReceiveHandler(byte[] data, String ip, int portRX) {
 
   String udpString = new String(data);
   println(udpString+" from: "+ip+" and port: "+portRX);
-  if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0){
+  if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
 
     /*  Old version with 10 markers
     char c = value.charAt(4);
-  if ( c>= '0' && c <= '9'){
+  if ( c>= '0' && c <= '9') {
       println("Found a valid UDP STIM of value: "+int(c)+" chr: "+c);
       hub.sendCommand("`"+char(c-(int)'0'));
       */
     int intValue = Integer.parseInt(udpString.substring(4));
 
-    if (intValue > 0 && intValue < 96){ // Since we only send single char ascii value markers (from space to char(126)
+    if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
 
       String sendString = "`"+char(intValue+31);
 
@@ -538,10 +545,12 @@ void udpReceiveHandler(byte[] data, String ip, int portRX){
 
 //======================== DRAW LOOP =============================//
 
-void draw() {
-  drawLoop_counter++; //signPost("10");
-  systemUpdate(); //signPost("20");
-  systemDraw();   //signPost("30");
+synchronized void draw() {
+  if(setupComplete) {
+    drawLoop_counter++; //signPost("10");
+    systemUpdate(); //signPost("20");
+    systemDraw();   //signPost("30");
+  }
 }
 
 //====================== END-OF-DRAW ==========================//
@@ -588,7 +597,7 @@ void hubStart() {
       nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
     } else if (isLinux()) {
       println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-      nodeHubby = exec(dataPath("OpenBCIHub"));
+      nodeHubby = exec(dataPath("./OpenBCIHub/OpenBCIHub"));
     } else {
       println("OpenBCI_GUI: hubStart: OS Detected: Mac");
       nodeHubby = launch(dataPath("OpenBCIHub.app"));
@@ -735,53 +744,12 @@ void initSystem() {
 
   verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
 
-  // Nfft = getNfftSafe();
-  nDataBackBuff = 3*(int)getSampleRateSafe();
-  dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
-  nPointsPerUpdate = int(round(float(update_millis) * getSampleRateSafe()/ 1000.f));
-  dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
-  dataBuffY_uV = new float[nchan][dataBuffX.length];
-  dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
-  yLittleBuff = new float[nPointsPerUpdate];
-  yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
-  auxBuff = new float[3][nPointsPerUpdate];
-  accelerometerBuff = new float[3][500]; // 500 points
-  for (int i=0; i<n_aux_ifEnabled; i++) {
-    for (int j=0; j<accelerometerBuff[0].length; j++) {
-      accelerometerBuff[i][j] = 0;
-    }
-  }
-  //data_std_uV = new float[nchan];
-  data_elec_imp_ohm = new float[nchan];
-  is_railed = new DataStatus[nchan];
-  for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
-  for (int i=0; i<nDataBackBuff; i++) {
-    dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
-  }
-  dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
-  dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
-
-  //initialize the data
-  prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+  initCoreDataObjects();
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
   verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
 
-  //initialize the FFT objects
-  for (int Ichan=0; Ichan < nchan; Ichan++) {
-    // verbosePrint("Init FFT Buff – " + Ichan);
-    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
-  }  //make the FFT objects
-
-  //Attempt initialization. If error, print to console and exit function.
-  //Fixes GUI crash when trying to load outdated recordings
-  try {
-    initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
-  } catch (ArrayIndexOutOfBoundsException e) {
-    //e.printStackTrace();
-    outputError("Playback file load error. Try using a more recent recording.");
-    return;
-  }
+  initFFTObjectsAndBuffer();
 
   //prepare some signal processing stuff
   //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
@@ -876,49 +844,8 @@ void initSystem() {
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-  //Take a snapshot of the default GUI settings before loading User settings!
-  String defaultSettingsFileToSave = null;
-  switch(eegDataSource) {
-    case DATASOURCE_CYTON:
-      defaultSettingsFileToSave = cytonDefaultSettingsFile;
-      break;
-    case DATASOURCE_GANGLION:
-      defaultSettingsFileToSave = ganglionDefaultSettingsFile;
-      break;
-    case DATASOURCE_PLAYBACKFILE:
-      defaultSettingsFileToSave = playbackDefaultSettingsFile;
-      break;
-    case DATASOURCE_SYNTHETIC:
-      defaultSettingsFileToSave = syntheticDefaultSettingsFile;
-      break;
-  }
-  saveGUISettings(defaultSettingsFileToSave);
-
-  //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
-  //Otherwise, load default settings.
-  loadErrorTimerStart = millis();
-  try {
-    switch(eegDataSource) {
-      case DATASOURCE_CYTON:
-        userSettingsFileToLoad = cytonUserSettingsFile;
-        break;
-      case DATASOURCE_GANGLION:
-        userSettingsFileToLoad = ganglionUserSettingsFile;
-        break;
-      case DATASOURCE_PLAYBACKFILE:
-        userSettingsFileToLoad = playbackUserSettingsFile;
-        break;
-      case DATASOURCE_SYNTHETIC:
-        userSettingsFileToLoad = syntheticUserSettingsFile;
-        break;
-    }
-    loadGUISettings(userSettingsFileToLoad);
-    errorUserSettingsNotFound = false;
-  } catch (Exception e) {
-    println(e.getMessage());
-    println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
-    errorUserSettingsNotFound = true;
-  }
+  //Init software settings: create default settings files, load user settings, etc.
+  initSoftwareSettings();
 
   //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
   String firmwareToPrint = "";
@@ -968,7 +895,7 @@ void initSystem() {
 float getSampleRateSafe() {
   if (eegDataSource == DATASOURCE_GANGLION) {
     return ganglion.getSampleRate();
-  } else if (eegDataSource == DATASOURCE_CYTON){
+  } else if (eegDataSource == DATASOURCE_CYTON) {
     return cyton.getSampleRate();
   } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
     return playbackData_table.getSampleRate();
@@ -996,6 +923,55 @@ int getNfftSafe() {
   }
 }
 
+void initCoreDataObjects() {
+  // Nfft = getNfftSafe();
+  nDataBackBuff = 3*(int)getSampleRateSafe();
+  dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
+  nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
+  dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
+  dataBuffY_uV = new float[nchan][dataBuffX.length];
+  dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+  yLittleBuff = new float[nPointsPerUpdate];
+  yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
+  auxBuff = new float[3][nPointsPerUpdate];
+  accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
+  for (int i=0; i<n_aux_ifEnabled; i++) {
+    for (int j=0; j<accelerometerBuff[0].length; j++) {
+      accelerometerBuff[i][j] = 0;
+    }
+  }
+  //data_std_uV = new float[nchan];
+  data_elec_imp_ohm = new float[nchan];
+  is_railed = new DataStatus[nchan];
+  for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
+  for (int i=0; i<nDataBackBuff; i++) {
+    dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
+  }
+  dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
+  dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
+
+  //initialize the data
+  prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+}
+
+void initFFTObjectsAndBuffer() {
+  //initialize the FFT objects
+  for (int Ichan=0; Ichan < nchan; Ichan++) {
+    // verbosePrint("Init FFT Buff – " + Ichan);
+    fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
+  }  //make the FFT objects
+
+  //Attempt initialization. If error, print to console and exit function.
+  //Fixes GUI crash when trying to load outdated recordings
+  try {
+    initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+  } catch (ArrayIndexOutOfBoundsException e) {
+    //e.printStackTrace();
+    outputError("Playback file load error. Try using a more recent recording.");
+    return;
+  }
+}
+
 void startRunning() {
   verbosePrint("startRunning...");
   output("Data stream started.");
@@ -1016,7 +992,11 @@ void stopRunning() {
   // openBCI.changeState(0); //make sure it's no longer interpretting as binary
   verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
   if (isRunning) {
-    output("Data stream stopped.");
+    //Dont print this message for playback mode.
+    //Allows user to see current playback time
+    if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
+      output("Data stream stopped.");
+    }
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
     if (ganglion != null) {
@@ -1146,7 +1126,7 @@ void haltSystem() {
     cyton.closeSDandPort();
   }
   if (eegDataSource == DATASOURCE_GANGLION) {
-    if(ganglion.isCheckingImpedance()){
+    if(ganglion.isCheckingImpedance()) {
       ganglion.impedanceStop();
       w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
     }
@@ -1156,6 +1136,8 @@ void haltSystem() {
   systemMode = SYSTEMMODE_PREINIT;
   hub.changeState(STATE_NOCOM);
   abandonInit = false;
+
+  recentPlaybackFilesHaveUpdated = false;
 
   // bleList.items.clear();
   // wifiList.items.clear();
@@ -1173,7 +1155,7 @@ void delayedInit() {
 
 void systemUpdate() { // for updating data values and variables
 
-  if (isHubInitialized && isHubObjectInitialized == false && millis() - timeOfSetup >= 1500) {
+  if (isHubInitialized && isHubObjectInitialized == false) {
     hub = new Hub(this);
     println("Instantiating hub object...");
     isHubObjectInitialized = true;
@@ -1295,11 +1277,11 @@ void systemDraw() { //for drawing to the screen
   // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
   // int currentWidth;
   // int currentHeight;
-  // if(!highDPI){
+  // if(!highDPI) {
   //   currentWidth = width;
   //   currentHeight = height;
   // }
-  // if(highDPI){
+  // if(highDPI) {
   //   pushMatrix();
   //   scale(2);
   // }
@@ -1437,7 +1419,7 @@ void systemDraw() { //for drawing to the screen
 
 
   // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-  // if(highDPI){
+  // if(highDPI) {
   //   popMatrix();
   //   size(currentWidth*2, currentHeight*2);
   // }

@@ -79,13 +79,19 @@ class W_networking extends Widget {
     stream3 = null;
     stream4 = null;
 
-    dataTypes = Arrays.asList("None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"); //Add any new widgets capable of streaming here
+    //default data types for streams 1-4 in Networking widget
+    nwDataType1 = 0;
+    nwDataType2 = 0;
+    nwDataType3 = 0;
+    nwDataType4 = 0;
+    nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
+
+    dataTypes = Arrays.asList(nwDataTypesArray); //Add any new widgets capable of streaming here
     defaultBaud = "115200";
     // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
-    baudRates = Arrays.asList("57600", "115200", "250000", "500000");
+    baudRates = Arrays.asList(nwBaudRatesArray);
     protocolMode = "OSC"; //default to OSC
-    nwProtocolSave = protocolIndex; //save default protocol index, updates in the Protocol() function
-    addDropdown("Protocol", "Protocol", Arrays.asList("OSC", "UDP", "LSL", "Serial"), protocolIndex);
+    addDropdown("Protocol", "Protocol", Arrays.asList(nwProtocolArray), protocolIndex);
     comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
     println("comPorts = " + comPorts);
 

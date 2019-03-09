@@ -136,11 +136,17 @@ class W_emg extends Widget {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
     parent = _parent;
 
+    //EMG settings
+    int emgSmoothingSave = 4;
+    int emguVLimSave = 2;
+    int emgCreepSave = 3;
+    int emgMinDeltauVSave = 1;
+
     //Add dropdowns
-    addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"), 4);
-    addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), 2);
-    addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), 3);
-    addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), 1);
+    addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"), emgSmoothingSave);
+    addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), emguVLimSave);
+    addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), emgCreepSave);
+    addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), emgMinDeltauVSave);
 
     updateEMGMotorWidgets(nchan);
 

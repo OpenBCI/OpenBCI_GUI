@@ -1,3 +1,25 @@
+# v4.1.0
+
+Use OpenBCIHub v2.0.6 please.
+
+## Beta 1
+
+### Bug Fixes
+* Cyton impedance check did not work for Ch16 #427
+
+## Beta 0
+
+### New Features
+* Sync Time Series and Accelerometer functionality and appearance #410
+* Option to sync time window in Accelerometer and Analog Read #410
+* Choose recent playback files from a dropdown in the Control Panel
+
+### Bug Fixes
+* Add GUI version info to Update button help text #407
+* Fix Time Series graph display issue #247
+* Align Ganglion accelerometer data to match Cyton #398
+* Fixed the GUI freezing on launch with a grey screen #409 #406 #426
+
 # v4.0.4
 
 Use OpenBCIHub v2.0.5 please.
