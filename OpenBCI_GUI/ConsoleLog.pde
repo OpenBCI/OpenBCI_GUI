@@ -268,7 +268,7 @@ class ConsoleData {
   void setupConsoleOutput() {
     try {
       File consoleDataFile = null;
-      if (isWindows() || isLinux()) {
+      if (isWindows()) {
         consoleDataFile = new File(sketchPath("/SavedData/Settings/"));
       } else {
         consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
