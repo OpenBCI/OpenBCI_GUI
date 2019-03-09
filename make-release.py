@@ -78,19 +78,9 @@ def cleanup_build_dirs(sketch_dir, zips = False):
             os.remove(full_zip_dir)
             print "Successfully deleted " + full_zip_dir
 
-def build_app(sketch_dir):
-    ### Run a build using processing-java
-    ###########################################################
-    # unfortunately, processing-java always returns exit code 1,
-    # so we can't reliably check for success or failure
-    print "Using sketch: " + sketch_dir
-    subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--export"])
-
-def package_app(sketch_dir, flavor):
-    print "Packaging " + flavor
-
-    ### Ask user for windows signing info
-    ###########################################################
+### Ask user for windows signing info
+###########################################################
+def ask_windows_signing():
     windows_signing = False
     windows_pfx_path = ''
     windows_pfx_password = ''
@@ -103,6 +93,17 @@ def package_app(sketch_dir, flavor):
                 windows_pfx_path = raw_input("PFX file not found. Re-enter: ")
             windows_pfx_password = raw_input("Password for the PFX file: ")
 
+    return windows_signing, windows_pfx_path, windows_pfx_password
+
+def build_app(sketch_dir):
+    ### Run a build using processing-java
+    ###########################################################
+    # unfortunately, processing-java always returns exit code 1,
+    # so we can't reliably check for success or failure
+    print "Using sketch: " + sketch_dir
+    subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--export"])
+
+def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     ### Ask user for the hub directory
     ###########################################################
     hub_dir = raw_input("Enter path to the HUB for " + flavor + ": ")
@@ -218,16 +219,18 @@ def package_app(sketch_dir, flavor):
         shutil.move(temp_dir, build_dir)
         print "Done: " + shutil.make_archive(build_dir, 'zip', build_dir)
 
-### Build and Cleanup
+### Build Sequence
 ###########################################################
 # grab the sketch directory
 sketch_dir = find_sketch_dir()
+# ask about signing
+windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
 # Cleanup to start
 cleanup_build_dirs(sketch_dir, zips=True) # delete old .zips
 # run the build (processing-java)
 build_app(sketch_dir)
 #package it up
 for flavor in flavors[LOCAL_OS]:
-    package_app(sketch_dir, flavor)
+    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
 # Cleanup to finish
 cleanup_build_dirs(sketch_dir, zips=False) # do not delete .zips
