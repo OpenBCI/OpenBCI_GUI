@@ -267,9 +267,15 @@ class ConsoleData {
   String file = "";
   void setupConsoleOutput() {
     try {
-      File consoleDataFile = new File(sketchPath("/SavedData/Settings/"));
+      File consoleDataFile = null;
+      if (isWindows() || isLinux()) {
+        consoleDataFile = new File(sketchPath("/SavedData/Settings/"));
+      } else {
+        consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
+      }
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
       file = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
+
       FileOutputStream outStr = new FileOutputStream(file, false);
       PrintStream printStream = new PrintStream(outStr);
       System.setOut(printStream);
