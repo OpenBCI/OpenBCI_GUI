@@ -78,7 +78,7 @@ def cleanup_build_dirs(sketch_dir, zips = False):
             os.remove(full_zip_dir)
             print "Successfully deleted " + full_zip_dir
 
-### Ask user for windows signing info
+### Function: Ask user for windows signing info
 ###########################################################
 def ask_windows_signing():
     windows_signing = False
@@ -95,14 +95,16 @@ def ask_windows_signing():
 
     return windows_signing, windows_pfx_path, windows_pfx_password
 
+### Function: Run a build using processing-java
+###########################################################
 def build_app(sketch_dir):
-    ### Run a build using processing-java
-    ###########################################################
     # unfortunately, processing-java always returns exit code 1,
     # so we can't reliably check for success or failure
     print "Using sketch: " + sketch_dir
     subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--export"])
 
+### Function: Package the app in the expected file structure
+###########################################################
 def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     ### Ask user for the hub directory
     ###########################################################
