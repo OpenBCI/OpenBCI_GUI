@@ -50,8 +50,8 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.0";
-String localGUIVersionDate = "February 2019";
+String localGUIVersionString = "v4.1.1-beta.0";
+String localGUIVersionDate = "March 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -362,7 +362,7 @@ String[] rangeSelectStringArray = {"1-10", "11-20", "21-30", "31-40", "41-50", "
 int fileSelectTabsInt = 1;
 int rangePlaybackSelected = 0; //this var is the range the user has selected
 int maxRangePlaybackSelect = 1; //max number of range tabs
-String[] rangePlaybackSelectArray = {};
+StringList rangePlaybackStringList = new StringList();
 boolean recentPlaybackFilesHaveUpdated = false;
 
 //------------------------------------------------------------------------
@@ -388,7 +388,7 @@ void settings() {
 void setup() {
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
-  
+
   //open window
   ourApplet = this;
 
@@ -406,7 +406,7 @@ void setup() {
   }
 
   // Bug #426: If setup takes too long, JOGL will time out waiting for the GUI to draw something.
-  // moving the setup to a separate thread solves this. We just have to make sure not to 
+  // moving the setup to a separate thread solves this. We just have to make sure not to
   // start drawing until delayed setup is done.
   thread("delayedSetup");
 }
@@ -415,7 +415,7 @@ void delayedSetup() {
 
   if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
   hubInit(); // putting down here gives windows time to close any open apps
-  
+
   smooth(); //turn this off if it's too slow
 
   surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -1031,6 +1031,11 @@ void stopButtonWasPressed() {
   } else { //not running
     verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
     wm.setUpdating(true);
+    // Clear plots when start button is pressed in playback mode
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+      clearAllTimeSeriesGPlots();
+      clearAllAccelGPlots();
+    }
     startRunning();
     topNav.stopButton.setString(stopButton_pressToStop_txt);
     topNav.stopButton.setColorNotPressed(color(224, 56, 45));
@@ -1107,6 +1112,7 @@ void haltSystem() {
   drawLoop_counter = 0;
   // eegDataSource = -1;
   //set all data source list items inactive
+  rangePlaybackStringList.clear();
 
   //Fix issue for processing successive playback files
   indices = 0;
@@ -1318,7 +1324,7 @@ void systemDraw() { //for drawing to the screen
         surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
         break;
       case DATASOURCE_PLAYBACKFILE:
-        surface.setTitle(int(frameRate) + " fps, Playing " + int(float(currentTableRowIndex)/getSampleRateSafe()) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
+        surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
         break;
       case DATASOURCE_GANGLION:
         surface.setTitle(int(frameRate) + " fps, Ganglion!");

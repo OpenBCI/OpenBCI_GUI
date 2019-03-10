@@ -1,3 +1,14 @@
+# v4.1.1
+
+Use OpenBCIHub v2.0.7 please.
+
+## Beta 0
+
+### Bug Fixes
+* Time in status line is not updated every seconds #443
+* Playback Mode: Playback slider and start data stream clears graphs #438
+* Load correct default settings for FFT X and Y axis
+
 # v4.1.0
 
 Use OpenBCIHub v2.0.6 please.

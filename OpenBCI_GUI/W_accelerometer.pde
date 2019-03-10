@@ -32,8 +32,7 @@ class W_accelerometer extends Widget {
   int[] yLimOptions = {0, 1, 2, 4};
   int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
   int accelHorizLimit = 20;
-  //Number of points, used to make buffers
-  int accelBuffSize;
+  int accelBuffSize; //Number of points, used to make buffers
   AccelerometerBar accelerometerBar;
 
   //Bottom xyz graph
@@ -68,7 +67,7 @@ class W_accelerometer extends Widget {
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
     //Default dropdown settings
-    accVertScaleSave = 2;
+    accVertScaleSave = 0;
     accHorizScaleSave = 0;
 
     //Make dropdowns
@@ -86,12 +85,8 @@ class W_accelerometer extends Widget {
 
     //create our channel bar and populate our accelerometerBar array!
     println("init accelerometer bar");
-    int analogReadBarY = int(accelGraphY) + (accelGraphHeight); //iterate through bar locations
-    AccelerometerBar tempBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //int _channelNumber, int _x, int _y, int _w, int _h
-    accelerometerBar = tempBar;
-    //accelerometerBar.adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
-    //sync horiz axis to Time Series by default
-    accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+    accelerometerBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
+    accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
     String defaultAccelModeButtonString;
     if (eegDataSource == DATASOURCE_GANGLION) {
@@ -118,9 +113,9 @@ class W_accelerometer extends Widget {
   void initAccelData() {
     //initialize data
     for (int i = 0; i < accelArray[0].length; i++) {  //initialize the accelerometer data
-      accelArray[0][i] = accelXyzLimit/2;
-      accelArray[1][i] = 0;
-      accelArray[2][i] = -accelXyzLimit/2;
+      accelArray[0][i] = 1.0;
+      accelArray[1][i] = 0.f;
+      accelArray[2][i] = -1.f;
     }
   }
 
@@ -184,8 +179,6 @@ class W_accelerometer extends Widget {
     super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
     pushStyle();
-    //put your code here...
-    //remember to refer to x,y,w,h which are the positioning variables of the Widget class
 
     fill(50);
     textFont(p4, 14);
@@ -232,17 +225,11 @@ class W_accelerometer extends Widget {
   }
 
   void setGraphDimensions() {
-    //println("accel w "+w);
-    //println("accel h "+h);
-    //println("accel x "+x);
-    //println("accel y "+y);
     accelGraphWidth = w - accPadding*2;
     accelGraphHeight = int((float(h) - float(accPadding*3))/2.0);
     accelGraphX = x + accPadding/3;
     accelGraphY = y + h - accelGraphHeight - int(accPadding*2) + accPadding/6;
 
-    //PolarWindowWidth = 155;
-    //PolarWindowHeight = 155;
     PolarWindowWidth = accelGraphHeight;
     PolarWindowHeight = accelGraphHeight;
     PolarWindowX = x + w - accPadding - PolarWindowWidth/2;
@@ -372,9 +359,8 @@ void accelDuration(int n) {
 //========================================================================================================================
 //                     Accelerometer Graph Class -- Implemented by Accelerometer Widget Class
 //========================================================================================================================
-//this class contains the plot for the 2d graph of accelerometer data
 class AccelerometerBar{
-
+  //this class contains the plot for the 2d graph of accelerometer data
   int x, y, w, h;
   boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
   int accBarPadding = 30;
@@ -389,11 +375,15 @@ class AccelerometerBar{
   float timeBetweenPoints;
   float[] accelTimeArray;
   int numSamplesToProcess;
+  float minX, minY, minZ;
+  float maxX, maxY, maxZ;
+  float minVal;
+  float maxVal;
+  final float autoScaleSpacing = 0.1;
 
   color channelColor; //color of plot trace
 
   boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
-  int autoScaleYLim = 0;
   int lastProcessedDataPacketInd = 0;
 
   AccelerometerBar(PApplet _parent, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
@@ -488,27 +478,22 @@ class AccelerometerBar{
 
     nPoints = nPointsBasedOnDataSource();
     timeBetweenPoints = (float)numSeconds / (float)nPoints;
-    //println("Accelerometer Points:  " + nPoints + "||   Interval: " + timeBetweenPoints);
 
     //Calculate the array for GPlot X axis (Time)
     accelTimeArray = new float[nPoints];
     for (int i = 0; i < accelTimeArray.length; i++) {
       accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
     }
-    //printArray(accelTimeArray);
-
     //Overwrite the existing GPointsArrays with a blank one of size == nPoints
     accelPointsX = new GPointsArray(nPoints);
     accelPointsY = new GPointsArray(nPoints);
     accelPointsZ = new GPointsArray(nPoints);
-
     //Set the number of axis divisions...
     if (_newTimeSize > 1) {
       plot.getXAxis().setNTicks(_newTimeSize);
     }else{
       plot.getXAxis().setNTicks(10);
     }
-
     //If user changes time window, and the accelerometer widget exists...
     if (w_accelerometer != null) {
       //...Redraw/update all of the points in the GPlot from the buffer
@@ -555,21 +540,20 @@ class AccelerometerBar{
     } else {
 
       switch (eegDataSource) {
-      case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-        numSamplesToProcess = 1;
-        break;
-      case DATASOURCE_PLAYBACKFILE:
-        // handle wrap-around
-        lastProcessedDataPacketInd = min(lastProcessedDataPacketInd, currentTableRowIndex);
-        //currentTableRowIndex is used for playback
-        numSamplesToProcess = currentTableRowIndex - lastProcessedDataPacketInd;
-        // we can't process more samples than we have a buffer for
-        numSamplesToProcess = min(numSamplesToProcess, accelBuffSize);
-        break;
-      default:
-        numSamplesToProcess = 0;
+        case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
+          numSamplesToProcess = 1;
+          break;
+        case DATASOURCE_PLAYBACKFILE:
+          // handle wrap-around
+          lastProcessedDataPacketInd = min(lastProcessedDataPacketInd, currentTableRowIndex);
+          //currentTableRowIndex is used for playback
+          numSamplesToProcess = currentTableRowIndex - lastProcessedDataPacketInd;
+          // we can't process more samples than we have a buffer for
+          numSamplesToProcess = min(numSamplesToProcess, accelBuffSize);
+          break;
+        default:
+          numSamplesToProcess = 0;
       }
-
       //Shift internal ring buffer numSamplesToProcess
       if (numSamplesToProcess > 0) {
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
@@ -578,7 +562,6 @@ class AccelerometerBar{
           }
         }
       }
-
       //for each new sample
       int samplesProcessed = 0;
       while (samplesProcessed < numSamplesToProcess) {
@@ -588,25 +571,17 @@ class AccelerometerBar{
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
           accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
         }
-
         samplesProcessed++;
       }
     }
-    //set all of the Gplot points
     setGPlotPoints(accelBuffSize);
   }
-
-
-  ///////////////////////
-
-
 
   void setGPlotPoints(int accelBuffSize) {
     //println("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
     if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-        //float time = -(float)numSeconds + (float)(i-(accelBuffDiff))*timeBetweenPoints;
         GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
         GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
         GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
@@ -631,13 +606,18 @@ class AccelerometerBar{
   }
 
   void autoScale() {
-    autoScaleYLim = 0;
-    for (int i = 0; i < nPoints; i++) {
-      if (int(abs(accelPointsX.getY(i))) > autoScaleYLim) {
-        autoScaleYLim = int(abs(accelPointsX.getY(i)));
-      }
+   float[] minMaxVals = minMax(accelPointsX, accelPointsY, accelPointsZ);
+   plot.setYLim(minMaxVals[0] - autoScaleSpacing, minMaxVals[1] + autoScaleSpacing);
+ }
+
+ float[] minMax(GPointsArray arrX, GPointsArray arrY, GPointsArray arrZ) {
+    float[] minMaxVals = {0.f, 0.f};
+    for (int i = 0; i < arrX.getNPoints(); i++) { //go through the XYZ GPpointArrays for on-screen values
+      float[] vals = {arrX.getY(i), arrY.getY(i), arrZ.getY(i)};
+      minMaxVals[0] = min(minMaxVals[0], min(vals)); //make room to see
+      minMaxVals[1] = max(minMaxVals[1], max(vals));
     }
-    plot.setYLim(-autoScaleYLim, autoScaleYLim);
+    return minMaxVals;
   }
 
   void screenResized(int _x, int _y, int _w, int _h) {
@@ -645,10 +625,20 @@ class AccelerometerBar{
     y = _y;
     w = _w+100;
     h = _h;
-
     //reposition & resize the plot
     plot.setPos(x + 36 + 4 + xOffset, y);
     plot.setDim(w - 36 - 4 - xOffset, h);
 
   }
-};
+
+  void clearAllGPlots() {
+      accelArray = new float[NUM_ACCEL_DIMS][accelArray[0].length];
+      w_accelerometer.initAccelData();
+      setGPlotPoints(w_accelerometer.accelBuffSize);
+  }
+}; //end of class
+
+//Global method
+void clearAllAccelGPlots() {
+  w_accelerometer.accelerometerBar.clearAllGPlots();
+}

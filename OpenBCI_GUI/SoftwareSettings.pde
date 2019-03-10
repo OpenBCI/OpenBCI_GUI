@@ -65,7 +65,7 @@ String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 
 
 //Used to set text in dropdown menus when loading Networking settings
 String[] nwProtocolArray = {"OSC", "UDP", "LSL", "Serial"};
-String[] nwDataTypesArray = {"None", "TimesSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"};
+String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"};
 String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
 //Used to set text in dropdown menus when loading Analog Read settings
@@ -216,7 +216,6 @@ void initSoftwareSettings() {
 
   //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
   //Otherwise, load default settings.
-  loadErrorTimerStart = millis();
   try {
     switch(eegDataSource) {
       case DATASOURCE_CYTON:
@@ -1125,6 +1124,7 @@ void loadApplyTimeSeriesSettings() {
       channelSettingValues[i][5] = (char)(srb1Setting + '0');
     } //end case for all channels
 
+    loadErrorTimerStart = millis();
     for (int i = 0; i < slnchan; i++) { //For all time series channels...
       try {
         cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
