@@ -228,7 +228,7 @@ class CustomOutputStream extends PrintStream {
     data = new StringList();
 
     // create log file
-    // TODO: 
+    // TODO: Figure out clean way to create file on all platforms
     try {
       File consoleDataFile = null;
       if (isWindows()) {
