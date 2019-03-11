@@ -96,8 +96,7 @@ class ConsoleWindow extends PApplet {
   void draw() {
     clear();
     int diff = consoleData.data.size() - previousConsoleDataSize;
-    for (int i=0; i < diff; i++)
-    {
+    for (int i=0; i < diff; i++) {
       String s = consoleData.data.get(consoleData.data.size() - diff - i);
       consoleTextArea.append(s+"\n");
     }
