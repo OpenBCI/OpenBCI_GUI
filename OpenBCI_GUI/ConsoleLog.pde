@@ -19,11 +19,10 @@ class ConsoleWindow extends PApplet {
   private ControlP5 cp5;
   private Textarea consoleTextArea;
   private ClipHelper clipboardCopy;
-
+  
   private final int headerHeight = 42;
-
-  private boolean visible = true;
-  private boolean updating = false;
+  private final int defaultWidth = 620;
+  private final int defaultHeight = 500;
 
   ConsoleWindow() {
     super();
@@ -31,18 +30,18 @@ class ConsoleWindow extends PApplet {
   }
 
   void settings() {
-    size(620, 500);
+    size(defaultWidth, defaultHeight);
   }
 
   void setup() {
     surface.setAlwaysOnTop(true);
+    surface.setResizable(true);
 
     clipboardCopy = new ClipHelper();
     cp5 = new ControlP5(this);
 
     consoleTextArea = cp5.addTextarea("ConsoleWindow")
       .setPosition(0, headerHeight)
-      .setSize(width, height - headerHeight)
       .setFont(createFont("arial", 14))
       .setLineHeight(18)
       .setColor(color(242))
@@ -57,15 +56,15 @@ class ConsoleWindow extends PApplet {
 
     int cW = int(width/3);
     int bX = int((cW - 150) / 2);
-    createConsoleLogButton("openLogFileTextButton", "Open Log as Text", bX);
+    createConsoleLogButton("openLogFileAsText", "Open Log as Text (T)", bX);
     bX += cW;
-    createConsoleLogButton("copyFullTextButton", "Copy Full Log Text", bX);
+    createConsoleLogButton("copyFullTextToClipboard", "Copy Full Log Text (C)", bX);
     bX += cW;
-    createConsoleLogButton("copyLastLineButton", "Copy Last Line", bX);
+    createConsoleLogButton("copyLastLineToClipboard", "Copy Last Line (L)", bX);
   }
 
   void createConsoleLogButton (String bName, String bText, int x) {
-    int w = 150;
+    int w = 170;
     int h = 34;
     int y = 4;
     cp5.addButton(bName)
@@ -81,32 +80,31 @@ class ConsoleWindow extends PApplet {
   }
 
   void draw() {
+    // dynamically resize text area to fit widget
+    consoleTextArea.setSize(width, height - headerHeight);
+
     clear();
     scene();
     cp5.draw();
   }
 
-  public boolean isVisible() {
-    return visible;
-  }
-  public boolean isUpdating() {
-    return updating;
-  }
-
-  public void setVisible(boolean _visible) {
-    visible = _visible;
-  }
-  public void setUpdating(boolean _updating) {
-    updating = _updating;
+  void scene() {
+    background(42);
+    fill(42);
+    rect(0, 0, width, headerHeight);
   }
 
   void keyReleased() {
-    if (key == 'c' || key == 'C') {
+    if (key == 'c') {
       copyFullTextToClipboard();
     }
 
     if (key == 'f') {
-      openLogFileTextButton();
+      openLogFileAsText();
+    }
+
+    if (key == 'l') {
+      copyLastLineToClipboard();
     }
   }
 
@@ -116,18 +114,6 @@ class ConsoleWindow extends PApplet {
 
   void mouseReleased() {
 
-  }
-
-  public void openLogFileTextButton() {
-    openLogFileAsText();
-  }
-
-  public void copyFullTextButton() {
-    copyFullTextToClipboard();
-  }
-
-  public void copyLastLineButton() {
-    copyLastLineToClipboard();
   }
 
   void openLogFileAsText() {
@@ -153,23 +139,6 @@ class ConsoleWindow extends PApplet {
     println("Previous line copied to clipboard.");
   }
 
-  void scene() {
-    background(42);
-    pushMatrix();
-
-    int fontHeight = 12;
-    float fontSpacing = 1.2;
-    int textY = 4;
-
-    fill(42);
-    rect(0, 0, width, headerHeight);
-
-    //text("mouseY = " + mouseY, width-130, heightOfConsoleCanvas-48);
-    //text("End of virtual canvas", width-130, heightOfConsoleCanvas-32);
-
-    popMatrix();
-  }
-
   void screenResized(){
     //put your code here...
   }
@@ -192,19 +161,19 @@ class ConsoleWindow extends PApplet {
     void getClipboard () {
       // this is our simple thread that grabs the clipboard
       Thread clipThread = new Thread() {
-    public void run() {
-      clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    }
+        public void run() {
+          clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
       };
 
       // start the thread as a daemon thread and wait for it to die
       if (clipboard == null) {
-    try {
-      clipThread.setDaemon(true);
-      clipThread.start();
-      clipThread.join();
-    }
-    catch (Exception e) {}
+        try {
+          clipThread.setDaemon(true);
+          clipThread.start();
+          clipThread.join();
+        }
+        catch (Exception e) {}
       }
     }
 
@@ -220,7 +189,7 @@ class ConsoleWindow extends PApplet {
     String pasteString () {
       String data = null;
       try {
-    data = (String)pasteObject(DataFlavor.stringFlavor);
+        data = (String)pasteObject(DataFlavor.stringFlavor);
       }
       catch (Exception e) {
         println("Error getting String from clipboard: " + e);
