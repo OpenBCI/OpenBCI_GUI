@@ -19,7 +19,7 @@ class ConsoleWindow extends PApplet {
   private ControlP5 cp5;
   private Textarea consoleTextArea;
   private ClipHelper clipboardCopy;
-  
+
   private final int headerHeight = 42;
   private final int defaultWidth = 620;
   private final int defaultHeight = 500;
@@ -55,7 +55,7 @@ class ConsoleWindow extends PApplet {
     outputStream.registerTextArea(consoleTextArea);
 
     int cW = int(width/3);
-    int bX = int((cW - 150) / 2);
+    int bX = int((cW - 170) / 2);
     createConsoleLogButton("openLogFileAsText", "Open Log as Text (F)", bX);
     bX += cW;
     createConsoleLogButton("copyFullTextToClipboard", "Copy Full Log Text (C)", bX);
@@ -269,7 +269,7 @@ class CustomOutputStream extends PrintStream {
 
     // add to array
     data.append(string);
-    
+
     // print to file
     fileOutput.print(string);
 
