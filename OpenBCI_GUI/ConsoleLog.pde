@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////
-//                 ConsoleLog.pde                     //
+//                 ConsoleLog.pde                         //
 //  This is an example of how to print console messages:  //
 //      -- to console                                     //
 //      -- to a file                                      //
@@ -193,7 +193,7 @@ class ConsoleWindow extends PApplet {
   }
 
   void exit() {
-    consolePrint("ConsoleWindow: Console closed!");
+    println("ConsoleWindow: Console closed!");
     consoleWindowExists = false;
     dispose();
   }

@@ -207,7 +207,7 @@ class W_Focus extends Widget {
         serial_output.write('\n');
       }
       catch(RuntimeException e) {
-        consolePrint("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
+        verbosePrint("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
       }
     }
   }
@@ -485,7 +485,7 @@ public class FocusSlider extends BasicSlider {
       float newVal = map(mouseY, yBot, yTop, 0, 1);
       val = constrain(newVal, valMin, valMax);
       y = map(val, 0, 1, yBot, yTop);
-      consolePrint("FocusSlider: " + val);
+      println(val);
     }
   }
 
@@ -521,7 +521,7 @@ public class FocusSlider_Static extends BasicSlider {
     if (isPressed) {
       float diff = map(mouseY, yBot, yTop, -0.07, 0);
       val = constrain(val + diff, valMin, valMax);
-      consolePrint("FocusSlider_Static: " + val);
+      println(val);
     }
   }
 
@@ -546,21 +546,21 @@ public class FocusSlider_Static extends BasicSlider {
 
 // //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void StrokeKeyWhenFocused(int n){
-  // consolePrint("Item " + (n+1) + " selected from Dropdown 1");
+  // println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0){
     //do this
     w_focus.enableKey = false;
-    consolePrint("The robot ignores focused state and will not press any key.");
+    println("The robot ignores focused state and will not press any key.");
   } else if(n==1){
     //do this instead
     w_focus.enableKey = true;
     w_focus.keyNum = 0;
-    consolePrint("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
+    println("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
   } else if(n==2){
     //do this instead
     w_focus.enableKey = true;
     w_focus.keyNum = 1;
-    consolePrint("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
+    println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
   }
   focusKeySave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close

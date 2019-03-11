@@ -33,7 +33,7 @@ class Presentation {
 
   Presentation (){
     //loading presentation images
-    consolePrint("attempting to load images for presentation...");
+    println("attempting to load images for presentation...");
     presentationSlides[0] = loadImage("prez-images/Presentation.000.jpg");
     presentationSlides[1] = loadImage("prez-images/Presentation.001.jpg");
     presentationSlides[2] = loadImage("prez-images/Presentation.002.jpg");
@@ -51,24 +51,24 @@ class Presentation {
     // presentationSlides[14] = loadImage("prez-images/Presentation.014.jpg");
     // presentationSlides[15] = loadImage("prez-images/Presentation.015.jpg");
     // slideCount = 4;
-    consolePrint("DONE loading images!");
+    println("DONE loading images!");
   }
 
   public void slideForward() {
     if(currentSlide < slideCount - 1 && drawPresentation && !lockSlides){
-      consolePrint("Slide Forward!");
+      println("Slide Forward!");
       currentSlide++;
     } else{
-      consolePrint("No more slides. Can't go forward...");
+      println("No more slides. Can't go forward...");
     }
   }
 
   public void slideBack() {
     if(currentSlide > 0 && drawPresentation && !lockSlides){
-      consolePrint("Slide Back!");
+      println("Slide Back!");
       currentSlide--;
     } else {
-      consolePrint("On the first slide. Can't go back...");
+      println("On the first slide. Can't go back...");
     }
   }
 

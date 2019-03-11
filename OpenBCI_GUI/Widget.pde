@@ -150,10 +150,10 @@ class Widget{
     dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
 
     cp5_widget.setColor(dropdownColors);
-    // consolePrint("Setting up dropdowns...");
+    // println("Setting up dropdowns...");
     for(int i = 0; i < dropdowns.size(); i++){
       int dropdownPos = dropdowns.size() - i;
-      // consolePrint("dropdowns.get(i).id = " + dropdowns.get(i).id);
+      // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
       cp5_widget.addScrollableList(dropdowns.get(i).id)
         .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
         .setFont(h5)
@@ -184,20 +184,20 @@ class Widget{
   }
   void updateDropdowns(){
     //if a dropdown is open and mouseX/mouseY is outside of dropdown, then close it
-    // consolePrint("dropdowns.size() = " + dropdowns.size());
+    // println("dropdowns.size() = " + dropdowns.size());
     if(cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
       if(!cp5_widget.getController("WidgetSelector").isMouseOver()){
-        // consolePrint("2");
+        // println("2");
         cp5_widget.get(ScrollableList.class, "WidgetSelector").close();
       }
     }
 
     for(int i = 0; i < dropdowns.size(); i++){
-      // consolePrint("i = " + i);
+      // println("i = " + i);
       if(cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
-        // consolePrint("1");
+        // println("1");
         if(!cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
-          // consolePrint("2");
+          // println("2");
           cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).close();
         }
       }
@@ -209,17 +209,17 @@ class Widget{
     } else{
       if(!cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
         if(cp5_widget.getController("WidgetSelector").isMouseOver()){
-          // consolePrint("2");
+          // println("2");
           cp5_widget.get(ScrollableList.class, "WidgetSelector").open();
         }
       }
 
       for(int i = 0; i < dropdowns.size(); i++){
-        // consolePrint("i = " + i);
+        // println("i = " + i);
         if(!cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
-          // consolePrint("1");
+          // println("1");
           if(cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
-            // consolePrint("2");
+            // println("2");
             cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).open();
           }
         }
@@ -306,15 +306,15 @@ class Widget{
 
     cp5_widget.setGraphics(pApplet, 0, 0);
 
-    // consolePrint("testing... 1. 2. 3....");
+    // println("testing... 1. 2. 3....");
     try {
       cp5_widget.getController("WidgetSelector")
         .setPosition(x0+2, y0+2) //upper left corner
         ;
     }
     catch (Exception e) {
-      // consolePrint(e.getMessage());
-      // consolePrint("widgetOptions List not built yet..."); AJK 8/22/17 because this is annoyance
+      // println(e.getMessage());
+      // println("widgetOptions List not built yet..."); AJK 8/22/17 because this is annoyance
     }
 
     for(int i = 0; i < dropdowns.size(); i++){
@@ -330,7 +330,7 @@ class Widget{
   boolean isMouseHere(){
     if(isActive){
       if(mouseX >= x0 && mouseX <= x0 + w0 && mouseY >= y0 && mouseY <= y0 + h0){
-        consolePrint("Your cursor is in " + widgetTitle);
+        println("Your cursor is in " + widgetTitle);
         return true;
       } else{
         return false;
@@ -400,7 +400,7 @@ void closeAllDropdowns(){
 }
 
 void WidgetSelector(int n){
-  consolePrint("New widget [" + n + "] selected for container...");
+  println("New widget [" + n + "] selected for container...");
   //find out if the widget you selected is already active
   boolean isSelectedWidgetActive = wm.widgets.get(n).isActive;
 

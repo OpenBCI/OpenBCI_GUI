@@ -84,7 +84,7 @@ class W_accelerometer extends Widget {
     currentAccelVals = new float[NUM_ACCEL_DIMS];
 
     //create our channel bar and populate our accelerometerBar array!
-    consolePrint("Init accelerometer bar");
+    println("Init accelerometer bar");
     accelerometerBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
     accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
@@ -431,7 +431,7 @@ class AccelerometerBar{
       GPoint tempPointX = new GPoint(accelTimeArray[i], accelArray[0][i]);
       GPoint tempPointY = new GPoint(accelTimeArray[i], accelArray[1][i]);
       GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArray[2][i]);
-      //consolePrint(accelTimeArray[i]);
+      //println(accelTimeArray[i]);
       accelPointsX.set(i, tempPointX);
       accelPointsY.set(i, tempPointY);
       accelPointsZ.set(i, tempPointZ);
@@ -578,7 +578,7 @@ class AccelerometerBar{
   }
 
   void setGPlotPoints(int accelBuffSize) {
-    //consolePrint("UPDATING ACCEL GRAPH");
+    //println("UPDATING ACCEL GRAPH");
     int accelBuffDiff = accelBuffSize - nPoints;
     if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
       for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries

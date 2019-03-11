@@ -32,11 +32,11 @@ void clientEvent(Client someClient) {
     if(p > 2) {
       String posMatch  = new String(hub.tcpBuffer, p - 1, 2);
       if (posMatch.equals(TCP_STOP)) {
-        // consolePrint("MATCH");
+        // println("MATCH");
         if (!hub.nodeProcessHandshakeComplete) {
           hub.nodeProcessHandshakeComplete = true;
           hub.setHubIsRunning(true);
-          consolePrint("Hub: clientEvent: handshake complete");
+          println("Hub: clientEvent: handshake complete");
         }
         // Get a string from the tcp buffer
         String msg = new String(hub.tcpBuffer, 0, p);
@@ -278,19 +278,19 @@ class Hub {
   public boolean isAccelModeActive() { return accelModeActive; }
   public void setLatency(int latency) {
     curLatency = latency;
-    consolePrint("Setting Latency to " + latency);
+    println("Setting Latency to " + latency);
   }
   public void setCurBLEHardware(String bleHardware) {
     curBLEHardware = bleHardware;
-    consolePrint("Setting BLE Hardware to " + bleHardware);
+    println("Setting BLE Hardware to " + bleHardware);
   }
   public void setWifiInternetProtocol(String internetProtocol) {
     curInternetProtocol = internetProtocol;
-    consolePrint("Setting WiFi Internet Protocol to " + internetProtocol);
+    println("Setting WiFi Internet Protocol to " + internetProtocol);
   }
   public void setWiFiStyle(String wifiStyle) {
     curWiFiStyle = wifiStyle;
-    consolePrint("Setting WiFi style to " + wifiStyle);
+    println("Setting WiFi style to " + wifiStyle);
   }
 
   private PApplet mainApplet;
@@ -328,7 +328,7 @@ class Hub {
       tcpClient = new Client(applet, tcpHubIP, tcpHubPort);
       return true;
     } catch (Exception e) {
-      consolePrint("startTCPClient: ConnectException: " + e);
+      println("startTCPClient: ConnectException: " + e);
       return false;
     }
   }
@@ -359,7 +359,7 @@ class Hub {
   public void parseMessage(String data) {
     JSONObject json = parseJSONObject(data);
     if (json == null) {
-      consolePrint("JSONObject could not be parsed" + data);
+      println("JSONObject could not be parsed" + data);
     } else {
       String type = json.getString(TCP_JSON_KEY_TYPE);
       if (type.equals(TCP_TYPE_ACCEL)) {
@@ -379,7 +379,7 @@ class Hub {
       } else if (type.equals(TCP_TYPE_ERROR)) {
         int code = json.getInt(TCP_JSON_KEY_CODE);
         String errorMessage = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("Hub: parseMessage: error: " + errorMessage);
+        println("Hub: parseMessage: error: " + errorMessage);
         if (code == RESP_ERROR_COMMAND_NOT_RECOGNIZED) {
           output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
         }
@@ -389,7 +389,7 @@ class Hub {
         processImpedance(json);
       } else if (type.equals(TCP_TYPE_LOG)) {
         String logMessage = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("Hub: Log: " + logMessage);
+        println("Hub: Log: " + logMessage);
       } else if (type.equals(TCP_TYPE_PROTOCOL)) {
         processProtocol(json);
       } else if (type.equals(TCP_TYPE_SCAN)) {
@@ -401,7 +401,7 @@ class Hub {
       } else if (type.equals(TCP_TYPE_WIFI)) {
         processWifi(json);
       } else {
-        consolePrint("Hub: parseMessage: default: " + data);
+        println("Hub: parseMessage: default: " + data);
         output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
       }
     }
@@ -413,11 +413,11 @@ class Hub {
 
   private void handleError(int code, String msg) {
     output("Code " + code + " Error: " + msg);
-    consolePrint("Code " + code + " Error: " + msg);
+    println("Code " + code + " Error: " + msg);
   }
 
   public void setBoardType(String boardType) {
-    consolePrint("Hub: setBoardType(): sending \'" + boardType + " -- " + millis());
+    println("Hub: setBoardType(): sending \'" + boardType + " -- " + millis());
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_BOARD_TYPE);
     json.setString(TCP_JSON_KEY_BOARD_TYPE, boardType);
@@ -429,10 +429,10 @@ class Hub {
     switch (code) {
       case RESP_SUCCESS:
         if (sdSetting > 0) {
-          consolePrint("Hub: processBoardType: success, starting SD card now -- " + millis());
+          println("Hub: processBoardType: success, starting SD card now -- " + millis());
           sdCardStart(sdSetting);
         } else {
-          consolePrint("Hub: processBoardType: success -- " + millis());
+          println("Hub: processBoardType: success -- " + millis());
           initAndShowGUI();
         }
         break;
@@ -446,7 +446,7 @@ class Hub {
 
   private void processConnect(JSONObject json) {
     int code = json.getInt(TCP_JSON_KEY_CODE);
-    consolePrint("Hub: processConnect: made it -- " + millis() + " code: " + code);
+    println("Hub: processConnect: made it -- " + millis() + " code: " + code);
     switch (code) {
       case RESP_SUCCESS:
       case RESP_ERROR_ALREADY_CONNECTED:
@@ -459,12 +459,12 @@ class Hub {
             setBoardType("daisy");
           }
         } else {
-          consolePrint("Hub: parseMessage: connect: success! -- " + millis());
+          println("Hub: parseMessage: connect: success! -- " + millis());
           initAndShowGUI();
         }
         break;
       case RESP_ERROR_UNABLE_TO_CONNECT:
-        consolePrint("Error in processConnect: RESP_ERROR_UNABLE_TO_CONNECT");
+        println("Error in processConnect: RESP_ERROR_UNABLE_TO_CONNECT");
         String message = json.getString(TCP_JSON_KEY_MESSAGE);
         if (message.equals("Error: Invalid sample rate")) {
           if (eegDataSource == DATASOURCE_CYTON) {
@@ -477,11 +477,11 @@ class Hub {
         }
         break;
       case RESP_ERROR_WIFI_NEEDS_UPDATE:
-        consolePrint("Error in processConnect: RESP_ERROR_WIFI_NEEDS_UPDATE");
+        println("Error in processConnect: RESP_ERROR_WIFI_NEEDS_UPDATE");
         killAndShowMsg("WiFi Shield Firmware is out of date. Learn to update: docs.openbci.com/Hardware/12-Wifi_Programming_Tutorial");
         break;
       default:
-        consolePrint("Error in processConnect");
+        println("Error in processConnect");
         message = json.getString(TCP_JSON_KEY_MESSAGE, "none");
         handleError(code, message);
         break;
@@ -489,7 +489,7 @@ class Hub {
   }
 
   private void processExamine(JSONObject json) {
-    // consolePrint(msg);
+    // println(msg);
     int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
@@ -507,7 +507,7 @@ class Hub {
         output("No WiFi Shield found, visit docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide to learn how to connect.");
         break;
       default:
-        if (wcBox.isShowing) consolePrint("it is showing"); //controlPanel.hideWifiPopoutBox();
+        if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
         String message = json.getString(TCP_JSON_KEY_MESSAGE, "none");
         handleError(code, message);
         break;
@@ -539,7 +539,7 @@ class Hub {
   }
 
   private void killAndShowMsg(String msg) {
-    consolePrint("InterfaceHub: Stopping system...");
+    println("InterfaceHub: Stopping system...");
     abandonInit = true;
     initSystemButton.setString("START SYSTEM");
     controlPanel.open();
@@ -552,7 +552,7 @@ class Hub {
    * @description Sends a command to ganglion board
    */
   public void sendCommand(char c) {
-    consolePrint("Hub: sendCommand(char): sending \'" + c + "\'");
+    println("Hub: sendCommand(char): sending \'" + c + "\'");
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_COMMAND);
     json.setString(TCP_JSON_KEY_COMMAND, Character.toString(c));
@@ -563,7 +563,7 @@ class Hub {
    * @description Sends a command to ganglion board
    */
   public void sendCommand(String s) {
-    consolePrint("Hub: sendCommand(String): sending \'" + s + "\'");
+    println("Hub: sendCommand(String): sending \'" + s + "\'");
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_COMMAND);
     json.setString(TCP_JSON_KEY_COMMAND, s);
@@ -575,15 +575,15 @@ class Hub {
     int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_SUCCESS:
-        consolePrint("Hub: processCommand: success -- " + millis());
+        println("Hub: processCommand: success -- " + millis());
         break;
       case RESP_ERROR_COMMAND_NOT_ABLE_TO_BE_SENT:
         message = json.getString(TCP_JSON_KEY_MESSAGE, "");
-        consolePrint("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + message);
+        println("Hub: processCommand: ERROR_COMMAND_NOT_ABLE_TO_BE_SENT -- " + millis() + " " + message);
         break;
       case RESP_ERROR_PROTOCOL_NOT_STARTED:
         message = json.getString(TCP_JSON_KEY_MESSAGE, "");
-        consolePrint("Hub: processCommand: RESP_ERROR_PROTOCOL_NOT_STARTED -- " + millis() + " " + message);
+        println("Hub: processCommand: RESP_ERROR_PROTOCOL_NOT_STARTED -- " + millis() + " " + message);
         break;
       default:
         break;
@@ -631,8 +631,8 @@ class Hub {
               } else {
                 numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
               }
-              consolePrint("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-              consolePrint("numPacketsDropped = " + numPacketsDroppedHub);
+              println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+              println("numPacketsDropped = " + numPacketsDroppedHub);
             }
           }
           prevSampleIndex = dataPacket.sampleIndex;
@@ -659,7 +659,7 @@ class Hub {
                 dataPacket.rawAuxValues[i][1] = byte(accelArray[i] >> 8);
               }
               if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
-                // consolePrint(msg);
+                // println(msg);
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
                   validAccelValues[i] = accelArray[i];
                 }
@@ -688,18 +688,18 @@ class Hub {
             }
           }
           getRawValues(dataPacket);
-          // consolePrint(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
-          // consolePrint(dataPacket.values[7]);
+          // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
+          // println(dataPacket.values[7]);
           curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
           copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
           // KILL SPIKES!!!
           // if(werePacketsDroppedHub){
-          //   // consolePrint("Packets Dropped ... doing some stuff...");
+          //   // println("Packets Dropped ... doing some stuff...");
           //   for(int i = numPacketsDroppedHub; i > 0; i--){
           //     int tempDataPacketInd = curDataPacketInd - i; //
           //     if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-          //       // consolePrint("i = " + i);
+          //       // println("i = " + i);
           //       copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
           //     } else {
           //       if (eegDataSource == DATASOURCE_GANGLION) {
@@ -749,11 +749,11 @@ class Hub {
           newPacketCounter++;
         } else {
           bleErrorCounter++;
-          consolePrint("Hub: parseMessage: data: bad");
+          println("Hub: parseMessage: data: bad");
         }
       }
     } catch (Exception e) {
-      consolePrint("\n\n" + json + "\nHub: parseMessage: error: " + e);
+      println("\n\n" + json + "\nHub: parseMessage: error: " + e);
     }
   }
 
@@ -811,7 +811,7 @@ class Hub {
       case RESP_SUCCESS:
         protocol = json.getString(TCP_JSON_KEY_PROTOCOL);
         output("Transfer Protocol set to " + protocol);
-        consolePrint("Transfer Protocol set to " + protocol);
+        println("Transfer Protocol set to " + protocol);
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
           // hub.searchDeviceStart();
           outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
@@ -819,7 +819,7 @@ class Hub {
         break;
       case RESP_ERROR_PROTOCOL_BLE_START:
         outputError("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
-        consolePrint("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+        println("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
         break;
       default:
         message = json.getString(TCP_JSON_KEY_MESSAGE);
@@ -832,13 +832,13 @@ class Hub {
     int code = json.getInt(TCP_JSON_KEY_CODE);
     if (waitingForResponse) {
       waitingForResponse = false;
-      consolePrint("Node process is up!");
+      println("Node process is up!");
     }
     if (code == RESP_ERROR_BAD_NOBLE_START) {
-      consolePrint("Hub: processStatus: Problem in the Hub");
+      println("Hub: processStatus: Problem in the Hub");
       output("Problem starting Ganglion Hub. Please make sure compatible USB is configured, then restart this GUI.");
     } else {
-      consolePrint("Hub: processStatus: Started Successfully");
+      println("Hub: processStatus: Started Successfully");
     }
   }
 
@@ -850,27 +850,27 @@ class Hub {
       case RESP_ERROR_CHANNEL_SETTINGS:
         killAndShowMsg("Failed to sync with Cyton, please power cycle your dongle and board.");
         message = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("RESP_ERROR_CHANNEL_SETTINGS general error: " + message);
+        println("RESP_ERROR_CHANNEL_SETTINGS general error: " + message);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_SYNC_IN_PROGRESS:
-        consolePrint("tried to sync channel settings but there was already one in progress");
+        println("tried to sync channel settings but there was already one in progress");
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
         message = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("an error was thrown trying to set the channels | error: " + message);
+        println("an error was thrown trying to set the channels | error: " + message);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
         message = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("an error was thrown trying to call the function to set the channels | error: " + message);
+        println("an error was thrown trying to call the function to set the channels | error: " + message);
         break;
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
         action = json.getString(TCP_JSON_KEY_ACTION);
         if (action.equals(TCP_ACTION_START)) {
-          consolePrint("Query registers for cyton channel settings");
+          println("Query registers for cyton channel settings");
         } else if (action.equals(TCP_ACTION_SET)) {
           checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
-          consolePrint("Success writing channel " + json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER));
+          println("Success writing channel " + json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER));
 
         }
         break;
@@ -963,7 +963,7 @@ class Hub {
 
   public void sdCardStart(int sdSetting) {
     String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
-    consolePrint("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
+    println("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
     json.setString(TCP_JSON_KEY_COMMAND, sdSettingStr);
@@ -981,13 +981,13 @@ class Hub {
         // Sent when either a scan was stopped or started Successfully
         switch (action) {
           case TCP_ACTION_START:
-            consolePrint("sd card setting set so now attempting to sync channel settings");
+            println("sd card setting set so now attempting to sync channel settings");
             // cyton.syncChannelSettings();
             initAndShowGUI();
             break;
           case TCP_ACTION_STOP:
             message = json.getString(TCP_JSON_KEY_MESSAGE);
-            consolePrint("ProcessSDcard::Success:Stop: " + message);
+            println("ProcessSDcard::Success:Stop: " + message);
             break;
         }
         break;
@@ -999,7 +999,7 @@ class Hub {
             break;
           case TCP_ACTION_STOP:
             message = json.getString(TCP_JSON_KEY_MESSAGE);
-            consolePrint("ProcessSDcard::Unknown:Stop: " + message);
+            println("ProcessSDcard::Unknown:Stop: " + message);
             break;
         }
         break;
@@ -1021,15 +1021,15 @@ class Hub {
   private void getRawValues(DataPacket_ADS1299 packet) {
     for (int i=0; i < nchan; i++) {
       int val = packet.values[i];
-      //consolePrint(binary(val, 24));
+      //println(binary(val, 24));
       byte rawValue[] = new byte[3];
       // Breakdown values into
       rawValue[2] = byte(val & 0xFF);
-      //consolePrint("rawValue[2] " + binary(rawValue[2], 8));
+      //println("rawValue[2] " + binary(rawValue[2], 8));
       rawValue[1] = byte((val & (0xFF << 8)) >> 8);
-      //consolePrint("rawValue[1] " + binary(rawValue[1], 8));
+      //println("rawValue[1] " + binary(rawValue[1], 8));
       rawValue[0] = byte((val & (0xFF << 16)) >> 16);
-      //consolePrint("rawValue[0] " + binary(rawValue[0], 8));
+      //println("rawValue[0] " + binary(rawValue[0], 8));
       // Store to the target raw values
       packet.rawValues[i] = rawValue;
     }
@@ -1047,7 +1047,7 @@ class Hub {
       // potentialFailureMessage = "";
       // defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
       // daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
-      consolePrint("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
+      println("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
     }
   }
 
@@ -1074,7 +1074,7 @@ class Hub {
     json.setString(TCP_JSON_KEY_NAME, id);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
     writeJSON(json);
-    consolePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
 
   }
   public void disconnectBLE() {
@@ -1093,7 +1093,7 @@ class Hub {
     json.setString(TCP_JSON_KEY_NAME, id);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
     writeJSON(json);
-    consolePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
   }
 
   public void examineWifi(String id) {
@@ -1119,12 +1119,12 @@ class Hub {
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
     json.setString(TCP_JSON_KEY_NAME, id);
     writeJSON(json);
-    consolePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
+    verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id);
     delay(1000);
 
   }
   public int disconnectSerial() {
-    consolePrint("Disconnecting serial...");
+    println("Disconnecting serial...");
     waitingForResponse = true;
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_SERIAL);
@@ -1149,7 +1149,7 @@ class Hub {
   public void setSampleRate(int _sampleRate) {
     requestedSampleRate = _sampleRate;
     setSampleRate = true;
-    consolePrint("\n\nsample rate set to: " + _sampleRate);
+    println("\n\nsample rate set to: " + _sampleRate);
   }
 
   public void getWifiInfo(String info) {
@@ -1165,20 +1165,20 @@ class Hub {
     int code = json.getInt(TCP_JSON_KEY_CODE);
     switch (code) {
       case RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED:
-        consolePrint("Sent an action to hub for wifi info but the command was unrecognized");
+        println("Sent an action to hub for wifi info but the command was unrecognized");
         output("Sent an action to hub for wifi info but the command was unrecognized");
         break;
       case RESP_ERROR_WIFI_NOT_CONNECTED:
-        consolePrint("Tried to get wifi info but no WiFi Shield was connected.");
+        println("Tried to get wifi info but no WiFi Shield was connected.");
         output("Tried to get wifi info but no WiFi Shield was connected.");
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:
         message = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("an error was thrown trying to set the channels | error: " + message);
+        println("an error was thrown trying to set the channels | error: " + message);
         break;
       case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_PARSE:
         message = json.getString(TCP_JSON_KEY_MESSAGE);
-        consolePrint("an error was thrown trying to call the function to set the channels | error: " + message);
+        println("an error was thrown trying to call the function to set the channels | error: " + message);
         break;
       case RESP_SUCCESS:
         // Sent when either a scan was stopped or started Successfully
@@ -1211,7 +1211,7 @@ class Hub {
               controlPanel.wifiBox.refreshWifiList();
               break;
           }
-          consolePrint("Success for wifi " + command + ": " + msgForWcBox);
+          println("Success for wifi " + command + ": " + msgForWcBox);
           wcBox.updateMessage(msgForWcBox);
         }
         break;
@@ -1225,7 +1225,7 @@ class Hub {
    */
   public boolean write(String out) {
     try {
-      // consolePrint("out " + out);
+      // println("out " + out);
       tcpClient.write(out);
       return true;
     } catch (Exception e) {
@@ -1234,7 +1234,7 @@ class Hub {
       } else {
         killAndShowMsg("Hub has crashed, please restart your application.");
       }
-      consolePrint("Error: Attempted to TCP write with no server connection initialized");
+      println("Error: Attempted to TCP write with no server connection initialized");
       return false;
     }
   }

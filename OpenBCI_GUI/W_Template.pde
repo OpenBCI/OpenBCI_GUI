@@ -92,7 +92,7 @@ class W_template extends Widget {
 void Dropdown1(int n){
   //Use consolePrint(String) instead of println() or print()
   //This allows us to print to: file, console, and ConsoleWindow
-  consolePrint("Item " + (n+1) + " selected from Dropdown 1");
+  println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0){
     //do this
   } else if(n==1){
@@ -103,11 +103,11 @@ void Dropdown1(int n){
 }
 
 void Dropdown2(int n){
-  consolePrint("Item " + (n+1) + " selected from Dropdown 2");
+  println("Item " + (n+1) + " selected from Dropdown 2");
   closeAllDropdowns();
 }
 
 void Dropdown3(int n){
-  consolePrint("Item " + (n+1) + " selected from Dropdown 3");
+  println("Item " + (n+1) + " selected from Dropdown 3");
   closeAllDropdowns();
 }

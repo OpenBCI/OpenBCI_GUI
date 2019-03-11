@@ -124,7 +124,7 @@ void Ten20(int n) { //triggered when there is an event in the Ten20 Dropdown
    */
 
   //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
-  // consolePrint("BOOOOM!" + n);
+  // println("BOOOOM!" + n);
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 
 }
@@ -361,7 +361,7 @@ class HeadPlot {
     int circ_width_foo = (int)(total_width - 2.f*((float)ear_width)/2.0f);
     int circ_height_foo = (int)(total_height - nose_height);
     circ_diam = min(circ_width_foo, circ_height_foo);
-    //consolePrint("headPlot: circ_diam: " + circ_diam);
+    //println("headPlot: circ_diam: " + circ_diam);
 
     //locations: circle center, measured from upper left
     circ_x = (int)((rel_posX+0.5f*rel_width)*(float)win_width);                  //center of head
@@ -431,8 +431,8 @@ class HeadPlot {
 
     //get the default locations if the file didn't exist
     if ((elec_relXY == null) || (elec_relXY.getRowCount() < n_elec_to_load)) {
-      consolePrint("headPlot: electrode position file not found or was wrong size: " + default_fname);
-      consolePrint("        : using defaults...");
+      println("headPlot: electrode position file not found or was wrong size: " + default_fname);
+      println("        : using defaults...");
       elec_relXY = createDefaultElectrodeLocations(default_fname, elec_relDiam);
     }
 
@@ -517,7 +517,7 @@ class HeadPlot {
       saveTable(table_elec_relXY, full_fname, "csv");
     }
     catch (NullPointerException e) {
-      consolePrint("headPlot: createDefaultElectrodeLocations: could not write file to " + full_fname);
+      println("headPlot: createDefaultElectrodeLocations: could not write file to " + full_fname);
     };
 
     //return
@@ -561,7 +561,7 @@ class HeadPlot {
         dy_frac = float(Iy - Iy_source*decimation)/float(decimation);
 
         for (int Ielec=0; Ielec<n_elec; Ielec++) {
-          //consolePrint("    : Ielec = " + Ielec);
+          //println("    : Ielec = " + Ielec);
           if ((Ix_source < (n_wide_small-1)) && (Iy_source < (n_tall_small-1))) {
             //normal 2-D interpolation
             electrode_color_weightFac[Ielec][Ix][Iy] = interpolate2D(weightFac[Ielec], Ix_source, Iy_source, Ix_source+1, Iy_source+1, dx_frac, dy_frac);
@@ -595,7 +595,7 @@ class HeadPlot {
 
   private float interpolate2D(float[][] weightFac, int Ix1, int Iy1, int Ix2, int Iy2, float dx_frac, float dy_frac) {
     if (Ix1 >= weightFac.length) {
-      consolePrint("headPlot: interpolate2D: Ix1 = " + Ix1 + ", weightFac.length = " + weightFac.length);
+      println("headPlot: interpolate2D: Ix1 = " + Ix1 + ", weightFac.length = " + weightFac.length);
     }
     float foo1 = (weightFac[Ix2][Iy1] - weightFac[Ix1][Iy1])*dx_frac + weightFac[Ix1][Iy1];
     float foo2 = (weightFac[Ix2][Iy2] - weightFac[Ix1][Iy2])*dx_frac + weightFac[Ix1][Iy2];
@@ -676,21 +676,21 @@ class HeadPlot {
     int toPixels[][][][] = new int[n_wide][n_tall][4][2];
     int toElectrodes[][][] = new int[n_wide][n_tall][4];
     //int numConnections[][] = new int[n_wide][n_tall];
-    // consolePrint("  HeadPlot B 2 0 -- " + millis());
+    // println("  HeadPlot B 2 0 -- " + millis());
 
     //find which pixesl are within the head and which pixels are within an electrode
     whereAreThePixels(pixelAddress, withinHead, withinElectrode);
-    // consolePrint("  HeadPlot B 2 1 -- " + millis());
+    // println("  HeadPlot B 2 1 -- " + millis());
 
     //loop over the pixels and make all the connections
     makeAllTheConnections(withinHead, withinElectrode, toPixels, toElectrodes);
-    // consolePrint("  HeadPlot B 2 3 -- " + millis());
+    // println("  HeadPlot B 2 3 -- " + millis());
 
     //compute the pixel values when lighting up each electrode invididually
     for (int Ielec=0; Ielec<n_elec; Ielec++) {
       computeWeightFactorsGivenOneElectrode_iterative(toPixels, toElectrodes, Ielec, weightFac);
     }
-    // consolePrint("  HeadPlot B 2 4 -- " + millis());
+    // println("  HeadPlot B 2 4 -- " + millis());
 
   }
 
@@ -926,10 +926,10 @@ class HeadPlot {
           }
         }
       }
-      //consolePrint("headPlot: computeWeightFactor: Ielec " + Ielec + ", iter = " + iter_count + ", max_dVal = " + max_dVal);
+      //println("headPlot: computeWeightFactor: Ielec " + Ielec + ", iter = " + iter_count + ", max_dVal = " + max_dVal);
     }
-    //consolePrint("headPlot: computeWeightFactor: Ielec " + Ielec + ", solution complete with " + iter_count + " iterations. min and max vals = " + min_val + ", " + max_val);
-    if (iter_count >= lim_iter_count) consolePrint("headPlot: computeWeightFactor: Ielec " + Ielec + ", solution complete with " + iter_count + " iterations. max_dVal = " + max_dVal);
+    //println("headPlot: computeWeightFactor: Ielec " + Ielec + ", solution complete with " + iter_count + " iterations. min and max vals = " + min_val + ", " + max_val);
+    if (iter_count >= lim_iter_count) println("headPlot: computeWeightFactor: Ielec " + Ielec + ", solution complete with " + iter_count + " iterations. max_dVal = " + max_dVal);
   } //end of method
 
 

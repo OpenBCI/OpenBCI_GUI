@@ -185,10 +185,10 @@ class W_MarkerMode extends Widget {
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
     int dy = y - prevY;
-    consolePrint("dy = " + dy);
+    println("dy = " + dy);
 
     //put your code here...
-    consolePrint("Acc Widget -- Screen Resized.");
+    println("Acc Widget -- Screen Resized.");
 
     setGraphDimensions();
 
@@ -213,7 +213,7 @@ class W_MarkerMode extends Widget {
 
     //put your code here...
     if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-      // consolePrint("markerModeButton...");
+      // println("markerModeButton...");
       if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
         if (cyton.getBoardMode() != BOARD_MODE_MARKER) {
           cyton.setBoardMode(BOARD_MODE_MARKER);
@@ -233,7 +233,7 @@ class W_MarkerMode extends Widget {
           w_digitalRead.digitalReadOn = false;
         }
         markerModeOn = !markerModeOn;
-      }
+      } 
     }
     markerModeButton.setIsActive(false);
   }

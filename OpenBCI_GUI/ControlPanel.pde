@@ -28,16 +28,16 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
   public void controlEvent(CallbackEvent theEvent) {
 
     if (cp5.isMouseOver(cp5.get(Textfield.class, "fileName"))){
-      consolePrint("CallbackListener: controlEvent: clearing cyton");
+      println("CallbackListener: controlEvent: clearing cyton");
       cp5.get(Textfield.class, "fileName").clear();
       // cp5.get(Textfield.class, "fileNameGanglion").clear();
 
     } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
-      consolePrint("CallbackListener: controlEvent: clearing ganglion");
+      println("CallbackListener: controlEvent: clearing ganglion");
       cp5.get(Textfield.class, "fileNameGanglion").clear();
 
     } else if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
-      consolePrint("CallbackListener: controlEvent: clearing static IP Address");
+      println("CallbackListener: controlEvent: clearing static IP Address");
       cp5.get(Textfield.class, "staticIPAddress").clear();
     }
   }
@@ -247,7 +247,7 @@ public void controlEvent(ControlEvent theEvent) {
     } else {
       output("OpenBCI microSD Setting = " + sdSettingString);
     }
-    consolePrint("SD setting = " + sdSetting);
+    verbosePrint("SD setting = " + sdSetting);
   }
 
   if (theEvent.isFrom("channelList")){
@@ -263,7 +263,7 @@ public void controlEvent(ControlEvent theEvent) {
       set_channel_over(rcBox,setChannelInt);
       ovrChannel.wasPressed = false;
     }
-    consolePrint("still goin off");
+    println("still goin off");
   }
 }
 
@@ -414,7 +414,7 @@ class ControlPanel {
 
     //auto-update serial list
     if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
-      consolePrint("Refreshing port list...");
+      println("Refreshing port list...");
       refreshPortList();
     }
 
@@ -693,7 +693,7 @@ class ControlPanel {
 
   //mouse pressed in control panel
   public void CPmousePressed() {
-    // consolePrint("CPmousePressed");
+    // verbosePrint("CPmousePressed");
 
     if (initSystemButton.isMouseHere()) {
       initSystemButton.setIsActive(true);
@@ -1084,7 +1084,7 @@ class ControlPanel {
 
   //mouse released in control panel
   public void CPmouseReleased() {
-    //consolePrint("CPMouseReleased: CPmouseReleased start...");
+    //verbosePrint("CPMouseReleased: CPmouseReleased start...");
     if(popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed){
       popOutRadioConfigButton.wasPressed = false;
       popOutRadioConfigButton.setIsActive(false);
@@ -1141,7 +1141,7 @@ class ControlPanel {
         } else {
           if (hub.getWiFiStyle() == WIFI_STATIC) {
             wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-            consolePrint("Static IP address of " + wifi_ipAddress);
+            println("Static IP address of " + wifi_ipAddress);
             output("Static IP address of " + wifi_ipAddress);
             hub.examineWifi(wifi_ipAddress);
             wcBox.isShowing = true;
@@ -1236,7 +1236,7 @@ class ControlPanel {
       wifiBox.h = 200;
       String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
       outputInfo(output);
-      consolePrint(output);
+      println(output);
     }
 
     if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
@@ -1244,11 +1244,11 @@ class ControlPanel {
       wifiBox.h = 120;
       String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
       outputInfo(output);
-      consolePrint(output);
+      println(output);
     }
 
     if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
-      consolePrint("protocolBLEGanglion");
+      println("protocolBLEGanglion");
 
       wifiList.items.clear();
       bleList.items.clear();
@@ -1274,7 +1274,7 @@ class ControlPanel {
       controlPanel.hideAllBoxes();
       if (isHubObjectInitialized) {
         output("Protocol BLED112 Selected for Ganglion");
-        consolePrint("Protocol BLED112 Selected for Ganglion");
+        println("Protocol BLED112 Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
         ganglion.setInterface(INTERFACE_HUB_BLED112);
         // hub.searchDeviceStart();
@@ -1284,11 +1284,11 @@ class ControlPanel {
     }
 
     if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-      consolePrint("protocolWifiGanglion");
+      println("protocolWifiGanglion");
       wifiList.items.clear();
       bleList.items.clear();
       controlPanel.hideAllBoxes();
-      consolePrint("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
+      println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
       if (isHubObjectInitialized) {
         output("Protocol Wifi Selected for Ganglion");
         if (hub.isPortOpen()) hub.closePort();
@@ -1580,17 +1580,17 @@ public void initButtonPressed(){
         initSystemButton.setIsActive(false);
         return;
       } else { //otherwise, initiate system!
-        //consolePrint("ControlPanel: CPmouseReleased: init");
+        //verbosePrint("ControlPanel: CPmouseReleased: init");
         initSystemButton.setString("STOP SYSTEM");
         //global steps to START SYSTEM
         // prepare the serial port
         if (eegDataSource == DATASOURCE_CYTON) {
-          consolePrint("ControlPanel — port is open: " + cyton.isPortOpen());
+          verbosePrint("ControlPanel — port is open: " + cyton.isPortOpen());
           if (cyton.isPortOpen() == true) {
             cyton.closePort();
           }
         } else if(eegDataSource == DATASOURCE_GANGLION){
-          consolePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
+          verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
           if (ganglion.isPortOpen()) {
             ganglion.closePort();
           }
@@ -1602,10 +1602,10 @@ public void initButtonPressed(){
         }
         if (hub.getWiFiStyle() == WIFI_STATIC && (cyton.isWifi() || ganglion.isWifi())) {
           wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-          consolePrint("Static IP address of " + wifi_ipAddress);
+          println("Static IP address of " + wifi_ipAddress);
         }
         midInit = true;
-        consolePrint("initSystem yoo");
+        println("initSystem yoo");
         initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
       }
     }
@@ -1626,7 +1626,7 @@ void updateToNChan(int _nchan) {
   slnchan = _nchan; //used in SoftwareSettings.pde only
   fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
   yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
-  consolePrint("channel count set to " + str(nchan));
+  println("channel count set to " + str(nchan));
   hub.initDataPackets(_nchan, 3);
   ganglion.initDataPackets(_nchan, 3);
   cyton.initDataPackets(_nchan, 3);
@@ -1709,7 +1709,7 @@ class SerialBox {
     popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
     serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
-    // consolePrint(w-padding*2);
+    // println(w-padding*2);
     serialList.setPosition(x + padding, y + padding*3 + 8);
     serialPorts = Serial.list();
     for (int i = 0; i < serialPorts.length; i++) {
@@ -1761,7 +1761,7 @@ class BLEBox {
 
     refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
     bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
-    // consolePrint(w-padding*2);
+    // println(w-padding*2);
     bleList.setPosition(x + padding, y + padding*3 + 8);
     // Call to update the list
     // ganglion.getBLEDevices();
@@ -1830,7 +1830,7 @@ class WifiBox {
     wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
     popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
-    // consolePrint(w-padding*2);
+    // println(w-padding*2);
     wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
     // Call to update the list
 
@@ -1911,7 +1911,7 @@ class WifiBox {
   }
 
   public void refreshWifiList() {
-    consolePrint("refreshWifiList");
+    println("refreshWifiList");
     wifiList.items.clear();
     if (hub.deviceList != null) {
       for (int i = 0; i < hub.deviceList.length; i++) {
@@ -2607,7 +2607,7 @@ class RecentPlaybackBox {
       JSONObject playbackHistory = loadJSONObject(userPlaybackHistoryFile);
       JSONArray recentFilesArray = playbackHistory.getJSONArray("playbackFileHistory");
       if (recentFilesArray.size() < 10) {
-        consolePrint("History Size = " + recentFilesArray.size());
+        println("History Size = " + recentFilesArray.size());
         numFilesToShow = recentFilesArray.size();
       }
       shortFileNames = new String[numFilesToShow];
@@ -2622,16 +2622,16 @@ class RecentPlaybackBox {
             //store to arrays to set recent playback buttons text and function
             shortFileNames[fileNumber - 1] = shortFileName;
             longFilePaths[fileNumber - 1] = longFilePath;
-            //consolePrint(shortFileName + " " + longFilePath);
+            //println(shortFileName + " " + longFilePath);
             }
       //For debugging
-      //consolePrint("OpenBCI_GUI::Control Panel: Playback history file found!!!");
+      //println("OpenBCI_GUI::Control Panel: Playback history file found!!!");
       //printArray(shortFileNames);
 
       playbackHistoryFileExists = true;
     } catch (Exception e) {
       //e.printStackTrace();
-      consolePrint("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
+      println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
       playbackHistoryFileExists = false;
     }
     recentPlaybackFilesHaveUpdated = true;
@@ -3224,7 +3224,7 @@ public class MenuList extends controlP5.Controller {
         menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
         menu.translate( 0, itemHeight );
       } catch(Exception e){
-        consolePrint("Nothing in list...");
+        println("Nothing in list...");
       }
 
 
@@ -3239,7 +3239,7 @@ public class MenuList extends controlP5.Controller {
    * otherwise do whatever this item of the list is supposed to do.
    */
   public void onClick() {
-    consolePrint("Control Panel: click!");
+    println("Control Panel: click!");
     try{
       if (getPointer().x()>getWidth()-scrollerWidth) {
         if(getHeight() != 0){
@@ -3258,7 +3258,7 @@ public class MenuList extends controlP5.Controller {
       updateMenu = true;
     } finally{}
     // catch(IOException e){
-    //   consolePrint("Nothing to click...");
+    //   println("Nothing to click...");
     // }
   }
 

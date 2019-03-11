@@ -211,10 +211,10 @@ class W_emg extends Widget {
     for (int i = 0; i < rowNum; i++) {
       for (int j = 0; j < colNum; j++) {
 
-        consolePrint("ROW: " + (4*rowOffset/8));
+        println("ROW: " + (4*rowOffset/8));
         tripSliders[index] = new TripSlider(int((5*colOffset/8) * 0.498), int((2 * rowOffset / 8) * 0.384), (4*rowOffset/8) * 0.408, int((3*colOffset/32) * 0.489), 2, tripSliders, true, motorWidgets[index]);
         untripSliders[index] = new TripSlider(int((5*colOffset/8) * 0.498), int((2 * rowOffset / 8) * 0.384), (4*rowOffset/8) * 0.408, int((3*colOffset/32) * 0.489), 2, tripSliders, false, motorWidgets[index]);
-        //consolePrint("Slider :" + (j+i) + " first: " + int((5*colOffset/8) * 0.498)+ " second: " + int((2 * rowOffset / 8) * 0.384) + " third: " + int((3*colOffset/32) * 0.489));
+        //println("Slider :" + (j+i) + " first: " + int((5*colOffset/8) * 0.498)+ " second: " + int((2 * rowOffset / 8) * 0.384) + " third: " + int((3*colOffset/32) * 0.489));
         tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
         untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
         index++;
@@ -382,7 +382,7 @@ class W_emg extends Widget {
     if (emgAdvanced) {
       if (connectButton.isMouseHere()) {
         connectButton.setIsActive(true);
-        consolePrint("Connect pressed");
+        println("Connect pressed");
       } else connectButton.setIsActive(false);
     }
   }
@@ -397,12 +397,12 @@ class W_emg extends Widget {
         try {
           serialOutEMG = new Serial(parent, theSerial, theBaud);
           connectButton.wasPressed = true;
-          consolePrint("Connected");
+          verbosePrint("Connected");
           output("Connected to " + theSerial);
         }
         catch (Exception e) {
           connectButton.wasPressed = false;
-          consolePrint("Could not connect!");
+          verbosePrint("Could not connect!");
           output("Could not connect. Confirm that your Serial/COM port is correct and active.");
         }
 
@@ -546,7 +546,7 @@ class W_emg extends Widget {
     //=================== OpenBionics switch example ==============================
 
     if (millis() - motorWidgets[0].timeOfLastTrip >= 2000 && serialOutEMG != null) {
-      //consolePrint("Counter: " + motorWidgets[0].switchCounter);
+      //println("Counter: " + motorWidgets[0].switchCounter);
       switch(motorWidgets[0].switchCounter) {
       case 1:
         serialOutEMG.write("G0");
@@ -642,7 +642,7 @@ class W_emg extends Widget {
 
     //Called whenever thresholds are dragged
     void update(float tx, float ty) {
-      // consolePrint("Testing thresholds...");
+      // println("testing...");
       boxx = lx;
       //boxy = (wid + (ly/2)) - int(((wid + (ly/2)) - ly) * (float(stretch) / float(wid)));
       //boxy = ly + (ly - int( ly * (float(stretch) / float(wid)))) ;
@@ -668,7 +668,7 @@ class W_emg extends Widget {
         // //int mappedVal = int(map((mouseY - (ty + ly) ), ((ty+ly) + wid - (ly/2)) - (ty+ly), 0, 0, wid));
         int mappedVal = int(mouseY - (ty+ly));
 
-        //consolePrint("bxLen: " + boxLen + " ty: " + ty + " ly: " + ly + " mouseY: " + mouseY + " boxy: " + boxy + " stretch: " + stretch + " width: " + wid + " mappedVal: " + mappedVal);
+        //println("bxLen: " + boxLen + " ty: " + ty + " ly: " + ly + " mouseY: " + mouseY + " boxy: " + boxy + " stretch: " + stretch + " width: " + wid + " mappedVal: " + mappedVal);
 
         if (!trip) stretch = lock(mappedVal, int(parent.untripThreshold * (boxLen)), boxLen);
         else stretch =  lock(mappedVal, 0, int(parent.tripThreshold * (boxLen)));
@@ -1190,7 +1190,7 @@ class W_emg extends Widget {
 
     //================= OpenBionics Analog Movement Example =======================
     if (serialOutEMG != null) {
-      //consolePrint("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
+      //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
       if (int(map(output_normalized, 0, 1, 0, 100)) > 10) {
         serialOutEMG.write("G0P" + int(map(output_normalized, 0, 1, 0, 100)));
         delay(10);
