@@ -278,8 +278,7 @@ Robot rob3115;
 
 PApplet ourApplet;
 
-PrintStream original = new PrintStream(System.out);
-ConsoleData consoleData = new ConsoleData();
+CustomOutputStream outputStream;
 boolean consoleWindowExists = false;
 
 //Variables from TopNav.pde. Used to set text when stopping/starting data stream.
@@ -391,7 +390,12 @@ void settings() {
 }
 
 void setup() {
-  consoleData.setupConsoleOutput();
+  // redirect all output to a custom stream that will intercept all prints
+  // write them to file and display them in the GUI's console window
+  outputStream = new CustomOutputStream(System.out);
+  System.setOut(outputStream);
+  System.setErr(outputStream);
+
   println("Screen Resolution: " + displayWidth + " X " + displayHeight);
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
   println("For more information, please visit: http://docs.openbci.com/OpenBCI%20Software/");
