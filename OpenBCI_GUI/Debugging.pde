@@ -43,13 +43,6 @@ void verbosePrint(String _string) {
   }
 }
 
-void consolePrint(Exception e) {
-  StringWriter sw = new StringWriter();
-  PrintWriter pw = new PrintWriter(sw);
-  e.printStackTrace(pw);
-  consolePrint(sw.toString());
-}
-
 void delay(int delay)
 {
   int time = millis();

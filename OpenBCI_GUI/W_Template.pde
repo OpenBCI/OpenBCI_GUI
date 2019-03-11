@@ -90,8 +90,6 @@ class W_template extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void Dropdown1(int n){
-  //Use consolePrint(String) instead of println() or print()
-  //This allows us to print to: file, console, and ConsoleWindow
   println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0){
     //do this

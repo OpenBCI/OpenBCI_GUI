@@ -5,7 +5,6 @@
 //      -- to a file                                      //
 //      -- to the screen with scrolling                   //
 //                                                        //
-//           Use consolePrint() over println()            //
 ////////////////////////////////////////////////////////////
 
 
@@ -72,7 +71,7 @@ class ConsoleWindow extends PApplet {
     }
     previousConsoleDataSize =  consoleData.data.size();
 
-    consolePrint("ConsoleWindow: Console opened!");
+    println("ConsoleWindow: Console opened!");
     setVisible(true);
     setUpdating(true);
   }
@@ -152,7 +151,7 @@ class ConsoleWindow extends PApplet {
 
   void openLogFileAsText() {
     try {
-      consolePrint("Opening console log as text file!");
+      println("Opening console log as text file!");
       File file = new File (consoleData.file);
       Desktop desktop = Desktop.getDesktop();
       if(file.exists()) desktop.open(file);
@@ -160,7 +159,7 @@ class ConsoleWindow extends PApplet {
   }
 
   void copyFullTextToClipboard() {
-    consolePrint("Copying console log to clipboard!");
+    println("Copying console log to clipboard!");
     String stringToCopy = join(consoleData.data.array(), "\n");
     String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
     clipboardCopy.copyString(formattedCodeBlock);
@@ -168,7 +167,7 @@ class ConsoleWindow extends PApplet {
 
   void copyLastLineToClipboard() {
     clipboardCopy.copyString(consoleData.data.get(consoleData.data.size()-1));
-    consolePrint("Previous line copied to clipboard.");
+    println("Previous line copied to clipboard.");
   }
 
   void scene() {
@@ -241,7 +240,7 @@ class ConsoleWindow extends PApplet {
     data = (String)pasteObject(DataFlavor.stringFlavor);
       }
       catch (Exception e) {
-        consolePrint("Error getting String from clipboard: " + e);
+        println("Error getting String from clipboard: " + e);
       }
       return data;
     }
@@ -285,7 +284,7 @@ class ConsoleData {
       System.setErr(printStream);
     }
     catch (IOException e) {
-      consolePrint("Error! Check path, or filename, or security manager! "+e);
+      println("Error! Check path, or filename, or security manager! "+e);
     }
   }
 }//end class
