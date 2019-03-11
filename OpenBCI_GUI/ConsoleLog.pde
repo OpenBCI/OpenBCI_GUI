@@ -56,7 +56,7 @@ class ConsoleWindow extends PApplet {
 
     int cW = int(width/3);
     int bX = int((cW - 150) / 2);
-    createConsoleLogButton("openLogFileAsText", "Open Log as Text (T)", bX);
+    createConsoleLogButton("openLogFileAsText", "Open Log as Text (F)", bX);
     bX += cW;
     createConsoleLogButton("copyFullTextToClipboard", "Copy Full Log Text (C)", bX);
     bX += cW;
@@ -259,7 +259,7 @@ class CustomOutputStream extends PrintStream {
 
   public void print(String string) {
     super.print(string);
-    string += "\n"; // TODO: having trouble with line endings, had to do this for now
+    //string += "\n"; // TODO: having trouble with line endings, had to do this for now
     data.append(string);
     fileOutput.print(string);
     if (textArea != null) {
