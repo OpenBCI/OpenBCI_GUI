@@ -23,6 +23,7 @@ class ConsoleWindow extends PApplet {
   private final int headerHeight = 42;
   private final int defaultWidth = 620;
   private final int defaultHeight = 500;
+  private int previousWidth = defaultWidth;
 
   ConsoleWindow() {
     super();
@@ -84,6 +85,8 @@ class ConsoleWindow extends PApplet {
   void draw() {
     // dynamically resize text area to fit widget
     consoleTextArea.setSize(width, height - headerHeight);
+    // update button positions when screen width changes
+    updateButtonPositions();
 
     clear();
     scene();
@@ -141,8 +144,18 @@ class ConsoleWindow extends PApplet {
     println("Previous line copied to clipboard.");
   }
 
-  void screenResized(){
-    //put your code here...
+  void updateButtonPositions() {
+    if (width != previousWidth) {
+      int cW = width / 3;
+      int bX = (cW - 170) / 2;
+      int bY = 4;
+      cp5.getController("openLogFileAsText").setPosition(bX, bY);
+      bX += cW;
+      cp5.getController("copyFullTextToClipboard").setPosition(bX, bY);
+      bX += cW;
+      cp5.getController("copyLastLineToClipboard").setPosition(bX, bY);
+      previousWidth = width;
+    }
   }
 
   void exit() {
