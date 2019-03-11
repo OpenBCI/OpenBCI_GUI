@@ -70,6 +70,7 @@ class ConsoleWindow extends PApplet {
     for (int i = 0; i < consoleData.data.size(); i++) {
       consoleTextArea.append(consoleData.data.get(i)+"\n");
     }
+    previousConsoleDataSize =  consoleData.data.size();
 
     consolePrint("ConsoleWindow: Console opened!");
     setVisible(true);
@@ -94,8 +95,10 @@ class ConsoleWindow extends PApplet {
 
   void draw() {
     clear();
-    if (consoleData.data.size() > previousConsoleDataSize) {
-      String s = consoleData.data.get(consoleData.data.size()-1);
+    int diff = consoleData.data.size() - previousConsoleDataSize;
+    for (int i=0; i < diff; i++)
+    {
+      String s = consoleData.data.get(consoleData.data.size() - diff - i);
       consoleTextArea.append(s+"\n");
     }
     scene();
