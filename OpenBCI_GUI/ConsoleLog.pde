@@ -249,9 +249,15 @@ class CustomOutputStream extends PrintStream {
 
   public void println(String string) {
     string += "\n";
-    super.print(string);  // don't call super.println(), you'll get double prints
+    super.print(string);  // don't call super.println() here, you'll get double prints
+
+    // add to array
     data.append(string);
+
+    // print to file
     fileOutput.print(string);
+
+    // add to text area, if registered
     if (textArea != null) {
       textArea.append(string);
     }
@@ -259,9 +265,15 @@ class CustomOutputStream extends PrintStream {
 
   public void print(String string) {
     super.print(string);
-    //string += "\n"; // TODO: having trouble with line endings, had to do this for now
+    string += "\n"; // TODO: shouldn't have to do this, but exceptions were printing on one line. investigate?
+
+    // add to array
     data.append(string);
+    
+    // print to file
     fileOutput.print(string);
+
+    // add to text area, if registered
     if (textArea != null) {
       textArea.append(string);
     }
