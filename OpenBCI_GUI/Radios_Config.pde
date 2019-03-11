@@ -33,7 +33,7 @@ void autoconnect(){
       try{
           serialPort = serialPorts[i];
           board = new Serial(this,serialPort,115200);
-          consolePrint("try " + i + " " + serialPort + " at 115200 baud");
+          println("try " + i + " " + serialPort + " at 115200 baud");
           output("Attempting to connect at 115200 baud to " + serialPort);  // not working
           delay(5000);
 
@@ -42,24 +42,24 @@ void autoconnect(){
           //board.write(0x07);
           delay(2000);
           if(confirm_openbci()) {
-            consolePrint("Board connected on port " +serialPorts[i] + " with BAUD 115200");
+            println("Board connected on port " +serialPorts[i] + " with BAUD 115200");
             output("Connected to " + serialPort + "!");
             openBCI_portName = serialPorts[i];
             openBCI_baud = 115200;
             board.stop();
             return;
           } else {
-            consolePrint("Board not on port " + serialPorts[i] +" with BAUD 115200");
+            println("Board not on port " + serialPorts[i] +" with BAUD 115200");
             board.stop();
           }
         }
         catch (Exception e){
-          consolePrint("Exception " + serialPorts[i] + " " + e);
+          println("Exception " + serialPorts[i] + " " + e);
         }
 
       try{
           board = new Serial(this,serialPort,230400);
-          consolePrint("try " + i + " " + serialPort + " at 230400 baud");
+          println("try " + i + " " + serialPort + " at 230400 baud");
           output("Attempting to connect at 230400 baud to " + serialPort);  // not working
           delay(5000);
 
@@ -68,20 +68,20 @@ void autoconnect(){
           //board.write(0x07);
           delay(2000);
           if(confirm_openbci()) {  // was just confrim_openbci  JAM 1/2017
-            consolePrint("Board connected on port " +serialPorts[i] + " with BAUD 230400");
+            println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
             output("Connected to " + serialPort + "!"); // not working
             openBCI_baud = 230400;
             openBCI_portName = serialPorts[i];
             board.stop();
             return;
           } else {
-            consolePrint("Board not on port " + serialPorts[i] +" with BAUD 230400");
+            println("Board not on port " + serialPorts[i] +" with BAUD 230400");
             board.stop();
           }
 
         }
         catch (Exception e){
-          consolePrint("Exception " + serialPorts[i] + " " + e);
+          println("Exception " + serialPorts[i] + " " + e);
         }
     }
 }
@@ -108,7 +108,7 @@ void autoconnect(){
 //           delay(1000);
 //
 //           if(confirm_openbci_v2()) {
-//             consolePrint("Board connected on port " +serialPorts[i] + " with BAUD 115200");
+//             println("Board connected on port " +serialPorts[i] + " with BAUD 115200");
 //             no_start_connection = true;
 //             openBCI_portName = serialPorts[i];
 //             openBCI_baud = 115200;
@@ -119,7 +119,7 @@ void autoconnect(){
 //           else locBoard.stop();
 //         }
 //         catch (Exception e){
-//           consolePrint("Board not on port " + serialPorts[i] +" with BAUD 115200");
+//           println("Board not on port " + serialPorts[i] +" with BAUD 115200");
 //         }
 //     }
 //
@@ -146,7 +146,7 @@ void autoconnect(){
 //           localBoard.write(0x07);
 //           delay(1000);
 //           if(confirm_openbci_v2()) {
-//             consolePrint("Board connected on port " +serialPorts[i] + " with BAUD 230400");
+//             println("Board connected on port " +serialPorts[i] + " with BAUD 230400");
 //             no_start_connection = true;
 //             openBCI_portName = serialPorts[i];
 //             openBCI_baud = 230400;
@@ -156,7 +156,7 @@ void autoconnect(){
 //           }
 //         }
 //         catch (Exception e){
-//           consolePrint("Board not on port " + serialPorts[i] +" with BAUD 230400");
+//           println("Board not on port " + serialPorts[i] +" with BAUD 230400");
 //         }
 //
 //     }
@@ -165,9 +165,9 @@ void autoconnect(){
 
 /**** Helper function for connection of boards ****/
 boolean confirm_openbci(){
-  //consolePrint(board_message.toString());
+  //println(board_message.toString());
   // if(board_message.toString().toLowerCase().contains("registers")) return true;
-  // consolePrint("board " + board_message.toString() + " message");
+  // print("board "); print(board_message.toString()); println("message");
   if(board_message != null){
     if(board_message.toString().toLowerCase().contains("ads")){
       return true;
@@ -177,7 +177,7 @@ boolean confirm_openbci(){
 }
 
 boolean confirm_openbci_v2(){
-  //consolePrint(board_message.toString());
+  //println(board_message.toString());
   if(board_message.toString().toLowerCase().contains("success"))  return true;
   // if(board_message.toString().contains("v2."))  return true;
   else return false;
@@ -191,7 +191,7 @@ boolean confirm_connected(){
 /**** Helper function to read from the serial easily ****/
 boolean print_bytes(RadioConfigBox rc){
   if(board_message != null){
-    consolePrint(board_message.toString());
+    println(board_message.toString());
     rc.print_onscreen(board_message.toString());
     return true;
   } else {
@@ -200,7 +200,7 @@ boolean print_bytes(RadioConfigBox rc){
 }
 
 void print_bytes_error(RadioConfigBox rcConfig){
-  consolePrint("Error reading from Serial/COM port");
+  println("Error reading from Serial/COM port");
   rcConfig.print_onscreen("Error reading from Serial port. Try a different port?");
   board = null;
 }
@@ -211,11 +211,11 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
   if(openBCI_portName != "N/A"){
     output("Attempting to open Serial/COM port: " + openBCI_portName);
     try {
-      consolePrint("Radios_Config: connect_to_portName: attempting to open serial port: " + openBCI_portName);
+      println("Radios_Config: connect_to_portName: attempting to open serial port: " + openBCI_portName);
       serial_output = new Serial(this, openBCI_portName, openBCI_baud); //open the com port
       serial_output.clear(); // clear anything in the com port's buffer
       // portIsOpen = true;
-      consolePrint("Radios_Config: connect_to_portName: port is open!");
+      println("Radios_Config: connect_to_portName: port is open!");
       // changeState(STATE_COMINIT);
       board = serial_output;
       return true;
@@ -223,15 +223,15 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
     catch (RuntimeException e){
       if (e.getMessage().contains("<init>")) {
         serial_output = null;
-        consolePrint("Radios_Config: connect_to_portName: port in use, trying again later...");
+        println("Radios_Config: connect_to_portName: port in use, trying again later...");
         // portIsOpen = false;
       } else{
-        consolePrint("RunttimeException: " + e);
+        println("RunttimeException: " + e);
         output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
         rcConfig.print_onscreen("Error connecting to Serial port. Try a different port?");
       }
       board = null;
-      consolePrint("Radios_Config: connect_to_portName: failed to connect to " + openBCI_portName);
+      println("Radios_Config: connect_to_portName: failed to connect to " + openBCI_portName);
       return false;
     }
   } else {
@@ -255,7 +255,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
 //==========================================
 
 void system_status(RadioConfigBox rcConfig){
-  consolePrint("Radios_Config: system_status");
+  println("Radios_Config: system_status");
 
   if(board == null){
     if(!connect_to_portName(rcConfig)){
@@ -270,14 +270,14 @@ void system_status(RadioConfigBox rcConfig){
       print_bytes_error(rcConfig);
     }
   } else {
-    consolePrint("Error, no board connected");
+    println("Error, no board connected");
     rcConfig.print_onscreen("No board connected!");
   }
 }
 
 //Scans through channels until a success message has been found
 void scan_channels(RadioConfigBox rcConfig){
-  consolePrint("Radios_Config: scan_channels");
+  println("Radios_Config: scan_channels");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -305,7 +305,7 @@ void scan_channels(RadioConfigBox rcConfig){
 //==========================================
 
 void get_channel(RadioConfigBox rcConfig){
-  consolePrint("Radios_Config: get_channel");
+  println("Radios_Config: get_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -321,7 +321,7 @@ void get_channel(RadioConfigBox rcConfig){
     }
   }
   else {
-    consolePrint("Error, no board connected");
+    println("Error, no board connected");
     rcConfig.print_onscreen("No board connected!");
   }
   }
@@ -340,7 +340,7 @@ void get_channel(RadioConfigBox rcConfig){
 //==========================================
 
 void set_channel(RadioConfigBox rcConfig, int channel_number){
-  consolePrint("Radios_Config: set_channel");
+  println("Radios_Config: set_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -359,7 +359,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
     else rcConfig.print_onscreen("Please Select a Channel");
   }
   else {
-    consolePrint("Error, no board connected");
+    println("Error, no board connected");
     rcConfig.print_onscreen("No board connected!");
   }
 }
@@ -378,7 +378,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
 //==========================================
 
 void set_channel_over(RadioConfigBox rcConfig, int channel_number){
-  consolePrint("Radios_Config: set_ovr_channel");
+  println("Radios_Config: set_ovr_channel");
   if(board == null){
     if(!connect_to_portName(rcConfig)){
       return;
@@ -399,7 +399,7 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
   }
 
   else {
-    consolePrint("Error, no board connected");
+    println("Error, no board connected");
     rcConfig.print_onscreen("No board connected!");
   }
 }
@@ -435,7 +435,7 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
 //   }
 //
 //   else {
-//     consolePrint("Error, no board connected");
+//     println("Error, no board connected");
 //     rcConfig.print_onscreen("No board connected!");
 //   }
 // }
@@ -469,7 +469,7 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
 // }
 //   }
 //   else {
-//     consolePrint("Error, no board connected");
+//     println("Error, no board connected");
 //     rcConfig.print_onscreen("No board connected!");
 //   }
 // }
@@ -507,11 +507,11 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
 //       board = autoconnect_return_default();
 //     }
 //     catch (Exception e){
-//       consolePrint("error setting serial to BAUD 115200");
+//       println("error setting serial to BAUD 115200");
 //     }
 //   }
 //   else {
-//     consolePrint("Error, no board connected");
+//     println("Error, no board connected");
 //     rcConfig.print_onscreen("No board connected!");
 //   }
 // }
@@ -548,11 +548,11 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
 //       board = autoconnect_return_high();
 //     }
 //     catch (Exception e){
-//       consolePrint("error setting serial to BAUD 230400");
+//       println("error setting serial to BAUD 230400");
 //     }
 //   }
 //   else {
-//     consolePrint("Error, no board connected");
+//     println("Error, no board connected");
 //     rcConfig.print_onscreen("No board connected!");
 //   }
 //

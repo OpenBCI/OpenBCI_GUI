@@ -141,7 +141,7 @@ class W_playback extends Widget {
       if (selectRecentFileButtons[i].isMouseHere() && selectRecentFileButtons[i].isActive) {
         //load the playback file using the full file path
         //String fileToLoad = longFilePaths[i];
-        //consolePrint("FILE PATH TO LOAD: " + longFilePaths[i] + " && Shrt file pth 2 ld: " + shortFileNames[i]);
+        //println("FILE PATH TO LOAD: " + longFilePaths[i] + " && Shrt file pth 2 ld: " + shortFileNames[i]);
         recentFileSelectedButton(longFilePaths[i], shortFileNames[i]);
       }
     }
@@ -173,7 +173,7 @@ class W_playback extends Widget {
           }
         }
         if (loadPlaybackHistoryJSONArray.size() <= 10) {
-          //consolePrint("History Size = " + loadPlaybackHistoryJSONArray.size());
+          //println("History Size = " + loadPlaybackHistoryJSONArray.size());
           //fileSelectTabsInt changes when user selects playback range from dropdown
           numFilesToShow = loadPlaybackHistoryJSONArray.size();
           playbackNumButtonsToDraw = loadPlaybackHistoryJSONArray.size();
@@ -198,8 +198,8 @@ class W_playback extends Widget {
         //+ " | max = " + int(loadPlaybackHistoryJSONArray.size() - numFilesToShow));
 
         //for all files that appear in JSON array in increments of 10
-        //consolePrint(fileSelectTabsInt + " " + numFilesToShow);
-        //consolePrint("Array Size:" + loadPlaybackHistoryJSONArray.size());
+        //println(fileSelectTabsInt + " " + numFilesToShow);
+        //println("Array Size:" + loadPlaybackHistoryJSONArray.size());
         int currentFileNameToDraw = 0;
         if (loadPlaybackHistoryJSONArray.size() > 1) {
           for (int i = (loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt); //minimum
@@ -250,10 +250,10 @@ class W_playback extends Widget {
         }
 
       } catch (NullPointerException e) {
-        consolePrint("PlaybackWidget: Playback history file not found.");
+        println("PlaybackWidget: Playback history file not found.");
       }
     } else {
-      consolePrint("PlaybackWidget: Found " + playbackHistoryFileExists); //playback History File Exists = false;
+      println("PlaybackWidget: Found " + playbackHistoryFileExists); //playback History File Exists = false;
     }
   }
 }; //end Playback widget class
@@ -263,7 +263,7 @@ class W_playback extends Widget {
 //////////////////////////////////////
 //Activated when an item from the corresponding dropdown is selected
 void pbRecentRange(int n) {
-  consolePrint("Item " + (n+1) + " selected from Dropdown 1");
+  println("Item " + (n+1) + " selected from Dropdown 1");
   if(n==0) {
     fileSelectTabsInt = 1;
   } else {
@@ -276,9 +276,9 @@ void pbRecentRange(int n) {
 //Activated when user selects a file using the load playback file button
 void playbackSelectedWidgetButton(File selection) {
   if (selection == null) {
-    consolePrint("W_Playback: playbackSelected: Window was closed or the user hit cancel.");
+    println("W_Playback: playbackSelected: Window was closed or the user hit cancel.");
   } else {
-    consolePrint("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
+    println("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
     //output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = selection.getAbsolutePath();
     playbackData_ShortName = selection.getName();
@@ -309,7 +309,7 @@ void playbackSelectedWidgetButton(File selection) {
       hasRepeated = false;
       has_processed = false;
       process_input_file();
-      consolePrint("+++GUI update process file has occurred");
+      println("+++GUI update process file has occurred");
     }
     catch(Exception e) {
       isOldData = true;
@@ -359,7 +359,7 @@ void recentFileSelectedButton(String fullPath, String shortName) {
     hasRepeated = false;
     has_processed = false;
     process_input_file();
-    consolePrint("+++GUI update process file has occurred");
+    println("+++GUI update process file has occurred");
   }
   catch(Exception e) {
     isOldData = true;
@@ -392,23 +392,23 @@ void processNewPlaybackFile() { //Also used in DataLogging.pde
 
 void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
   //open and load the data file
-  consolePrint("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
+  println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
   try {
     playbackData_table = new Table_CSV(playbackData_fname);
     //removing first column of data from data file...the first column is a time index and not eeg data
     playbackData_table.removeColumn(0);
   } catch (Exception e) {
-    consolePrint("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-    consolePrint("   : quitting...");
+    println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
+    println("   : quitting...");
     hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
   }
 
-  consolePrint("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
+  println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
 }
 
 
 void reinitializeCoreDataAndFFTBuffer() {
-  //consolePrint("Data Processing Number of Channels is: " + dataProcessing.nchan);
+  //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
   dataProcessing.nchan = nchan;
   dataProcessing.fs_Hz = getSampleRateSafe();
   dataProcessing.data_std_uV = new float[nchan];
@@ -420,11 +420,11 @@ void reinitializeCoreDataAndFFTBuffer() {
 
   //initialize core data objects
   initCoreDataObjects();
-  //consolePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
+  //verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
 
   initFFTObjectsAndBuffer();
 
-  //consolePrint("W_Playback: initSystem: -- Init 2 -- " + millis());
+  //verbosePrint("W_Playback: initSystem: -- Init 2 -- " + millis());
 
   //Update the number of channels for FFT
   w_fft.fft_points = null;
@@ -446,7 +446,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
 
   int maxNumHistoryFiles = 100;
   if (playbackHistoryFileExists) {
-    consolePrint("Found user playback file!");
+    println("Found user playback file!");
     //do this if the file exists
     savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
     JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
@@ -480,7 +480,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
     saveJSONObject(savePlaybackHistoryJSON, userPlaybackHistoryFile);
 
   } else if (!playbackHistoryFileExists) {
-    consolePrint("Playback history file not found. making a new one.");
+    println("Playback history file not found. making a new one.");
     //do this if the file does not exist
     JSONObject newHistoryFile;
     newHistoryFile = new JSONObject();
@@ -501,7 +501,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
     rangePlaybackStringList.append(rangeSelectStringArray[0]);
 
     //now the file exists!
-    consolePrint("Playback history JSON has been made!");
+    println("Playback history JSON has been made!");
     playbackHistoryFileExists = true;
   }
 

@@ -142,7 +142,7 @@ class W_PulseSensor extends Widget {
 
       processSignal(signal);
       PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>// //<>//
-      //consolePrint("BPM, Signal, IBI ~~~~ " + BPM + "," +  signal + "," + IBI);
+      //println("BPM, Signal, IBI ~~~~ " + BPM + "," +  signal + "," + IBI);
 
       samplesProcessed++;
     }
@@ -191,7 +191,7 @@ class W_PulseSensor extends Widget {
   void screenResized(){
     super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-    consolePrint("Pulse Sensor Widget -- Screen Resized.");
+    println("Pulse Sensor Widget -- Screen Resized.");
 
     setPulseWidgetVariables();
     analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
@@ -210,7 +210,7 @@ class W_PulseSensor extends Widget {
 
     //put your code here...
     if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-      // consolePrint("analogModeButton...");
+      // println("analogModeButton...");
       if(cyton.isPortOpen()) {
         if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
           cyton.setBoardMode(BOARD_MODE_ANALOG);

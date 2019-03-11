@@ -472,13 +472,13 @@ class TopNav {
     int[] localVersionCompareArray = int(split(localVersionString, '.'));
     webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
     localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-    consolePrint("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
+    println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
     if (localGUIVersionInt < webGUIVersionInt) {
       guiVersionIsUpToDate = false;
-      consolePrint("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
+      println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
     } else if (localGUIVersionInt >= webGUIVersionInt) {
       guiVersionIsUpToDate = true;
-      consolePrint("GUI is up to date!");
+      println("GUI is up to date!");
     }
   }
 
@@ -614,7 +614,7 @@ class LayoutSelector {
       for (int i = 0; i < layoutOptions.size(); i++) {
         if (layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()) {
           int layoutSelected = i+1;
-          consolePrint("Layout [" + layoutSelected + "] selected.");
+          println("Layout [" + layoutSelected + "] selected.");
           output("Layout [" + layoutSelected + "] selected.");
           layoutOptions.get(i).setIsActive(false);
           toggleVisibility(); //shut layoutSelector if something is selected
@@ -792,7 +792,7 @@ class configSelector {
       for (int i = 0; i < configOptions.size(); i++) {
         if (configOptions.get(i).isMouseHere()) {
           configOptions.get(i).setIsActive(true);
-          consolePrint("config pressed");
+          println("config pressed");
         }
       }
     }
@@ -827,7 +827,7 @@ class configSelector {
             if (saveSettingsDialogName == null) {
               selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileToSave)); //open dialog box to save settings as json
             } else {
-              consolePrint("saveSettingsFileName = " + saveSettingsDialogName);
+              println("saveSettingsFileName = " + saveSettingsDialogName);
               saveSettingsDialogName = null;
             }
           } else if (configSelected == 1) {
@@ -836,7 +836,7 @@ class configSelector {
               selectInput("Load a custom settings file from JSON:", "loadConfigFile");
               saveSettingsDialogName = null;
             } else {
-              consolePrint("loadSettingsFileName = " + loadSettingsDialogName);
+              println("loadSettingsFileName = " + loadSettingsDialogName);
             }
           } else if (configSelected == 2) {
             //Revert GUI to default settings that were flashed on system start!
@@ -1004,7 +1004,7 @@ class TutorialSelector {
           int tutorialSelected = i+1;
           tutorialOptions.get(i).setIsActive(false);
           tutorialOptions.get(i).goToURL();
-          consolePrint("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
+          println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
           output("Layout [" + tutorialSelected + "] selected.");
           toggleVisibility(); //shut layoutSelector if something is selected
           //open corresponding link
@@ -1081,9 +1081,9 @@ class TutorialSelector {
 // Select file to save custom settings using dropdown in TopNav.pde
 void saveConfigFile(File selection) {
   if (selection == null) {
-    consolePrint("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
+    println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
   } else {
-    consolePrint("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
+    println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
     output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
     saveSettingsDialogName = selection.getAbsolutePath();
     saveGUISettings(saveSettingsDialogName); //save current settings to JSON file in SavedData
@@ -1094,9 +1094,9 @@ void saveConfigFile(File selection) {
 // Select file to load custom settings using dropdown in TopNav.pde
 void loadConfigFile(File selection) {
   if (selection == null) {
-    consolePrint("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
+    println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
   } else {
-    consolePrint("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
+    println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
     output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
     loadSettingsDialogName = selection.getAbsolutePath();
     loadGUISettings(loadSettingsDialogName); //load settings from JSON file in /data/

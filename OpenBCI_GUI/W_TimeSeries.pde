@@ -259,7 +259,7 @@ class W_timeSeries extends Widget {
     if(eegDataSource == DATASOURCE_CYTON){
       //put your code here...
       if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
-        consolePrint("HardwareSetingsButton: Toggle...");
+        println("HardwareSetingsButton: Toggle...");
         if(showHardwareSettings){
           showHardwareSettings = false;
           hsc.isVisible = false;
@@ -284,7 +284,7 @@ class W_timeSeries extends Widget {
 
   //Called when a user selects a new playback file from playback widget
   void updateNumChannelBars(PApplet _parent) {
-    //consolePrint("NEW NCHAN = " + nchan);
+    //println("NEW NCHAN = " + nchan);
     numChannelBars = nchan;
 
     //Clear the array that holds the channel bars
@@ -328,7 +328,7 @@ void VertScale_TS(int n) {
 //triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
   tsHorizScaleSave = n;
-  // consolePrint("adjust duration to: " + xLimOptions[n]);
+  // println("adjust duration to: " + xLimOptions[n]);
   //set time series x axis to the duration selected from dropdown
   int newDuration = w_timeSeries.xLimOptions[tsHorizScaleSave];
   for(int i = 0; i < w_timeSeries.numChannelBars; i++){
@@ -602,7 +602,7 @@ class ChannelBar{
     if(w_timeSeries.isUpdating()){
       updatePlotPoints();
     }
-    // consolePrint("New X axis = " + _newTimeSize);
+    // println("New X axis = " + _newTimeSize);
   }
 
   void adjustVertScale(int _vertScaleValue){
@@ -635,7 +635,7 @@ class ChannelBar{
       onOffButton.but_dx = onOff_diameter;
       onOffButton.but_dy = onOff_diameter;
     } else{
-      // consolePrint("h = " + h);
+      // println("h = " + h);
       onOff_diameter = h - 2;
       onOffButton.but_dx = onOff_diameter;
       onOffButton.but_dy = onOff_diameter;
@@ -662,13 +662,13 @@ class ChannelBar{
 
   void mousePressed(){
     if(onOffButton.isMouseHere()){
-      consolePrint("[" + channelNumber + "] onOff pressed");
+      println("[" + channelNumber + "] onOff pressed");
       onOffButton.setIsActive(true);
     }
 
     if(eegDataSource == DATASOURCE_CYTON){
       if(impCheckButton.isMouseHere()){
-        consolePrint("[" + channelNumber + "] imp pressed");
+        println("[" + channelNumber + "] imp pressed");
         impCheckButton.setIsActive(true);
       }
     }
@@ -677,7 +677,7 @@ class ChannelBar{
 
   void mouseReleased(){
     if(onOffButton.isMouseHere()){
-      consolePrint("[" + channelNumber + "] onOff released");
+      println("[" + channelNumber + "] onOff released");
       if(isOn){  // if channel is active
         isOn = false; // deactivate it
         deactivateChannel(channelNumber - 1); //got to - 1 to make 0 indexed
@@ -694,7 +694,7 @@ class ChannelBar{
 
     if(eegDataSource == DATASOURCE_CYTON){
       if(impCheckButton.isMouseHere() && impCheckButton.isActive()){
-        consolePrint("[" + channelNumber + "] imp released");
+        println("[" + channelNumber + "] imp released");
         w_timeSeries.hsc.toggleImpedanceCheck(channelNumber);  // 'n' indicates the N inputs and '1' indicates test impedance
         if(drawImpValue){
           drawImpValue = false;
@@ -790,8 +790,7 @@ class PlaybackScrollbar {
         clearAllAccelGPlots();
         playbackScrubbing(); //perform scrubbing
       } catch (Exception e) {
-        //e.printStackTrace();
-        consolePrint("PlaybackScrollbar: Error: " + e);
+        println("PlaybackScrollbar: Error: " + e);
       }
     }
 
@@ -803,7 +802,7 @@ class PlaybackScrollbar {
         pointCounter = 0;
         try {
           process_input_file();
-          ///consolePrint("TimeSeriesFileProcessed");
+          ///println("TimeSeriesFileProcessed");
         } catch(Exception e) {
           isOldData = true;
           output("###Error processing timestamps, are you using old data?");
@@ -827,7 +826,7 @@ class PlaybackScrollbar {
     }
 
     if(mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
-      //consolePrint("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
+      //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
       skipToStartButton.setIsActive(true);
       skipToStartButtonAction(); //skip to start
       indicatorAtStart = true;
@@ -909,7 +908,7 @@ class PlaybackScrollbar {
     //Divide the width (Max - Min) by the number of indices
     //Store this value for scrollbar step size as a float
     float scrollbarStepSize = (sposMax-sposMin) / num_indices;
-    //consolePrint("sep val : " + scrollbarStepSize);
+    //println("sep val : " + scrollbarStepSize);
     int index_Position = int(getPos());
     int indexCounter;
 
@@ -923,7 +922,7 @@ class PlaybackScrollbar {
       if (index_Position > scrollbarStepSize * indexCounter && index_Position <= scrollbarStepSize * (indexCounter + 1)) {
         indexPosition = indexCounter;
         indicatorAtStart = false;
-        //consolePrint(">= val: " + (scrollbarStepSize * indexCounter) + " || <= val: " + (scrollbarStepSize * (indexCounter +1)) );
+        //println(">= val: " + (scrollbarStepSize * indexCounter) + " || <= val: " + (scrollbarStepSize * (indexCounter +1)) );
       }
       if (spos == sposMax) { //Indicator is at the end
         indexPosition = num_indices;
@@ -947,7 +946,7 @@ class PlaybackScrollbar {
     int secondCounterMax = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
     //Map the values to playbackslider min and max
     float m = map(secondCounter, 0, secondCounterMax, sposMin, sposMax);
-    //consolePrint("mapval_"+m);
+    //println("mapval_"+m);
     //Returns mapped value to set the new position of playback indicator
     return m;
   }
@@ -958,7 +957,7 @@ class PlaybackScrollbar {
   // This function should scrub the file using the slider position      //
   void playbackScrubbing() {
     num_indices = indices;
-    //consolePrint("INDEXES: "+num_indices);
+    //println("INDEXES: "+num_indices);
     if(has_processed){
       //This updates Time Series playback position and the value at the top of the GUI in title bar
       currentTableRowIndex = getIndex();

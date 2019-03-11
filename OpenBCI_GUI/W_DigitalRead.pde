@@ -152,7 +152,7 @@ class W_DigitalRead extends Widget {
     yF = float(y);
     wF = float(w);
     hF = float(h);
-    // consolePrint("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h + " navBarHeight: " + navBarHeight);
+    // println("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h + " navBarHeight: " + navBarHeight);
 
     if (wF > hF) {
       digitalReadDotHeight = int(hF/(numDigitalReadDots+1));
@@ -190,7 +190,7 @@ class W_DigitalRead extends Widget {
 
     //put your code here...
     if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
-      // consolePrint("digitalModeButton...");
+      // println("digitalModeButton...");
       if(cyton.isPortOpen()) {
         if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
           cyton.setBoardMode(BOARD_MODE_DIGITAL);
@@ -330,7 +330,7 @@ class DigitalReadDot{
     DotHeight = _h;
     DotCorner = (sqrt(2)*DotWidth/2)/2;
 
-    // consolePrint("DigitalReadDot: " + digitalInputPin + " screenResized: DotX: " + DotX + " DotY: " + DotY + " DotWidth: "+ DotWidth + " DotHeight: " + DotHeight);
+    // println("DigitalReadDot: " + digitalInputPin + " screenResized: DotX: " + DotX + " DotY: " + DotY + " DotWidth: "+ DotWidth + " DotHeight: " + DotHeight);
 
     digitalPin.x = DotX;
     digitalPin.y = DotY - int(DotWidth/2.0);

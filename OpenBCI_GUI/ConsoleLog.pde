@@ -1,11 +1,10 @@
 ////////////////////////////////////////////////////////////
-//                 ConsoleLog.pde                     //
+//                 ConsoleLog.pde                         //
 //  This is an example of how to print console messages:  //
 //      -- to console                                     //
 //      -- to a file                                      //
 //      -- to the screen with scrolling                   //
 //                                                        //
-//           Use consolePrint() over println()            //
 ////////////////////////////////////////////////////////////
 
 
@@ -15,24 +14,15 @@ import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 import java.awt.Desktop;
 
-//PrintStream original = new PrintStream(System.out);
-//ConsoleData consoleData = new ConsoleData();
-
 class ConsoleWindow extends PApplet {
 
-  Desktop desktop;
-  ControlP5 cp5;
-  Textarea consoleTextArea;
-  int headerHeight = 42;
-  float heightOfConsoleCanvas = 500 - headerHeight;
-
-  int previousConsoleDataSize = 0;
-  boolean consoleMouseEvent = false;
-
-  private boolean visible = true;
-  private boolean updating = false;
-
-  ClipHelper clipboardCopy = new ClipHelper();
+  private ControlP5 cp5;
+  private Textarea consoleTextArea;
+  private ClipHelper clipboardCopy;
+  
+  private final int headerHeight = 42;
+  private final int defaultWidth = 620;
+  private final int defaultHeight = 500;
 
   ConsoleWindow() {
     super();
@@ -40,15 +30,18 @@ class ConsoleWindow extends PApplet {
   }
 
   void settings() {
-    size(620, 500);
+    size(defaultWidth, defaultHeight);
   }
 
   void setup() {
     surface.setAlwaysOnTop(true);
+    surface.setResizable(true);
+
+    clipboardCopy = new ClipHelper();
     cp5 = new ControlP5(this);
+
     consoleTextArea = cp5.addTextarea("ConsoleWindow")
       .setPosition(0, headerHeight)
-      .setSize(width, height - headerHeight)
       .setFont(createFont("arial", 14))
       .setLineHeight(18)
       .setColor(color(242))
@@ -58,27 +51,20 @@ class ConsoleWindow extends PApplet {
       .setScrollForeground(color(144, 100))
     ;
 
+    // register this console's Textarea with the output stream object
+    outputStream.registerTextArea(consoleTextArea);
+
     int cW = int(width/3);
     int bX = int((cW - 150) / 2);
-    createConsoleLogButton("openLogFileTextButton", "Open Log as Text", bX);
+    createConsoleLogButton("openLogFileAsText", "Open Log as Text (F)", bX);
     bX += cW;
-    createConsoleLogButton("copyFullTextButton", "Copy Full Log Text", bX);
+    createConsoleLogButton("copyFullTextToClipboard", "Copy Full Log Text (C)", bX);
     bX += cW;
-    createConsoleLogButton("copyLastLineButton", "Copy Last Line", bX);
-
-    // add all available console info when opening a new console window
-    for (int i = 0; i < consoleData.data.size(); i++) {
-      consoleTextArea.append(consoleData.data.get(i)+"\n");
-    }
-    previousConsoleDataSize =  consoleData.data.size();
-
-    consolePrint("ConsoleWindow: Console opened!");
-    setVisible(true);
-    setUpdating(true);
+    createConsoleLogButton("copyLastLineToClipboard", "Copy Last Line (L)", bX);
   }
 
   void createConsoleLogButton (String bName, String bText, int x) {
-    int w = 150;
+    int w = 170;
     int h = 34;
     int y = 4;
     cp5.addButton(bName)
@@ -96,38 +82,31 @@ class ConsoleWindow extends PApplet {
   }
 
   void draw() {
+    // dynamically resize text area to fit widget
+    consoleTextArea.setSize(width, height - headerHeight);
+
     clear();
-    int diff = consoleData.data.size() - previousConsoleDataSize;
-    for (int i=0; i < diff; i++) {
-      String s = consoleData.data.get(consoleData.data.size() - diff - i);
-      consoleTextArea.append(s+"\n");
-    }
     scene();
     cp5.draw();
-    previousConsoleDataSize =  consoleData.data.size();
   }
 
-  public boolean isVisible() {
-    return visible;
-  }
-  public boolean isUpdating() {
-    return updating;
-  }
-
-  public void setVisible(boolean _visible) {
-    visible = _visible;
-  }
-  public void setUpdating(boolean _updating) {
-    updating = _updating;
+  void scene() {
+    background(42);
+    fill(42);
+    rect(0, 0, width, headerHeight);
   }
 
   void keyReleased() {
-    if (key == 'c' || key == 'C') {
+    if (key == 'c') {
       copyFullTextToClipboard();
     }
 
     if (key == 'f') {
-      openLogFileTextButton();
+      openLogFileAsText();
+    }
+
+    if (key == 'l') {
+      copyLastLineToClipboard();
     }
   }
 
@@ -139,54 +118,27 @@ class ConsoleWindow extends PApplet {
 
   }
 
-  public void openLogFileTextButton() {
-    openLogFileAsText();
-  }
-
-  public void copyFullTextButton() {
-    copyFullTextToClipboard();
-  }
-
-  public void copyLastLineButton() {
-    copyLastLineToClipboard();
-  }
-
   void openLogFileAsText() {
     try {
-      consolePrint("Opening console log as text file!");
-      File file = new File (consoleData.file);
+      println("Opening console log as text file!");
+      File file = new File (outputStream.getFilePath());
       Desktop desktop = Desktop.getDesktop();
-      if(file.exists()) desktop.open(file);
+      if(file.exists()) {
+        desktop.open(file);
+      }
     } catch (IOException e) {}
   }
 
   void copyFullTextToClipboard() {
-    consolePrint("Copying console log to clipboard!");
-    String stringToCopy = join(consoleData.data.array(), "\n");
+    println("Copying console log to clipboard!");
+    String stringToCopy = outputStream.getFullLog();
     String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
     clipboardCopy.copyString(formattedCodeBlock);
   }
 
   void copyLastLineToClipboard() {
-    clipboardCopy.copyString(consoleData.data.get(consoleData.data.size()-1));
-    consolePrint("Previous line copied to clipboard.");
-  }
-
-  void scene() {
-    background(42);
-    pushMatrix();
-
-    int fontHeight = 12;
-    float fontSpacing = 1.2;
-    int textY = 4;
-
-    fill(42);
-    rect(0, 0, width, headerHeight);
-
-    //text("mouseY = " + mouseY, width-130, heightOfConsoleCanvas-48);
-    //text("End of virtual canvas", width-130, heightOfConsoleCanvas-32);
-
-    popMatrix();
+    clipboardCopy.copyString(outputStream.getLastLine());
+    println("Previous line copied to clipboard.");
   }
 
   void screenResized(){
@@ -194,7 +146,7 @@ class ConsoleWindow extends PApplet {
   }
 
   void exit() {
-    consolePrint("ConsoleWindow: Console closed!");
+    println("ConsoleWindow: Console closed!");
     consoleWindowExists = false;
     dispose();
   }
@@ -211,19 +163,19 @@ class ConsoleWindow extends PApplet {
     void getClipboard () {
       // this is our simple thread that grabs the clipboard
       Thread clipThread = new Thread() {
-    public void run() {
-      clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    }
+        public void run() {
+          clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        }
       };
 
       // start the thread as a daemon thread and wait for it to die
       if (clipboard == null) {
-    try {
-      clipThread.setDaemon(true);
-      clipThread.start();
-      clipThread.join();
-    }
-    catch (Exception e) {}
+        try {
+          clipThread.setDaemon(true);
+          clipThread.start();
+          clipThread.join();
+        }
+        catch (Exception e) {}
       }
     }
 
@@ -239,10 +191,10 @@ class ConsoleWindow extends PApplet {
     String pasteString () {
       String data = null;
       try {
-    data = (String)pasteObject(DataFlavor.stringFlavor);
+        data = (String)pasteObject(DataFlavor.stringFlavor);
       }
       catch (Exception e) {
-        consolePrint("Error getting String from clipboard: " + e);
+        println("Error getting String from clipboard: " + e);
       }
       return data;
     }
@@ -264,12 +216,19 @@ class ConsoleWindow extends PApplet {
 
 // --------------------------------------------------------------
 
-class ConsoleData {
+class CustomOutputStream extends PrintStream {
 
-  StringList data = new StringList();
-  int outputLine = 0;
-  String file = "";
-  void setupConsoleOutput() {
+  private StringList data;
+  private PrintStream fileOutput;
+  private Textarea textArea;
+  private String filePath;
+
+  public CustomOutputStream(OutputStream out) {
+    super(out);
+    data = new StringList();
+
+    // create log file
+    // TODO: Figure out clean way to create file on all platforms
     try {
       File consoleDataFile = null;
       if (isWindows()) {
@@ -278,15 +237,62 @@ class ConsoleData {
         consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
       }
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
-      file = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
+      filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
 
-      FileOutputStream outStr = new FileOutputStream(file, false);
-      PrintStream printStream = new PrintStream(outStr);
-      System.setOut(printStream);
-      System.setErr(printStream);
+      FileOutputStream outStr = new FileOutputStream(filePath, false);
+      fileOutput = new PrintStream(outStr);
     }
     catch (IOException e) {
-      consolePrint("Error! Check path, or filename, or security manager! "+e);
+      println("Error! Check path, or filename, or security manager! "+e);
     }
   }
-}//end class
+
+  public void println(String string) {
+    string += "\n";
+    super.print(string);  // don't call super.println() here, you'll get double prints
+
+    // add to array
+    data.append(string);
+
+    // print to file
+    fileOutput.print(string);
+
+    // add to text area, if registered
+    if (textArea != null) {
+      textArea.append(string);
+    }
+  }
+
+  public void print(String string) {
+    super.print(string);
+    string += "\n"; // TODO: shouldn't have to do this, but exceptions were printing on one line. investigate?
+
+    // add to array
+    data.append(string);
+    
+    // print to file
+    fileOutput.print(string);
+
+    // add to text area, if registered
+    if (textArea != null) {
+      textArea.append(string);
+    }
+  }
+
+  public void registerTextArea(Textarea area) {
+    textArea = area;
+    textArea.setText(getFullLog());
+  }
+
+  public String getFilePath() {
+    return filePath;
+  }
+
+  public String getLastLine() {
+    return data.get(data.size()-1);
+  }
+
+  public String getFullLog() {
+    return join(data.array(), "");
+  }
+}

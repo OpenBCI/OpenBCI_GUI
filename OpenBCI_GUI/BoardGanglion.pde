@@ -124,7 +124,7 @@ class Ganglion {
 
   private void handleError(int code, String msg) {
     output("Code " + code + "Error: " + msg);
-    consolePrint("Code " + code + "Error: " + msg);
+    println("Code " + code + "Error: " + msg);
   }
 
   public void processImpedance(JSONObject json) {
@@ -144,7 +144,7 @@ class Ganglion {
   public void setSampleRate(int _sampleRate) {
     sampleRate = _sampleRate;
     hub.setSampleRate(sampleRate);
-    consolePrint("Setting sample rate for Ganglion to " + sampleRate + "Hz");
+    println("Setting sample rate for Ganglion to " + sampleRate + "Hz");
   }
 
   public void setInterface(int _interface) {
@@ -183,7 +183,7 @@ class Ganglion {
    */
   void startDataTransfer(){
     hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
-    consolePrint("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
+    println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
     if (checkingImpedance) {
       impedanceStop();
       delay(100);
@@ -198,12 +198,12 @@ class Ganglion {
    */
   public void stopDataTransfer() {
     hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
-    consolePrint("Ganglion: stopDataTransfer(): sending \'" + command_stop);
+    println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
     hub.sendCommand('s');
   }
 
   private void printGanglion(String msg) {
-    consolePrint("Ganglion: " + msg);
+    print("Ganglion: "); println(msg);
   }
 
   // Channel setting
@@ -212,11 +212,11 @@ class Ganglion {
     if (isPortOpen()) {
       if ((Ichan >= 0)) {
         if (activate) {
-          consolePrint("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
+          println("Ganglion: changeChannelState(): activate: sending " + command_activate_channel[Ichan]);
           hub.sendCommand(command_activate_channel[Ichan]);
           w_timeSeries.hsc.powerUpChannel(Ichan);
         } else {
-          consolePrint("Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
+          println("Ganglion: changeChannelState(): deactivate: sending " + command_deactivate_channel[Ichan]);
           hub.sendCommand(command_deactivate_channel[Ichan]);
           w_timeSeries.hsc.powerDownChannel(Ichan);
         }
@@ -232,7 +232,7 @@ class Ganglion {
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_ACCEL);
     hub.writeJSON(json);
-    consolePrint("Ganglion: accell: START");
+    println("Ganglion: accell: START");
     accelModeActive = true;
   }
 
@@ -241,7 +241,7 @@ class Ganglion {
    *  was sent by this function.
    */
   public void accelStop() {
-    consolePrint("Ganglion: accel: STOP");
+    println("Ganglion: accel: STOP");
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_STOP);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_ACCEL);
@@ -253,7 +253,7 @@ class Ganglion {
    * Used to start impedance testing. Impedances will arrive asynchronously!
    */
   public void impedanceStart() {
-    consolePrint("Ganglion: impedance: START");
+    println("Ganglion: impedance: START");
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
@@ -266,7 +266,7 @@ class Ganglion {
    *  was sent by this function.
    */
   public void impedanceStop() {
-    consolePrint("Ganglion: impedance: STOP");
+    println("Ganglion: impedance: STOP");
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_STOP);
     json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
@@ -278,7 +278,7 @@ class Ganglion {
    * Puts the ganglion in bootloader mode.
    */
   public void enterBootloaderMode() {
-    consolePrint("Ganglion: Entering Bootloader Mode");
+    println("Ganglion: Entering Bootloader Mode");
     hub.sendCommand(GANGLION_BOOTLOADER_MODE.charAt(0));
     delay(500);
     closePort();

@@ -110,7 +110,7 @@ class W_openBionics extends Widget {
         }
         byte inByte = byte(OpenBionicsHand.read());
 
-        consolePrint("inByte = " + inByte);
+        println("inByte = " + inByte);
     }
 
     if(fingerChans[5] == -1){
@@ -288,7 +288,7 @@ class W_openBionics extends Widget {
       ;
     }
     catch(Exception e){
-      consolePrint("OpenBionics: error resizing...");
+      println("OpenBionics: error resizing...");
     }
 
   }
@@ -329,13 +329,13 @@ class W_openBionics extends Widget {
         try{
 
           OpenBionicsHand = new Serial(parent,obName,Integer.parseInt(obBaud));
-          consolePrint("Connected to OpenBionics Hand");
+          verbosePrint("Connected to OpenBionics Hand");
           wasConnected = true;
         }
         catch(Exception e){
           wasConnected = false;
-          //consolePrint(e.getMessage());
-          consolePrint("Could not connect to OpenBionics Hand");
+          println(e);
+          verbosePrint("Could not connect to OpenBionics Hand");
         }
       }
 

@@ -45,14 +45,14 @@ void openNewLogFile(String _fileName) {
  */
 void openNewLogFileBDF(String _fileName) {
   if (fileoutput_bdf != null) {
-    consolePrint("OpenBCI_GUI: closing log file");
+    println("OpenBCI_GUI: closing log file");
     closeLogFile();
   }
   //open the new file
   fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
 
   output_fname = fileoutput_bdf.fname;
-  consolePrint("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
+  println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
   //output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
@@ -63,23 +63,23 @@ void openNewLogFileBDF(String _fileName) {
  */
 void openNewLogFileODF(String _fileName) {
   if (fileoutput_odf != null) {
-    consolePrint("OpenBCI_GUI: closing log file");
+    println("OpenBCI_GUI: closing log file");
     closeLogFile();
   }
   //open the new file
   fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
 
   output_fname = fileoutput_odf.fname;
-  consolePrint("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
+  println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
   //output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
 }
 
 //Called when user selects a playback file from dialog box
 void playbackSelectedControlPanel(File selection) {
   if (selection == null) {
-    consolePrint("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
+    println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
   } else {
-    consolePrint("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
+    println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
     //Set the name of the file
     playbackFileSelectedCP(selection.getAbsolutePath(), selection.getName());
   }
@@ -107,7 +107,7 @@ void playbackFileSelectedCP (String longName, String shortName) {
     }
     playbackHistoryFileExists = true;
   } catch (NullPointerException e) {
-    consolePrint("Playback history JSON file does not exist. Load first file to make it.");
+    //println("Playback history JSON file does not exist. Load first file to make it.");
     playbackHistoryFileExists = false;
   }
   //add playback file that was processed to the JSON history
@@ -170,7 +170,7 @@ void closeLogFileODF() {
 
 void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
   if (selection == null) {
-    consolePrint("fileSelected: no selection so far...");
+    println("fileSelected: no selection so far...");
   } else {
     //inputFile = selection;
     playbackData_fname = selection.getAbsolutePath(); //<>// //<>//
@@ -209,12 +209,12 @@ void createPlaybackFileFromSD() {
 
 void sdFileSelected(File selection) {
   if (selection == null) {
-    consolePrint("Window was closed or the user hit cancel.");
+    println("Window was closed or the user hit cancel.");
   } else {
-    consolePrint("User selected " + selection.getAbsolutePath());
+    println("User selected " + selection.getAbsolutePath());
     dataReader = createReader(selection.getAbsolutePath()); // ("positions.txt");
     controlPanel.convertingSD = true;
-    consolePrint("Timing SD file conversion...");
+    println("Timing SD file conversion...");
     thatTime = millis();
   }
 }
@@ -322,7 +322,7 @@ public class OutputFile_rawtxt {
 
   private void writeAuxValues(DataPacket_ADS1299 data) {
     if (eegDataSource == DATASOURCE_CYTON) {
-      // consolePrint("board mode: " + cyton.getBoardMode());
+      // println("board mode: " + cyton.getBoardMode());
       if (cyton.getBoardMode() == BOARD_MODE_DIGITAL) {
         if (cyton.isWifi()) {
           output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
@@ -655,7 +655,7 @@ public class OutputFile_BDF {
       dataRecordsWritten++;
 
     } catch (Exception e) {
-      consolePrint("writeRawData_dataPacket: Exception ");
+      println("writeRawData_dataPacket: Exception ");
       e.printStackTrace();
     }
   }
@@ -666,47 +666,47 @@ public class OutputFile_BDF {
     try {
       dstream.close();
     } catch (Exception e) {
-      consolePrint("closeFile: dstream close exception ");
-      //e.printStackTrace();
+      println("closeFile: dstream close exception ");
+      e.printStackTrace();
     }
-    consolePrint("closeFile: started...");
+    println("closeFile: started...");
     // File f = new File(fname);
     // fstream = new FileOutputStream(f);
     // bstream = new BufferedOutputStream(fstream);
     // dstream = new DataOutputStream(bstream);
 
     OutputStream o = createOutput(fname);
-    consolePrint("closeFile: made file");
+    println("closeFile: made file");
 
     // Create a new writer with the same file name
     // Write the header
     writeHeader(o);
     output("Header writen, now writing data.");
-    consolePrint("closeFile: wrote header");
+    println("closeFile: wrote header");
 
     writeData(o);
     output("Data written. Closing new file.");
-    consolePrint("closeFile: wrote data");
+    println("closeFile: wrote data");
     // Create write stream
     // try {
-    //   consolePrint("closeFile: started...");
+    //   println("closeFile: started...");
     //   // File f = new File(fname);
     //   // fstream = new FileOutputStream(f);
     //   // bstream = new BufferedOutputStream(fstream);
     //   // dstream = new DataOutputStream(bstream);
     //
     //   OutputStream o = createOutput(fname);
-    //   consolePrint("closeFile: made file");
+    //   println("closeFile: made file");
     //
     //   // Create a new writer with the same file name
     //   // Write the header
     //   writeHeader(o);
     //   output("Header writen, now writing data.");
-    //   consolePrint("closeFile: wrote header");
+    //   println("closeFile: wrote header");
     //
     //   writeData(o);
     //   output("Data written. Closing new file.");
-    //   consolePrint("closeFile: wrote data");
+    //   println("closeFile: wrote data");
     //
     //   // dstream.close();
     //
@@ -721,8 +721,8 @@ public class OutputFile_BDF {
     //   // }
     // }
     // catch(IOException e) {
-    //   consolePrint("closeFile: IOException");
-    //   //e.printStackTrace();
+    //   println("closeFile: IOException");
+    //   e.printStackTrace();
     // }
 
   }
@@ -1176,20 +1176,20 @@ public class OutputFile_BDF {
   private byte swapByte(byte val) {
     int mask = 0x80;
     int res = 0;
-    // consolePrint("swapByte: starting to swap val: 0b" + binary(val,8));
+    // println("swapByte: starting to swap val: 0b" + binary(val,8));
     for (int i = 0; i < 8; i++) {
-      // consolePrint("\nswapByte: i: " + i);
+      // println("\nswapByte: i: " + i);
       // Isolate the MSB with a big mask i.e. 10000000, 01000000, etc...
       int temp = (val & mask);
-      // consolePrint("swapByte: temp:    0b" + binary(temp,8));
+      // println("swapByte: temp:    0b" + binary(temp,8));
       // Save this temp value
       res = (res >> 1) | (temp << i);
-      // consolePrint("swapByte: res:     0b" + binary(res,8));
+      // println("swapByte: res:     0b" + binary(res,8));
       // Move mask one place
       mask = mask >> 1;
-      // consolePrint("swapByte: mask: 0b" + binary(mask,32));
+      // println("swapByte: mask: 0b" + binary(mask,32));
     }
-    // consolePrint("swapByte: ending swapped val: 0b" + binary(res,8));
+    // println("swapByte: ending swapped val: 0b" + binary(res,8));
     return (byte)res;
   }
 
@@ -1276,7 +1276,7 @@ public class OutputFile_BDF {
     InputStream input = createInput(tempWriterPrefix);
 
     try {
-      consolePrint("writeData: started...");
+      println("writeData: started...");
       int data = input.read();
       int byteCount = 0;
       while (data != -1) {
@@ -1284,19 +1284,19 @@ public class OutputFile_BDF {
         data = input.read();
         byteCount++;
       }
-      consolePrint("writeData: finished: wrote " + byteCount + " bytes");
+      println("writeData: finished: wrote " + byteCount + " bytes");
     }
     catch (IOException e) {
-      consolePrint("writeData: " + e);
-      //e.printStackTrace();
+      print("writeData: ");
+      e.printStackTrace();
     }
     finally {
       try {
         input.close();
       }
       catch (IOException e) {
-        consolePrint("writeData: " + e);
-        //e.printStackTrace();
+        print("writeData: ");
+        e.printStackTrace();
       }
     }
   }
@@ -1307,7 +1307,7 @@ public class OutputFile_BDF {
   private void writeHeader(OutputStream o) {
     // writer.write(0xFF); // Write the first byte of the header here
     try {
-      // consolePrint("writeHeader: starting...");
+      // println("writeHeader: starting...");
 
       o.write(0xFF);
       writeString(padStringRight(new String(bdf_version),BDF_HEADER_SIZE_VERSION - 1), o); // Do one less then supposed to because of the first byte already written.
@@ -1363,10 +1363,10 @@ public class OutputFile_BDF {
       if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(reservedAux, BDF_HEADER_NS_SIZE_RESERVED, o);
       writeStringArrayWithPaddingTimes(reservedAnnotations, BDF_HEADER_NS_SIZE_RESERVED, o);
 
-      // consolePrint("writeHeader: done...");
+      // println("writeHeader: done...");
 
     } catch(Exception e) {
-      consolePrint("writeHeader: Exception " + e);
+      println("writeHeader: Exception " + e);
     }
   }
 
@@ -1396,7 +1396,7 @@ public class OutputFile_BDF {
         o.write((int)s.charAt(i));
       }
     } catch (Exception e) {
-      consolePrint("writeString: exception: " + e);
+      println("writeString: exception: " + e);
     }
   }
 
@@ -1441,21 +1441,21 @@ class Table_CSV extends Table {
         if (line.charAt(0) == '%') {
           if (line.length() > 18) {
             if (line.charAt(1) == 'S') {
-              // consolePrint(line.substring(15, 18));
+              // println(line.substring(15, 18));
               sampleRate = Integer.parseInt(line.substring(15, 18));
               if (sampleRate == 100 || sampleRate == 160) {
                 sampleRate = Integer.parseInt(line.substring(15, 19));
               }
-              consolePrint("Sample rate set to " + sampleRate);
+              println("Sample rate set to " + sampleRate);
               // String[] m = match(line, "\\d+");
               // if (m != null) {
-                // consolePrint("Found '" + m[1] + "' inside the line");
+                // println("Found '" + m[1] + "' inside the line");
               // }
             }
           }
-          consolePrint("readCSV: " + line);
+          println("readCSV: " + line);
           // if (line.charAt(1) == 'S') {
-          //   consolePrint("sampel rarteakjdsf;ldj");
+          //   println("sampel rarteakjdsf;ldj");
           // }
           continue;
         }
@@ -1478,7 +1478,7 @@ class Table_CSV extends Table {
         if (row < rowCount) {
            int pct = (100 * row) / rowCount;
            if (pct != prev) {  // also prevents "0%" from showing up
-           consolePrint(pct + "%");
+           System.out.println(pct + "%");
            prev = pct;
            }
            }
@@ -1540,8 +1540,8 @@ public void convertSDFile() {
     // Stop reading because of an error or file is empty
     thisTime = millis() - thatTime;
     controlPanel.convertingSD = false;
-    consolePrint("nothing left in file");
-    consolePrint("SD file conversion took "+thisTime+" mS");
+    println("nothing left in file");
+    println("SD file conversion took "+thisTime+" mS");
     outputSuccess("SD file converted to " + logFileName);
     dataWriter.flush();
     dataWriter.close();
@@ -1551,9 +1551,9 @@ public void convertSDFile() {
     hexNums = splitTokens(dataLine, ",");
 
     if (hexNums[0].charAt(0) == '%') {
-      //          consolePrint(dataLine);
+      //          println(dataLine);
       // dataWriter.println(dataLine);
-      consolePrint("convertSDFile: " + dataLine);
+      println("convertSDFile: " + dataLine);
       printNextLine = true;
     } else {
       if (hexNums.length < 13){
@@ -1586,7 +1586,7 @@ void convert16channelLine() {
       }
     }
     dataWriter.println();
-    consolePrint(consoleMsg);
+    println(consoleMsg);
     return;
   }
   for (int i=0; i<hexNums.length; i++) {
@@ -1605,7 +1605,7 @@ void convert16channelLine() {
         }
       }
     }
-    // consolePrint(h); // use for debugging
+    // println(h); // use for debugging
     if (h.length()%2 == 0 && h.length() <= 10) {  // make sure this is a real number
       floatData[i] = unhex(h);
     } else {
@@ -1648,7 +1648,7 @@ void convert8channelLine() {
       }
     }
     dataWriter.println();
-    consolePrint(consoleMsg);
+    println(consoleMsg);
     return;
   }
   for (int i=0; i<hexNums.length; i++) {
@@ -1667,7 +1667,7 @@ void convert8channelLine() {
         }
       }
     }
-    // consolePrint(h + " " + h.length()); // use for debugging
+    // println(h + " " + h.length()); // use for debugging
     if (h.length() > 8) {
       break;
     }
