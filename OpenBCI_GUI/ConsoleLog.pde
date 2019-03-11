@@ -70,7 +70,9 @@ class ConsoleWindow extends PApplet {
     cp5.addButton(bName)
         .setPosition(x, y)
         .setSize(w, h)
-        .setColorBackground(color(80, 100));
+        .setColorLabel(color(255))
+        .setColorForeground(color(31, 69, 110))
+        .setColorBackground(color(144, 100));
     cp5.getController(bName)
         .getCaptionLabel()
         .setFont(createFont("Arial",16,true))
