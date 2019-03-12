@@ -1378,7 +1378,7 @@ void systemDraw() { //for drawing to the screen
     drawContainers();
   } else { //systemMode != 10
     //still print title information about fps
-    surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");
+    surface.setTitle(int(frameRate) + " fps - OpenBCI GUI");
   }
 
   if (systemMode >= SYSTEMMODE_PREINIT) {
