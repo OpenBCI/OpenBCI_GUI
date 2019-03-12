@@ -236,6 +236,8 @@ class CustomOutputStream extends PrintStream {
   private Textarea textArea;
   private String filePath;
 
+  private final String fileDirectory = "/SavedData/Settings/";
+
   public CustomOutputStream(OutputStream out) {
     super(out);
     data = new StringList();
@@ -245,9 +247,9 @@ class CustomOutputStream extends PrintStream {
     try {
       File consoleDataFile = null;
       if (isWindows()) {
-        consoleDataFile = new File(sketchPath("/SavedData/Settings/"));
+        consoleDataFile = new File(sketchPath(fileDirectory));
       } else {
-        consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
+        consoleDataFile = new File(sketchPath()+fileDirectory);
       }
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
       filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
