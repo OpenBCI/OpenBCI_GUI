@@ -23,6 +23,8 @@ class ConsoleWindow extends PApplet {
   private final int headerHeight = 42;
   private final int defaultWidth = 620;
   private final int defaultHeight = 500;
+  private final int buttonWidth = 170;
+  private final int buttonHeight = 34;
   private int previousWidth = defaultWidth;
 
   ConsoleWindow() {
@@ -56,7 +58,7 @@ class ConsoleWindow extends PApplet {
     outputStream.registerTextArea(consoleTextArea);
 
     int cW = int(width/3);
-    int bX = int((cW - 170) / 2);
+    int bX = int((cW - buttonWidth) / 2);
     createConsoleLogButton("openLogFileAsText", "Open Log as Text (F)", bX);
     bX += cW;
     createConsoleLogButton("copyFullTextToClipboard", "Copy Full Log Text (C)", bX);
@@ -65,12 +67,10 @@ class ConsoleWindow extends PApplet {
   }
 
   void createConsoleLogButton (String bName, String bText, int x) {
-    int w = 170;
-    int h = 34;
-    int y = 4;
+    int y = 4;  // vertical position for button
     cp5.addButton(bName)
         .setPosition(x, y)
-        .setSize(w, h)
+        .setSize(buttonWidth, buttonHeight)
         .setColorLabel(color(255))
         .setColorForeground(color(31, 69, 110))
         .setColorBackground(color(144, 100));
@@ -236,6 +236,9 @@ class CustomOutputStream extends PrintStream {
   private Textarea textArea;
   private String filePath;
 
+  private final String fileDirectory = "/SavedData/Settings/";
+  private final String fileName =  "console-data.txt";
+
   public CustomOutputStream(OutputStream out) {
     super(out);
     data = new StringList();
@@ -243,14 +246,9 @@ class CustomOutputStream extends PrintStream {
     // create log file
     // TODO: Figure out clean way to create file on all platforms
     try {
-      File consoleDataFile = null;
-      if (isWindows()) {
-        consoleDataFile = new File(sketchPath("/SavedData/Settings/"));
-      } else {
-        consoleDataFile = new File(sketchPath()+"/SavedData/Settings/");
-      }
+      File consoleDataFile = new File(sketchPath()+fileDirectory);
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
-      filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
+      filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + fileName;
 
       FileOutputStream outStr = new FileOutputStream(filePath, false);
       fileOutput = new PrintStream(outStr);
