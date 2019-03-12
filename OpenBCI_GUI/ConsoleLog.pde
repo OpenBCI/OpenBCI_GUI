@@ -237,6 +237,7 @@ class CustomOutputStream extends PrintStream {
   private String filePath;
 
   private final String fileDirectory = "/SavedData/Settings/";
+  private final String fileName =  "console-data.txt";
 
   public CustomOutputStream(OutputStream out) {
     super(out);
@@ -252,7 +253,7 @@ class CustomOutputStream extends PrintStream {
         consoleDataFile = new File(sketchPath()+fileDirectory);
       }
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
-      filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + "console-data.txt";
+      filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + fileName;
 
       FileOutputStream outStr = new FileOutputStream(filePath, false);
       fileOutput = new PrintStream(outStr);
