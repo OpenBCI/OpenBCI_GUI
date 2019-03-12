@@ -246,12 +246,7 @@ class CustomOutputStream extends PrintStream {
     // create log file
     // TODO: Figure out clean way to create file on all platforms
     try {
-      File consoleDataFile = null;
-      if (isWindows()) {
-        consoleDataFile = new File(sketchPath(fileDirectory));
-      } else {
-        consoleDataFile = new File(sketchPath()+fileDirectory);
-      }
+      File consoleDataFile = new File(sketchPath()+fileDirectory);
       if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
       filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + fileName;
 
