@@ -223,18 +223,6 @@ class DataPacket_ADS1299 {
     rawValues = new byte[nValues][rawAdsSize];
     rawAuxValues = new byte[nAuxValues][rawAdsSize];
   }
-  int printToConsole() {
-    print("printToConsole: DataPacket = ");
-    print(sampleIndex);
-    for (int i=0; i < values.length; i++) {
-      print(", " + values[i]);
-    }
-    for (int i=0; i < auxValues.length; i++) {
-      print(", " + auxValues[i]);
-    }
-    println();
-    return 0;
-  }
 
   int copyTo(DataPacket_ADS1299 target) { return copyTo(target, 0, 0); }
   int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {

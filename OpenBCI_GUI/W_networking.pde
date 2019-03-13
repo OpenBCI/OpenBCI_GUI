@@ -802,7 +802,7 @@ class W_networking extends Widget {
         println(comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue())));
         name = comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
         // name = cp5_networking_portName.get(ScrollableList.class, "port_name").getItem((int)cp5_networking_portName.get(ScrollableList.class, "port_name").getValue());
-        println(Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
+        println("Baudrate: " + Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
         baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
 
         filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
@@ -884,7 +884,7 @@ class W_networking extends Widget {
   }
 };
 
-class Stream extends Thread{
+class Stream extends Thread {
   String protocol;
   String dataType;
   String ip;
@@ -1025,7 +1025,7 @@ class Stream extends Thread{
           try {
             Thread.sleep(1);
           } catch (InterruptedException e){
-            println(e);
+            println(e.getMessage());
           }
         } else {
             if (checkForData()){
@@ -1047,7 +1047,7 @@ class Stream extends Thread{
               try {
                 Thread.sleep(1);
               } catch (InterruptedException e){
-                println(e);
+                println(e.getMessage());
               }
             }
           }
@@ -1057,7 +1057,7 @@ class Stream extends Thread{
         try {
           Thread.sleep(1);
         } catch (InterruptedException e){
-          println(e);
+          println(e.getMessage());
         }
       } else {
         if (checkForData()){
@@ -1128,7 +1128,7 @@ class Stream extends Thread{
          try {
            this.osc.send(msg,this.netaddress);
          } catch (Exception e){
-           println(e);
+           println(e.getMessage());
          }
        }
        // UDP
@@ -1146,7 +1146,7 @@ class Stream extends Thread{
          try {
            this.udp.send(outputter, this.ip, this.port);
          } catch (Exception e) {
-           println(e);
+           println(e.getMessage());
          }
        }
        // LSL
@@ -1174,7 +1174,7 @@ class Stream extends Thread{
            //  println(serialMessage);
            this.serial_networking.write(serialMessage);          //write message to serial
          } catch (Exception e){
-           println(e);
+           println(e.getMessage());
          }
        }
      }
@@ -1191,7 +1191,7 @@ class Stream extends Thread{
          try {
            this.osc.send(msg,this.netaddress);
          } catch (Exception e){
-           println(e);
+           println(e.getMessage());
          }
        }
      } else if (this.protocol.equals("UDP")){
@@ -1208,7 +1208,7 @@ class Stream extends Thread{
          try {
            this.udp.send(outputter, this.ip, this.port);
          } catch (Exception e) {
-           println(e);
+           println(e.getMessage());
          }
        }
      } else if (this.protocol.equals("LSL")){
@@ -1234,7 +1234,7 @@ class Stream extends Thread{
            //  println(serialMessage);
            this.serial_networking.write(serialMessage);          //write message to serial
          } catch (Exception e){
-           println(e);
+           println(e.getMessage());
          }
        }
      }
@@ -1255,7 +1255,7 @@ class Stream extends Thread{
          try {
            this.osc.send(msg,this.netaddress);
          } catch (Exception e){
-           println(e);
+           println(e.getMessage());
          }
        }
       // UDP
@@ -1277,7 +1277,7 @@ class Stream extends Thread{
        try {
          this.udp.send(outputter, this.ip, this.port);
        } catch (Exception e) {
-         println(e);
+         println(e.getMessage());
        }
        // LSL
      } else if (this.protocol.equals("LSL")){
@@ -1300,7 +1300,7 @@ class Stream extends Thread{
             // println(serialMessage);
             this.serial_networking.write(serialMessage);
           } catch (Exception e){
-            println(e);
+            println(e.getMessage());
           }
         }
       }
@@ -1323,7 +1323,7 @@ class Stream extends Thread{
           try {
             this.osc.send(msg,this.netaddress);
           } catch (Exception e){
-            println(e);
+            println(e.getMessage());
           }
         }
        // UDP
@@ -1346,7 +1346,7 @@ class Stream extends Thread{
         try {
           this.udp.send(outputter, this.ip, this.port);
         } catch (Exception e) {
-          println(e);
+          println(e.getMessage());
         }
         // LSL
       } else if (this.protocol.equals("LSL")){
@@ -1374,7 +1374,7 @@ class Stream extends Thread{
               // println(serialMessage);
               this.serial_networking.write(serialMessage);
             } catch (Exception e){
-              println(e);
+              println(e.getMessage());
             }
           }
        }
@@ -1395,7 +1395,7 @@ class Stream extends Thread{
           try {
             this.osc.send(msg,this.netaddress);
           } catch (Exception e){
-            println(e);
+            println(e.getMessage());
           }
         }
        // UDP
@@ -1412,7 +1412,7 @@ class Stream extends Thread{
         try {
           this.udp.send(outputter, this.ip, this.port);
         } catch (Exception e) {
-          println(e);
+          println(e.getMessage());
         }
         // LSL
       } else if (this.protocol.equals("LSL")){
@@ -1432,7 +1432,7 @@ class Stream extends Thread{
             //  println(serialMessage);
              this.serial_networking.write(serialMessage);
            } catch (Exception e){
-             println(e);
+             println(e.getMessage());
            }
          }
        }
@@ -1450,7 +1450,7 @@ class Stream extends Thread{
         try {
           this.osc.send(msg,this.netaddress);
         } catch (Exception e){
-          println(e);
+          println(e.getMessage());
         }
       // UDP
       } else if (this.protocol.equals("UDP")){
@@ -1460,7 +1460,7 @@ class Stream extends Thread{
         try {
           this.udp.send(outputter, this.ip, this.port);
         } catch (Exception e) {
-          println(e);
+          println(e.getMessage());
         }
       // LSL
       } else if (this.protocol.equals("LSL")){
@@ -1478,13 +1478,13 @@ class Stream extends Thread{
             println(serialMessage);
             this.serial_networking.write(serialMessage);
           } catch (Exception e){
-            println(e);
+            println(e.getMessage());
           }
         }
       }
     }
   }
-////////////////////////////////////// Stream pulse data from W_PulseSensor
+  ////////////////////////////////////// Stream pulse data from W_PulseSensor
   void sendPulseData() {
     if (this.filter==0 || this.filter==1){
       // OSC
@@ -1500,7 +1500,7 @@ class Stream extends Thread{
           try {
             this.osc.send(msg,this.netaddress);
           } catch (Exception e){
-            println(e);
+            println(e.getMessage());
           }
         }
       // UDP
@@ -1514,7 +1514,7 @@ class Stream extends Thread{
           try {
             this.udp.send(outputter, this.ip, this.port);
           } catch (Exception e) {
-            println(e);
+            println(e.getMessage());
           }
         }
       // LSL
@@ -1539,7 +1539,7 @@ class Stream extends Thread{
             println(serialMessage);
             this.serial_networking.write(serialMessage);
           } catch (Exception e){
-            println(e);
+            println(e.getMessage());
           }
         }
       }
@@ -1559,7 +1559,7 @@ class Stream extends Thread{
       try {
         this.osc.stop();
       } catch (Exception e){
-        println(e);
+        println(e.getMessage());
       }
     } else if (this.protocol.equals("UDP")){
         this.udp.close();
@@ -1619,25 +1619,26 @@ class Stream extends Thread{
     }
   }
 
-  List getAttributes() {
-    List attributes = new ArrayList();
+  //used only to print attributes to the screen
+  StringList getAttributes() {
+    StringList attributes = new StringList();
     if (this.protocol.equals("OSC")){
-      attributes.add(this.dataType);
-      attributes.add(this.ip);
-      attributes.add(this.port);
-      attributes.add(this.address);
-      attributes.add(this.filter);
+      attributes.append(this.dataType);
+      attributes.append(this.ip);
+      attributes.append(str(this.port));
+      attributes.append(this.address);
+      attributes.append(str(this.filter));
     } else if (this.protocol.equals("UDP")){
-      attributes.add(this.dataType);
-      attributes.add(this.ip);
-      attributes.add(this.port);
-      attributes.add(this.filter);
+      attributes.append(this.dataType);
+      attributes.append(this.ip);
+      attributes.append(str(this.port));
+      attributes.append(str(this.filter));
     } else if (this.protocol.equals("LSL")){
-      attributes.add(this.dataType);
-      attributes.add(this.streamName);
-      attributes.add(this.streamType);
-      attributes.add(this.nChanLSL);
-      attributes.add(this.filter);
+      attributes.append(this.dataType);
+      attributes.append(this.streamName);
+      attributes.append(this.streamType);
+      attributes.append(str(this.nChanLSL));
+      attributes.append(str(this.filter));
     } else if (this.protocol.equals("Serial")){
       // Add Serial Port Attributes %%%%%
     }
@@ -1665,7 +1666,6 @@ void Protocol(int protocolIndex){
   w_networking.screenResized();
   w_networking.showCP5();
   closeAllDropdowns();
-
 }
 
 void dataType1(int n){

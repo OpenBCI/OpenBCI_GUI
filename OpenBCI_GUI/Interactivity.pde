@@ -332,7 +332,6 @@ void parseKey(char val) {
 
     case 'd':
       verbosePrint("Updating GUI's channel settings to default...");
-      // gui.cc.loadDefaultChannelSettings();
       w_timeSeries.hsc.loadDefaultChannelSettings();
       //cyton.serial_openBCI.write('d');
       cyton.configureAllChannelsToDefault();
@@ -547,48 +546,10 @@ void mousePressed() {
     if (controlPanel.isOpen == false) {
       //was the stopButton pressed?
 
-      // gui.mousePressed(); // trigger mousePressed function in GUI
-      // GUIWidgets_mousePressed(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
       wm.mousePressed();
 
-      //check the graphs
-      // if (gui.isMouseOnFFT(mouseX, mouseY)) {
-      //   GraphDataPoint dataPoint = new GraphDataPoint();
-      //   gui.getFFTdataPoint(mouseX, mouseY, dataPoint);
-      //   println("OpenBCI_GUI: FFT data point: " + String.format("%4.2f", dataPoint.x) + " " + dataPoint.x_units + ", " + String.format("%4.2f", dataPoint.y) + " " + dataPoint.y_units);
-      // } else if (gui.headPlot1.isPixelInsideHead(mouseX, mouseY)) {
-      //   //toggle the head plot contours
-      //   gui.headPlot1.drawHeadAsContours = !gui.headPlot1.drawHeadAsContours;
-      // } else if (gui.isMouseOnMontage(mouseX, mouseY)) {
-      //   //toggle the display of the montage values
-      //   gui.showMontageValues  = !gui.showMontageValues;
-      // }
-
-      // if (gui.isMouseOnMontage(mouseX, mouseY)) {
-      //   //toggle the display of the montage values
-      //   gui.showMontageValues  = !gui.showMontageValues;
-      // }
     }
   }
-
-  //=============================//
-  // CONTROL PANEL INTERACTIVITY //
-  //=============================//
-
-  // //was control panel button pushed
-  // if (controlPanelCollapser.isMouseHere()) {
-  //   if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
-  //     controlPanelCollapser.setIsActive(false);
-  //     controlPanel.isOpen = false;
-  //   } else {
-  //     controlPanelCollapser.setIsActive(true);
-  //     controlPanel.isOpen = true;
-  //   }
-  // } else {
-  //   if (controlPanel.isOpen) {
-  //     controlPanel.CPmousePressed();
-  //   }
-  // }
 
   //topNav is always clickable
   topNav.mousePressed();
@@ -621,30 +582,6 @@ void mousePressed() {
     playground.toggleWindow();
   }
 
-
-  //if (accelWidget.isMouseHere()) {
-  //  accelWidget.mousePressed();
-  //}
-
-  //if (accelWidget.isMouseInButton()) {
-  //  accelWidget.toggleWindow();
-  //}
-
-  //if (pulseWidget.isMouseHere()) {
-  //  pulseWidget.mousePressed();
-  //}
-
-  //if (accelWidget.isMouseInButton()) {
-  //  accelWidget.toggleWindow();
-  //}
-
-  //if (pulseWidget.isMouseHere()) {
-  //  pulseWidget.mousePressed();
-  //}
-
-  //if (pulseWidget.isMouseInButton()) {
-  //  pulseWidget.toggleWindow();
-  //}
 }
 
 void mouseReleased() {
@@ -747,7 +684,7 @@ class Button {
     //println(PFont.list()); //see which fonts are available
     //font = createFont("SansSerif.plain",fontSize);
     //font = createFont("Lucida Sans Regular",fontSize);
-    // font = createFont("Arial",fontSize);
+    //font = createFont("Arial",fontSize);
     //font = loadFont("SansSerif.plain.vlw");
   }
 
@@ -987,6 +924,7 @@ class Button {
       popStyle();
     }
 
+    //This could be utilized at a later date
     //cursor = funny looking finger thing when hovering over buttons...
     // if (true) {
     //   if (!isMouseHere() && drawHand) {
@@ -1029,7 +967,6 @@ class ButtonHelpText{
   }
 
   public void draw(){
-    // println("4");
     if(isVisible){
       pushStyle();
       textAlign(CENTER, TOP);
@@ -1058,12 +995,12 @@ class ButtonHelpText{
 void openURLInBrowser(String _url){
   try {
     //Set your page url in this string. For eg, I m using URL for Google Search engine
-    String url = _url;
-    java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-    output("Attempting to use your default browser to launch: " + url);
+    java.awt.Desktop.getDesktop().browse(java.net.URI.create(_url));
+    output("Attempting to use your default browser to launch: " + _url);
   }
   catch (java.io.IOException e) {
-      System.out.println(e.getMessage());
+      println(e.getMessage());
+      println("Error launching url in browser: " + _url);
   }
 }
 
@@ -1078,19 +1015,20 @@ void toggleFrameRate(){
     topNav.fpsButton.setString("24 fps");
   }
   if(frameRateCounter==1){
-    frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(30);
     topNav.fpsButton.setString("30 fps");
   }
   if(frameRateCounter==2){
-    frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(45);
     topNav.fpsButton.setString("45 fps");
   }
   if(frameRateCounter==3){
-    frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    frameRate(60);
     topNav.fpsButton.setString("60 fps");
   }
 }
 
+//loop through networking textfields and find out if any are active
 boolean isNetworkingTextActive(){
   boolean isAFieldActive = false;
   if (w_networking != null) {
@@ -1103,8 +1041,8 @@ boolean isNetworkingTextActive(){
   }
   // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
 
-  //isFocus(); returns true if active for textField...
-  println("Text Field Active? " + isAFieldActive);
+  // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
+  println("Networking Text Field Active? " + isAFieldActive);
   return isAFieldActive; //if not, return false
 }
 

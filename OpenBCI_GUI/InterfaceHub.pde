@@ -539,6 +539,7 @@ class Hub {
   }
 
   private void killAndShowMsg(String msg) {
+    println("InterfaceHub: Stopping system...");
     abandonInit = true;
     initSystemButton.setString("START SYSTEM");
     controlPanel.open();
@@ -752,10 +753,7 @@ class Hub {
         }
       }
     } catch (Exception e) {
-      print("\n\n");
-      println(json);
-      println("Hub: parseMessage: error: " + e);
-      e.printStackTrace();
+      println("\n\n" + json + "\nHub: parseMessage: error: " + e);
     }
   }
 
@@ -834,7 +832,7 @@ class Hub {
     int code = json.getInt(TCP_JSON_KEY_CODE);
     if (waitingForResponse) {
       waitingForResponse = false;
-      println("Node process up!");
+      println("Node process is up!");
     }
     if (code == RESP_ERROR_BAD_NOBLE_START) {
       println("Hub: processStatus: Problem in the Hub");
@@ -989,7 +987,7 @@ class Hub {
             break;
           case TCP_ACTION_STOP:
             message = json.getString(TCP_JSON_KEY_MESSAGE);
-            println(message);
+            println("ProcessSDcard::Success:Stop: " + message);
             break;
         }
         break;
@@ -1001,7 +999,7 @@ class Hub {
             break;
           case TCP_ACTION_STOP:
             message = json.getString(TCP_JSON_KEY_MESSAGE);
-            println(message);
+            println("ProcessSDcard::Unknown:Stop: " + message);
             break;
         }
         break;
@@ -1034,7 +1032,6 @@ class Hub {
       //println("rawValue[0] " + binary(rawValue[0], 8));
       // Store to the target raw values
       packet.rawValues[i] = rawValue;
-      //println();
     }
   }
 
@@ -1127,7 +1124,7 @@ class Hub {
 
   }
   public int disconnectSerial() {
-    println("disconnecting serial");
+    println("Disconnecting serial...");
     waitingForResponse = true;
     JSONObject json = new JSONObject();
     json.setString(TCP_JSON_KEY_PROTOCOL, PROTOCOL_SERIAL);

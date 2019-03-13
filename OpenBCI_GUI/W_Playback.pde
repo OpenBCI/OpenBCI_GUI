@@ -250,10 +250,10 @@ class W_playback extends Widget {
         }
 
       } catch (NullPointerException e) {
-        println("Playback history file not found.");
+        println("PlaybackWidget: Playback history file not found.");
       }
     } else {
-      println("playback exists = " + playbackHistoryFileExists); //playback History File Exists = false;
+      println("PlaybackWidget: Found " + playbackHistoryFileExists); //playback History File Exists = false;
     }
   }
 }; //end Playback widget class

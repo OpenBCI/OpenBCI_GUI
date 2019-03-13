@@ -102,7 +102,6 @@ int getDataIfAvailable(int pointCounter) {
       // generate or read the data
       lastReadDataPacketInd = 0;
       for (int i = 0; i < nPointsPerUpdate; i++) {
-        // println();
         dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
         switch (eegDataSource) {
         case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
@@ -290,7 +289,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
   //check to see if we can load a value from the table
   if (currentTableRowIndex >= datatable.getRowCount()) {
     //end of file
-    println("OpenBCI_GUI: getPlaybackDataFromTable: hit the end of the playback data file.  starting over...");
+    println("OpenBCI_GUI: getPlaybackDataFromTable: End of playback data file.  Starting over...");
     hasRepeated = true;
     //if (isRunning) stopRunning();
     currentTableRowIndex = 0;
@@ -361,7 +360,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
       }
       catch (ArrayIndexOutOfBoundsException e){
         println(e);
-        println("8 Channel");
+        println("OpenBCI_GUI: getPlaybackDataFromTable: 8 Channel");
       }
     }
 

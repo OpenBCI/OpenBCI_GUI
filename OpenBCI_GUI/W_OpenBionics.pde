@@ -110,7 +110,7 @@ class W_openBionics extends Widget {
         }
         byte inByte = byte(OpenBionicsHand.read());
 
-        println(inByte);
+        println("inByte = " + inByte);
     }
 
     if(fingerChans[5] == -1){
@@ -288,7 +288,7 @@ class W_openBionics extends Widget {
       ;
     }
     catch(Exception e){
-      println("error resizing...");
+      println("OpenBionics: error resizing...");
     }
 
   }

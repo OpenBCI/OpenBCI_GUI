@@ -319,16 +319,7 @@ class InterfaceSerial {
   }
 
   int finalizeCOMINIT() {
-    // //wait specified time for COM/serial port to initialize
-    // if (state == STATE_COMINIT) {
-    //   // println("InterfaceSerial: finalizeCOMINIT: Initializing Serial: millis() = " + millis());
-    //   if ((millis() - prevState_millis) > COM_INIT_MSEC) {
-    //     //serial_openBCI.write(command_activates + "\n"); println("Processing: Serial: activating filters");
-    //     println("InterfaceSerial: finalizeCOMINIT: State = NORMAL");
     changeState(STATE_NORMAL);
-    //     // startRunning();
-    //   }
-    // }
     return 0;
   }
 
@@ -346,7 +337,6 @@ class InterfaceSerial {
   }
 
   public int closeSerialPort() {
-    // if (serial_openBCI != null) {
     portIsOpen = false;
     if (serial_openBCI != null) {
       serial_openBCI.stop();
@@ -358,8 +348,8 @@ class InterfaceSerial {
   }
 
   public void updateSyncState(int sdSetting) {
-    //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-    // println("0");
+    //Has it been 3000 milliseconds since we initiated the serial port?
+    //We want to make sure we wait for the OpenBCI board to finish its setup()
 
     if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
       state = STATE_SYNCWITHHARDWARE;
@@ -498,13 +488,11 @@ class InterfaceSerial {
           println("InterfaceSerial: read(): x");
           println(cyton.defaultChannelSettings);
           println("InterfaceSerial: read(): y");
-          // gui.cc.loadDefaultChannelSettings();
           w_timeSeries.hsc.loadDefaultChannelSettings();
           println("InterfaceSerial: read(): z");
         }
         readyToSend = true;
         // println(hardwareSyncStep);
-        // syncWithHardware(); //haha, I'm getting very verbose with my naming... it's late...
       }
     }
 
@@ -514,7 +502,7 @@ class InterfaceSerial {
         output.write(inByte);   //for debugging  WEA 2014-01-26
       }
       catch (IOException e) {
-        System.err.println("InterfaceSerial: read(): Caught IOException: " + e.getMessage());
+        println("InterfaceSerial: read(): Caught IOException: " + e.getMessage());
         //do nothing
       }
     }

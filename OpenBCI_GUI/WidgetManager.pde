@@ -227,7 +227,9 @@ class WidgetManager{
         widgets.get(i).setupNavDropdowns();
       }
       println("widgetOptions:");
-      println(widgetOptions);
+      for (int i = 0; i < widgetOptions.size(); i++) {
+        println(widgetOptions.get(i));
+      }
   }
 
   void update(){
@@ -260,7 +262,7 @@ class WidgetManager{
             try{
               w_networking.shutDown();
             }catch (NullPointerException e){
-              println(e);
+              println("WM:Networking_shutDown_Error: " + e);
             }
           }
         }
@@ -318,15 +320,16 @@ class WidgetManager{
 
   void printLayouts(){
     for(int i = 0; i < layouts.size(); i++){
-      println(layouts.get(i));
+      println("WM:printLayouts: " + layouts.get(i));
+      String layoutString = "";
       for(int j = 0; j < layouts.get(i).myContainers.length; j++){
-        // println(layouts.get(i).myContainers[j]);
-        print(layouts.get(i).myContainers[j].x + ", ");
-        print(layouts.get(i).myContainers[j].y + ", ");
-        print(layouts.get(i).myContainers[j].w + ", ");
-        println(layouts.get(i).myContainers[j].h);
+        // println("WM:layoutContainers: " + layouts.get(i).myContainers[j]);
+        layoutString += layouts.get(i).myContainers[j].x + ", ";
+        layoutString += layouts.get(i).myContainers[j].y + ", ";
+        layoutString += layouts.get(i).myContainers[j].w + ", ";
+        layoutString += layouts.get(i).myContainers[j].h;
       }
-      println();
+      println(layoutString);
     }
   }
 
@@ -348,10 +351,10 @@ class WidgetManager{
       //shut some down
       int numToShutDown = numActiveWidgets - numActiveWidgetsNeeded;
       int counter = 0;
-      println("Powering " + numToShutDown + " widgets down, and remapping.");
+      println("WM: Powering " + numToShutDown + " widgets down, and remapping.");
       for(int i = widgets.size()-1; i >= 0; i--){
         if(widgets.get(i).isActive && counter < numToShutDown){
-          println("Deactivating widget [" + i + "]");
+          println("WM: Deactivating widget [" + i + "]");
           widgets.get(i).isActive = false;
           counter++;
         }
@@ -370,10 +373,10 @@ class WidgetManager{
       //power some up
       int numToPowerUp = numActiveWidgetsNeeded - numActiveWidgets;
       int counter = 0;
-      println("Powering " + numToPowerUp + " widgets up, and remapping.");
+      println("WM: Powering " + numToPowerUp + " widgets up, and remapping.");
       for(int i = 0; i < widgets.size(); i++){
         if(!widgets.get(i).isActive && counter < numToPowerUp){
-          println("Activating widget [" + i + "]");
+          println("WM: Activating widget [" + i + "]");
           widgets.get(i).isActive = true;
           counter++;
         }
@@ -391,7 +394,7 @@ class WidgetManager{
 
     } else{ //if there are the same amount
       //simply remap active widgets
-      println("Remapping widgets.");
+      println("WM: Remapping widgets.");
       int counter = 0;
       for(int i = 0; i < widgets.size(); i++){
         if(widgets.get(i).isActive){
@@ -428,7 +431,7 @@ class Layout{
     if(_numContainer < myContainers.length){
       return myContainers[_numContainer];
     } else{
-      println("tried to return a non-existant container...");
+      println("WM: Tried to return a non-existant container...");
       return myContainers[myContainers.length-1];
     }
   }

@@ -221,6 +221,8 @@ int win_y = 768; //window height
 
 PImage logo_blue;
 PImage logo_white;
+PImage consoleImgBlue;
+PImage consoleImgWhite;
 
 PFont f1;
 PFont f2;
@@ -275,6 +277,9 @@ String nodeHubName = "OpenBCIHub";
 Robot rob3115;
 
 PApplet ourApplet;
+
+CustomOutputStream outputStream;
+boolean consoleWindowExists = false;
 
 //Variables from TopNav.pde. Used to set text when stopping/starting data stream.
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
@@ -374,7 +379,6 @@ boolean recentPlaybackFilesHaveUpdated = false;
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
-  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
   //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
   //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
   if (displayWidth == 1366 && displayHeight == 768) {
@@ -386,8 +390,15 @@ void settings() {
 }
 
 void setup() {
+  // redirect all output to a custom stream that will intercept all prints
+  // write them to file and display them in the GUI's console window
+  outputStream = new CustomOutputStream(System.out);
+  System.setOut(outputStream);
+  System.setErr(outputStream);
+
+  println("Screen Resolution: " + displayWidth + " X " + displayHeight);
   println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-  println("For more information about how to work with this code base, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+  println("For more information, please visit: http://docs.openbci.com/OpenBCI%20Software/");
 
   //open window
   ourApplet = this;
@@ -474,6 +485,8 @@ void delayedSetup() {
   logo_blue = loadImage("logo_blue.png");
   logo_white = loadImage("logo_white.png");
   cog = loadImage("cog_1024x1024.png");
+  consoleImgBlue = loadImage("console-45x45-dots_blue.png");
+  consoleImgWhite = loadImage("console-45x45-dots_white.png");
   loadingGIF = new Gif(this, "OpenBCI-LoadingGIF-2.gif");
   loadingGIF.loop();
   loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
@@ -723,12 +736,12 @@ void setupWidgetManager() {
 
 //Initialize the system
 void initSystem() {
-  println();
-  println();
+  println("");
+  println("");
   println("=================================================");
   println("||             INITIALIZING SYSTEM             ||");
   println("=================================================");
-  println();
+  println("");
 
   verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + millis());
   timeOfInit = millis(); //store this for timeout in case init takes too long
@@ -1365,7 +1378,7 @@ void systemDraw() { //for drawing to the screen
     drawContainers();
   } else { //systemMode != 10
     //still print title information about fps
-    surface.setTitle(int(frameRate) + " fps — OpenBCI GUI");
+    surface.setTitle(int(frameRate) + " fps - OpenBCI GUI");
   }
 
   if (systemMode >= SYSTEMMODE_PREINIT) {

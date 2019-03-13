@@ -259,7 +259,7 @@ class W_timeSeries extends Widget {
     if(eegDataSource == DATASOURCE_CYTON){
       //put your code here...
       if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
-        println("toggle...");
+        println("HardwareSetingsButton: Toggle...");
         if(showHardwareSettings){
           showHardwareSettings = false;
           hsc.isVisible = false;
@@ -790,7 +790,7 @@ class PlaybackScrollbar {
         clearAllAccelGPlots();
         playbackScrubbing(); //perform scrubbing
       } catch (Exception e) {
-        e.printStackTrace();
+        println("PlaybackScrollbar: Error: " + e);
       }
     }
 

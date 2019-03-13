@@ -138,12 +138,12 @@ class W_PulseSensor extends Widget {
       }
 
       int signal = dataPacketBuff[lastProcessedDataPacketInd].auxValues[0];
-      
-      
+
+
       processSignal(signal);
       PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>// //<>//
       //println("BPM, Signal, IBI ~~~~ " + BPM + "," +  signal + "," + IBI);
-      
+
       samplesProcessed++;
     }
 

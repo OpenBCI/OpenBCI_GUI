@@ -33,7 +33,7 @@ void autoconnect(){
       try{
           serialPort = serialPorts[i];
           board = new Serial(this,serialPort,115200);
-          print("blasss try "); print(i); print(" "); print(serialPort); println(" at 115200 baud");
+          println("try " + i + " " + serialPort + " at 115200 baud");
           output("Attempting to connect at 115200 baud to " + serialPort);  // not working
           delay(5000);
 
@@ -59,7 +59,7 @@ void autoconnect(){
 
       try{
           board = new Serial(this,serialPort,230400);
-          print("try "); print(i); print(" "); print(serialPort); println(" at 230400 baud");
+          println("try " + i + " " + serialPort + " at 230400 baud");
           output("Attempting to connect at 230400 baud to " + serialPort);  // not working
           delay(5000);
 
@@ -223,7 +223,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
     catch (RuntimeException e){
       if (e.getMessage().contains("<init>")) {
         serial_output = null;
-        System.out.println("Radios_Config: connect_to_portName: port in use, trying again later...");
+        println("Radios_Config: connect_to_portName: port in use, trying again later...");
         // portIsOpen = false;
       } else{
         println("RunttimeException: " + e);

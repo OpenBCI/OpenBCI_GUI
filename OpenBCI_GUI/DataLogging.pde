@@ -1287,6 +1287,7 @@ public class OutputFile_BDF {
       println("writeData: finished: wrote " + byteCount + " bytes");
     }
     catch (IOException e) {
+      print("writeData: ");
       e.printStackTrace();
     }
     finally {
@@ -1294,6 +1295,7 @@ public class OutputFile_BDF {
         input.close();
       }
       catch (IOException e) {
+        print("writeData: ");
         e.printStackTrace();
       }
     }
@@ -1451,7 +1453,7 @@ class Table_CSV extends Table {
               // }
             }
           }
-          println(line);
+          println("readCSV: " + line);
           // if (line.charAt(1) == 'S') {
           //   println("sampel rarteakjdsf;ldj");
           // }
@@ -1526,7 +1528,6 @@ long thatTime;
 boolean printNextLine = false;
 
 public void convertSDFile() {
-  // println("");
   try {
     dataLine = dataReader.readLine();
   }
@@ -1552,7 +1553,7 @@ public void convertSDFile() {
     if (hexNums[0].charAt(0) == '%') {
       //          println(dataLine);
       // dataWriter.println(dataLine);
-      println(dataLine);
+      println("convertSDFile: " + dataLine);
       printNextLine = true;
     } else {
       if (hexNums.length < 13){
@@ -1568,6 +1569,7 @@ public void convertSDFile() {
 }
 
 void convert16channelLine() {
+  String consoleMsg = "";
   if(printNextLine){
     for(int i=0; i<hexNums.length; i++){
       h = hexNums[i];
@@ -1577,14 +1579,14 @@ void convert16channelLine() {
         intData[i] = 0;
       }
       dataWriter.print(intData[i]);
-      print(intData[i]);
+      consoleMsg = str(int(intData[i]));
       if(hexNums.length > 1){
         dataWriter.print(", ");
-        print(", ");
+        consoleMsg += ", ";
       }
     }
     dataWriter.println();
-    println();
+    println(consoleMsg);
     return;
   }
   for (int i=0; i<hexNums.length; i++) {
@@ -1629,6 +1631,7 @@ void convert16channelLine() {
 }
 
 void convert8channelLine() {
+  String consoleMsg = "";
   if(printNextLine){
     for(int i=0; i<hexNums.length; i++){
       h = hexNums[i];
@@ -1637,15 +1640,15 @@ void convert8channelLine() {
       } else {
         intData[i] = 0;
       }
-      print(intData[i]);
+      consoleMsg = str(int(intData[i]));
       dataWriter.print(intData[i]);
       if(hexNums.length > 1){
         dataWriter.print(", ");
-        print(", ");
+        consoleMsg += ", ";
       }
     }
     dataWriter.println();
-    println();
+    println(consoleMsg);
     return;
   }
   for (int i=0; i<hexNums.length; i++) {
@@ -1691,65 +1694,3 @@ void convert8channelLine() {
   }
   dataWriter.println();
 }
-
-
-
-
-
-
-
-
-
-
-
-//     BEWARE: Old Stuff Below
-//
-//     //        println(dataLine);
-//     String[] hexNums = splitTokens(dataLine, ",");
-//
-//     if (hexNums[0].charAt(0) == '%') {
-//       //          println(dataLine);
-//       dataWriter.println(dataLine);
-//       println(dataLine);
-//       printNextLine = true;
-//     } else {
-//       for (int i=0; i<hexNums.length; i++) {
-//         h = hexNums[i];
-//         if (i > 0) {
-//           if (h.charAt(0) > '7') {  // if the number is negative
-//             h = "FF" + hexNums[i];   // keep it negative
-//           } else {                  // if the number is positive
-//             h = "00" + hexNums[i];   // keep it positive
-//           }
-//           if (i > 8) { // accelerometer data needs another byte
-//             if (h.charAt(0) == 'F') {
-//               h = "FF" + h;
-//             } else {
-//               h = "00" + h;
-//             }
-//           }
-//         }
-//         // println(h); // use for debugging
-//         if (h.length()%2 == 0) {  // make sure this is a real number
-//           intData[i] = unhex(h);
-//         } else {
-//           intData[i] = 0;
-//         }
-//
-//         //if not first column(sample #) or columns 9-11 (accelerometer), convert to uV
-//         if (i>=1 && i<=8) {
-//           intData[i] *= openBCI.get_scale_fac_uVolts_per_count();
-//         }
-//
-//         //print the current channel value
-//         dataWriter.print(intData[i]);
-//         if (i < hexNums.length-1) {
-//           //print "," separator
-//           dataWriter.print(",");
-//         }
-//       }
-//       //println();
-//       dataWriter.println();
-//     }
-//   }
-// }

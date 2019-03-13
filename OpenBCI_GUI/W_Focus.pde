@@ -76,7 +76,6 @@ class W_Focus extends Widget {
     //Dropdowns.
     addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), focusThemeSave);
     addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), focusKeySave);
-    //addDropdown("SerialSendFocused", "Serial", Arrays.asList("OFF", "ON"), 0); //Users can stream Focus state using Networking Widget
 
     // prepare simulate keystroking
     try {
@@ -208,7 +207,7 @@ class W_Focus extends Widget {
         serial_output.write('\n');
       }
       catch(RuntimeException e) {
-        if (isVerbose) println("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
+        verbosePrint("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
       }
     }
   }
@@ -566,23 +565,6 @@ void StrokeKeyWhenFocused(int n){
   focusKeySave = n;
   closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
-
-/*
-void SerialSendFocused(int n){
-  if(n==0){
-    //do this
-    w_focus.enableSerial = false;
-    println("Serial write off.");
-  } else if(n==1){
-    //do this instead
-    w_focus.enableSerial = true;
-    println("Serial write on, writing character 1 (int 49) when focused, and character 0 (int 48) when losing focus.");
-    println("Current output port name: " + serial_output_portName + ". Current baud rate: " + serial_output_baud + ".");
-    println("You can change serial settings in OpenBCI_GUI.pde by searching serial_output.");
-  }
-  closeAllDropdowns();
-}
-*/
 
 void ChooseFocusColor(int n){
   if(n==0){

@@ -114,10 +114,6 @@ class HardwareSettingsController{
   }
 
   void update(){
-    //make false to check again below
-    // for (int i = 0; i < nchan; i++) {
-    //   drawImpedanceValues[i] = false;
-    // }
 
     for (int i = 0; i < nchan; i++) { //for every channel
       //update buttons based on channelSettingValues[i][j]
@@ -209,17 +205,10 @@ class HardwareSettingsController{
           }
         }
 
-        // for (int i = 0; i < nchan; i++) {
-        //   if (drawImpedanceValues[i] == true) {
-        //     gui.impValuesMontage[i].draw();  //impedance values on montage plot
-        //   }
-        // }
-
         popStyle();
   }
 
   public void loadDefaultChannelSettings() {
-    // println("loadDefaultChannelSettings");
     // verbosePrint("ChannelController: loading default channel settings to GUI's channel controller...");
     for (int i = 0; i < nchan; i++) {
       // verbosePrint("chan: " + i + " ");
@@ -229,14 +218,7 @@ class HardwareSettingsController{
       channelSettingValues[i][3] = '1';
       channelSettingValues[i][4] = '1';
       channelSettingValues[i][5] = '0';
-      // for (int j = 0; j < numSettingsPerChannel; j++) { //channel setting values
-      //   channelSettingValues[i][j] = char(cyton.get_defaultChannelSettings().toCharArray()[j]); //parse defaultChannelSettings string created in the Cyton class
-      //   if (j == numSettingsPerChannel - 1) {
-      //     println(char(cyton.get_defaultChannelSettings().toCharArray()[j]));
-      //   } else {
-      //     print(char(cyton.get_defaultChannelSettings().toCharArray()[j]) + ",");
-      //   }
-      // }
+
       for (int k = 0; k < 2; k++) { //impedance setting values
         impedanceCheckValues[i][k] = '0';
       }
