@@ -4,6 +4,9 @@ Use OpenBCIHub v2.0.7 please.
 
 ## Beta 0
 
+### New Features
+* Added Console Log window in the GUI, so users can diagnose and report issues
+
 ### Bug Fixes
 * Time in status line is not updated every seconds #443
 * Playback Mode: Playback slider and start data stream clears graphs #438
