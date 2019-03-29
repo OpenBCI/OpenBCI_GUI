@@ -1,6 +1,11 @@
 # v4.1.1
-
 Use OpenBCIHub v2.0.7 please.
+
+## Beta 1
+
+### Improvements
+
+* Adjust Networking Widget appearance and scaling
 
 ## Beta 0
 
