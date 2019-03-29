@@ -300,14 +300,26 @@ class W_accelerometer extends Widget {
 
     //Draw the current accelerometer values as text
     void drawAccValues() {
+        float displayX = 0;
+        float displayY = 0;
+        float displayZ = 0;
+        if(eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
+            displayX = currentAccelVals[1]; //Swap X and Y
+            displayY = currentAccelVals[0];
+            displayZ = -currentAccelVals[2]; //Invert Z
+        } else {
+            displayX = currentAccelVals[0];
+            displayY = currentAccelVals[1];
+            displayZ = currentAccelVals[2];
+        }
         textAlign(LEFT,CENTER);
         textFont(h1,20);
         fill(ACCEL_X_COLOR);
-        text("X = " + nf(currentAccelVals[0], 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
+        text("X = " + nf(displayY, 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
         fill(ACCEL_Y_COLOR);
-        text("Y = " + nf(currentAccelVals[1], 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
+        text("Y = " + nf(displayX, 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
         fill(ACCEL_Z_COLOR);
-        text("Z = " + nf(currentAccelVals[2], 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
+        text("Z = " + nf(displayZ, 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
     }
 
     //Draw the current accelerometer values as a 3D graph
@@ -531,8 +543,14 @@ class AccelerometerBar{
                 }
 
                 int curArrayInd = accelBuffSize - numSamplesToProcess + samplesProcessed;
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
+                if(eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
+                    accelArray[0][curArrayInd] = w_accelerometer.currentAccelVals[1]; //Swap X and Y
+                    accelArray[1][curArrayInd] = w_accelerometer.currentAccelVals[0];
+                    accelArray[2][curArrayInd] = -w_accelerometer.currentAccelVals[2]; //Invert Z
+                } else {
+                    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                        accelArray[i][curArrayInd] = w_accelerometer.currentAccelVals[i];
+                    }
                 }
 
                 samplesProcessed++;
