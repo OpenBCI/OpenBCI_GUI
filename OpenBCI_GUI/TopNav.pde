@@ -475,7 +475,7 @@ class TopNav {
         println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
         if (localGUIVersionInt < webGUIVersionInt) {
             guiVersionIsUpToDate = false;
-            println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest.");
+            println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
         } else if (localGUIVersionInt >= webGUIVersionInt) {
             guiVersionIsUpToDate = true;
             println("GUI is up to date!");
@@ -1059,7 +1059,7 @@ class TutorialSelector {
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
+        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 2;
@@ -1073,7 +1073,7 @@ class TutorialSelector {
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/15-Custom_Widgets");
+        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/16-Custom_Widgets");
         tutorialOptions.add(tempTutorialButton);
     }
 }
