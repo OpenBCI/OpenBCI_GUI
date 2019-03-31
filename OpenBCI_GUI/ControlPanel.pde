@@ -1681,7 +1681,7 @@ class NoHubBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("HUB NOT FOUND", x + padding, y + padding);
+        text("HUB NOT CONNECTED", x + padding, y + padding);
         noHubShowDoc.draw();
         popStyle();
     }
