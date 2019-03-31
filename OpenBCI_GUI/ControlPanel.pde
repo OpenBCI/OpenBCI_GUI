@@ -160,9 +160,9 @@ public void controlEvent(ControlEvent theEvent) {
 
         if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
             if (isWindows()) {
-                output("Please launch OpenBCI Hub prior to launching this application. Learn at docs.openbci.com", OUTPUT_LEVEL_ERROR);
+                outputError("Please launch OpenBCI Hub prior to launching this application. Learn at docs.openbci.com");
             } else {
-                output("Unable to establish link to Hub. Checkout tutorial at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI", OUTPUT_LEVEL_ERROR);
+                outputError("Unable to establish link to Hub. Checkout tutorial at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
             }
             eegDataSource = -1;
             return;
