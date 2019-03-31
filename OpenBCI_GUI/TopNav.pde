@@ -1052,7 +1052,7 @@ class TutorialSelector {
         int buttonNumber = 0;
         Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("http://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide");
+        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 1;
@@ -1066,7 +1066,7 @@ class TutorialSelector {
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("http://openbci.com/index.php/forum/");
+        tempTutorialButton.setURL("https://openbci.com/index.php/forum/");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 3;

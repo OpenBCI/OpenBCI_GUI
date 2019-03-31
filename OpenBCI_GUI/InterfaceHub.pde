@@ -818,8 +818,8 @@ class Hub {
                 }
                 break;
             case RESP_ERROR_PROTOCOL_BLE_START:
-                outputError("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
-                println("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+                outputError("Failed to start Ganglion BLE Driver, please see https://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+                println("Failed to start Ganglion BLE Driver, please see https://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
                 break;
             default:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);

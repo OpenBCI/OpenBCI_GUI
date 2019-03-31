@@ -398,7 +398,7 @@ void setup() {
 
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-    println("For more information, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+    println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
 
     //open window
     ourApplet = this;
