@@ -33,8 +33,7 @@ void clientEvent(Client someClient) {
             String posMatch  = new String(hub.tcpBuffer, p - 1, 2);
             if (posMatch.equals(TCP_STOP)) {
                 // println("MATCH");
-                if (!hub.nodeProcessHandshakeComplete) {
-                    hub.nodeProcessHandshakeComplete = true;
+                if (!hub.isHubRunning()) {
                     hub.setHubIsRunning(true);
                     println("Hub: clientEvent: handshake complete");
                 }
@@ -227,7 +226,6 @@ class Hub {
     private int tcpHubPort = 10996;
     private String tcpHubIP = "127.0.0.1";
     private String tcpHubFull = tcpHubIP + ":" + tcpHubPort;
-    private boolean tcpClientActive = false;
     private int tcpTimeout = 1000;
 
     private String firmwareVersion = "";
@@ -236,7 +234,6 @@ class Hub {
 
     public Client tcpClient;
     private boolean portIsOpen = false;
-    private boolean connected = false;
 
     public int numberOfDevices = 0;
     public int maxNumberOfDevices = 10;
@@ -248,7 +245,6 @@ class Hub {
     private String curWiFiStyle = WIFI_DYNAMIC;
 
     private boolean waitingForResponse = false;
-    private boolean nodeProcessHandshakeComplete = false;
     private boolean searching = false;
     public boolean shouldStartNodeApp = false;
     private boolean checkingImpedance = false;
@@ -301,8 +297,9 @@ class Hub {
         mainApplet = applet;
 
         // Able to start tcpClient connection?
-        startTCPClient(mainApplet);
-
+        if(!startTCPClient()) {
+            outputWarn("Failed to connect to OpenBCIHub background application. LIVE functionality will be disabled.");
+        }
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -319,18 +316,13 @@ class Hub {
     }
 
     /**
-      * @descirpiton Used to `try` and start the tcpClient
+      * @description Used to `try` and start the tcpClient
       * @param applet {PApplet} - The main applet.
       * @return {boolean} - True if able to start.
       */
-    public boolean startTCPClient(PApplet applet) {
-        try {
-            tcpClient = new Client(applet, tcpHubIP, tcpHubPort);
-            return true;
-        } catch (Exception e) {
-            println("startTCPClient: ConnectException: " + e);
-            return false;
-        }
+    public boolean startTCPClient() {
+        tcpClient = new Client(mainApplet, tcpHubIP, tcpHubPort);
+        return tcpClient.active();
     }
 
 
