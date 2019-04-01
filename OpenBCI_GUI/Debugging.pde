@@ -51,11 +51,10 @@ void verbosePrint(String _string) {
 class HelpWidget {
 
     public float x, y, w, h;
-    // ArrayList<String> prevOutputs; //growing list of all previous system interactivity
+    int padding;
 
-    String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI"; //current text shown in help widget, based on most recent command
-
-    int padding = 5;
+    //current text shown in help widget, based on most recent command
+    String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI";
     OutputLevel curOutputLevel = OutputLevel.DEFAULT;
 
     HelpWidget(float _xPos, float _yPos, float _width, float _height) {
@@ -63,6 +62,7 @@ class HelpWidget {
         y = _yPos;
         w = _width;
         h = _height;
+        padding = 5;
     }
 
     public void update() {
@@ -155,7 +155,9 @@ class HelpWidget {
     public void output(String _output, OutputLevel level) {
         curOutputLevel = level;
         currentOutput = _output;
-        // prevOutputs.add(_output);
+
+        String outputWithPrefix = "[" + level.name() + "]: " + _output;
+        println(outputWithPrefix); // add this output to the console log
     }
 };
 
