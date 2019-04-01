@@ -55,7 +55,7 @@ class HelpWidget {
 
     //current text shown in help widget, based on most recent command
     String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI";
-    OutputLevel curOutputLevel = OutputLevel.DEFAULT;
+    OutputLevel curOutputLevel = OutputLevel.INFO;
 
     HelpWidget(float _xPos, float _yPos, float _width, float _height) {
         x = _xPos;

@@ -124,7 +124,6 @@ class Ganglion {
 
     private void handleError(int code, String msg) {
         output("Code " + code + "Error: " + msg);
-        println("Code " + code + "Error: " + msg);
     }
 
     public void processImpedance(JSONObject json) {
