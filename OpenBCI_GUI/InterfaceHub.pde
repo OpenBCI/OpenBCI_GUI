@@ -412,7 +412,7 @@ class Hub {
     }
 
     private void handleError(int code, String msg) {
-        output("Code " + code + " Error: " + msg);\
+        output("Code " + code + " Error: " + msg);
     }
 
     public void setBoardType(String boardType) {
