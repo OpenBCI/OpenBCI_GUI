@@ -2636,7 +2636,7 @@ class RecentPlaybackBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RECENT", x + padding, y + padding);
+        text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
 
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
