@@ -343,25 +343,15 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
             }
         }
 
-        // get time stamp for use in playback
-        try{
-            if (!isOldData) curTimestamp = row.getString(nchan+3);
-            } catch (ArrayIndexOutOfBoundsException e){
+        // if available, get time stamp for use in playback
+        if (row.getColumnCount() == nchan + NUM_ACCEL_DIMS + 2) {
+            try{
+                if (!isOldData) curTimestamp = row.getString(nchan+3);
+            } catch (ArrayIndexOutOfBoundsException e) {
                 println("Data does not exist... possibly an old file.");
             }
-
-        //int localnchan = nchan;
-
-        if(!isRunning){
-            try{
-                row.getString(nchan+3);
-
-                // nchan = 16; AJK 5/31/17 see issue #151
-            }
-            catch (ArrayIndexOutOfBoundsException e){
-                println(e);
-                println("OpenBCI_GUI: getPlaybackDataFromTable: 8 Channel");
-            }
+        } else {
+            curTimestamp = "null";
         }
 
     } //end else

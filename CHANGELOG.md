@@ -1,12 +1,12 @@
 # v4.1.1
-
 Use OpenBCIHub v2.0.7 please.
 
 ## Beta 1
 
- ### Improvements
+### Improvements
 
- * Explicitly warn users when the HUB is not running
+* Adjust Networking Widget appearance and scaling
+* Explicitly warn users when the HUB is not running
 
 ## Beta 0
 
