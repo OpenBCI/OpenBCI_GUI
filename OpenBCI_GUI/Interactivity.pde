@@ -532,9 +532,12 @@ void mouseDragged() {
         }
     }
 }
-//swtich yard if a click is detected
+//switch yard if a click is detected
 void mousePressed() {
-
+    // don't allow mouse clicks until setup is complete and the UI is initialized
+    if (!setupComplete) {
+        return;
+    }
     // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
     // println("systemMode" + systemMode);
     // controlPanel.CPmousePressed();
@@ -585,6 +588,10 @@ void mousePressed() {
 }
 
 void mouseReleased() {
+    // don't allow mouse clicks until setup is complete and the UI is initialized
+    if (!setupComplete) {
+        return;
+    }
 
     //some buttons light up only when being actively pressed.  Now that we've
     //released the mouse button, turn off those buttons.
