@@ -27,11 +27,13 @@ boolean printSignPosts = true;
 float millisOfLastSignPost = 0.0;
 float millisSinceLastSignPost = 0.0;
 
-final static int OUTPUT_LEVEL_DEFAULT = 0;
-final static int OUTPUT_LEVEL_INFO = 1;
-final static int OUTPUT_LEVEL_SUCCESS = 2;
-final static int OUTPUT_LEVEL_WARN = 3;
-final static int OUTPUT_LEVEL_ERROR = 4;
+static enum OutputLevel {
+    DEFAULT,
+    INFO,
+    SUCCESS,
+    WARN,
+    ERROR
+}
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -43,42 +45,28 @@ void verbosePrint(String _string) {
     }
 }
 
-void delay(int delay)
-{
-    int time = millis();
-    while (millis() - time <= delay);
-}
-
 //this class is used to create the help widget that provides system feedback in response to interactivity
 //it is intended to serve as a pseudo-console, allowing us to print useful information to the interface as opposed to an IDE console
 
 class HelpWidget {
 
     public float x, y, w, h;
-    // ArrayList<String> prevOutputs; //growing list of all previous system interactivity
+    int padding;
 
-    String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI"; //current text shown in help widget, based on most recent command
-
-    int padding = 5;
-    int outputStart = 0;
-    int outputDurationMs = 3000;
-    boolean animatingMessage = false;
-    int curOutputLevel = OUTPUT_LEVEL_DEFAULT;
+    //current text shown in help widget, based on most recent command
+    String currentOutput = "Learn how to use this application and more at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI";
+    OutputLevel curOutputLevel = OutputLevel.INFO;
 
     HelpWidget(float _xPos, float _yPos, float _width, float _height) {
         x = _xPos;
         y = _yPos;
         w = _width;
         h = _height;
+        padding = 5;
     }
 
     public void update() {
-        if (animatingMessage) {
-            if (millis() > outputStart + outputDurationMs) {
-                animatingMessage = false;
-                curOutputLevel = OUTPUT_LEVEL_DEFAULT;
-            }
-        }
+        // empty
     }
 
     public void draw() {
@@ -134,15 +122,15 @@ class HelpWidget {
 
     private color getTextColor() {
         switch (curOutputLevel) {
-            case OUTPUT_LEVEL_INFO:
+            case INFO:
                 return #00529B;
-            case OUTPUT_LEVEL_SUCCESS:
+            case SUCCESS:
                 return #4F8A10;
-            case OUTPUT_LEVEL_WARN:
+            case WARN:
                 return #9F6000;
-            case OUTPUT_LEVEL_ERROR:
+            case ERROR:
                 return #D8000C;
-            case OUTPUT_LEVEL_DEFAULT:
+            case DEFAULT:
             default:
                 return color(0, 5, 11);
         }
@@ -150,55 +138,51 @@ class HelpWidget {
 
     private color getBackgroundColor() {
         switch (curOutputLevel) {
-            case OUTPUT_LEVEL_INFO:
+            case INFO:
                 return #BDE5F8;
-            case OUTPUT_LEVEL_SUCCESS:
+            case SUCCESS:
                 return #DFF2BF;
-            case OUTPUT_LEVEL_WARN:
+            case WARN:
                 return #FEEFB3;
-            case OUTPUT_LEVEL_ERROR:
+            case ERROR:
                 return #FFD2D2;
-            case OUTPUT_LEVEL_DEFAULT:
+            case DEFAULT:
             default:
                 return color(255);
         }
     }
 
-    public void output(String _output, int level) {
-        if (OUTPUT_LEVEL_DEFAULT == level) {
-            animatingMessage = false;
-        } else {
-            animatingMessage = true;
-            outputStart = millis();
-        }
+    public void output(String _output, OutputLevel level) {
         curOutputLevel = level;
         currentOutput = _output;
-        // prevOutputs.add(_output);
+
+        String outputWithPrefix = "[" + level.name() + "]: " + _output;
+        println(outputWithPrefix); // add this output to the console log
     }
 };
 
 public void output(String _output) {
-    output(_output, OUTPUT_LEVEL_DEFAULT);
+    output(_output, OutputLevel.DEFAULT);
 }
 
-public void output(String _output, int level) {
+public void output(String _output, OutputLevel level) {
     helpWidget.output(_output, level);
 }
 
 public void outputError(String _output) {
-    output(_output, OUTPUT_LEVEL_ERROR);
+    output(_output, OutputLevel.ERROR);
 }
 
 public void outputInfo(String _output) {
-    output(_output, OUTPUT_LEVEL_INFO);
+    output(_output, OutputLevel.INFO);
 }
 
 public void outputSuccess(String _output) {
-    output(_output, OUTPUT_LEVEL_SUCCESS);
+    output(_output, OutputLevel.SUCCESS);
 }
 
 public void outputWarn(String _output) {
-    output(_output, OUTPUT_LEVEL_WARN);
+    output(_output, OutputLevel.WARN);
 }
 
 // created 2/10/16 by Conor Russomanno to dissect the aspects of the GUI that are slowing it down

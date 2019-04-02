@@ -1288,7 +1288,6 @@ class ControlPanel {
             controlPanel.hideAllBoxes();
             if (isHubObjectInitialized) {
                 output("Protocol BLED112 Selected for Ganglion");
-                println("Protocol BLED112 Selected for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
                 ganglion.setInterface(INTERFACE_HUB_BLED112);
                 // hub.searchDeviceStart();

@@ -405,7 +405,6 @@ class Hub {
 
     private void handleError(int code, String msg) {
         output("Code " + code + " Error: " + msg);
-        println("Code " + code + " Error: " + msg);
     }
 
     public void setBoardType(String boardType) {
@@ -797,15 +796,13 @@ class Hub {
             case RESP_SUCCESS:
                 protocol = json.getString(TCP_JSON_KEY_PROTOCOL);
                 output("Transfer Protocol set to " + protocol);
-                println("Transfer Protocol set to " + protocol);
                 if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
                     // hub.searchDeviceStart();
                     outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
                 }
                 break;
             case RESP_ERROR_PROTOCOL_BLE_START:
-                outputError("Failed to start Ganglion BLE Driver, please see https://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
-                println("Failed to start Ganglion BLE Driver, please see https://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+                outputError("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
                 break;
             default:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);
@@ -1151,11 +1148,9 @@ class Hub {
         int code = json.getInt(TCP_JSON_KEY_CODE);
         switch (code) {
             case RESP_ERROR_WIFI_ACTION_NOT_RECOGNIZED:
-                println("Sent an action to hub for wifi info but the command was unrecognized");
                 output("Sent an action to hub for wifi info but the command was unrecognized");
                 break;
             case RESP_ERROR_WIFI_NOT_CONNECTED:
-                println("Tried to get wifi info but no WiFi Shield was connected.");
                 output("Tried to get wifi info but no WiFi Shield was connected.");
                 break;
             case RESP_ERROR_CHANNEL_SETTINGS_FAILED_TO_SET_CHANNEL:

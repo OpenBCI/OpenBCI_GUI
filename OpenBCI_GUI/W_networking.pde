@@ -1602,7 +1602,6 @@ class Stream extends Thread {
             this.udp.setBuffer(20000);
             this.udp.listen(false);
             this.udp.log(false);
-            println("UDP successfully connected");
             output("UDP successfully connected");
         } else if (this.protocol.equals("LSL")){
             String stream_id = "openbcieeg12345";
