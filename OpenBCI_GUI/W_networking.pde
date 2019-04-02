@@ -47,6 +47,7 @@ class W_networking extends Widget {
     int row3;
     int row4;
     int row5;
+    int itemWidth = 96;
 
     /* UI */
     Boolean osc_visible;
@@ -196,7 +197,7 @@ class W_networking extends Widget {
         fill(255);
         if (!protocolMode.equals("Serial")){
             for (int i = 0; i < dropdownNames.length; i++) {
-                rect(cp5_networking_dropdowns.getController(dropdownNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(dropdownNames[i]).getPosition()[1] - 1, 100 + 2, cp5_networking_dropdowns.getController(dropdownNames[i]).getHeight()+2);
+                rect(cp5_networking_dropdowns.getController(dropdownNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(dropdownNames[i]).getPosition()[1] - 1, itemWidth + 2, cp5_networking_dropdowns.getController(dropdownNames[i]).getHeight()+2);
             }
         } else {
             rect(cp5_networking_portName.getController("port_name").getPosition()[0] - 1, cp5_networking_portName.getController("port_name").getPosition()[1] - 1, cp5_networking_portName.getController("port_name").getWidth() + 2, cp5_networking_portName.getController("port_name").getHeight()+2);
@@ -209,9 +210,9 @@ class W_networking extends Widget {
         popStyle();
 
         // cp5_networking_dropdowns.draw();
-
+        int headerFontSize = 18;
         fill(0,0,0);// Background fill: white
-        textFont(h1,20);
+        textFont(h1, headerFontSize);
 
         if (!protocolMode.equals("Serial")){
             text(" Stream 1",column1,row0);
@@ -221,14 +222,14 @@ class W_networking extends Widget {
         if (protocolMode.equals("OSC")){
             text(" Stream 4",column4,row0);
         }
-        text("Data Type", column0,row1);
+        text("Data Type",column0,row1);
 
         startButton.draw();
 
         if (protocolMode.equals("OSC")){
             textFont(f4,40);
             text("OSC", x+20,y+h/8+15);
-            textFont(h1,20);
+            textFont(h1,headerFontSize);
             text("IP", column0,row2);
             text("Port", column0,row3);
             text("Address",column0,row4);
@@ -236,21 +237,21 @@ class W_networking extends Widget {
         } else if (protocolMode.equals("UDP")){
             textFont(f4,40);
             text("UDP", x+20,y+h/8+15);
-            textFont(h1,20);
+            textFont(h1,headerFontSize);
             text("IP", column0,row2);
             text("Port", column0,row3);
             text("Filters",column0,row4);
         } else if (protocolMode.equals("LSL")){
             textFont(f4,40);
             text("LSL", x+20,y+h/8+15);
-            textFont(h1,20);
+            textFont(h1,headerFontSize);
             text("Name", column0,row2);
             text("Type", column0,row3);
             text("# Chan", column0, row4);
         } else if (protocolMode.equals("Serial")){
             textFont(f4,40);
             text("Serial", x+20,y+h/8+15);
-            textFont(h1,20);
+            textFont(h1,headerFontSize);
             text("Baud/Port", column0,row2);
             // text("Port Name", column0,row3);
             text("Filters",column0,row3);
@@ -367,7 +368,7 @@ class W_networking extends Widget {
     void createTextField(String name, String default_text){
         cp5_networking.addTextfield(name)
             .align(10,100,10,100)                   // Alignment
-            .setSize(100,20)                         // Size of textfield
+            .setSize(120,20)                         // Size of textfield
             .setFont(f2)
             .setFocus(false)                        // Deselects textfield
             .setColor(color(26,26,26))
@@ -416,7 +417,7 @@ class W_networking extends Widget {
                 .setColorActive(color(150, 170, 200))       // border color when selected
                 // .setColorCursor(color(26,26,26))
 
-                .setSize(100,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+                .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
                 .setBarHeight(navH-4) //height of top/primary bar
                 .setItemHeight(navH-4) //height of all item/dropdown bars
                 .addItems(_items) // used to be .addItems(maxFreqList)
@@ -453,7 +454,7 @@ class W_networking extends Widget {
                 .setColorActive(color(150, 170, 200))       // border color when selected
                 // .setColorCursor(color(26,26,26))
 
-                .setSize(100,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+                .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
                 .setBarHeight(navH-4) //height of top/primary bar
                 .setItemHeight(navH-4) //height of all item/dropdown bars
                 .addItems(_items) // used to be .addItems(maxFreqList)
@@ -490,7 +491,7 @@ class W_networking extends Widget {
                 .setColorActive(color(150, 170, 200))       // border color when selected
                 // .setColorCursor(color(26,26,26))
 
-                .setSize(100,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+                .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
                 .setBarHeight(navH-4) //height of top/primary bar
                 .setItemHeight(navH-4) //height of all item/dropdown bars
                 .addItems(_items) // used to be .addItems(maxFreqList)
@@ -524,16 +525,14 @@ class W_networking extends Widget {
         cp5_networking_baudRate.setGraphics(pApplet, 0,0);
         cp5_networking_portName.setGraphics(pApplet, 0,0);
 
-        column0 = x+w/22-20;
+        column0 = x+w/22-12;
         int widthd = 46;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
         column1 = x+12*w/widthd-25;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
         column2 = x+(12+9*1)*w/widthd-25;
         column3 = x+(12+9*2)*w/widthd-25;
         column4 = x+(12+9*3)*w/widthd-25;
-
         halfWidth = (column2+100) - column1;
         fullColumnWidth = (column4+100) - column1;
-
         row0 = y+h/4+10;
         row1 = y+4*h/10;
         row2 = y+5*h/10;
@@ -543,62 +542,73 @@ class W_networking extends Widget {
         int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
 
         startButton.setPos(x + w/2 - 70, y + h - 40 );
-        cp5_networking.get(Textfield.class, "osc_ip1").setPosition(column1, row2 - offset);
-        cp5_networking.get(Textfield.class, "osc_port1").setPosition(column1, row3 - offset);
-        cp5_networking.get(Textfield.class, "osc_address1").setPosition(column1, row4 - offset);
-        cp5_networking.get(Textfield.class, "osc_ip2").setPosition(column2, row2 - offset);
-        cp5_networking.get(Textfield.class, "osc_port2").setPosition(column2, row3 - offset);
-        cp5_networking.get(Textfield.class, "osc_address2").setPosition(column2, row4 - offset);
-        cp5_networking.get(Textfield.class, "osc_ip3").setPosition(column3, row2 - offset);
-        cp5_networking.get(Textfield.class, "osc_port3").setPosition(column3, row3 - offset);
-        cp5_networking.get(Textfield.class, "osc_address3").setPosition(column3, row4 - offset);
-        cp5_networking.get(Textfield.class, "osc_ip4").setPosition(column4, row2 - offset);
-        cp5_networking.get(Textfield.class, "osc_port4").setPosition(column4, row3 - offset);
-        cp5_networking.get(Textfield.class, "osc_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
-        cp5_networking.get(Textfield.class, "udp_ip1").setPosition(column1, row2 - offset);
-        cp5_networking.get(Textfield.class, "udp_port1").setPosition(column1, row3 - offset);
-        cp5_networking.get(Textfield.class, "udp_ip2").setPosition(column2, row2 - offset);
-        cp5_networking.get(Textfield.class, "udp_port2").setPosition(column2, row3 - offset);
-        cp5_networking.get(Textfield.class, "udp_ip3").setPosition(column3, row2 - offset);
-        cp5_networking.get(Textfield.class, "udp_port3").setPosition(column3, row3 - offset);
-        cp5_networking.get(Textfield.class, "lsl_name1").setPosition(column1,row2 - offset);
-        cp5_networking.get(Textfield.class, "lsl_type1").setPosition(column1,row3 - offset);
-        cp5_networking.get(Textfield.class, "lsl_numchan1").setPosition(column1,row4 - offset);
-        cp5_networking.get(Textfield.class, "lsl_name2").setPosition(column2,row2 - offset);
-        cp5_networking.get(Textfield.class, "lsl_type2").setPosition(column2,row3 - offset);
-        cp5_networking.get(Textfield.class, "lsl_numchan2").setPosition(column2,row4 - offset);
-        cp5_networking.get(Textfield.class, "lsl_name3").setPosition(column3,row2 - offset);
-        cp5_networking.get(Textfield.class, "lsl_type3").setPosition(column3,row3 - offset);
-        cp5_networking.get(Textfield.class, "lsl_numchan3").setPosition(column3,row4 - offset);
 
+        //scale the item width of all elements in the networking widget
+        itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
+        for (String dropdownName : dropdownNames) {
+            cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).setWidth(itemWidth);
+        }
 
         if (protocolMode.equals("OSC")){
+            for (String textField : oscTextFieldNames) {
+                cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
+            }
+            cp5_networking.get(Textfield.class, "osc_ip1").setPosition(column1, row2 - offset);
+            cp5_networking.get(Textfield.class, "osc_port1").setPosition(column1, row3 - offset);
+            cp5_networking.get(Textfield.class, "osc_address1").setPosition(column1, row4 - offset);
+            cp5_networking.get(Textfield.class, "osc_ip2").setPosition(column2, row2 - offset);
+            cp5_networking.get(Textfield.class, "osc_port2").setPosition(column2, row3 - offset);
+            cp5_networking.get(Textfield.class, "osc_address2").setPosition(column2, row4 - offset);
+            cp5_networking.get(Textfield.class, "osc_ip3").setPosition(column3, row2 - offset);
+            cp5_networking.get(Textfield.class, "osc_port3").setPosition(column3, row3 - offset);
+            cp5_networking.get(Textfield.class, "osc_address3").setPosition(column3, row4 - offset);
+            cp5_networking.get(Textfield.class, "osc_ip4").setPosition(column4, row2 - offset);
+            cp5_networking.get(Textfield.class, "osc_port4").setPosition(column4, row3 - offset);
+            cp5_networking.get(Textfield.class, "osc_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
             cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
             cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
             cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
             cp5_networking.get(RadioButton.class, "filter4").setPosition(column4, row5 - 10);
-        } else if (protocolMode.equals("LSL")){
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
         } else if (protocolMode.equals("UDP")){
+            for (String textField : udpTextFieldNames) {
+                cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
+            }
+            cp5_networking.get(Textfield.class, "udp_ip1").setPosition(column1, row2 - offset);
+            cp5_networking.get(Textfield.class, "udp_port1").setPosition(column1, row3 - offset);
+            cp5_networking.get(Textfield.class, "udp_ip2").setPosition(column2, row2 - offset);
+            cp5_networking.get(Textfield.class, "udp_port2").setPosition(column2, row3 - offset);
+            cp5_networking.get(Textfield.class, "udp_ip3").setPosition(column3, row2 - offset);
+            cp5_networking.get(Textfield.class, "udp_port3").setPosition(column3, row3 - offset);
             cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
             cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
             cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
+        } else if (protocolMode.equals("LSL")){
+            for (String textField : lslTextFieldNames) {
+                cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
+            }
+            cp5_networking.get(Textfield.class, "lsl_name1").setPosition(column1,row2 - offset);
+            cp5_networking.get(Textfield.class, "lsl_type1").setPosition(column1,row3 - offset);
+            cp5_networking.get(Textfield.class, "lsl_numchan1").setPosition(column1,row4 - offset);
+            cp5_networking.get(Textfield.class, "lsl_name2").setPosition(column2,row2 - offset);
+            cp5_networking.get(Textfield.class, "lsl_type2").setPosition(column2,row3 - offset);
+            cp5_networking.get(Textfield.class, "lsl_numchan2").setPosition(column2,row4 - offset);
+            cp5_networking.get(Textfield.class, "lsl_name3").setPosition(column3,row2 - offset);
+            cp5_networking.get(Textfield.class, "lsl_type3").setPosition(column3,row3 - offset);
+            cp5_networking.get(Textfield.class, "lsl_numchan3").setPosition(column3,row4 - offset);
+            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
+            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
+            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
         } else if (protocolMode.equals("Serial")){
+            //Serial Specific
+            cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
+            // cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
+            cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column2, row2-offset);
+            cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setSize(itemWidth, (baudRates.size()+1)*(navH-4));
+            // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
+            // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
+            cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //halfWidth
             cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row3 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row3 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row3 - 10);
         }
-
-        //Serial Specific
-        cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
-        // cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column1, row3-offset);
-        cp5_networking_portName.get(ScrollableList.class, "port_name").setPosition(column2, row2-offset);
-        cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setSize(100, (baudRates.size()+1)*(navH-4));
-        // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
-        // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
-        cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //halfWidth
 
         cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
         cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setPosition(column2, row1-offset);

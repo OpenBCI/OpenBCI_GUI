@@ -33,8 +33,7 @@ void clientEvent(Client someClient) {
             String posMatch  = new String(hub.tcpBuffer, p - 1, 2);
             if (posMatch.equals(TCP_STOP)) {
                 // println("MATCH");
-                if (!hub.nodeProcessHandshakeComplete) {
-                    hub.nodeProcessHandshakeComplete = true;
+                if (!hub.isHubRunning()) {
                     hub.setHubIsRunning(true);
                     println("Hub: clientEvent: handshake complete");
                 }
@@ -227,7 +226,6 @@ class Hub {
     private int tcpHubPort = 10996;
     private String tcpHubIP = "127.0.0.1";
     private String tcpHubFull = tcpHubIP + ":" + tcpHubPort;
-    private boolean tcpClientActive = false;
     private int tcpTimeout = 1000;
 
     private String firmwareVersion = "";
@@ -236,7 +234,6 @@ class Hub {
 
     public Client tcpClient;
     private boolean portIsOpen = false;
-    private boolean connected = false;
 
     public int numberOfDevices = 0;
     public int maxNumberOfDevices = 10;
@@ -248,7 +245,6 @@ class Hub {
     private String curWiFiStyle = WIFI_DYNAMIC;
 
     private boolean waitingForResponse = false;
-    private boolean nodeProcessHandshakeComplete = false;
     private boolean searching = false;
     public boolean shouldStartNodeApp = false;
     private boolean checkingImpedance = false;
@@ -301,8 +297,9 @@ class Hub {
         mainApplet = applet;
 
         // Able to start tcpClient connection?
-        startTCPClient(mainApplet);
-
+        if(!startTCPClient()) {
+            outputWarn("Failed to connect to OpenBCIHub background application. LIVE functionality will be disabled.");
+        }
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -319,18 +316,13 @@ class Hub {
     }
 
     /**
-      * @descirpiton Used to `try` and start the tcpClient
+      * @description Used to `try` and start the tcpClient
       * @param applet {PApplet} - The main applet.
       * @return {boolean} - True if able to start.
       */
-    public boolean startTCPClient(PApplet applet) {
-        try {
-            tcpClient = new Client(applet, tcpHubIP, tcpHubPort);
-            return true;
-        } catch (Exception e) {
-            println("startTCPClient: ConnectException: " + e);
-            return false;
-        }
+    public boolean startTCPClient() {
+        tcpClient = new Client(mainApplet, tcpHubIP, tcpHubPort);
+        return tcpClient.active();
     }
 
 
@@ -381,7 +373,7 @@ class Hub {
                 String errorMessage = json.getString(TCP_JSON_KEY_MESSAGE);
                 println("Hub: parseMessage: error: " + errorMessage);
                 if (code == RESP_ERROR_COMMAND_NOT_RECOGNIZED) {
-                    output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
+                    output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Hub/releases/latest");
                 }
             } else if (type.equals(TCP_TYPE_EXAMINE)) {
                 processExamine(json);
@@ -402,7 +394,7 @@ class Hub {
                 processWifi(json);
             } else {
                 println("Hub: parseMessage: default: " + data);
-                output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
+                output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Hub/releases/latest");
             }
         }
     }
@@ -593,14 +585,8 @@ class Hub {
         int code = json.getInt(TCP_JSON_KEY_CODE);
         if (code == RESP_SUCCESS_DATA_ACCEL) {
             JSONArray accelDataCounts = json.getJSONArray(TCP_JSON_KEY_ACCEL_DATA_COUNTS);
-            if(eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
-                accelArray[0] = accelDataCounts.getInt(1); //Swap X and Y
-                accelArray[1] = accelDataCounts.getInt(0);
-                accelArray[2] = -accelDataCounts.getInt(2); //Invert Z
-            } else {
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                        accelArray[i] = accelDataCounts.getInt(i);
-                }
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                    accelArray[i] = accelDataCounts.getInt(i);
             }
             newAccelData = true;
             if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {

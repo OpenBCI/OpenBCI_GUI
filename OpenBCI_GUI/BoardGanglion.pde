@@ -231,7 +231,7 @@ class Ganglion {
         json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
         json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_ACCEL);
         hub.writeJSON(json);
-        println("Ganglion: accell: START");
+        println("Ganglion: accel: START");
         accelModeActive = true;
     }
 

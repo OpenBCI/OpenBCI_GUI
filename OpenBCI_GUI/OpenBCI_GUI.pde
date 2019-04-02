@@ -50,7 +50,7 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.1-beta.0";
+String localGUIVersionString = "v4.1.1-beta.1";
 String localGUIVersionDate = "March 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -398,7 +398,7 @@ void setup() {
 
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-    println("For more information, please visit: http://docs.openbci.com/OpenBCI%20Software/");
+    println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
 
     //open window
     ourApplet = this;

@@ -68,6 +68,8 @@ color isSelected_color = color(184, 220, 105);
 boolean calledForBLEList = false;
 boolean calledForWifiList = false;
 
+Button noHubShowDoc;
+
 Button refreshPort;
 Button refreshBLE;
 Button refreshWifi;
@@ -158,13 +160,10 @@ public void controlEvent(ControlEvent theEvent) {
         controlEventDataSource = str; //Used for output message on system start
         int newDataSource = int(theEvent.getValue());
 
-        if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.nodeProcessHandshakeComplete) {
-            if (isWindows()) {
-                outputError("Please launch OpenBCI Hub prior to launching this application. Learn at docs.openbci.com");
-            } else {
-                outputError("Unable to establish link to Hub. Checkout tutorial at docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
-            }
-            eegDataSource = -1;
+        eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
+
+        if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
+            outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
             return;
         }
 
@@ -173,9 +172,6 @@ public void controlEvent(ControlEvent theEvent) {
         protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
         protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
         protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
-
-        eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
-
 
         ganglion.setInterface(INTERFACE_NONE);
         cyton.setInterface(INTERFACE_NONE);
@@ -291,11 +287,9 @@ class ControlPanel {
     PlaybackFileBox playbackFileBox;
     SDConverterBox sdConverterBox;
 
+    NoHubBox noHubBox;
     BLEBox bleBox;
     DataLogBoxGanglion dataLogBoxGanglion;
-
-    // BLEHardwareBox bleHardwareBox;
-
     WifiBox wifiBox;
     InterfaceBoxCyton interfaceBoxCyton;
     InterfaceBoxGanglion interfaceBoxGanglion;
@@ -348,6 +342,7 @@ class ControlPanel {
         interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
         interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
 
+        noHubBox = new NoHubBox(x + w, dataSourceBox.y, w, h, globalPadding);
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
         wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
 
@@ -495,8 +490,11 @@ class ControlPanel {
             cp5.setVisible(true);//make sure controlP5 elements are visible
             cp5Popup.setVisible(true);
 
-            if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
-                if (cyton.getInterface() == INTERFACE_NONE) {
+             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
+                if(!hub.isHubRunning()) {
+                    noHubBox.draw();
+                }
+                else if (cyton.getInterface() == INTERFACE_NONE) {
                     interfaceBoxCyton.draw();
                 } else {
                     interfaceBoxCyton.draw();
@@ -576,7 +574,10 @@ class ControlPanel {
                 // hideAllBoxes();
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
-                if (ganglion.getInterface() == INTERFACE_NONE) {
+                if(!hub.isHubRunning()) {
+                    noHubBox.draw();
+                }
+                else if (ganglion.getInterface() == INTERFACE_NONE) {
                     interfaceBoxGanglion.draw();
                 } else {
                     interfaceBoxGanglion.draw();
@@ -749,8 +750,15 @@ class ControlPanel {
                 }
             }
 
+            // active button when the hub is not running
+            if (!hub.isHubRunning()) {
+                if (noHubShowDoc.isMouseHere()) {
+                    noHubShowDoc.setIsActive(true);
+                    noHubShowDoc.wasPressed = true;
+                }
+            }
             //active buttons during DATASOURCE_CYTON
-            if (eegDataSource == DATASOURCE_CYTON) {
+            else if (eegDataSource == DATASOURCE_CYTON) {
                 if (cyton.isSerial()) {
                     if (popOutRadioConfigButton.isMouseHere()){
                         popOutRadioConfigButton.setIsActive(true);
@@ -918,7 +926,7 @@ class ControlPanel {
                 }
             }
 
-            if (eegDataSource == DATASOURCE_GANGLION) {
+            else if (eegDataSource == DATASOURCE_GANGLION) {
                 // This is where we check for button presses if we are searching for BLE devices
 
                 if (autoFileNameGanglion.isMouseHere()) {
@@ -1205,6 +1213,12 @@ class ControlPanel {
             //cursor(ARROW); //this this back to ARROW
         }
 
+        if (noHubShowDoc.isMouseHere() && noHubShowDoc.wasPressed) {
+            noHubShowDoc.wasPressed=false;
+            noHubShowDoc.setIsActive(false);
+            noHubShowDoc.goToURL();
+        }
+
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
             output("Serial/COM List Refreshed");
@@ -1456,6 +1470,8 @@ class ControlPanel {
         }
 
         //reset all buttons to false
+        noHubShowDoc.setIsActive(false);
+        noHubShowDoc.wasPressed = false;
         refreshPort.setIsActive(false);
         refreshPort.wasPressed = false;
         refreshBLE.setIsActive(false);
@@ -1640,6 +1656,35 @@ public void set_channel_popup(){;
 //                	BELOW ARE THE CLASSES FOR THE VARIOUS                         //
 //                	CONTROL PANEL BOXes (control widgets)                        //
 //==============================================================================//
+
+class NoHubBox {    
+    int x, y, w, h, padding; //size and position
+
+    NoHubBox(int _x, int _y, int _w, int _h, int _padding) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = 73;
+        padding = _padding;
+
+        noHubShowDoc = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "OPENBCI GUI INSTALL GUIDE", fontInfo.buttonLabel_size);
+        noHubShowDoc.setURL("http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
+    }
+
+    public void draw() {
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        fill(bgColor);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("HUB NOT CONNECTED", x + padding, y + padding);
+        noHubShowDoc.draw();
+        popStyle();
+    }
+};
 
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
