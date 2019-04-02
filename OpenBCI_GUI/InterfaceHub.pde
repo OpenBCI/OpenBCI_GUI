@@ -373,7 +373,7 @@ class Hub {
                 String errorMessage = json.getString(TCP_JSON_KEY_MESSAGE);
                 println("Hub: parseMessage: error: " + errorMessage);
                 if (code == RESP_ERROR_COMMAND_NOT_RECOGNIZED) {
-                    output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
+                    output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Hub/releases/latest");
                 }
             } else if (type.equals(TCP_TYPE_EXAMINE)) {
                 processExamine(json);
@@ -394,7 +394,7 @@ class Hub {
                 processWifi(json);
             } else {
                 println("Hub: parseMessage: default: " + data);
-                output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Ganglion_Electron/releases/latest");
+                output("Hub in data folder outdated. Download a new hub for your OS at https://github.com/OpenBCI/OpenBCI_Hub/releases/latest");
             }
         }
     }
@@ -804,8 +804,8 @@ class Hub {
                 }
                 break;
             case RESP_ERROR_PROTOCOL_BLE_START:
-                outputError("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
-                println("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+                outputError("Failed to start Ganglion BLE Driver, please see https://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+                println("Failed to start Ganglion BLE Driver, please see https://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
                 break;
             default:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);
