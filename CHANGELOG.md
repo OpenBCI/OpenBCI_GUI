@@ -6,6 +6,7 @@ Use OpenBCIHub v2.0.7 please.
 ### Improvements
 
 * Adjust Networking Widget appearance and scaling
+* Explicitly warn users when the HUB is not running
 
 ## Beta 0
 
