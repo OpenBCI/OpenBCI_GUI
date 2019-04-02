@@ -259,7 +259,17 @@ public void controlEvent(ControlEvent theEvent) {
             set_channel_over(rcBox,setChannelInt);
             ovrChannel.wasPressed = false;
         }
-        println("still goin off");
+        //println("still goin off");
+    }
+
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        if(theEvent.isFrom("playbackMenuList")) {
+            Map m = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+            println("got a menu event from item" + ((MenuList)theEvent.getController()).getValue() + " : " + m);
+            //w_playback.currentActiveItem = m.get("subline");
+            //println(m.get("copy"));
+            loadRecentFileFromMenuList(m.get("copy").toString(), m.get("headline").toString());
+        }
     }
 }
 
@@ -1657,7 +1667,7 @@ public void set_channel_popup(){;
 //                	CONTROL PANEL BOXes (control widgets)                        //
 //==============================================================================//
 
-class NoHubBox {    
+class NoHubBox {
     int x, y, w, h, padding; //size and position
 
     NoHubBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -3146,6 +3156,15 @@ Map<String, Object> makeItem(String theHeadline) {
     return m;
 }
 
+//makeItem function used by MenuList class below
+Map<String, Object> makeItem(String theHeadline, String theSubline, String theCopy) {
+    Map m = new HashMap<String, Object>();
+    m.put("headline", theHeadline);
+    m.put("subline", theSubline);
+    m.put("copy", theCopy);
+    return m;
+}
+
 //=======================================================================================================================================
 //
 //                    MenuList Class
@@ -3283,7 +3302,7 @@ public class MenuList extends controlP5.Controller {
       * otherwise do whatever this item of the list is supposed to do.
       */
     public void onClick() {
-        println("Control Panel: click!");
+        println("MenuList: click!");
         try{
             if (getPointer().x()>getWidth()-scrollerWidth) {
                 if(getHeight() != 0){

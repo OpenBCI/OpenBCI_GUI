@@ -7,15 +7,16 @@
 //                       Created: Richard Waltman - August 2018
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+ControlP5 cp5_playback;
 class W_playback extends Widget {
 
     //allow access to dataProcessing
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
     Button selectPlaybackFileButton;
-    Button[] selectRecentFileButtons = new Button[10];
-    int playbackNumButtonsToDraw = 1;
+    MenuList playbackMenuList;
+    int currentActiveItem = -1;
+
     String[] shortFileNames = new String[10];
     String[] longFilePaths = new String[10];
     //Used for spacing
@@ -23,13 +24,11 @@ class W_playback extends Widget {
 
     private boolean visible = true;
     private boolean updating = true;
+    private boolean menuHasUpdated = false;
 
     W_playback(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //make a dropdown menu to select the rang
-        String[] temp = rangePlaybackStringList.array();
-        addDropdown("pbRecentRange", "Range", Arrays.asList(temp), 0);
         //make a button to load new files
         selectPlaybackFileButton = new Button (
             x + w/2 - (padding*2),
@@ -38,20 +37,13 @@ class W_playback extends Widget {
             navHeight - 6,
             "SELECT PLAYBACK FILE",
             fontInfo.buttonLabel_size);
-        //make ten buttons for recent playback with blank text
-        for (int i = 0; i < 10; i++) { //playbackNumButtonsToDraw
-            selectRecentFileButtons[i] = new Button (
-                x + (padding*4),
-                y + int(i * (h/10)) + padding/10,
-                int(w/2.4) - padding*2,
-                30 - padding/10,
-                " ",
-                30);
-                selectRecentFileButtons[i].setFont(p4,16);
-                selectRecentFileButtons[i].setColorNotPressed(color(225,225,225));
-        }
-
-        updatePlaybackWidgetButtons();
+        //make a menulist
+        cp5_playback = new ControlP5(pApplet);
+        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", w - padding*3, h - padding*2, p4);
+        playbackMenuList.setPosition(x + padding/2, y + 2);
+        playbackMenuList.setSize(w - padding*3, h - padding*2);
+        cp5_playback.get(MenuList.class, "playbackMenuList").setVisible(true);
+        cp5_playback.setAutoDraw(false);
     }
 
     public boolean isVisible() {
@@ -70,7 +62,12 @@ class W_playback extends Widget {
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        updatePlaybackWidgetButtons();
+        if (!menuHasUpdated) {
+            refreshPlaybackList();
+            menuHasUpdated = true;
+        }
+        playbackMenuList.updateMenu();
+
     }
 
     void draw() {
@@ -84,6 +81,7 @@ class W_playback extends Widget {
             fill(boxColor);
             stroke(boxStrokeColor);
             strokeWeight(1);
+            rect(x, y, w, h);
             //Add text if needed
             /*
             fill(bgColor);
@@ -95,10 +93,7 @@ class W_playback extends Widget {
 
             pushStyle();
             selectPlaybackFileButton.draw();
-
-            for (int i = 0; i < playbackNumButtonsToDraw; i++) {
-                selectRecentFileButtons[i].draw();
-            }
+            cp5_playback.draw();
             popStyle();
         }
     } //end draw loop
@@ -107,13 +102,12 @@ class W_playback extends Widget {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         //resize and position the playback file box and button
-        selectPlaybackFileButton.setPos(x + w/2 - (padding*2), y - navHeight + 2);
+        selectPlaybackFileButton.setPos(x + w - selectPlaybackFileButton.but_dx - padding, y - navHeight + 2);
 
-        for (int i = 0; i < playbackNumButtonsToDraw; i++) { //playbackNumButtonsToDraw
-            selectRecentFileButtons[i].setPos(
-                x + (padding*4),
-                y + int(i * (h/10)) + padding/10);
-            }
+        playbackMenuList.setPosition(x + padding/2, y + 2);
+        playbackMenuList.setSize(w - padding, h - padding*2);
+        //println("WIDTH " + w + " , of " + width);
+        //println("Height " + h + " , of " + height);
     } //end screen Resized
 
     void mousePressed() {
@@ -124,31 +118,10 @@ class W_playback extends Widget {
             selectPlaybackFileButton.setIsActive(true);
             //selectPlaybackFileButton.wasPressed = true;
         }
-
-        //check if mouse is over the recent file buttons
-        for (int i = 0; i < playbackNumButtonsToDraw ;i++) {
-            if (selectRecentFileButtons[i].isMouseHere()) {
-                selectRecentFileButtons[i].setIsActive(true);
-            }
-        }
     } // end mouse Pressed
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        //check if user has clicked on one of the recent file buttons
-        for (int i = 0; i < playbackNumButtonsToDraw; i++) { //playbackNumButtonsToDraw
-            if (selectRecentFileButtons[i].isMouseHere() && selectRecentFileButtons[i].isActive) {
-                //load the playback file using the full file path
-                //String fileToLoad = longFilePaths[i];
-                //println("FILE PATH TO LOAD: " + longFilePaths[i] + " && Shrt file pth 2 ld: " + shortFileNames[i]);
-                recentFileSelectedButton(longFilePaths[i], shortFileNames[i]);
-            }
-        }
-        //make the button show it is inactive
-        for (int i = 0; i < playbackNumButtonsToDraw; i++) {
-            selectRecentFileButtons[i].setIsActive(false);
-        }
 
         //check if user has clicked on the select playback file button
         if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.isActive) {
@@ -156,104 +129,31 @@ class W_playback extends Widget {
             selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
         }
         selectPlaybackFileButton.setIsActive(false);
+
     } // end mouse Released
 
-    void updatePlaybackWidgetButtons() {
-        //Used to show 10 of 100 latest playback files
-        int numFilesToShow = 10;
-        //Load the JSON array for playback history
-        if (playbackHistoryFileExists) {
-            try {
-                loadPlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
-                JSONArray loadPlaybackHistoryJSONArray = loadPlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-                //remove entries greater than 100
-                if (loadPlaybackHistoryJSONArray.size() >= 100) {
-                    for (int i = 0; i < loadPlaybackHistoryJSONArray.size()-100; i++) {
-                        loadPlaybackHistoryJSONArray.remove(i);
-                    }
-                }
-                if (loadPlaybackHistoryJSONArray.size() <= 10) {
-                    //println("History Size = " + loadPlaybackHistoryJSONArray.size());
-                    //fileSelectTabsInt changes when user selects playback range from dropdown
-                    numFilesToShow = loadPlaybackHistoryJSONArray.size();
-                    playbackNumButtonsToDraw = loadPlaybackHistoryJSONArray.size();
-                    fileSelectTabsInt = 1;
-                } else if (rangePlaybackSelected == 0 && loadPlaybackHistoryJSONArray.size() > 10) {
-                    numFilesToShow = 10;
-                    playbackNumButtonsToDraw = 10;
-                } else if (rangePlaybackSelected > 0
-                && rangePlaybackSelected == maxRangePlaybackSelect) {
-                    //fileSelectTabsInt changes when user selects playback range from dropdown
-                    numFilesToShow = fileSelectTabsInt + loadPlaybackHistoryJSONArray.size()%10; //if set to max, show the remainer only
-                    playbackNumButtonsToDraw = loadPlaybackHistoryJSONArray.size()%10; //and draw the remainder
-                //} else if (loadPlaybackHistoryJSONArray.size()%10 == 0) {
-                //  numFilesToShow = 10;
-                //  playbackNumButtonsToDraw = 10;
-                } else if (rangePlaybackSelected > 0
-                && rangePlaybackSelected < maxRangePlaybackSelect) {
-                    numFilesToShow = fileSelectTabsInt + 10;
-                    playbackNumButtonsToDraw = 10;
-                }
-                //println ("min = " + int(loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt)
-                //+ " | max = " + int(loadPlaybackHistoryJSONArray.size() - numFilesToShow));
-
-                //for all files that appear in JSON array in increments of 10
-                //println(fileSelectTabsInt + " " + numFilesToShow);
-                //println("Array Size:" + loadPlaybackHistoryJSONArray.size());
-                int currentFileNameToDraw = 0;
-                if (loadPlaybackHistoryJSONArray.size() > 1) {
-                    for (int i = (loadPlaybackHistoryJSONArray.size()-fileSelectTabsInt); //minimum
-                        i >= (loadPlaybackHistoryJSONArray.size() - numFilesToShow);  //maximum
-                        i--) { //go through array in reverse since using append
-                        JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
-                        int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
-                        String shortFileName = loadRecentPlaybackFile.getString("id");
-                        String longFilePath = loadRecentPlaybackFile.getString("filePath");
-                        //store to arrays to set recent playback buttons text and function
-                        shortFileNames[currentFileNameToDraw] = shortFileName;
-                        longFilePaths[currentFileNameToDraw] = longFilePath;
-                        //Set up the string that will be displayed for each recent file
-                        /*
-                        int digitPadding = 0;
-                        if (fileNumber == 100) {
-                            digitPadding = 3;
-                        } else if (fileNumber >= 10 && fileNumber <= 99) {
-                            digitPadding = 2;
-                        } else if (fileNumber <= 9) {
-                            digitPadding = 1;
-                        }
-                        String fileNumberString = nfs(fileNumber, digitPadding) + ". ";
-                        */
-                        //Draw the text for each fileName
-
-                        //printArray("short file names : " + shortFileNames);
-                        //set to visisble and change text
-                        for (int j = 0; j < playbackNumButtonsToDraw; j++) {
-                            selectRecentFileButtons[j].setString(shortFileNames[j]);
-                        }
-
-                        currentFileNameToDraw++;
-                        if (currentFileNameToDraw > 9) currentFileNameToDraw = 9;
-                    }
-                } else { //if there is only 1 file in the playback history file...
-                    JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(0);
-                    int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
-                    String shortFileName = loadRecentPlaybackFile.getString("id"); //used to display in playback widget
-                    String longFilePath = loadRecentPlaybackFile.getString("filePath"); //used to load file
-                    //store to arrays to set recent playback buttons text and function
-                    shortFileNames[currentFileNameToDraw] = shortFileName;
-                    longFilePaths[currentFileNameToDraw] = longFilePath;
-                    //set the text of the first button
-                    selectRecentFileButtons[0].setString(shortFileNames[0]);
-                    //increment which file name to draw
-                    currentFileNameToDraw++;
-                }
-
-            } catch (NullPointerException e) {
-                println("PlaybackWidget: Playback history file not found.");
+    public void refreshPlaybackList() {
+        try {
+            playbackMenuList.items.clear();
+            loadPlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+            JSONArray loadPlaybackHistoryJSONArray = loadPlaybackHistoryJSON.getJSONArray("playbackFileHistory");
+            //println("Array Size:" + loadPlaybackHistoryJSONArray.size());
+            int currentFileNameToDraw = 0;
+            for (int i = 0; i < loadPlaybackHistoryJSONArray.size(); i++) { //go through array in reverse since using append
+                JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
+                int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
+                String shortFileName = loadRecentPlaybackFile.getString("id");
+                String longFilePath = loadRecentPlaybackFile.getString("filePath");
+                //store to arrays to set recent playback buttons text and function
+                //shortFileNames[currentFileNameToDraw] = shortFileName;
+                //longFilePaths[currentFileNameToDraw] = longFilePath;
+                playbackMenuList.addItem(makeItem(shortFileName, Integer.toString(fileNumber), longFilePath));
+                //println(shortFileName);
+                currentFileNameToDraw++;
             }
-        } else {
-            println("PlaybackWidget: Found " + playbackHistoryFileExists); //playback History File Exists = false;
+            playbackMenuList.updateMenu();
+        } catch (NullPointerException e) {
+            println("PlaybackWidget: Playback history file not found.");
         }
     }
 }; //end Playback widget class
@@ -261,17 +161,6 @@ class W_playback extends Widget {
 //////////////////////////////////////
 // GLOBAL FUNCTIONS BELOW THIS LINE //
 //////////////////////////////////////
-//Activated when an item from the corresponding dropdown is selected
-void pbRecentRange(int n) {
-    println("Item " + (n+1) + " selected from Dropdown 1");
-    if(n==0) {
-        fileSelectTabsInt = 1;
-    } else {
-        fileSelectTabsInt = 10 * n;
-    }
-    rangePlaybackSelected = n;
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-}
 
 //Activated when user selects a file using the load playback file button
 void playbackSelectedWidgetButton(File selection) {
@@ -310,26 +199,15 @@ void playbackSelectedWidgetButton(File selection) {
             has_processed = false;
             process_input_file();
             println("+++GUI update process file has occurred");
-        }
-        catch(Exception e) {
+        } catch(Exception e) {
             isOldData = true;
             output("+++Error processing timestamps, are you using old data?");
         }
-        int numToResize = w_playback.playbackNumButtonsToDraw;
-        if (w_playback.playbackNumButtonsToDraw == 10) {
-            numToResize = 9;
-        }
-
-        for (int i = 0; i <= numToResize; i++) { //playbackNumButtonsToDraw
-            w_playback.selectRecentFileButtons[i].setPos(
-                w_playback.x + (w_playback.padding*4),
-                w_playback.y + int(i * (w_playback.h/10)) + w_playback.padding/10);
-            }
     }
 }
 
-//Activated when user selects a file using the recent file buttons
-void recentFileSelectedButton(String fullPath, String shortName) {
+//Activated when user selects a file using the recent file MenuList
+void loadRecentFileFromMenuList(String fullPath, String shortName) {
     //output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = fullPath;
     playbackData_ShortName = shortName;
@@ -365,16 +243,6 @@ void recentFileSelectedButton(String fullPath, String shortName) {
         isOldData = true;
         output("+++Error processing timestamps, are you using old data?");
     }
-    int numToResize = w_playback.playbackNumButtonsToDraw;
-    if (w_playback.playbackNumButtonsToDraw == 10) {
-        numToResize = 9;
-    }
-
-    for (int i = 0; i <= numToResize; i++) { //playbackNumButtonsToDraw
-        w_playback.selectRecentFileButtons[i].setPos(
-            w_playback.x + (w_playback.padding*4),
-            w_playback.y + int(i * (w_playback.h/10)) + w_playback.padding/10);
-        }
 }
 
 void processNewPlaybackFile() { //Also used in DataLogging.pde
@@ -497,21 +365,8 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         newHistoryFile.setJSONArray("playbackFileHistory", newHistoryFileArray);
         saveJSONObject(newHistoryFile, userPlaybackHistoryFile);
 
-        //set the dropdown menu array for range select
-        rangePlaybackStringList.append(rangeSelectStringArray[0]);
-
         //now the file exists!
         println("Playback history JSON has been made!");
         playbackHistoryFileExists = true;
     }
-
-    //make sure the dropdown list shows the correct ranges
-    //w_playback.maxRangePlaybackSelect = recentFilesArray.size()/10;
-    /*
-    if (newArraySize > oldArraySize && oldArraySize%10 >= 1) {
-        String itemToAdd = rangeSelectStringArray[maxRangePlaybackSelect];
-        cp5.get(ScrollableList.class, "pbRecentRange").clear();
-        cp5.get(ScrollableList.class, "pbRecentRange").addItem(itemToAdd, "pbRecentRange");
-    }
-    */
 }

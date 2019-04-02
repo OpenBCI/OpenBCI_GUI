@@ -62,7 +62,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     if(eegDataSource == DATASOURCE_PLAYBACKFILE){
         //Playback Widget_3
         w_playback = new W_playback(_this);
-        w_playback.setTitle("Playback");
+        w_playback.setTitle("Playback History");
         addWidget(w_playback, w);
     }
 
