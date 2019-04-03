@@ -16,6 +16,7 @@ class W_playback extends Widget {
     Button selectPlaybackFileButton;
     MenuList playbackMenuList;
     int currentActiveItem = -1;
+    int initialWidth = 0;
 
     String[] shortFileNames = new String[10];
     String[] longFilePaths = new String[10];
@@ -37,11 +38,13 @@ class W_playback extends Widget {
             navHeight - 6,
             "SELECT PLAYBACK FILE",
             fontInfo.buttonLabel_size);
-        //make a menulist
+        //make a MenuList
+        initialWidth = w - padding*2;
         cp5_playback = new ControlP5(pApplet);
-        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", w - padding*3, h - padding*2, p4);
+        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p4);
         playbackMenuList.setPosition(x + padding/2, y + 2);
-        playbackMenuList.setSize(w - padding*3, h - padding*2);
+        playbackMenuList.setSize(initialWidth, h - padding*2);
+        playbackMenuList.scrollerLength = 40;
         cp5_playback.get(MenuList.class, "playbackMenuList").setVisible(true);
         cp5_playback.setAutoDraw(false);
     }
@@ -67,7 +70,6 @@ class W_playback extends Widget {
             menuHasUpdated = true;
         }
         playbackMenuList.updateMenu();
-
     }
 
     void draw() {
@@ -100,14 +102,18 @@ class W_playback extends Widget {
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        cp5_playback.setGraphics(pApplet, 0, 0);
 
         //resize and position the playback file box and button
         selectPlaybackFileButton.setPos(x + w - selectPlaybackFileButton.but_dx - padding, y - navHeight + 2);
 
+        //playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p4);
+        //playbackMenuList.menu = createGraphics(initialWidth, h - padding*2);
         playbackMenuList.setPosition(x + padding/2, y + 2);
-        playbackMenuList.setSize(w - padding, h - padding*2);
+        playbackMenuList.setSize(w - padding*2, h - padding*2);
         //println("WIDTH " + w + " , of " + width);
         //println("Height " + h + " , of " + height);
+        refreshPlaybackList();
     } //end screen Resized
 
     void mousePressed() {

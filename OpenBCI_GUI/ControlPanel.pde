@@ -99,13 +99,7 @@ Button popOutWifiConfigButton;
 Button getChannel;
 Button setChannel;
 Button ovrChannel;
-// Button getPoll;
-// Button setPoll;
-// Button defaultBAUD;
-// Button highBAUD;
 Button autoscan;
-// Button autoconnectNoStartDefault;
-// Button autoconnectNoStartHigh;
 Button systemStatus;
 
 Button eraseCredentials;
@@ -259,15 +253,12 @@ public void controlEvent(ControlEvent theEvent) {
             set_channel_over(rcBox,setChannelInt);
             ovrChannel.wasPressed = false;
         }
-        //println("still goin off");
     }
 
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         if(theEvent.isFrom("playbackMenuList")) {
             Map m = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-            println("got a menu event from item" + ((MenuList)theEvent.getController()).getValue() + " : " + m);
-            //w_playback.currentActiveItem = m.get("subline");
-            //println(m.get("copy"));
+            //println("got a menu event from item " + ((MenuList)theEvent.getController()).getValue() + " : " + m);
             loadRecentFileFromMenuList(m.get("copy").toString(), m.get("headline").toString());
         }
     }
@@ -3206,7 +3197,7 @@ public class MenuList extends controlP5.Controller {
                 if (updateMenu) {
                     updateMenu();
                 }
-                if (inside()) {
+                if (isMouseOver()) {
                     // if(!drawHand){
                     //   cursor(HAND);
                     //   drawHand = true;

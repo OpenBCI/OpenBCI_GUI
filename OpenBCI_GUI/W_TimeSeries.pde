@@ -85,7 +85,7 @@ class W_timeSeries extends Widget {
             playbackWidgetHeight = 50.0;
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
-            pb_w = wF - ts_padding*4;
+            pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             //Make a new scrollbar
             scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
@@ -225,7 +225,7 @@ class W_timeSeries extends Widget {
             //Resize the playback slider if using playback mode
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
-            pb_w = wF - ts_padding*8;
+            pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
         }
@@ -735,6 +735,7 @@ class PlaybackScrollbar {
     Boolean indicatorAtStart; //true means the indicator is at index 0
     int clearBufferThreshold = 5;
     float ps_Padding = 50.0; //used to make room for skip to start button
+    String currentTimeToDisplay = "";
 
     PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
         swidth = sw;
@@ -810,11 +811,6 @@ class PlaybackScrollbar {
             }
             //Set the new position of playback indicator using mapped value
             newspos = updatePos();
-
-            //Print current position to bottom of GUI
-            output("Time: " + getCurrentTimeStamp()
-            + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
-            + " seconds" );
         }
         if (abs(newspos - spos) > 1) { //if the slider has been moved
             spos = spos + (newspos-spos); //update position
@@ -825,7 +821,7 @@ class PlaybackScrollbar {
             indicatorAtStart = false;
         }
 
-        if(mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
+        if (mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
             //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
             skipToStartButton.setIsActive(true);
             skipToStartButtonAction(); //skip to start
@@ -834,11 +830,15 @@ class PlaybackScrollbar {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
+        if (curTimestamp != null) {
+            currentTimeToDisplay = getCurrentTimeStamp();
+            int seconds = int(float(currentTableRowIndex)/getSampleRateSafe());
+        }
     } //end update loop for PlaybackScrollbar
 
     float constrain(float val, float minv, float maxv) {
         return min(max(val, minv), maxv);
-    } //end update loop
+    }
 
     //checks if mouse is over the playback scrollbar
     boolean overEvent() {
@@ -871,6 +871,14 @@ class PlaybackScrollbar {
         }
         //draws playback position indicator
         rect(spos, ypos, sheight/2, sheight);
+
+        if (!currentTimeToDisplay.equals(null)) {
+            int fontSize = 17;
+            textFont(p2, fontSize);
+            fill(0);
+            float tw = textWidth(currentTimeToDisplay);
+            text(currentTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
+        }
 
         popStyle();
     }

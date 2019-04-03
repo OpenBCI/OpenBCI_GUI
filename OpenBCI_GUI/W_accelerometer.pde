@@ -56,7 +56,6 @@ class W_accelerometer extends Widget {
     boolean OBCI_inited= true;
     private boolean visible = true;
     private boolean updating = true;
-    boolean accelInitHasOccured = false;
     boolean accelerometerModeOn = true;
     Button accelModeButton;
 
