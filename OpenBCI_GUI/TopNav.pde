@@ -745,6 +745,9 @@ class configSelector {
     boolean isVisible;
     ArrayList<Button> configOptions;
     int configHeight = 0;
+    color newGreen = color(114,204,171);
+    color expertPurple = color(188, 139, 201);
+    color cautionRed = color(214,100,100);
 
     configSelector() {
         w = 120;
@@ -818,7 +821,20 @@ class configSelector {
                 if (configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()) {
                     int configSelected = i;
                     configOptions.get(i).setIsActive(false);
-                    if (configSelected == 0) { //If save button is pressed..
+                    if (configSelected == 0) { //If expert mode toggle button is pressed...
+                        if (configOptions.get(0).getButtonText().equals("Expert Mode Off")) {
+                            configOptions.get(0).setString("Expert Mode On");
+                            configOptions.get(0).setColorNotPressed(expertPurple);
+                            println("TopNav: Expert Mode On");
+                            expertModeToggle = true;
+                        } else {
+                            configOptions.get(0).setString("Expert Mode Off");
+                            configOptions.get(0).setColorNotPressed(newGreen);
+                            println("TopNav: Expert Mode Off");
+                            expertModeToggle = false;
+                        }
+
+                    } else if (configSelected == 1) { //If save button is pressed..
                         String userSettingsFileToSave = null;
                         switch(eegDataSource) {
                             case DATASOURCE_CYTON:
@@ -841,7 +857,7 @@ class configSelector {
                             saveSettingsDialogName = null;
                         }
                         toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 1) {
+                    } else if (configSelected == 2) {
                         //Select file to load from dialog box
                         if (loadSettingsDialogName == null) {
                             selectInput("Load a custom settings file from JSON:", "loadConfigFile");
@@ -850,7 +866,7 @@ class configSelector {
                             println("loadSettingsFileName = " + loadSettingsDialogName);
                         }
                         toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 2) {
+                    } else if (configSelected == 3) {
                         //Revert GUI to default settings that were flashed on system start!
                         String defaultSettingsFileToLoad = null;
                         switch(eegDataSource) {
@@ -885,15 +901,15 @@ class configSelector {
                             outputError("Default Settings not found.");
                         }
                         toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 3) {
+                    } else if (configSelected == 4) {
                         clearAllSettingsPressed = true;
                         //expand the height of the dropdown
                         h = margin*(configOptions.size()+2) + b_h*(configOptions.size()+1);
-                    } else if (configSelected == 4) {
+                    } else if (configSelected == 5) {
                         //Do nothing because the user clicked Are You Sure?->No
                         clearAllSettingsPressed = false;
                         toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 5) {
+                    } else if (configSelected == 6) {
                         //User has selected Are You Sure?->Yes
                         //Delete only specified files in the Settings Folder
                         String[] filesToDelete = {
@@ -963,37 +979,44 @@ class configSelector {
     }
 
     void addConfigButtons() {
-
-        //FIRST ROW
-
-        //setup button 0 -- Save Custom Settings
+        //Customize initial button appearance here
+        //setup button 0 -- Expert Mode Toggle Button
         int buttonNumber = 0;
-        Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
+        Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Expert Mode Off");
+        tempConfigButton.setFont(p5, 12);
+        tempConfigButton.setColorNotPressed(newGreen);
+        tempConfigButton.setFontColorNotActive(color(0));
+        tempConfigButton.setHelpText("Expert Mode enables advanced keyboard shortcuts and access to all GUI features");
+        configOptions.add(tempConfigButton);
+
+        //setup button 1 -- Save Custom Settings
+        buttonNumber++;
+        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
-        //setup button 1 -- Load Custom Settings
+        //setup button 2 -- Load Custom Settings
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
-        //setup button 2 -- Default Settings
+        //setup button 3 -- Default Settings
         buttonNumber++;
         //set the height of the Settings dropdown
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
-        //setup button 3 -- Clear All Settings
+        //setup button 4 -- Clear All Settings
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
         tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setColorNotPressed(color(214,100,100));
+        tempConfigButton.setColorNotPressed(cautionRed);
         tempConfigButton.setFontColorNotActive(color(255));
         configOptions.add(tempConfigButton);
 
-        //setup button 4 -- Are You Sure? No
+        //setup button 5 -- Are You Sure? No
         buttonNumber++;
         //leave space for "Are You Sure?"
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "No");
@@ -1001,7 +1024,7 @@ class configSelector {
         configOptions.add(tempConfigButton);
 
 
-        //setup button 5 -- Are You Sure? Yes
+        //setup button 6 -- Are You Sure? Yes
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
         tempConfigButton.setFont(p5, 12);

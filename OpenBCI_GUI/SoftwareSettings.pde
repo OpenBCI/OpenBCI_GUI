@@ -3,13 +3,13 @@
 //                       This sketch saves and loads the following User Settings:
 //                       -- All Time Series widget settings in Live, Playback, and Synthetic modes
 //                       -- All FFT widget settings
-//                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode
+//                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
 //                       -- Analog Read, Head Plot, EMG, and Focus
 //                       -- Widget/Container Pairs
-
+//
 //                       Created: Richard Waltman - May/June 2018
-
+//
 //    -- Start System first!
 //    -- Lowercase 'n' to Save
 //    -- Capital 'N' to Load
@@ -19,9 +19,22 @@
 //        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
 //    -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
 //    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
+//
+//      Tips on adding a new setting:
+//      -- figure out if the setting is Global, in an existing widget, or in a new class or widget
+//      -- read the comments
+//      -- once you find the right place to add your setting, you can copy the surrounding style
+//      -- uses JSON keys
+//      -- Example: Expert Mode is a global boolean, so we include it under kJSONKeySettings
+//      -- We use one variable to load from JSON: loadExpertModeToggle
+//      -- And another variable to use functionally and globally: expertModeToggle
+//
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////
+//      Global variables       //
+/////////////////////////////////
 JSONObject saveSettingsJSONData;
 JSONObject loadSettingsJSONData;
 
@@ -160,12 +173,14 @@ int nwSerialFilter1Load;
 //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
 int slnchan;
 int numChanloaded;
-Boolean chanNumError = false;
+boolean chanNumError = false;
 int numLoadedWidgets;
 String [] loadedWidgetsArray;
 int loadFramerate;
 int loadDatasource;
-Boolean dataSourceError = false;
+boolean dataSourceError = false;
+//used globally to track and determine if expertMode is on or off
+boolean expertModeToggle = false;
 
 ////////////////////////////////////////////////////////////////
 //               Init GUI Software Settings                   //
@@ -320,6 +335,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
     }
     //Make a second JSON object within our JSONArray to store Global settings for the GUI
     JSONObject saveGlobalSettings = new JSONObject();
+    saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
     saveGlobalSettings.setInt("Current Layout", currentLayout);
     saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
     saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
@@ -555,6 +571,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     loadNotchSetting = loadGlobalSettings.getInt("Notch");
     loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
     loadFramerate = loadGlobalSettings.getInt("Framerate");
+    boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
     loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
     loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
     Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
@@ -573,6 +590,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
         "Default Notch: " + loadNotchSetting, //default notch
         "Default BP: " + loadBandpassSetting, //default bp
         "Default Framerate: " + loadFramerate, //default framerate
+        "Expert Mode: " + loadExpertModeToggle,
         "TS Vert Scale: " + loadTimeSeriesVertScale,
         "TS Horiz Scale: " + loadTimeSeriesHorizScale,
         "Analog Vert Scale: " + loadAnalogReadVertScale,
@@ -771,6 +789,19 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     //Apply Board Mode to Cyton Only
     if (eegDataSource == DATASOURCE_CYTON) {
         applyBoardMode();
+    }
+
+    //Apply Expert Mode toggle
+    if (loadExpertModeToggle) {
+        topNav.configSelector.configOptions.get(0).setString("Expert Mode On");
+        topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.expertPurple);
+        println("LoadGUISettings: Expert Mode On");
+        expertModeToggle = true;
+    } else {
+        topNav.configSelector.configOptions.get(0).setString("Expert Mode Off");
+        topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
+        println("LoadGUISettings: Expert Mode Off");
+        expertModeToggle = false;
     }
 
     //Apply Framerate

@@ -22,10 +22,12 @@ void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
-            parseKey(key);
-        } else {
-            parseKeycode(keyCode);
+        if (expertModeToggle) {
+            if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
+                parseKey(key);
+            } else {
+                parseKeycode(keyCode);
+            }
         }
     }
 
@@ -812,6 +814,10 @@ class Button {
             currentColor = color_notPressed;
         }
         return currentColor;
+    }
+
+    public String getButtonText() {
+        return but_txt;
     }
 
     public void setCurrentColor(color _color){
