@@ -2692,7 +2692,7 @@ class RecentPlaybackBox {
 
             playbackHistoryFileExists = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
             playbackHistoryFileExists = false;
         }

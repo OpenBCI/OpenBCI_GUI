@@ -9,6 +9,7 @@
 
 import java.awt.Desktop;
 import java.net.*;
+import java.nio.file.*;
 
 int navBarHeight = 32;
 TopNav topNav;
@@ -220,6 +221,7 @@ class TopNav {
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             layoutSelector.update();
             tutorialSelector.update();
+            configSelector.update();
         }
     }
 
@@ -739,9 +741,10 @@ class LayoutSelector {
 
 class configSelector {
     int x, y, w, h, margin, b_w, b_h;
+    boolean clearAllSettingsPressed;
     boolean isVisible;
-
-    ArrayList<Button> configOptions; //
+    ArrayList<Button> configOptions;
+    int configHeight = 0;
 
     configSelector() {
         w = 120;
@@ -750,7 +753,7 @@ class configSelector {
         margin = 6;
         b_w = w - margin*2;
         b_h = 22;
-        h = margin*3 + b_h*2;
+        h = margin*3 + b_h;
 
         isVisible = false;
 
@@ -766,16 +769,22 @@ class configSelector {
             pushStyle();
 
             stroke(bgColor);
-            // fill(229); //bg
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
-            for (int i = 0; i < configOptions.size(); i++) {
+            for (int i = 0; i < configOptions.size()-2; i++) {
                 configOptions.get(i).draw();
+            }
+            if (clearAllSettingsPressed) {
+                int fontSize = 16;
+                textFont(p2, fontSize);
+                fill(255);
+                text("Are You Sure?", x + margin, y + margin*(configOptions.size()-2) + b_h*(configOptions.size()-1));
+                configOptions.get(configOptions.size()-2).draw();
+                configOptions.get(configOptions.size()-1).draw();
             }
 
             fill(57, 128, 204);
-            // fill(177, 184, 193);
             noStroke();
             rect(x+w-(topNav.configButton.but_dx-1), y, (topNav.configButton.but_dx-1), 1);
 
@@ -803,6 +812,7 @@ class configSelector {
         if (isVisible) {
             if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.configButton.isMouseHere()) {
                 toggleVisibility();
+                clearAllSettingsPressed = false;
             }
             for (int i = 0; i < configOptions.size(); i++) {
                 if (configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()) {
@@ -830,6 +840,7 @@ class configSelector {
                             println("saveSettingsFileName = " + saveSettingsDialogName);
                             saveSettingsDialogName = null;
                         }
+                        toggleVisibility(); //shut configSelector if something is selected
                     } else if (configSelected == 1) {
                         //Select file to load from dialog box
                         if (loadSettingsDialogName == null) {
@@ -838,6 +849,7 @@ class configSelector {
                         } else {
                             println("loadSettingsFileName = " + loadSettingsDialogName);
                         }
+                        toggleVisibility(); //shut configSelector if something is selected
                     } else if (configSelected == 2) {
                         //Revert GUI to default settings that were flashed on system start!
                         String defaultSettingsFileToLoad = null;
@@ -855,12 +867,64 @@ class configSelector {
                                 defaultSettingsFileToLoad = syntheticDefaultSettingsFile;
                                 break;
                         }
-                        loadGUISettings(defaultSettingsFileToLoad);
-                        outputSuccess("Default Settings Loaded!");
+
+                        //This method is more accurate than file.exists()
+                        boolean defaultSettingsFileExists;
+                        try {
+                            //Load all saved User Settings from a JSON file to see if it exists
+                            JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToLoad);
+                            defaultSettingsFileExists = true;
+                        } catch (Exception e) {
+                            defaultSettingsFileExists = false;
+                        }
+                        if (defaultSettingsFileExists) {
+                            loadGUISettings(defaultSettingsFileToLoad);
+                            outputSuccess("Default Settings Loaded!");
+                        } else {
+                            //If the file doesn't exist, the user has likely cleared all settings
+                            outputError("Default Settings not found.");
+                        }
+                        toggleVisibility(); //shut configSelector if something is selected
+                    } else if (configSelected == 3) {
+                        clearAllSettingsPressed = true;
+                        //expand the height of the dropdown
+                        h = margin*(configOptions.size()+2) + b_h*(configOptions.size()+1);
+                    } else if (configSelected == 4) {
+                        //Do nothing because the user clicked Are You Sure?->No
+                        clearAllSettingsPressed = false;
+                        toggleVisibility(); //shut configSelector if something is selected
+                    } else if (configSelected == 5) {
+                        //User has selected Are You Sure?->Yes
+                        //Delete only specified files in the Settings Folder
+                        String[] filesToDelete = {
+                            cytonUserSettingsFile,
+                            ganglionUserSettingsFile,
+                            playbackUserSettingsFile,
+                            syntheticUserSettingsFile,
+                            userPlaybackHistoryFile
+                        };
+                        int successfulDeletions = 0;
+                        for (int j = 0; j < filesToDelete.length; j++) {
+                            String f = new File(sketchPath()+System.getProperty("file.separator")+filesToDelete[j]).getAbsolutePath();
+                            try {
+                                Files.deleteIfExists(Paths.get(f));
+                                successfulDeletions++;
+                            } catch(NoSuchFileException e) {
+                                println("No such file/directory exists");
+                            } catch(DirectoryNotEmptyException e) {
+                                println("Directory is not empty.");
+                            } catch(IOException e) {
+                                println("Invalid permissions.");
+                            }
+                        }
+                        if (filesToDelete.length == successfulDeletions) {
+                            outputSuccess("Successfully deleted all settings files!");
+                        }
+                        clearAllSettingsPressed = false;
+                        toggleVisibility(); //shut configSelector if something is selected
                     }
-                    toggleVisibility(); //shut configSelector if something is selected
-                }
-            }
+                } //end case mouseHere && Active
+            } //end for all configOptions loop
         }
     }
 
@@ -884,6 +948,9 @@ class configSelector {
                         wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
                     }
                 }
+                //resize the height of the settings dropdown
+                h = margin*(configOptions.size()-4) + b_h*(configOptions.size()-1);
+                clearAllSettingsPressed = false;
             } else {
                 //the very convoluted way of unlocking all controllers of a single controlP5 instance...
                 for (int i = 0; i < wm.widgets.size(); i++) {
@@ -899,23 +966,44 @@ class configSelector {
 
         //FIRST ROW
 
-        //setup button 1 -- Save Custom Settings
+        //setup button 0 -- Save Custom Settings
         int buttonNumber = 0;
         Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
-        //setup button 2 -- Load Custom Settings
-        buttonNumber = 1;
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+        //setup button 1 -- Load Custom Settings
+        buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
-        //setup button 3 -- Default Settings
-        buttonNumber = 2;
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+        //setup button 2 -- Default Settings
+        buttonNumber++;
+        //set the height of the Settings dropdown
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
+        tempConfigButton.setFont(p5, 12);
+        configOptions.add(tempConfigButton);
+
+        //setup button 3 -- Clear All Settings
+        buttonNumber++;
+        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
+        tempConfigButton.setFont(p5, 12);
+        tempConfigButton.setColorNotPressed(color(214,100,100));
+        tempConfigButton.setFontColorNotActive(color(255));
+        configOptions.add(tempConfigButton);
+
+        //setup button 4 -- Are You Sure? No
+        buttonNumber++;
+        //leave space for "Are You Sure?"
+        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "No");
+        tempConfigButton.setFont(p5, 12);
+        configOptions.add(tempConfigButton);
+
+
+        //setup button 5 -- Are You Sure? Yes
+        buttonNumber++;
+        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
     }

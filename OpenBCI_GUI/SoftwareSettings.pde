@@ -175,8 +175,6 @@ Boolean dataSourceError = false;
 void initSoftwareSettings() {
     String defaultSettingsFileToSave = null;
     boolean defaultSettingsFileExists;
-    boolean defaultFileDataSourceError;
-    boolean defaultFileChanNumError;
     int defaultNumChanLoaded = 0;
     int defaultLoadedDataSource = 0;
     switch(eegDataSource) {
@@ -193,6 +191,7 @@ void initSoftwareSettings() {
             defaultSettingsFileToSave = syntheticDefaultSettingsFile;
             break;
     }
+    //This method is more accurate than file.exists()
     try {
         //Load all saved User Settings from a JSON file if it exists
         JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToSave);
@@ -205,14 +204,16 @@ void initSoftwareSettings() {
         defaultSettingsFileExists = true;
     } catch (Exception e) {
         defaultSettingsFileExists = false;
-        println(e);
+        //println(e);
     }
     if ( //Take a snapshot of the default GUI settings if needed
         (!defaultSettingsFileExists) ||
         (defaultLoadedDataSource != eegDataSource) ||
         (defaultNumChanLoaded != slnchan)) {
-            println("Default user settings file saved!");
+            println("Saving Default Settings to file!");
             saveGUISettings(defaultSettingsFileToSave);
+    } else {
+        println("Default Settings file already exists!");
     }
 
     //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.

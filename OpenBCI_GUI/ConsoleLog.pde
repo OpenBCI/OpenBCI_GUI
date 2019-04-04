@@ -244,7 +244,6 @@ class CustomOutputStream extends PrintStream {
         data = new StringList();
 
         // create log file
-        // TODO: Figure out clean way to create file on all platforms
         try {
             File consoleDataFile = new File(sketchPath()+fileDirectory);
             if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();

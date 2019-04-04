@@ -726,6 +726,10 @@ class Button {
         buttonTextSize = _newTextSize;
     }
 
+    public void setFontColorNotActive (color _color) {
+        textColorNotActive = _color;
+    }
+
     public void setCircleButton(boolean _isCircleButton){
         isCircleButton = _isCircleButton;
         if(isCircleButton){

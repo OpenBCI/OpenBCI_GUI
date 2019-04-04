@@ -873,6 +873,7 @@ class PlaybackScrollbar {
         //draws playback position indicator
         rect(spos, ypos, sheight/2, sheight);
 
+        //draw current timestamp and X of Y Seconds above scrollbar
         if (!currentAbsoluteTimeToDisplay.equals(null)) {
             int fontSize = 17;
             textFont(p2, fontSize);
