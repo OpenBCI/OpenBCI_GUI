@@ -423,7 +423,6 @@ class HardwareSettingsController{
                 // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
                 // writeImpedanceSettings(i);
                 initImpWrite(_channelNumber, 'p', '1');
-                //initImpWrite
             } else {
                 // impedanceCheckValues[i][0] = '0';
                 // channelSettingButtons[i][0].setColorNotPressed(color(255));

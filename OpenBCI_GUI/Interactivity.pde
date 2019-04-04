@@ -22,7 +22,7 @@ void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if (expertModeToggle) {
+        if (expertModeToggle) { //Check if Expert Mode is On
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);
             } else {
@@ -942,22 +942,6 @@ class Button {
             popStyle();
         }
 
-        //This could be utilized at a later date
-        //cursor = funny looking finger thing when hovering over buttons...
-        // if (true) {
-        //   if (!isMouseHere() && drawHand) {
-        //     cursor(ARROW);
-        //     drawHand = false;
-        //     //verbosePrint("don't draw hand");
-        //   }
-        //   //if cursor is over button change cursor icon to hand!
-        //   if (isMouseHere() && !drawHand) {
-        //     cursor(HAND);
-        //     drawHand = true;
-        //     //verbosePrint("draw hand");
-        //   }
-        // }
-
         popStyle();
     } //end of button draw
 };
@@ -1057,8 +1041,8 @@ boolean isNetworkingTextActive(){
             }
         }
     }
-    // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
-
+    //loop through networking textfields and find out if any of the are active
+    // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
     // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
     println("Networking Text Field Active? " + isAFieldActive);
     return isAFieldActive; //if not, return false
