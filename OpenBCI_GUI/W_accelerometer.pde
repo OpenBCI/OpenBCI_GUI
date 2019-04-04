@@ -598,18 +598,23 @@ class AccelerometerBar{
         //println("UPDATING ACCEL GRAPH");
         int accelBuffDiff = accelBuffSize - nPoints;
         if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
-            for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-                GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
-                GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
-                GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
-                accelPointsX.set(i-accelBuffDiff, tempPointX);
-                accelPointsY.set(i-accelBuffDiff, tempPointY);
-                accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+            try {
+                for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
+                    GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
+                    GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
+                    GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
+                    accelPointsX.set(i-accelBuffDiff, tempPointX);
+                    accelPointsY.set(i-accelBuffDiff, tempPointY);
+                    accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+                }
+                //set points in three layers on the same plot, just like old graph
+                plot.setPoints(accelPointsX, "layer 1");
+                plot.setPoints(accelPointsY, "layer 2");
+                plot.setPoints(accelPointsZ, "layer 3");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //catch exception that occurs when loading synthetic mode after Ganglion+WiFi
+                //println("SetGPlotPoints: ArrayIndexOutOfBoundsException");
             }
-            //set points in three layers on the same plot, just like old graph
-            plot.setPoints(accelPointsX, "layer 1");
-            plot.setPoints(accelPointsY, "layer 2");
-            plot.setPoints(accelPointsZ, "layer 3");
         }
     }
 
