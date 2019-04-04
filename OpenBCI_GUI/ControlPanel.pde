@@ -2615,21 +2615,19 @@ class RecentPlaybackBox {
             try {
                 cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
                 getRecentPlaybackFiles();
-                String[] temp = shortFileNames.array();
-                String[] temp2 = {};
-                //remove null array elements and append to new temp array
-                for (String element : temp) {
-                    if (element != null) temp2 = append(temp2, element);
+                String[] temp = {};
+                //remove null array elements and append to new temporary array
+                for (String element : shortFileNames.array()) {
+                    if (element != null) temp = append(temp, element);
                 }
-                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp2);
+                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
                 cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, shortFileNames.size() * 24);
             } catch (NullPointerException e) {
                 println("RecentPlaybackBox: NullPointerException");
-                e.printStackTrace();
             }
         }
 
-        //IDEAL: This can be update to use controlEvent in Control Panel for theEvent.isFrom("recentFiles")
+        //TODO: This can be updated to use controlEvent in ControlPanel.pde for theEvent.isFrom("recentFiles")
         //SUBPAR: Keep updating to see if User has selected a new recent playback file
         newFilePickedShort = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
         if (newFilePickedShort.equals(filePickedShort) == false) {

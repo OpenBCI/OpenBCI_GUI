@@ -735,7 +735,8 @@ class PlaybackScrollbar {
     Boolean indicatorAtStart; //true means the indicator is at index 0
     int clearBufferThreshold = 5;
     float ps_Padding = 50.0; //used to make room for skip to start button
-    String currentTimeToDisplay = "";
+    String currentAbsoluteTimeToDisplay = "";
+    String currentTimeInSecondsToDisplay = "";
 
     PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
         swidth = sw;
@@ -831,8 +832,8 @@ class PlaybackScrollbar {
         }
 
         if (curTimestamp != null) {
-            currentTimeToDisplay = getCurrentTimeStamp();
-            int seconds = int(float(currentTableRowIndex)/getSampleRateSafe());
+            currentAbsoluteTimeToDisplay = getCurrentTimeStamp();
+            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " s";
         }
     } //end update loop for PlaybackScrollbar
 
@@ -872,12 +873,13 @@ class PlaybackScrollbar {
         //draws playback position indicator
         rect(spos, ypos, sheight/2, sheight);
 
-        if (!currentTimeToDisplay.equals(null)) {
+        if (!currentAbsoluteTimeToDisplay.equals(null)) {
             int fontSize = 17;
             textFont(p2, fontSize);
             fill(0);
-            float tw = textWidth(currentTimeToDisplay);
-            text(currentTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
+            float tw = textWidth(currentAbsoluteTimeToDisplay);
+            text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
+            text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
         }
 
         popStyle();

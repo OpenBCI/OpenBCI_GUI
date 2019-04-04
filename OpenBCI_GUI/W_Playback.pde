@@ -1,7 +1,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
-//    W_playback.pde (ie "Playback")
+//    W_playback.pde (ie "Playback History")
 //
 //    Allow user playback control from within GUI system and address #48 and #55 on Github
 //                       Created: Richard Waltman - August 2018
@@ -9,17 +9,11 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ControlP5 cp5_playback;
 class W_playback extends Widget {
-
     //allow access to dataProcessing
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
     Button selectPlaybackFileButton;
     MenuList playbackMenuList;
-    int currentActiveItem = -1;
-    int initialWidth = 0;
-
-    String[] shortFileNames = new String[10];
-    String[] longFilePaths = new String[10];
     //Used for spacing
     int padding = 10;
 
@@ -39,7 +33,7 @@ class W_playback extends Widget {
             "SELECT PLAYBACK FILE",
             fontInfo.buttonLabel_size);
         //make a MenuList
-        initialWidth = w - padding*2;
+        int initialWidth = w - padding*2;
         cp5_playback = new ControlP5(pApplet);
         playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p4);
         playbackMenuList.setPosition(x + padding/2, y + 2);
@@ -103,18 +97,15 @@ class W_playback extends Widget {
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
+        //**IMPORTANT FOR CP5**//
         //This makes the cp5 objects within the widget scale properly
         cp5_playback.setGraphics(pApplet, 0, 0);
 
         //resize and position the playback file box and button
         selectPlaybackFileButton.setPos(x + w - selectPlaybackFileButton.but_dx - padding, y - navHeight + 2);
 
-        //playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p4);
-        //playbackMenuList.menu = createGraphics(initialWidth, h - padding*2);
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);
-        //println("WIDTH " + w + " , of " + width);
-        //println("Height " + h + " , of " + height);
         refreshPlaybackList();
     } //end screen Resized
 
@@ -124,7 +115,6 @@ class W_playback extends Widget {
         //check if mouse is over the select playback file button
         if (selectPlaybackFileButton.isMouseHere()) {
             selectPlaybackFileButton.setIsActive(true);
-            //selectPlaybackFileButton.wasPressed = true;
         }
     } // end mouse Pressed
 
@@ -152,11 +142,8 @@ class W_playback extends Widget {
                 int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
                 String shortFileName = loadRecentPlaybackFile.getString("id");
                 String longFilePath = loadRecentPlaybackFile.getString("filePath");
-                //store to arrays to set recent playback buttons text and function
-                //shortFileNames[currentFileNameToDraw] = shortFileName;
-                //longFilePaths[currentFileNameToDraw] = longFilePath;
+                //add as an item in the MenuList
                 playbackMenuList.addItem(makeItem(shortFileName, Integer.toString(fileNumber), longFilePath));
-                //println(shortFileName);
                 currentFileNameToDraw++;
             }
             playbackMenuList.updateMenu();
@@ -288,14 +275,12 @@ void reinitializeCoreDataAndFFTBuffer() {
 }
 
 void savePlaybackFileToHistory(String fileNameToAdd) {
-
     int maxNumHistoryFiles = 36;
     if (playbackHistoryFileExists) {
         println("Found user playback history file!");
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-        //w_playback.oldArraySize = savePlaybackHistoryJSON.size();
-        println("ARRAYSIZE-Check1: " + int(recentFilesArray.size()));
+        //println("ARRAYSIZE-Check1: " + int(recentFilesArray.size()));
         //Recent file has recentFileNumber=1, and appears at the end of the JSON array
         //check if already in the list, if so, remove from the list
         for (int i = 0; i < recentFilesArray.size() - 1; i++) {
@@ -313,7 +298,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
             playbackFile.setString("filePath", playbackFile.getString("filePath"));
             recentFilesArray.setJSONObject(i, playbackFile);
         }
-        println("ARRAYSIZE-Check2: " + int(recentFilesArray.size()));
+        //println("ARRAYSIZE-Check2: " + int(recentFilesArray.size()));
         //append selected playback file to position 1 at the end of the JSONArray
         JSONObject mostRecentFile = new JSONObject();
         mostRecentFile.setInt("recentFileNumber", 1);
@@ -327,9 +312,8 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
                 println("ARRAY INDEX " + i + " REMOVED----");
             }
         }
-        println("ARRAYSIZE-Check3: " + int(recentFilesArray.size()));
+        //println("ARRAYSIZE-Check3: " + int(recentFilesArray.size()));
         //printArray(recentFilesArray);
-        //newPlaybackArraySize = recentFilesArray.size();
 
         //save the JSON array and file
         savePlaybackHistoryJSON.setJSONArray("playbackFileHistory", recentFilesArray);
