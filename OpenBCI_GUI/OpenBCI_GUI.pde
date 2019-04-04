@@ -1143,14 +1143,15 @@ void haltSystem() {
     if (eegDataSource == DATASOURCE_CYTON) {
         closeLogFile();  //close log file
         cyton.closeSDandPort();
-    }
-    if (eegDataSource == DATASOURCE_GANGLION) {
+    } else if (eegDataSource == DATASOURCE_GANGLION) {
         if(ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
         closeLogFile();  //close log file
         ganglion.closePort();
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
     }
     systemMode = SYSTEMMODE_PREINIT;
     hub.changeState(STATE_NOCOM);

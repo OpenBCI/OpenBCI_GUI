@@ -73,13 +73,14 @@ void parseKey(char val) {
             drawContainers = !drawContainers;
             break;
         case '<':
-            w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
-            // drawTimeSeries = !drawTimeSeries;
+            //w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
             break;
         case '>':
+            /*
             if(eegDataSource == DATASOURCE_GANGLION){
                 ganglion.enterBootloaderMode();
             }
+            */
             break;
         case '{':
             if(colorScheme == COLOR_SCHEME_DEFAULT){

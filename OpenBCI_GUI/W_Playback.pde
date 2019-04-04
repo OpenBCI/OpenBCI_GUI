@@ -102,6 +102,8 @@ class W_playback extends Widget {
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+        //This makes the cp5 objects within the widget scale properly
         cp5_playback.setGraphics(pApplet, 0, 0);
 
         //resize and position the playback file box and button
@@ -145,7 +147,7 @@ class W_playback extends Widget {
             JSONArray loadPlaybackHistoryJSONArray = loadPlaybackHistoryJSON.getJSONArray("playbackFileHistory");
             //println("Array Size:" + loadPlaybackHistoryJSONArray.size());
             int currentFileNameToDraw = 0;
-            for (int i = 0; i < loadPlaybackHistoryJSONArray.size(); i++) { //go through array in reverse since using append
+            for (int i = loadPlaybackHistoryJSONArray.size() - 1; i >= 0; i--) { //go through array in reverse since using append
                 JSONObject loadRecentPlaybackFile = loadPlaybackHistoryJSONArray.getJSONObject(i);
                 int fileNumber = loadRecentPlaybackFile.getInt("recentFileNumber");
                 String shortFileName = loadRecentPlaybackFile.getString("id");
@@ -168,52 +170,18 @@ class W_playback extends Widget {
 // GLOBAL FUNCTIONS BELOW THIS LINE //
 //////////////////////////////////////
 
-//Activated when user selects a file using the load playback file button
+//Activated when user selects a file using the "Select Playback File" button in PlaybackHistory
 void playbackSelectedWidgetButton(File selection) {
     if (selection == null) {
         println("W_Playback: playbackSelected: Window was closed or the user hit cancel.");
     } else {
         println("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
-        //output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
-        playbackData_fname = selection.getAbsolutePath();
-        playbackData_ShortName = selection.getName();
-
-        //If a new file was selected, process it so we can set variables first.
-        processNewPlaybackFile();
-
-        //Determine the number of channels and updateToNChan()
-        determineNumChanFromFile(playbackData_table);
-
-        //Print success message
-        outputSuccess("You have selected \""
-        + selection.getName() + "\" for playback. "
-        + str(nchan) + " channels found.");
-
-        String nameToAdd = selection.getName();
-        //add playback file that was processed to the JSON history
-        savePlaybackFileToHistory(nameToAdd);
-
-        //Tell TS widget that the number of channel bars needs to be updated
-        w_timeSeries.updateNumberOfChannelBars = true;
-
-        //Reinitialize core data, EMG, FFT, and Headplot number of channels
-        reinitializeCoreDataAndFFTBuffer();
-
-        //Process the file again to fix issue. This makes indexes for playback slider load properly
-        try {
-            hasRepeated = false;
-            has_processed = false;
-            process_input_file();
-            println("+++GUI update process file has occurred");
-        } catch(Exception e) {
-            isOldData = true;
-            output("+++Error processing timestamps, are you using old data?");
-        }
+        loadRecentPlaybackHistoryFile(selection.getAbsolutePath(), selection.getName());
     }
 }
 
 //Activated when user selects a file using the recent file MenuList
-void loadRecentFileFromMenuList(String fullPath, String shortName) {
+void loadRecentPlaybackHistoryFile (String fullPath, String shortName) {
     //output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = fullPath;
     playbackData_ShortName = shortName;
@@ -237,6 +205,9 @@ void loadRecentFileFromMenuList(String fullPath, String shortName) {
 
     //Reinitialize core data, EMG, FFT, and Headplot number of channels
     reinitializeCoreDataAndFFTBuffer();
+
+    //Update the MenuList in the PlaybackHistory Widget
+    w_playback.refreshPlaybackList();
 
     //Process the file again to fix issue. This makes indexes for playback slider load properly
     try {
@@ -318,34 +289,45 @@ void reinitializeCoreDataAndFFTBuffer() {
 
 void savePlaybackFileToHistory(String fileNameToAdd) {
 
-    int maxNumHistoryFiles = 100;
+    int maxNumHistoryFiles = 36;
     if (playbackHistoryFileExists) {
-        println("Found user playback file!");
-        //do this if the file exists
+        println("Found user playback history file!");
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
         //w_playback.oldArraySize = savePlaybackHistoryJSON.size();
-
-        //move all current entries +1
-        for (int i = 0; i < recentFilesArray.size(); i++) {
+        println("ARRAYSIZE-Check1: " + int(recentFilesArray.size()));
+        //Recent file has recentFileNumber=1, and appears at the end of the JSON array
+        //check if already in the list, if so, remove from the list
+        for (int i = 0; i < recentFilesArray.size() - 1; i++) {
             JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-            playbackFile.setInt("recentFileNumber", recentFilesArray.size()-(i-1));
+            if (playbackFile.getString("id").equals(fileNameToAdd)) {
+                recentFilesArray.remove(i);
+            }
+        }
+        //next, increment fileNumber of all current entries +1
+        for (int i = 0; i <= recentFilesArray.size() - 1; i++) {
+            JSONObject playbackFile = recentFilesArray.getJSONObject(i);
+            playbackFile.setInt("recentFileNumber", recentFilesArray.size()-i+1);
+            //println(recentFilesArray.size()-i+1);
             playbackFile.setString("id", playbackFile.getString("id"));
             playbackFile.setString("filePath", playbackFile.getString("filePath"));
             recentFilesArray.setJSONObject(i, playbackFile);
         }
-        //save selected playback file to position 1 in recent file history
+        println("ARRAYSIZE-Check2: " + int(recentFilesArray.size()));
+        //append selected playback file to position 1 at the end of the JSONArray
         JSONObject mostRecentFile = new JSONObject();
         mostRecentFile.setInt("recentFileNumber", 1);
         mostRecentFile.setString("id", playbackData_ShortName);
         mostRecentFile.setString("filePath", playbackData_fname);
         recentFilesArray.append(mostRecentFile);
-        //remove entries greater than 100
+        //remove entries greater than max num files
         if (recentFilesArray.size() >= maxNumHistoryFiles) {
-            for (int i = 0; i <= recentFilesArray.size()-100; i++) {
+            for (int i = 0; i <= recentFilesArray.size()-maxNumHistoryFiles; i++) {
                 recentFilesArray.remove(i);
+                println("ARRAY INDEX " + i + " REMOVED----");
             }
         }
+        println("ARRAYSIZE-Check3: " + int(recentFilesArray.size()));
         //printArray(recentFilesArray);
         //newPlaybackArraySize = recentFilesArray.size();
 

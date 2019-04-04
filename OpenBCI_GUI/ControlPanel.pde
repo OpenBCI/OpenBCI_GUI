@@ -255,11 +255,12 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
+    //Check for event in the PlaybackHistory Widget MenuList
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         if(theEvent.isFrom("playbackMenuList")) {
             Map m = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
             //println("got a menu event from item " + ((MenuList)theEvent.getController()).getValue() + " : " + m);
-            loadRecentFileFromMenuList(m.get("copy").toString(), m.get("headline").toString());
+            loadRecentPlaybackHistoryFile(m.get("copy").toString(), m.get("headline").toString());
         }
     }
 }
@@ -2574,9 +2575,8 @@ class SyntheticChannelCountBox {
 
 class RecentPlaybackBox {
     int x, y, w, h, padding; //size and position
-    String[] previousFileNames = new String[1];
-    String[] shortFileNames = new String[1];
-    String[] longFilePaths = new String[1];
+    StringList shortFileNames = new StringList();
+    StringList longFilePaths = new StringList();
     String filePickedShort = "Select Recent Playback File";
     String newFilePickedShort = "";
 
@@ -2592,11 +2592,19 @@ class RecentPlaybackBox {
         cp5_controlPanel_dropdown = new ControlP5(ourApplet);
         getRecentPlaybackFiles();
         if (!playbackHistoryFileExists) {
-            shortFileNames[0] = "None";
+            shortFileNames.append("None");
         }
-        createDropdown("recentFiles", Arrays.asList(shortFileNames));
+
+        String[] temp = shortFileNames.array();
+        String[] temp2 = {};
+        //remove null array elements and append to new temp array
+        for (String element : temp) {
+            if (element != null) temp2 = append(temp2, element);
+        }
+        createDropdown("recentFiles", Arrays.asList(temp2));
         cp5_controlPanel_dropdown.setGraphics(ourApplet, 0,0);
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
+        cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp2.length + 1) * 24);
         cp5_controlPanel_dropdown.setAutoDraw(false);
     }
 
@@ -2604,26 +2612,38 @@ class RecentPlaybackBox {
     public void update() {
         //Update the dropdown list if it has not already been done
         if (!recentPlaybackFilesHaveUpdated) {
-            previousFileNames = shortFileNames;
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").removeItems(Arrays.asList(previousFileNames));
-            getRecentPlaybackFiles();
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2,(shortFileNames.length+1)*24);
+            try {
+                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
+                getRecentPlaybackFiles();
+                String[] temp = shortFileNames.array();
+                String[] temp2 = {};
+                //remove null array elements and append to new temp array
+                for (String element : temp) {
+                    if (element != null) temp2 = append(temp2, element);
+                }
+                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp2);
+                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, shortFileNames.size() * 24);
+            } catch (NullPointerException e) {
+                println("RecentPlaybackBox: NullPointerException");
+                e.printStackTrace();
+            }
         }
-        //Keep updating to see if User has selected a new recent playback file
+
+        //IDEAL: This can be update to use controlEvent in Control Panel for theEvent.isFrom("recentFiles")
+        //SUBPAR: Keep updating to see if User has selected a new recent playback file
         newFilePickedShort = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
         if (newFilePickedShort.equals(filePickedShort) == false) {
             if (newFilePickedShort.equals("None") == false) {
                 filePickedShort = newFilePickedShort;
                 int filePickedInt = -1;
                 //Find the corresponding array index
-                for (int i = 0; i < shortFileNames.length; i++) {
-                    if (filePickedShort.equals(shortFileNames[i]) == true) {
+                for (int i = 0; i < shortFileNames.size(); i++) {
+                    if (filePickedShort.equals(shortFileNames.get(i)) == true) {
                         filePickedInt = i;
                     }
                 }
                 //Load the playback file!
-                playbackFileSelectedCP(longFilePaths[filePickedInt], filePickedShort);
+                playbackFileSelectedCP(longFilePaths.get(filePickedInt), filePickedShort);
             }
         }
     }
@@ -2633,7 +2653,7 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight() - 2*padding);
+        rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight() - padding*2);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
@@ -2655,27 +2675,26 @@ class RecentPlaybackBox {
                 println("History Size = " + recentFilesArray.size());
                 numFilesToShow = recentFilesArray.size();
             }
-            shortFileNames = new String[numFilesToShow];
-            longFilePaths = new String[numFilesToShow];
-            for (int i = recentFilesArray.size() - 1; //minimum
-                i > recentFilesArray.size() - numFilesToShow - 1;  //maximum
-                i--) { //go through array in reverse since using append
-                        JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-                        int fileNumber = playbackFile.getInt("recentFileNumber");
-                        String shortFileName = playbackFile.getString("id");
-                        String longFilePath = playbackFile.getString("filePath");
-                        //store to arrays to set recent playback buttons text and function
-                        shortFileNames[fileNumber - 1] = shortFileName;
-                        longFilePaths[fileNumber - 1] = longFilePath;
-                        //println(shortFileName + " " + longFilePath);
-                        }
+            shortFileNames.clear();
+            longFilePaths.clear();
+            for (int i = numFilesToShow - 1; i >= 0; i--) {
+                //println(i);
+                JSONObject playbackFile = recentFilesArray.getJSONObject(i);
+                int fileNumber = playbackFile.getInt("recentFileNumber");
+                String shortFileName = playbackFile.getString("id");
+                String longFilePath = playbackFile.getString("filePath");
+                //store to arrays to set recent playback buttons text and function
+                shortFileNames.set(fileNumber, shortFileName);
+                longFilePaths.set(fileNumber,longFilePath);
+                //println(shortFileName + " " + longFilePath);
+            }
             //For debugging
             //println("OpenBCI_GUI::Control Panel: Playback history file found!!!");
             //printArray(shortFileNames);
 
             playbackHistoryFileExists = true;
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
             playbackHistoryFileExists = false;
         }
