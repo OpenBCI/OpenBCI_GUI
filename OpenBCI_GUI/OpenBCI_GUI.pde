@@ -1190,10 +1190,10 @@ void systemUpdate() { // for updating data values and variables
     win_y = height;
 
     helpWidget.update();
+    topNav.update();
     if (systemMode == SYSTEMMODE_PREINIT) {
         //updates while in system control panel before START SYSTEM
         controlPanel.update();
-        topNav.update();
 
         if (widthOfLastScreen != width || heightOfLastScreen != height) {
             topNav.screenHasBeenResized(width, height);

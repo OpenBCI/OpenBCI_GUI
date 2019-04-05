@@ -93,8 +93,12 @@ class TopNav {
         shopButton.setURL("http://shop.openbci.com/");
         shopButton.setFont(h3, 16);
 
-        updateGuiVersionButton = new Button(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
+        configButton = new Button(width - 70 - 3, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
+        configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
+        configButton.setFont(h4, 14);
+
         //Lookup and check the local GUI version against the latest Github release
+        updateGuiVersionButton = new Button(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
         try {
             loadGUIVersionData();
             //Print the message to the button help text that appears when mouse hovers over button
@@ -142,9 +146,6 @@ class TopNav {
         layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
         layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
         layoutButton.setFont(h4, 14);
-        configButton = new Button(width - 3 - 60 - 3 - 60 - 10, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
-        configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
-        configButton.setFont(h4, 14);
 
         updateSecondaryNavButtonsColor();
     }
@@ -159,6 +160,7 @@ class TopNav {
             shopButton.setColorNotPressed(color(255));
             tutorialsButton.setColorNotPressed(color(255));
             updateGuiVersionButton.setColorNotPressed(color(255));
+            configButton.setColorNotPressed(color(255));
 
             controlPanelCollapser.textColorNotActive = color(bgColor);
             fpsButton.textColorNotActive = color(bgColor);
@@ -168,6 +170,7 @@ class TopNav {
             shopButton.textColorNotActive = color(bgColor);
             tutorialsButton.textColorNotActive = color(bgColor);
             updateGuiVersionButton.textColorNotActive = color(bgColor);
+            configButton.textColorNotActive = color(bgColor);
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             controlPanelCollapser.setColorNotPressed(openbciBlue);
             fpsButton.setColorNotPressed(openbciBlue);
@@ -177,6 +180,7 @@ class TopNav {
             shopButton.setColorNotPressed(openbciBlue);
             tutorialsButton.setColorNotPressed(openbciBlue);
             updateGuiVersionButton.setColorNotPressed(openbciBlue);
+            configButton.setColorNotPressed(color(57, 128, 204));
 
             controlPanelCollapser.textColorNotActive = color(255);
             fpsButton.textColorNotActive = color(255);
@@ -186,6 +190,7 @@ class TopNav {
             shopButton.textColorNotActive = color(255);
             tutorialsButton.textColorNotActive = color(255);
             updateGuiVersionButton.textColorNotActive = color(255);
+            configButton.textColorNotActive = color(255);
         }
 
         if (systemMode >= SYSTEMMODE_POSTINIT) {
@@ -198,22 +203,18 @@ class TopNav {
             filtBPButton.setColorNotPressed(color(255));
             filtNotchButton.setColorNotPressed(color(255));
             layoutButton.setColorNotPressed(color(255));
-            configButton.setColorNotPressed(color(255));
 
             filtBPButton.textColorNotActive = color(bgColor);
             filtNotchButton.textColorNotActive = color(bgColor);
             layoutButton.textColorNotActive = color(bgColor);
-            configButton.textColorNotActive = color(bgColor);
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             filtBPButton.setColorNotPressed(color(57, 128, 204));
             filtNotchButton.setColorNotPressed(color(57, 128, 204));
             layoutButton.setColorNotPressed(color(57, 128, 204));
-            configButton.setColorNotPressed(color(57, 128, 204));
 
             filtBPButton.textColorNotActive = color(255);
             filtNotchButton.textColorNotActive = color(255);
             layoutButton.textColorNotActive = color(255);
-            configButton.textColorNotActive = color(255);
         }
     }
 
@@ -221,8 +222,16 @@ class TopNav {
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             layoutSelector.update();
             tutorialSelector.update();
-            configSelector.update();
+            if (configButton.but_x != width - 3 - (70*2)) {
+                configButton.but_x = width - 3 - (70*2);
+                println("Updated Position");
+            }
+        } else {
+            if (configButton.but_x != width - 70 - 3) {
+                configButton.but_x = width - 70 - 3;
+            }
         }
+        configSelector.update();
     }
 
     void draw() {
@@ -255,12 +264,12 @@ class TopNav {
             filtBPButton.draw();
             filtNotchButton.draw();
             layoutButton.draw();
-            configButton.draw();
         }
 
         controlPanelCollapser.draw();
         fpsButton.draw();
         debugButton.draw();
+        configButton.draw();
         if (colorScheme == COLOR_SCHEME_DEFAULT) {
             image(consoleImgBlue, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
         } else {
@@ -283,14 +292,15 @@ class TopNav {
         issuesButton.but_x = tutorialsButton.but_x - 80 - 3;
         shopButton.but_x = issuesButton.but_x - 80 - 3;
         updateGuiVersionButton.but_x = shopButton.but_x - 80 - 3;
+        configButton.but_x = width - configButton.but_dx - 3;
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
             layoutButton.but_x = width - 3 - layoutButton.but_dx;
-            configButton.but_x = width - (3*2) - (layoutButton.but_dx*2) - 10;
+            configButton.but_x = width - 3 - (configButton.but_dx*2);
             layoutSelector.screenResized();     //pass screenResized along to layoutSelector
             tutorialSelector.screenResized();
-            configSelector.screenResized();
         }
+        configSelector.screenResized();
     }
 
     void mousePressed() {
@@ -311,10 +321,10 @@ class TopNav {
                 layoutButton.setIsActive(true);
                 //toggle layout window to enable the selection of your container layoutButton...
             }
-            if (configButton.isMouseHere()) {
-                configButton.setIsActive(true);
-                //toggle save/load window
-            }
+        }
+        if (configButton.isMouseHere()) {
+            configButton.setIsActive(true);
+            //toggle save/load window
         }
 
         //was control panel button pushed
@@ -409,6 +419,12 @@ class TopNav {
             updateGuiVersionButton.goToURL();
         }
 
+        if (configButton.isMouseHere() && configButton.isActive()) {
+            //layoutSelector.toggleVisibility();
+            configSelector.toggleVisibility();
+            configButton.setIsActive(true);
+        }
+
 
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -419,18 +435,12 @@ class TopNav {
                     layoutButton.setIsActive(true);
                     wm.printLayouts();
                 }
-                if (configButton.isMouseHere() && configButton.isActive()) {
-                    //layoutSelector.toggleVisibility();
-                    configSelector.toggleVisibility();
-                    configButton.setIsActive(true);
-                }
             }
 
             stopButton.setIsActive(false);
             filtBPButton.setIsActive(false);
             filtNotchButton.setIsActive(false);
             layoutButton.setIsActive(false);
-            configButton.setIsActive(false);
         }
 
         fpsButton.setIsActive(false);
@@ -440,6 +450,7 @@ class TopNav {
         issuesButton.setIsActive(false);
         shopButton.setIsActive(false);
         updateGuiVersionButton.setIsActive(false);
+        configButton.setIsActive(false);
 
 
         layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
@@ -746,12 +757,13 @@ class configSelector {
     ArrayList<Button> configOptions;
     int configHeight = 0;
     color newGreen = color(114,204,171);
-    color expertPurple = color(188, 139, 201);
+    color expertPurple = color(135,95,154);
     color cautionRed = color(214,100,100);
+    int previousSystemMode = -1;
 
     configSelector() {
         w = 120;
-        x = width- 3*2 - 60*3 - margin*3;
+        x = width - 70*2 - 3 + 20;
         y = (navBarHeight * 2) - 3;
         margin = 6;
         b_w = w - margin*2;
@@ -765,6 +777,8 @@ class configSelector {
     }
 
     void update() {
+        if (previousSystemMode != systemMode) updateConfigButtonPositions();
+        previousSystemMode = systemMode;
     }
 
     void draw() {
@@ -945,13 +959,7 @@ class configSelector {
     }
 
     void screenResized() {
-        //update position of outer box and buttons
-        int oldX = x;
-        x = width - 3*2 - 60*3;
-        int dx = oldX - x;
-        for (int i = 0; i < configOptions.size(); i++) {
-            configOptions.get(i).setX(configOptions.get(i).but_x - dx);
-        }
+        updateConfigButtonPositions();
     }
 
     void toggleVisibility() {
@@ -975,6 +983,10 @@ class configSelector {
                     }
                 }
             }
+        } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.configButton.isActive()) {
+            //resize the height of the settings dropdown
+            h = margin*(configOptions.size()-4) + b_h*(configOptions.size()-1);
+            clearAllSettingsPressed = false;
         }
     }
 
@@ -985,7 +997,7 @@ class configSelector {
         Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Expert Mode Off");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(newGreen);
-        tempConfigButton.setFontColorNotActive(color(0));
+        tempConfigButton.setFontColorNotActive(color(255));
         tempConfigButton.setHelpText("Expert Mode enables advanced keyboard shortcuts and access to all GUI features");
         configOptions.add(tempConfigButton);
 
@@ -1003,13 +1015,14 @@ class configSelector {
 
         //setup button 3 -- Default Settings
         buttonNumber++;
-        //set the height of the Settings dropdown
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
         //setup button 4 -- Clear All Settings
         buttonNumber++;
+        //Update the height of the Settings dropdown
+        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(cautionRed);
@@ -1031,8 +1044,15 @@ class configSelector {
         configOptions.add(tempConfigButton);
     }
 
-    void updateConfigOptionButtons() {
-        //dropdown is static, so no need to update
+    void updateConfigButtonPositions() {
+        //update position of outer box and buttons
+        int oldX = x;
+        int multiplier = (systemMode == SYSTEMMODE_POSTINIT) ? 3 : 2;
+        x = width - 70*multiplier - 3 + 20;
+        int dx = oldX - x;
+        for (int i = 0; i < configOptions.size(); i++) {
+            configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+        }
     }
 }
 
