@@ -159,7 +159,7 @@ class HardwareSettingsController{
             }
         }
 
-        if (rewriteImpedanceWhenDoneWriting == true && cyton.get_isWritingImp() == false) {
+        if (rewriteImpedanceWhenDoneWriting == true) {
             initImpWrite(impChannelToWriteWhenDoneWriting, final_pORn, final_onORoff);
             rewriteImpedanceWhenDoneWriting = false;
         }
@@ -299,11 +299,8 @@ class HardwareSettingsController{
 
     public void initChannelWrite(int _numChannel) {
         //after clicking any button, write the new settings for that channel to OpenBCI
-        if (!cyton.get_isWritingImp()) { //make sure you aren't currently writing imp settings for a channel
-            verbosePrint("Writing channel settings for channel " + str(_numChannel+1) + " to OpenBCI!");
-            cyton.initChannelWrite(_numChannel);
-            channelToWrite = _numChannel;
-        }
+        verbosePrint("Writing channel settings for channel " + str(_numChannel+1) + " to OpenBCI!");
+        channelToWrite = _numChannel;
     }
 
     public void initImpWrite(int _numChannel, char pORn, char onORoff) {

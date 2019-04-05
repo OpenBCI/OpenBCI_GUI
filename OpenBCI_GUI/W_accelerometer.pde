@@ -202,7 +202,7 @@ class W_accelerometer extends Widget {
         if (eegDataSource == DATASOURCE_CYTON) {  //LIVE CYTON
             drawAccValues();
             draw3DGraph();
-            if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
+            if (cyton.getBoardMode() != BoardMode.DEFAULT) {
                 accelModeButton.setString("Turn Accel. On");
                 accelModeButton.draw();
             } else {
@@ -285,7 +285,7 @@ class W_accelerometer extends Widget {
             accelModeButton.setIsActive(false);
         } else if (eegDataSource == DATASOURCE_CYTON) {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                cyton.setBoardMode(BoardMode.DEFAULT);
                 output("Starting to read accelerometer");
                 accelerometerModeOn = true;
                 w_analogRead.analogReadOn = false;

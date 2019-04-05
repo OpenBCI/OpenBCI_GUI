@@ -1026,10 +1026,6 @@ class Hub {
         //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
         if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
             state = STATE_SYNCWITHHARDWARE;
-            timeOfLastCommand = millis();
-            // potentialFailureMessage = "";
-            // defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
-            // daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
             println("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
         }
     }

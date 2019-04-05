@@ -323,7 +323,7 @@ public class OutputFile_rawtxt {
     private void writeAuxValues(DataPacket_ADS1299 data) {
         if (eegDataSource == DATASOURCE_CYTON) {
             // println("board mode: " + cyton.getBoardMode());
-            if (cyton.getBoardMode() == BOARD_MODE_DIGITAL) {
+            if (cyton.getBoardMode() == BoardMode.DIGITAL) {
                 if (cyton.isWifi()) {
                     output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
                     output.print(", " + (data.auxValues[0] & 0xFF));
@@ -335,7 +335,7 @@ public class OutputFile_rawtxt {
                     output.print(", " + (data.auxValues[1] & 0xFF));
                     output.print(", " + data.auxValues[2]);
                 }
-            } else if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
+            } else if (cyton.getBoardMode() == BoardMode.ANALOG) {
                 if (cyton.isWifi()) {
                     output.print(", " + data.auxValues[0]);
                     output.print(", " + data.auxValues[1]);
@@ -344,7 +344,7 @@ public class OutputFile_rawtxt {
                     output.print(", " + data.auxValues[1]);
                     output.print(", " + data.auxValues[2]);
                 }
-            } else if (cyton.getBoardMode() == BOARD_MODE_MARKER) {
+            } else if (cyton.getBoardMode() == BoardMode.MARKER) {
                 output.print(", " + data.auxValues[0]);
                 if ( data.auxValues[0] > 0) {
                     hub.validLastMarker = data.auxValues[0];

@@ -100,7 +100,7 @@ int tsSrb1Setting;
 int loadLayoutSetting;
 int loadNotchSetting;
 int loadBandpassSetting;
-int loadBoardMode;
+BoardMode loadBoardMode;
 
 //Load TS dropdown variables
 int loadTimeSeriesVertScale;
@@ -333,7 +333,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
         saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
         saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
         saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
-        saveGlobalSettings.setInt("Board Mode", cyton.curBoardMode);
+        saveGlobalSettings.setString("Board Mode", cyton.curBoardMode.name());
     }
     saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
 
@@ -560,7 +560,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
         loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
-        loadBoardMode = loadGlobalSettings.getInt("Board Mode");
+        loadBoardMode = BoardMode.valueOf(loadGlobalSettings.getString("Board Mode"));
     }
     //Store loaded layout to current layout variable
     currentLayout = loadLayoutSetting;
@@ -834,8 +834,8 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
 void applyBoardMode() {
     //Apply Board Mode
     switch(loadBoardMode) { //Switch-case for loaded board mode
-        case BOARD_MODE_DEFAULT:
-            cyton.setBoardMode(BOARD_MODE_DEFAULT);
+        case DEFAULT:
+            cyton.setBoardMode(BoardMode.DEFAULT);
             //outputSuccess("Starting to read accelerometer");
             w_accelerometer.accelerometerModeOn = true;
             w_analogRead.analogReadOn = false;
@@ -843,12 +843,12 @@ void applyBoardMode() {
             w_digitalRead.digitalReadOn = false;
             w_markermode.markerModeOn = false;
             break;
-        case BOARD_MODE_DEBUG: //Not being used currently
+        case DEBUG: //Not being used currently
             break;
-        case BOARD_MODE_ANALOG:
+        case ANALOG:
             if (cyton.isPortOpen()) { //This code has been copied from AnalogRead
-                if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
-                    cyton.setBoardMode(BOARD_MODE_ANALOG);
+                if (cyton.getBoardMode() != BoardMode.ANALOG) {
+                    cyton.setBoardMode(BoardMode.ANALOG);
                     if (cyton.isWifi()) {
                         output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                     } else {
@@ -860,16 +860,16 @@ void applyBoardMode() {
                     w_pulsesensor.analogReadOn = true;
                     w_analogRead.analogReadOn = true;
                 } else {
-                    cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT);
                     output("Starting to read accelerometer");
                     w_accelerometer.accelerometerModeOn = true;
                 }
             }
             break;
-        case BOARD_MODE_DIGITAL:
+        case DIGITAL:
             if (cyton.isPortOpen()) { //This code has been copied from DigitalRead
-                if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
-                    cyton.setBoardMode(BOARD_MODE_DIGITAL);
+                if (cyton.getBoardMode() != BoardMode.DIGITAL) {
+                    cyton.setBoardMode(BoardMode.DIGITAL);
                     if (cyton.isWifi()) {
                         output("Starting to read digital inputs on pin marked D11, D12 and D17");
                     } else {
@@ -880,16 +880,16 @@ void applyBoardMode() {
                     w_pulsesensor.analogReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT);
                     outputSuccess("Starting to read accelerometer");
                     w_accelerometer.accelerometerModeOn = true;
                 }
             }
             break;
-        case BOARD_MODE_MARKER:
+        case MARKER:
             if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
-                if (cyton.getBoardMode() != BOARD_MODE_MARKER) {
-                    cyton.setBoardMode(BOARD_MODE_MARKER);
+                if (cyton.getBoardMode() != BoardMode.MARKER) {
+                    cyton.setBoardMode(BoardMode.MARKER);
                     output("Starting to read markers");
                     w_markermode.markerModeButton.setString("Turn Marker Off");
                     w_accelerometer.accelerometerModeOn = false;
@@ -897,7 +897,7 @@ void applyBoardMode() {
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
                 } else {
-                    cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT);
                     output("Starting to read accelerometer");
                     w_markermode.markerModeButton.setString("Turn Marker On");
                     w_accelerometer.accelerometerModeOn = true;

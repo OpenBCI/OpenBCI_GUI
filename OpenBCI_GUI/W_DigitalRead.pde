@@ -132,7 +132,7 @@ class W_DigitalRead extends Widget {
             pushStyle();
             //draw channel bars
             digitalModeButton.draw();
-            if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
+            if (cyton.getBoardMode() != BoardMode.DIGITAL) {
                 digitalModeButton.setString("Turn Digital Read On");
             } else {
                 digitalModeButton.setString("Turn Digital Read Off");
@@ -192,8 +192,8 @@ class W_DigitalRead extends Widget {
         if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
             // println("digitalModeButton...");
             if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BOARD_MODE_DIGITAL) {
-                    cyton.setBoardMode(BOARD_MODE_DIGITAL);
+                if (cyton.getBoardMode() != BoardMode.DIGITAL) {
+                    cyton.setBoardMode(BoardMode.DIGITAL);
                     if (cyton.isWifi()) {
                         output("Starting to read digital inputs on pin marked D11, D12 and D17");
                     } else {
@@ -204,7 +204,7 @@ class W_DigitalRead extends Widget {
                     w_pulsesensor.analogReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT);
                     output("Starting to read accelerometer");
                     w_accelerometer.accelerometerModeOn = true;
                 }

@@ -176,7 +176,7 @@ class W_PulseSensor extends Widget {
         text("BPM "+BPM, BPMposX, BPMposY);
         text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-        if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
+        if (cyton.getBoardMode() != BoardMode.ANALOG) {
             analogModeButton.setString("Turn Analog Read On");
         } else {
             analogModeButton.setString("Turn Analog Read Off");
@@ -212,8 +212,8 @@ class W_PulseSensor extends Widget {
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
             // println("analogModeButton...");
             if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BOARD_MODE_ANALOG) {
-                    cyton.setBoardMode(BOARD_MODE_ANALOG);
+                if (cyton.getBoardMode() != BoardMode.ANALOG) {
+                    cyton.setBoardMode(BoardMode.ANALOG);
                     output("Starting to read analog inputs on pin marked D11");
                     analogModeButton.setString("Turn Analog Read Off");
                     w_accelerometer.accelerometerModeOn = false;
@@ -221,7 +221,7 @@ class W_PulseSensor extends Widget {
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT);
                     output("Starting to read accelerometer");
                     analogModeButton.setString("Turn Analog Read On");
                     w_accelerometer.accelerometerModeOn = true;
