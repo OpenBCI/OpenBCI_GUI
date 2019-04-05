@@ -109,25 +109,30 @@ class W_playback extends Widget {
         refreshPlaybackList();
     } //end screen Resized
 
+    void mouseOver() {
+        if (topNav.configSelector.isVisible) {
+            selectPlaybackFileButton.setIsActive(false);
+        }
+    }
+
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        //check if mouse is over the select playback file button
-        if (selectPlaybackFileButton.isMouseHere()) {
-            selectPlaybackFileButton.setIsActive(true);
+        if (!topNav.configSelector.isVisible) {
+            //check if mouse is over the select playback file button
+            if (selectPlaybackFileButton.isMouseHere()) {
+                selectPlaybackFileButton.setIsActive(true);
+            }
         }
     } // end mouse Pressed
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
         //check if user has clicked on the select playback file button
         if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.isActive) {
             output("select a file for playback");
             selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
         }
         selectPlaybackFileButton.setIsActive(false);
-
     } // end mouse Released
 
     public void refreshPlaybackList() {

@@ -98,6 +98,9 @@ class W_networking extends Widget {
         "obci_eeg2","EEG",Integer.toString(nchan),
         "obci_eeg3","EEG",Integer.toString(nchan)};
 
+    boolean configIsVisible = false;
+    boolean layoutIsVisible = false;
+
     W_networking(PApplet _parent){
         super(_parent);
         // ourApplet = _parent;
@@ -149,6 +152,32 @@ class W_networking extends Widget {
             }
         }
 
+        //Check if a change has occured
+        if ((topNav.configSelector.isVisible != configIsVisible) || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
+            //lock/unlock the controllers within networking widget when using TopNav Objects
+            if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").lock();
+                cp5_networking_portName.getController("port_name").lock();
+                lockTextFields(oscTextFieldNames, true);
+                lockTextFields(udpTextFieldNames, true);
+                lockTextFields(lslTextFieldNames, true);
+                //println("##LOCKED NETWORKING CP5 CONTROLLERS##");
+            } else {
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").unlock();
+                cp5_networking_portName.getController("port_name").unlock();
+                lockTextFields(oscTextFieldNames, false);
+                lockTextFields(udpTextFieldNames, false);
+                lockTextFields(lslTextFieldNames, false);
+            }
+            configIsVisible = topNav.configSelector.isVisible;
+            layoutIsVisible = topNav.layoutSelector.isVisible;
+        }
         //put your code here...
         if (dataDropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -355,6 +384,17 @@ class W_networking extends Widget {
     void setTextFieldVisible(String[] textFieldNames, Boolean isVisible) {
         for (int i = 0; i < textFieldNames.length; i++) {
             cp5_networking.get(Textfield.class, textFieldNames[i]).setVisible(isVisible);
+        }
+    }
+
+    //Lock text fields by setting _lock = true, unlock using false
+    void lockTextFields(String[] textFieldNames, Boolean _lock) {
+        for (int i = 0; i < textFieldNames.length; i++) {
+            if (_lock) {
+                cp5_networking.get(Textfield.class, textFieldNames[i]).lock();
+            } else {
+                cp5_networking.get(Textfield.class, textFieldNames[i]).unlock();
+            }
         }
     }
 
@@ -885,9 +925,10 @@ class W_networking extends Widget {
                 cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).close();
             }
         }
+        //If using a TopNav object, ignore interaction with widget objects
         if (!cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).isOpen()){
             if (cp5_networking_dropdowns.getController(dropdownName).isMouseOver()){
-                // println("2");
+                println("++++Opening dropdown " + dropdownName);
                 cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).open();
             }
         }

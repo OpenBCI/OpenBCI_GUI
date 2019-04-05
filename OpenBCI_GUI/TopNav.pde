@@ -222,9 +222,9 @@ class TopNav {
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             layoutSelector.update();
             tutorialSelector.update();
-            if (configButton.but_x != width - 3 - (70*2)) {
-                configButton.but_x = width - 3 - (70*2);
-                println("Updated Position");
+            if (configButton.but_x != width - (70*2) + 3) {
+                configButton.but_x = width - (70*2) + 3;
+                println("TopNav: Updated Settings Button Position");
             }
         } else {
             if (configButton.but_x != width - 70 - 3) {
@@ -296,7 +296,7 @@ class TopNav {
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
             layoutButton.but_x = width - 3 - layoutButton.but_dx;
-            configButton.but_x = width - 3 - (configButton.but_dx*2);
+            configButton.but_x = width - (configButton.but_dx*2) + 3;
             layoutSelector.screenResized();     //pass screenResized along to layoutSelector
             tutorialSelector.screenResized();
         }
@@ -420,7 +420,6 @@ class TopNav {
         }
 
         if (configButton.isMouseHere() && configButton.isActive()) {
-            //layoutSelector.toggleVisibility();
             configSelector.toggleVisibility();
             configButton.setIsActive(true);
         }
@@ -763,7 +762,7 @@ class configSelector {
 
     configSelector() {
         w = 120;
-        x = width - 70*2 - 3 + 20;
+        x = width - 70*2 + 20;
         y = (navBarHeight * 2) - 3;
         margin = 6;
         b_w = w - margin*2;
@@ -816,9 +815,16 @@ class configSelector {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
             for (int i = 0; i < configOptions.size(); i++) {
-                if (configOptions.get(i).isMouseHere()) {
-                    configOptions.get(i).setIsActive(true);
-                    println("config pressed");
+                if (i < configOptions.size() - 2) {
+                    if (configOptions.get(i).isMouseHere()) {
+                        configOptions.get(i).setIsActive(true);
+                        //println("TopNav: Settings: Button Pressed");
+                    }
+                } else {
+                    if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
+                        configOptions.get(i).setIsActive(true);
+                        //println("TopNav: Settings: AreYouSure? Pressed");
+                    }
                 }
             }
         }
@@ -919,11 +925,11 @@ class configSelector {
                         clearAllSettingsPressed = true;
                         //expand the height of the dropdown
                         h = margin*(configOptions.size()+2) + b_h*(configOptions.size()+1);
-                    } else if (configSelected == 5) {
+                    } else if (configSelected == 5 && clearAllSettingsPressed) {
                         //Do nothing because the user clicked Are You Sure?->No
                         clearAllSettingsPressed = false;
                         toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 6) {
+                    } else if (configSelected == 6 && clearAllSettingsPressed) {
                         //User has selected Are You Sure?->Yes
                         //Delete only specified files in the Settings Folder
                         String[] filesToDelete = {
@@ -1048,7 +1054,8 @@ class configSelector {
         //update position of outer box and buttons
         int oldX = x;
         int multiplier = (systemMode == SYSTEMMODE_POSTINIT) ? 3 : 2;
-        x = width - 70*multiplier - 3 + 20;
+        int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
+        x = width - 70*multiplier - _padding + 20;
         int dx = oldX - x;
         for (int i = 0; i < configOptions.size(); i++) {
             configOptions.get(i).setX(configOptions.get(i).but_x - dx);

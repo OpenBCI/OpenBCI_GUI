@@ -680,6 +680,7 @@ class Button {
     int buttonTextSize;
     PImage bgImage;
     boolean hasbgImage = false;
+    boolean ignoreHover = false;
 
     public Button(int x, int y, int w, int h, String txt) {
         setup(x, y, w, h, txt);
@@ -704,6 +705,10 @@ class Button {
         but_dx = w;
         but_dy = h;
         setString(txt);
+    }
+
+    public boolean getIgnoreHover() {
+        return ignoreHover;
     }
 
     public void setX(int _but_x){
@@ -752,6 +757,10 @@ class Button {
 
     public void setHelpText(String _helpText){
         helpText = _helpText;
+    }
+
+    public void setIgnoreHover (boolean _ignoreHover) {
+        ignoreHover = _ignoreHover;
     }
 
     public void setURL(String _myURL){
@@ -808,8 +817,10 @@ class Button {
     color getColor() {
         if (isActive) {
             currentColor = color_pressed;
-        } else if (isMouseHere()) {
+        } else if (isMouseHere() && !ignoreHover) {
             currentColor = color_hover;
+        } else if (ignoreHover) {
+            currentColor = color_notPressed;
         } else {
             currentColor = color_notPressed;
         }

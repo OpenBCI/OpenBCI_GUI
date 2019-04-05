@@ -44,9 +44,7 @@ class Widget{
     }
 
     void update(){
-
         updateDropdowns();
-
     }
 
     void draw(){
@@ -266,8 +264,10 @@ class Widget{
         popStyle();
     }
 
-    void screenResized(){
-        mapToCurrentContainer();
+
+
+    void mouseDragged(){
+
     }
 
     void mousePressed(){
@@ -278,8 +278,8 @@ class Widget{
 
     }
 
-    void mouseDragged(){
-
+    void screenResized(){
+        mapToCurrentContainer();
     }
 
     void setTitle(String _widgetTitle){
