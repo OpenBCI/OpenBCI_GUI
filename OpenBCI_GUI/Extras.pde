@@ -53,15 +53,8 @@ float std(float[] data) {
     return (float)Math.sqrt(val);
 }
 
-
 float mean(float[] data) {
     return mean(data,data.length);
-}
-
-int medianDestructive(int[] data) {
-    sort(data);
-    int midPoint = data.length / 2;
-    return data[midPoint];
 }
 
 //////////////////////////////////////////////////
@@ -314,9 +307,6 @@ class TextBox {
     public int backgroundEdge_pixels;
     public int alignH,alignV;
 
-//  textBox(String s,int x1,int y1) {
-//    textBox(s,x1,y1,0);
-//  }
     TextBox(String s, int x1, int y1) {
         string = s; x = x1; y = y1;
         backgroundColor = color(255,255,255);
