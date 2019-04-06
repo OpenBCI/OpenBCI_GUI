@@ -3101,6 +3101,7 @@ public class MenuList extends controlP5.Controller {
                 activeItem = index;
             }
             updateMenu = true;
+        } finally {
         }
     }
 
