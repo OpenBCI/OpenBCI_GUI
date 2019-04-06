@@ -759,6 +759,8 @@ class configSelector {
     color expertPurple = color(135,95,154);
     color cautionRed = color(214,100,100);
     int previousSystemMode = -1;
+    int osPadding = 0;
+    int osPadding2 = 0;
 
     configSelector() {
         w = 120;
@@ -768,6 +770,9 @@ class configSelector {
         b_w = w - margin*2;
         b_h = 22;
         h = margin*3 + b_h;
+        //makes the setting text "are you sure" display correctly on linux
+        osPadding = isLinux() ? -3 : -2;
+        osPadding2 = isLinux() ? 5 : 0;
 
         isVisible = false;
 
@@ -777,7 +782,7 @@ class configSelector {
 
     void update() {
         if (previousSystemMode != systemMode) updateConfigButtonPositions();
-        previousSystemMode = systemMode;
+        previousSystemMode = systemMode; 
     }
 
     void draw() {
@@ -795,7 +800,7 @@ class configSelector {
                 int fontSize = 16;
                 textFont(p2, fontSize);
                 fill(255);
-                text("Are You Sure?", x + margin, y + margin*(configOptions.size()-2) + b_h*(configOptions.size()-1));
+                text("Are You Sure?", x + margin, y + margin*(configOptions.size() + osPadding) + b_h*(configOptions.size()-1) + osPadding2);
                 configOptions.get(configOptions.size()-2).draw();
                 configOptions.get(configOptions.size()-1).draw();
             }
