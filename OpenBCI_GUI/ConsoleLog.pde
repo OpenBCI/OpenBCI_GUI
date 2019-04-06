@@ -256,7 +256,7 @@ class CustomOutputStream extends PrintStream {
             fileOutput = new PrintStream(outStr);
         }
         catch (IOException e) {
-            println("Error! Failed open " + fileName + " for write.");
+            println("Error! Failed to open " + fileName + " for write.");
             println(e);
         }
     }
