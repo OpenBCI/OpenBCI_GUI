@@ -62,12 +62,6 @@ color boxColor = color(200);
 color boxStrokeColor = color(bgColor);
 color isSelected_color = color(184, 220, 105);
 
-// Button openClosePort;
-// boolean portButtonPressed;
-
-boolean calledForBLEList = false;
-boolean calledForWifiList = false;
-
 Button noHubShowDoc;
 
 Button refreshPort;
@@ -78,7 +72,7 @@ Button protocolWifiCyton;
 Button protocolWifiGanglion;
 Button protocolBLED112Ganglion;
 Button protocolBLEGanglion;
-// Button autoconnect;
+
 Button initSystemButton;
 Button autoFileName;
 Button outputBDF;
@@ -99,13 +93,7 @@ Button popOutWifiConfigButton;
 Button getChannel;
 Button setChannel;
 Button ovrChannel;
-// Button getPoll;
-// Button setPoll;
-// Button defaultBAUD;
-// Button highBAUD;
 Button autoscan;
-// Button autoconnectNoStartDefault;
-// Button autoconnectNoStartHigh;
 Button systemStatus;
 
 Button eraseCredentials;
@@ -272,7 +260,6 @@ class ControlPanel {
     public int x, y, w, h;
     public boolean isOpen;
 
-    boolean showSourceBox, showSerialBox, showFileBox, showChannelBox, showInitBox;
     PlotFontInfo fontInfo;
 
     //various control panel elements that are unique to specific datasources
@@ -282,11 +269,9 @@ class ControlPanel {
     ChannelCountBox channelCountBox;
     InitBox initBox;
     SyntheticChannelCountBox synthChannelCountBox;
-
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
     SDConverterBox sdConverterBox;
-
     NoHubBox noHubBox;
     BLEBox bleBox;
     DataLogBoxGanglion dataLogBoxGanglion;
@@ -299,14 +284,10 @@ class ControlPanel {
     LatencyGanglionBox latencyGanglionBox;
     WifiTransferProtcolCytonBox wifiTransferProtcolCytonBox;
     WifiTransferProtcolGanglionBox wifiTransferProtcolGanglionBox;
-
     SDBox sdBox;
 
     boolean drawStopInstructions;
-
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
-    int globalBorder;
-
     boolean convertingSD = false;
 
     ControlPanel(OpenBCI_GUI mainClass) {
@@ -316,25 +297,14 @@ class ControlPanel {
         w = topNav.controlPanelCollapser.but_dx;
         h = height - int(helpWidget.h);
 
-        if(hasIntroAnimation){
-            isOpen = false;
-        } else {
-            isOpen = true;
-        }
-
+        isOpen = false;
         fontInfo = new PlotFontInfo();
 
-        // f1 = createFont("Raleway-SemiBold.otf", 16);
-        // f2 = createFont("Raleway-Regular.otf", 15);
-        // f3 = createFont("Raleway-SemiBold.otf", 15);
-
         globalPadding = 10;  //controls the padding of all elements on the control panel
-        globalBorder = 0;   //controls the border of all elements in the control panel ... using processing's stroke() instead
 
         cp5 = new ControlP5(mainClass);
         cp5Popup = new ControlP5(mainClass);
         cp5.setAutoDraw(false);
-        // cp5.set
         cp5Popup.setAutoDraw(false);
 
         //boxes active when eegDataSource = Normal (OpenBCI)
@@ -449,27 +419,6 @@ class ControlPanel {
         while (convertingSD == true) {
             convertSDFile();
         }
-
-        // if (isHubInitialized && isHubObjectInitialized) {
-        //   if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-        //     if (!calledForBLEList) {
-        //       calledForBLEList = true;
-        //       if (hub.isHubRunning()) {
-        //         // Commented out because noble will auto scan
-        //         hub.searchDeviceStart();
-        //       }
-        //     }
-        //   }
-        //
-        //   if (ganglion.getInterface() == INTERFACE_HUB_WIFI || cyton.getInterface() == INTERFACE_HUB_WIFI) {
-        //     if (!calledForWifiList) {
-        //       calledForWifiList = true;
-        //       if (hub.isHubRunning()) {
-        //         hub.searchDeviceStart();
-        //       }
-        //     }
-        //   }
-        // }
     }
 
     public void draw() {
@@ -1620,7 +1569,7 @@ public void initButtonPressed(){
                     println("Static IP address of " + wifi_ipAddress);
                 }
                 midInit = true;
-                println("initSystem yoo");
+                println("Calling initSystem()");
                 initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
             }
         }
@@ -1647,10 +1596,6 @@ void updateToNChan(int _nchan) {
     cyton.initDataPackets(_nchan, 3);
     updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
-
-public void set_channel_popup(){;
-}
-
 
 //==============================================================================//
 //                	BELOW ARE THE CLASSES FOR THE VARIOUS                         //
@@ -1737,9 +1682,6 @@ class DataSourceBox {
 
 class SerialBox {
     int x, y, w, h, padding; //size and position
-    //connect/disconnect button
-    //Refresh list button
-    //String port status;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1763,7 +1705,6 @@ class SerialBox {
     }
 
     public void update() {
-        // serialList.updateMenu();
     }
 
     public void draw() {
@@ -1778,9 +1719,7 @@ class SerialBox {
         text("SERIAL/COM PORT", x + padding, y + padding);
         popStyle();
 
-        // openClosePort.draw();
         refreshPort.draw();
-        // autoconnect.draw();
         if (cyton.isSerial()) {
             popOutRadioConfigButton.draw();
         }
@@ -1792,9 +1731,6 @@ class SerialBox {
 
 class BLEBox {
     int x, y, w, h, padding; //size and position
-    //connect/disconnect button
-    //Refresh list button
-    //String port status;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1805,19 +1741,10 @@ class BLEBox {
 
         refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
-        // println(w-padding*2);
         bleList.setPosition(x + padding, y + padding*3 + 8);
-        // Call to update the list
-        // ganglion.getBLEDevices();
     }
 
     public void update() {
-        // Quick check to see if there are just more or less devices in general
-
-    }
-
-    public void updateListPosition(){
-        bleList.setPosition(x + padding, y + padding * 3);
     }
 
     public void draw() {
@@ -1854,9 +1781,6 @@ class BLEBox {
 
 class WifiBox {
     int x, y, w, h, padding; //size and position
-    //connect/disconnect button
-    //Refresh list button
-    //String port status;
 
     WifiBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1874,7 +1798,6 @@ class WifiBox {
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
         popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
-        // println(w-padding*2);
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
         // Call to update the list
 
@@ -1897,12 +1820,6 @@ class WifiBox {
     }
 
     public void update() {
-        // Quick check to see if there are just more or less devices in general
-
-    }
-
-    public void updateListPosition(){
-        wifiList.setPosition(x + padding, y + padding * 3);
     }
 
     public void draw() {
@@ -1915,7 +1832,6 @@ class WifiBox {
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WIFI SHIELDS", x + padding, y + padding);
-        // wifiIPAddress.setString("STATIC");
         wifiIPAddressDyanmic.draw();
         wifiIPAddressStatic.draw();
         wifiIPAddressDyanmic.but_y = y + padding*2 + 16;
@@ -2043,12 +1959,6 @@ class InterfaceBoxGanglion {
 
 class DataLogBox {
     int x, y, w, h, padding; //size and position
-    String fileName;
-    //text field for inputing text
-    //create/open/closefile button
-    String fileStatus;
-    boolean isFileOpen; //true if file has been activated and is ready to write to
-    //String port status;
 
     DataLogBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2056,10 +1966,6 @@ class DataLogBox {
         w = _w;
         h = 127; // Added 24 +
         padding = _padding;
-        //instantiate button
-        //figure out default file name (from Chip's code)
-        isFileOpen = false; //set to true on button push
-        fileStatus = "NO FILE CREATED";
 
         //button to autogenerate file name based on time/date
         autoFileName = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
@@ -2085,8 +1991,6 @@ class DataLogBox {
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
             .setAutoClear(true);
-
-        //clear text field on double click
     }
 
     public void update() {
@@ -2117,12 +2021,6 @@ class DataLogBox {
 
 class DataLogBoxGanglion {
     int x, y, w, h, padding; //size and position
-    String fileName;
-    //text field for inputing text
-    //create/open/closefile button
-    String fileStatus;
-    boolean isFileOpen; //true if file has been activated and is ready to write to
-    //String port status;
 
     DataLogBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2130,10 +2028,6 @@ class DataLogBoxGanglion {
         w = _w;
         h = 127; // Added 24 +
         padding = _padding;
-        //instantiate button
-        //figure out default file name (from Chip's code)
-        isFileOpen = false; //set to true on button push
-        fileStatus = "NO FILE CREATED";
 
         //button to autogenerate file name based on time/date
         autoFileNameGanglion = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
@@ -2192,8 +2086,6 @@ class DataLogBoxGanglion {
 class ChannelCountBox {
     int x, y, w, h, padding; //size and position
 
-    boolean isSystemInitialized;
-    // button for init/halt system
 
     ChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2237,9 +2129,6 @@ class ChannelCountBox {
 class SampleRateGanglionBox {
     int x, y, w, h, padding; //size and position
 
-    boolean isSystemInitialized;
-    // button for init/halt system
-
     SampleRateGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
@@ -2280,9 +2169,6 @@ class SampleRateGanglionBox {
 
 class SampleRateCytonBox {
     int x, y, w, h, padding; //size and position
-
-    boolean isSystemInitialized;
-    // button for init/halt system
 
     SampleRateCytonBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2528,9 +2414,6 @@ class WifiTransferProtcolCytonBox {
 class SyntheticChannelCountBox {
     int x, y, w, h, padding; //size and position
 
-    boolean isSystemInitialized;
-    // button for init/halt system
-
     SyntheticChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
@@ -2674,7 +2557,6 @@ class RecentPlaybackBox {
 
             playbackHistoryFileExists = true;
         } catch (Exception e) {
-            //e.printStackTrace();
             println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
             playbackHistoryFileExists = false;
         }
@@ -2721,10 +2603,6 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-    }
-
-    void recentFiles(int n){
-        closeAllDropdowns();
     }
 };
 
@@ -2804,14 +2682,12 @@ class SDBox {
         popStyle();
         sdTimes.setPosition(x + padding, y + padding*2 + 13);
         //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
-
     }
 };
 
 class RadioConfigBox {
     int x, y, w, h, padding; //size and position
     String last_message = "";
-    Serial board;
     boolean isShowing;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2865,19 +2741,11 @@ class RadioConfigBox {
         text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
         this.last_message = localstring;
     }
-
-    public void print_lastmessage(){
-        fill(bgColor);
-        rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
-        fill(255);
-        text(this.last_message, 180, 340, 240, 60);
-    }
 };
 
 class WifiConfigBox {
     int x, y, w, h, padding; //size and position
     String last_message = "";
-    Serial board;
     boolean isShowing;
 
     WifiConfigBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2890,12 +2758,9 @@ class WifiConfigBox {
 
         getTypeOfAttachedBoard = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "OPENBCI BOARD", fontInfo.buttonLabel_size);
         getIpAddress = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
-        // getIpAddress = new Button(x + w -padding*2)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
         getMacAddress = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
         getFirmwareVersion = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "FIRMWARE VERS.", fontInfo.buttonLabel_size);
         eraseCredentials = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "ERASE NETWORK CREDENTIALS", fontInfo.buttonLabel_size);
-
-        //y + padding*4 + 18 + 24*2
 
         //Set help text
         getTypeOfAttachedBoard.setHelpText("Get the type of OpenBCI board attached to the WiFi Shield");
@@ -2936,26 +2801,6 @@ class WifiConfigBox {
         rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
         fill(255);
         text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
-        // this.last_message = localstring;
-
-
-        // textAlign(LEFT);
-        // fill(0);
-        // rect(x + padding, y + (padding*8) + 18 + (24*2), (w-padding*3 + 5), 135 - 24 - padding);
-        // fill(255);
-        // text(localstring, x + padding + 10, y + (padding*8) + 18 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
-    }
-
-    public void print_lastmessage(){
-
-        fill(bgColor);
-        rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
-        fill(255);
-
-        // fill(0);
-        // rect(x + padding, y + (padding*7) + 18 + (24*5), (w-padding*3 + 5), 135);
-        // fill(255);
-        text(this.last_message, 180, 340, 240, 60);
     }
 };
 
@@ -2993,9 +2838,6 @@ class SDConverterBox {
 
 class ChannelPopup {
     int x, y, w, h, padding; //size and position
-    //connect/disconnect button
-    //Refresh list button
-    //String port status;
     boolean clicked;
 
     ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
@@ -3015,7 +2857,6 @@ class ChannelPopup {
     }
 
     public void update() {
-        // serialList.updateMenu();
     }
 
     public void draw() {
@@ -3029,23 +2870,15 @@ class ChannelPopup {
         textAlign(LEFT, TOP);
         text("CHANNEL SELECTION", x + padding, y + padding);
         popStyle();
-
-        // openClosePort.draw();
         refreshPort.draw();
-        // autoconnect.draw();
     }
 
-    public void setClicked(boolean click){this.clicked = click; }
-
-    public boolean wasClicked(){return this.clicked;}
-
+    public void setClicked(boolean click) { this.clicked = click; }
+    public boolean wasClicked() { return this.clicked; }
 };
 
 class PollPopup {
     int x, y, w, h, padding; //size and position
-    //connect/disconnect button
-    //Refresh list button
-    //String port status;
     boolean clicked;
 
     PollPopup(int _x, int _y, int _w, int _h, int _padding) {
@@ -3056,7 +2889,6 @@ class PollPopup {
         padding = _padding;
         clicked = false;
 
-
         pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p4);
         pollList.setPosition(x+padding, y+padding*3);
 
@@ -3066,7 +2898,6 @@ class PollPopup {
     }
 
     public void update() {
-        // serialList.updateMenu();
     }
 
     public void draw() {
@@ -3080,26 +2911,15 @@ class PollPopup {
         textAlign(LEFT, TOP);
         text("POLL SELECTION", x + padding, y + padding);
         popStyle();
-
-        // openClosePort.draw();
         refreshPort.draw();
-        // autoconnect.draw();
     }
 
-    public void setClicked(boolean click){this.clicked = click; }
-
-    public boolean wasClicked(){return this.clicked;}
-
+    public void setClicked(boolean click) { this.clicked = click; }
+    public boolean wasClicked() { return this.clicked; }
 };
-
 
 class InitBox {
     int x, y, w, h, padding; //size and position
-
-    boolean initButtonPressed; //default false
-
-    boolean isSystemInitialized;
-    // button for init/halt system
 
     InitBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -3107,19 +2927,14 @@ class InitBox {
         w = _w;
         h = 50;
         padding = _padding;
-
-        //init button
+        
         initSystemButton = new Button (padding, y + padding, w-padding*2, h - padding*2, "START SYSTEM", fontInfo.buttonLabel_size);
-        //initSystemButton.color_notPressed = color(boolor);
-        //initSystemButton.buttonStrokeColor = color(boxColor);
-        initButtonPressed = false;
     }
 
     public void update() {
     }
 
     public void draw() {
-
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
@@ -3164,12 +2979,10 @@ public class MenuList extends controlP5.Controller {
     List< Map<String, Object>> items = new ArrayList< Map<String, Object>>();
     PGraphics menu;
     boolean updateMenu;
-    boolean drawHand;
     int hoverItem = -1;
     int activeItem = -1;
     PFont menuFont = p4;
     int padding = 7;
-
 
     MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
 
@@ -3188,10 +3001,6 @@ public class MenuList extends controlP5.Controller {
                     updateMenu();
                 }
                 if (inside()) {
-                    // if(!drawHand){
-                    //   cursor(HAND);
-                    //   drawHand = true;
-                    // }
                     menu.beginDraw();
                     int len = -(itemHeight * items.size()) + getHeight();
                     int ty;
@@ -3205,12 +3014,6 @@ public class MenuList extends controlP5.Controller {
                         menu.rect(getWidth()-scrollerWidth-2, ty, scrollerWidth, scrollerLength );
                     }
                     menu.endDraw();
-                }
-                else {
-                    // if(drawHand){
-                    //   drawHand = false;
-                    //   cursor(ARROW);
-                    // }
                 }
                 pg.image(menu, 0, 0);
             }
@@ -3270,8 +3073,6 @@ public class MenuList extends controlP5.Controller {
             } catch(Exception e){
                 println("Nothing in list...");
             }
-
-
         }
         menu.popMatrix();
         menu.popMatrix();
@@ -3300,10 +3101,7 @@ public class MenuList extends controlP5.Controller {
                 activeItem = index;
             }
             updateMenu = true;
-        } finally{}
-        // catch(IOException e){
-        //   println("Nothing to click...");
-        // }
+        }
     }
 
     public void onMove() {

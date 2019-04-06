@@ -66,7 +66,6 @@ class HelpWidget {
     }
 
     public void update() {
-        // empty
     }
 
     public void draw() {

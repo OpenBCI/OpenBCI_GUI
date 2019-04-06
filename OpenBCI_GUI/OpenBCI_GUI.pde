@@ -69,7 +69,6 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = true;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
@@ -1383,12 +1382,7 @@ void systemDraw() { //for drawing to the screen
 
 
     if (systemMode == SYSTEMMODE_INTROANIMATION) {
-        //intro animation sequence
-        if (hasIntroAnimation) {
-            introAnimation();
-        } else {
-            systemMode = SYSTEMMODE_PREINIT;
-        }
+        introAnimation();
     }
 
     if ((hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
