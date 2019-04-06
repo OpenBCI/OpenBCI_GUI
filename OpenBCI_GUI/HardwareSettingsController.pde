@@ -8,8 +8,6 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-HardwareSettingsController hwSettingsController;
-
 public void updateChannelArrays(int _nchan) {
     channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
     impedanceCheckValues = new char [_nchan][2];
@@ -60,12 +58,7 @@ boolean isChannelActive(int Ichan) {
 class HardwareSettingsController{
 
     boolean isVisible = false;
-
     int x, y, w, h;
-
-    //int numSettingsPerChannel = 6; //each channel has 6 different settings
-    //char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-    //char[][] impedanceCheckValues = new char [nchan][2];
 
     int spaceBetweenButtons = 5; //space between buttons
 
@@ -87,21 +80,6 @@ class HardwareSettingsController{
         '1', // SRB2 :: (0) Open, (1) Closed
         '1'
     }; // SRB1 :: (0) Yes, (1) No ... this setting affects all channels ... either all on or all off
-    //
-
-    //variables used for channel write timing in writeChannelSettings()
-    int channelToWrite = -1;
-
-    //variables use for imp write timing with writeImpedanceSettings()
-    int impChannelToWrite = -1;
-
-    boolean rewriteChannelWhenDoneWriting = false;
-    int channelToWriteWhenDoneWriting = 0;
-
-    boolean rewriteImpedanceWhenDoneWriting = false;
-    int impChannelToWriteWhenDoneWriting = 0;
-    char final_pORn = '0';
-    char final_onORoff = '0';
 
     HardwareSettingsController(int _x, int _y, int _w, int _h, int _channelBarHeight){
         x = _x;
@@ -110,11 +88,9 @@ class HardwareSettingsController{
         h = _h;
 
         createChannelSettingButtons(_channelBarHeight);
-
     }
 
     void update(){
-
         for (int i = 0; i < nchan; i++) { //for every channel
             //update buttons based on channelSettingValues[i][j]
             for (int j = 0; j < numSettingsPerChannel; j++) {
@@ -158,60 +134,50 @@ class HardwareSettingsController{
                 }
             }
         }
-
-        if (rewriteImpedanceWhenDoneWriting == true) {
-            initImpWrite(impChannelToWriteWhenDoneWriting, final_pORn, final_onORoff);
-            rewriteImpedanceWhenDoneWriting = false;
-        }
     }
 
     void draw(){
+        pushStyle();
 
-                pushStyle();
+        if (isVisible) {
+            //background
+            noStroke();
+            fill(0, 0, 0, 100);
+            rect(x, y, w, h);
 
-                if (isVisible) {
-
-                    //background
-                    noStroke();
-                    fill(0, 0, 0, 100);
-                    rect(x, y, w, h);
-
-                    // [numChan] x 5 ... all channel setting buttons (other than on/off)
-                    for (int i = 0; i < nchan; i++) {
-                        for (int j = 1; j < 6; j++) {
-                            channelSettingButtons[i][j].draw();
-                        }
-                    }
-
-                    //draw column headers for channel settings behind EEG graph
-                    fill(bgColor);
-                    textFont(p6, 10);
-                    textAlign(CENTER, TOP);
-                    text("PGA Gain", x + (w/10)*1, y-1);
-                    text("Input Type", x + (w/10)*3, y-1);
-                    text("  Bias ", x + (w/10)*5, y-1);
-                    text("SRB2", x + (w/10)*7, y-1);
-                    text("SRB1", x + (w/10)*9, y-1);
-
-                    //if mode is not from OpenBCI, draw a dark overlay to indicate that you cannot edit these settings
-                    if (eegDataSource != DATASOURCE_CYTON) {
-                        fill(0, 0, 0, 200);
-                        noStroke();
-                        rect(x-2, y, w+1, h);
-                        fill(255);
-                        textAlign(CENTER,CENTER);
-                        textFont(h1,18);
-                        text("DATA SOURCE (LIVE) only", x + (w/2), y + (h/2));
-                    }
+            // [numChan] x 5 ... all channel setting buttons (other than on/off)
+            for (int i = 0; i < nchan; i++) {
+                for (int j = 1; j < 6; j++) {
+                    channelSettingButtons[i][j].draw();
                 }
+            }
 
-                popStyle();
+            //draw column headers for channel settings behind EEG graph
+            fill(bgColor);
+            textFont(p6, 10);
+            textAlign(CENTER, TOP);
+            text("PGA Gain", x + (w/10)*1, y-1);
+            text("Input Type", x + (w/10)*3, y-1);
+            text("  Bias ", x + (w/10)*5, y-1);
+            text("SRB2", x + (w/10)*7, y-1);
+            text("SRB1", x + (w/10)*9, y-1);
+
+            //if mode is not from OpenBCI, draw a dark overlay to indicate that you cannot edit these settings
+            if (eegDataSource != DATASOURCE_CYTON) {
+                fill(0, 0, 0, 200);
+                noStroke();
+                rect(x-2, y, w+1, h);
+                fill(255);
+                textAlign(CENTER,CENTER);
+                textFont(h1,18);
+                text("DATA SOURCE (LIVE) only", x + (w/2), y + (h/2));
+            }
+        }
+        popStyle();
     }
 
     public void loadDefaultChannelSettings() {
-        // verbosePrint("ChannelController: loading default channel settings to GUI's channel controller...");
         for (int i = 0; i < nchan; i++) {
-            // verbosePrint("chan: " + i + " ");
             channelSettingValues[i][0] = '0';
             channelSettingValues[i][1] = '6';
             channelSettingValues[i][2] = '0';
@@ -223,7 +189,6 @@ class HardwareSettingsController{
                 impedanceCheckValues[i][k] = '0';
             }
         }
-        // verbosePrint("made it!");
         update(); //update 1 time to refresh button values based on new loaded settings
     }
 
@@ -236,7 +201,6 @@ class HardwareSettingsController{
                 cyton.changeChannelState(Ichan, true); //activate
             }
         } else if (eegDataSource == DATASOURCE_GANGLION) {
-            // println("activating channel on ganglion");
             ganglion.changeChannelState(Ichan, true);
         }
         if (Ichan < nchan) {
@@ -297,12 +261,6 @@ class HardwareSettingsController{
         cyton.activateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels//assumes numChannel counts from zero (not one)...handles regular and daisy channels
     }
 
-    public void initChannelWrite(int _numChannel) {
-        //after clicking any button, write the new settings for that channel to OpenBCI
-        verbosePrint("Writing channel settings for channel " + str(_numChannel+1) + " to OpenBCI!");
-        channelToWrite = _numChannel;
-    }
-
     public void initImpWrite(int _numChannel, char pORn, char onORoff) {
         verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel) + " to OpenBCI!");
         if (pORn == 'p') {
@@ -316,7 +274,6 @@ class HardwareSettingsController{
 
     public void createChannelSettingButtons(int _channelBarHeight) {
         //the size and space of these buttons are dependendant on the size of the screen and full ChannelController
-
         verbosePrint("ChannelController: createChannelSettingButtons: creating channel setting buttons...");
         int buttonW = 0;
         int buttonX = 0;
@@ -403,7 +360,6 @@ class HardwareSettingsController{
     }
 
     void toggleImpedanceCheck(int _channelNumber){ //Channel Numbers start at 1
-
         if(channelSettingValues[_channelNumber-1][4] == '1'){     //is N pin being used...
             if (impedanceCheckValues[_channelNumber-1][1] < '1') { //if not checking/drawing impedance
                 initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
@@ -416,18 +372,10 @@ class HardwareSettingsController{
 
         if(channelSettingValues[_channelNumber-1][4] == '0'){     //is P pin being used
             if (impedanceCheckValues[_channelNumber-1][0] < '1') {    //is channel on
-                // impedanceCheckValues[i][0] = '1';	//increment [i][j] channelSettingValue by, until it reaches max values per setting [j],
-                // channelSettingButtons[i][0].setColorNotPressed(color(25,25,25));
-                // writeImpedanceSettings(i);
                 initImpWrite(_channelNumber, 'p', '1');
-                //initImpWrite
             } else {
-                // impedanceCheckValues[i][0] = '0';
-                // channelSettingButtons[i][0].setColorNotPressed(color(255));
-                // writeImpedanceSettings(i);
                 initImpWrite(_channelNumber, 'p', '0');
             }
         }
     }
-
 };
