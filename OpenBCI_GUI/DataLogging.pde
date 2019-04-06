@@ -53,7 +53,6 @@ void openNewLogFileBDF(String _fileName) {
 
     output_fname = fileoutput_bdf.fname;
     println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
-    //output("cyton: openNewLogFile: opened BDF output file: " + output_fname);
 }
 
 /**
@@ -71,7 +70,6 @@ void openNewLogFileODF(String _fileName) {
 
     output_fname = fileoutput_odf.fname;
     println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
-    //output("cyton: openNewLogFile: opened ODF output file: " + output_fname);
 }
 
 //Called when user selects a playback file from dialog box
@@ -455,12 +453,9 @@ public class OutputFile_BDF {
     private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2,23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
 
-    private int bdf_number_of_data_records = -1;
-
     public boolean continuous = true;
     public boolean write_accel = true;
 
-    private float dataRecordDuration = 1; // second
     private int nbAnnotations = 1;
     private int nbAux = 3;
     private int nbChan = 8;
@@ -520,8 +515,6 @@ public class OutputFile_BDF {
     public String fname = "";
 
     public int nbSamplesPerAnnontation = 20;
-
-    public DataPacket_ADS1299 data_t;
 
     /**
       * @description Creates an EDF writer! Name of output file based on current
@@ -670,10 +663,6 @@ public class OutputFile_BDF {
             e.printStackTrace();
         }
         println("closeFile: started...");
-        // File f = new File(fname);
-        // fstream = new FileOutputStream(f);
-        // bstream = new BufferedOutputStream(fstream);
-        // dstream = new DataOutputStream(bstream);
 
         OutputStream o = createOutput(fname);
         println("closeFile: made file");
@@ -687,44 +676,6 @@ public class OutputFile_BDF {
         writeData(o);
         output("Data written. Closing new file.");
         println("closeFile: wrote data");
-        // Create write stream
-        // try {
-        //   println("closeFile: started...");
-        //   // File f = new File(fname);
-        //   // fstream = new FileOutputStream(f);
-        //   // bstream = new BufferedOutputStream(fstream);
-        //   // dstream = new DataOutputStream(bstream);
-        //
-        //   OutputStream o = createOutput(fname);
-        //   println("closeFile: made file");
-        //
-        //   // Create a new writer with the same file name
-        //   // Write the header
-        //   writeHeader(o);
-        //   output("Header writen, now writing data.");
-        //   println("closeFile: wrote header");
-        //
-        //   writeData(o);
-        //   output("Data written. Closing new file.");
-        //   println("closeFile: wrote data");
-        //
-        //   // dstream.close();
-        //
-        //   // Try to delete the file
-        //   // https://forum.processing.org/one/topic/noob-how-to-delete-a-file-in-the-data-folder.html
-        //   // File f = new File(tempWriterPrefix);
-        //   // if (f.exists()) {
-        //   //   f.delete();
-        //   //   output("Deleted temp data file.");
-        //   // } else {
-        //   //   output("Unable to delete temp data file.");
-        //   // }
-        // }
-        // catch(IOException e) {
-        //   println("closeFile: IOException");
-        //   e.printStackTrace();
-        // }
-
     }
 
     public int getRecordsWritten() {
@@ -1441,22 +1392,14 @@ class Table_CSV extends Table {
                 if (line.charAt(0) == '%') {
                     if (line.length() > 18) {
                         if (line.charAt(1) == 'S') {
-                            // println(line.substring(15, 18));
                             sampleRate = Integer.parseInt(line.substring(15, 18));
                             if (sampleRate == 100 || sampleRate == 160) {
                                 sampleRate = Integer.parseInt(line.substring(15, 19));
                             }
                             println("Sample rate set to " + sampleRate);
-                            // String[] m = match(line, "\\d+");
-                            // if (m != null) {
-                                // println("Found '" + m[1] + "' inside the line");
-                            // }
                         }
                     }
                     println("readCSV: " + line);
-                    // if (line.charAt(1) == 'S') {
-                    //   println("sampel rarteakjdsf;ldj");
-                    // }
                     continue;
                 }
 
@@ -1474,15 +1417,6 @@ class Table_CSV extends Table {
 
                 // this is problematic unless we're going to calculate rowCount first
                 if (row % 10000 == 0) {
-                    /*
-                if (row < rowCount) {
-                    int pct = (100 * row) / rowCount;
-                        if (pct != prev) {  // also prevents "0%" from showing up
-                            System.out.println(pct + "%");
-                            prev = pct;
-                        }
-                    }
-                      */
                     try {
                         // Sleep this thread so that the GC can catch up
                         Thread.sleep(10);
@@ -1516,8 +1450,6 @@ class Table_CSV extends Table {
 BufferedReader dataReader;
 String dataLine;
 PrintWriter dataWriter;
-String convertedLine;
-String thisLine;
 String h;
 float[] floatData = new float[20];
 float[] intData = new float[20];
