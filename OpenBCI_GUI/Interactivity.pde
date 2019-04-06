@@ -579,15 +579,6 @@ void mousePressed() {
     }
 
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is pressed
-
-    if (playground.isMouseHere()) {
-        playground.mousePressed();
-    }
-
-    if (playground.isMouseInButton()) {
-        playground.toggleWindow();
-    }
-
 }
 
 void mouseReleased() {
@@ -619,14 +610,6 @@ void mouseReleased() {
     if (screenHasBeenResized) {
         println("OpenBCI_GUI: mouseReleased: screen has been resized...");
         screenHasBeenResized = false;
-    }
-
-    //Playground Interactivity
-    if (playground.isMouseHere()) {
-        playground.mouseReleased();
-    }
-    if (playground.isMouseInButton()) {
-        // playground.toggleWindow();
     }
 }
 
