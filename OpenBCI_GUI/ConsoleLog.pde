@@ -242,6 +242,8 @@ class CustomOutputStream extends PrintStream {
     public CustomOutputStream(OutputStream out) {
         super(out);
         data = new StringList();
+        // initialize the printstream just in case the file open fails
+        fileOutput = new PrintStream(out);
 
         // create log file
         // TODO: Figure out clean way to create file on all platforms
@@ -254,7 +256,8 @@ class CustomOutputStream extends PrintStream {
             fileOutput = new PrintStream(outStr);
         }
         catch (IOException e) {
-            println("Error! Check path, or filename, or security manager! "+e);
+            println("Error! Failed open " + fileName + " for write.");
+            println(e);
         }
     }
 
