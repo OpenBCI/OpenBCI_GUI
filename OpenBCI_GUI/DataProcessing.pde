@@ -7,17 +7,14 @@ import ddf.minim.analysis.*; //for FFT
 DataProcessing dataProcessing;
 String curTimestamp;
 boolean hasRepeated = false;
-HashMap<String,float[][]> processed_file;
 HashMap<Integer,String> index_of_times;
-HashMap<String,Integer> index_of_times_rev;
 
-// indexs
+// indexes
 final int DELTA = 0; // 1-4 Hz
 final int THETA = 1; // 4-8 Hz
 final int ALPHA = 2; // 8-13 Hz
 final int BETA = 3; // 13-30 Hz
 final int GAMMA = 4; // 30-55 Hz
-
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -25,22 +22,12 @@ final int GAMMA = 4; // 30-55 Hz
 
 //called from systemUpdate when mode=10 and isRunning = true
 void process_input_file() throws Exception {
-    processed_file = new HashMap<String, float[][]>();
     index_of_times = new HashMap<Integer, String>();
-    index_of_times_rev = new HashMap<String, Integer>();
-    float localLittleBuff[][] = new float[nchan][nPointsPerUpdate];
     indices = 0;
     try {
         while (!hasRepeated) {
             currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-
-            for (int Ichan=0; Ichan < nchan; Ichan++) {
-                //scale the data into engineering units..."microvolts"
-                localLittleBuff[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* cyton.get_scale_fac_uVolts_per_count();
-            }
-            processed_file.put(curTimestamp, localLittleBuff);
             index_of_times.put(indices,curTimestamp);
-            index_of_times_rev.put(curTimestamp,indices);
             indices++;
         }
     }
@@ -48,18 +35,9 @@ void process_input_file() throws Exception {
         throw new Exception();
     }
     println("number of indexes "+indices);
-
-    /*
-    //print index of times for use in playback
-    for (Map.Entry val : index_of_times.entrySet()) {
-        println(val.getKey() + " is " + val);
-    }
-    */
-
     println("Finished filling hashmap");
     has_processed = true;
 }
-
 
 /*************************/
 int getDataIfAvailable(int pointCounter) {
@@ -121,11 +99,7 @@ int getDataIfAvailable(int pointCounter) {
 
                 pointCounter++;
             } //close the loop over data points
-            //if (eegDataSource==DATASOURCE_PLAYBACKFILE) println("OpenBCI_GUI: getDataIfAvailable: currentTableRowIndex = " + currentTableRowIndex);
-            //println("OpenBCI_GUI: getDataIfAvailable: pointCounter = " + pointCounter);
         } // close "has enough time passed"
-        else{
-        }
     }
     return pointCounter;
 }
@@ -144,9 +118,6 @@ void processNewData() {
     avgBitRate.addValue(inst_byteRate_perSec);
     byteRate_perSec = (int)avgBitRate.calcMean();
 
-    ////prepare to update the data buffers
-    //float foo_val;
-
     //update the data buffers
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         //append the new data to the larger data buffer...because we want the plotting routines
@@ -162,13 +133,6 @@ void processNewData() {
 
     //apply additional processing for the time-domain montage plot (ie, filtering)
     dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
-
-    //apply user processing
-    // ...yLittleBuff_uV[Ichan] is the most recent raw data since the last call to this processing routine
-    // ...dataBuffY_filtY_uV[Ichan] is the full set of filtered data as shown in the time-domain plot in the GUI
-    // ...fftBuff[Ichan] is the FFT data structure holding the frequency spectrum as shown in the freq-domain plot in the GUI
-    // w_emg.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff); //%%%
-    // w_openbionics.process();
 
     dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
     dataProcessing.newDataToSend = true;
@@ -222,7 +186,6 @@ void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, Da
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         if (isChannelActive(Ichan)) {
             val_uV = randomGaussian()*sqrt(fs_Hz/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-            //val_uV = random(1)*sqrt(fs_Hz/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
             if (Ichan==0) val_uV*= 10f;  //scale one channel higher
 
             if (Ichan==1) {
@@ -266,7 +229,6 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float
     float[] fooData;
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         //make the FFT objects...Following "SoundSpectrum" example that came with the Minim library
-        //fftBuff[Ichan] = new FFT(Nfft, fs_Hz);  //I can't have this here...it must be in setup
         fftBuff[Ichan].window(FFT.HAMMING);
 
         //do the FFT on the initial data
@@ -291,7 +253,6 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         //end of file
         println("OpenBCI_GUI: getPlaybackDataFromTable: End of playback data file.  Starting over...");
         hasRepeated = true;
-        //if (isRunning) stopRunning();
         currentTableRowIndex = 0;
     } else {
         //get the row
@@ -342,7 +303,6 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
                 appendAndShift(accelerometerBuff[Iacc], acc_G[Iacc]);
             }
         }
-
         // if available, get time stamp for use in playback
         if (row.getColumnCount() == nchan + NUM_ACCEL_DIMS + 2) {
             try{
@@ -353,7 +313,6 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         } else {
             curTimestamp = "null";
         }
-
     } //end else
     return currentTableRowIndex;
 }
@@ -374,7 +333,6 @@ class DataProcessing {
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
-    private String[] binNames;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
     }; //lower bound for each frequency band of interest (2D classifier only)
@@ -383,7 +341,6 @@ class DataProcessing {
     };  //upper bound for each frequency band of interest
     float avgPowerInBins[][];
     float headWidePower[];
-    int numBins;
 
     DataProcessing(int NCHAN, float sample_rate_Hz) {
         nchan = NCHAN;
@@ -810,12 +767,5 @@ class DataProcessing {
                 polarity[Ichan]=-1.0;
             }
         }
-
-        // println("Brain Wide DELTA = " + headWidePower[DELTA]);
-        // println("Brain Wide THETA = " + headWidePower[THETA]);
-        // println("Brain Wide ALPHA = " + headWidePower[ALPHA]);
-        // println("Brain Wide BETA  = " + headWidePower[BETA]);
-        // println("Brain Wide GAMMA = " + headWidePower[GAMMA]);
-
     }
 }
