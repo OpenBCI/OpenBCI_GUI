@@ -460,7 +460,6 @@ void parseKeycode(int val) {
             break;
         case 38:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
-            dataProcessing_user.switchesActive = true;
             break;
         case 39:
             if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
@@ -472,7 +471,6 @@ void parseKeycode(int val) {
             break;
         case 40:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
-            dataProcessing_user.switchesActive = false;
             break;
         case 112:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received F1 keypress.  Ignoring...");
