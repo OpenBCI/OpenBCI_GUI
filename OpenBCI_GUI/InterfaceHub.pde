@@ -256,7 +256,6 @@ class Hub {
     public int validLastMarker;
     public boolean validNewAccelData = false;
 
-    public boolean impedanceUpdated = false;
     public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
     private String curBLEHardware = BLE_HARDWARE_NOBLE;

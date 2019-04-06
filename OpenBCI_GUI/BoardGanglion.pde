@@ -17,7 +17,7 @@
 //------------------------------------------------------------------------
 
 class Ganglion {
-    final static String GANGLION_BOOTLOADER_MODE = ">";
+    final static char GANGLION_BOOTLOADER_MODE = '>';
 
     final static int NUM_ACCEL_DIMS = 3;
 
@@ -26,30 +26,20 @@ class Ganglion {
 
     private final float fsHzBLE = 200.0f;  //sample rate used by OpenBCI Ganglion board... set by its Arduino code
     private final float fsHzWifi = 1600.0f;  //sample rate used by OpenBCI Ganglion board on wifi, set by hub
-    private final int NfftBLE = 256;
-    private final int NfftWifi = 2048;
+
     private final float MCP3912_Vref = 1.2f;  // reference voltage for ADC in MCP3912 set in hardware
-    private float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
+    private final float MCP3912_gain = 1.0;  //assumed gain setting for MCP3912.  NEEDS TO BE ADJUSTABLE JM
     private float scale_fac_uVolts_per_count = (MCP3912_Vref * 1000000.f) / (8388607.0 * MCP3912_gain * 1.5 * 51.0); //MCP3912 datasheet page 34. Gain of InAmp = 80
-    // private float scale_fac_accel_G_per_count = 0.032;
     private float scale_fac_accel_G_per_count_ble = 0.016;
     private float scale_fac_accel_G_per_count_wifi = 0.001;
-    // private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2,4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
-    // private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
     private int curInterface = INTERFACE_NONE;
 
     private DataPacket_ADS1299 dataPacket;
 
-    private boolean connected = false;
-
-    public int numberOfDevices = 0;
-    public int maxNumberOfDevices = 10;
-
     private boolean checkingImpedance = false;
     private boolean accelModeActive = true;
 
-    public boolean impedanceUpdated = false;
     public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
     private int sampleRate = (int)fsHzWifi;
@@ -62,18 +52,11 @@ class Ganglion {
             return hub.getSampleRate();
         }
     }
-    public int getNfft() {
-        if (isWifi()) {
-            if (hub.getSampleRate() == (int)fsHzBLE) {
-                return NfftBLE;
-            } else {
-                return NfftWifi;
-            }
-        } else {
-            return NfftBLE;
-        }
+    
+    public float get_scale_fac_uVolts_per_count() {
+        return scale_fac_uVolts_per_count;
     }
-    public float get_scale_fac_uVolts_per_count() { return scale_fac_uVolts_per_count; }
+
     public float get_scale_fac_accel_G_per_count() {
         if (isWifi()) {
             return scale_fac_accel_G_per_count_wifi;
@@ -122,10 +105,6 @@ class Ganglion {
         }
     }
 
-    private void handleError(int code, String msg) {
-        output("Code " + code + "Error: " + msg);
-    }
-
     public void processImpedance(JSONObject json) {
         int code = json.getInt(TCP_JSON_KEY_CODE);
         if (code == RESP_SUCCESS_DATA_IMPEDANCE) {
@@ -133,9 +112,6 @@ class Ganglion {
             if (channel < 5) {
                 int value = json.getInt(TCP_JSON_KEY_IMPEDANCE_VALUE);
                 impedanceArray[channel] = value;
-                if (channel == 0) {
-                    impedanceUpdated = true;
-                }
             }
         }
     }
@@ -161,10 +137,6 @@ class Ganglion {
             hub.setProtocol(PROTOCOL_WIFI);
             hub.searchDeviceStart();
         }
-    }
-
-    public int copyDataPacketTo(DataPacket_ADS1299 target) {
-        return dataPacket.copyTo(target);
     }
 
     // SCANNING/SEARCHING FOR DEVICES
@@ -199,10 +171,6 @@ class Ganglion {
         hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
         println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
         hub.sendCommand('s');
-    }
-
-    private void printGanglion(String msg) {
-        print("Ganglion: "); println(msg);
     }
 
     // Channel setting
@@ -278,7 +246,7 @@ class Ganglion {
       */
     public void enterBootloaderMode() {
         println("Ganglion: Entering Bootloader Mode");
-        hub.sendCommand(GANGLION_BOOTLOADER_MODE.charAt(0));
+        hub.sendCommand(GANGLION_BOOTLOADER_MODE);
         delay(500);
         closePort();
         haltSystem();

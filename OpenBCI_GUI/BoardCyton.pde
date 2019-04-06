@@ -50,11 +50,6 @@ class Cyton {
     private DataPacket_ADS1299 missedDataPacket;
     private DataPacket_ADS1299 dataPacket;
 
-    private boolean isNewDataPacketAvailable = false;
-    private OutputStream output; //for debugging  WEA 2014-01-26
-    private int prevSampleIndex = 0;
-    private int serialErrorCounter = 0;
-
     private final int fsHzSerialCyton = 250;  //sample rate used by OpenBCI board...set by its Arduino code
     private final int fsHzSerialCytonDaisy = 125;  //sample rate used by OpenBCI board...set by its Arduino code
     private final int fsHzWifi = 1000;  //sample rate used by OpenBCI board...set by its Arduino code
