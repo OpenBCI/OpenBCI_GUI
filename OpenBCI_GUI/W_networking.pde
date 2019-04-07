@@ -973,7 +973,6 @@ class Stream extends Thread {
     String portName;
     int baudRate;
     String serialMessage = "";
-    int focusNetworkingTimer = 0;
 
     PApplet pApplet;
 
@@ -982,7 +981,6 @@ class Stream extends Thread {
         println("Stream update numChan to " + numChan);
         dataToSend = new float[numChan * nPointsPerUpdate];
         println("nPointsPerUpdate " + nPointsPerUpdate);
-
         println("dataToSend len: " + numChan * nPointsPerUpdate);
     }
 
@@ -1522,20 +1520,17 @@ class Stream extends Thread {
                 outlet_data.push_chunk(dataToSend);
             // Serial
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
-                if (millis() > focusNetworkingTimer + 800) {
-                    serialMessage = ""; //clear message
-                    String isFocused = Boolean.toString(w_focus.isFocused);
-                    serialMessage += isFocused;
-                    serialMessage += "\n";
-                    try {
-                        println("SerialMessage: " + serialMessage);
-                        this.serial_networking.write(serialMessage);
-                    } catch (Exception e){
-                        println(e.getMessage());
-                    }
-                    focusNetworkingTimer = millis();
+                serialMessage = ""; //clear message
+                String isFocused = Boolean.toString(w_focus.isFocused);
+                serialMessage += isFocused;
+                serialMessage += "\n";
+                try {
+                    //println("SerialMessage: " + serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println("SerialMessage: Focus Error");
+                    //println(e.getMessage());
                 }
-
             }
         }
     }
@@ -1651,13 +1646,13 @@ class Stream extends Thread {
         } else if (this.protocol.equals("LSL")){
             String stream_id = "openbcieeg12345";
             info_data = new LSL.StreamInfo(
-                                                        this.streamName,
-                                                        this.streamType,
-                                                        this.nChanLSL,
-                                                        getSampleRateSafe(),
-                                                        LSL.ChannelFormat.float32,
-                                                        stream_id
-                                                    );
+                        this.streamName,
+                        this.streamType,
+                        this.nChanLSL,
+                        getSampleRateSafe(),
+                        LSL.ChannelFormat.float32,
+                        stream_id
+                    );
             outlet_data = new LSL.StreamOutlet(info_data);
         } else if (this.protocol.equals("Serial")){
             //Open Serial Port! %%%%%
