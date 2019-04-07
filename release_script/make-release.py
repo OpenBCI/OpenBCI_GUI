@@ -187,9 +187,8 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
 
         # sign the app
         try:
-            subprocess.check_call(["codesign", "-s",\
-                "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)",\
-                "-v", app_dir, "--force"])
+            subprocess.check_call(["codesign", "-f", "-v", "-s"\
+                "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", app_dir])
         except subprocess.CalledProcessError as err:
             print err
             print "WARNING: Failed to sign app."
@@ -212,14 +211,25 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
     ###########################################################
     if LOCAL_OS == MAC:
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
+        dmg_dir = build_dir + ".dmg"
         try:
             subprocess.check_call(["dmgbuild", "-s", "release_script/dmgbuild_settings.py", "-D",\
-                "app=" + app_dir, "OpenBCI_GUI", build_dir + ".dmg"])
+                "app=" + app_dir, "OpenBCI_GUI", dmg_dir])
         except subprocess.CalledProcessError as err:
             print err
             print "WARNING: Failed create the .dmg file."
         else:
-            print "Successfully created " + build_dir + ".dmg"
+            print "Successfully created " + dmg_dir
+
+        # sign the dmg
+        try:
+            subprocess.check_call(["codesign", "-f", "-v", "-s"\
+                "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", dmg_dir])
+        except subprocess.CalledProcessError as err:
+            print err
+            print "WARNING: Failed to sign dmg."
+        else:
+            print "Successfully signed dmg."
 
     ### Else zip the file
     ###########################################################
