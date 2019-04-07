@@ -71,12 +71,17 @@ def cleanup_build_dirs(sketch_dir, zips = False):
     for dir in all_flavors:
         full_dir = os.path.join(sketch_dir, dir)
         full_zip_dir = full_dir + ".zip"
+        full_dmg_dir = full_dir + ".dmg"
         if os.path.isdir(full_dir):
             shutil.rmtree(full_dir)
             print "Successfully deleted " + full_dir
-        if zips and os.path.isfile(full_zip_dir):
-            os.remove(full_zip_dir)
-            print "Successfully deleted " + full_zip_dir
+        if zips:
+            if os.path.isfile(full_zip_dir):
+                os.remove(full_zip_dir)
+                print "Successfully deleted " + full_zip_dir
+            if os.path.isfile(full_dmg_dir):
+                os.remove(full_dmg_dir)
+                print "Successfully deleted " + full_dmg_dir
 
 ### Function: Ask user for windows signing info
 ###########################################################
@@ -206,14 +211,15 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
     ### On Mac, make a .dmg and sign it
     ###########################################################
     if LOCAL_OS == MAC:
+        app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
         try:
             subprocess.check_call(["dmgbuild", "-s", "release_script/dmgbuild_settings.py", "-D",\
-                "app=" + build_dir, "OpenBCI_GUI", build_dir + ".dmg"])
+                "app=" + app_dir, "OpenBCI_GUI", build_dir + ".dmg"])
         except subprocess.CalledProcessError as err:
             print err
             print "WARNING: Failed create the .dmg file."
         else:
-            print "Successfully created the .dmg file."
+            print "Successfully created " + build_dir + ".dmg"
 
     ### Else zip the file
     ###########################################################
