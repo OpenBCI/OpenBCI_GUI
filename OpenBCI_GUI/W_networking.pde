@@ -973,6 +973,7 @@ class Stream extends Thread {
     String portName;
     int baudRate;
     String serialMessage = "";
+    int focusNetworkingTimer = 0;
 
     PApplet pApplet;
 
@@ -1521,17 +1522,20 @@ class Stream extends Thread {
                 outlet_data.push_chunk(dataToSend);
             // Serial
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
-                for (int i=0;i<numChan;i++){
+                if (millis() > focusNetworkingTimer + 800) {
                     serialMessage = ""; //clear message
                     String isFocused = Boolean.toString(w_focus.isFocused);
                     serialMessage += isFocused;
+                    serialMessage += "\n";
                     try {
-                        println(serialMessage);
+                        println("SerialMessage: " + serialMessage);
                         this.serial_networking.write(serialMessage);
                     } catch (Exception e){
                         println(e.getMessage());
                     }
+                    focusNetworkingTimer = millis();
                 }
+
             }
         }
     }
