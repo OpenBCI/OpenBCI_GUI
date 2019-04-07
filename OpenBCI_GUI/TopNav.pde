@@ -782,7 +782,7 @@ class configSelector {
 
     void update() {
         if (previousSystemMode != systemMode) updateConfigButtonPositions();
-        previousSystemMode = systemMode; 
+        previousSystemMode = systemMode;
     }
 
     void draw() {
@@ -793,9 +793,13 @@ class configSelector {
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
-            for (int i = 0; i < configOptions.size()-2; i++) {
-                configOptions.get(i).draw();
+            configOptions.get(0).draw();
+            if (systemMode == SYSTEMMODE_POSTINIT) {
+                for (int i = 1; i < 4; i++) {
+                    configOptions.get(i).draw();
+                }
             }
+            configOptions.get(4).draw();
             if (clearAllSettingsPressed) {
                 int fontSize = 16;
                 textFont(p2, fontSize);
@@ -820,15 +824,31 @@ class configSelector {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
             for (int i = 0; i < configOptions.size(); i++) {
-                if (i < configOptions.size() - 2) {
-                    if (configOptions.get(i).isMouseHere()) {
-                        configOptions.get(i).setIsActive(true);
-                        //println("TopNav: Settings: Button Pressed");
+                //Allow interaction with all settings buttons after init
+                if (systemMode == SYSTEMMODE_POSTINIT) {
+                    if (i >= 0 && i < 5) {
+                        if (configOptions.get(i).isMouseHere()) {
+                            configOptions.get(i).setIsActive(true);
+                            //println("TopNav: Settings: Button Pressed");
+                        }
+                    } else if (i == 5 || i == 6){
+                        if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
+                            configOptions.get(i).setIsActive(true);
+                            //println("TopNav: ClearSettings: AreYouSure? Button Pressed");
+                        }
                     }
-                } else {
-                    if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
-                        configOptions.get(i).setIsActive(true);
-                        //println("TopNav: Settings: AreYouSure? Pressed");
+                //Before system start, Only allow interaction with "Expert Mode" and "Clear All"
+                } else if (systemMode == SYSTEMMODE_PREINIT) {
+                    if (i == 0 || i == 4) {
+                        if (configOptions.get(i).isMouseHere()) {
+                            configOptions.get(i).setIsActive(true);
+                            //println("TopNav: Settings: Button Pressed");
+                        }
+                    } else if (i == 5 || i == 6){
+                        if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
+                            configOptions.get(i).setIsActive(true);
+                            //println("TopNav: ClearSettings: AreYouSure? Button Pressed");
+                        }
                     }
                 }
             }
@@ -960,6 +980,10 @@ class configSelector {
                         }
                         if (filesToDelete.length == successfulDeletions) {
                             outputSuccess("Successfully deleted all settings files!");
+                        }
+                        //Stop the system if the user clears all settings
+                        if (systemMode == SYSTEMMODE_POSTINIT) {
+                            haltSystem();
                         }
                         clearAllSettingsPressed = false;
                         toggleVisibility(); //shut configSelector if something is selected

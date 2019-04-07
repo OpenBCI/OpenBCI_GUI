@@ -288,14 +288,16 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         //println("ARRAYSIZE-Check1: " + int(recentFilesArray.size()));
         //Recent file has recentFileNumber=1, and appears at the end of the JSON array
         //check if already in the list, if so, remove from the list
-        for (int i = 0; i < recentFilesArray.size() - 1; i++) {
+        for (int i = 0; i < recentFilesArray.size(); i++) {
             JSONObject playbackFile = recentFilesArray.getJSONObject(i);
+            //println("CHECKING " + i + " : " + playbackFile.getString("id") + " == " + fileNameToAdd + " ?");
             if (playbackFile.getString("id").equals(fileNameToAdd)) {
                 recentFilesArray.remove(i);
+                //println("REMOVED: " + fileNameToAdd);
             }
         }
         //next, increment fileNumber of all current entries +1
-        for (int i = 0; i <= recentFilesArray.size() - 1; i++) {
+        for (int i = 0; i < recentFilesArray.size(); i++) {
             JSONObject playbackFile = recentFilesArray.getJSONObject(i);
             playbackFile.setInt("recentFileNumber", recentFilesArray.size()-i+1);
             //println(recentFilesArray.size()-i+1);
