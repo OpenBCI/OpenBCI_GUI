@@ -389,6 +389,39 @@ void settings() {
 }
 
 void setup() {
+    //V1 FONTS
+    f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
+    f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
+    f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
+
+    h1 = createFont("fonts/Montserrat-Regular.otf", 20);
+    h2 = createFont("fonts/Montserrat-Regular.otf", 18);
+    h3 = createFont("fonts/Montserrat-Regular.otf", 16);
+    h4 = createFont("fonts/Montserrat-Regular.otf", 14);
+    h5 = createFont("fonts/Montserrat-Regular.otf", 12);
+
+    p0 = createFont("fonts/OpenSans-Semibold.ttf", 24);
+    p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
+    p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
+    p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
+    p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
+    p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
+    p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
+    p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
+    p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
+
+    // check if the current directory is writable
+    File dummy = new File(sketchPath());
+    if (!dummy.canWrite()) {
+        showStartupError = true;
+        startupErrorMessage = "OpenBCI GUI was launched from a read-only location.\n\n" +
+            "Please move the application to a different location and re-launch.\n" +
+            "If you just downloaded the GUI, move it out of the disk image or Downloads folder.\n\n" +
+            "If this error persists, contact the OpenBCI team for support.";
+        return; // early exit
+    }
+
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
     outputStream = new CustomOutputStream(System.out);
@@ -422,38 +455,6 @@ void setup() {
 }
 
 void delayedSetup() {
-    //V1 FONTS
-    f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    f2 = createFont("fonts/Raleway-Regular.otf", 15);
-    f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
-    f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
-
-    h1 = createFont("fonts/Montserrat-Regular.otf", 20);
-    h2 = createFont("fonts/Montserrat-Regular.otf", 18);
-    h3 = createFont("fonts/Montserrat-Regular.otf", 16);
-    h4 = createFont("fonts/Montserrat-Regular.otf", 14);
-    h5 = createFont("fonts/Montserrat-Regular.otf", 12);
-
-    p0 = createFont("fonts/OpenSans-Semibold.ttf", 24);
-    p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
-    p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
-    p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
-    p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
-    p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
-    p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
-    p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
-    p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
-
-    // check if the current directory is writable
-    File dummy = new File(sketchPath());
-    if (!dummy.canWrite()) {
-        showStartupError = true;
-        startupErrorMessage = "OpenBCI GUI was launched from a read-only location.\n\n" +
-            "Please move the application to a different location and re-launch.\n" +
-            "If this error persists, contact the OpenBCI team for support.";
-        return; // early exit
-    }
-
     if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
     hubInit(); // putting down here gives windows time to close any open apps
 
@@ -1484,7 +1485,7 @@ void introAnimation() {
 
 void drawStartupError() {
     final int w = 600;
-    final int h = 300;
+    final int h = 350;
     final int headerHeight = 75;
     final int padding = 20;
 
