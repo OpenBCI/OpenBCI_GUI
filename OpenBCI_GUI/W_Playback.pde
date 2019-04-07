@@ -177,40 +177,45 @@ void loadRecentPlaybackHistoryFile (String fullPath, String shortName) {
     //output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = fullPath;
     playbackData_ShortName = shortName;
+    
+    if (new File(playbackData_fname).isFile()) {
 
-    //If a new file was selected, process it so we can set variables first.
-    processNewPlaybackFile();
+        //If a new file was selected, process it so we can set variables first.
+        processNewPlaybackFile();
 
-    //Determine the number of channels and updateToNChan()
-    determineNumChanFromFile(playbackData_table);
+        //Determine the number of channels and updateToNChan()
+        determineNumChanFromFile(playbackData_table);
 
-    //Print success message
-    outputSuccess("You have selected \""
-    + playbackData_ShortName + "\" for playback. "
-    + str(nchan) + " channels found.");
+        //Print success message
+        outputSuccess("You have selected \""
+        + playbackData_ShortName + "\" for playback. "
+        + str(nchan) + " channels found.");
 
-    //add playback file that was processed to the JSON history
-    savePlaybackFileToHistory(playbackData_ShortName);
+        //add playback file that was processed to the JSON history
+        savePlaybackFileToHistory(playbackData_ShortName);
 
-    //Tell TS widget that the number of channel bars needs to be updated
-    w_timeSeries.updateNumberOfChannelBars = true;
+        //Tell TS widget that the number of channel bars needs to be updated
+        w_timeSeries.updateNumberOfChannelBars = true;
 
-    //Reinitialize core data, EMG, FFT, and Headplot number of channels
-    reinitializeCoreDataAndFFTBuffer();
+        //Reinitialize core data, EMG, FFT, and Headplot number of channels
+        reinitializeCoreDataAndFFTBuffer();
 
-    //Update the MenuList in the PlaybackHistory Widget
-    w_playback.refreshPlaybackList();
+        //Update the MenuList in the PlaybackHistory Widget
+        w_playback.refreshPlaybackList();
 
-    //Process the file again to fix issue. This makes indexes for playback slider load properly
-    try {
-        hasRepeated = false;
-        has_processed = false;
-        process_input_file();
-        println("+++GUI update process file has occurred");
-    }
-    catch(Exception e) {
-        isOldData = true;
-        output("+++Error processing timestamps, are you using old data?");
+        //Process the file again to fix issue. This makes indexes for playback slider load properly
+        try {
+            hasRepeated = false;
+            has_processed = false;
+            process_input_file();
+            println("+++GUI update process file has occurred");
+        }
+        catch(Exception e) {
+            isOldData = true;
+            output("+++Error processing timestamps, are you using old data?");
+        }
+    } else {
+        outputError("W_Playback: Selected file does not exist. Try another file or clear settings to remove this entry.");
     }
 }
 

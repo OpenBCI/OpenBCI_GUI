@@ -263,6 +263,23 @@ public void controlEvent(ControlEvent theEvent) {
             loadRecentPlaybackHistoryFile(m.get("copy").toString(), m.get("headline").toString());
         }
     }
+
+    if(theEvent.isFrom("recentFiles")) {
+        int s = (int)(theEvent.getController()).getValue();
+        println("got a menu event from item " + s);
+        println(controlPanel.recentPlaybackBox.longFilePaths);
+        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s+1);
+        if (new File(filePath).isFile()) {
+            String shortFileName = controlPanel.recentPlaybackBox.shortFileNames.get(s+1);
+            if (shortFileName.equals("None") == false) {
+                controlPanel.recentPlaybackBox.setFilePickedShort(shortFileName);
+                //Load the playback file!
+                playbackFileSelectedCP(filePath, shortFileName);
+            }
+        } else {
+            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+        }
+    }
 }
 
 //------------------------------------------------------------------------
@@ -2577,8 +2594,7 @@ class RecentPlaybackBox {
     int x, y, w, h, padding; //size and position
     StringList shortFileNames = new StringList();
     StringList longFilePaths = new StringList();
-    String filePickedShort = "Select Recent Playback File";
-    String newFilePickedShort = "";
+    private String filePickedShort = "Select Recent Playback File";
 
     ControlP5 cp5_controlPanel_dropdown;
 
@@ -2626,24 +2642,14 @@ class RecentPlaybackBox {
                 println("RecentPlaybackBox: NullPointerException");
             }
         }
+    }
 
-        //TODO: This can be updated to use controlEvent in ControlPanel.pde for theEvent.isFrom("recentFiles")
-        //SUBPAR: Keep updating to see if User has selected a new recent playback file
-        newFilePickedShort = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
-        if (newFilePickedShort.equals(filePickedShort) == false) {
-            if (newFilePickedShort.equals("None") == false) {
-                filePickedShort = newFilePickedShort;
-                int filePickedInt = -1;
-                //Find the corresponding array index
-                for (int i = 0; i < shortFileNames.size(); i++) {
-                    if (filePickedShort.equals(shortFileNames.get(i)) == true) {
-                        filePickedInt = i;
-                    }
-                }
-                //Load the playback file!
-                playbackFileSelectedCP(longFilePaths.get(filePickedInt), filePickedShort);
-            }
-        }
+    public String getFilePickedShort() {
+        return filePickedShort;
+    }
+
+    public void setFilePickedShort(String _fileName) {
+        filePickedShort = _fileName;
     }
 
     public void draw() {
@@ -2724,7 +2730,7 @@ class RecentPlaybackBox {
         cp5_controlPanel_dropdown.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText("Select Recent Playback File")
+            .setText(filePickedShort)
             .setFont(h4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2733,7 +2739,7 @@ class RecentPlaybackBox {
         cp5_controlPanel_dropdown.getController(name)
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText("Select Recent Playback File")
+            .setText(filePickedShort)
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
