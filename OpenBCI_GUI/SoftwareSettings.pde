@@ -77,7 +77,7 @@ String[] accVertScaleArray = {"Auto","1 g", "2 g", "4 g"};
 String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
 //Used to set text in dropdown menus when loading Networking settings
-String[] nwProtocolArray = {"OSC", "UDP", "LSL", "Serial"};
+String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
 String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"};
 String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
@@ -384,7 +384,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
     saveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
 
     switch(nwProtocolSave) {
-        case 0:
+        case 4:
             //Save Data Types for OSC
             saveNetworkingSettings.setInt("OSC_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
             saveNetworkingSettings.setInt("OSC_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
@@ -411,7 +411,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
             saveNetworkingSettings.setInt("OSC_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
             saveNetworkingSettings.setInt("OSC_filter4", int(w_networking.cp5_networking.get(RadioButton.class, "filter4").getValue()));
             break;
-        case 1:
+        case 3:
             //Save UDP data types
             saveNetworkingSettings.setInt("UDP_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
             saveNetworkingSettings.setInt("UDP_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
@@ -451,7 +451,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
             saveNetworkingSettings.setInt("LSL_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
             saveNetworkingSettings.setInt("LSL_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
             break;
-        case 3:
+        case 1:
             //Save Serial data type
             saveNetworkingSettings.setInt("Serial_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
             //Save Serial baud rate. Not saving serial port. cp5_networking_baudRate.
@@ -634,7 +634,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject("networking");
     nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
     switch (nwProtocolLoad)  {
-        case 0:
+        case 4:
             nwDataType1 = loadNetworkingSettings.getInt("OSC_DataType1");
             nwDataType2 = loadNetworkingSettings.getInt("OSC_DataType2");
             nwDataType3 = loadNetworkingSettings.getInt("OSC_DataType3");
@@ -656,7 +656,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
             nwOscFilter3Load = loadNetworkingSettings.getInt("OSC_filter3");
             nwOscFilter4Load = loadNetworkingSettings.getInt("OSC_filter4");
             break;
-        case 1:
+        case 3:
             nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
             nwDataType2 = loadNetworkingSettings.getInt("UDP_DataType2");
             nwDataType3 = loadNetworkingSettings.getInt("UDP_DataType3");
@@ -687,7 +687,7 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
             nwLSLFilter2Load = loadNetworkingSettings.getInt("LSL_filter2");
             nwLSLFilter3Load = loadNetworkingSettings.getInt("LSL_filter3");
             break;
-        case 3:
+        case 1:
             nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
             nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
             nwSerialFilter1Load = loadNetworkingSettings.getInt("Serial_filter1");
@@ -1026,7 +1026,7 @@ void loadApplyWidgetDropdownText() {
     //Update dropdowns and textfields in the Networking widget with loaded values
     w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
     switch (nwProtocolLoad) {
-        case 0:  //Apply OSC if loaded
+        case 4:  //Apply OSC if loaded
             w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
             w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
             w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1052,7 +1052,7 @@ void loadApplyWidgetDropdownText() {
             w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwOscFilter3Load);
             w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(nwOscFilter4Load);
             break;
-        case 1:  //Apply UDP if loaded
+        case 3:  //Apply UDP if loaded
             println("apply UDP nw mode");
             w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
             w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
@@ -1091,7 +1091,7 @@ void loadApplyWidgetDropdownText() {
             w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwLSLFilter2Load);
             w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwLSLFilter3Load);
             break;
-        case 3:  //Apply Serial if loaded
+        case 1:  //Apply Serial if loaded
             println("apply Serial nw mode");
             w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
             w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend

@@ -437,7 +437,8 @@ class TopNav {
                 if (layoutButton.isMouseHere() && layoutButton.isActive()) {
                     layoutSelector.toggleVisibility();
                     layoutButton.setIsActive(true);
-                    wm.printLayouts();
+                    //wm.printLayouts(); //Used for debugging
+                    println("TopNav: Layout Dropdown Opened");
                 }
             }
 
@@ -1025,7 +1026,7 @@ class configSelector {
             }
         } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.configButton.isActive()) {
             //resize the height of the settings dropdown
-            h = margin*3 + b_h*3;
+            h = margin*3 + b_h*2;
             clearAllSettingsPressed = false;
         }
     }

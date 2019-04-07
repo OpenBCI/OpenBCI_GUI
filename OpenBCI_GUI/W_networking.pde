@@ -122,7 +122,7 @@ class W_networking extends Widget {
         defaultBaud = "115200";
         // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
         baudRates = Arrays.asList(nwBaudRatesArray);
-        protocolMode = "OSC"; //default to OSC
+        protocolMode = "Serial"; //default to OSC
         addDropdown("Protocol", "Protocol", Arrays.asList(nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
         println("comPorts = " + comPorts);
@@ -1702,13 +1702,13 @@ class Stream extends Thread {
   */
 void Protocol(int protocolIndex){
     nwProtocolSave = protocolIndex;
-    if (protocolIndex==0){
+    if (protocolIndex==3){
         w_networking.protocolMode = "OSC";
-    } else if (protocolIndex==1){
-        w_networking.protocolMode = "UDP";
     } else if (protocolIndex==2){
+        w_networking.protocolMode = "UDP";
+    } else if (protocolIndex==1){
         w_networking.protocolMode = "LSL";
-    } else if (protocolIndex==3){
+    } else if (protocolIndex==0){
         w_networking.protocolMode = "Serial";
     }
     println(w_networking.protocolMode + " selected from Protocol Menu");
