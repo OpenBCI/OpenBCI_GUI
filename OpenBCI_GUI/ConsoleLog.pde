@@ -232,31 +232,22 @@ class ConsoleWindow extends PApplet {
 class CustomOutputStream extends PrintStream {
 
     private StringList data;
-    private PrintStream fileOutput;
+    private PrintWriter fileOutput;
     private Textarea textArea;
-    private String filePath;
-
-    private final String fileDirectory = "/SavedData/Settings/";
-    private final String fileName =  "console-data.txt";
+    private final String filePath = "SavedData/Settings/console-data.txt";
 
     public CustomOutputStream(OutputStream out) {
         super(out);
         data = new StringList();
-        // initialize the printstream just in case the file open fails
-        fileOutput = new PrintStream(out);
+        // initialize the printwriter just in case the file open fails
+        fileOutput = new PrintWriter(out);
 
         // create log file
-        // TODO: Figure out clean way to create file on all platforms
         try {
-            File consoleDataFile = new File(sketchPath()+fileDirectory);
-            if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
-            filePath = consoleDataFile.getAbsolutePath() + System.getProperty("file.separator") + fileName;
-
-            FileOutputStream outStr = new FileOutputStream(filePath, false);
-            fileOutput = new PrintStream(outStr);
+            fileOutput = createWriter(filePath);
         }
-        catch (IOException e) {
-            println("Error! Failed to open " + fileName + " for write.");
+        catch (Exception e) {
+            println("Error! Failed to open " + filePath + " for write.");
             println(e);
         }
     }
@@ -270,6 +261,7 @@ class CustomOutputStream extends PrintStream {
 
         // print to file
         fileOutput.print(string);
+        fileOutput.flush();
 
         // add to text area, if registered
         if (textArea != null) {
@@ -286,6 +278,7 @@ class CustomOutputStream extends PrintStream {
 
         // print to file
         fileOutput.print(string);
+        fileOutput.flush();
 
         // add to text area, if registered
         if (textArea != null) {
