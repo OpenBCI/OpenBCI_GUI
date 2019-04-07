@@ -17,6 +17,11 @@
 
 //interpret a keypress...the key pressed comes in as "key"
 void keyPressed() {
+    // don't allow key presses until setup is complete and the UI is initialized
+    if (!setupComplete) {
+        return;
+    }
+    
     //note that the Processing variable "key" is the keypress as an ASCII character
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
