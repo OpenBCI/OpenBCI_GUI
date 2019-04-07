@@ -5,20 +5,30 @@ import biplist
 import os.path
 
 #
-# Example settings file for dmgbuild
+# Settings file for dmgbuild
 #
 
 # Use like this: dmgbuild -s settings.py "Test Volume" test.dmg
 
-# You can actually use this file for your own application (not just TextEdit)
+# You can actually use this file for any application (not just TextEdit)
 # by doing e.g.
 #
 #   dmgbuild -s settings.py -D app=/path/to/My.app "My Application" MyApp.dmg
 
 # .. Useful stuff ..............................................................
 
-application = defines.get('app', '/Applications/TextEdit.app')
+application = defines.get('app', '/Applications/TextEdit.app') # default
 appname = os.path.basename(application)
+
+def icon_from_app(app_path):
+    plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
+    plist = biplist.readPlist(plist_path)
+    icon_name = plist['CFBundleIconFile']
+    icon_root,icon_ext = os.path.splitext(icon_name)
+    if not icon_ext:
+        icon_ext = '.icns'
+    icon_name = icon_root + icon_ext
+    return os.path.join(app_path, 'Contents', 'Resources', icon_name)
 
 # .. Basics ....................................................................
 
@@ -47,7 +57,7 @@ symlinks = { 'Applications': '/Applications' }
 # will be used to badge the system's Removable Disk icon
 #
 #icon = '/path/to/icon.icns'
-badge_icon = os.path.join(application, "Contents", "Resources", "sketch.icns")
+badge_icon = icon_from_app(application)
 
 # Where to put the icons
 icon_locations = {
