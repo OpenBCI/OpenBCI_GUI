@@ -7,7 +7,7 @@
 #   This is meant for members of the OpenBCI organization to quickly build new releases:
 #   https://github.com/OpenBCI/OpenBCI_GUI/releases
 #
-#   Usage: > python make-release.py
+#   Usage: > python release_script/make-release.py
 #   Written for python 2.7, but could easily be adapted to python 3.
 #   No warranty. Use at your own risk. 
 #
@@ -203,17 +203,24 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
             print err
             print "WARNING: Failed to sign app."
 
-    ### Zip the file
+    ### On Mac, make a .dmg and sign it
     ###########################################################
-    print "Zipping ..."
-    zip_dir = build_dir + ".zip"
-
-    # mac app uses symlinks, and shutil does not handle symlinks, so we have to use the zip command
     if LOCAL_OS == MAC:
-        os.chdir(sketch_dir)
-        subprocess.check_output(["zip", "-ry", zip_dir, flavor])
-        print "Done: " + zip_dir
+        try:
+            subprocess.check_call(["dmgbuild", "-s", "release_script/dmgbuild_settings.py", "-D",\
+                "app=" + build_dir, "OpenBCI_GUI", build_dir + ".dmg"])
+        except subprocess.CalledProcessError as err:
+            print err
+            print "WARNING: Failed create the .dmg file."
+        else:
+            print "Successfully created the .dmg file."
+
+    ### Else zip the file
+    ###########################################################
     else:
+        print "Zipping ..."
+        zip_dir = build_dir + ".zip"
+
         # fix the directory structure: application.windows64/OpenBCI_GUI/OpenBCI_GUI.exe
         temp_dir = os.path.join(sketch_dir, "OpenBCI_GUI")
         os.rename(build_dir, temp_dir)

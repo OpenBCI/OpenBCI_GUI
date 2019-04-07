@@ -57,7 +57,7 @@ symlinks = { 'Applications': '/Applications' }
 # will be used to badge the system's Removable Disk icon
 #
 #icon = '/path/to/icon.icns'
-badge_icon = icon_from_app(application)
+badge_icon = os.path.join(application, "OpenBCI_GUI.app", "Contents", "Resources", "sketch.icns")
 
 # Where to put the icons
 icon_locations = {
