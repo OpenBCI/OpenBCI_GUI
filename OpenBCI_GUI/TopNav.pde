@@ -39,6 +39,7 @@ class TopNav {
     LayoutSelector layoutSelector;
     TutorialSelector tutorialSelector;
     configSelector configSelector;
+    int previousSystemMode = 0;
 
     boolean finishedInit = false;
 
@@ -219,19 +220,23 @@ class TopNav {
     }
 
     void update() {
-        if (systemMode >= SYSTEMMODE_POSTINIT) {
-            layoutSelector.update();
-            tutorialSelector.update();
-            if (configButton.but_x != width - (70*2) + 3) {
-                configButton.but_x = width - (70*2) + 3;
-                println("TopNav: Updated Settings Button Position");
+        if (previousSystemMode != systemMode) {
+            if (systemMode >= SYSTEMMODE_POSTINIT) {
+                layoutSelector.update();
+                tutorialSelector.update();
+                if (configButton.but_x != width - (70*2) + 3) {
+                    configButton.but_x = width - (70*2) + 3;
+                    println("TopNav: Updated Settings Button Position");
+                }
+            } else {
+                if (configButton.but_x != width - 70 - 3) {
+                    configButton.but_x = width - 70 - 3;
+                    println("TopNav: Updated Settings Button Position");
+                }
             }
-        } else {
-            if (configButton.but_x != width - 70 - 3) {
-                configButton.but_x = width - 70 - 3;
-            }
+            configSelector.update();
+            previousSystemMode = systemMode;
         }
-        configSelector.update();
     }
 
     void draw() {
@@ -758,7 +763,7 @@ class configSelector {
     color newGreen = color(114,204,171);
     color expertPurple = color(135,95,154);
     color cautionRed = color(214,100,100);
-    int previousSystemMode = -1;
+
     int osPadding = 0;
     int osPadding2 = 0;
 
@@ -781,8 +786,7 @@ class configSelector {
     }
 
     void update() {
-        if (previousSystemMode != systemMode) updateConfigButtonPositions();
-        previousSystemMode = systemMode;
+        updateConfigButtonPositions();
     }
 
     void draw() {
@@ -1020,7 +1024,7 @@ class configSelector {
             }
         } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.configButton.isActive()) {
             //resize the height of the settings dropdown
-            h = margin*(configOptions.size()-4) + b_h*(configOptions.size()-1);
+            h = margin*3 + b_h*3;
             clearAllSettingsPressed = false;
         }
     }
@@ -1055,9 +1059,9 @@ class configSelector {
         configOptions.add(tempConfigButton);
 
         //setup button 4 -- Clear All Settings
-        buttonNumber++;
+        buttonNumber = 1;
         //Update the height of the Settings dropdown
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+        h = margin*(buttonNumber+1) + b_h*(buttonNumber+1);
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(cautionRed);
@@ -1086,9 +1090,21 @@ class configSelector {
         int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
         x = width - 70*multiplier - _padding + 20;
         int dx = oldX - x;
-        for (int i = 0; i < configOptions.size(); i++) {
-            configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+        if (systemMode == SYSTEMMODE_POSTINIT) {
+            for (int i = 0; i < configOptions.size(); i++) {
+                configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+                int spacer = (i > configOptions.size() - 3) ? 1 : 0;
+                int newY = y + margin*(i+spacer+1) + b_h*(i+spacer);
+                configOptions.get(i).setY(newY);
+            }
+        } else if (systemMode < SYSTEMMODE_POSTINIT) {
+            for (int i = 0; i < configOptions.size(); i++) {
+                configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+                int newY = y + margin*(i+1) + b_h*(i);
+                configOptions.get(i).setY(newY);
+            }
         }
+        //println("TopNav: ConfigSelector: Button Positions Updated");
     }
 }
 

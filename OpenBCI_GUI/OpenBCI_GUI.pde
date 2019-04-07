@@ -1196,6 +1196,8 @@ void systemUpdate() { // for updating data values and variables
 
         if (widthOfLastScreen != width || heightOfLastScreen != height) {
             topNav.screenHasBeenResized(width, height);
+            widthOfLastScreen = width;
+            heightOfLastScreen = height;
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
