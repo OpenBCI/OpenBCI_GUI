@@ -766,6 +766,7 @@ class configSelector {
 
     int osPadding = 0;
     int osPadding2 = 0;
+    int buttonSpacer = 0;
 
     configSelector() {
         w = 120;
@@ -808,7 +809,7 @@ class configSelector {
                 int fontSize = 16;
                 textFont(p2, fontSize);
                 fill(255);
-                text("Are You Sure?", x + margin, y + margin*(configOptions.size() + osPadding) + b_h*(configOptions.size()-1) + osPadding2);
+                text("Are You Sure?", x + margin, y + margin*(buttonSpacer + osPadding) + b_h*(buttonSpacer-1) + osPadding2);
                 configOptions.get(configOptions.size()-2).draw();
                 configOptions.get(configOptions.size()-1).draw();
             }
@@ -953,7 +954,7 @@ class configSelector {
                     } else if (configSelected == 4) {
                         clearAllSettingsPressed = true;
                         //expand the height of the dropdown
-                        h = margin*(configOptions.size()+2) + b_h*(configOptions.size()+1);
+                        h = margin*(buttonSpacer+2) + b_h*(buttonSpacer+1);
                     } else if (configSelected == 5 && clearAllSettingsPressed) {
                         //Do nothing because the user clicked Are You Sure?->No
                         clearAllSettingsPressed = false;
@@ -1090,18 +1091,21 @@ class configSelector {
         int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
         x = width - 70*multiplier - _padding + 20;
         int dx = oldX - x;
+        buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 3;
         if (systemMode == SYSTEMMODE_POSTINIT) {
             for (int i = 0; i < configOptions.size(); i++) {
-                configOptions.get(i).setX(configOptions.get(i).but_x - dx);
+                configOptions.get(i).setX(x + multiplier*2);
                 int spacer = (i > configOptions.size() - 3) ? 1 : 0;
                 int newY = y + margin*(i+spacer+1) + b_h*(i+spacer);
                 configOptions.get(i).setY(newY);
             }
         } else if (systemMode < SYSTEMMODE_POSTINIT) {
-            for (int i = 0; i < configOptions.size(); i++) {
-                configOptions.get(i).setX(configOptions.get(i).but_x - dx);
-                int newY = y + margin*(i+1) + b_h*(i);
-                configOptions.get(i).setY(newY);
+            int[] t = {0, 4, 5, 6};
+            for (int i = 0; i < t.length; i++) {
+                configOptions.get(t[i]).setX(configOptions.get(t[i]).but_x - dx);
+                int spacer = (t[i] > 4) ? i + 1 : i;
+                int newY = y + margin*(spacer+1) + b_h*(spacer);
+                configOptions.get(t[i]).setY(newY);
             }
         }
         //println("TopNav: ConfigSelector: Button Positions Updated");
