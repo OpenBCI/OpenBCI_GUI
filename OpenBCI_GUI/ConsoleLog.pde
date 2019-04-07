@@ -246,7 +246,7 @@ class CustomOutputStream extends PrintStream {
         try {
             fileOutput = createWriter(filePath);
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             println("Error! Failed to open " + filePath + " for write.");
             println(e);
         }
