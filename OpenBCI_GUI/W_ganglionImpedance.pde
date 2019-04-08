@@ -11,9 +11,6 @@
 ///////////////////////////////////////////////////,
 
 class W_ganglionImpedance extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
     Button startStopCheck;
     int padding = 24;
 
@@ -22,7 +19,6 @@ class W_ganglionImpedance extends Widget {
 
         startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
         startStopCheck.setFont(p4, 14);
-
     }
 
     void update(){
@@ -36,7 +32,6 @@ class W_ganglionImpedance extends Widget {
         pushStyle();
 
         startStopCheck.draw();
-
 
         //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
         fill(bgColor);
@@ -79,7 +74,6 @@ class W_ganglionImpedance extends Widget {
         }
 
         popStyle();
-
     }
 
     void screenResized(){
@@ -120,7 +114,6 @@ class W_ganglionImpedance extends Widget {
 };
 
 public float convertRawGanglionImpedanceToTarget(float _actual){
-
     //the following impedance adjustment calculations were derived using empirical values from resistors between 1,2,3,4,REF-->D_G
     float _target;
 
