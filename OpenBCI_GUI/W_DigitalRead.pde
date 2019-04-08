@@ -120,7 +120,7 @@ class W_DigitalRead extends Widget {
         if(visible){
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
             digitalModeButton.draw();

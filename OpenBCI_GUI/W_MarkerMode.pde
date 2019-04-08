@@ -114,7 +114,6 @@ class W_MarkerMode extends Widget {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
         pushStyle();
-        //put your code here...
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         if (true) {
 
@@ -181,8 +180,6 @@ class W_MarkerMode extends Widget {
 
         int dy = y - prevY;
         println("dy = " + dy);
-
-        //put your code here...
         println("Acc Widget -- Screen Resized.");
 
         setGraphDimensions();
@@ -206,9 +203,7 @@ class W_MarkerMode extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-            // println("markerModeButton...");
             if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
                 if (cyton.getBoardMode() != BoardMode.MARKER) {
                     cyton.setBoardMode(BoardMode.MARKER);

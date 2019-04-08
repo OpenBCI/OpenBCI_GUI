@@ -208,9 +208,7 @@ class W_PulseSensor extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-            // println("analogModeButton...");
             if(cyton.isPortOpen()) {
                 if (cyton.getBoardMode() != BoardMode.ANALOG) {
                     cyton.setBoardMode(BoardMode.ANALOG);

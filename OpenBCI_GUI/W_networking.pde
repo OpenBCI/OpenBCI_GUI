@@ -149,7 +149,6 @@ class W_networking extends Widget {
             }
         }
 
-        //put your code here...
         if (dataDropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
         } else {

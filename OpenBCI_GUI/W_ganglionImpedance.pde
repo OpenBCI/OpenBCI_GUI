@@ -27,13 +27,12 @@ class W_ganglionImpedance extends Widget {
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        //put your code here...
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         startStopCheck.draw();
@@ -85,26 +84,19 @@ class W_ganglionImpedance extends Widget {
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         startStopCheck.setPos(x + padding, y + padding);
-
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         if(startStopCheck.isMouseHere()){
             startStopCheck.setIsActive(true);
         }
-
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(startStopCheck.isActive && startStopCheck.isMouseHere()){
             if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
                 if(ganglion.isCheckingImpedance()){

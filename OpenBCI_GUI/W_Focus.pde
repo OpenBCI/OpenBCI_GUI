@@ -215,7 +215,7 @@ class W_Focus extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         //----------------- presettings before drawing Focus Viz --------------
@@ -370,7 +370,6 @@ class W_Focus extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         update_graphic_parameters();
 
         //update sliders...

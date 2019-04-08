@@ -140,7 +140,6 @@ class W_timeSeries extends Widget {
         if(visible && updating){
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //put your code here...
             hsc.update(); //update channel controller
 
             if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
@@ -163,8 +162,7 @@ class W_timeSeries extends Widget {
         if(visible){
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-
+            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
             for(int i = 0; i < numChannelBars; i++){
@@ -195,7 +193,6 @@ class W_timeSeries extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
         wF = float(w);
@@ -233,7 +230,6 @@ class W_timeSeries extends Widget {
 
 
         if(eegDataSource == DATASOURCE_CYTON){
-            //put your code here...
             if (hardwareSettingsButton.isMouseHere()) {
                 hardwareSettingsButton.setIsActive(true);
             }
@@ -254,7 +250,6 @@ class W_timeSeries extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(eegDataSource == DATASOURCE_CYTON){
-            //put your code here...
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
                 println("HardwareSetingsButton: Toggle...");
                 if(showHardwareSettings){

@@ -67,7 +67,7 @@ class W_BandPower extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         // Draw the third plot
         plot3.beginDraw();
         plot3.drawBackground();

@@ -56,23 +56,17 @@ class W_headPlot extends Widget {
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         headPlot.update();
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
-        //put your code here
         headPlot.draw(); //draw the actual headplot
 
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         headPlot.hp_x = x;
         headPlot.hp_y = y;
         headPlot.hp_w = w;
@@ -81,28 +75,20 @@ class W_headPlot extends Widget {
         headPlot.hp_win_y = y;
 
         thread("doHardCalcs");
-        // headPlot.setPositionSize(x, y, w, h, width, height);     //update position of headplot
-
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         headPlot.mousePressed();
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         headPlot.mouseReleased();
     }
 
     void mouseDragged(){
         super.mouseDragged(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         headPlot.mouseDragged();
     }
 

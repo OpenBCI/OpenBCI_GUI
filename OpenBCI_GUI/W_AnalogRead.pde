@@ -114,7 +114,6 @@ class W_AnalogRead extends Widget {
         if(visible && updating) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //put your code here...
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < numAnalogReadBars; i++) {
                 analogReadBars[i].update();
@@ -126,7 +125,7 @@ class W_AnalogRead extends Widget {
         if(visible) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
             analogModeButton.draw();
@@ -145,7 +144,6 @@ class W_AnalogRead extends Widget {
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
         wF = float(w);
@@ -176,7 +174,6 @@ class W_AnalogRead extends Widget {
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
             // println("analogModeButton...");
             if(cyton.isPortOpen()) {
