@@ -1016,11 +1016,7 @@ void stopRunning() {
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
     if (isRunning) {
-        //Dont print this message for playback mode.
-        //Allows user to see current playback time
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
-            output("Data stream stopped.");
-        }
+        output("Data stream stopped.");
     }
     if (eegDataSource == DATASOURCE_GANGLION) {
         if (ganglion != null) {
@@ -1506,7 +1502,7 @@ void drawStartupError() {
     textFont(p3, 16);
     fill(102);
     textAlign(LEFT, TOP);
-    text(startupErrorMessage, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight); 
+    text(startupErrorMessage, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight);
     popStyle();
 }
 
