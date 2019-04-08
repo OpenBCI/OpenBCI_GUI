@@ -15,13 +15,10 @@ TopNav topNav;
 
 class TopNav {
 
-    // PlotFontInfo fontInfo;
     Button controlPanelCollapser;
-
     Button fpsButton;
     Button debugButton;
     ConsoleWindow consoleWindow;
-    //Button highRezButton;
 
     Button stopButton;
 
@@ -37,16 +34,13 @@ class TopNav {
 
     LayoutSelector layoutSelector;
     TutorialSelector tutorialSelector;
-    configSelector configSelector;
-
-    boolean finishedInit = false;
+    ConfigSelector configSelector;
 
     String webGUIVersionString;
     int webGUIVersionInt;
     int localGUIVersionInt;
     Boolean guiVersionIsUpToDate;
-    Boolean unableToFindPlistFile;
-
+    
     //constructor
     TopNav() {
         int w = 256;
@@ -118,7 +112,7 @@ class TopNav {
 
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
-        configSelector = new configSelector();
+        configSelector = new ConfigSelector();
 
         updateNavButtonsBasedOnColorScheme();
     }
@@ -737,13 +731,13 @@ class LayoutSelector {
     }
 }
 
-class configSelector {
+class ConfigSelector {
     int x, y, w, h, margin, b_w, b_h;
     boolean isVisible;
 
     ArrayList<Button> configOptions; //
 
-    configSelector() {
+    ConfigSelector() {
         w = 120;
         x = width- 3*2 - 60*3 - margin*3;
         y = (navBarHeight * 2) - 3;
