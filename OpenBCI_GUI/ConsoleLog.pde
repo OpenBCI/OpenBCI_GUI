@@ -292,7 +292,7 @@ class CustomOutputStream extends PrintStream {
     }
 
     public String getFilePath() {
-        return filePath;
+        return sketchPath() + System.getProperty("file.separator") + filePath;
     }
 
     public String getLastLine() {
