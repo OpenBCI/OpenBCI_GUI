@@ -41,7 +41,6 @@ class W_timeSeries extends Widget {
     HardwareSettingsController hsc;
 
     TextBox[] impValuesMontage;
-    boolean showMontageValues;
 
     private boolean visible = true;
     private boolean updating = true;

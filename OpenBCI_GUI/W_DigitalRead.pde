@@ -9,21 +9,15 @@
 ///////////////////////////////////////////////////,
 
 class W_DigitalRead extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
-
     int numDigitalReadDots;
     float xF, yF, wF, hF;
     int dot_padding;
     float dot_x, dot_y, dot_h, dot_w; //values for actual time series chart (rectangle encompassing all digitalReadDots)
     float plotBottomWell;
     float playbackWidgetHeight;
-    int digitalReadDotHeight;
+    int digitalReaddotHeight;
 
     DigitalReadDot[] digitalReadDots;
-
-    boolean showMontageValues;
 
     private boolean visible = true;
     private boolean updating = true;
@@ -55,14 +49,14 @@ class W_DigitalRead extends Widget {
         dot_y = yF + (dot_padding);
         dot_w = wF - dot_padding*2;
         dot_h = hF - playbackWidgetHeight - plotBottomWell - (dot_padding*2);
-        digitalReadDotHeight = int(dot_h/numDigitalReadDots);
+        digitalReaddotHeight = int(dot_h/numDigitalReadDots);
 
         digitalReadDots = new DigitalReadDot[numDigitalReadDots];
 
         //create our channel bars and populate our digitalReadDots array!
         for(int i = 0; i < numDigitalReadDots; i++){
-            int digitalReadDotY = int(dot_y) + i*(digitalReadDotHeight); //iterate through bar locations
-            int digitalReadDotX = int(dot_x) + i*(digitalReadDotHeight); //iterate through bar locations
+            int digitalReaddotY = int(dot_y) + i*(digitalReaddotHeight); //iterate through bar locations
+            int digitalReaddotX = int(dot_x) + i*(digitalReaddotHeight); //iterate through bar locations
             int digitalPin = 0;
             if (i == 0) {
                 digitalPin = 11;
@@ -79,7 +73,7 @@ class W_DigitalRead extends Widget {
             } else {
                 digitalPin = 18;
             }
-            DigitalReadDot tempDot = new DigitalReadDot(_parent, digitalPin, digitalReadDotX, digitalReadDotY, int(dot_w), digitalReadDotHeight, dot_padding);
+            DigitalReadDot tempDot = new DigitalReadDot(_parent, digitalPin, digitalReaddotX, digitalReaddotY, int(dot_w), digitalReaddotHeight, dot_padding);
             digitalReadDots[i] = tempDot;
         }
 
@@ -115,7 +109,6 @@ class W_DigitalRead extends Widget {
         if(visible && updating){
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //put your code here...
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < numDigitalReadDots; i++){
                 digitalReadDots[i].update();
@@ -146,30 +139,28 @@ class W_DigitalRead extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
         wF = float(w);
         hF = float(h);
-        // println("w_digitalRead: screenResized: x: " + x + " y: " + y + " w: "+ w + " h: " + h + " navBarHeight: " + navBarHeight);
 
         if (wF > hF) {
-            digitalReadDotHeight = int(hF/(numDigitalReadDots+1));
+            digitalReaddotHeight = int(hF/(numDigitalReadDots+1));
         } else {
-            digitalReadDotHeight = int(wF/(numDigitalReadDots+1));
+            digitalReaddotHeight = int(wF/(numDigitalReadDots+1));
         }
 
         if (numDigitalReadDots == 3) {
-            digitalReadDots[0].screenResized(x+int(wF*(1.0/3.0)), y+int(hF*(1.0/3.0)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-            digitalReadDots[1].screenResized(x+int(wF/2), y+int(hF/2), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
-            digitalReadDots[2].screenResized(x+int(wF*(2.0/3.0)), y+int(hF*(2.0/3.0)), digitalReadDotHeight, digitalReadDotHeight); //bar x, bar y, bar w, bar h
+            digitalReadDots[0].screenResized(x+int(wF*(1.0/3.0)), y+int(hF*(1.0/3.0)), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
+            digitalReadDots[1].screenResized(x+int(wF/2), y+int(hF/2), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
+            digitalReadDots[2].screenResized(x+int(wF*(2.0/3.0)), y+int(hF*(2.0/3.0)), digitalReaddotHeight, digitalReaddotHeight); //bar x, bar y, bar w, bar h
         } else {
             int y_pad = y + dot_padding;
-            digitalReadDots[0].screenResized(x+int(wF*(1.0/8.0)), y_pad+int(hF*(1.0/8.0)), digitalReadDotHeight, digitalReadDotHeight);
-            digitalReadDots[2].screenResized(x+int(wF/2), y_pad+int(hF/2), digitalReadDotHeight, digitalReadDotHeight);
-            digitalReadDots[4].screenResized(x+int(wF*(7.0/8.0)), y_pad+int(hF*(7.0/8.0)), digitalReadDotHeight, digitalReadDotHeight);
-            digitalReadDots[1].screenResized(digitalReadDots[0].DotX+int(wF*(3.0/16.0)), digitalReadDots[0].DotY+int(hF*(3.0/16.0)), digitalReadDotHeight, digitalReadDotHeight);
-            digitalReadDots[3].screenResized(digitalReadDots[2].DotX+int(wF*(3.0/16.0)), digitalReadDots[2].DotY+int(hF*(3.0/16.0)), digitalReadDotHeight, digitalReadDotHeight);
+            digitalReadDots[0].screenResized(x+int(wF*(1.0/8.0)), y_pad+int(hF*(1.0/8.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[2].screenResized(x+int(wF/2), y_pad+int(hF/2), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[4].screenResized(x+int(wF*(7.0/8.0)), y_pad+int(hF*(7.0/8.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[1].screenResized(digitalReadDots[0].dotX+int(wF*(3.0/16.0)), digitalReadDots[0].dotY+int(hF*(3.0/16.0)), digitalReaddotHeight, digitalReaddotHeight);
+            digitalReadDots[3].screenResized(digitalReadDots[2].dotX+int(wF*(3.0/16.0)), digitalReadDots[2].dotY+int(hF*(3.0/16.0)), digitalReaddotHeight, digitalReaddotHeight);
 
         }
 
@@ -187,9 +178,7 @@ class W_DigitalRead extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
-            // println("digitalModeButton...");
             if(cyton.isPortOpen()) {
                 if (cyton.getBoardMode() != BoardMode.DIGITAL) {
                     cyton.setBoardMode(BoardMode.DIGITAL);
@@ -238,11 +227,11 @@ class DigitalReadDot{
     color val0Fill = #000000;
     color val1Fill = #ffffff;
 
-    int DotX;
-    int DotY;
-    int DotWidth;
-    int DotHeight;
-    float DotCorner;
+    int dotX;
+    int dotY;
+    int dotWidth;
+    int dotHeight;
+    float dotCorner;
 
     DigitalReadDot(PApplet _parent, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding){ // channel number, x/y location, height, width
 
@@ -263,23 +252,21 @@ class DigitalReadDot{
             dot1Fill = channelColors[4];
         }
 
-        DotX = _x;
-        DotY = _y;
-        DotWidth = _w;
-        DotHeight = _h;
+        dotX = _x;
+        dotY = _y;
+        dotWidth = _w;
+        dotHeight = _h;
         padding = _padding;
 
-        digitalValue = new TextBox("", DotX, DotY);
+        digitalValue = new TextBox("", dotX, dotY);
         digitalValue.textColor = color(val0Fill);
         digitalValue.alignH = CENTER;
         digitalValue.alignV = CENTER;
+        drawDigitalValue = true;
 
-        digitalPin = new TextBox("D" + digitalInputString, DotX, DotY - DotWidth);
+        digitalPin = new TextBox("D" + digitalInputString, dotX, dotY - dotWidth);
         digitalPin.textColor = color(bgColor);
         digitalPin.alignH = CENTER;
-        // digitalPin.alignV = CENTER;
-
-        drawDigitalValue = true;
     }
 
     void update(){
@@ -302,8 +289,6 @@ class DigitalReadDot{
     void draw(){
         pushStyle();
 
-        //draw plot
-
         if (digitalInputVal == 1) {
             fill(dot1Fill);
             digitalValue.textColor = val1Fill;
@@ -312,7 +297,7 @@ class DigitalReadDot{
             digitalValue.textColor = val0Fill;
         }
         stroke(dotStroke);
-        ellipse(DotX, DotY, DotWidth, DotHeight);
+        ellipse(dotX, dotY, dotWidth, dotHeight);
 
         if(drawDigitalValue){
             digitalValue.draw();
@@ -323,18 +308,16 @@ class DigitalReadDot{
     }
 
     void screenResized(int _x, int _y, int _w, int _h){
-        DotX = _x;
-        DotY = _y;
-        DotWidth = _w;
-        DotHeight = _h;
-        DotCorner = (sqrt(2)*DotWidth/2)/2;
+        dotX = _x;
+        dotY = _y;
+        dotWidth = _w;
+        dotHeight = _h;
+        dotCorner = (sqrt(2)*dotWidth/2)/2;
 
-        // println("DigitalReadDot: " + digitalInputPin + " screenResized: DotX: " + DotX + " DotY: " + DotY + " DotWidth: "+ DotWidth + " DotHeight: " + DotHeight);
+        digitalPin.x = dotX;
+        digitalPin.y = dotY - int(dotWidth/2.0);
 
-        digitalPin.x = DotX;
-        digitalPin.y = DotY - int(DotWidth/2.0);
-
-        digitalValue.x = DotX;
-        digitalValue.y = DotY;
+        digitalValue.x = dotX;
+        digitalValue.y = dotY;
     }
 };
