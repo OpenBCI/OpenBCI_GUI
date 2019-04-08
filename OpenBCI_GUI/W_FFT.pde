@@ -14,7 +14,7 @@
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
-class W_fft extends Widget {.
+class W_fft extends Widget {
     GPlot fft_plot; //create an fft plot for each active channel
     GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
     int[] lineColor = {

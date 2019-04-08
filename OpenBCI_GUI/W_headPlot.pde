@@ -14,14 +14,8 @@
 
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
-int intensityFac_ind = 2;
-
 
 class W_headPlot extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
-
     HeadPlot headPlot;
 
     W_headPlot(PApplet _parent){
@@ -46,7 +40,6 @@ class W_headPlot extends Widget {
     }
 
     void updateHeadPlot(int _nchan) {
-        //add your code here
         headPlot = new HeadPlot(x, y, w, h, win_x, win_y);
         //FROM old Gui_Manager
         headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
@@ -62,7 +55,6 @@ class W_headPlot extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
         headPlot.draw(); //draw the actual headplot
-
     }
 
     void screenResized(){
@@ -96,30 +88,7 @@ class W_headPlot extends Widget {
     void setSmoothFac(float fac) {
         headPlot.smooth_fac = fac;
     }
-
 };
-
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void Ten20(int n) { //triggered when there is an event in the Ten20 Dropdown
-    /* here an item is stored as a Map  with the following key-value pairs:
-      * name, the given name of the item
-      * text, the given text of the item by default the same as name
-      * value, the given value of the item, can be changed by using .getItem(n).put("value", "abc"); a value here is of type Object therefore can be anything
-      * color, the given color of the item, how to change, see below
-      * view, a customizable view, is of type CDrawable
-      */
-
-    //fft_widget.fft_plot.setXLim(0.1, fft_widget.xLimOptions[n]); //update the xLim of the FFT_Plot
-    // println("BOOOOM!" + n);
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-
-}
-
-//triggered when there is an event in the Headset Dropdown
-void Headset(int n) {
-    //fft_widget.fft_plot.setYLim(0.1, fft_widget.yLimOptions[n]); //update the yLim of the FFT_Plot
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-}
 
 //triggered when there is an event in the Polarity Dropdown
 void Polarity(int n) {
@@ -250,23 +219,10 @@ class HeadPlot {
         nose_x = new int[3];
         nose_y = new int[3];
         electrode_xy = new float[n_elec][2];   //x-y position of electrodes (pixels?)
-        //electrode_relDist = new float[n_elec][n_elec];  //relative distance between electrodes (pixels)
         ref_electrode_xy = new float[2];  //x-y position of reference electrode
         electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
         font = p5;
         drawHeadAsContours = true; //set this to be false for slower computers
-
-        //float percentMargin = 0.1;
-        //_x = _x + (int)(float(_w)*percentMargin);
-        //_y = _y + (int)(float(_h)*percentMargin);
-        //_w = (int)(float(_w)-(2*(float(_w)*percentMargin)));
-        //_h = (int)(float(_h)-(2*(float(_h)*percentMargin)));
-
-        //rel_posX = float(_x)/_win_x;
-        //rel_posY = float(_y)/_win_y;
-        //rel_width = float(_w)/_win_x;
-        //rel_height = float(_h)/_win_y;
-        //setWindowDimensions(_win_x, _win_y);
 
         hp_x = _x;
         hp_y = _y;
@@ -275,7 +231,6 @@ class HeadPlot {
         hp_win_x = _win_x;
         hp_win_y = _win_y;
         thread("doHardCalcs");
-        // setPositionSize(_x, _y, _w, _h, _win_x, _win_y);
         setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
     }
 
@@ -300,7 +255,6 @@ class HeadPlot {
 
     public void setPolarityData_byRef(float[] data) {
         polarity_data = data;//simply alias the data held externally.  DOES NOT COPY THE DATA ITSEF!  IT'S SIMPLY LINKED!
-        //if (polarity_data != null) use_polarity = true;
     }
 
     public String getUsePolarityTrueFalse() {
@@ -347,7 +301,6 @@ class HeadPlot {
         int circ_width_foo = (int)(total_width - 2.f*((float)ear_width)/2.0f);
         int circ_height_foo = (int)(total_height - nose_height);
         circ_diam = min(circ_width_foo, circ_height_foo);
-        //println("headPlot: circ_diam: " + circ_diam);
 
         //locations: circle center, measured from upper left
         circ_x = (int)((rel_posX+0.5f*rel_width)*(float)win_width);                  //center of head
@@ -687,7 +640,7 @@ class HeadPlot {
         int withinElectrode[][] = new int[n_wide][n_tall]; //which electrode is this pixel within (-1 means that it is not within any electrode)
         boolean withinHead[][] = new boolean[n_wide][n_tall]; //is the pixel within the head?
 
-        //find which pixesl are within the head and which pixels are within an electrode
+        //find which pixels are within the head and which pixels are within an electrode
         whereAreThePixels(pixelAddress, withinHead, withinElectrode);
 
         //loop over the pixels and change the weightFac to reflext where it is
@@ -918,32 +871,6 @@ class HeadPlot {
         if (iter_count >= lim_iter_count) println("headPlot: computeWeightFactor: Ielec " + Ielec + ", solution complete with " + iter_count + " iterations. max_dVal = " + max_dVal);
     } //end of method
 
-
-
-    //  private void countConnections(int toPixels[][][][],int toElectrodes[][][], int numConnections[][]) {
-    //    int n_wide = toPixels.length;
-    //    int n_tall = toPixels[0].length;
-    //    int n_dir = toPixels[0][0].length;
-    //
-    //    //loop over each pixel
-    //    for (int Ix=0; Ix<n_wide;Ix++) {
-    //      for (int Iy=0; Iy<n_tall;Iy++) {
-    //
-    //        //initialize
-    //        numConnections[Ix][Iy]=0;
-    //
-    //        //loop through the four directions
-    //        for (int Idir=0;Idir<n_dir;Idir++) {
-    //          //is it a connection to another pixel (anything > -1 is a connection)
-    //          if (toPixels[Ix][Iy][Idir][0] > -1) numConnections[Ix][Iy]++;
-    //
-    //          //is it a connection to an electrode?
-    //          if (toElectrodes[Ix][Iy][Idir] > -1) numConnections[Ix][Iy]++;
-    //        }
-    //      }
-    //    }
-    //  }
-
     private void makeAllTheConnections(boolean withinHead[][], int withinElectrode[][], int toPixels[][][][], int toElectrodes[][][]) {
 
         int n_wide = toPixels.length;
@@ -952,7 +879,6 @@ class HeadPlot {
         int curPixel, Ipix, Ielec;
         int n_pixels = n_wide * n_tall;
         int Ix_try, Iy_try;
-
 
         //loop over every pixel in the image
         for (int Iy=0; Iy < n_tall; Iy++) {
