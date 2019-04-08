@@ -968,6 +968,10 @@ class configSelector {
                             ganglionUserSettingsFile,
                             playbackUserSettingsFile,
                             syntheticUserSettingsFile,
+                            cytonDefaultSettingsFile,
+                            ganglionDefaultSettingsFile,
+                            playbackDefaultSettingsFile,
+                            syntheticDefaultSettingsFile,
                             userPlaybackHistoryFile
                         };
                         int successfulDeletions = 0;
