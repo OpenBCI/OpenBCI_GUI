@@ -16,7 +16,7 @@ W_timeSeries w_timeSeries;
 W_fft w_fft;
 W_networking w_networking;
 W_BandPower w_bandPower;
-W_accelerometer w_accelerometer;
+W_Accelerometer w_accelerometer;
 W_ganglionImpedance w_ganglionImpedance;
 W_headPlot w_headPlot;
 W_template w_template1;
@@ -47,7 +47,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets fft -- " + millis());
 
     //Widget_2
-    w_accelerometer = new W_accelerometer(_this);
+    w_accelerometer = new W_Accelerometer(_this);
     w_accelerometer.setTitle("Accelerometer");
     addWidget(w_accelerometer, w);
 

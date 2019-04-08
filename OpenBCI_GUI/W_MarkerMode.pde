@@ -50,7 +50,6 @@ class W_MarkerMode extends Widget {
     float synthTime;
     int synthCount;
 
-    boolean OBCI_inited= true;
     boolean markerModeOn = false;
 
     Button markerModeButton;
@@ -84,10 +83,6 @@ class W_MarkerMode extends Widget {
         markerModeButton.textColorNotActive = color(255);
         markerModeButton.hasStroke(false);
         markerModeButton.setHelpText("Click this button to activate/deactivate the MarkerMode of your Cyton board!");
-    }
-
-    public void initPlayground(Cyton _OBCI) {
-        OBCI_inited = true;
     }
 
     void update(){
