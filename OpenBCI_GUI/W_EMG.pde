@@ -112,9 +112,6 @@ void minUVRange(int n){
 }
 
 class W_emg extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
     Motor_Widget[] motorWidgets;
     TripSlider[] tripSliders;
     TripSlider[] untripSliders;
@@ -173,12 +170,6 @@ class W_emg extends Widget {
             baudList.add(Integer.toString(7200));
             baudList.add(Integer.toString(4800));
             baudList.add(Integer.toString(3600));
-            // // ignore below here... I don't think these baud rates will be necessary
-            // baudList.add(Integer.toString(2400));
-            // baudList.add(Integer.toString(1800));
-            // baudList.add(Integer.toString(1200));
-            // baudList.add(Integer.toString(600));
-            // baudList.add(Integer.toString(300));
 
             String[] serialPorts = Serial.list();
             serList.add("NONE");
@@ -214,7 +205,6 @@ class W_emg extends Widget {
                 println("ROW: " + (4*rowOffset/8));
                 tripSliders[index] = new TripSlider(int((5*colOffset/8) * 0.498), int((2 * rowOffset / 8) * 0.384), (4*rowOffset/8) * 0.408, int((3*colOffset/32) * 0.489), 2, tripSliders, true, motorWidgets[index]);
                 untripSliders[index] = new TripSlider(int((5*colOffset/8) * 0.498), int((2 * rowOffset / 8) * 0.384), (4*rowOffset/8) * 0.408, int((3*colOffset/32) * 0.489), 2, tripSliders, false, motorWidgets[index]);
-                //println("Slider :" + (j+i) + " first: " + int((5*colOffset/8) * 0.498)+ " second: " + int((2 * rowOffset / 8) * 0.384) + " third: " + int((3*colOffset/32) * 0.489));
                 tripSliders[index].setStretchPercentage(motorWidgets[index].tripThreshold);
                 untripSliders[index].setStretchPercentage(motorWidgets[index].untripThreshold);
                 index++;
@@ -242,15 +232,12 @@ class W_emg extends Widget {
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
     }
 
     void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
         noStroke();
         fill(255);
@@ -271,7 +258,6 @@ class W_emg extends Widget {
             }
         }
 
-        // float rx = x, ry = y + 2* navHeight, rw = w, rh = h - 2*navHeight;
         float rx = x, ry = y, rw = w, rh = h;
         float scaleFactor = 1.0;
         float scaleFactorJaw = 1.5;
@@ -281,41 +267,27 @@ class W_emg extends Widget {
         float colOffset = rw / colNum;
         int index = 0;
         float currx, curry;
-        //new
+
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
 
-                //%%%%%
                 pushMatrix();
                 currx = rx + j * colOffset;
                 curry = ry + i * rowOffset; //never name variables on an empty stomach
                 translate(currx, curry);
 
-                //draw visualizer
-                // (int)color(129, 129, 129),
-                // (int)color(124, 75, 141),
-                // (int)color(54, 87, 158),
-                // (int)color(49, 113, 89),
-                // (int)color(221, 178, 13),
-                // (int)color(253, 94, 52),
-                // (int)color(224, 56, 45),
-                // (int)color(162, 82, 49),
-
                 //realtime
-                // fill(255, 0, 0, 125);
                 fill(red(channelColors[index%8]), green(channelColors[index%8]), blue(channelColors[index%8]), 200);
                 noStroke();
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].myAverage, scaleFactor * motorWidgets[i * colNum + j].myAverage);
 
                 //circle for outer threshold
-                // stroke(0, 255, 0);
                 noFill();
                 strokeWeight(1);
                 stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].upperThreshold, scaleFactor * motorWidgets[i * colNum + j].upperThreshold);
 
                 //circle for inner threshold
-                // stroke(0, 255, 255);
                 stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].lowerThreshold, scaleFactor * motorWidgets[i * colNum + j].lowerThreshold);
 
@@ -350,8 +322,6 @@ class W_emg extends Widget {
                 int _chan = index+1;
                 textFont(p5, 12);
                 text(_chan + "", 10, 20);
-                // rectMode(CORNERS);
-                // rect(0, 0, 10, 10);
                 popStyle();
 
                 index++;
@@ -365,8 +335,6 @@ class W_emg extends Widget {
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
-        //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y + h/2 - widgetTemplateButton.but_dy/2);
         if (emgAdvanced) {
             connectButton.setPos(int(x) + 2, int(y) - navHeight + 2);
 
@@ -416,7 +384,8 @@ class W_emg extends Widget {
         }
     }
 
-    public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
+    public void process(
+        float[][] data_newest_uV, //holds raw EEG data that is new since the last call
         float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
         float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
         FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
@@ -451,18 +420,11 @@ class W_emg extends Widget {
             }
             if (cfc.lowerThreshold <= cfc.myAverage) {
                 cfc.lowerThreshold *= (1)/(cfc.creepSpeed); //adjustmentSpeed
-                // cfc.lowerThreshold += (10 - cfc.lowerThreshold)/(frameRate * 5); //have lower threshold creep upwards to keep range tight
             }
             if (cfc.upperThreshold <= (cfc.lowerThreshold + cfc.minRange)){
                 cfc.upperThreshold = cfc.lowerThreshold + cfc.minRange;
             }
-            // if (cfc.upperThreshold >= (cfc.myAverage + 35)) {
-            //   cfc.upperThreshold *= .97;
-            // }
-            // if (cfc.lowerThreshold <= cfc.myAverage) {
-            //   cfc.lowerThreshold += (10 - cfc.lowerThreshold)/(frameRate * 5); //have lower threshold creep upwards to keep range tight
-            // }
-            //output_L = (int)map(myAverage_L, lowerThreshold_L, upperThreshold_L, 0, 255);
+
             cfc.output_normalized = map(cfc.myAverage, cfc.lowerThreshold, cfc.upperThreshold, 0, 1);
             if(cfc.output_normalized < 0){
                 cfc.output_normalized = 0; //always make sure this value is >= 0
@@ -563,8 +525,6 @@ class W_emg extends Widget {
             for (int Ibin=0; Ibin < fftBuff[Ichan].specSize(); Ibin++) {
                 FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin);
                 FFT_value_uV = fftData[Ichan].getBand(Ibin);
-
-                //add your processing here...
             }
         }
         //---------------------------------------------------------------------------------
@@ -664,12 +624,7 @@ class W_emg extends Widget {
 
             if (press) {
                 //Some of this may need to be refactored in order to support window resizing
-                // int mappedVal = int(mouseY - (ty + ly));
-                // //int mappedVal = int(map((mouseY - (ty + ly) ), ((ty+ly) + wid - (ly/2)) - (ty+ly), 0, 0, wid));
                 int mappedVal = int(mouseY - (ty+ly));
-
-                //println("bxLen: " + boxLen + " ty: " + ty + " ly: " + ly + " mouseY: " + mouseY + " boxy: " + boxy + " stretch: " + stretch + " width: " + wid + " mappedVal: " + mappedVal);
-
                 if (!trip) stretch = lock(mappedVal, int(parent.untripThreshold * (boxLen)), boxLen);
                 else stretch =  lock(mappedVal, 0, int(parent.tripThreshold * (boxLen)));
 
