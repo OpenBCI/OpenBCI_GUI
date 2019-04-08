@@ -153,7 +153,7 @@ class Ganglion {
       * @description Sends a start streaming command to the Ganglion Node module.
       */
     void startDataTransfer(){
-        hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
+        hub.changeState(HubState.NORMAL);  // make sure it's now interpretting as binary
         println("Ganglion: startDataTransfer(): sending \'" + command_startBinary);
         if (checkingImpedance) {
             impedanceStop();
@@ -168,7 +168,7 @@ class Ganglion {
       * @description Sends a stop streaming command to the Ganglion Node module.
       */
     public void stopDataTransfer() {
-        hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
+        hub.changeState(HubState.STOPPED);  // make sure it's now interpretting as binary
         println("Ganglion: stopDataTransfer(): sending \'" + command_stop);
         hub.sendCommand('s');
     }

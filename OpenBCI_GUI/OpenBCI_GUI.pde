@@ -765,7 +765,7 @@ void initSystem() {
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
     verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
-    hub.changeState(STATE_COMINIT);
+    hub.changeState(HubState.COMINIT);
     // hub.searchDeviceStop();
 
     //prepare the source of the input data
@@ -1145,7 +1145,7 @@ void haltSystem() {
         ganglion.closePort();
     }
     systemMode = SYSTEMMODE_PREINIT;
-    hub.changeState(STATE_NOCOM);
+    hub.changeState(HubState.NOCOM);
     abandonInit = false;
 
     recentPlaybackFilesHaveUpdated = false;
@@ -1174,11 +1174,11 @@ void systemUpdate() { // for updating data values and variables
     }
 
     // //update the sync state with the OpenBCI hardware
-    // if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
+    // if (iSerial.get_state() == iSerial.HubState.NOCOM || iSerial.get_state() == iSerial.HubState.COMINIT || iSerial.get_state() == iSerial.HubState.SYNCWITHHARDWARE) {
     //   iSerial.updateSyncState(sdSetting);
     // }
 
-    // if (hub.get_state() == STATE_NOCOM || hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) {
+    // if (hub.get_state() == HubState.NOCOM || hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) {
     //   hub.updateSyncState(sdSetting);
     // }
 
@@ -1385,7 +1385,7 @@ void systemDraw() { //for drawing to the screen
         introAnimation();
     }
 
-    if ((hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+    if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
         //make out blink the text "Initalizing GUI..."
         pushStyle();
         imageMode(CENTER);

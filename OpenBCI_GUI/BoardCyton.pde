@@ -206,7 +206,7 @@ class Cyton {
         if (isPortOpen()) {
             // Now give the command to start binary data transmission
             if (isSerial()) {
-                hub.changeState(STATE_NORMAL);  // make sure it's now interpretting as binary
+                hub.changeState(HubState.NORMAL);  // make sure it's now interpretting as binary
                 println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
                 // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
                 write(command_startBinary);
@@ -222,7 +222,7 @@ class Cyton {
 
     public void stopDataTransfer() {
         if (isPortOpen()) {
-            hub.changeState(STATE_STOPPED);  // make sure it's now interpretting as binary
+            hub.changeState(HubState.STOPPED);  // make sure it's now interpretting as binary
             println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
             write(command_stop);// + "\n");
         }

@@ -216,7 +216,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
             serial_output.clear(); // clear anything in the com port's buffer
             // portIsOpen = true;
             println("Radios_Config: connect_to_portName: port is open!");
-            // changeState(STATE_COMINIT);
+            // changeState(HubState.COMINIT);
             board = serial_output;
             return true;
         }
