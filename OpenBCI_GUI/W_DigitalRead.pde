@@ -23,7 +23,6 @@ class W_DigitalRead extends Widget {
 
     DigitalReadDot[] digitalReadDots;
 
-    TextBox[] chanValuesMontage;
     boolean showMontageValues;
 
     private boolean visible = true;

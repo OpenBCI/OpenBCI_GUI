@@ -16,7 +16,7 @@ class W_AnalogRead extends Widget {
     int numAnalogReadBars;
     float xF, yF, wF, hF;
     float arPadding;
-    float ar_x, ar_y, ar_h, ar_w; //values for actual time series chart (rectangle encompassing all analogReadBars)
+    float ar_x, ar_y, ar_h, ar_w; // values for actual time series chart (rectangle encompassing all analogReadBars)
     float plotBottomWell;
     float playbackWidgetHeight;
     int analogReadBarHeight;
@@ -26,19 +26,13 @@ class W_AnalogRead extends Widget {
     int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
     int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
-    boolean allowSpillover = false;
-
-    TextBox[] chanValuesMontage;
-    boolean showMontageValues;
-
+    private boolean allowSpillover = false;
     private boolean visible = true;
     private boolean updating = true;
-    boolean analogReadOn = false;
+    private boolean analogReadOn = false;
 
     int arInitialVertScaleIndex = 5;
     int arInitialHorizScaleIndex = 0;
-
-    private boolean hasScrollbar = false;
 
     Button analogModeButton;
 
@@ -92,13 +86,9 @@ class W_AnalogRead extends Widget {
         analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p6,10);
-        // analogModeButton.setStrokeColor((int)(color(150)));
-        // analogModeButton.setColorNotPressed(openbciBlue);
         analogModeButton.setColorNotPressed(color(57,128,204));
         analogModeButton.textColorNotActive = color(255);
-        // analogModeButton.setStrokeColor((int)(color(138, 182, 229, 100)));
         analogModeButton.hasStroke(false);
-        // analogModeButton.setColorNotPressed((int)(color(138, 182, 229)));
         if (cyton.isWifi()) {
             analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11) and A6(D12)");
         } else {
@@ -437,14 +427,13 @@ class AnalogReadBar{
         plot.drawBox(); // we won't draw this eventually ...
         plot.drawGridLines(0);
         plot.drawLines();
-        // plot.drawPoints();
-        // plot.drawYAxis();
         if (cyton.isWifi()) {
             if(auxValuesPosition == 1) { //only draw the x axis label on the bottom channel bar
                 plot.drawXAxis();
                 plot.getXAxis().draw();
             }
-        } else {
+        }
+        else {
             if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
                 plot.drawXAxis();
                 plot.getXAxis().draw();
@@ -473,9 +462,10 @@ class AnalogReadBar{
         nPoints = nPointsBasedOnDataSource();
 
         analogReadPoints = new GPointsArray(nPoints);
-        if(_newTimeSize > 1) {
+        if (_newTimeSize > 1) {
             plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
-        }else{
+        }
+        else {
             plot.getXAxis().setNTicks(10);
         }
         if (w_analogRead != null) {
@@ -483,8 +473,6 @@ class AnalogReadBar{
                 updatePlotPoints();
             }
         }
-        // println("New X axis = " + _newTimeSize);
-        //closeAllDropdowns();
     }
 
     void adjustVertScale(int _vertScaleValue) {
@@ -494,7 +482,6 @@ class AnalogReadBar{
             isAutoscale = false;
             plot.setYLim(-_vertScaleValue, _vertScaleValue);
         }
-        //closeAllDropdowns();
     }
 
     void autoScale() {
@@ -513,7 +500,6 @@ class AnalogReadBar{
         w = _w;
         h = _h;
 
-        //reposition & resize the plot
         plot.setPos(x + 36 + 4, y);
         plot.setDim(w - 36 - 4, h);
 
