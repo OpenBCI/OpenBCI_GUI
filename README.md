@@ -50,7 +50,7 @@ The OpenBCI GUI will:
 * Provide a widget framework that allows users to create their own experiments.
 * Provide the ability to output data into a saved file for later offline processing.
 
-Using the OpenBCI GUI allows you, the user, to quickly visualize adn use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
+Using the OpenBCI GUI allows you, the user, to quickly visualize and use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
 
 ## Who are we?
 
