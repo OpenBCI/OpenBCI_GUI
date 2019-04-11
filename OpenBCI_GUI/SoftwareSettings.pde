@@ -814,6 +814,10 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
     //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
     if (eegDataSource == DATASOURCE_GANGLION) {
         if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
+            // daniellasry: it seems the ganglion board does not like turning on the accelerometer
+            // immediately after activating channels. From what I can tell, the issue is in the
+            // firmware. This delay is a workaround for the issue.
+            delay(1000);
             ganglion.accelStart(); //send message to hub
         } else {
             ganglion.accelStop(); //send message to hub
