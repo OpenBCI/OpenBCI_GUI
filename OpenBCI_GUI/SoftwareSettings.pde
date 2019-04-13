@@ -1196,49 +1196,37 @@ void loadApplyTimeSeriesSettings() {
 
 /**
   * @description Used in System Init, TopNav, and Interactivity
-  * @params mode="User"/"Default", dataSource, and number of channels
-  * @returns {String} - filepath in SavedData/Settings/
+  * @params mode="User"or"Default", dataSource, and number of channels
+  * @returns {String} - filePath in SavedData/Settings/ or Error if mode not specified correctly
   */
 String getSettingsFileName(String _mode, int dataSource, int _nchan) {
-    String fileName = "";
+    String filePath = "SavedData/Settings/";
+    String[] fileNames = new String[7];
     if (_mode.equals("Default")) {
-        if (dataSource == DATASOURCE_CYTON) {
-            fileName = (_nchan == NCHAN_CYTON) ?
-                cytonDefaultSettingsFile :
-                daisyDefaultSettingsFile;
-        } else if (dataSource == DATASOURCE_GANGLION) {
-            fileName = ganglionDefaultSettingsFile;
-        } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
-            fileName = playbackDefaultSettingsFile;
-        } else if (dataSource == DATASOURCE_SYNTHETIC) {
-            if (_nchan == NCHAN_GANGLION) {
-                fileName = synthFourDefaultSettingsFile;
-            } else if (_nchan == NCHAN_CYTON) {
-                fileName = synthEightDefaultSettingsFile;
-            } else {
-                fileName = synthSixteenDefaultSettingsFile;
-            }
-        }
+        fileNames = defaultSettingsFiles;
     } else if (_mode.equals("User")) {
+        fileNames = userSettingsFiles;
+    } else {
+        filePath = "Error";
+    }
+    if (!filePath.equals("Error")) {
         if (dataSource == DATASOURCE_CYTON) {
-            fileName = (_nchan == NCHAN_CYTON) ?
-                cytonUserSettingsFile :
-                daisyUserSettingsFile;
+            filePath += (_nchan == NCHAN_CYTON) ?
+                fileNames[0] :
+                fileNames[1];
         } else if (dataSource == DATASOURCE_GANGLION) {
-            fileName = ganglionUserSettingsFile;
+            filePath += fileNames[2];
         } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
-            fileName = playbackUserSettingsFile;
+            filePath += fileNames[3];
         } else if (dataSource == DATASOURCE_SYNTHETIC) {
             if (_nchan == NCHAN_GANGLION) {
-                fileName = synthFourUserSettingsFile;
+                filePath += fileNames[4];
             } else if (_nchan == NCHAN_CYTON) {
-                fileName = synthEightUserSettingsFile;
+                filePath += fileNames[5];
             } else {
-                fileName = synthSixteenUserSettingsFile;
+                filePath += fileNames[6];
             }
         }
-    } else {
-        fileName = "Error";
     }
-    return fileName;
+    return filePath;
 }

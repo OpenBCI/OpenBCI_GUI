@@ -888,8 +888,8 @@ class configSelector {
                     } else if (configSelected == 1) { //If save button is pressed..
                         if (saveSettingsDialogName == null) {
                             selectOutput("Save a custom settings file as JSON:",
-                                        "saveConfigFile", 
-                                        dataFile(getSettingsFileName("User", eegDataSource, nchan));
+                                        "saveConfigFile",
+                                        dataFile(getSettingsFileName("User", eegDataSource, nchan)));
                         } else {
                             println("saveSettingsFileName = " + saveSettingsDialogName);
                             saveSettingsDialogName = null;
@@ -935,25 +935,14 @@ class configSelector {
                     } else if (configSelected == 6 && clearAllSettingsPressed) {
                         //User has selected Are You Sure?->Yes
                         //Delete only specified files in the Settings Folder
-                        String[] filesToDelete = {
-                            cytonUserSettingsFile,
-                            cytonDefaultSettingsFile,
-                            daisyUserSettingsFile,
-                            daisyDefaultSettingsFile,
-                            ganglionUserSettingsFile,
-                            ganglionDefaultSettingsFile,
-                            playbackUserSettingsFile,
-                            playbackDefaultSettingsFile,
-                            synthFourUserSettingsFile,
-                            synthFourDefaultSettingsFile,
-                            synthEightUserSettingsFile,
-                            synthEightDefaultSettingsFile,
-                            synthSixteenUserSettingsFile,
-                            synthSixteenDefaultSettingsFile
-                        };
+                        String[] filesToDelete = concat(userSettingsFiles, defaultSettingsFiles);
+                        filesToDelete = append(filesToDelete, userPlaybackHistoryFile);
+                        println(filesToDelete);
                         int successfulDeletions = 0;
                         for (int j = 0; j < filesToDelete.length; j++) {
-                            String f = new File(sketchPath()+System.getProperty("file.separator")+filesToDelete[j]).getAbsolutePath();
+                            String settingsPath = "SavedData/Settings/";
+                            String f = new File(sketchPath()+System.getProperty("file.separator")+settingsPath+filesToDelete[j]).getAbsolutePath();
+                            println(f);
                             try {
                                 Files.deleteIfExists(Paths.get(f));
                                 successfulDeletions++;

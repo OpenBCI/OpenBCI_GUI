@@ -341,20 +341,24 @@ int nwDataType4;
 int nwProtocolSave;
 
 //default configuration settings file location and file name variables
-final String cytonUserSettingsFile = "SavedData/Settings/CytonUserSettings.json";
-final String cytonDefaultSettingsFile = "SavedData/Settings/CytonDefaultSettings.json";
-final String daisyUserSettingsFile = "SavedData/Settings/DaisyUserSettings.json";
-final String daisyDefaultSettingsFile = "SavedData/Settings/DaisyDefaultSettings.json";
-final String ganglionUserSettingsFile = "SavedData/Settings/GanglionUserSettings.json";
-final String ganglionDefaultSettingsFile = "SavedData/Settings/GanglionDefaultSettings.json";
-final String playbackUserSettingsFile = "SavedData/Settings/PlaybackUserSettings.json";
-final String playbackDefaultSettingsFile = "SavedData/Settings/PlaybackDefaultSettings.json";
-final String synthFourUserSettingsFile = "SavedData/Settings/SynthFourUserSettings.json";
-final String synthFourDefaultSettingsFile = "SavedData/Settings/SynthFourDefaultSettings.json";
-final String synthEightUserSettingsFile = "SavedData/Settings/SynthEightUserSettings.json";
-final String synthEightDefaultSettingsFile = "SavedData/Settings/SynthEightDefaultSettings.json";
-final String synthSixteenUserSettingsFile = "SavedData/Settings/SynthSixteenUserSettings.json";
-final String synthSixteenDefaultSettingsFile = "SavedData/Settings/SynthSixteenDefaultSettings.json";
+final String[] userSettingsFiles = {
+    "CytonUserSettings.json",
+    "DaisyUserSettings.json",
+    "GanglionUserSettings.json",
+    "PlaybackUserSettings.json",
+    "SynthFourUserSettings.json",
+    "SynthEightUserSettings.json",
+    "SynthSixteenUserSettings.json"
+    };
+final String[] defaultSettingsFiles = {
+    "CytonDefaultSettings.json",
+    "DaisyDefaultSettings.json",
+    "GanglionDefaultSettings.json",
+    "PlaybackDefaultSettings.json",
+    "SynthFourDefaultSettings.json",
+    "SynthEightDefaultSettings.json",
+    "SynthSixteenDefaultSettings.json"
+    };
 String saveSettingsDialogName; //Used when Save button is pressed
 String loadSettingsDialogName; //Used when Load button is pressed
 String controlEventDataSource; //Used for output message on system start
@@ -368,7 +372,7 @@ final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
 JSONObject loadPlaybackHistoryJSON;
-final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.json";
+final String userPlaybackHistoryFile = "UserPlaybackHistory.json";
 boolean playbackHistoryFileExists = false;
 String playbackData_ShortName;
 boolean recentPlaybackFilesHaveUpdated = false;
