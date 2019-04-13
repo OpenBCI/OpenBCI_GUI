@@ -255,7 +255,7 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    //Check for event in the PlaybackHistory Widget MenuList
+    //Check for event in PlaybackHistory Widget MenuList
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         if(theEvent.isFrom("playbackMenuList")) {
             Map m = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
@@ -264,6 +264,7 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
+    //Check for event in PlaybackHistory Dropdown List in Control Panel
     if(theEvent.isFrom("recentFiles")) {
         int s = (int)(theEvent.getController()).getValue();
         println("got a menu event from item " + s);

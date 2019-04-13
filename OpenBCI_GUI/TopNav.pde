@@ -995,7 +995,7 @@ class configSelector {
             }
         } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.configButton.isActive()) {
             //resize the height of the settings dropdown
-            h = margin*3 + b_h*2;
+            h = margin*2 + b_h;
             clearAllSettingsPressed = false;
         }
     }
