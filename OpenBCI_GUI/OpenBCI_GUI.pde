@@ -90,6 +90,8 @@ final int INTERFACE_HUB_BLE = 1; // used only by ganglion
 final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
 final int INTERFACE_HUB_BLED112 = 3; // used only by ganglion with bled dongle
 
+boolean showStartupError = false;
+String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
@@ -232,6 +234,7 @@ PFont h3; //medium Montserrat
 PFont h4; //small/medium Montserrat
 PFont h5; //small Montserrat
 
+PFont p0; //large bold Open Sans
 PFont p1; //large Open Sans
 PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
@@ -386,6 +389,39 @@ void settings() {
 }
 
 void setup() {
+    //V1 FONTS
+    f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
+    f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
+    f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
+
+    h1 = createFont("fonts/Montserrat-Regular.otf", 20);
+    h2 = createFont("fonts/Montserrat-Regular.otf", 18);
+    h3 = createFont("fonts/Montserrat-Regular.otf", 16);
+    h4 = createFont("fonts/Montserrat-Regular.otf", 14);
+    h5 = createFont("fonts/Montserrat-Regular.otf", 12);
+
+    p0 = createFont("fonts/OpenSans-Semibold.ttf", 24);
+    p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
+    p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
+    p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
+    p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
+    p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
+    p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
+    p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
+    p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
+
+    // check if the current directory is writable
+    File dummy = new File(sketchPath());
+    if (!dummy.canWrite()) {
+        showStartupError = true;
+        startupErrorMessage = "OpenBCI GUI was launched from a read-only location.\n\n" +
+            "Please move the application to a different location and re-launch.\n" +
+            "If you just downloaded the GUI, move it out of the disk image or Downloads folder.\n\n" +
+            "If this error persists, contact the OpenBCI team for support.";
+        return; // early exit
+    }
+
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
     outputStream = new CustomOutputStream(System.out);
@@ -419,7 +455,6 @@ void setup() {
 }
 
 void delayedSetup() {
-
     if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
     hubInit(); // putting down here gives windows time to close any open apps
 
@@ -430,27 +465,6 @@ void delayedSetup() {
     heightOfLastScreen = height;
 
     setupContainers();
-
-    //V1 FONTS
-    f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    f2 = createFont("fonts/Raleway-Regular.otf", 15);
-    f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
-    f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
-
-    h1 = createFont("fonts/Montserrat-Regular.otf", 20);
-    h2 = createFont("fonts/Montserrat-Regular.otf", 18);
-    h3 = createFont("fonts/Montserrat-Regular.otf", 16);
-    h4 = createFont("fonts/Montserrat-Regular.otf", 14);
-    h5 = createFont("fonts/Montserrat-Regular.otf", 12);
-
-    p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
-    p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
-    p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
-    p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
-    p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
-    p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
-    p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
-    p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
     //listen for window resize ... used to adjust elements in application
     frame.addComponentListener(new ComponentAdapter() {
@@ -553,7 +567,10 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
 //======================== DRAW LOOP =============================//
 
 synchronized void draw() {
-    if(setupComplete) {
+    if (showStartupError) {
+        drawStartupError();
+    }
+    else if (setupComplete) {
         drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
@@ -1460,6 +1477,31 @@ void introAnimation() {
         systemMode = SYSTEMMODE_PREINIT;
         controlPanel.isOpen = true;
     }
+    popStyle();
+}
+
+void drawStartupError() {
+    final int w = 600;
+    final int h = 350;
+    final int headerHeight = 75;
+    final int padding = 20;
+
+    pushStyle();
+    background(bgColor);
+    stroke(204);
+    fill(238);
+    rect((width - w)/2, (height - h)/2, w, h);
+    noStroke();
+    fill(217, 4, 4);
+    rect((width - w)/2, (height - h)/2, w, headerHeight);
+    textFont(p0, 24);
+    fill(255);
+    textAlign(LEFT, CENTER);
+    text("Error", (width - w)/2 + padding, (height - h)/2, w, headerHeight);
+    textFont(p3, 16);
+    fill(102);
+    textAlign(LEFT, TOP);
+    text(startupErrorMessage, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight); 
     popStyle();
 }
 

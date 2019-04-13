@@ -751,20 +751,12 @@ class PlaybackScrollbar {
         indicatorAtStart = true;
 
         //Let's make a button to return to the start of playback!!
-        if(sh > 26){
-            skipToStart_diameter = 26;
-        } else{
-            skipToStart_diameter = sh - 2;
-        }
-        skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "|<", fontInfo.buttonLabel_size);
-        skipToStartButton.setFont(h2, 18);
-        skipToStartButton.setCircleButton(true);
-        skipToStartButton.setColorNotPressed(openbciBlue); //Set channel button background colors
-        skipToStartButton.setColorPressed(color(255));
-        skipToStartButton.textColorNotActive = color(255); //Set channel button text to white
-        skipToStartButton.textColorActive = color(0,255,0); //Green text when clicked
-        skipToStartButton.hasStroke(true);
-
+        skipToStart_diameter = 30;
+        skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "");
+        skipToStartButton.setColorNotPressed(color(235)); //Set channel button background colors
+        skipToStartButton.hasStroke(false);
+        PImage bgImage = loadImage("skipToStart-30x26.png");
+        skipToStartButton.setBackgroundImage(bgImage);
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -885,20 +877,9 @@ class PlaybackScrollbar {
         //update the position of the playback indicator us
         newspos = updatePos();
 
-        //resize the skip to start button
-        if(sheight > 26){
-            skipToStart_diameter = 26;
-            skipToStartButton.but_dx = skipToStart_diameter;
-            skipToStartButton.but_dy = skipToStart_diameter;
-        } else{
-            skipToStart_diameter = int(_h) - 2;
-            skipToStartButton.but_dx = skipToStart_diameter;
-            skipToStartButton.but_dy = skipToStart_diameter;
-        }
-        //update the x and y positions for the skipToStartButton
         skipToStartButton.setPos(
             int(_x) + int(skipToStart_diameter*.5),
-            int(_y) + int(_h/2) - int(skipToStart_diameter)
+            int(_y) - int(skipToStart_diameter*.5)
             );
 
     }
