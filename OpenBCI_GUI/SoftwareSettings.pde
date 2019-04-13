@@ -188,24 +188,11 @@ boolean expertModeToggle = false;
 //  - Called during system initialization in OpenBCI_GUI.pde  //
 ////////////////////////////////////////////////////////////////
 void initSoftwareSettings() {
-    String defaultSettingsFileToSave = null;
+    String defaultSettingsFileToSave = getSettingsFileName("Default", eegDataSource, nchan);
     boolean defaultSettingsFileExists;
     int defaultNumChanLoaded = 0;
     int defaultLoadedDataSource = 0;
-    switch(eegDataSource) {
-        case DATASOURCE_CYTON:
-            defaultSettingsFileToSave = cytonDefaultSettingsFile;
-            break;
-        case DATASOURCE_GANGLION:
-            defaultSettingsFileToSave = ganglionDefaultSettingsFile;
-            break;
-        case DATASOURCE_PLAYBACKFILE:
-            defaultSettingsFileToSave = playbackDefaultSettingsFile;
-            break;
-        case DATASOURCE_SYNTHETIC:
-            defaultSettingsFileToSave = syntheticDefaultSettingsFile;
-            break;
-    }
+
     //This method is more accurate than file.exists()
     try {
         //Load all saved User Settings from a JSON file if it exists
@@ -233,26 +220,13 @@ void initSoftwareSettings() {
 
     //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
     //Otherwise, load default settings.
+    String settingsFileToLoad = getSettingsFileName("User", eegDataSource, nchan);
     try {
-        switch(eegDataSource) {
-            case DATASOURCE_CYTON:
-                userSettingsFileToLoad = cytonUserSettingsFile;
-                break;
-            case DATASOURCE_GANGLION:
-                userSettingsFileToLoad = ganglionUserSettingsFile;
-                break;
-            case DATASOURCE_PLAYBACKFILE:
-                userSettingsFileToLoad = playbackUserSettingsFile;
-                break;
-            case DATASOURCE_SYNTHETIC:
-                userSettingsFileToLoad = syntheticUserSettingsFile;
-                break;
-        }
-        loadGUISettings(userSettingsFileToLoad);
+        loadGUISettings(settingsFileToLoad);
         errorUserSettingsNotFound = false;
     } catch (Exception e) {
         //e.printStackTrace();
-        println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+        println(settingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
         errorUserSettingsNotFound = true;
     }
 }
@@ -1219,3 +1193,52 @@ void loadApplyTimeSeriesSettings() {
         }
     } //end of Ganglion/Playback/Synthetic case
 } //end loadApplyTimeSeriesSettings
+
+/**
+  * @description Used in System Init, TopNav, and Interactivity
+  * @params mode="User"/"Default", dataSource, and number of channels
+  * @returns {String} - filepath in SavedData/Settings/
+  */
+String getSettingsFileName(String _mode, int dataSource, int _nchan) {
+    String fileName = "";
+    if (_mode.equals("Default")) {
+        if (dataSource == DATASOURCE_CYTON) {
+            fileName = (_nchan == NCHAN_CYTON) ?
+                cytonDefaultSettingsFile :
+                daisyDefaultSettingsFile;
+        } else if (dataSource == DATASOURCE_GANGLION) {
+            fileName = ganglionDefaultSettingsFile;
+        } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+            fileName = playbackDefaultSettingsFile;
+        } else if (dataSource == DATASOURCE_SYNTHETIC) {
+            if (_nchan == NCHAN_GANGLION) {
+                fileName = synthFourDefaultSettingsFile;
+            } else if (_nchan == NCHAN_CYTON) {
+                fileName = synthEightDefaultSettingsFile;
+            } else {
+                fileName = synthSixteenDefaultSettingsFile;
+            }
+        }
+    } else if (_mode.equals("User")) {
+        if (dataSource == DATASOURCE_CYTON) {
+            fileName = (_nchan == NCHAN_CYTON) ?
+                cytonUserSettingsFile :
+                daisyUserSettingsFile;
+        } else if (dataSource == DATASOURCE_GANGLION) {
+            fileName = ganglionUserSettingsFile;
+        } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+            fileName = playbackUserSettingsFile;
+        } else if (dataSource == DATASOURCE_SYNTHETIC) {
+            if (_nchan == NCHAN_GANGLION) {
+                fileName = synthFourUserSettingsFile;
+            } else if (_nchan == NCHAN_CYTON) {
+                fileName = synthEightUserSettingsFile;
+            } else {
+                fileName = synthSixteenUserSettingsFile;
+            }
+        }
+    } else {
+        fileName = "Error";
+    }
+    return fileName;
+}

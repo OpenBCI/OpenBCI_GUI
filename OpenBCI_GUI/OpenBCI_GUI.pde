@@ -343,14 +343,18 @@ int nwProtocolSave;
 //default configuration settings file location and file name variables
 final String cytonUserSettingsFile = "SavedData/Settings/CytonUserSettings.json";
 final String cytonDefaultSettingsFile = "SavedData/Settings/CytonDefaultSettings.json";
+final String daisyUserSettingsFile = "SavedData/Settings/DaisyUserSettings.json";
+final String daisyDefaultSettingsFile = "SavedData/Settings/DaisyDefaultSettings.json";
 final String ganglionUserSettingsFile = "SavedData/Settings/GanglionUserSettings.json";
 final String ganglionDefaultSettingsFile = "SavedData/Settings/GanglionDefaultSettings.json";
 final String playbackUserSettingsFile = "SavedData/Settings/PlaybackUserSettings.json";
 final String playbackDefaultSettingsFile = "SavedData/Settings/PlaybackDefaultSettings.json";
-final String syntheticUserSettingsFile = "SavedData/Settings/SyntheticUserSettings.json";
-final String syntheticDefaultSettingsFile = "SavedData/Settings/SyntheticDefaultSettings.json";
-String userSettingsFileToSave;
-String userSettingsFileToLoad;
+final String synthFourUserSettingsFile = "SavedData/Settings/SynthFourUserSettings.json";
+final String synthFourDefaultSettingsFile = "SavedData/Settings/SynthFourDefaultSettings.json";
+final String synthEightUserSettingsFile = "SavedData/Settings/SynthEightUserSettings.json";
+final String synthEightDefaultSettingsFile = "SavedData/Settings/SynthEightDefaultSettings.json";
+final String synthSixteenUserSettingsFile = "SavedData/Settings/SynthSixteenUserSettings.json";
+final String synthSixteenDefaultSettingsFile = "SavedData/Settings/SynthSixteenDefaultSettings.json";
 String saveSettingsDialogName; //Used when Save button is pressed
 String loadSettingsDialogName; //Used when Load button is pressed
 String controlEventDataSource; //Used for output message on system start
@@ -897,7 +901,7 @@ void initSystem() {
         verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
         output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
     } else if (errorUserSettingsNotFound) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileToLoad + " not found. " + millis()); //Print the error to console
+        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: File not found. " + millis()); //Print the error to console
         output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
     } else {
         verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
@@ -1080,21 +1084,7 @@ void haltSystem() {
     //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
     //This method establishes default and user settings for all data modes
     if (systemMode == SYSTEMMODE_POSTINIT) {
-        switch(eegDataSource) {
-            case DATASOURCE_CYTON:
-                userSettingsFileToSave = cytonUserSettingsFile;
-                break;
-            case DATASOURCE_GANGLION:
-                userSettingsFileToSave = ganglionUserSettingsFile;
-                break;
-            case DATASOURCE_PLAYBACKFILE:
-                userSettingsFileToSave = playbackUserSettingsFile;
-                break;
-            case DATASOURCE_SYNTHETIC:
-                userSettingsFileToSave = syntheticUserSettingsFile;
-                break;
-        }
-        saveGUISettings(userSettingsFileToSave);
+        saveGUISettings(getSettingsFileName("User", eegDataSource, nchan));
     }
 
     if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.

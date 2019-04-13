@@ -886,23 +886,10 @@ class configSelector {
                         }
 
                     } else if (configSelected == 1) { //If save button is pressed..
-                        String userSettingsFileToSave = null;
-                        switch(eegDataSource) {
-                            case DATASOURCE_CYTON:
-                                userSettingsFileToSave = cytonUserSettingsFile;
-                                break;
-                            case DATASOURCE_GANGLION:
-                                userSettingsFileToSave = ganglionUserSettingsFile;
-                                break;
-                            case DATASOURCE_PLAYBACKFILE:
-                                userSettingsFileToSave = playbackUserSettingsFile;
-                                break;
-                            case DATASOURCE_SYNTHETIC:
-                                userSettingsFileToSave = syntheticUserSettingsFile;
-                                break;
-                        }
                         if (saveSettingsDialogName == null) {
-                            selectOutput("Save a custom settings file as JSON:", "saveConfigFile", dataFile(userSettingsFileToSave)); //open dialog box to save settings as json
+                            selectOutput("Save a custom settings file as JSON:",
+                                        "saveConfigFile", 
+                                        dataFile(getSettingsFileName("User", eegDataSource, nchan));
                         } else {
                             println("saveSettingsFileName = " + saveSettingsDialogName);
                             saveSettingsDialogName = null;
@@ -919,22 +906,7 @@ class configSelector {
                         toggleVisibility(); //shut configSelector if something is selected
                     } else if (configSelected == 3) {
                         //Revert GUI to default settings that were flashed on system start!
-                        String defaultSettingsFileToLoad = null;
-                        switch(eegDataSource) {
-                            case DATASOURCE_CYTON:
-                                defaultSettingsFileToLoad = cytonDefaultSettingsFile;
-                                break;
-                            case DATASOURCE_GANGLION:
-                                defaultSettingsFileToLoad = ganglionDefaultSettingsFile;
-                                break;
-                            case DATASOURCE_PLAYBACKFILE:
-                                defaultSettingsFileToLoad = playbackDefaultSettingsFile;
-                                break;
-                            case DATASOURCE_SYNTHETIC:
-                                defaultSettingsFileToLoad = syntheticDefaultSettingsFile;
-                                break;
-                        }
-
+                        String defaultSettingsFileToLoad = getSettingsFileName("Default", eegDataSource, nchan);
                         //This method is more accurate than file.exists()
                         boolean defaultSettingsFileExists;
                         try {
@@ -965,14 +937,19 @@ class configSelector {
                         //Delete only specified files in the Settings Folder
                         String[] filesToDelete = {
                             cytonUserSettingsFile,
-                            ganglionUserSettingsFile,
-                            playbackUserSettingsFile,
-                            syntheticUserSettingsFile,
                             cytonDefaultSettingsFile,
+                            daisyUserSettingsFile,
+                            daisyDefaultSettingsFile,
+                            ganglionUserSettingsFile,
                             ganglionDefaultSettingsFile,
+                            playbackUserSettingsFile,
                             playbackDefaultSettingsFile,
-                            syntheticDefaultSettingsFile,
-                            userPlaybackHistoryFile
+                            synthFourUserSettingsFile,
+                            synthFourDefaultSettingsFile,
+                            synthEightUserSettingsFile,
+                            synthEightDefaultSettingsFile,
+                            synthSixteenUserSettingsFile,
+                            synthSixteenDefaultSettingsFile
                         };
                         int successfulDeletions = 0;
                         for (int j = 0; j < filesToDelete.length; j++) {

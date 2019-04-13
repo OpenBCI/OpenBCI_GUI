@@ -21,7 +21,7 @@ void keyPressed() {
     if (!setupComplete) {
         return;
     }
-    
+
     //note that the Processing variable "key" is the keypress as an ASCII character
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
@@ -275,51 +275,24 @@ void parseKey(char val) {
             }
             break;
 
-        ///////////////////// Save settings lowercase n
+        ///////////////////// Save User settings lowercase n
         case 'n':
             println("Save key pressed!");
-            switch(eegDataSource) {
-                case DATASOURCE_CYTON:
-                    userSettingsFileToSave = cytonUserSettingsFile;
-                    break;
-                case DATASOURCE_GANGLION:
-                    userSettingsFileToSave = ganglionUserSettingsFile;
-                    break;
-                case DATASOURCE_PLAYBACKFILE:
-                    userSettingsFileToSave = playbackUserSettingsFile;
-                    break;
-                case DATASOURCE_SYNTHETIC:
-                    userSettingsFileToSave = syntheticUserSettingsFile;
-                    break;
-            }
-            saveGUISettings(userSettingsFileToSave);
+            saveGUISettings(getSettingsFileName("User", eegDataSource, nchan));
             outputSuccess("Settings Saved!");
             break;
 
-        ///////////////////// Load settings uppercase N
+        ///////////////////// Load User settings uppercase N
         case 'N':
             println("Load key pressed!");
             loadErrorTimerStart = millis();
+            String settingsFileToLoad = getSettingsFileName("User", eegDataSource, nchan);
             try {
-                switch(eegDataSource) {
-                    case DATASOURCE_CYTON:
-                        userSettingsFileToLoad = cytonUserSettingsFile;
-                        break;
-                    case DATASOURCE_GANGLION:
-                        userSettingsFileToLoad = ganglionUserSettingsFile;
-                        break;
-                    case DATASOURCE_PLAYBACKFILE:
-                        userSettingsFileToLoad = playbackUserSettingsFile;
-                        break;
-                    case DATASOURCE_SYNTHETIC:
-                        userSettingsFileToLoad = syntheticUserSettingsFile;
-                        break;
-                }
-                loadGUISettings(userSettingsFileToLoad);
+                loadGUISettings(settingsFileToLoad);
                 errorUserSettingsNotFound = false;
             } catch (Exception e) {
                 println(e.getMessage());
-                println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+                println(settingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
                 errorUserSettingsNotFound = true;
             }
             //Output message when Loading settings is complete
@@ -330,7 +303,7 @@ void parseKey(char val) {
             } else if (dataSourceError) {
                 outputError("Load Settings Error: Invalid data source");
             } else {
-                outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
+                outputError("Load settings error: " + settingsFileToLoad + " not found. ");
             }
             break;
 
