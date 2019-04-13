@@ -341,6 +341,7 @@ int nwDataType4;
 int nwProtocolSave;
 
 //default configuration settings file location and file name variables
+final String settingsPath = "SavedData/Settings/";
 final String[] userSettingsFiles = {
     "CytonUserSettings.json",
     "DaisyUserSettings.json",
@@ -372,7 +373,7 @@ final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
 JSONObject loadPlaybackHistoryJSON;
-final String userPlaybackHistoryFile = "UserPlaybackHistory.json";
+final String userPlaybackHistoryFile = settingsPath+"UserPlaybackHistory.json";
 boolean playbackHistoryFileExists = false;
 String playbackData_ShortName;
 boolean recentPlaybackFilesHaveUpdated = false;

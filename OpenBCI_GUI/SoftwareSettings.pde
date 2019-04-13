@@ -1190,7 +1190,7 @@ void loadApplyTimeSeriesSettings() {
   * @returns {String} - filePath in SavedData/Settings/ or Error if mode not specified correctly
   */
 String getSettingsFileName(String _mode, int dataSource, int _nchan) {
-    String filePath = "SavedData/Settings/";
+    String filePath = settingsPath;
     String[] fileNames = new String[7];
     if (_mode.equals("Default")) {
         fileNames = defaultSettingsFiles;

@@ -936,11 +936,10 @@ class configSelector {
                         //User has selected Are You Sure?->Yes
                         //Delete only specified files in the Settings Folder
                         String[] filesToDelete = concat(userSettingsFiles, defaultSettingsFiles);
-                        filesToDelete = append(filesToDelete, userPlaybackHistoryFile);
+                        filesToDelete = append(filesToDelete, userPlaybackHistoryFile.substring(settingsPath.length()-1));
                         //println(filesToDelete);
                         int successfulDeletions = 0;
                         for (int j = 0; j < filesToDelete.length; j++) {
-                            String settingsPath = "SavedData/Settings/";
                             String f = new File(sketchPath()+System.getProperty("file.separator")+settingsPath+filesToDelete[j]).getAbsolutePath();
                             //println(f);
                             try {
