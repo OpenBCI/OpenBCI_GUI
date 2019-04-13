@@ -799,9 +799,9 @@ class configSelector {
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
-            configOptions.get(0).draw();
+            //configOptions.get(0).draw();
             if (systemMode == SYSTEMMODE_POSTINIT) {
-                for (int i = 1; i < 4; i++) {
+                for (int i = 0; i < 4; i++) {
                     configOptions.get(i).draw();
                 }
             }
@@ -845,10 +845,10 @@ class configSelector {
                     }
                 //Before system start, Only allow interaction with "Expert Mode" and "Clear All"
                 } else if (systemMode == SYSTEMMODE_PREINIT) {
-                    if (i == 0 || i == 4) {
+                    if (i == 4) {
                         if (configOptions.get(i).isMouseHere()) {
                             configOptions.get(i).setIsActive(true);
-                            //println("TopNav: Settings: Button Pressed");
+                            //println("TopNav: Settings: Clear Settings Pressed");
                         }
                     } else if (i == 5 || i == 6){
                         if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
@@ -1061,7 +1061,7 @@ class configSelector {
         int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
         x = width - 70*multiplier - _padding + 20;
         int dx = oldX - x;
-        buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 3;
+        buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
         if (systemMode == SYSTEMMODE_POSTINIT) {
             for (int i = 0; i < configOptions.size(); i++) {
                 configOptions.get(i).setX(x + multiplier*2);
@@ -1070,7 +1070,7 @@ class configSelector {
                 configOptions.get(i).setY(newY);
             }
         } else if (systemMode < SYSTEMMODE_POSTINIT) {
-            int[] t = {0, 4, 5, 6};
+            int[] t = {4, 5, 6}; //button numbers
             for (int i = 0; i < t.length; i++) {
                 configOptions.get(t[i]).setX(configOptions.get(t[i]).but_x - dx);
                 int spacer = (t[i] > 4) ? i + 1 : i;
