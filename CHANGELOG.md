@@ -6,6 +6,9 @@ Use OpenBCIHub v2.0.7 please.
 ### Improvements
 * New icon for "back to start" button in playbacks
 
+### Bug fixes
+* Fixed: ganglion accelerometer starts "on" but no accel data streaming
+
 # v4.1.1
 Use OpenBCIHub v2.0.7 please.
 
