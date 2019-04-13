@@ -1,3 +1,11 @@
+# v4.1.2
+Use OpenBCIHub v2.0.7 please.
+
+## Beta 0
+
+### Improvements
+* New icon for "back to start" button in playbacks
+
 # v4.1.1
 Use OpenBCIHub v2.0.7 please.
 
