@@ -258,9 +258,15 @@ public void controlEvent(ControlEvent theEvent) {
     //Check for event in PlaybackHistory Widget MenuList
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         if(theEvent.isFrom("playbackMenuList")) {
-            Map m = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-            //println("got a menu event from item " + ((MenuList)theEvent.getController()).getValue() + " : " + m);
-            loadRecentPlaybackHistoryFile(m.get("copy").toString(), m.get("headline").toString());
+            //Check to make sure value of clicked item is in valid range. Fixes #480
+            float valueOfItem = theEvent.getValue();
+            if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
+                //println("CP: No such item " + value + " found in list.");
+            } else {
+                Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
+                //println("got a menu event from item " + value + " : " + m);
+                loadRecentPlaybackHistoryFile(m.get("copy").toString(), m.get("headline").toString());
+            }
         }
     }
 
@@ -3337,7 +3343,7 @@ public class MenuList extends controlP5.Controller {
       */
     public void onClick() {
         println("MenuList: click!");
-        try{
+        if (items.size() > 0) { //Fixes #480
             if (getPointer().x()>getWidth()-scrollerWidth) {
                 if(getHeight() != 0){
                     npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
@@ -3353,10 +3359,9 @@ public class MenuList extends controlP5.Controller {
                 activeItem = index;
             }
             updateMenu = true;
-        } finally{}
-        // catch(IOException e){
-        //   println("Nothing to click...");
-        // }
+        } else {
+            println("Nothing to click...");
+        }
     }
 
     public void onMove() {
@@ -3397,8 +3402,15 @@ public class MenuList extends controlP5.Controller {
         items.remove(m);
         updateMenu = true;
     }
-
+    
+    //Returns null if selecting an item that does not exist
     Map<String, Object> getItem(int theIndex) {
-        return items.get(theIndex);
+        Map<String, Object> m = new HashMap<String, Object>();
+        try {
+            m = items.get(theIndex);
+        } catch (Exception e) {
+            //println("Item " + theIndex + " does not exist.");
+        }
+        return m;
     }
 };
