@@ -56,8 +56,8 @@ class W_accelerometer extends Widget {
     boolean OBCI_inited= true;
     private boolean visible = true;
     private boolean updating = true;
-    boolean accelerometerModeOn = true;
-    Button accelModeButton;
+    boolean accelInitHasOccured = false;
+    private Button accelModeButton;
 
     // Synthetic data timer. Track frame count for synthetic data.
     int synthTime;
@@ -87,13 +87,7 @@ class W_accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
-        String defaultAccelModeButtonString;
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            defaultAccelModeButtonString = "Turn Accel. Off";
-        } else {
-            defaultAccelModeButtonString = "Turn Accel. On";
-        }
-        accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, defaultAccelModeButtonString, 12);
+        accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p6,10);
         accelModeButton.setColorNotPressed(color(57,128,204));
@@ -152,7 +146,7 @@ class W_accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && accelerometerModeOn) {
+        if (isRunning && isAccelModeActive()) {
             //update the current Accelerometer values
             updateAccelPoints();
             //update the line graph and corresponding gplot points
@@ -171,6 +165,28 @@ class W_accelerometer extends Widget {
             } else {  //playback data
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
             }
+        }
+    }
+
+    // check the approrpiate board to see if accel mode is on
+    boolean isAccelModeActive() {
+        if (eegDataSource == DATASOURCE_CYTON) {
+            return cyton.getBoardMode() == BOARD_MODE_DEFAULT;
+        }
+        else if (eegDataSource == DATASOURCE_GANGLION) {
+            return ganglion.isAccelModeActive();
+        }
+        else {
+            return true;
+        }
+    }
+
+    String getButtonString() {
+        if (isAccelModeActive()) {
+            return "Turn Accel. Off";
+        }
+        else {
+            return "Turn Accel. On";
         }
     }
 
@@ -197,29 +213,18 @@ class W_accelerometer extends Widget {
 
         fill(50);
         textFont(p3, 16);
+        accelModeButton.setString(getButtonString());
 
-        if (eegDataSource == DATASOURCE_CYTON) {  //LIVE CYTON
-            drawAccValues();
-            draw3DGraph();
-            if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
-                accelModeButton.setString("Turn Accel. On");
-                accelModeButton.draw();
-            } else {
-                accelerometerBar.draw();
-            }
-        } else if (eegDataSource == DATASOURCE_GANGLION) {  //LIVE GANGLION
-            if (accelerometerModeOn) {
-                drawAccValues();
-                draw3DGraph();
-                accelerometerBar.draw();
-            }
-            if (ganglion.isBLE()) accelModeButton.draw();
-        } else {  //SYNTHETIC and PLAYBACK
+        if (eegDataSource == DATASOURCE_CYTON
+        || (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE())) {
+            accelModeButton.draw();
+        }
+
+        if (isAccelModeActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
-        }
-
+        } 
         popStyle();
     }
 
@@ -270,14 +275,10 @@ class W_accelerometer extends Widget {
 
         if (eegDataSource == DATASOURCE_GANGLION) {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (ganglion.isAccelModeActive()) {
+                if (isAccelModeActive()) {
                     ganglion.accelStop();
-                    accelModeButton.setString("Turn Accel. On");
-                    accelerometerModeOn = false;
                 } else{
                     ganglion.accelStart();
-                    accelModeButton.setString("Turn Accel. Off");
-                    accelerometerModeOn = true;
                 }
                 //accelerometerModeOn = !accelerometerModeOn;
             }
@@ -286,7 +287,6 @@ class W_accelerometer extends Widget {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
                 cyton.setBoardMode(BOARD_MODE_DEFAULT);
                 output("Starting to read accelerometer");
-                accelerometerModeOn = true;
                 w_analogRead.analogReadOn = false;
                 w_pulsesensor.analogReadOn = false;
                 w_digitalRead.digitalReadOn = false;
@@ -294,7 +294,6 @@ class W_accelerometer extends Widget {
             }
             accelModeButton.setIsActive(false);
         }
-
     }
 
     //Draw the current accelerometer values as text

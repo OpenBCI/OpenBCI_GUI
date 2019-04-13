@@ -197,14 +197,12 @@ class W_AnalogRead extends Widget {
                     } else {
                         output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
                     }
-                    w_accelerometer.accelerometerModeOn = false;
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                     w_pulsesensor.analogReadOn = true;
                 } else {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     output("Starting to read accelerometer");
-                    w_accelerometer.accelerometerModeOn = true;
                 }
                 analogReadOn = !analogReadOn;
             }

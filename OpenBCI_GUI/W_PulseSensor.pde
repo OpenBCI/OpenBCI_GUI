@@ -216,7 +216,6 @@ class W_PulseSensor extends Widget {
                     cyton.setBoardMode(BOARD_MODE_ANALOG);
                     output("Starting to read analog inputs on pin marked D11");
                     analogModeButton.setString("Turn Analog Read Off");
-                    w_accelerometer.accelerometerModeOn = false;
                     w_analogRead.analogReadOn = true; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be activated also, this variable documents the change
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
@@ -224,7 +223,6 @@ class W_PulseSensor extends Widget {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     output("Starting to read accelerometer");
                     analogModeButton.setString("Turn Analog Read On");
-                    w_accelerometer.accelerometerModeOn = true;
                     w_analogRead.analogReadOn = false; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be de-activated also, this variable documents the change
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;

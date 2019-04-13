@@ -316,7 +316,7 @@ void saveGUISettings(String saveGUISettingsFileLocation) {
     saveGlobalSettings.setInt("Framerate", frameRateCounter);
     saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
     saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-    saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.accelerometerModeOn);
+    saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.isAccelModeActive());
     if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
         saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
         saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
@@ -819,17 +819,14 @@ void loadGUISettings (String loadGUISettingsFileLocation) {
 
     //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
     if (eegDataSource == DATASOURCE_GANGLION) {
-        w_accelerometer.accelerometerModeOn = loadAccelerometer;
-        //ganglion.accelModeActive = loadAccelerometer;
         if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
+            // daniellasry: it seems the ganglion board does not like turning on the accelerometer
+            // immediately after activating channels. From what I can tell, the issue is in the
+            // firmware. This delay is a workaround for the issue.
+            delay(1000);
             ganglion.accelStart(); //send message to hub
-            w_accelerometer.accelModeButton.setString("Turn Accel. Off"); //update button text
-            w_accelerometer.drawAccValues(); //draw accelerometer
-            w_accelerometer.draw3DGraph();
-            w_accelerometer.accelerometerBar.draw();
         } else {
             ganglion.accelStop(); //send message to hub
-            w_accelerometer.accelModeButton.setString("Turn Accel. On"); //update button text
         }
     }
 
@@ -843,7 +840,6 @@ void applyBoardMode() {
         case BOARD_MODE_DEFAULT:
             cyton.setBoardMode(BOARD_MODE_DEFAULT);
             //outputSuccess("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_analogRead.analogReadOn = false;
             w_pulsesensor.analogReadOn = false;
             w_digitalRead.digitalReadOn = false;
@@ -860,7 +856,6 @@ void applyBoardMode() {
                     } else {
                         output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
                     }
-                    w_accelerometer.accelerometerModeOn = false;
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                     w_pulsesensor.analogReadOn = true;
@@ -868,7 +863,6 @@ void applyBoardMode() {
                 } else {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     output("Starting to read accelerometer");
-                    w_accelerometer.accelerometerModeOn = true;
                 }
             }
             break;
@@ -881,14 +875,12 @@ void applyBoardMode() {
                     } else {
                         output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                     }
-                    w_accelerometer.accelerometerModeOn = false;
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     outputSuccess("Starting to read accelerometer");
-                    w_accelerometer.accelerometerModeOn = true;
                 }
             }
             break;
@@ -898,7 +890,6 @@ void applyBoardMode() {
                     cyton.setBoardMode(BOARD_MODE_MARKER);
                     output("Starting to read markers");
                     w_markermode.markerModeButton.setString("Turn Marker Off");
-                    w_accelerometer.accelerometerModeOn = false;
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
@@ -906,7 +897,6 @@ void applyBoardMode() {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     output("Starting to read accelerometer");
                     w_markermode.markerModeButton.setString("Turn Marker On");
-                    w_accelerometer.accelerometerModeOn = true;
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;

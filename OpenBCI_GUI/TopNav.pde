@@ -937,12 +937,12 @@ class configSelector {
                         //Delete only specified files in the Settings Folder
                         String[] filesToDelete = concat(userSettingsFiles, defaultSettingsFiles);
                         filesToDelete = append(filesToDelete, userPlaybackHistoryFile);
-                        println(filesToDelete);
+                        //println(filesToDelete);
                         int successfulDeletions = 0;
                         for (int j = 0; j < filesToDelete.length; j++) {
                             String settingsPath = "SavedData/Settings/";
                             String f = new File(sketchPath()+System.getProperty("file.separator")+settingsPath+filesToDelete[j]).getAbsolutePath();
-                            println(f);
+                            //println(f);
                             try {
                                 Files.deleteIfExists(Paths.get(f));
                                 successfulDeletions++;

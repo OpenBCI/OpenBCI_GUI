@@ -1095,7 +1095,6 @@ void haltSystem() {
         if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
             cyton.setBoardMode(BOARD_MODE_DEFAULT);
             output("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
             w_pulsesensor.analogReadOn = false;
             w_analogRead.analogModeButton.setString("Turn Analog Read On");
@@ -1103,13 +1102,11 @@ void haltSystem() {
         } else if (w_digitalRead.digitalReadOn) {
             cyton.setBoardMode(BOARD_MODE_DEFAULT);
             output("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
             w_digitalRead.digitalReadOn = false;
         } else if (w_markermode.markerModeOn) {
             cyton.setBoardMode(BOARD_MODE_DEFAULT);
             output("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_markermode.markerModeButton.setString("Turn Marker On");
             w_markermode.markerModeOn = false;
         }
