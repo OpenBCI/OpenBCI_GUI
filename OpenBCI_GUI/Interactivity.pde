@@ -27,7 +27,7 @@ void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if (expertModeToggle) { //Check if Expert Mode is On
+        if (expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);
             } else {
