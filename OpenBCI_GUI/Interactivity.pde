@@ -831,10 +831,6 @@ class Button {
             }
             popStyle();
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/development
         popStyle();
     } //end of button draw
 };

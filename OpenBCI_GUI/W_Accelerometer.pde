@@ -164,7 +164,7 @@ class W_Accelerometer extends Widget {
     // check the approrpiate board to see if accel mode is on
     boolean isAccelModeActive() {
         if (eegDataSource == DATASOURCE_CYTON) {
-            return cyton.getBoardMode() == BOARD_MODE_DEFAULT;
+            return cyton.getBoardMode() == BoardMode.DEFAULT;
         }
         else if (eegDataSource == DATASOURCE_GANGLION) {
             return ganglion.isAccelModeActive();
