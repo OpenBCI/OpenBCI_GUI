@@ -122,7 +122,7 @@ class W_networking extends Widget {
         defaultBaud = "115200";
         // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
         baudRates = Arrays.asList(nwBaudRatesArray);
-        protocolMode = "Serial"; //default to OSC
+        protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
         println("comPorts = " + comPorts);

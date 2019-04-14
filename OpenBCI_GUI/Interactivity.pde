@@ -641,7 +641,7 @@ class Button {
     int buttonTextSize;
     PImage bgImage;
     boolean hasbgImage = false;
-    boolean ignoreHover = false;
+    private boolean ignoreHover = false;
 
     public Button(int x, int y, int w, int h, String txt) {
         setup(x, y, w, h, txt);

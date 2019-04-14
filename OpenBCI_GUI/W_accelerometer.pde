@@ -224,7 +224,7 @@ class W_accelerometer extends Widget {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
-        } 
+        }
         popStyle();
     }
 
@@ -612,7 +612,7 @@ class AccelerometerBar{
                 plot.setPoints(accelPointsZ, "layer 3");
             } catch (ArrayIndexOutOfBoundsException e) {
                 //catch exception that occurs when loading synthetic mode after Ganglion+WiFi
-                //println("SetGPlotPoints: ArrayIndexOutOfBoundsException");
+                println("SetGPlotPoints: ArrayIndexOutOfBoundsException");
             }
         }
     }
