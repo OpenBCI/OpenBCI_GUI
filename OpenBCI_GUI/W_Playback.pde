@@ -301,7 +301,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
         //println("ARRAYSIZE-Check1: " + int(recentFilesArray.size()));
-        //Recent file has recentFileNumber=1, and appears at the end of the JSON array
+        //Recent file has recentFileNumber=0, and appears at the end of the JSON array
         //check if already in the list, if so, remove from the list
         for (int i = 0; i < recentFilesArray.size(); i++) {
             JSONObject playbackFile = recentFilesArray.getJSONObject(i);
@@ -314,8 +314,8 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         //next, increment fileNumber of all current entries +1
         for (int i = 0; i < recentFilesArray.size(); i++) {
             JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-            playbackFile.setInt("recentFileNumber", recentFilesArray.size()-i+1);
-            //println(recentFilesArray.size()-i+1);
+            playbackFile.setInt("recentFileNumber", recentFilesArray.size()-i);
+            //println(recentFilesArray.size()-i);
             playbackFile.setString("id", playbackFile.getString("id"));
             playbackFile.setString("filePath", playbackFile.getString("filePath"));
             recentFilesArray.setJSONObject(i, playbackFile);
@@ -323,7 +323,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         //println("ARRAYSIZE-Check2: " + int(recentFilesArray.size()));
         //append selected playback file to position 1 at the end of the JSONArray
         JSONObject mostRecentFile = new JSONObject();
-        mostRecentFile.setInt("recentFileNumber", 1);
+        mostRecentFile.setInt("recentFileNumber", 0);
         mostRecentFile.setString("id", playbackData_ShortName);
         mostRecentFile.setString("filePath", playbackData_fname);
         recentFilesArray.append(mostRecentFile);
@@ -349,7 +349,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         JSONArray newHistoryFileArray = new JSONArray();
         //save selected playback file to position 1 in recent file history
         JSONObject mostRecentFile = new JSONObject();
-        mostRecentFile.setInt("recentFileNumber", 1);
+        mostRecentFile.setInt("recentFileNumber", 0);
         mostRecentFile.setString("id", fileNameToAdd);
         mostRecentFile.setString("filePath", playbackData_fname);
         newHistoryFileArray.setJSONObject(0, mostRecentFile);
