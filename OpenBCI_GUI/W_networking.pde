@@ -98,6 +98,9 @@ class W_networking extends Widget {
         "obci_eeg2","EEG",Integer.toString(nchan),
         "obci_eeg3","EEG",Integer.toString(nchan)};
 
+    boolean configIsVisible = false;
+    boolean layoutIsVisible = false;
+
     W_networking(PApplet _parent){
         super(_parent);
         // ourApplet = _parent;
@@ -109,18 +112,18 @@ class W_networking extends Widget {
         stream4 = null;
 
         //default data types for streams 1-4 in Networking widget
-        nwDataType1 = 0;
-        nwDataType2 = 0;
-        nwDataType3 = 0;
-        nwDataType4 = 0;
-        nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
+        settings.nwDataType1 = 0;
+        settings.nwDataType2 = 0;
+        settings.nwDataType3 = 0;
+        settings.nwDataType4 = 0;
+        settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
 
-        dataTypes = Arrays.asList(nwDataTypesArray); //Add any new widgets capable of streaming here
+        dataTypes = Arrays.asList(settings.nwDataTypesArray); //Add any new widgets capable of streaming here
         defaultBaud = "115200";
         // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
-        baudRates = Arrays.asList(nwBaudRatesArray);
-        protocolMode = "OSC"; //default to OSC
-        addDropdown("Protocol", "Protocol", Arrays.asList(nwProtocolArray), protocolIndex);
+        baudRates = Arrays.asList(settings.nwBaudRatesArray);
+        protocolMode = "Serial"; //default to Serial
+        addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
         println("comPorts = " + comPorts);
 
@@ -149,6 +152,32 @@ class W_networking extends Widget {
             }
         }
 
+        //Check if a change has occured
+        if ((topNav.configSelector.isVisible != configIsVisible) || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
+            //lock/unlock the controllers within networking widget when using TopNav Objects
+            if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").lock();
+                cp5_networking_portName.getController("port_name").lock();
+                lockTextFields(oscTextFieldNames, true);
+                lockTextFields(udpTextFieldNames, true);
+                lockTextFields(lslTextFieldNames, true);
+                //println("##LOCKED NETWORKING CP5 CONTROLLERS##");
+            } else {
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").unlock();
+                cp5_networking_portName.getController("port_name").unlock();
+                lockTextFields(oscTextFieldNames, false);
+                lockTextFields(udpTextFieldNames, false);
+                lockTextFields(lslTextFieldNames, false);
+            }
+            configIsVisible = topNav.configSelector.isVisible;
+            layoutIsVisible = topNav.layoutSelector.isVisible;
+        }
         //put your code here...
         if (dataDropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -355,6 +384,17 @@ class W_networking extends Widget {
     void setTextFieldVisible(String[] textFieldNames, Boolean isVisible) {
         for (int i = 0; i < textFieldNames.length; i++) {
             cp5_networking.get(Textfield.class, textFieldNames[i]).setVisible(isVisible);
+        }
+    }
+
+    //Lock text fields by setting _lock = true, unlock using false
+    void lockTextFields(String[] textFieldNames, Boolean _lock) {
+        for (int i = 0; i < textFieldNames.length; i++) {
+            if (_lock) {
+                cp5_networking.get(Textfield.class, textFieldNames[i]).lock();
+            } else {
+                cp5_networking.get(Textfield.class, textFieldNames[i]).unlock();
+            }
         }
     }
 
@@ -705,10 +745,10 @@ class W_networking extends Widget {
         int baudRate;
         String type;
 
-        String dt1 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()];
-        String dt2 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()];
-        String dt3 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()];
-        String dt4 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()];
+        String dt1 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()];
+        String dt2 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()];
+        String dt3 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()];
+        String dt4 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()];
         networkActive = true;
 
         // Establish OSC Streams
@@ -885,9 +925,10 @@ class W_networking extends Widget {
                 cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).close();
             }
         }
+        //If using a TopNav object, ignore interaction with widget objects
         if (!cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).isOpen()){
             if (cp5_networking_dropdowns.getController(dropdownName).isMouseOver()){
-                // println("2");
+                println("++++Opening dropdown " + dropdownName);
                 cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).open();
             }
         }
@@ -940,7 +981,6 @@ class Stream extends Thread {
         println("Stream update numChan to " + numChan);
         dataToSend = new float[numChan * nPointsPerUpdate];
         println("nPointsPerUpdate " + nPointsPerUpdate);
-
         println("dataToSend len: " + numChan * nPointsPerUpdate);
     }
 
@@ -1480,16 +1520,16 @@ class Stream extends Thread {
                 outlet_data.push_chunk(dataToSend);
             // Serial
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
-                for (int i=0;i<numChan;i++){
-                    serialMessage = ""; //clear message
-                    String isFocused = Boolean.toString(w_focus.isFocused);
-                    serialMessage += isFocused;
-                    try {
-                        println(serialMessage);
-                        this.serial_networking.write(serialMessage);
-                    } catch (Exception e){
-                        println(e.getMessage());
-                    }
+                serialMessage = ""; //clear message
+                String isFocused = Boolean.toString(w_focus.isFocused);
+                serialMessage += isFocused;
+                serialMessage += "\n";
+                try {
+                    //println("SerialMessage: " + serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println("SerialMessage: Focus Error");
+                    //println(e.getMessage());
                 }
             }
         }
@@ -1606,13 +1646,13 @@ class Stream extends Thread {
         } else if (this.protocol.equals("LSL")){
             String stream_id = "openbcieeg12345";
             info_data = new LSL.StreamInfo(
-                                                        this.streamName,
-                                                        this.streamType,
-                                                        this.nChanLSL,
-                                                        getSampleRateSafe(),
-                                                        LSL.ChannelFormat.float32,
-                                                        stream_id
-                                                    );
+                        this.streamName,
+                        this.streamType,
+                        this.nChanLSL,
+                        getSampleRateSafe(),
+                        LSL.ChannelFormat.float32,
+                        stream_id
+                    );
             outlet_data = new LSL.StreamOutlet(info_data);
         } else if (this.protocol.equals("Serial")){
             //Open Serial Port! %%%%%
@@ -1661,14 +1701,14 @@ class Stream extends Thread {
   * @param `n` {int} - Index of protocol item selected in menu
   */
 void Protocol(int protocolIndex){
-    nwProtocolSave = protocolIndex;
-    if (protocolIndex==0){
+    settings.nwProtocolSave = protocolIndex;
+    if (protocolIndex==3){
         w_networking.protocolMode = "OSC";
-    } else if (protocolIndex==1){
-        w_networking.protocolMode = "UDP";
     } else if (protocolIndex==2){
+        w_networking.protocolMode = "UDP";
+    } else if (protocolIndex==1){
         w_networking.protocolMode = "LSL";
-    } else if (protocolIndex==3){
+    } else if (protocolIndex==0){
         w_networking.protocolMode = "Serial";
     }
     println(w_networking.protocolMode + " selected from Protocol Menu");

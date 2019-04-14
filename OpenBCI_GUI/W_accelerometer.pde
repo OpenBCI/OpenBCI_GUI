@@ -30,7 +30,6 @@ class W_accelerometer extends Widget {
     //Graphing variables
     int[] xLimOptions = {0, 1, 3, 5, 10, 20}; //number of seconds (x axis of graph)
     int[] yLimOptions = {0, 1, 2, 4};
-    int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
     int accelHorizLimit = 20;
     int accelBuffSize; //Number of points, used to make buffers
     AccelerometerBar accelerometerBar;
@@ -66,12 +65,12 @@ class W_accelerometer extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Default dropdown settings
-        accVertScaleSave = 0;
-        accHorizScaleSave = 0;
+        settings.accVertScaleSave = 0;
+        settings.accHorizScaleSave = 0;
 
         //Make dropdowns
-        addDropdown("accelVertScale", "Vert Scale", Arrays.asList(accVertScaleArray), accVertScaleSave);
-        addDropdown("accelDuration", "Window", Arrays.asList(accHorizScaleArray), accHorizScaleSave);
+        addDropdown("accelVertScale", "Vert Scale", Arrays.asList(settings.accVertScaleArray), settings.accVertScaleSave);
+        addDropdown("accelDuration", "Window", Arrays.asList(settings.accHorizScaleArray), settings.accHorizScaleSave);
 
         setGraphDimensions();
         yMaxMin = adjustYMaxMinBasedOnSource();
@@ -85,7 +84,7 @@ class W_accelerometer extends Widget {
         //create our channel bar and populate our accelerometerBar array!
         println("Init accelerometer bar");
         accelerometerBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
-        accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]); //sync horiz axis to Time Series by default
+        accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
         accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
@@ -224,7 +223,7 @@ class W_accelerometer extends Widget {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
-        } 
+        }
         popStyle();
     }
 
@@ -347,18 +346,18 @@ class W_accelerometer extends Widget {
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void accelVertScale(int n) {
-    accVertScaleSave = n;
+    settings.accVertScaleSave = n;
     w_accelerometer.accelerometerBar.adjustVertScale(w_accelerometer.yLimOptions[n]);
     closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
 void accelDuration(int n) {
-    accHorizScaleSave = n;
+    settings.accHorizScaleSave = n;
 
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     if (n == 0) {
-        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
     } else {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(w_accelerometer.xLimOptions[n]);
@@ -597,18 +596,23 @@ class AccelerometerBar{
         //println("UPDATING ACCEL GRAPH");
         int accelBuffDiff = accelBuffSize - nPoints;
         if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
-            for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-                GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
-                GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
-                GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
-                accelPointsX.set(i-accelBuffDiff, tempPointX);
-                accelPointsY.set(i-accelBuffDiff, tempPointY);
-                accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+            try {
+                for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
+                    GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
+                    GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
+                    GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
+                    accelPointsX.set(i-accelBuffDiff, tempPointX);
+                    accelPointsY.set(i-accelBuffDiff, tempPointY);
+                    accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+                }
+                //set points in three layers on the same plot, just like old graph
+                plot.setPoints(accelPointsX, "layer 1");
+                plot.setPoints(accelPointsY, "layer 2");
+                plot.setPoints(accelPointsZ, "layer 3");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //catch exception that occurs when loading synthetic mode after Ganglion+WiFi
+                println("SetGPlotPoints: ArrayIndexOutOfBoundsException");
             }
-            //set points in three layers on the same plot, just like old graph
-            plot.setPoints(accelPointsX, "layer 1");
-            plot.setPoints(accelPointsY, "layer 2");
-            plot.setPoints(accelPointsZ, "layer 3");
         }
     }
 

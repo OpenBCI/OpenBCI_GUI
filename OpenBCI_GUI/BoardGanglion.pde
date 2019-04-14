@@ -82,7 +82,9 @@ class Ganglion {
         }
     }
     public boolean isCheckingImpedance() { return checkingImpedance; }
-    public boolean isAccelModeActive() { return accelModeActive; }
+    public boolean isAccelModeActive() {
+        return isWifi() ? true : accelModeActive; //Accel is always on for Ganglion+Wifi
+    }
     public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; }
     public int getInterface() {
         return curInterface;

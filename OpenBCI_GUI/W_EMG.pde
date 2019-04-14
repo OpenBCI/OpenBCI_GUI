@@ -47,7 +47,7 @@ void SmoothEMG(int n){
             w_emg.motorWidgets[i].averagePeriod = samplesPerSecond * 2.0;
         }
     }
-    emgSmoothingSave = n;
+    settings.emgSmoothingSave = n;
     closeAllDropdowns();
 }
 
@@ -66,7 +66,7 @@ void uVLimit(int n){
             w_emg.motorWidgets[i].acceptableLimitUV = 400.0;
         }
     }
-    emguVLimSave = n;
+    settings.emguVLimSave = n;
     closeAllDropdowns();
 }
 
@@ -88,7 +88,7 @@ void CreepSpeed(int n){
             w_emg.motorWidgets[i].creepSpeed = 0.999;
         }
     }
-    emgCreepSave = n;
+    settings.emgCreepSave = n;
     closeAllDropdowns();
 }
 
@@ -107,7 +107,7 @@ void minUVRange(int n){
             w_emg.motorWidgets[i].minRange = 80.0;
         }
     }
-    emgMinDeltauVSave = n;
+    settings.emgMinDeltauVSave = n;
     closeAllDropdowns();
 }
 
@@ -137,16 +137,16 @@ class W_emg extends Widget {
         parent = _parent;
 
         //EMG settings
-        int emgSmoothingSave = 4;
-        int emguVLimSave = 2;
-        int emgCreepSave = 3;
-        int emgMinDeltauVSave = 1;
+        settings.emgSmoothingSave = 4;
+        settings.emguVLimSave = 2;
+        settings.emgCreepSave = 3;
+        settings.emgMinDeltauVSave = 1;
 
         //Add dropdowns
-        addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"), emgSmoothingSave);
-        addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), emguVLimSave);
-        addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), emgCreepSave);
-        addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), emgMinDeltauVSave);
+        addDropdown("SmoothEMG", "Smooth", Arrays.asList("0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"), settings.emgSmoothingSave);
+        addDropdown("uVLimit", "uV Limit", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV"), settings.emguVLimSave);
+        addDropdown("CreepSpeed", "Creep", Arrays.asList("0.9", "0.95", "0.98", "0.99", "0.999"), settings.emgCreepSave);
+        addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), settings.emgMinDeltauVSave);
 
         updateEMGMotorWidgets(nchan);
 

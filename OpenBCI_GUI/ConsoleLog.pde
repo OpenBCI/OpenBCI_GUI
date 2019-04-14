@@ -236,7 +236,7 @@ class CustomOutputStream extends PrintStream {
     private Textarea textArea;
     private String filePath;
 
-    private final String fileDirectory = "/SavedData/Settings/";
+    private final String fileDirectory = "/SavedData/";
     private final String fileName =  "console-data.txt";
 
     public CustomOutputStream(OutputStream out) {
@@ -246,7 +246,6 @@ class CustomOutputStream extends PrintStream {
         fileOutput = new PrintStream(out);
 
         // create log file
-        // TODO: Figure out clean way to create file on all platforms
         try {
             File consoleDataFile = new File(sketchPath()+fileDirectory);
             if (!consoleDataFile.isDirectory()) consoleDataFile.mkdir();
