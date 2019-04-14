@@ -296,87 +296,7 @@ char[][] impedanceCheckValues = new char [nchan][2];
 //[Number of Channels] x 6 array of buttons for channel settings
 //Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
 
-//default layout variables
-int layoutSelected;
-int currentLayout;
-
-////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
-//Notch and Bandpass filter variables for save
-int dataProcessingNotchSave = 0;
-int dataProcessingBandpassSave = 3;
-//Time Series settings
-int tsVertScaleSave;
-int tsHorizScaleSave;
-int checkForSuccessTS = 0;
-//Accelerometer settings
-int accVertScaleSave;
-int accHorizScaleSave;
-//FFT plot settings,
-int fftMaxFrqSave;
-int fftMaxuVSave;
-int fftLogLinSave;
-int fftSmoothingSave;
-int fftFilterSave;
-//Analog Read settings
-int arVertScaleSave; //updates in VertScale_AR()
-int arHorizScaleSave; //updates in Duration_AR()
-//Headplot settings
-int hpIntensitySave;
-int hpPolaritySave;
-int hpContoursSave;
-int hpSmoothingSave;
-//EMG settings
-int emgSmoothingSave;
-int emguVLimSave;
-int emgCreepSave;
-int emgMinDeltauVSave;
-//Focus widget settings
-int focusThemeSave;
-int focusKeySave;
-//default data types for streams 1-4 in Networking widget
-int nwDataType1;
-int nwDataType2;
-int nwDataType3;
-int nwDataType4;
-int nwProtocolSave;
-
-//default configuration settings file location and file name variables
-final String settingsPath = "SavedData/Settings/";
-final String[] userSettingsFiles = {
-    "CytonUserSettings.json",
-    "DaisyUserSettings.json",
-    "GanglionUserSettings.json",
-    "PlaybackUserSettings.json",
-    "SynthFourUserSettings.json",
-    "SynthEightUserSettings.json",
-    "SynthSixteenUserSettings.json"
-    };
-final String[] defaultSettingsFiles = {
-    "CytonDefaultSettings.json",
-    "DaisyDefaultSettings.json",
-    "GanglionDefaultSettings.json",
-    "PlaybackDefaultSettings.json",
-    "SynthFourDefaultSettings.json",
-    "SynthEightDefaultSettings.json",
-    "SynthSixteenDefaultSettings.json"
-    };
-String saveSettingsDialogName; //Used when Save button is pressed
-String loadSettingsDialogName; //Used when Load button is pressed
-String controlEventDataSource; //Used for output message on system start
-Boolean errorUserSettingsNotFound = false; //For error catching
-int loadErrorTimerStart;
-int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
-Boolean loadErrorCytonEvent = false;
-Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
-final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
-
-//Used mostly in W_playback.pde
-JSONObject savePlaybackHistoryJSON;
-JSONObject loadPlaybackHistoryJSON;
-final String userPlaybackHistoryFile = settingsPath+"UserPlaybackHistory.json";
-boolean playbackHistoryFileExists = false;
-String playbackData_ShortName;
-boolean recentPlaybackFilesHaveUpdated = false;
+SoftwareSettings settings = new SoftwareSettings();
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -878,43 +798,9 @@ void initSystem() {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
     //Init software settings: create default settings files, load user settings, etc.
-    initSoftwareSettings();
+    settings.init();
 
-    //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
-    String firmwareToPrint = "";
-    String dataModeVersionToPrint = controlEventDataSource;
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (!loadErrorCytonEvent) {
-            firmwareToPrint = " " + hub.firmwareVersion + ")";
-        } else {
-            firmwareToPrint = "v.?)";
-        }
-        dataModeVersionToPrint = controlEventDataSource.replace(")", " ");
-        dataModeVersionToPrint += firmwareToPrint;
-    }
-
-    //Output messages when Loading settings is complete
-    if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
-        }
-    } else if (chanNumError) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
-        output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-    } else if (dataSourceError) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
-        output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-    } else if (errorUserSettingsNotFound) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: File not found. " + millis()); //Print the error to console
-        output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
-    } else {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
-        outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
-    }
-
-    //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
-    settingsLoadedCheck = true;
+    settings.initCheckPointFive();
 
     //reset init variables
     midInit = false;
@@ -1089,7 +975,7 @@ void haltSystem() {
     //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
     //This method establishes default and user settings for all data modes
     if (systemMode == SYSTEMMODE_POSTINIT) {
-        saveGUISettings(getSettingsFileName("User", eegDataSource, nchan));
+        settings.save(settings.getPath("User", eegDataSource, nchan));
     }
 
     if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
@@ -1129,7 +1015,7 @@ void haltSystem() {
     indices = 0;
     hasRepeated = false;
     has_processed = false;
-    settingsLoadedCheck = false; //on halt, reset this value
+    settings.settingsLoaded = false; //on halt, reset this value
 
     //reset connect loadStrings
     openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
@@ -1411,7 +1297,7 @@ void systemDraw() { //for drawing to the screen
             output("");
         }
 
-        if (millis() - timeOfInit > initTimeoutThreshold) {
+        if (millis() - timeOfInit > settings.initTimeoutThreshold) {
             haltSystem();
             initSystemButton.but_txt = "START SYSTEM";
             output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");

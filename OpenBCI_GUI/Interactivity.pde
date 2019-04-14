@@ -27,7 +27,7 @@ void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if (expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
+        if (settings.expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);
             } else {
@@ -278,33 +278,14 @@ void parseKey(char val) {
         ///////////////////// Save User settings lowercase n
         case 'n':
             println("Save key pressed!");
-            saveGUISettings(getSettingsFileName("User", eegDataSource, nchan));
+            settings.save(settings.getPath("User", eegDataSource, nchan));
             outputSuccess("Settings Saved!");
             break;
 
         ///////////////////// Load User settings uppercase N
         case 'N':
             println("Load key pressed!");
-            loadErrorTimerStart = millis();
-            String settingsFileToLoad = getSettingsFileName("User", eegDataSource, nchan);
-            try {
-                loadGUISettings(settingsFileToLoad);
-                errorUserSettingsNotFound = false;
-            } catch (Exception e) {
-                println(e.getMessage());
-                println(settingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
-                errorUserSettingsNotFound = true;
-            }
-            //Output message when Loading settings is complete
-            if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
-                outputSuccess("Settings Loaded!");
-            } else if (chanNumError) {
-                outputError("Load Settings Error: Invalid number of channels");
-            } else if (dataSourceError) {
-                outputError("Load Settings Error: Invalid data source");
-            } else {
-                outputError("Load settings error: " + settingsFileToLoad + " not found. ");
-            }
+            settings.loadKeyPressed();
             break;
 
         case '?':

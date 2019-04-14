@@ -68,16 +68,15 @@ class W_timeSeries extends Widget {
         numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
         //Time Series settings
-        tsVertScaleSave = 3;
-        tsHorizScaleSave = 2;
-        //checkForSuccessTS = 0;
+        settings.tsVertScaleSave = 3;
+        settings.tsHorizScaleSave = 2;
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-        addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(tsVertScaleArray), tsVertScaleSave);
-        addDropdown("Duration", "Window", Arrays.asList(tsHorizScaleArray), tsHorizScaleSave);
+        addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(settings.tsVertScaleArray), settings.tsVertScaleSave);
+        addDropdown("Duration", "Window", Arrays.asList(settings.tsHorizScaleArray), settings.tsHorizScaleSave);
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
@@ -318,7 +317,7 @@ class W_timeSeries extends Widget {
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
-    tsVertScaleSave = n;
+    settings.tsVertScaleSave = n;
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
         w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
     }
@@ -327,20 +326,20 @@ void VertScale_TS(int n) {
 
 //triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
-    tsHorizScaleSave = n;
+    settings.tsHorizScaleSave = n;
     // println("adjust duration to: " + xLimOptions[n]);
     //set time series x axis to the duration selected from dropdown
-    int newDuration = w_timeSeries.xLimOptions[tsHorizScaleSave];
+    int newDuration = w_timeSeries.xLimOptions[n];
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
         w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
     }
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (accHorizScaleSave == 0) {
+    if (settings.accHorizScaleSave == 0) {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
     }
     if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
-        if (arHorizScaleSave == 0){
+        if (settings.arHorizScaleSave == 0){
             //set analog read x axis to the duration selected from dropdown
             for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
                 w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);

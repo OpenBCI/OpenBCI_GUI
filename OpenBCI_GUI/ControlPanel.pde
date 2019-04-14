@@ -151,7 +151,7 @@ public void controlEvent(ControlEvent theEvent) {
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         String str = (String)bob.get("headline");
-        controlEventDataSource = str; //Used for output message on system start
+        settings.controlEventDataSource = str; //Used for output message on system start
         int newDataSource = int(theEvent.getValue());
 
         eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
@@ -1683,7 +1683,7 @@ public void initButtonPressed(){
 
 void updateToNChan(int _nchan) {
     nchan = _nchan;
-    slnchan = _nchan; //used in SoftwareSettings.pde only
+    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("channel count set to " + str(nchan));
@@ -3402,7 +3402,7 @@ public class MenuList extends controlP5.Controller {
         items.remove(m);
         updateMenu = true;
     }
-    
+
     //Returns null if selecting an item that does not exist
     Map<String, Object> getItem(int theIndex) {
         Map<String, Object> m = new HashMap<String, Object>();

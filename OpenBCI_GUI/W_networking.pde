@@ -112,18 +112,18 @@ class W_networking extends Widget {
         stream4 = null;
 
         //default data types for streams 1-4 in Networking widget
-        nwDataType1 = 0;
-        nwDataType2 = 0;
-        nwDataType3 = 0;
-        nwDataType4 = 0;
-        nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
+        settings.nwDataType1 = 0;
+        settings.nwDataType2 = 0;
+        settings.nwDataType3 = 0;
+        settings.nwDataType4 = 0;
+        settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
 
-        dataTypes = Arrays.asList(nwDataTypesArray); //Add any new widgets capable of streaming here
+        dataTypes = Arrays.asList(settings.nwDataTypesArray); //Add any new widgets capable of streaming here
         defaultBaud = "115200";
         // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
-        baudRates = Arrays.asList(nwBaudRatesArray);
+        baudRates = Arrays.asList(settings.nwBaudRatesArray);
         protocolMode = "Serial"; //default to Serial
-        addDropdown("Protocol", "Protocol", Arrays.asList(nwProtocolArray), protocolIndex);
+        addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
         println("comPorts = " + comPorts);
 
@@ -745,10 +745,10 @@ class W_networking extends Widget {
         int baudRate;
         String type;
 
-        String dt1 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()];
-        String dt2 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()];
-        String dt3 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()];
-        String dt4 = nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()];
+        String dt1 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()];
+        String dt2 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()];
+        String dt3 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()];
+        String dt4 = settings.nwDataTypesArray[(int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()];
         networkActive = true;
 
         // Establish OSC Streams
@@ -1701,7 +1701,7 @@ class Stream extends Thread {
   * @param `n` {int} - Index of protocol item selected in menu
   */
 void Protocol(int protocolIndex){
-    nwProtocolSave = protocolIndex;
+    settings.nwProtocolSave = protocolIndex;
     if (protocolIndex==3){
         w_networking.protocolMode = "OSC";
     } else if (protocolIndex==2){

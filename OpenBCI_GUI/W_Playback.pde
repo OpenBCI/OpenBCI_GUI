@@ -7,7 +7,17 @@
 //                       Created: Richard Waltman - August 2018
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ControlP5 cp5_playback;
+
+//Used mostly in W_playback.pde
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+final String userPlaybackHistoryFile = settings.settingsPath+"UserPlaybackHistory.json";
+boolean playbackHistoryFileExists = false;
+String playbackData_ShortName;
+boolean recentPlaybackFilesHaveUpdated = false;
+
 class W_playback extends Widget {
     //allow access to dataProcessing
     DataProcessing dataProcessing;
@@ -69,7 +79,7 @@ class W_playback extends Widget {
     void draw() {
         //Only draw if the widget is visible and User settings have been loaded
         //settingsLoadedCheck is set to true after default settings are saved between Init checkpoints 4 and 5
-        if(visible && settingsLoadedCheck) {
+        if(visible && settings.settingsLoaded) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
             //x,y,w,h are the positioning variables of the Widget class
@@ -177,7 +187,7 @@ void loadRecentPlaybackHistoryFile (String fullPath, String shortName) {
     //output("You have selected \"" + selection.getAbsolutePath() + "\" for playback.");
     playbackData_fname = fullPath;
     playbackData_ShortName = shortName;
-    
+
     if (new File(playbackData_fname).isFile()) {
 
         //If a new file was selected, process it so we can set variables first.

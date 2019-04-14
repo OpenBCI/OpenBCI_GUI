@@ -637,7 +637,7 @@ class LayoutSelector {
                     layoutOptions.get(i).setIsActive(false);
                     toggleVisibility(); //shut layoutSelector if something is selected
                     wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
-                    currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
+                    settings.currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
                 }
             }
         }
@@ -877,71 +877,36 @@ class configSelector {
                             configOptions.get(0).setString("Expert Mode On");
                             configOptions.get(0).setColorNotPressed(expertPurple);
                             println("TopNav: Expert Mode On");
-                            expertModeToggle = true;
+                            settings.expertModeToggle = true;
                         } else {
                             configOptions.get(0).setString("Expert Mode Off");
                             configOptions.get(0).setColorNotPressed(newGreen);
                             println("TopNav: Expert Mode Off");
-                            expertModeToggle = false;
+                            settings.expertModeToggle = false;
                         }
-
-                    } else if (configSelected == 1) { //If save button is pressed..
-                        if (saveSettingsDialogName == null) {
-                            selectOutput("Save a custom settings file as JSON:",
-                                        "saveConfigFile",
-                                        dataFile(getSettingsFileName("User", eegDataSource, nchan)));
-                        } else {
-                            println("saveSettingsFileName = " + saveSettingsDialogName);
-                            saveSettingsDialogName = null;
-                        }
-                        toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 2) {
-                        //Select file to load from dialog box
-                        if (loadSettingsDialogName == null) {
-                            selectInput("Load a custom settings file from JSON:", "loadConfigFile");
-                            saveSettingsDialogName = null;
-                        } else {
-                            println("loadSettingsFileName = " + loadSettingsDialogName);
-                        }
-                        toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 3) {
-                        //Revert GUI to default settings that were flashed on system start!
-                        String defaultSettingsFileToLoad = getSettingsFileName("Default", eegDataSource, nchan);
-                        //This method is more accurate than file.exists()
-                        boolean defaultSettingsFileExists;
-                        try {
-                            //Load all saved User Settings from a JSON file to see if it exists
-                            JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToLoad);
-                            defaultSettingsFileExists = true;
-                        } catch (Exception e) {
-                            defaultSettingsFileExists = false;
-                        }
-                        if (defaultSettingsFileExists) {
-                            loadGUISettings(defaultSettingsFileToLoad);
-                            outputSuccess("Default Settings Loaded!");
-                        } else {
-                            //If the file doesn't exist, the user has likely cleared all settings
-                            outputError("Default Settings not found.");
-                        }
-                        toggleVisibility(); //shut configSelector if something is selected
-                    } else if (configSelected == 4) {
+                    } else if (configSelected == 1) { ////Save Button
+                        settings.saveButtonPressed();
+                    } else if (configSelected == 2) { ////Load Button
+                        settings.loadButtonPressed();
+                    } else if (configSelected == 3) { ////Default Button
+                        settings.defaultButtonPressed();
+                    } else if (configSelected == 4) { ///ClearAllSettings Button
                         clearAllSettingsPressed = true;
                         //expand the height of the dropdown
                         h = margin*(buttonSpacer+2) + b_h*(buttonSpacer+1);
                     } else if (configSelected == 5 && clearAllSettingsPressed) {
                         //Do nothing because the user clicked Are You Sure?->No
                         clearAllSettingsPressed = false;
-                        toggleVisibility(); //shut configSelector if something is selected
                     } else if (configSelected == 6 && clearAllSettingsPressed) {
                         //User has selected Are You Sure?->Yes
-                        clearAllGUISettings();
+                        settings.clearAll();
+                        clearAllSettingsPressed = false;
                         //Stop the system if the user clears all settings
                         if (systemMode == SYSTEMMODE_POSTINIT) {
                             haltSystem();
                         }
-                        clearAllSettingsPressed = false;
-                        toggleVisibility(); //shut configSelector if something is selected
                     }
+                    toggleVisibility(); //shut configSelector if something is selected
                 } //end case mouseHere && Active
             } //end for all configOptions loop
         }
@@ -1211,39 +1176,5 @@ class TutorialSelector {
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/16-Custom_Widgets");
         tutorialOptions.add(tempTutorialButton);
-    }
-}
-
-// Select file to save custom settings using dropdown in TopNav.pde
-void saveConfigFile(File selection) {
-    if (selection == null) {
-        println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
-    } else {
-        println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
-        output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
-        saveSettingsDialogName = selection.getAbsolutePath();
-        saveGUISettings(saveSettingsDialogName); //save current settings to JSON file in SavedData
-        outputSuccess("Settings Saved!"); //print success message to screen
-        saveSettingsDialogName = null; //reset this variable for future use
-    }
-}
-// Select file to load custom settings using dropdown in TopNav.pde
-void loadConfigFile(File selection) {
-    if (selection == null) {
-        println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
-    } else {
-        println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
-        output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
-        loadSettingsDialogName = selection.getAbsolutePath();
-        loadGUISettings(loadSettingsDialogName); //load settings from JSON file in /data/
-        //Output success message when Loading settings is complete without errors
-        if (chanNumError == false && dataSourceError == false && loadErrorCytonEvent == false) {
-            outputSuccess("Settings Loaded!");
-        } else if (chanNumError == true) {
-            outputError("Channel Number Error:  Loading Default Settings");
-        } else {
-            outputError("Data Source Error: Loading Default Settings");
-        }
-        loadSettingsDialogName = null; //reset this variable for future use
     }
 }
