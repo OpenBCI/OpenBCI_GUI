@@ -906,7 +906,8 @@ class configSelector {
                             haltSystem();
                         }
                     }
-                    toggleVisibility(); //shut configSelector if something is selected
+                    //shut configSelector if something other than clear settings was pressed
+                    if (!clearAllSettingsPressed) toggleVisibility();
                 } //end case mouseHere && Active
             } //end for all configOptions loop
         }
