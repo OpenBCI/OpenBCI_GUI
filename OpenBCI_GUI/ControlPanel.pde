@@ -99,13 +99,7 @@ Button popOutWifiConfigButton;
 Button getChannel;
 Button setChannel;
 Button ovrChannel;
-// Button getPoll;
-// Button setPoll;
-// Button defaultBAUD;
-// Button highBAUD;
 Button autoscan;
-// Button autoconnectNoStartDefault;
-// Button autoconnectNoStartHigh;
 Button systemStatus;
 
 Button eraseCredentials;
@@ -157,7 +151,7 @@ public void controlEvent(ControlEvent theEvent) {
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         String str = (String)bob.get("headline");
-        controlEventDataSource = str; //Used for output message on system start
+        settings.controlEventDataSource = str; //Used for output message on system start
         int newDataSource = int(theEvent.getValue());
 
         eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
@@ -259,7 +253,37 @@ public void controlEvent(ControlEvent theEvent) {
             set_channel_over(rcBox,setChannelInt);
             ovrChannel.wasPressed = false;
         }
-        println("still goin off");
+    }
+
+    //Check for event in PlaybackHistory Widget MenuList
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        if(theEvent.isFrom("playbackMenuList")) {
+            //Check to make sure value of clicked item is in valid range. Fixes #480
+            float valueOfItem = theEvent.getValue();
+            if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
+                //println("CP: No such item " + value + " found in list.");
+            } else {
+                Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
+                //println("got a menu event from item " + value + " : " + m);
+                loadRecentPlaybackHistoryFile(m.get("copy").toString(), m.get("headline").toString());
+            }
+        }
+    }
+
+    //Check for event in PlaybackHistory Dropdown List in Control Panel
+    if(theEvent.isFrom("recentFiles")) {
+        int s = (int)(theEvent.getController()).getValue();
+        println("got a menu event from item " + s);
+        println(controlPanel.recentPlaybackBox.longFilePaths);
+        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
+        if (new File(filePath).isFile()) {
+            String shortFileName = controlPanel.recentPlaybackBox.shortFileNames.get(s);
+            controlPanel.recentPlaybackBox.setFilePickedShort(shortFileName);
+            //Load the playback file!
+            playbackFileSelectedCP(filePath, shortFileName);
+        } else {
+            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+        }
     }
 }
 
@@ -759,291 +783,308 @@ class ControlPanel {
             }
             //active buttons during DATASOURCE_CYTON
             else if (eegDataSource == DATASOURCE_CYTON) {
-                if (cyton.isSerial()) {
-                    if (popOutRadioConfigButton.isMouseHere()){
-                        popOutRadioConfigButton.setIsActive(true);
-                        popOutRadioConfigButton.wasPressed = true;
+
+                // active button when the hub is not running
+                if (!hub.isHubRunning()) {
+                    if (noHubShowDoc.isMouseHere()) {
+                        noHubShowDoc.setIsActive(true);
+                        noHubShowDoc.wasPressed = true;
                     }
-                    if (refreshPort.isMouseHere()) {
-                        refreshPort.setIsActive(true);
-                        refreshPort.wasPressed = true;
+                } else {
+                    if (cyton.isSerial()) {
+                        if (popOutRadioConfigButton.isMouseHere()){
+                            popOutRadioConfigButton.setIsActive(true);
+                            popOutRadioConfigButton.wasPressed = true;
+                        }
+                        if (refreshPort.isMouseHere()) {
+                            refreshPort.setIsActive(true);
+                            refreshPort.wasPressed = true;
+                        }
                     }
-                }
 
-                if (cyton.isWifi()) {
-                    if (refreshWifi.isMouseHere()) {
-                        refreshWifi.setIsActive(true);
-                        refreshWifi.wasPressed = true;
+                    if (cyton.isWifi()) {
+                        if (refreshWifi.isMouseHere()) {
+                            refreshWifi.setIsActive(true);
+                            refreshWifi.wasPressed = true;
+                        }
                     }
-                }
 
 
 
-                if (autoFileName.isMouseHere()) {
-                    autoFileName.setIsActive(true);
-                    autoFileName.wasPressed = true;
-                }
+                    if (autoFileName.isMouseHere()) {
+                        autoFileName.setIsActive(true);
+                        autoFileName.wasPressed = true;
+                    }
 
-                if (outputODF.isMouseHere()) {
-                    outputODF.setIsActive(true);
-                    outputODF.wasPressed = true;
-                    outputODF.color_notPressed = isSelected_color;
-                    outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (outputODF.isMouseHere()) {
+                        outputODF.setIsActive(true);
+                        outputODF.wasPressed = true;
+                        outputODF.color_notPressed = isSelected_color;
+                        outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (outputBDF.isMouseHere()) {
-                    outputBDF.setIsActive(true);
-                    outputBDF.wasPressed = true;
-                    outputBDF.color_notPressed = isSelected_color;
-                    outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (outputBDF.isMouseHere()) {
+                        outputBDF.setIsActive(true);
+                        outputBDF.wasPressed = true;
+                        outputBDF.color_notPressed = isSelected_color;
+                        outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (chanButton8.isMouseHere()) {
-                    chanButton8.setIsActive(true);
-                    chanButton8.wasPressed = true;
-                    chanButton8.color_notPressed = isSelected_color;
-                    chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (chanButton8.isMouseHere()) {
+                        chanButton8.setIsActive(true);
+                        chanButton8.wasPressed = true;
+                        chanButton8.color_notPressed = isSelected_color;
+                        chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (chanButton16.isMouseHere()) {
-                    chanButton16.setIsActive(true);
-                    chanButton16.wasPressed = true;
-                    chanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    chanButton16.color_notPressed = isSelected_color;
-                }
+                    if (chanButton16.isMouseHere()) {
+                        chanButton16.setIsActive(true);
+                        chanButton16.wasPressed = true;
+                        chanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        chanButton16.color_notPressed = isSelected_color;
+                    }
 
-                if (getChannel.isMouseHere()){
-                    getChannel.setIsActive(true);
-                    getChannel.wasPressed = true;
-                }
+                    if (getChannel.isMouseHere()){
+                        getChannel.setIsActive(true);
+                        getChannel.wasPressed = true;
+                    }
 
-                if (setChannel.isMouseHere()){
-                    setChannel.setIsActive(true);
-                    setChannel.wasPressed = true;
-                }
+                    if (setChannel.isMouseHere()){
+                        setChannel.setIsActive(true);
+                        setChannel.wasPressed = true;
+                    }
 
-                if (ovrChannel.isMouseHere()){
-                    ovrChannel.setIsActive(true);
-                    ovrChannel.wasPressed = true;
-                }
+                    if (ovrChannel.isMouseHere()){
+                        ovrChannel.setIsActive(true);
+                        ovrChannel.wasPressed = true;
+                    }
 
 
 
-                if (protocolWifiCyton.isMouseHere()) {
-                    protocolWifiCyton.setIsActive(true);
-                    protocolWifiCyton.wasPressed = true;
-                    protocolWifiCyton.color_notPressed = isSelected_color;
-                    protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
-                }
+                    if (protocolWifiCyton.isMouseHere()) {
+                        protocolWifiCyton.setIsActive(true);
+                        protocolWifiCyton.wasPressed = true;
+                        protocolWifiCyton.color_notPressed = isSelected_color;
+                        protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
+                    }
 
-                if (protocolSerialCyton.isMouseHere()) {
-                    protocolSerialCyton.setIsActive(true);
-                    protocolSerialCyton.wasPressed = true;
-                    protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
-                    protocolSerialCyton.color_notPressed = isSelected_color;
-                }
+                    if (protocolSerialCyton.isMouseHere()) {
+                        protocolSerialCyton.setIsActive(true);
+                        protocolSerialCyton.wasPressed = true;
+                        protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
+                        protocolSerialCyton.color_notPressed = isSelected_color;
+                    }
 
-                if (autoscan.isMouseHere()){
-                    autoscan.setIsActive(true);
-                    autoscan.wasPressed = true;
-                }
+                    if (autoscan.isMouseHere()){
+                        autoscan.setIsActive(true);
+                        autoscan.wasPressed = true;
+                    }
 
-                if (systemStatus.isMouseHere()){
-                    systemStatus.setIsActive(true);
-                    systemStatus.wasPressed = true;
-                }
+                    if (systemStatus.isMouseHere()){
+                        systemStatus.setIsActive(true);
+                        systemStatus.wasPressed = true;
+                    }
 
-                if (sampleRate250.isMouseHere()) {
-                    sampleRate250.setIsActive(true);
-                    sampleRate250.wasPressed = true;
-                    sampleRate250.color_notPressed = isSelected_color;
-                    sampleRate500.color_notPressed = autoFileName.color_notPressed;
-                    sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (sampleRate250.isMouseHere()) {
+                        sampleRate250.setIsActive(true);
+                        sampleRate250.wasPressed = true;
+                        sampleRate250.color_notPressed = isSelected_color;
+                        sampleRate500.color_notPressed = autoFileName.color_notPressed;
+                        sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (sampleRate500.isMouseHere()) {
-                    sampleRate500.setIsActive(true);
-                    sampleRate500.wasPressed = true;
-                    sampleRate500.color_notPressed = isSelected_color;
-                    sampleRate250.color_notPressed = autoFileName.color_notPressed;
-                    sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (sampleRate500.isMouseHere()) {
+                        sampleRate500.setIsActive(true);
+                        sampleRate500.wasPressed = true;
+                        sampleRate500.color_notPressed = isSelected_color;
+                        sampleRate250.color_notPressed = autoFileName.color_notPressed;
+                        sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (sampleRate1000.isMouseHere()) {
-                    sampleRate1000.setIsActive(true);
-                    sampleRate1000.wasPressed = true;
-                    sampleRate1000.color_notPressed = isSelected_color;
-                    sampleRate250.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    sampleRate500.color_notPressed = autoFileName.color_notPressed;
-                }
+                    if (sampleRate1000.isMouseHere()) {
+                        sampleRate1000.setIsActive(true);
+                        sampleRate1000.wasPressed = true;
+                        sampleRate1000.color_notPressed = isSelected_color;
+                        sampleRate250.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        sampleRate500.color_notPressed = autoFileName.color_notPressed;
+                    }
 
-                if (latencyCyton5ms.isMouseHere()) {
-                    latencyCyton5ms.setIsActive(true);
-                    latencyCyton5ms.wasPressed = true;
-                    latencyCyton5ms.color_notPressed = isSelected_color;
-                    latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (latencyCyton5ms.isMouseHere()) {
+                        latencyCyton5ms.setIsActive(true);
+                        latencyCyton5ms.wasPressed = true;
+                        latencyCyton5ms.color_notPressed = isSelected_color;
+                        latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (latencyCyton10ms.isMouseHere()) {
-                    latencyCyton10ms.setIsActive(true);
-                    latencyCyton10ms.wasPressed = true;
-                    latencyCyton10ms.color_notPressed = isSelected_color;
-                    latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (latencyCyton10ms.isMouseHere()) {
+                        latencyCyton10ms.setIsActive(true);
+                        latencyCyton10ms.wasPressed = true;
+                        latencyCyton10ms.color_notPressed = isSelected_color;
+                        latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (latencyCyton20ms.isMouseHere()) {
-                    latencyCyton20ms.setIsActive(true);
-                    latencyCyton20ms.wasPressed = true;
-                    latencyCyton20ms.color_notPressed = isSelected_color;
-                    latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (latencyCyton20ms.isMouseHere()) {
+                        latencyCyton20ms.setIsActive(true);
+                        latencyCyton20ms.wasPressed = true;
+                        latencyCyton20ms.color_notPressed = isSelected_color;
+                        latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (wifiInternetProtocolCytonTCP.isMouseHere()) {
-                    wifiInternetProtocolCytonTCP.setIsActive(true);
-                    wifiInternetProtocolCytonTCP.wasPressed = true;
-                    wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color;
-                    wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (wifiInternetProtocolCytonTCP.isMouseHere()) {
+                        wifiInternetProtocolCytonTCP.setIsActive(true);
+                        wifiInternetProtocolCytonTCP.wasPressed = true;
+                        wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color;
+                        wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (wifiInternetProtocolCytonUDP.isMouseHere()) {
-                    wifiInternetProtocolCytonUDP.setIsActive(true);
-                    wifiInternetProtocolCytonUDP.wasPressed = true;
-                    wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color;
-                    wifiInternetProtocolCytonTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (wifiInternetProtocolCytonUDP.isMouseHere()) {
+                        wifiInternetProtocolCytonUDP.setIsActive(true);
+                        wifiInternetProtocolCytonUDP.wasPressed = true;
+                        wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color;
+                        wifiInternetProtocolCytonTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (wifiInternetProtocolCytonUDPBurst.isMouseHere()) {
-                    wifiInternetProtocolCytonUDPBurst.setIsActive(true);
-                    wifiInternetProtocolCytonUDPBurst.wasPressed = true;
-                    wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color;
-                    wifiInternetProtocolCytonTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    if (wifiInternetProtocolCytonUDPBurst.isMouseHere()) {
+                        wifiInternetProtocolCytonUDPBurst.setIsActive(true);
+                        wifiInternetProtocolCytonUDPBurst.wasPressed = true;
+                        wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color;
+                        wifiInternetProtocolCytonTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
                 }
             }
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
-                // This is where we check for button presses if we are searching for BLE devices
 
-                if (autoFileNameGanglion.isMouseHere()) {
-                    autoFileNameGanglion.setIsActive(true);
-                    autoFileNameGanglion.wasPressed = true;
-                }
-
-                if (outputODFGanglion.isMouseHere()) {
-                    outputODFGanglion.setIsActive(true);
-                    outputODFGanglion.wasPressed = true;
-                    outputODFGanglion.color_notPressed = isSelected_color;
-                    outputBDFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
-
-                if (outputBDFGanglion.isMouseHere()) {
-                    outputBDFGanglion.setIsActive(true);
-                    outputBDFGanglion.wasPressed = true;
-                    outputBDFGanglion.color_notPressed = isSelected_color;
-                    outputODFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
-
-                if (ganglion.isWifi()) {
-                    if (refreshWifi.isMouseHere()) {
-                        refreshWifi.setIsActive(true);
-                        refreshWifi.wasPressed = true;
+                // active button when the hub is not running
+                if (!hub.isHubRunning()) {
+                    if (noHubShowDoc.isMouseHere()) {
+                        noHubShowDoc.setIsActive(true);
+                        noHubShowDoc.wasPressed = true;
                     }
                 } else {
-                    if (refreshBLE.isMouseHere()) {
-                        refreshBLE.setIsActive(true);
-                        refreshBLE.wasPressed = true;
+                    // This is where we check for button presses if we are searching for BLE devices
+                    if (autoFileNameGanglion.isMouseHere()) {
+                        autoFileNameGanglion.setIsActive(true);
+                        autoFileNameGanglion.wasPressed = true;
                     }
-                }
 
-                if (protocolBLEGanglion.isMouseHere()) {
-                    protocolBLEGanglion.setIsActive(true);
-                    protocolBLEGanglion.wasPressed = true;
-                    protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-                    protocolBLEGanglion.color_notPressed = isSelected_color;
-                    protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-                }
+                    if (outputODFGanglion.isMouseHere()) {
+                        outputODFGanglion.setIsActive(true);
+                        outputODFGanglion.wasPressed = true;
+                        outputODFGanglion.color_notPressed = isSelected_color;
+                        outputBDFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (protocolWifiGanglion.isMouseHere()) {
-                    protocolWifiGanglion.setIsActive(true);
-                    protocolWifiGanglion.wasPressed = true;
-                    protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-                    protocolWifiGanglion.color_notPressed = isSelected_color;
-                    protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
-                }
+                    if (outputBDFGanglion.isMouseHere()) {
+                        outputBDFGanglion.setIsActive(true);
+                        outputBDFGanglion.wasPressed = true;
+                        outputBDFGanglion.color_notPressed = isSelected_color;
+                        outputODFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (protocolBLED112Ganglion.isMouseHere()) {
-                    protocolBLED112Ganglion.setIsActive(true);
-                    protocolBLED112Ganglion.wasPressed = true;
-                    protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
-                    protocolBLED112Ganglion.color_notPressed = isSelected_color;
-                    protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-                }
+                    if (ganglion.isWifi()) {
+                        if (refreshWifi.isMouseHere()) {
+                            refreshWifi.setIsActive(true);
+                            refreshWifi.wasPressed = true;
+                        }
+                    } else {
+                        if (refreshBLE.isMouseHere()) {
+                            refreshBLE.setIsActive(true);
+                            refreshBLE.wasPressed = true;
+                        }
+                    }
 
-                if (sampleRate200.isMouseHere()) {
-                    sampleRate200.setIsActive(true);
-                    sampleRate200.wasPressed = true;
-                    sampleRate200.color_notPressed = isSelected_color;
-                    sampleRate1600.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (protocolBLEGanglion.isMouseHere()) {
+                        protocolBLEGanglion.setIsActive(true);
+                        protocolBLEGanglion.wasPressed = true;
+                        protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
+                        protocolBLEGanglion.color_notPressed = isSelected_color;
+                        protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+                    }
 
-                if (sampleRate1600.isMouseHere()) {
-                    sampleRate1600.setIsActive(true);
-                    sampleRate1600.wasPressed = true;
-                    sampleRate1600.color_notPressed = isSelected_color;
-                    sampleRate200.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (protocolWifiGanglion.isMouseHere()) {
+                        protocolWifiGanglion.setIsActive(true);
+                        protocolWifiGanglion.wasPressed = true;
+                        protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
+                        protocolWifiGanglion.color_notPressed = isSelected_color;
+                        protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                    }
 
-                if (latencyGanglion5ms.isMouseHere()) {
-                    latencyGanglion5ms.setIsActive(true);
-                    latencyGanglion5ms.wasPressed = true;
-                    latencyGanglion5ms.color_notPressed = isSelected_color;
-                    latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (protocolBLED112Ganglion.isMouseHere()) {
+                        protocolBLED112Ganglion.setIsActive(true);
+                        protocolBLED112Ganglion.wasPressed = true;
+                        protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                        protocolBLED112Ganglion.color_notPressed = isSelected_color;
+                        protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+                    }
 
-                if (latencyGanglion10ms.isMouseHere()) {
-                    latencyGanglion10ms.setIsActive(true);
-                    latencyGanglion10ms.wasPressed = true;
-                    latencyGanglion10ms.color_notPressed = isSelected_color;
-                    latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (sampleRate200.isMouseHere()) {
+                        sampleRate200.setIsActive(true);
+                        sampleRate200.wasPressed = true;
+                        sampleRate200.color_notPressed = isSelected_color;
+                        sampleRate1600.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (latencyGanglion20ms.isMouseHere()) {
-                    latencyGanglion20ms.setIsActive(true);
-                    latencyGanglion20ms.wasPressed = true;
-                    latencyGanglion20ms.color_notPressed = isSelected_color;
-                    latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (sampleRate1600.isMouseHere()) {
+                        sampleRate1600.setIsActive(true);
+                        sampleRate1600.wasPressed = true;
+                        sampleRate1600.color_notPressed = isSelected_color;
+                        sampleRate200.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (wifiInternetProtocolGanglionTCP.isMouseHere()) {
-                    wifiInternetProtocolGanglionTCP.setIsActive(true);
-                    wifiInternetProtocolGanglionTCP.wasPressed = true;
-                    wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color;
-                    wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (latencyGanglion5ms.isMouseHere()) {
+                        latencyGanglion5ms.setIsActive(true);
+                        latencyGanglion5ms.wasPressed = true;
+                        latencyGanglion5ms.color_notPressed = isSelected_color;
+                        latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (wifiInternetProtocolGanglionUDP.isMouseHere()) {
-                    wifiInternetProtocolGanglionUDP.setIsActive(true);
-                    wifiInternetProtocolGanglionUDP.wasPressed = true;
-                    wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color;
-                    wifiInternetProtocolGanglionTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
-                }
+                    if (latencyGanglion10ms.isMouseHere()) {
+                        latencyGanglion10ms.setIsActive(true);
+                        latencyGanglion10ms.wasPressed = true;
+                        latencyGanglion10ms.color_notPressed = isSelected_color;
+                        latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
 
-                if (wifiInternetProtocolGanglionUDPBurst.isMouseHere()) {
-                    wifiInternetProtocolGanglionUDPBurst.setIsActive(true);
-                    wifiInternetProtocolGanglionUDPBurst.wasPressed = true;
-                    wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color;
-                    wifiInternetProtocolGanglionTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    if (latencyGanglion20ms.isMouseHere()) {
+                        latencyGanglion20ms.setIsActive(true);
+                        latencyGanglion20ms.wasPressed = true;
+                        latencyGanglion20ms.color_notPressed = isSelected_color;
+                        latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
+
+                    if (wifiInternetProtocolGanglionTCP.isMouseHere()) {
+                        wifiInternetProtocolGanglionTCP.setIsActive(true);
+                        wifiInternetProtocolGanglionTCP.wasPressed = true;
+                        wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color;
+                        wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
+
+                    if (wifiInternetProtocolGanglionUDP.isMouseHere()) {
+                        wifiInternetProtocolGanglionUDP.setIsActive(true);
+                        wifiInternetProtocolGanglionUDP.wasPressed = true;
+                        wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color;
+                        wifiInternetProtocolGanglionTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
+
+                    if (wifiInternetProtocolGanglionUDPBurst.isMouseHere()) {
+                        wifiInternetProtocolGanglionUDPBurst.setIsActive(true);
+                        wifiInternetProtocolGanglionUDPBurst.wasPressed = true;
+                        wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color;
+                        wifiInternetProtocolGanglionTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    }
                 }
             }
 
@@ -1213,10 +1254,12 @@ class ControlPanel {
             //cursor(ARROW); //this this back to ARROW
         }
 
-        if (noHubShowDoc.isMouseHere() && noHubShowDoc.wasPressed) {
-            noHubShowDoc.wasPressed=false;
-            noHubShowDoc.setIsActive(false);
-            noHubShowDoc.goToURL();
+        if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION)) {
+            if (noHubShowDoc.isMouseHere() && noHubShowDoc.wasPressed) {
+                noHubShowDoc.wasPressed=false;
+                noHubShowDoc.setIsActive(false);
+                noHubShowDoc.goToURL();
+            }
         }
 
         //open or close serial port if serial port button is pressed (left button in serial widget)
@@ -1638,7 +1681,7 @@ public void initButtonPressed(){
 
 void updateToNChan(int _nchan) {
     nchan = _nchan;
-    slnchan = _nchan; //used in SoftwareSettings.pde only
+    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("channel count set to " + str(nchan));
@@ -1657,7 +1700,7 @@ public void set_channel_popup(){;
 //                	CONTROL PANEL BOXes (control widgets)                        //
 //==============================================================================//
 
-class NoHubBox {    
+class NoHubBox {
     int x, y, w, h, padding; //size and position
 
     NoHubBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2573,11 +2616,9 @@ class SyntheticChannelCountBox {
 
 class RecentPlaybackBox {
     int x, y, w, h, padding; //size and position
-    String[] previousFileNames = new String[1];
-    String[] shortFileNames = new String[1];
-    String[] longFilePaths = new String[1];
-    String filePickedShort = "Select Recent Playback File";
-    String newFilePickedShort = "";
+    StringList shortFileNames = new StringList();
+    StringList longFilePaths = new StringList();
+    private String filePickedShort = "Select Recent Playback File";
 
     ControlP5 cp5_controlPanel_dropdown;
 
@@ -2590,12 +2631,12 @@ class RecentPlaybackBox {
 
         cp5_controlPanel_dropdown = new ControlP5(ourApplet);
         getRecentPlaybackFiles();
-        if (!playbackHistoryFileExists) {
-            shortFileNames[0] = "None";
-        }
-        createDropdown("recentFiles", Arrays.asList(shortFileNames));
+
+        String[] temp = shortFileNames.array();
+        createDropdown("recentFiles", Arrays.asList(temp));
         cp5_controlPanel_dropdown.setGraphics(ourApplet, 0,0);
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
+        cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
         cp5_controlPanel_dropdown.setAutoDraw(false);
     }
 
@@ -2603,28 +2644,20 @@ class RecentPlaybackBox {
     public void update() {
         //Update the dropdown list if it has not already been done
         if (!recentPlaybackFilesHaveUpdated) {
-            previousFileNames = shortFileNames;
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").removeItems(Arrays.asList(previousFileNames));
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
             getRecentPlaybackFiles();
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setItems(Arrays.asList(shortFileNames));
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2,(shortFileNames.length+1)*24);
+            String[] temp = shortFileNames.array();
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
         }
-        //Keep updating to see if User has selected a new recent playback file
-        newFilePickedShort = cp5_controlPanel_dropdown.getController("recentFiles").getLabel();
-        if (newFilePickedShort.equals(filePickedShort) == false) {
-            if (newFilePickedShort.equals("None") == false) {
-                filePickedShort = newFilePickedShort;
-                int filePickedInt = -1;
-                //Find the corresponding array index
-                for (int i = 0; i < shortFileNames.length; i++) {
-                    if (filePickedShort.equals(shortFileNames[i]) == true) {
-                        filePickedInt = i;
-                    }
-                }
-                //Load the playback file!
-                playbackFileSelectedCP(longFilePaths[filePickedInt], filePickedShort);
-            }
-        }
+    }
+
+    public String getFilePickedShort() {
+        return filePickedShort;
+    }
+
+    public void setFilePickedShort(String _fileName) {
+        filePickedShort = _fileName;
     }
 
     public void draw() {
@@ -2632,11 +2665,11 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight() - 2*padding);
+        rect(x, y, w, h + cp5_controlPanel_dropdown.getController("recentFiles").getHeight() - padding*2);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RECENT", x + padding, y + padding);
+        text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
 
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
@@ -2654,20 +2687,19 @@ class RecentPlaybackBox {
                 println("History Size = " + recentFilesArray.size());
                 numFilesToShow = recentFilesArray.size();
             }
-            shortFileNames = new String[numFilesToShow];
-            longFilePaths = new String[numFilesToShow];
-            for (int i = recentFilesArray.size() - 1; //minimum
-                i > recentFilesArray.size() - numFilesToShow - 1;  //maximum
-                i--) { //go through array in reverse since using append
-                        JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-                        int fileNumber = playbackFile.getInt("recentFileNumber");
-                        String shortFileName = playbackFile.getString("id");
-                        String longFilePath = playbackFile.getString("filePath");
-                        //store to arrays to set recent playback buttons text and function
-                        shortFileNames[fileNumber - 1] = shortFileName;
-                        longFilePaths[fileNumber - 1] = longFilePath;
-                        //println(shortFileName + " " + longFilePath);
-                        }
+            shortFileNames.clear();
+            longFilePaths.clear();
+            for (int i = numFilesToShow - 1; i >= 0; i--) {
+                //println(i);
+                JSONObject playbackFile = recentFilesArray.getJSONObject(i);
+                //int fileNumber = playbackFile.getInt("recentFileNumber");
+                String shortFileName = playbackFile.getString("id");
+                String longFilePath = playbackFile.getString("filePath");
+                //store to arrays to set recent playback buttons text and function
+                shortFileNames.append(shortFileName);
+                longFilePaths.append(longFilePath);
+                //println(shortFileName + " " + longFilePath);
+            }
             //For debugging
             //println("OpenBCI_GUI::Control Panel: Playback history file found!!!");
             //printArray(shortFileNames);
@@ -2706,7 +2738,7 @@ class RecentPlaybackBox {
         cp5_controlPanel_dropdown.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText("Select Recent Playback File")
+            .setText(filePickedShort)
             .setFont(h4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2715,7 +2747,7 @@ class RecentPlaybackBox {
         cp5_controlPanel_dropdown.getController(name)
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText("Select Recent Playback File")
+            .setText(filePickedShort)
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
@@ -3146,6 +3178,15 @@ Map<String, Object> makeItem(String theHeadline) {
     return m;
 }
 
+//makeItem function used by MenuList class below
+Map<String, Object> makeItem(String theHeadline, String theSubline, String theCopy) {
+    Map m = new HashMap<String, Object>();
+    m.put("headline", theHeadline);
+    m.put("subline", theSubline);
+    m.put("copy", theCopy);
+    return m;
+}
+
 //=======================================================================================================================================
 //
 //                    MenuList Class
@@ -3187,7 +3228,7 @@ public class MenuList extends controlP5.Controller {
                 if (updateMenu) {
                     updateMenu();
                 }
-                if (inside()) {
+                if (isMouseOver()) {
                     // if(!drawHand){
                     //   cursor(HAND);
                     //   drawHand = true;
@@ -3283,8 +3324,8 @@ public class MenuList extends controlP5.Controller {
       * otherwise do whatever this item of the list is supposed to do.
       */
     public void onClick() {
-        println("Control Panel: click!");
-        try{
+        println("MenuList: click!");
+        if (items.size() > 0) { //Fixes #480
             if (getPointer().x()>getWidth()-scrollerWidth) {
                 if(getHeight() != 0){
                     npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
@@ -3300,10 +3341,9 @@ public class MenuList extends controlP5.Controller {
                 activeItem = index;
             }
             updateMenu = true;
-        } finally{}
-        // catch(IOException e){
-        //   println("Nothing to click...");
-        // }
+        } else {
+            println("Nothing to click...");
+        }
     }
 
     public void onMove() {
@@ -3345,7 +3385,14 @@ public class MenuList extends controlP5.Controller {
         updateMenu = true;
     }
 
+    //Returns null if selecting an item that does not exist
     Map<String, Object> getItem(int theIndex) {
-        return items.get(theIndex);
+        Map<String, Object> m = new HashMap<String, Object>();
+        try {
+            m = items.get(theIndex);
+        } catch (Exception e) {
+            //println("Item " + theIndex + " does not exist.");
+        }
+        return m;
     }
 };

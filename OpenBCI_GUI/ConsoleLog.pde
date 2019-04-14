@@ -234,7 +234,14 @@ class CustomOutputStream extends PrintStream {
     private StringList data;
     private PrintWriter fileOutput;
     private Textarea textArea;
+<<<<<<< HEAD
     private final String filePath = "SavedData/Settings/console-data.txt";
+=======
+    private String filePath;
+
+    private final String fileDirectory = "/SavedData/";
+    private final String fileName =  "console-data.txt";
+>>>>>>> upstream/development
 
     public CustomOutputStream(OutputStream out) {
         super(out);

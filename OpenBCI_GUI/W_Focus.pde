@@ -70,12 +70,12 @@ class W_Focus extends Widget {
         sliderBetaMid = new FocusSlider(x + xg2 + wg * 0.8, y + yg2 + hg/2, y + yg2 - hg/2, beta_thresh / beta_upper);
 
         ///Focus widget settings
-        int focusThemeSave = 0;
-        int focusKeySave = 0;
+        settings.focusThemeSave = 0;
+        settings.focusKeySave = 0;
 
         //Dropdowns.
-        addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), focusThemeSave);
-        addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), focusKeySave);
+        addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), settings.focusThemeSave);
+        addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), settings.focusKeySave);
 
         // prepare simulate keystroking
         try {
@@ -562,7 +562,7 @@ void StrokeKeyWhenFocused(int n){
         w_focus.keyNum = 1;
         println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
     }
-    focusKeySave = n;
+    settings.focusKeySave = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -577,6 +577,6 @@ void ChooseFocusColor(int n){
         w_focus.focusColors = FocusColors.CYAN;
         w_focus.onColorChange();
     }
-    focusThemeSave = n;
+    settings.focusThemeSave = n;
     closeAllDropdowns();
 }

@@ -35,8 +35,9 @@ class W_AnalogRead extends Widget {
     private boolean updating = true;
     boolean analogReadOn = false;
 
-    int arInitialVertScaleIndex = 5;
-    int arInitialHorizScaleIndex = 0;
+    //Initial dropdown settings
+    private int arInitialVertScaleIndex = 5;
+    private int arInitialHorizScaleIndex = 0;
 
     private boolean hasScrollbar = false;
 
@@ -46,14 +47,14 @@ class W_AnalogRead extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Analog Read settings
-        arVertScaleSave = 5; //updates in VertScale_AR()
-        arHorizScaleSave = 0; //updates in Duration_AR()
+        settings.arVertScaleSave = 5; //updates in VertScale_AR()
+        settings.arHorizScaleSave = 0; //updates in Duration_AR()
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("VertScale_AR", "Vert Scale", Arrays.asList(arVertScaleArray), arInitialVertScaleIndex);
-        addDropdown("Duration_AR", "Window", Arrays.asList(arHorizScaleArray), arInitialHorizScaleIndex);
+        addDropdown("VertScale_AR", "Vert Scale", Arrays.asList(settings.arVertScaleArray), arInitialVertScaleIndex);
+        addDropdown("Duration_AR", "Window", Arrays.asList(settings.arHorizScaleArray), arInitialHorizScaleIndex);
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //set number of analog reads
@@ -86,7 +87,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i] = tempBar;
             analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
             //sync horiz axis to Time Series by default
-            analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+            analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         }
 
         analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
@@ -197,14 +198,12 @@ class W_AnalogRead extends Widget {
                     } else {
                         output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
                     }
-                    w_accelerometer.accelerometerModeOn = false;
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                     w_pulsesensor.analogReadOn = true;
                 } else {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     output("Starting to read accelerometer");
-                    w_accelerometer.accelerometerModeOn = true;
                 }
                 analogReadOn = !analogReadOn;
             }
@@ -215,7 +214,7 @@ class W_AnalogRead extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_AR(int n) {
-    arVertScaleSave = n;
+    settings.arVertScaleSave = n;
     for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
             w_analogRead.analogReadBars[i].adjustVertScale(w_analogRead.yLimOptions[n]);
     }
@@ -226,12 +225,12 @@ void VertScale_AR(int n) {
 void Duration_AR(int n) {
     // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
     //set analog read x axis to the duration selected from dropdown
-    arHorizScaleSave = n;
+    settings.arHorizScaleSave = n;
 
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
         if (n == 0) {
-            w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+            w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         } else {
             w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
         }

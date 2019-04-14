@@ -520,7 +520,7 @@ class Hub {
             firmwareString = "";
         }
         //This success message appears in Ganglion mode
-        if (loadErrorCytonEvent == true) {
+        if (settings.loadErrorCytonEvent == true) {
             outputError("Connection Error: Failed to apply channel settings to Cyton.");
         } else {
             outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
@@ -852,7 +852,7 @@ class Hub {
                 if (action.equals(TCP_ACTION_START)) {
                     println("Query registers for cyton channel settings");
                 } else if (action.equals(TCP_ACTION_SET)) {
-                    checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
+                    settings.checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
                     println("Success writing channel " + json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER));
 
                 }

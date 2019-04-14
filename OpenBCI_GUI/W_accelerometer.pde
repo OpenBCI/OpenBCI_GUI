@@ -30,7 +30,6 @@ class W_accelerometer extends Widget {
     //Graphing variables
     int[] xLimOptions = {0, 1, 3, 5, 10, 20}; //number of seconds (x axis of graph)
     int[] yLimOptions = {0, 1, 2, 4};
-    int accelInitialHorizScaleIndex = accHorizScaleSave; //default to 10 second view
     int accelHorizLimit = 20;
     int accelBuffSize; //Number of points, used to make buffers
     AccelerometerBar accelerometerBar;
@@ -57,8 +56,7 @@ class W_accelerometer extends Widget {
     private boolean visible = true;
     private boolean updating = true;
     boolean accelInitHasOccured = false;
-    boolean accelerometerModeOn = true;
-    Button accelModeButton;
+    private Button accelModeButton;
 
     // Synthetic data timer. Track frame count for synthetic data.
     int synthTime;
@@ -67,12 +65,12 @@ class W_accelerometer extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Default dropdown settings
-        accVertScaleSave = 0;
-        accHorizScaleSave = 0;
+        settings.accVertScaleSave = 0;
+        settings.accHorizScaleSave = 0;
 
         //Make dropdowns
-        addDropdown("accelVertScale", "Vert Scale", Arrays.asList(accVertScaleArray), accVertScaleSave);
-        addDropdown("accelDuration", "Window", Arrays.asList(accHorizScaleArray), accHorizScaleSave);
+        addDropdown("accelVertScale", "Vert Scale", Arrays.asList(settings.accVertScaleArray), settings.accVertScaleSave);
+        addDropdown("accelDuration", "Window", Arrays.asList(settings.accHorizScaleArray), settings.accHorizScaleSave);
 
         setGraphDimensions();
         yMaxMin = adjustYMaxMinBasedOnSource();
@@ -86,15 +84,9 @@ class W_accelerometer extends Widget {
         //create our channel bar and populate our accelerometerBar array!
         println("Init accelerometer bar");
         accelerometerBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
-        accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]); //sync horiz axis to Time Series by default
+        accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
-        String defaultAccelModeButtonString;
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            defaultAccelModeButtonString = "Turn Accel. Off";
-        } else {
-            defaultAccelModeButtonString = "Turn Accel. On";
-        }
-        accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, defaultAccelModeButtonString, 12);
+        accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p6,10);
         accelModeButton.setColorNotPressed(color(57,128,204));
@@ -153,7 +145,7 @@ class W_accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && accelerometerModeOn) {
+        if (isRunning && isAccelModeActive()) {
             //update the current Accelerometer values
             updateAccelPoints();
             //update the line graph and corresponding gplot points
@@ -172,6 +164,28 @@ class W_accelerometer extends Widget {
             } else {  //playback data
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
             }
+        }
+    }
+
+    // check the approrpiate board to see if accel mode is on
+    boolean isAccelModeActive() {
+        if (eegDataSource == DATASOURCE_CYTON) {
+            return cyton.getBoardMode() == BOARD_MODE_DEFAULT;
+        }
+        else if (eegDataSource == DATASOURCE_GANGLION) {
+            return ganglion.isAccelModeActive();
+        }
+        else {
+            return true;
+        }
+    }
+
+    String getButtonString() {
+        if (isAccelModeActive()) {
+            return "Turn Accel. Off";
+        }
+        else {
+            return "Turn Accel. On";
         }
     }
 
@@ -198,29 +212,18 @@ class W_accelerometer extends Widget {
 
         fill(50);
         textFont(p3, 16);
+        accelModeButton.setString(getButtonString());
 
-        if (eegDataSource == DATASOURCE_CYTON) {  //LIVE CYTON
-            drawAccValues();
-            draw3DGraph();
-            if (cyton.getBoardMode() != BOARD_MODE_DEFAULT) {
-                accelModeButton.setString("Turn Accel. On");
-                accelModeButton.draw();
-            } else {
-                accelerometerBar.draw();
-            }
-        } else if (eegDataSource == DATASOURCE_GANGLION) {  //LIVE GANGLION
-            if (accelerometerModeOn) {
-                drawAccValues();
-                draw3DGraph();
-                accelerometerBar.draw();
-            }
-            if (ganglion.isBLE()) accelModeButton.draw();
-        } else {  //SYNTHETIC and PLAYBACK
+        if (eegDataSource == DATASOURCE_CYTON
+        || (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE())) {
+            accelModeButton.draw();
+        }
+
+        if (isAccelModeActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
         }
-
         popStyle();
     }
 
@@ -271,14 +274,10 @@ class W_accelerometer extends Widget {
 
         if (eegDataSource == DATASOURCE_GANGLION) {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (ganglion.isAccelModeActive()) {
+                if (isAccelModeActive()) {
                     ganglion.accelStop();
-                    accelModeButton.setString("Turn Accel. On");
-                    accelerometerModeOn = false;
                 } else{
                     ganglion.accelStart();
-                    accelModeButton.setString("Turn Accel. Off");
-                    accelerometerModeOn = true;
                 }
                 //accelerometerModeOn = !accelerometerModeOn;
             }
@@ -287,7 +286,6 @@ class W_accelerometer extends Widget {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
                 cyton.setBoardMode(BOARD_MODE_DEFAULT);
                 output("Starting to read accelerometer");
-                accelerometerModeOn = true;
                 w_analogRead.analogReadOn = false;
                 w_pulsesensor.analogReadOn = false;
                 w_digitalRead.digitalReadOn = false;
@@ -295,7 +293,6 @@ class W_accelerometer extends Widget {
             }
             accelModeButton.setIsActive(false);
         }
-
     }
 
     //Draw the current accelerometer values as text
@@ -349,18 +346,18 @@ class W_accelerometer extends Widget {
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void accelVertScale(int n) {
-    accVertScaleSave = n;
+    settings.accVertScaleSave = n;
     w_accelerometer.accelerometerBar.adjustVertScale(w_accelerometer.yLimOptions[n]);
     closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
 void accelDuration(int n) {
-    accHorizScaleSave = n;
+    settings.accHorizScaleSave = n;
 
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     if (n == 0) {
-        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[tsHorizScaleSave]);
+        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
     } else {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(w_accelerometer.xLimOptions[n]);
@@ -599,18 +596,23 @@ class AccelerometerBar{
         //println("UPDATING ACCEL GRAPH");
         int accelBuffDiff = accelBuffSize - nPoints;
         if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
-            for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-                GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
-                GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
-                GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
-                accelPointsX.set(i-accelBuffDiff, tempPointX);
-                accelPointsY.set(i-accelBuffDiff, tempPointY);
-                accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+            try {
+                for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
+                    GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
+                    GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
+                    GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
+                    accelPointsX.set(i-accelBuffDiff, tempPointX);
+                    accelPointsY.set(i-accelBuffDiff, tempPointY);
+                    accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+                }
+                //set points in three layers on the same plot, just like old graph
+                plot.setPoints(accelPointsX, "layer 1");
+                plot.setPoints(accelPointsY, "layer 2");
+                plot.setPoints(accelPointsZ, "layer 3");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                //catch exception that occurs when loading synthetic mode after Ganglion+WiFi
+                println("SetGPlotPoints: ArrayIndexOutOfBoundsException");
             }
-            //set points in three layers on the same plot, just like old graph
-            plot.setPoints(accelPointsX, "layer 1");
-            plot.setPoints(accelPointsY, "layer 2");
-            plot.setPoints(accelPointsZ, "layer 3");
         }
     }
 

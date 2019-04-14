@@ -219,7 +219,6 @@ class W_MarkerMode extends Widget {
                     cyton.setBoardMode(BOARD_MODE_MARKER);
                     output("Starting to read markers");
                     markerModeButton.setString("Turn Marker Off");
-                    w_accelerometer.accelerometerModeOn = false;
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
@@ -227,7 +226,6 @@ class W_MarkerMode extends Widget {
                     cyton.setBoardMode(BOARD_MODE_DEFAULT);
                     output("Starting to read accelerometer");
                     markerModeButton.setString("Turn Marker On");
-                    w_accelerometer.accelerometerModeOn = true;
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;

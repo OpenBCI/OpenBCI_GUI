@@ -55,20 +55,20 @@ class W_fft extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Default FFT plot settings
-        fftMaxFrqSave = 2;
-        fftMaxuVSave = 2;
-        fftLogLinSave = 0;
-        fftSmoothingSave = 3;
-        fftFilterSave = 0;
+        settings.fftMaxFrqSave = 2;
+        settings.fftMaxuVSave = 2;
+        settings.fftLogLinSave = 0;
+        settings.fftSmoothingSave = 3;
+        settings.fftFilterSave = 0;
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("MaxFreq", "Max Freq", Arrays.asList(fftMaxFrqArray), fftMaxFrqSave);
-        addDropdown("VertScale", "Max uV", Arrays.asList(fftVertScaleArray), fftMaxuVSave);
-        addDropdown("LogLin", "Log/Lin", Arrays.asList(fftLogLinArray), fftLogLinSave);
-        addDropdown("Smoothing", "Smooth", Arrays.asList(fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
-        addDropdown("UnfiltFilt", "Filters?", Arrays.asList(fftFilterArray), fftFilterSave);
+        addDropdown("MaxFreq", "Max Freq", Arrays.asList(settings.fftMaxFrqArray), settings.fftMaxFrqSave);
+        addDropdown("VertScale", "Max uV", Arrays.asList(settings.fftVertScaleArray), settings.fftMaxuVSave);
+        addDropdown("LogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.fftLogLinSave);
+        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
+        addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
 
         fft_points = new GPointsArray[nchan];
         // println("fft_points.length: " + fft_points.length);
@@ -217,7 +217,7 @@ class W_fft extends Widget {
 void MaxFreq(int n) {
     /* request the selected item based on index n */
     w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
-    fftMaxFrqSave = n; //save the xLim to variable for save/load settings
+    settings.fftMaxFrqSave = n; //save the xLim to variable for save/load settings
     closeAllDropdowns();
 }
 
@@ -225,7 +225,7 @@ void MaxFreq(int n) {
 void VertScale(int n) {
 
     w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
-    fftMaxuVSave = n; //save the yLim to variable for save/load settings
+    settings.fftMaxuVSave = n; //save the yLim to variable for save/load settings
     closeAllDropdowns();
 }
 
@@ -234,11 +234,11 @@ void LogLin(int n) {
     if (n==0) {
         w_fft.fft_plot.setLogScale("y");
         //store the current setting to save
-        fftLogLinSave = 0;
+        settings.fftLogLinSave = 0;
     } else {
         w_fft.fft_plot.setLogScale("");
         //store the current setting to save
-        fftLogLinSave = 1;
+        settings.fftLogLinSave = 1;
     }
     closeAllDropdowns();
 }
@@ -246,7 +246,7 @@ void LogLin(int n) {
 //triggered when there is an event in the Smoothing Dropdown
 void Smoothing(int n) {
     smoothFac_ind = n;
-    fftSmoothingSave = n;
+    settings.fftSmoothingSave = n;
     closeAllDropdowns();
 }
 

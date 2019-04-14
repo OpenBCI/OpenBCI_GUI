@@ -68,16 +68,15 @@ class W_timeSeries extends Widget {
         numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
         //Time Series settings
-        tsVertScaleSave = 3;
-        tsHorizScaleSave = 2;
-        //checkForSuccessTS = 0;
+        settings.tsVertScaleSave = 3;
+        settings.tsHorizScaleSave = 2;
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
-        addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(tsVertScaleArray), tsVertScaleSave);
-        addDropdown("Duration", "Window", Arrays.asList(tsHorizScaleArray), tsHorizScaleSave);
+        addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(settings.tsVertScaleArray), settings.tsVertScaleSave);
+        addDropdown("Duration", "Window", Arrays.asList(settings.tsHorizScaleArray), settings.tsHorizScaleSave);
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
@@ -85,7 +84,7 @@ class W_timeSeries extends Widget {
             playbackWidgetHeight = 50.0;
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
-            pb_w = wF - ts_padding*4;
+            pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             //Make a new scrollbar
             scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
@@ -225,7 +224,7 @@ class W_timeSeries extends Widget {
             //Resize the playback slider if using playback mode
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
-            pb_w = wF - ts_padding*8;
+            pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
         }
@@ -318,7 +317,7 @@ class W_timeSeries extends Widget {
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
-    tsVertScaleSave = n;
+    settings.tsVertScaleSave = n;
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
         w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
     }
@@ -327,20 +326,20 @@ void VertScale_TS(int n) {
 
 //triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
-    tsHorizScaleSave = n;
+    settings.tsHorizScaleSave = n;
     // println("adjust duration to: " + xLimOptions[n]);
     //set time series x axis to the duration selected from dropdown
-    int newDuration = w_timeSeries.xLimOptions[tsHorizScaleSave];
+    int newDuration = w_timeSeries.xLimOptions[n];
     for(int i = 0; i < w_timeSeries.numChannelBars; i++){
         w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
     }
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (accHorizScaleSave == 0) {
+    if (settings.accHorizScaleSave == 0) {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
     }
     if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
-        if (arHorizScaleSave == 0){
+        if (settings.arHorizScaleSave == 0){
             //set analog read x axis to the duration selected from dropdown
             for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
                 w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
@@ -735,6 +734,8 @@ class PlaybackScrollbar {
     Boolean indicatorAtStart; //true means the indicator is at index 0
     int clearBufferThreshold = 5;
     float ps_Padding = 50.0; //used to make room for skip to start button
+    String currentAbsoluteTimeToDisplay = "";
+    String currentTimeInSecondsToDisplay = "";
 
     PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
         swidth = sw;
@@ -751,20 +752,12 @@ class PlaybackScrollbar {
         indicatorAtStart = true;
 
         //Let's make a button to return to the start of playback!!
-        if(sh > 26){
-            skipToStart_diameter = 26;
-        } else{
-            skipToStart_diameter = sh - 2;
-        }
-        skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "|<", fontInfo.buttonLabel_size);
-        skipToStartButton.setFont(h2, 18);
-        skipToStartButton.setCircleButton(true);
-        skipToStartButton.setColorNotPressed(openbciBlue); //Set channel button background colors
-        skipToStartButton.setColorPressed(color(255));
-        skipToStartButton.textColorNotActive = color(255); //Set channel button text to white
-        skipToStartButton.textColorActive = color(0,255,0); //Green text when clicked
-        skipToStartButton.hasStroke(true);
-
+        skipToStart_diameter = 30;
+        skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "");
+        skipToStartButton.setColorNotPressed(color(235)); //Set channel button background colors
+        skipToStartButton.hasStroke(false);
+        PImage bgImage = loadImage("skipToStart-30x26.png");
+        skipToStartButton.setBackgroundImage(bgImage);
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -810,11 +803,6 @@ class PlaybackScrollbar {
             }
             //Set the new position of playback indicator using mapped value
             newspos = updatePos();
-
-            //Print current position to bottom of GUI
-            output("Time: " + getCurrentTimeStamp()
-            + " --- " + int(float(currentTableRowIndex)/getSampleRateSafe())
-            + " seconds" );
         }
         if (abs(newspos - spos) > 1) { //if the slider has been moved
             spos = spos + (newspos-spos); //update position
@@ -825,7 +813,7 @@ class PlaybackScrollbar {
             indicatorAtStart = false;
         }
 
-        if(mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
+        if (mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
             //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
             skipToStartButton.setIsActive(true);
             skipToStartButtonAction(); //skip to start
@@ -834,11 +822,15 @@ class PlaybackScrollbar {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
+        if (curTimestamp != null) {
+            currentAbsoluteTimeToDisplay = getCurrentTimeStamp();
+            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " s";
+        }
     } //end update loop for PlaybackScrollbar
 
     float constrain(float val, float minv, float maxv) {
         return min(max(val, minv), maxv);
-    } //end update loop
+    }
 
     //checks if mouse is over the playback scrollbar
     boolean overEvent() {
@@ -872,6 +864,16 @@ class PlaybackScrollbar {
         //draws playback position indicator
         rect(spos, ypos, sheight/2, sheight);
 
+        //draw current timestamp and X of Y Seconds above scrollbar
+        if (!currentAbsoluteTimeToDisplay.equals(null)) {
+            int fontSize = 17;
+            textFont(p2, fontSize);
+            fill(0);
+            float tw = textWidth(currentAbsoluteTimeToDisplay);
+            text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
+            text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
+        }
+
         popStyle();
     }
 
@@ -885,20 +887,9 @@ class PlaybackScrollbar {
         //update the position of the playback indicator us
         newspos = updatePos();
 
-        //resize the skip to start button
-        if(sheight > 26){
-            skipToStart_diameter = 26;
-            skipToStartButton.but_dx = skipToStart_diameter;
-            skipToStartButton.but_dy = skipToStart_diameter;
-        } else{
-            skipToStart_diameter = int(_h) - 2;
-            skipToStartButton.but_dx = skipToStart_diameter;
-            skipToStartButton.but_dy = skipToStart_diameter;
-        }
-        //update the x and y positions for the skipToStartButton
         skipToStartButton.setPos(
             int(_x) + int(skipToStart_diameter*.5),
-            int(_y) + int(_h/2) - int(skipToStart_diameter)
+            int(_y) - int(skipToStart_diameter*.5)
             );
 
     }

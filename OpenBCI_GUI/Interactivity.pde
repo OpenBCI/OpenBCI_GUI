@@ -21,16 +21,18 @@ void keyPressed() {
     if (!setupComplete) {
         return;
     }
-    
+
     //note that the Processing variable "key" is the keypress as an ASCII character
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
-            parseKey(key);
-        } else {
-            parseKeycode(keyCode);
+        if (settings.expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
+            if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
+                parseKey(key);
+            } else {
+                parseKeycode(keyCode);
+            }
         }
     }
 
@@ -78,13 +80,14 @@ void parseKey(char val) {
             drawContainers = !drawContainers;
             break;
         case '<':
-            w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
-            // drawTimeSeries = !drawTimeSeries;
+            //w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
             break;
         case '>':
+            /*
             if(eegDataSource == DATASOURCE_GANGLION){
                 ganglion.enterBootloaderMode();
             }
+            */
             break;
         case '{':
             if(colorScheme == COLOR_SCHEME_DEFAULT){
@@ -272,63 +275,17 @@ void parseKey(char val) {
             }
             break;
 
-        ///////////////////// Save settings lowercase n
+        ///////////////////// Save User settings lowercase n
         case 'n':
             println("Save key pressed!");
-            switch(eegDataSource) {
-                case DATASOURCE_CYTON:
-                    userSettingsFileToSave = cytonUserSettingsFile;
-                    break;
-                case DATASOURCE_GANGLION:
-                    userSettingsFileToSave = ganglionUserSettingsFile;
-                    break;
-                case DATASOURCE_PLAYBACKFILE:
-                    userSettingsFileToSave = playbackUserSettingsFile;
-                    break;
-                case DATASOURCE_SYNTHETIC:
-                    userSettingsFileToSave = syntheticUserSettingsFile;
-                    break;
-            }
-            saveGUISettings(userSettingsFileToSave);
+            settings.save(settings.getPath("User", eegDataSource, nchan));
             outputSuccess("Settings Saved!");
             break;
 
-        ///////////////////// Load settings uppercase N
+        ///////////////////// Load User settings uppercase N
         case 'N':
             println("Load key pressed!");
-            loadErrorTimerStart = millis();
-            try {
-                switch(eegDataSource) {
-                    case DATASOURCE_CYTON:
-                        userSettingsFileToLoad = cytonUserSettingsFile;
-                        break;
-                    case DATASOURCE_GANGLION:
-                        userSettingsFileToLoad = ganglionUserSettingsFile;
-                        break;
-                    case DATASOURCE_PLAYBACKFILE:
-                        userSettingsFileToLoad = playbackUserSettingsFile;
-                        break;
-                    case DATASOURCE_SYNTHETIC:
-                        userSettingsFileToLoad = syntheticUserSettingsFile;
-                        break;
-                }
-                loadGUISettings(userSettingsFileToLoad);
-                errorUserSettingsNotFound = false;
-            } catch (Exception e) {
-                println(e.getMessage());
-                println(userSettingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
-                errorUserSettingsNotFound = true;
-            }
-            //Output message when Loading settings is complete
-            if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
-                outputSuccess("Settings Loaded!");
-            } else if (chanNumError) {
-                outputError("Load Settings Error: Invalid number of channels");
-            } else if (dataSourceError) {
-                outputError("Load Settings Error: Invalid data source");
-            } else {
-                outputError("Load settings error: " + userSettingsFileToLoad + " not found. ");
-            }
+            settings.loadKeyPressed();
             break;
 
         case '?':
@@ -665,6 +622,7 @@ class Button {
     int buttonTextSize;
     PImage bgImage;
     boolean hasbgImage = false;
+    private boolean ignoreHover = false;
 
     public Button(int x, int y, int w, int h, String txt) {
         setup(x, y, w, h, txt);
@@ -691,6 +649,10 @@ class Button {
         setString(txt);
     }
 
+    public boolean getIgnoreHover() {
+        return ignoreHover;
+    }
+
     public void setX(int _but_x){
         but_x = _but_x;
     }
@@ -713,6 +675,10 @@ class Button {
         buttonTextSize = _newTextSize;
     }
 
+    public void setFontColorNotActive (color _color) {
+        textColorNotActive = _color;
+    }
+
     public void setCircleButton(boolean _isCircleButton){
         isCircleButton = _isCircleButton;
         if(isCircleButton){
@@ -733,6 +699,10 @@ class Button {
 
     public void setHelpText(String _helpText){
         helpText = _helpText;
+    }
+
+    public void setIgnoreHover (boolean _ignoreHover) {
+        ignoreHover = _ignoreHover;
     }
 
     public void setURL(String _myURL){
@@ -789,12 +759,18 @@ class Button {
     color getColor() {
         if (isActive) {
             currentColor = color_pressed;
-        } else if (isMouseHere()) {
+        } else if (isMouseHere() && !ignoreHover) {
             currentColor = color_hover;
+        } else if (ignoreHover) {
+            currentColor = color_notPressed;
         } else {
             currentColor = color_notPressed;
         }
         return currentColor;
+    }
+
+    public String getButtonText() {
+        return but_txt;
     }
 
     public void setCurrentColor(color _color){
@@ -919,22 +895,6 @@ class Button {
             popStyle();
         }
 
-        //This could be utilized at a later date
-        //cursor = funny looking finger thing when hovering over buttons...
-        // if (true) {
-        //   if (!isMouseHere() && drawHand) {
-        //     cursor(ARROW);
-        //     drawHand = false;
-        //     //verbosePrint("don't draw hand");
-        //   }
-        //   //if cursor is over button change cursor icon to hand!
-        //   if (isMouseHere() && !drawHand) {
-        //     cursor(HAND);
-        //     drawHand = true;
-        //     //verbosePrint("draw hand");
-        //   }
-        // }
-
         popStyle();
     } //end of button draw
 };
@@ -1034,8 +994,8 @@ boolean isNetworkingTextActive(){
             }
         }
     }
-    // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class)); //loop through networking textfields and find out if any of the are active
-
+    //loop through networking textfields and find out if any of the are active
+    // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
     // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
     println("Networking Text Field Active? " + isAFieldActive);
     return isAFieldActive; //if not, return false
