@@ -15,10 +15,10 @@
 float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
 int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 
-class W_headPlot extends Widget {
+class W_HeadPlot extends Widget {
     HeadPlot headPlot;
 
-    W_headPlot(PApplet _parent){
+    W_HeadPlot(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Headplot settings

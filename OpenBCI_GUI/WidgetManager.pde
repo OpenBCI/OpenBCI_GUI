@@ -8,17 +8,17 @@ int navHeight = 22;
     Notes:
     - In this file all you have to do is MAKE YOUR WIDGET GLOBALLY, and then ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER in the setupWidgets() function below
     - the order in which they are added will effect the order in which they appear in the GUI and in the WidgetSelector dropdown menu of each widget
-    - use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_timeSeries.pde, W_fft.pde, and W_headPlot.pde)
+    - use the WidgetTemplate.pde file as a starting point for creating new widgets (also check out W_timeSeries.pde, W_fft.pde, and W_HeadPlot.pde)
 */
 
 // MAKE YOUR WIDGET GLOBALLY
 W_timeSeries w_timeSeries;
 W_fft w_fft;
-W_networking w_networking;
+W_Networking w_networking;
 W_BandPower w_bandPower;
 W_Accelerometer w_accelerometer;
-W_ganglionImpedance w_ganglionImpedance;
-W_headPlot w_headPlot;
+W_GanglionImpedance w_ganglionImpedance;
+W_HeadPlot w_headPlot;
 W_template w_template1;
 W_emg w_emg;
 W_openBionics w_openbionics;
@@ -54,7 +54,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     //only instantiate this widget if you are using a Ganglion board for live streaming
     if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
         //If using Ganglion, this is Widget_3
-        w_ganglionImpedance = new W_ganglionImpedance(_this);
+        w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
         addWidget(w_ganglionImpedance, w);
     }
@@ -67,7 +67,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     }
 
     //Cyton/Synthetic Widget_3, Ganglion/Playback Widget_4
-    w_networking = new W_networking(_this);
+    w_networking = new W_Networking(_this);
     w_networking.setTitle("Networking");
     addWidget(w_networking, w);
 
@@ -78,7 +78,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets band power -- " + millis());
 
     //Cyton/Synthetic Widget_5, Ganglion/Playback Widget_6
-    w_headPlot = new W_headPlot(_this);
+    w_headPlot = new W_HeadPlot(_this);
     w_headPlot.setTitle("Head Plot");
     addWidget(w_headPlot, w);
     // println("  setupWidgets head plot -- " + millis());

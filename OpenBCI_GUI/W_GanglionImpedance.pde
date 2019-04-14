@@ -10,11 +10,11 @@
 //
 ///////////////////////////////////////////////////,
 
-class W_ganglionImpedance extends Widget {
+class W_GanglionImpedance extends Widget {
     Button startStopCheck;
     int padding = 24;
 
-    W_ganglionImpedance(PApplet _parent){
+    W_GanglionImpedance(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);

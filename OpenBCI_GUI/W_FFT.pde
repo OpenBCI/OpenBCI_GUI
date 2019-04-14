@@ -61,7 +61,7 @@ class W_fft extends Widget {
         addDropdown("MaxFreq", "Max Freq", Arrays.asList(settings.fftMaxFrqArray), settings.fftMaxFrqSave);
         addDropdown("VertScale", "Max uV", Arrays.asList(settings.fftVertScaleArray), settings.fftMaxuVSave);
         addDropdown("LogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.fftLogLinSave);
-        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
+        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
         addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
 
         fft_points = new GPointsArray[nchan];
