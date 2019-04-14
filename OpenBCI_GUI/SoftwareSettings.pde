@@ -1185,6 +1185,36 @@ void loadApplyTimeSeriesSettings() {
 } //end loadApplyTimeSeriesSettings
 
 /**
+  * @description Used in TopNav when user clicks ClearSettings->AreYouSure->Yes
+  * @params none
+  * @returns Output Success message to bottom of GUI
+  */
+void clearAllGUISettings() {
+    //Delete only specified files in the Settings Folder
+    String[] filesToDelete = concat(userSettingsFiles, defaultSettingsFiles);
+    filesToDelete = append(filesToDelete, userPlaybackHistoryFile.substring(settingsPath.length()-1));
+    //println(filesToDelete);
+    int successfulDeletions = 0;
+    for (int j = 0; j < filesToDelete.length; j++) {
+        String f = new File(sketchPath()+System.getProperty("file.separator")+settingsPath+filesToDelete[j]).getAbsolutePath();
+        //println(f);
+        try {
+            Files.deleteIfExists(Paths.get(f));
+            successfulDeletions++;
+        } catch(NoSuchFileException e) {
+            println("No such file/directory exists");
+        } catch(DirectoryNotEmptyException e) {
+            println("Directory is not empty.");
+        } catch(IOException e) {
+            println("Invalid permissions.");
+        }
+    }
+    if (filesToDelete.length == successfulDeletions) {
+        outputSuccess("Successfully deleted all settings files!");
+    }
+}
+
+/**
   * @description Used in System Init, TopNav, and Interactivity
   * @params mode="User"or"Default", dataSource, and number of channels
   * @returns {String} - filePath in SavedData/Settings/ or Error if mode not specified correctly
