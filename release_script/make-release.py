@@ -251,5 +251,3 @@ build_app(sketch_dir)
 #package it up
 for flavor in flavors[LOCAL_OS]:
     package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
-# Cleanup to finish
-cleanup_build_dirs(sketch_dir, zips=False) # do not delete .zips
