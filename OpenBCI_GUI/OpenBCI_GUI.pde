@@ -521,6 +521,11 @@ private void prepareExitHandler () {
                 } else {
                     System.out.println("FAILED TO SHUTDOWN HUB");
                 }
+                //If user starts system and quits the app,
+                //save user settings for current mode!
+                if (systemMode == SYSTEMMODE_POSTINIT) {
+                    settings.save(settings.getPath("User", eegDataSource, nchan));
+                }
             } catch (Exception ex) {
                 ex.printStackTrace(); // not much else to do at this point
             }
