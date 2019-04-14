@@ -2631,9 +2631,6 @@ class RecentPlaybackBox {
 
         cp5_controlPanel_dropdown = new ControlP5(ourApplet);
         getRecentPlaybackFiles();
-        if (!playbackHistoryFileExists) {
-            shortFileNames.append("None");
-        }
 
         String[] temp = shortFileNames.array();
         createDropdown("recentFiles", Arrays.asList(temp));
@@ -2651,7 +2648,7 @@ class RecentPlaybackBox {
             getRecentPlaybackFiles();
             String[] temp = shortFileNames.array();
             cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, temp.length * 24);
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
         }
     }
 
