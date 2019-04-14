@@ -98,11 +98,6 @@ void playbackFileSelectedCP (String longName, String shortName) {
     try {
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-        maxRangePlaybackSelect = recentFilesArray.size()/10;
-
-        for (int i = 0; i <= maxRangePlaybackSelect; i++) {
-            rangePlaybackStringList.append(rangeSelectStringArray[i]);
-        }
         playbackHistoryFileExists = true;
     } catch (NullPointerException e) {
         //println("Playback history JSON file does not exist. Load first file to make it.");

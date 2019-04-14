@@ -41,6 +41,11 @@ import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
 import edu.ucsd.sccn.LSL; //for LSL
+//These are used by LSL
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
+import com.sun.jna.Pointer;
 
 
 import gifAnimation.*;
@@ -50,8 +55,8 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.1-beta.1";
-String localGUIVersionDate = "March 2019";
+String localGUIVersionString = "v4.1.2-beta.0";
+String localGUIVersionDate = "April 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -89,6 +94,8 @@ final int INTERFACE_HUB_BLE = 1; // used only by ganglion
 final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
 final int INTERFACE_HUB_BLED112 = 3; // used only by ganglion with bled dongle
 
+boolean showStartupError = false;
+String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
@@ -230,6 +237,7 @@ PFont h3; //medium Montserrat
 PFont h4; //small/medium Montserrat
 PFont h5; //small Montserrat
 
+PFont p0; //large bold Open Sans
 PFont p1; //large Open Sans
 PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
@@ -286,83 +294,7 @@ char[][] impedanceCheckValues = new char [nchan][2];
 //[Number of Channels] x 6 array of buttons for channel settings
 //Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
 
-//default layout variables
-int layoutSelected;
-int currentLayout;
-
-////////////////////////////////////////////  These variables are set to default, and updated every time user selects from dropdown
-//Notch and Bandpass filter variables for save
-int dataProcessingNotchSave = 0;
-int dataProcessingBandpassSave = 3;
-//Time Series settings
-int tsVertScaleSave;
-int tsHorizScaleSave;
-int checkForSuccessTS = 0;
-//Accelerometer settings
-int accVertScaleSave;
-int accHorizScaleSave;
-//FFT plot settings,
-int fftMaxFrqSave;
-int fftMaxuVSave;
-int fftLogLinSave;
-int fftSmoothingSave;
-int fftFilterSave;
-//Analog Read settings
-int arVertScaleSave; //updates in VertScale_AR()
-int arHorizScaleSave; //updates in Duration_AR()
-//Headplot settings
-int hpIntensitySave;
-int hpPolaritySave;
-int hpContoursSave;
-int hpSmoothingSave;
-//EMG settings
-int emgSmoothingSave;
-int emguVLimSave;
-int emgCreepSave;
-int emgMinDeltauVSave;
-//Focus widget settings
-int focusThemeSave;
-int focusKeySave;
-//default data types for streams 1-4 in Networking widget
-int nwDataType1;
-int nwDataType2;
-int nwDataType3;
-int nwDataType4;
-int nwProtocolSave;
-
-//default configuration settings file location and file name variables
-final String cytonUserSettingsFile = "SavedData/Settings/CytonUserSettings.json";
-final String cytonDefaultSettingsFile = "SavedData/Settings/CytonDefaultSettings.json";
-final String ganglionUserSettingsFile = "SavedData/Settings/GanglionUserSettings.json";
-final String ganglionDefaultSettingsFile = "SavedData/Settings/GanglionDefaultSettings.json";
-final String playbackUserSettingsFile = "SavedData/Settings/PlaybackUserSettings.json";
-final String playbackDefaultSettingsFile = "SavedData/Settings/PlaybackDefaultSettings.json";
-final String syntheticUserSettingsFile = "SavedData/Settings/SyntheticUserSettings.json";
-final String syntheticDefaultSettingsFile = "SavedData/Settings/SyntheticDefaultSettings.json";
-String userSettingsFileToSave;
-String userSettingsFileToLoad;
-String saveSettingsDialogName; //Used when Save button is pressed
-String loadSettingsDialogName; //Used when Load button is pressed
-String controlEventDataSource; //Used for output message on system start
-Boolean errorUserSettingsNotFound = false; //For error catching
-int loadErrorTimerStart;
-int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
-Boolean loadErrorCytonEvent = false;
-Boolean settingsLoadedCheck = false; //Used to determine if settings are done loading successfully after init
-final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
-
-//Used mostly in W_playback.pde
-JSONObject savePlaybackHistoryJSON;
-JSONObject loadPlaybackHistoryJSON;
-final String userPlaybackHistoryFile = "SavedData/Settings/UserPlaybackHistory.json";
-boolean playbackHistoryFileExists = false;
-String playbackData_ShortName;
-String[] rangeSelectStringArray = {"1-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100"};
-int fileSelectTabsInt = 1;
-int rangePlaybackSelected = 0; //this var is the range the user has selected
-int maxRangePlaybackSelect = 1; //max number of range tabs
-StringList rangePlaybackStringList = new StringList();
-boolean recentPlaybackFilesHaveUpdated = false;
+SoftwareSettings settings = new SoftwareSettings();
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -384,6 +316,39 @@ void settings() {
 }
 
 void setup() {
+    //V1 FONTS
+    f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
+    f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
+    f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
+
+    h1 = createFont("fonts/Montserrat-Regular.otf", 20);
+    h2 = createFont("fonts/Montserrat-Regular.otf", 18);
+    h3 = createFont("fonts/Montserrat-Regular.otf", 16);
+    h4 = createFont("fonts/Montserrat-Regular.otf", 14);
+    h5 = createFont("fonts/Montserrat-Regular.otf", 12);
+
+    p0 = createFont("fonts/OpenSans-Semibold.ttf", 24);
+    p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
+    p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
+    p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
+    p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
+    p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
+    p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
+    p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
+    p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
+
+    // check if the current directory is writable
+    File dummy = new File(sketchPath());
+    if (!dummy.canWrite()) {
+        showStartupError = true;
+        startupErrorMessage = "OpenBCI GUI was launched from a read-only location.\n\n" +
+            "Please move the application to a different location and re-launch.\n" +
+            "If you just downloaded the GUI, move it out of the disk image or Downloads folder.\n\n" +
+            "If this error persists, contact the OpenBCI team for support.";
+        return; // early exit
+    }
+
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
     outputStream = new CustomOutputStream(System.out);
@@ -417,7 +382,6 @@ void setup() {
 }
 
 void delayedSetup() {
-
     if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
     hubInit(); // putting down here gives windows time to close any open apps
 
@@ -428,27 +392,6 @@ void delayedSetup() {
     heightOfLastScreen = height;
 
     setupContainers();
-
-    //V1 FONTS
-    f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    f2 = createFont("fonts/Raleway-Regular.otf", 15);
-    f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
-    f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
-
-    h1 = createFont("fonts/Montserrat-Regular.otf", 20);
-    h2 = createFont("fonts/Montserrat-Regular.otf", 18);
-    h3 = createFont("fonts/Montserrat-Regular.otf", 16);
-    h4 = createFont("fonts/Montserrat-Regular.otf", 14);
-    h5 = createFont("fonts/Montserrat-Regular.otf", 12);
-
-    p1 = createFont("fonts/OpenSans-Regular.ttf", 20);
-    p2 = createFont("fonts/OpenSans-Regular.ttf", 18);
-    p3 = createFont("fonts/OpenSans-Regular.ttf", 16);
-    p15 = createFont("fonts/OpenSans-Regular.ttf", 15);
-    p4 = createFont("fonts/OpenSans-Regular.ttf", 14);
-    p13 = createFont("fonts/OpenSans-Regular.ttf", 13);
-    p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
-    p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
     //listen for window resize ... used to adjust elements in application
     frame.addComponentListener(new ComponentAdapter() {
@@ -551,7 +494,10 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
 //======================== DRAW LOOP =============================//
 
 synchronized void draw() {
-    if(setupComplete) {
+    if (showStartupError) {
+        drawStartupError();
+    }
+    else if (setupComplete) {
         drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
@@ -572,6 +518,11 @@ private void prepareExitHandler () {
                     System.out.println("SHUTDOWN HUB");
                 } else {
                     System.out.println("FAILED TO SHUTDOWN HUB");
+                }
+                //If user starts system and quits the app,
+                //save user settings for current mode!
+                if (systemMode == SYSTEMMODE_POSTINIT) {
+                    settings.save(settings.getPath("User", eegDataSource, nchan));
                 }
             } catch (Exception ex) {
                 ex.printStackTrace(); // not much else to do at this point
@@ -850,43 +801,9 @@ void initSystem() {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
     //Init software settings: create default settings files, load user settings, etc.
-    initSoftwareSettings();
+    settings.init();
 
-    //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
-    String firmwareToPrint = "";
-    String dataModeVersionToPrint = controlEventDataSource;
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (!loadErrorCytonEvent) {
-            firmwareToPrint = " " + hub.firmwareVersion + ")";
-        } else {
-            firmwareToPrint = "v.?)";
-        }
-        dataModeVersionToPrint = controlEventDataSource.replace(")", " ");
-        dataModeVersionToPrint += firmwareToPrint;
-    }
-
-    //Output messages when Loading settings is complete
-    if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
-        }
-    } else if (chanNumError) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
-        output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-    } else if (dataSourceError) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
-        output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-    } else if (errorUserSettingsNotFound) {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: " + userSettingsFileToLoad + " not found. " + millis()); //Print the error to console
-        output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
-    } else {
-        verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
-        outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
-    }
-
-    //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
-    settingsLoadedCheck = true;
+    settings.initCheckPointFive();
 
     //reset init variables
     midInit = false;
@@ -997,11 +914,7 @@ void stopRunning() {
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
     if (isRunning) {
-        //Dont print this message for playback mode.
-        //Allows user to see current playback time
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
-            output("Data stream stopped.");
-        }
+        output("Data stream stopped.");
     }
     if (eegDataSource == DATASOURCE_GANGLION) {
         if (ganglion != null) {
@@ -1065,28 +978,13 @@ void haltSystem() {
     //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
     //This method establishes default and user settings for all data modes
     if (systemMode == SYSTEMMODE_POSTINIT) {
-        switch(eegDataSource) {
-            case DATASOURCE_CYTON:
-                userSettingsFileToSave = cytonUserSettingsFile;
-                break;
-            case DATASOURCE_GANGLION:
-                userSettingsFileToSave = ganglionUserSettingsFile;
-                break;
-            case DATASOURCE_PLAYBACKFILE:
-                userSettingsFileToSave = playbackUserSettingsFile;
-                break;
-            case DATASOURCE_SYNTHETIC:
-                userSettingsFileToSave = syntheticUserSettingsFile;
-                break;
-        }
-        saveGUISettings(userSettingsFileToSave);
+        settings.save(settings.getPath("User", eegDataSource, nchan));
     }
 
     if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
         if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
             cyton.setBoardMode(BoardMode.DEFAULT);
             output("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
             w_pulsesensor.analogReadOn = false;
             w_analogRead.analogModeButton.setString("Turn Analog Read On");
@@ -1094,13 +992,11 @@ void haltSystem() {
         } else if (w_digitalRead.digitalReadOn) {
             cyton.setBoardMode(BoardMode.DEFAULT);
             output("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
             w_digitalRead.digitalReadOn = false;
         } else if (w_markermode.markerModeOn) {
             cyton.setBoardMode(BoardMode.DEFAULT);
             output("Starting to read accelerometer");
-            w_accelerometer.accelerometerModeOn = true;
             w_markermode.markerModeButton.setString("Turn Marker On");
             w_markermode.markerModeOn = false;
         }
@@ -1117,13 +1013,12 @@ void haltSystem() {
     drawLoop_counter = 0;
     // eegDataSource = -1;
     //set all data source list items inactive
-    rangePlaybackStringList.clear();
 
     //Fix issue for processing successive playback files
     indices = 0;
     hasRepeated = false;
     has_processed = false;
-    settingsLoadedCheck = false; //on halt, reset this value
+    settings.settingsLoaded = false; //on halt, reset this value
 
     //reset connect loadStrings
     openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
@@ -1135,14 +1030,15 @@ void haltSystem() {
     if (eegDataSource == DATASOURCE_CYTON) {
         closeLogFile();  //close log file
         cyton.closeSDandPort();
-    }
-    if (eegDataSource == DATASOURCE_GANGLION) {
+    } else if (eegDataSource == DATASOURCE_GANGLION) {
         if(ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
         closeLogFile();  //close log file
         ganglion.closePort();
+    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
     }
     systemMode = SYSTEMMODE_PREINIT;
     hub.changeState(HubState.NOCOM);
@@ -1187,13 +1083,15 @@ void systemUpdate() { // for updating data values and variables
     win_y = height;
 
     helpWidget.update();
+    topNav.update();
     if (systemMode == SYSTEMMODE_PREINIT) {
         //updates while in system control panel before START SYSTEM
         controlPanel.update();
-        topNav.update();
 
         if (widthOfLastScreen != width || heightOfLastScreen != height) {
             topNav.screenHasBeenResized(width, height);
+            widthOfLastScreen = width;
+            heightOfLastScreen = height;
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -1397,7 +1295,7 @@ void systemDraw() { //for drawing to the screen
             output("");
         }
 
-        if (millis() - timeOfInit > initTimeoutThreshold) {
+        if (millis() - timeOfInit > settings.initTimeoutThreshold) {
             haltSystem();
             initSystemButton.but_txt = "START SYSTEM";
             output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
@@ -1456,6 +1354,31 @@ void introAnimation() {
         systemMode = SYSTEMMODE_PREINIT;
         controlPanel.isOpen = true;
     }
+    popStyle();
+}
+
+void drawStartupError() {
+    final int w = 600;
+    final int h = 350;
+    final int headerHeight = 75;
+    final int padding = 20;
+
+    pushStyle();
+    background(bgColor);
+    stroke(204);
+    fill(238);
+    rect((width - w)/2, (height - h)/2, w, h);
+    noStroke();
+    fill(217, 4, 4);
+    rect((width - w)/2, (height - h)/2, w, headerHeight);
+    textFont(p0, 24);
+    fill(255);
+    textAlign(LEFT, CENTER);
+    text("Error", (width - w)/2 + padding, (height - h)/2, w, headerHeight);
+    textFont(p3, 16);
+    fill(102);
+    textAlign(LEFT, TOP);
+    text(startupErrorMessage, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight);
     popStyle();
 }
 

@@ -1,3 +1,21 @@
+# v4.1.2
+Use OpenBCIHub v2.0.7 please.
+
+## Beta 0
+
+### New features
+* Expert mode button to toggle advanced keyboard shortcuts
+* Clear GUI settings button w/ confirmation
+
+### Improvements
+* New icon for "back to start" button in Playback mode
+* Playback History widget functionality and appearance
+* Optimized playback history
+
+### Bug fixes
+* Fixed: Ganglion accelerometer starts "on" but data not streaming
+* Fixed: LSL streaming in standalone GUI
+
 # v4.1.1
 Use OpenBCIHub v2.0.7 please.
 

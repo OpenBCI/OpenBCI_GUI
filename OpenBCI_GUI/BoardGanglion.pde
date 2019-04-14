@@ -38,7 +38,7 @@ class Ganglion {
     private DataPacket_ADS1299 dataPacket;
 
     private boolean checkingImpedance = false;
-    private boolean accelModeActive = true;
+    private boolean accelModeActive = false;
 
     public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
@@ -65,7 +65,9 @@ class Ganglion {
         }
     }
     public boolean isCheckingImpedance() { return checkingImpedance; }
-    public boolean isAccelModeActive() { return accelModeActive; }
+    public boolean isAccelModeActive() {
+        return isWifi() ? true : accelModeActive; //Accel is always on for Ganglion+Wifi
+    }
     public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; }
     public int getInterface() {
         return curInterface;

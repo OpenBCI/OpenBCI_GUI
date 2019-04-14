@@ -62,7 +62,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     if(eegDataSource == DATASOURCE_PLAYBACKFILE){
         //Playback Widget_3
         w_playback = new W_playback(_this);
-        w_playback.setTitle("Playback");
+        w_playback.setTitle("Playback History");
         addWidget(w_playback, w);
     }
 
@@ -185,15 +185,15 @@ class WidgetManager{
 
         if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION) {
             currentContainerLayout = 1;
-            currentLayout = 1; // used for save/load settings
+            settings.currentLayout = 1; // used for save/load settings
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             currentContainerLayout = 1;
-            currentLayout = 1; // used for save/load settings
+            settings.currentLayout = 1; // used for save/load settings
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         } else {
             currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-            currentLayout = 4; // used for save/load settings
+            settings.currentLayout = 4; // used for save/load settings
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         }
 

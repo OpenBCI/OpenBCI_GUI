@@ -616,14 +616,14 @@ class DataProcessing {
         //increment the index
         currentFilt_ind++;
         if (currentFilt_ind >= N_FILT_CONFIGS) currentFilt_ind = 0;
-        dataProcessingBandpassSave = currentFilt_ind;//store the value to save bandpass setting
+        settings.dataProcessingBandpassSave = currentFilt_ind;//store the value to save bandpass setting
     }
 
     public void incrementNotchConfiguration() {
         //increment the index
         currentNotch_ind++;
         if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
-        dataProcessingNotchSave = currentNotch_ind;
+        settings.dataProcessingNotchSave = currentNotch_ind;
     }
 
     public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call

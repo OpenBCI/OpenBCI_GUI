@@ -22,18 +22,18 @@ class W_headPlot extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Headplot settings
-        hpIntensitySave = 2;
-        hpPolaritySave = 0;
-        hpContoursSave = 0;
-        hpSmoothingSave = 3;
+        settings.hpIntensitySave = 2;
+        settings.hpPolaritySave = 0;
+        settings.hpContoursSave = 0;
+        settings.hpSmoothingSave = 3;
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
         // addDropdown("Ten20", "Layout", Arrays.asList("10-20", "5-10"), 0);
         // addDropdown("Headset", "Headset", Arrays.asList("None", "Mark II", "Mark III", "Mark IV "), 0);
         addDropdown("Intensity", "Intensity", Arrays.asList("4x", "2x", "1x", "0.5x", "0.2x", "0.02x"), vertScaleFactor_ind);
-        addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), hpPolaritySave);
-        addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), hpContoursSave);
+        addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), settings.hpPolaritySave);
+        addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), settings.hpContoursSave);
         addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
         //Initialize the headplot
         updateHeadPlot(nchan);
@@ -98,7 +98,7 @@ void Polarity(int n) {
     } else {
         w_headPlot.headPlot.use_polarity = false;
     }
-    hpPolaritySave = n;
+    settings.hpPolaritySave = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -110,14 +110,14 @@ void ShowContours(int n){
         //turn headplot contours off
         w_headPlot.headPlot.drawHeadAsContours = false;
     }
-    hpContoursSave = n;
+    settings.hpContoursSave = n;
     closeAllDropdowns();
 }
 
 //triggered when there is an event in the SmoothingHeadPlot Dropdown
 void SmoothingHeadPlot(int n) {
     w_headPlot.setSmoothFac(smoothFac[n]);
-    hpSmoothingSave = n;
+    settings.hpSmoothingSave = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
@@ -130,7 +130,7 @@ void UnfiltFiltHeadPlot(int n) {
 void Intensity(int n){
     vertScaleFactor_ind = n;
     updateVertScale();
-    hpIntensitySave = n;
+    settings.hpIntensitySave = n;
     closeAllDropdowns();
 }
 

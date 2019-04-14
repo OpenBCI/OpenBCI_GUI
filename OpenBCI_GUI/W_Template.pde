@@ -35,6 +35,13 @@ class W_template extends Widget {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
         //put your code here...
+        //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
+        if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
+            widgetTemplateButton.setIsActive(false);
+            widgetTemplateButton.setIgnoreHover(true);
+        } else {
+            widgetTemplateButton.setIgnoreHover(false);
+        }
 
     }
 
@@ -63,10 +70,12 @@ class W_template extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         //put your code here...
-        if(widgetTemplateButton.isMouseHere()){
-            widgetTemplateButton.setIsActive(true);
+        //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
+        if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
+            if(widgetTemplateButton.isMouseHere()){
+                widgetTemplateButton.setIsActive(true);
+            }
         }
-
     }
 
     void mouseReleased(){
