@@ -275,14 +275,12 @@ public void controlEvent(ControlEvent theEvent) {
         int s = (int)(theEvent.getController()).getValue();
         println("got a menu event from item " + s);
         println(controlPanel.recentPlaybackBox.longFilePaths);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s+1);
+        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
         if (new File(filePath).isFile()) {
-            String shortFileName = controlPanel.recentPlaybackBox.shortFileNames.get(s+1);
-            if (shortFileName.equals("None") == false) {
-                controlPanel.recentPlaybackBox.setFilePickedShort(shortFileName);
-                //Load the playback file!
-                playbackFileSelectedCP(filePath, shortFileName);
-            }
+            String shortFileName = controlPanel.recentPlaybackBox.shortFileNames.get(s);
+            controlPanel.recentPlaybackBox.setFilePickedShort(shortFileName);
+            //Load the playback file!
+            playbackFileSelectedCP(filePath, shortFileName);
         } else {
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
@@ -2638,35 +2636,22 @@ class RecentPlaybackBox {
         }
 
         String[] temp = shortFileNames.array();
-        String[] temp2 = {};
-        //remove null array elements and append to new temp array
-        for (String element : temp) {
-            if (element != null) temp2 = append(temp2, element);
-        }
-        createDropdown("recentFiles", Arrays.asList(temp2));
+        createDropdown("recentFiles", Arrays.asList(temp));
         cp5_controlPanel_dropdown.setGraphics(ourApplet, 0,0);
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
-        cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp2.length + 1) * 24);
+        cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
         cp5_controlPanel_dropdown.setAutoDraw(false);
     }
 
     /////*Update occurs while control panel is open*/////
     public void update() {
-        //Update the dropdown list if it has not already been done
+        //Update the dropdown list irecentPlaybackFilesHaveUpdatedf it has not already been done
         if (!recentPlaybackFilesHaveUpdated) {
-            try {
-                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
-                getRecentPlaybackFiles();
-                String[] temp = {};
-                //remove null array elements and append to new temporary array
-                for (String element : shortFileNames.array()) {
-                    if (element != null) temp = append(temp, element);
-                }
-                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-                cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, shortFileNames.size() * 24);
-            } catch (NullPointerException e) {
-                println("RecentPlaybackBox: NullPointerException");
-            }
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
+            getRecentPlaybackFiles();
+            String[] temp = shortFileNames.array();
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
+            cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, temp.length * 24);
         }
     }
 
@@ -2710,12 +2695,12 @@ class RecentPlaybackBox {
             for (int i = numFilesToShow - 1; i >= 0; i--) {
                 //println(i);
                 JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-                int fileNumber = playbackFile.getInt("recentFileNumber");
+                //int fileNumber = playbackFile.getInt("recentFileNumber");
                 String shortFileName = playbackFile.getString("id");
                 String longFilePath = playbackFile.getString("filePath");
                 //store to arrays to set recent playback buttons text and function
-                shortFileNames.set(fileNumber, shortFileName);
-                longFilePaths.set(fileNumber,longFilePath);
+                shortFileNames.append(shortFileName);
+                longFilePaths.append(longFilePath);
                 //println(shortFileName + " " + longFilePath);
             }
             //For debugging
