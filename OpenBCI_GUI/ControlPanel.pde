@@ -2645,7 +2645,7 @@ class RecentPlaybackBox {
 
     /////*Update occurs while control panel is open*/////
     public void update() {
-        //Update the dropdown list irecentPlaybackFilesHaveUpdatedf it has not already been done
+        //Update the dropdown list if it has not already been done
         if (!recentPlaybackFilesHaveUpdated) {
             cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
             getRecentPlaybackFiles();
