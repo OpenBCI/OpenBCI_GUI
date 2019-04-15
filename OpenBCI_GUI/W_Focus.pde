@@ -161,10 +161,7 @@ class W_Focus extends Widget {
         }
 
         alpha_avg = alpha_avg / alpha_count;  // average uV per bin
-        //alpha_avg = alpha_avg / (cyton.getSampleRate()/Nfft);  // average uV per delta freq
         beta_avg = beta_avg / beta_count;  // average uV per bin
-        //beta_avg = beta_avg / (cyton.getSampleRate()/Nfft);  // average uV per delta freq
-        //current time = int(float(currentTableRowIndex)/cyton.getSampleRate());
 
         // version 1
         if (alpha_avg > alpha_thresh && alpha_avg < alpha_upper && beta_avg < beta_thresh) {
@@ -172,9 +169,6 @@ class W_Focus extends Widget {
         } else {
             isFocused = false;
         }
-
-        //alpha_avg = beta_avg = 0;
-
     }
 
     void invokeKeyStroke() {
@@ -215,7 +209,7 @@ class W_Focus extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         //----------------- presettings before drawing Focus Viz --------------
@@ -370,7 +364,6 @@ class W_Focus extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         update_graphic_parameters();
 
         //update sliders...

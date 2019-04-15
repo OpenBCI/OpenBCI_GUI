@@ -1,26 +1,20 @@
 
 ////////////////////////////////////////////////////
 //
-// This class creates an FFT Plot separate from the old Gui_Manager
+// This class creates an FFT Plot
 // It extends the Widget class
 //
 // Conor Russomanno, November 2016
 //
-// Requires the plotting library from grafica ... replacing the old gwoptics (which is now no longer supported)
+// Requires the plotting library from grafica ...
+// replacing the old gwoptics (which is now no longer supported)
 //
 ///////////////////////////////////////////////////
 
-//fft global variables
-// int Nfft; //125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.  //prev: Use N=256 for normal, N=512 for MU waves
-// float fs_Hz; // AJ Keller removed because shall get sample rate at runtime
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 class W_fft extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-
-    //put your custom variables here...
     GPlot fft_plot; //create an fft plot for each active channel
     GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
     int[] lineColor = {
@@ -67,7 +61,7 @@ class W_fft extends Widget {
         addDropdown("MaxFreq", "Max Freq", Arrays.asList(settings.fftMaxFrqArray), settings.fftMaxFrqSave);
         addDropdown("VertScale", "Max uV", Arrays.asList(settings.fftVertScaleArray), settings.fftMaxuVSave);
         addDropdown("LogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.fftLogLinSave);
-        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_headPlot.pde
+        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
         addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
 
         fft_points = new GPointsArray[nchan];
@@ -81,7 +75,6 @@ class W_fft extends Widget {
         fft_plot =  new GPlot(_parent, x, y-navHeight, w, h+navHeight); //based on container dimensions
         fft_plot.getXAxis().setAxisLabelText("Frequency (Hz)");
         fft_plot.getYAxis().setAxisLabelText("Amplitude (uV)");
-        //fft_plot.setMar(50,50,50,50); //{ bot=60, left=70, top=40, right=30 } by default
         fft_plot.setMar(60, 70, 40, 30); //{ bot=60, left=70, top=40, right=30 } by default
         fft_plot.setLogScale("y");
 
@@ -101,8 +94,6 @@ class W_fft extends Widget {
         //fill fft point arrays
         for (int i = 0; i < fft_points.length; i++) { //loop through each channel
             for (int j = 0; j < FFT_indexLim; j++) {
-                //GPoint temp = new GPoint(i, 15*noise(0.1*i));
-                //println(i + " " + j);
                 GPoint temp = new GPoint(j, 0);
                 fft_points[i].set(j, temp);
             }
@@ -118,35 +109,14 @@ class W_fft extends Widget {
         float sr = getSampleRateSafe();
         int nfft = getNfftSafe();
 
-        //put your code here...
         //update the points of the FFT channel arrays
         //update fft point arrays
-        // println("LENGTH = " + fft_points.length);
-        // println("LENGTH = " + fftBuff.length);
-        // println("LENGTH = " + FFT_indexLim);
         for (int i = 0; i < fft_points.length; i++) {
             for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
-                //GPoint powerAtBin = new GPoint(j, 15*random(0.1*j));
-                GPoint powerAtBin;
-
-                // println("i = " + i);
-                // float a = getSampleRateSafe();
-                // float aa = fftBuff[i].getBand(j);
-                // float b = fftBuff[i].getBand(j);
-                // float c = Nfft;
-
-                //println("Sample rate: "+ sr + " -- Nfft: " + nfft);
-                powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
+                GPoint powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
                 fft_points[i].set(j, powerAtBin);
-                // GPoint powerAtBin = new GPoint((1.0*getSampleRateSafe()/Nfft)*j, fftBuff[i].getBand(j));
-
-                //println("=========================================");
-                //println(j);
-                //println(fftBuff[i].getBand(j) + " :: " + fft_points[i].getX(j) + " :: " + fft_points[i].getY(j));
-                //println("=========================================");
             }
         }
-
         //remap fft point arrays to fft plots
         fft_plot.setPoints(fft_points[0]);
 
@@ -155,7 +125,7 @@ class W_fft extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         //draw FFT Graph w/ all plots
@@ -165,16 +135,12 @@ class W_fft extends Widget {
         fft_plot.drawBox();
         fft_plot.drawXAxis();
         fft_plot.drawYAxis();
-        //fft_plot.drawTopAxis();
-        //fft_plot.drawRightAxis();
-        //fft_plot.drawTitle();
         fft_plot.drawGridLines(2);
         //here is where we will update points & loop...
         for (int i = 0; i < fft_points.length; i++) {
             fft_plot.setLineColor(lineColor[i]);
             fft_plot.setPoints(fft_points[i]);
             fft_plot.drawLines();
-            // fft_plot.drawPoints(); //draw points
         }
         fft_plot.endDraw();
 
@@ -189,27 +155,18 @@ class W_fft extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         //update position/size of FFT plot
         fft_plot.setPos(x, y-navHeight);//update position
         fft_plot.setOuterDim(w, h+navHeight);//update dimensions
-
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        //put your code here...
-
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        //put your code here...
-
     }
-
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected

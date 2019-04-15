@@ -299,58 +299,6 @@ void parseKey(char val) {
             cyton.configureAllChannelsToDefault();
             break;
 
-        // //change the state of the impedance measurements...activate the N-channels
-        // case 'A':
-        //   Ichan = 1; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'S':
-        //   Ichan = 2; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'D':
-        //   Ichan = 3; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'F':
-        //   Ichan = 4; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'G':
-        //   Ichan = 5; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'H':
-        //   Ichan = 6; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'J':
-        //   Ichan = 7; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'K':
-        //   Ichan = 8; activate = true; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-
-        // //change the state of the impedance measurements...deactivate the N-channels
-        // case 'Z':
-        //   Ichan = 1; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'X':
-        //   Ichan = 2; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'C':
-        //   Ichan = 3; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'V':
-        //   Ichan = 4; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'B':
-        //   Ichan = 5; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'N':
-        //   Ichan = 6; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case 'M':
-        //   Ichan = 7; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-        // case '<':
-        //   Ichan = 8; activate = false; code_P_N_Both = 1;  setChannelImpedanceState(Ichan-1,activate,code_P_N_Both);
-        //   break;
-
         case 'm':
             String picfname = "OpenBCI-" + getDateString() + ".jpg";
             println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
@@ -422,7 +370,6 @@ void parseKeycode(int val) {
             break;
         case 38:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
-            dataProcessing_user.switchesActive = true;
             break;
         case 39:
             if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
@@ -434,7 +381,6 @@ void parseKeycode(int val) {
             break;
         case 40:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
-            dataProcessing_user.switchesActive = false;
             break;
         case 112:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received F1 keypress.  Ignoring...");
@@ -595,19 +541,15 @@ class Button {
     //int rectSize = 90;     // Diameter of rect
 
     color currentColor;
-    // color color_hover = color(127, 134, 143);//color(252, 221, 198);
     color color_hover = color(177, 184, 193);//color(252, 221, 198);
     color color_pressed = color(150,170,200); //bgColor;
-    color color_highlight = color(102);
     color color_notPressed = color(255); //color(227,118,37);
     color buttonStrokeColor = bgColor;
     color textColorActive = color(255);
     color textColorNotActive = bgColor;
-    color rectHighlight;
     boolean drawHand = false;
     boolean isCircleButton = false;
     int cornerRoundness = 0;
-    //boolean isMouseHere = false;
     boolean buttonHasStroke = true;
     boolean isActive = false;
     boolean isDropdownButton = false;
@@ -634,11 +576,6 @@ class Button {
         setup(x, y, w, h, txt);
         buttonFont = p5;
         buttonTextSize = 12;
-        //println(PFont.list()); //see which fonts are available
-        //font = createFont("SansSerif.plain",fontSize);
-        //font = createFont("Lucida Sans Regular",fontSize);
-        //font = createFont("Arial",fontSize);
-        //font = loadFont("SansSerif.plain.vlw");
     }
 
     public void setup(int x, int y, int w, int h, String txt) {
@@ -894,7 +831,6 @@ class Button {
             }
             popStyle();
         }
-
         popStyle();
     } //end of button draw
 };
@@ -994,9 +930,6 @@ boolean isNetworkingTextActive(){
             }
         }
     }
-    //loop through networking textfields and find out if any of the are active
-    // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
-    // println("Test - " + w_networking.cp5_networking.getAll(Textfield.class));
     println("Networking Text Field Active? " + isAFieldActive);
     return isAFieldActive; //if not, return false
 }

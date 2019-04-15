@@ -11,10 +11,6 @@ boolean drawFFT = true;
 boolean drawBionics = false;
 boolean drawHead = true;
 
-
-String oldCommand = "";
-boolean hasGestured = false;
-
 //------------------------------------------------------------------------
 //                            Classes
 //------------------------------------------------------------------------
@@ -22,15 +18,6 @@ boolean hasGestured = false;
 class DataProcessing_User {
     private float fs_Hz;  //sample rate
     private int n_chan;
-
-    boolean switchesActive = false;
-
-
-    Button leftConfig = new Button(3*(width/4) - 65,height/4 - 120,20,20,"\\/",fontInfo.buttonLabel_size);
-    Button midConfig = new Button(3*(width/4) + 63,height/4 - 120,20,20,"\\/",fontInfo.buttonLabel_size);
-    Button rightConfig = new Button(3*(width/4) + 190,height/4 - 120,20,20,"\\/",fontInfo.buttonLabel_size);
-
-
 
     //class constructor
     DataProcessing_User(int NCHAN, float sample_rate_Hz) {
@@ -49,10 +36,5 @@ class DataProcessing_User {
         //for example, you could loop over each EEG channel to do some sort of time-domain processing
         //using the sample values that have already been filtered, as will be plotted on the display
         float EEG_value_uV;
-
-
-
-
-        }
-
     }
+};

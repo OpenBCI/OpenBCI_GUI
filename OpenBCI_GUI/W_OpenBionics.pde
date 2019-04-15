@@ -144,16 +144,13 @@ class W_openBionics extends Widget {
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         process();
-
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         //configP5.setVisible(true);
@@ -269,7 +266,6 @@ class W_openBionics extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         configClose = new Button(int(x) + w/4,int(y) + 3*navHeight,int(w/25.3),int(w/25.3),"X",fontInfo.buttonLabel_size);
         configConfirm = new Button(int(x) + w/2 + w/7,int(y) + 12*navHeight,int(w/10.12),int(w/25.3),"OKAY",fontInfo.buttonLabel_size);
 
@@ -296,7 +292,6 @@ class W_openBionics extends Widget {
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(drawConfig == -1){
             if(overThumb()) thumbPressed = true;
             else if(overIndex()) indexPressed = true;

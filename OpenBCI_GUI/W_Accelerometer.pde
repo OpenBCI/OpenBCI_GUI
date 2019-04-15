@@ -1,7 +1,7 @@
 
 ////////////////////////////////////////////////////
 //
-// W_accelerometer is used to visualize accelerometer data
+// W_Accelerometer is used to visualize accelerometer data
 //
 // Created: Joel Murphy
 // Modified: Colin Fausnaught, September 2016
@@ -19,7 +19,7 @@ final color ACCEL_Z_COLOR = color(54, 87, 158);
 float[][] accelArray; //holds X,Y,Z values for up to 20s
 float accelXyzLimit = 4.0; //hard limit on all accel values
 
-class W_accelerometer extends Widget {
+class W_Accelerometer extends Widget {
     //To see all core variables/methods of the Widget class, refer to Widget.pde
     color graphStroke = color(210);
     color graphBG = color(245);
@@ -42,17 +42,16 @@ class W_accelerometer extends Widget {
     int accPadding = 30;
 
     //Circular 3d xyz graph
-    float PolarWindowX;
-    float PolarWindowY;
-    int PolarWindowWidth;
-    int PolarWindowHeight;
-    float PolarCorner;
+    float polarWindowX;
+    float polarWindowY;
+    int polarWindowWidth;
+    int polarWindowHeight;
+    float polarCorner;
 
     float yMaxMin;
 
     float[] currentAccelVals;
 
-    boolean OBCI_inited= true;
     private boolean visible = true;
     private boolean updating = true;
     boolean accelInitHasOccured = false;
@@ -61,7 +60,7 @@ class W_accelerometer extends Widget {
     // Synthetic data timer. Track frame count for synthetic data.
     int synthTime;
 
-    W_accelerometer(PApplet _parent) {
+    W_Accelerometer(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Default dropdown settings
@@ -95,11 +94,6 @@ class W_accelerometer extends Widget {
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
 
         synthTime = 0;
-
-    }
-
-    public void initPlayground(Cyton _OBCI) {
-        OBCI_inited = true;
     }
 
     void initAccelData() {
@@ -170,7 +164,7 @@ class W_accelerometer extends Widget {
     // check the approrpiate board to see if accel mode is on
     boolean isAccelModeActive() {
         if (eegDataSource == DATASOURCE_CYTON) {
-            return cyton.getBoardMode() == BOARD_MODE_DEFAULT;
+            return cyton.getBoardMode() == BoardMode.DEFAULT;
         }
         else if (eegDataSource == DATASOURCE_GANGLION) {
             return ganglion.isAccelModeActive();
@@ -197,18 +191,18 @@ class W_accelerometer extends Widget {
         fill(50);
         textFont(p4, 14);
         textAlign(CENTER,CENTER);
-        text("z", PolarWindowX, (PolarWindowY-PolarWindowHeight/2)-12);
-        text("x", (PolarWindowX+PolarWindowWidth/2)+8, PolarWindowY-5);
-        text("y", (PolarWindowX+PolarCorner)+10, (PolarWindowY-PolarCorner)-10);
+        text("z", polarWindowX, (polarWindowY-polarWindowHeight/2)-12);
+        text("x", (polarWindowX+polarWindowWidth/2)+8, polarWindowY-5);
+        text("y", (polarWindowX+polarCorner)+10, (polarWindowY-polarCorner)-10);
 
         fill(graphBG);  //pulse window background
         stroke(graphStroke);
-        ellipse(PolarWindowX,PolarWindowY,PolarWindowWidth,PolarWindowHeight);
+        ellipse(polarWindowX,polarWindowY,polarWindowWidth,polarWindowHeight);
 
         stroke(180);
-        line(PolarWindowX-PolarWindowWidth/2, PolarWindowY, PolarWindowX+PolarWindowWidth/2, PolarWindowY);
-        line(PolarWindowX, PolarWindowY-PolarWindowHeight/2, PolarWindowX, PolarWindowY+PolarWindowHeight/2);
-        line(PolarWindowX-PolarCorner, PolarWindowY+PolarCorner, PolarWindowX+PolarCorner, PolarWindowY-PolarCorner);
+        line(polarWindowX-polarWindowWidth/2, polarWindowY, polarWindowX+polarWindowWidth/2, polarWindowY);
+        line(polarWindowX, polarWindowY-polarWindowHeight/2, polarWindowX, polarWindowY+polarWindowHeight/2);
+        line(polarWindowX-polarCorner, polarWindowY+polarCorner, polarWindowX+polarCorner, polarWindowY-polarCorner);
 
         fill(50);
         textFont(p3, 16);
@@ -233,11 +227,11 @@ class W_accelerometer extends Widget {
         accelGraphX = x + accPadding/3;
         accelGraphY = y + h - accelGraphHeight - int(accPadding*2) + accPadding/6;
 
-        PolarWindowWidth = accelGraphHeight;
-        PolarWindowHeight = accelGraphHeight;
-        PolarWindowX = x + w - accPadding - PolarWindowWidth/2;
-        PolarWindowY = y + accPadding + PolarWindowHeight/2 - 10;
-        PolarCorner = (sqrt(2)*PolarWindowWidth/2)/2;
+        polarWindowWidth = accelGraphHeight;
+        polarWindowHeight = accelGraphHeight;
+        polarWindowX = x + w - accPadding - polarWindowWidth/2;
+        polarWindowY = y + accPadding + polarWindowHeight/2 - 10;
+        polarCorner = (sqrt(2)*polarWindowWidth/2)/2;
     }
 
     void screenResized() {
@@ -284,7 +278,7 @@ class W_accelerometer extends Widget {
             accelModeButton.setIsActive(false);
         } else if (eegDataSource == DATASOURCE_CYTON) {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                cyton.setBoardMode(BOARD_MODE_DEFAULT);
+                cyton.setBoardMode(BoardMode.DEFAULT);
                 output("Starting to read accelerometer");
                 w_analogRead.analogReadOn = false;
                 w_pulsesensor.analogReadOn = false;
@@ -324,11 +318,11 @@ class W_accelerometer extends Widget {
         noFill();
         strokeWeight(3);
         stroke(ACCEL_X_COLOR);
-        line(PolarWindowX, PolarWindowY, PolarWindowX+map(currentAccelVals[0], -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY);
+        line(polarWindowX, polarWindowY, polarWindowX+map(currentAccelVals[0], -yMaxMin, yMaxMin, -polarWindowWidth/2, polarWindowWidth/2), polarWindowY);
         stroke(ACCEL_Y_COLOR);
-        line(PolarWindowX, PolarWindowY, PolarWindowX+map((sqrt(2)*currentAccelVals[1]/2), -yMaxMin, yMaxMin, -PolarWindowWidth/2, PolarWindowWidth/2), PolarWindowY+map((sqrt(2)*currentAccelVals[1]/2), -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
+        line(polarWindowX, polarWindowY, polarWindowX+map((sqrt(2)*currentAccelVals[1]/2), -yMaxMin, yMaxMin, -polarWindowWidth/2, polarWindowWidth/2), polarWindowY+map((sqrt(2)*currentAccelVals[1]/2), -yMaxMin, yMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
         stroke(ACCEL_Z_COLOR);
-        line(PolarWindowX, PolarWindowY, PolarWindowX, PolarWindowY+map(currentAccelVals[2], -yMaxMin, yMaxMin, PolarWindowWidth/2, -PolarWindowWidth/2));
+        line(polarWindowX, polarWindowY, polarWindowX, polarWindowY+map(currentAccelVals[2], -yMaxMin, yMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
         strokeWeight(1);
     }
 
@@ -342,7 +336,7 @@ class W_accelerometer extends Widget {
         }
         synthTime ++;
     }//end void synthesizeAccelData
-};//end W_accelerometer class
+};//end W_Accelerometer class
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void accelVertScale(int n) {
@@ -368,7 +362,7 @@ void accelDuration(int n) {
 //========================================================================================================================
 //                     Accelerometer Graph Class -- Implemented by Accelerometer Widget Class
 //========================================================================================================================
-class AccelerometerBar{
+class AccelerometerBar {
     //this class contains the plot for the 2d graph of accelerometer data
     int x, y, w, h;
     boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware

@@ -74,7 +74,6 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-boolean hasIntroAnimation = true;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
@@ -100,7 +99,6 @@ String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
-float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
@@ -140,17 +138,11 @@ DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
-//related to sync'ing communiction to OpenBCI hardware?
-boolean currentlySyncing = false;
-long timeOfLastCommand = 0;
 ////// ---- End variables related to the OpenBCI boards
 
 // define some timing variables for this program's operation
 long timeOfLastFrame = 0;
-int newPacketCounter = 0;
 long timeOfInit;
-long timeSinceStopRunning = 1000;
-int prev_time_millis = 0;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -198,16 +190,7 @@ PlotFontInfo fontInfo;
 boolean isRunning = false;
 boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
-byte inByte = -1;    // Incoming serial data
 StringBuilder board_message;
-StringBuilder scanning_message;
-
-int dollaBillz;
-boolean isGettingPoll = false;
-boolean spaceFound = false;
-boolean scanningChannels = false;
-int hexToInt = 0;
-boolean dev = false;
 
 //for screen resizing
 boolean screenHasBeenResized = false;
@@ -254,7 +237,6 @@ ButtonHelpText buttonHelpText;
 //EMG_Widget emg_widget;
 // PulseSensor_Widget pulseWidget;
 
-boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
 //Used for playback file
@@ -262,8 +244,6 @@ int indices = 0;
 //# columns used by a playback file determines number of channels
 final int totalColumns4ChanThresh = 10;
 final int totalColumns16ChanThresh = 16;
-
-boolean synthesizeData = false;
 
 boolean setupComplete = false;
 boolean isHubInitialized = false;
@@ -276,9 +256,7 @@ int COLOR_SCHEME_ALTERNATIVE_A = 2;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
-int hubPid = 0;
 String nodeHubName = "OpenBCIHub";
-Robot rob3115;
 
 PApplet ourApplet;
 
@@ -718,7 +696,7 @@ void initSystem() {
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
     verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
-    hub.changeState(STATE_COMINIT);
+    hub.changeState(HubState.COMINIT);
     // hub.searchDeviceStop();
 
     //prepare the source of the input data
@@ -928,7 +906,6 @@ void stopRunning() {
         }
     }
 
-    timeSinceStopRunning = millis(); //used as a timer to prevent misc. bytes from flooding serial...
     isRunning = false;
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     // systemMode = 0;
@@ -985,19 +962,19 @@ void haltSystem() {
 
     if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
         if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
-            cyton.setBoardMode(BOARD_MODE_DEFAULT);
+            cyton.setBoardMode(BoardMode.DEFAULT);
             output("Starting to read accelerometer");
             w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
             w_pulsesensor.analogReadOn = false;
             w_analogRead.analogModeButton.setString("Turn Analog Read On");
             w_analogRead.analogReadOn = false;
         } else if (w_digitalRead.digitalReadOn) {
-            cyton.setBoardMode(BOARD_MODE_DEFAULT);
+            cyton.setBoardMode(BoardMode.DEFAULT);
             output("Starting to read accelerometer");
             w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
             w_digitalRead.digitalReadOn = false;
         } else if (w_markermode.markerModeOn) {
-            cyton.setBoardMode(BOARD_MODE_DEFAULT);
+            cyton.setBoardMode(BoardMode.DEFAULT);
             output("Starting to read accelerometer");
             w_markermode.markerModeButton.setString("Turn Marker On");
             w_markermode.markerModeOn = false;
@@ -1043,7 +1020,7 @@ void haltSystem() {
         controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
     }
     systemMode = SYSTEMMODE_PREINIT;
-    hub.changeState(STATE_NOCOM);
+    hub.changeState(HubState.NOCOM);
     abandonInit = false;
 
     recentPlaybackFilesHaveUpdated = false;
@@ -1072,11 +1049,11 @@ void systemUpdate() { // for updating data values and variables
     }
 
     // //update the sync state with the OpenBCI hardware
-    // if (iSerial.get_state() == iSerial.STATE_NOCOM || iSerial.get_state() == iSerial.STATE_COMINIT || iSerial.get_state() == iSerial.STATE_SYNCWITHHARDWARE) {
+    // if (iSerial.get_state() == iSerial.HubState.NOCOM || iSerial.get_state() == iSerial.HubState.COMINIT || iSerial.get_state() == iSerial.HubState.SYNCWITHHARDWARE) {
     //   iSerial.updateSyncState(sdSetting);
     // }
 
-    // if (hub.get_state() == STATE_NOCOM || hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) {
+    // if (hub.get_state() == HubState.NOCOM || hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) {
     //   hub.updateSyncState(sdSetting);
     // }
 
@@ -1282,15 +1259,10 @@ void systemDraw() { //for drawing to the screen
 
 
     if (systemMode == SYSTEMMODE_INTROANIMATION) {
-        //intro animation sequence
-        if (hasIntroAnimation) {
-            introAnimation();
-        } else {
-            systemMode = SYSTEMMODE_PREINIT;
-        }
+        introAnimation();
     }
 
-    if ((hub.get_state() == STATE_COMINIT || hub.get_state() == STATE_SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+    if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
         //make out blink the text "Initalizing GUI..."
         pushStyle();
         imageMode(CENTER);

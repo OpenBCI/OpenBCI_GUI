@@ -40,10 +40,7 @@ class W_timeSeries extends Widget {
 
     HardwareSettingsController hsc;
 
-
-    TextBox[] chanValuesMontage;
     TextBox[] impValuesMontage;
-    boolean showMontageValues;
 
     private boolean visible = true;
     private boolean updating = true;
@@ -142,7 +139,6 @@ class W_timeSeries extends Widget {
         if(visible && updating){
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //put your code here...
             hsc.update(); //update channel controller
 
             if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
@@ -165,8 +161,7 @@ class W_timeSeries extends Widget {
         if(visible){
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-
+            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
             for(int i = 0; i < numChannelBars; i++){
@@ -197,7 +192,6 @@ class W_timeSeries extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
         wF = float(w);
@@ -235,7 +229,6 @@ class W_timeSeries extends Widget {
 
 
         if(eegDataSource == DATASOURCE_CYTON){
-            //put your code here...
             if (hardwareSettingsButton.isMouseHere()) {
                 hardwareSettingsButton.setIsActive(true);
             }
@@ -256,7 +249,6 @@ class W_timeSeries extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(eegDataSource == DATASOURCE_CYTON){
-            //put your code here...
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
                 println("HardwareSetingsButton: Toggle...");
                 if(showHardwareSettings){
@@ -338,7 +330,7 @@ void Duration(int n) {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
     }
-    if (cyton.getBoardMode() == BOARD_MODE_ANALOG) {
+    if (cyton.getBoardMode() == BoardMode.ANALOG) {
         if (settings.arHorizScaleSave == 0){
             //set analog read x axis to the duration selected from dropdown
             for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){

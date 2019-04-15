@@ -19,60 +19,6 @@
 boolean werePacketsDroppedHub = false;
 int numPacketsDroppedHub = 0;
 
-void clientEvent(Client someClient) {
-    int p;
-    char newChar;
-
-    newChar = hub.tcpClient.readChar();
-    while(newChar != (char)-1) {
-        p = hub.tcpBufferPositon;
-        hub.tcpBuffer[p] = newChar;
-        hub.tcpBufferPositon++;
-
-        if(p > 2) {
-            String posMatch  = new String(hub.tcpBuffer, p - 1, 2);
-            if (posMatch.equals(TCP_STOP)) {
-                // println("MATCH");
-                if (!hub.isHubRunning()) {
-                    hub.setHubIsRunning(true);
-                    println("Hub: clientEvent: handshake complete");
-                }
-                // Get a string from the tcp buffer
-                String msg = new String(hub.tcpBuffer, 0, p);
-                // Send the new string message to be processed
-
-                if (eegDataSource == DATASOURCE_GANGLION) {
-                    hub.parseMessage(msg);
-                    // Check to see if the ganglion ble list needs to be updated
-                    if (hub.deviceListUpdated) {
-                        hub.deviceListUpdated = false;
-                        if (ganglion.isBLE()) {
-                            controlPanel.bleBox.refreshBLEList();
-                        } else {
-                            controlPanel.wifiBox.refreshWifiList();
-                        }
-                    }
-                } else if (eegDataSource == DATASOURCE_CYTON) {
-                    // Do stuff for cyton
-                    hub.parseMessage(msg);
-                    // Check to see if the ganglion ble list needs to be updated
-                    if (hub.deviceListUpdated) {
-                        hub.deviceListUpdated = false;
-                        controlPanel.wifiBox.refreshWifiList();
-                    }
-                }
-
-                // Reset the buffer position
-                hub.tcpBufferPositon = 0;
-            }
-        }
-        newChar = hub.tcpClient.readChar();
-    }
-}
-
-final static String BLE_HARDWARE_NOBLE = "noble";
-final static String BLE_HARDWARE_BLED112 = "bled112";
-
 final static String TCP_JSON_KEY_ACTION = "action";
 final static String TCP_JSON_KEY_ACCEL_DATA_COUNTS = "accelDataCounts";
 final static String TCP_JSON_KEY_AUX_DATA = "auxData";
@@ -139,11 +85,14 @@ final static byte BYTE_START = (byte)0xA0;
 final static byte BYTE_END = (byte)0xC0;
 
 // States For Syncing with the hardware
-final static int STATE_NOCOM = 0;
-final static int STATE_COMINIT = 1;
-final static int STATE_SYNCWITHHARDWARE = 2;
-final static int STATE_NORMAL = 3;
-final static int STATE_STOPPED = 4;
+enum HubState {
+    NOCOM,
+    COMINIT,
+    SYNCWITHHARDWARE,
+    NORMAL,
+    STOPPED
+}
+
 final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
 
 final static int NUM_ACCEL_DIMS = 3;
@@ -204,6 +153,58 @@ final static String UDP_BURST = "udpBurst";
 final static String WIFI_DYNAMIC = "dynamic";
 final static String WIFI_STATIC = "static";
 
+
+void clientEvent(Client someClient) {
+    int p;
+    char newChar;
+
+    newChar = hub.tcpClient.readChar();
+    while(newChar != (char)-1) {
+        p = hub.tcpBufferPositon;
+        hub.tcpBuffer[p] = newChar;
+        hub.tcpBufferPositon++;
+
+        if(p > 2) {
+            String posMatch  = new String(hub.tcpBuffer, p - 1, 2);
+            if (posMatch.equals(TCP_STOP)) {
+                // println("MATCH");
+                if (!hub.isHubRunning()) {
+                    hub.setHubIsRunning(true);
+                    println("Hub: clientEvent: handshake complete");
+                }
+                // Get a string from the tcp buffer
+                String msg = new String(hub.tcpBuffer, 0, p);
+                // Send the new string message to be processed
+
+                if (eegDataSource == DATASOURCE_GANGLION) {
+                    hub.parseMessage(msg);
+                    // Check to see if the ganglion ble list needs to be updated
+                    if (hub.deviceListUpdated) {
+                        hub.deviceListUpdated = false;
+                        if (ganglion.isBLE()) {
+                            controlPanel.bleBox.refreshBLEList();
+                        } else {
+                            controlPanel.wifiBox.refreshWifiList();
+                        }
+                    }
+                } else if (eegDataSource == DATASOURCE_CYTON) {
+                    // Do stuff for cyton
+                    hub.parseMessage(msg);
+                    // Check to see if the ganglion ble list needs to be updated
+                    if (hub.deviceListUpdated) {
+                        hub.deviceListUpdated = false;
+                        controlPanel.wifiBox.refreshWifiList();
+                    }
+                }
+
+                // Reset the buffer position
+                hub.tcpBufferPositon = 0;
+            }
+        }
+        newChar = hub.tcpClient.readChar();
+    }
+}
+
 class Hub {
 
     public int curLatency = LATENCY_10_MS;
@@ -217,7 +218,7 @@ class Hub {
     private int requestedSampleRate = 0;
     private boolean setSampleRate = false;
 
-    private int state = STATE_NOCOM;
+    private HubState state = HubState.NOCOM;
     int prevState_millis = 0; // Used for calculating connect time out
 
     private int nEEGValuesPerPacket = 8;
@@ -225,8 +226,6 @@ class Hub {
 
     private int tcpHubPort = 10996;
     private String tcpHubIP = "127.0.0.1";
-    private String tcpHubFull = tcpHubIP + ":" + tcpHubPort;
-    private int tcpTimeout = 1000;
 
     private String firmwareVersion = "";
 
@@ -236,7 +235,6 @@ class Hub {
     private boolean portIsOpen = false;
 
     public int numberOfDevices = 0;
-    public int maxNumberOfDevices = 10;
     private boolean hubRunning = false;
     public char[] tcpBuffer = new char[4096];
     public int tcpBufferPositon = 0;
@@ -246,25 +244,17 @@ class Hub {
 
     private boolean waitingForResponse = false;
     private boolean searching = false;
-    public boolean shouldStartNodeApp = false;
     private boolean checkingImpedance = false;
-    private boolean connectForWifiConfig = false;
     private boolean accelModeActive = false;
     private boolean newAccelData = false;
     public int[] accelArray = new int[NUM_ACCEL_DIMS];
     public int[] validAccelValues = {0, 0, 0};
     public int validLastMarker;
-    public boolean validNewAccelData = false;
-
-    public boolean impedanceUpdated = false;
     public int[] impedanceArray = new int[NCHAN_GANGLION + 1];
 
-    private String curBLEHardware = BLE_HARDWARE_NOBLE;
-
     // Getters
-    public int get_state() { return state; }
+    public HubState get_state() { return state; }
     public int getLatency() { return curLatency; }
-    public String getCurBLEHardware() { return curBLEHardware; }
     public String getWifiInternetProtocol() { return curInternetProtocol; }
     public String getWiFiStyle() { return curWiFiStyle; }
     public boolean isPortOpen() { return portIsOpen; }
@@ -275,10 +265,6 @@ class Hub {
     public void setLatency(int latency) {
         curLatency = latency;
         println("Setting Latency to " + latency);
-    }
-    public void setCurBLEHardware(String bleHardware) {
-        curBLEHardware = bleHardware;
-        println("Setting BLE Hardware to " + bleHardware);
     }
     public void setWifiInternetProtocol(String internetProtocol) {
         curInternetProtocol = internetProtocol;
@@ -442,7 +428,7 @@ class Hub {
             case RESP_SUCCESS:
             case RESP_ERROR_ALREADY_CONNECTED:
                 firmwareVersion = json.getString(TCP_JSON_KEY_FIRMWARE);
-                changeState(STATE_SYNCWITHHARDWARE);
+                changeState(HubState.SYNCWITHHARDWARE);
                 if (eegDataSource == DATASOURCE_CYTON) {
                     if (nchan == 8) {
                         setBoardType("cyton");
@@ -506,7 +492,7 @@ class Hub {
     }
 
     private void initAndShowGUI() {
-        changeState(STATE_NORMAL);
+        changeState(HubState.NORMAL);
         systemMode = SYSTEMMODE_POSTINIT;
         controlPanel.close();
         topNav.controlPanelCollapser.setIsActive(false);
@@ -731,7 +717,6 @@ class Hub {
                             // Do nothing...
                             break;
                     }
-                    newPacketCounter++;
                 } else {
                     bleErrorCounter++;
                     println("Hub: parseMessage: data: bad");
@@ -1024,12 +1009,8 @@ class Hub {
 
     public void updateSyncState(int sdSetting) {
         //has it been 3000 milliseconds since we initiated the serial port? We want to make sure we wait for the OpenBCI board to finish its setup()
-        if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
-            state = STATE_SYNCWITHHARDWARE;
-            timeOfLastCommand = millis();
-            // potentialFailureMessage = "";
-            // defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
-            // daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
+        if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == HubState.COMINIT) ) {
+            state = HubState.SYNCWITHHARDWARE;
             println("InterfaceHub: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
         }
     }
@@ -1048,7 +1029,7 @@ class Hub {
             default:
                 break;
         }
-        changeState(STATE_NOCOM);
+        changeState(HubState.NOCOM);
     }
 
     // CONNECTION
@@ -1223,7 +1204,7 @@ class Hub {
         return write(String.valueOf(val));
     }
 
-    public int changeState(int newState) {
+    public int changeState(HubState newState) {
         state = newState;
         prevState_millis = millis();
         return 0;

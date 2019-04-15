@@ -37,8 +37,6 @@ int heightOfLastScreen_C = 0;
 
 int topNav_h = 64; //tie this to a global variable or one attached to GUI_Manager
 int bottomNav_h = 28; //same
-int leftNav_w = 0; //not used currently, maybe if we add a left-side tool bar
-int rightNav_w = 0; //not used currently
 
 void setupContainers() {
 
@@ -64,30 +62,23 @@ void setupContainers() {
     container[16] = new Container(container[6], "TOP_RIGHT");
     container[17] = new Container(container[6], "BOTTOM_LEFT");
     container[18] = new Container(container[6], "BOTTOM_RIGHT");
-    //container11 = new Container(container1, "LEFT");
-    //container12 = new Container(container1, "RIGHT");
 
     //setup viz objects... example of container extension (more below)
     //setupVizs();
 }
 
 void drawContainers() {
-    //background(255);
     for(int i = 0; i < container.length; i++){
         container[i].draw();
     }
-    //container11.draw();
-    //container12.draw();
 
-    //Draw viz objects.. exampl extension of container class (more below)
+    //Draw viz objects.. example extension of container class (more below)
     //viz1.draw();
     //viz2.draw();
 
     //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
     if (widthOfLastScreen_C != width || heightOfLastScreen_C != height) {
         println("OpenBCI_GUI: setup: RESIZED");
-        //screenHasBeenResized = true;
-        //timeOfLastScreenResize = millis();
         setupContainers();
         //setupVizs(); //container extension example (more below)
         widthOfLastScreen = width;

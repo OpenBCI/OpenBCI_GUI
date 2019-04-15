@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//    W_networking.pde (Networking Widget)
+//    W_Networking.pde (Networking Widget)
 //
 //    This widget provides networking capabilities in the OpenBCI GUI.
 //    The networking protocols can be used for outputting data
@@ -15,7 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class W_networking extends Widget {
+class W_Networking extends Widget {
 
     /* Variables for protocol selection */
     int protocolIndex;
@@ -101,7 +101,7 @@ class W_networking extends Widget {
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
-    W_networking(PApplet _parent){
+    W_Networking(PApplet _parent){
         super(_parent);
         // ourApplet = _parent;
 
@@ -178,7 +178,7 @@ class W_networking extends Widget {
             configIsVisible = topNav.configSelector.isVisible;
             layoutIsVisible = topNav.layoutSelector.isVisible;
         }
-        //put your code here...
+        
         if (dataDropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
         } else {
@@ -1662,7 +1662,7 @@ class Stream extends Thread {
                 verbosePrint("Successfully opened SERIAL/COM: " + this.portName);
                 output("Successfully opened SERIAL/COM (" + this.baudRate + "): " + this.portName );
             } catch (Exception e){
-                verbosePrint("W_networking.pde: could not open SERIAL PORT: " + this.portName);
+                verbosePrint("W_Networking.pde: could not open SERIAL PORT: " + this.portName);
                 println("Error: " + e);
             }
         }

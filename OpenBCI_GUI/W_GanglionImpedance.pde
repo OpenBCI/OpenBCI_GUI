@@ -10,34 +10,28 @@
 //
 ///////////////////////////////////////////////////,
 
-class W_ganglionImpedance extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
+class W_GanglionImpedance extends Widget {
     Button startStopCheck;
     int padding = 24;
 
-    W_ganglionImpedance(PApplet _parent){
+    W_GanglionImpedance(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
         startStopCheck.setFont(p4, 14);
-
     }
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        //put your code here...
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         startStopCheck.draw();
-
 
         //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
         fill(bgColor);
@@ -80,31 +74,23 @@ class W_ganglionImpedance extends Widget {
         }
 
         popStyle();
-
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         startStopCheck.setPos(x + padding, y + padding);
-
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        //put your code here...
         if(startStopCheck.isMouseHere()){
             startStopCheck.setIsActive(true);
         }
-
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        //put your code here...
         if(startStopCheck.isActive && startStopCheck.isMouseHere()){
             if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
                 if(ganglion.isCheckingImpedance()){
@@ -128,7 +114,6 @@ class W_ganglionImpedance extends Widget {
 };
 
 public float convertRawGanglionImpedanceToTarget(float _actual){
-
     //the following impedance adjustment calculations were derived using empirical values from resistors between 1,2,3,4,REF-->D_G
     float _target;
 
