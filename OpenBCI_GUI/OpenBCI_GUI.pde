@@ -99,7 +99,6 @@ String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
-float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
 int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
@@ -139,16 +138,11 @@ DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
-//related to sync'ing communiction to OpenBCI hardware?
-boolean currentlySyncing = false;
 ////// ---- End variables related to the OpenBCI boards
 
 // define some timing variables for this program's operation
 long timeOfLastFrame = 0;
-int newPacketCounter = 0;
 long timeOfInit;
-long timeSinceStopRunning = 1000;
-int prev_time_millis = 0;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -196,16 +190,7 @@ PlotFontInfo fontInfo;
 boolean isRunning = false;
 boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
-byte inByte = -1;    // Incoming serial data
 StringBuilder board_message;
-StringBuilder scanning_message;
-
-int dollaBillz;
-boolean isGettingPoll = false;
-boolean spaceFound = false;
-boolean scanningChannels = false;
-int hexToInt = 0;
-boolean dev = false;
 
 //for screen resizing
 boolean screenHasBeenResized = false;
@@ -926,7 +911,6 @@ void stopRunning() {
         }
     }
 
-    timeSinceStopRunning = millis(); //used as a timer to prevent misc. bytes from flooding serial...
     isRunning = false;
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     // systemMode = 0;

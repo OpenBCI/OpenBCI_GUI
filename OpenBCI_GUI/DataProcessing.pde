@@ -16,6 +16,8 @@ final int ALPHA = 2; // 8-13 Hz
 final int BETA = 3; // 13-30 Hz
 final int GAMMA = 4; // 30-55 Hz
 
+float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

@@ -717,7 +717,6 @@ class Hub {
                             // Do nothing...
                             break;
                     }
-                    newPacketCounter++;
                 } else {
                     bleErrorCounter++;
                     println("Hub: parseMessage: data: bad");
