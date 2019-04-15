@@ -237,7 +237,6 @@ ButtonHelpText buttonHelpText;
 //EMG_Widget emg_widget;
 // PulseSensor_Widget pulseWidget;
 
-boolean no_start_connection = false;
 boolean has_processed = false;
 boolean isOldData = false;
 //Used for playback file
@@ -245,8 +244,6 @@ int indices = 0;
 //# columns used by a playback file determines number of channels
 final int totalColumns4ChanThresh = 10;
 final int totalColumns16ChanThresh = 16;
-
-boolean synthesizeData = false;
 
 boolean setupComplete = false;
 boolean isHubInitialized = false;
@@ -259,9 +256,7 @@ int COLOR_SCHEME_ALTERNATIVE_A = 2;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
-int hubPid = 0;
 String nodeHubName = "OpenBCIHub";
-Robot rob3115;
 
 PApplet ourApplet;
 
