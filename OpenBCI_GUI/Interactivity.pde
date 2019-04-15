@@ -16,7 +16,7 @@
 //------------------------------------------------------------------------
 
 //interpret a keypress...the key pressed comes in as "key"
-void keyPressed() {
+synchronized void keyPressed() {
     // don't allow key presses until setup is complete and the UI is initialized
     if (!setupComplete) {
         return;
@@ -441,7 +441,7 @@ void mouseDragged() {
     }
 }
 //switch yard if a click is detected
-void mousePressed() {
+synchronized void mousePressed() {
     // don't allow mouse clicks until setup is complete and the UI is initialized
     if (!setupComplete) {
         return;
@@ -486,7 +486,7 @@ void mousePressed() {
     redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is pressed
 }
 
-void mouseReleased() {
+synchronized void mouseReleased() {
     // don't allow mouse clicks until setup is complete and the UI is initialized
     if (!setupComplete) {
         return;
