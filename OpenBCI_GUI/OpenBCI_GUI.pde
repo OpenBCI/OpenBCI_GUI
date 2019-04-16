@@ -392,13 +392,6 @@ void delayedSetup() {
     //setup topNav
     topNav = new TopNav();
 
-    //from the user's perspective, the program hangs out on the ControlPanel until the user presses "Start System".
-    print("Graphics & GUI Library: ");
-    controlPanel = new ControlPanel(this);
-    //The effect of "Start System" is that initSystem() gets called, which starts up the connection to the OpenBCI
-    //hardware (via the "updateSyncState()" process) as well as initializing the rest of the GUI elements.
-    //Once the hardware is synchronized, the main GUI is drawn and the user switches over to the main GUI.
-
     logo_blue = loadImage("logo_blue.png");
     logo_white = loadImage("logo_white.png");
     cog = loadImage("cog_1024x1024.png");
@@ -428,6 +421,11 @@ void delayedSetup() {
     println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
     synchronized(this) {
+        // Instantiate ControlPanel in the synchronized block.
+        // It's important to avoid instantiating a ControlP5 during a draw() call
+        // Otherwise we get a crash on launch 10% of the time
+        controlPanel = new ControlPanel(this);
+
         setupComplete = true; // signal that the setup thread has finished
     }
 }
