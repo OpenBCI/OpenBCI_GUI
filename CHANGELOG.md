@@ -1,5 +1,5 @@
 # v4.1.2
-Use OpenBCIHub v2.0.7 please.
+Use OpenBCIHub v2.0.8 please.
 
 ## Beta 0
 
@@ -11,6 +11,8 @@ Use OpenBCIHub v2.0.7 please.
 * New icon for "back to start" button in Playback mode
 * Playback History widget functionality and appearance
 * Optimized playback history
+* Adjust Networking Widget appearance and scaling
+* Explicitly warn users when the HUB is not running
 
 ### Bug fixes
 * Fixed: Ganglion accelerometer starts "on" but data not streaming
@@ -18,13 +20,6 @@ Use OpenBCIHub v2.0.7 please.
 
 # v4.1.1
 Use OpenBCIHub v2.0.7 please.
-
-## Beta 1
-
-### Improvements
-
-* Adjust Networking Widget appearance and scaling
-* Explicitly warn users when the HUB is not running
 
 ## Beta 0
 
