@@ -78,8 +78,6 @@ PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
 
-boolean initSystemThreadLock = false;
-
 // ---- Define variables related to OpenBCI_GUI UDPMarker functionality
 UDP udpRX;
 
@@ -405,8 +403,6 @@ void delayedSetup() {
     loadingGIF.loop();
     loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
     loadingGIF_blue.loop();
-
-    playground = new Playground(navBarHeight);
 
     buttonHelpText = new ButtonHelpText();
 
@@ -1151,14 +1147,10 @@ void systemUpdate() { // for updating data values and variables
             timeOfGUIreinitialize = millis();
             // initializeGUI();
             // GUIWidgets_screenResized(width, height);
-            playground.x = width; //reset the x for the playground...
         }
 
-        if (!initSystemThreadLock) {
-            if (wm.isWMInitialized) {
-                wm.update();
-                playground.update();
-            }
+        if (wm.isWMInitialized) {
+            wm.update();
         }
     }
 }
@@ -1183,7 +1175,7 @@ void systemDraw() { //for drawing to the screen
     noStroke();
     //background(255);  //clear the screen
 
-    if (systemMode >= SYSTEMMODE_POSTINIT && !initSystemThreadLock) {
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
         int drawLoopCounter_thresh = 100;
         if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
             //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");

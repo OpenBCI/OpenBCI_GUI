@@ -66,6 +66,12 @@ class Cyton {
     private int curInterface = INTERFACE_SERIAL;
     private int sampleRate = fsHzWifi;
 
+    // needed by interfaceserial
+    public int hardwareSyncStep = 0; //start this at 0...
+    public String potentialFailureMessage = "";
+    public String defaultChannelSettings = "";    
+    public String daisyOrNot = "";
+
     //some get methods
     public float getSampleRate() {
         if (isSerial()) {
@@ -431,5 +437,9 @@ class Cyton {
         json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel-1][0] == '1');
         json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel-1][1] == '1');
         hub.writeJSON(json);
+    }
+
+    public int copyDataPacketTo(DataPacket_ADS1299 target) {
+        return dataPacket.copyTo(target);
     }
 };

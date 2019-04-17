@@ -20,6 +20,16 @@ import java.io.OutputStream; //for logging raw bytes to an output file
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
+int dollaBillz;
+int newPacketCounter = 0;
+boolean no_start_connection = false;
+byte inByte = -1;    // Incoming serial data
+boolean isOpenBCI;
+boolean isGettingPoll = false;
+boolean spaceFound = false;
+int hexToInt = 0;
+boolean currentlySyncing = false;
+long timeSinceStopRunning = 1000;
 
 //these variables are used for "Kill Spikes" ... duplicating the last received data packet if packets were droppeds
 boolean werePacketsDroppedSerial = false;
