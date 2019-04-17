@@ -191,12 +191,92 @@ class Cyton {
         return 0;
     }
 
+    public void syncWithHardware(int sdSetting) {
+        switch (hardwareSyncStep) {
+        case 1: //send # of channels (8 or 16) ... (regular or daisy setup)
+            println("Cyton: syncWithHardware: [1] Sending channel count (" + nchan + ") to OpenBCI...");
+            if (nchan == 8) {
+            write('c');
+            }
+            if (nchan == 16) {
+            write('C', false);
+            }
+            break;
+        case 2: //reset hardware to default registers
+            println("Cyton: syncWithHardware: [2] Reseting OpenBCI registers to default... writing \'d\'...");
+            write('d'); // TODO: Why does this not get a $$$ readyToSend = false?
+            break;
+        case 3: //ask for series of channel setting ASCII values to sync with channel setting interface in GUI
+            println("Cyton: syncWithHardware: [3] Retrieving OpenBCI's channel settings to sync with GUI... writing \'D\'... waiting for $$$...");
+            write('D', false); //wait for $$$ to iterate... applies to commands expecting a response
+            break;
+        case 4: //check existing registers
+            println("Cyton: syncWithHardware: [4] Retrieving OpenBCI's full register map for verification... writing \'?\'... waiting for $$$...");
+            write('?', false); //wait for $$$ to iterate... applies to commands expecting a response
+            break;
+        case 5:
+            // write("j"); // send OpenBCI's 'j' commaned to make sure any already open SD file is closed before opening another one...
+            switch (sdSetting) {
+            case 1: //"5 min max"
+                write('A', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 2: //"15 min max"
+                write('S', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 3: //"30 min max"
+                write('F', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 4: //"1 hr max"
+                write('G', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 5: //"2 hr max"
+                write('H', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 6: //"4 hr max"
+                write('J', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 7: //"12 hr max"
+                write('K', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            case 8: //"24 hr max"
+                write('L', false); //wait for $$$ to iterate... applies to commands expecting a response
+                break;
+            default:
+                break; // Do Nothing
+            }
+            println("Cyton: syncWithHardware: [5] Writing selected SD setting (" + sdSettingString + ") to OpenBCI...");
+            //final hacky way of abandoning initiation if someone selected daisy but doesn't have one connected.
+            if(abandonInit){
+            haltSystem();
+            output("No daisy board present. Make sure you selected the correct number of channels.");
+            controlPanel.open();
+            abandonInit = false;
+            }
+            break;
+        case 6:
+            println("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
+            hub.changeState(HubState.STOPPED);
+            systemMode = 10;
+            controlPanel.close();
+            topNav.controlPanelCollapser.setIsActive(false);
+            //renitialize GUI if nchan has been updated... needs to be built
+            break;
+        }
+    }
+
     public boolean write(char val) {
         if (hub.isHubRunning()) {
             hub.sendCommand(val);
             return true;
         }
         return false;
+    }
+
+    public boolean write(char val, boolean _readyToSend) {
+        // if (isSerial()) {
+        //   iSerial.setReadyToSend(_readyToSend);
+        // }
+        return write(val);
     }
 
     private boolean isSerial () {
