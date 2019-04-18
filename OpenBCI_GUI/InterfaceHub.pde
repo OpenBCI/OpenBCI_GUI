@@ -93,6 +93,7 @@ enum HubState {
     STOPPED
 }
 
+final static int STATE_STOPPED = 4;
 final static int COM_INIT_MSEC = 3000; //you may need to vary this for your computer or your Arduino
 
 final static int NUM_ACCEL_DIMS = 3;
