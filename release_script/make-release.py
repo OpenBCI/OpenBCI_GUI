@@ -43,15 +43,21 @@ hub_dir_names = {
     MAC : "OpenBCIHub.app"
 }
 
-all_flavors = [
-    "application.windows32",
-    "application.windows64",
-    "application.macosx",
-    "application.linux32",
-    "application.linux64",
-    "application.linux-arm64",
-    "application.linux-armv6hf"
-]
+### Function: Rename flavor with GUI version
+###########################################################
+def get_release_dir_name(sketch_dir, flavor):
+    main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
+    version_str = "VERSION.NOT.FOUND"
+    with open(main_file_dir, 'r') as sketch_file:
+        for line in sketch_file:
+            if line.startswith("String localGUIVersionString"):
+                quotes_pos = [pos for pos, char in enumerate(line) if char == '"']
+                version_str = line[quotes_pos[0]+1:quotes_pos[1]]
+                print(version_str)
+                break
+
+    new_name = "openbcigui_" + version_str + "_"
+    return flavor.replace("application.", new_name)
 
 ### Function: Find the sketch directory
 ###########################################################
@@ -69,22 +75,17 @@ def find_sketch_dir():
 
 ### Function: Clean up any old build directories or .zips
 ###########################################################
-def cleanup_build_dirs(sketch_dir, zips = False):
-    print ("Cleanup ...")
-    for dir in all_flavors:
-        full_dir = os.path.join(sketch_dir, dir)
-        full_zip_dir = full_dir + ".zip"
-        full_dmg_dir = full_dir + ".dmg"
-        if os.path.isdir(full_dir):
-            shutil.rmtree(full_dir)
-            print ("Successfully deleted " + full_dir)
-        if zips:
-            if os.path.isfile(full_zip_dir):
-                os.remove(full_zip_dir)
-                print ("Successfully deleted " + full_zip_dir)
-            if os.path.isfile(full_dmg_dir):
-                os.remove(full_dmg_dir)
-                print ("Successfully deleted " + full_dmg_dir)
+def cleanup_build_dirs(sketch_dir):
+    print("Cleanup ...")
+    for file in os.listdir(sketch_dir):
+        if file.startswith("application.") or file.startswith("openbcigui_"):
+            file_path = os.path.join(sketch_dir, file)
+            if os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+                print ("Successfully deleted " + file)
+            elif os.path.isfile(file_path):
+                os.remove(file_path)
+                print ("Successfully deleted " + file)
 
 ### Function: Ask user for windows signing info
 ###########################################################
@@ -118,6 +119,12 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
     build_dir = os.path.join(sketch_dir, flavor)
     if not os.path.isdir(build_dir):
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
+
+    # rename the build dir
+    release_dir_name = get_release_dir_name(sketch_dir, flavor)
+    new_build_dir = os.path.join(sketch_dir, release_dir_name)
+    os.rename(build_dir, new_build_dir)
+    build_dir = new_build_dir
 
     # delete source directory
     source_dir = os.path.join(build_dir, "source")
@@ -233,8 +240,6 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
     ###########################################################
     else:
         print ("Zipping ...")
-        zip_dir = build_dir + ".zip"
-
         # fix the directory structure: application.windows64/OpenBCI_GUI/OpenBCI_GUI.exe
         temp_dir = os.path.join(sketch_dir, "OpenBCI_GUI")
         os.rename(build_dir, temp_dir)
@@ -249,7 +254,7 @@ sketch_dir = find_sketch_dir()
 # ask about signing
 windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
 # Cleanup to start
-cleanup_build_dirs(sketch_dir, zips=True) # delete old .zips
+cleanup_build_dirs(sketch_dir)
 # run the build (processing-java)
 build_app(sketch_dir)
 #package it up
