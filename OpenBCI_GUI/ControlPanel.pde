@@ -2604,14 +2604,14 @@ class RecentPlaybackBox {
 
     String truncateFileName(String _shortName, int maxLength) {
         if (textWidth(_shortName) > (w-50)) {
-            //println(textWidth(_shortName) + " of " + w);
             String s1 = _shortName.substring(0, maxLength/2);
             String s2 = _shortName.substring(_shortName.length() - (maxLength/2 - 6), _shortName.length());
             String output = s1 + "..." + s2;
             if (textWidth(output) > (w-50)) {
-                println(textWidth(output) + " of " + w);
+                //println(textWidth(output) + " of " + w);
                 s1 = _shortName.substring(0, maxLength/3);
                 s2 = _shortName.substring(_shortName.length() - maxLength/4, _shortName.length());
+                //println(textWidth(s1 + "..." + s2) + " of " + w);
                 return s1 + "..." + s2;
             } else {
                 return output;
