@@ -2579,7 +2579,7 @@ class RecentPlaybackBox {
                 String shortFileName = playbackFile.getString("id");
                 String longFilePath = playbackFile.getString("filePath");
                 //truncate display name, if needed
-                shortFileName = truncateFileName(shortFileName, 40);
+                shortFileName = shortenString(shortFileName, w-padding*2.f);
                 //store to arrays to set recent playback buttons text and function
                 shortFileNames.append(shortFileName);
                 longFilePaths.append(longFilePath);
@@ -2598,23 +2598,27 @@ class RecentPlaybackBox {
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").close();
     }
 
-    String truncateFileName(String _shortName, int maxLength) {
-        if (textWidth(_shortName) > (w-50)) {
-            String s1 = _shortName.substring(0, maxLength/2);
-            String s2 = _shortName.substring(_shortName.length() - (maxLength/2 - 6), _shortName.length());
-            String output = s1 + "..." + s2;
-            if (textWidth(output) > (w-50)) {
-                //println(textWidth(output) + " of " + w);
-                s1 = _shortName.substring(0, maxLength/3);
-                s2 = _shortName.substring(_shortName.length() - maxLength/4, _shortName.length());
-                //println(textWidth(s1 + "..." + s2) + " of " + w);
-                return s1 + "..." + s2;
-            } else {
-                return output;
-            }
-        } else {
-            return _shortName;
+    String shortenString(String str, float maxWidth) {
+        if (textWidth(str) <= maxWidth) {
+            return str;
         }
+
+        int firstIndex = 0; // forward iterator
+        int lastIndex = str.length()-1; // reverse iterator
+        float spaceLeft = maxWidth - textWidth("..."); // account for the space taken by "..."
+
+        while (firstIndex < lastIndex && spaceLeft >= 0.f) {
+            spaceLeft -= textWidth(str.charAt(firstIndex)); // subtract space taken by first char
+            spaceLeft -= textWidth(str.charAt(lastIndex)); // and last char
+
+            // move interators inward
+            firstIndex ++;
+            lastIndex --;
+        }
+
+        String s1 = str.substring(0, firstIndex); // firstIndex is excluded here
+        String s2 = str.substring(lastIndex + 1, str.length()); // manually exclude lastIndex
+        return s1 + "..." + s2;
     }
 
     void createDropdown(String name, List<String> _items){
