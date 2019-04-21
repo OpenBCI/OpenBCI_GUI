@@ -268,12 +268,8 @@ public void controlEvent(ControlEvent theEvent) {
     if(theEvent.isFrom("recentFiles")) {
         int s = (int)(theEvent.getController()).getValue();
         //println("got a menu event from item " + s);
-        //println(controlPanel.recentPlaybackBox.longFilePaths);
         String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
         if (new File(filePath).isFile()) {
-            //String shortFileName = controlPanel.recentPlaybackBox.shortFileNames.get(s);
-            //controlPanel.recentPlaybackBox.setFilePickedShort(shortFileName);
-            //Load the playback file!
             playbackFileSelected(filePath, s);
         } else {
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
