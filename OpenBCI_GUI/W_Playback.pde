@@ -215,6 +215,58 @@ void reInitAfterPlaybackSelected() {
     }
 }
 
+//Called when user selects a playback file from dialog box
+void playbackFileSelected(File selection) {
+    if (selection == null) {
+        println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
+    } else {
+        println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
+        //Set the name of the file
+        playbackFileSelected(selection.getAbsolutePath(), selection.getName());
+    }
+}
+
+//Called when user selects a playback file from a list
+void playbackFileSelected (String longName, int listItem) {
+    String shortName = "";
+    //look at the JSON file to set the range menu using number of recent file entries
+    try {
+        savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+        JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
+        JSONObject playbackFile = recentFilesArray.getJSONObject(-listItem + recentFilesArray.size() - 1);
+        shortName = playbackFile.getString("id");
+        playbackHistoryFileExists = true;
+    } catch (NullPointerException e) {
+        //println("Playback history JSON file does not exist. Load first file to make it.");
+        playbackHistoryFileExists = false;
+    }
+    playbackFileSelected(longName, shortName);
+}
+
+//Handles the work for the above two cases
+void playbackFileSelected (String longName, String shortName) {
+    playbackData_fname = longName;
+    playbackData_ShortName = shortName;
+    //Process the playback file
+    processNewPlaybackFile();
+    //Determine the number of channels
+    determineNumChanFromFile(playbackData_table);
+    //Output new playback settings to GUI as success
+    outputSuccess("You have selected \""
+    + shortName + "\" for playback. "
+    + str(nchan) + " channels found.");
+    try {
+        savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+        JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
+        playbackHistoryFileExists = true;
+    } catch (NullPointerException e) {
+        //println("Playback history JSON file does not exist. Load first file to make it.");
+        playbackHistoryFileExists = false;
+    }
+    //add playback file that was processed to the JSON history
+    savePlaybackFileToHistory(playbackData_ShortName);
+}
+
 void processNewPlaybackFile() { //Also used in DataLogging.pde
     //Fix issue for processing successive playback files
     indices = 0;
@@ -223,9 +275,25 @@ void processNewPlaybackFile() { //Also used in DataLogging.pde
     if (systemMode == SYSTEMMODE_POSTINIT) {
         w_timeSeries.scrollbar.skipToStartButtonAction(); //sets scrollbar to 0
     }
-
     //initialize playback file
     initPlaybackFileToTable();
+}
+
+//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
+//Currently looks at the total number of Columns
+//Maybe try counting the number of columns after first index and before X...
+//...where X is the unique data type that occurs after last channel
+void determineNumChanFromFile(Table datatable) {
+    int numColumnsPlaybackFile = datatable.getColumnCount();
+    int numChannelsFoundInPlaybackFile;
+    if (numColumnsPlaybackFile > totalColumns16ChanThresh) {
+        numChannelsFoundInPlaybackFile = 16;
+    } else if (numColumnsPlaybackFile <= totalColumns4ChanThresh) {
+        numChannelsFoundInPlaybackFile = 4;
+    } else {
+        numChannelsFoundInPlaybackFile = 8;
+    }
+    updateToNChan(numChannelsFoundInPlaybackFile);
 }
 
 void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
@@ -349,74 +417,4 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         println("Playback history JSON has been made!");
         playbackHistoryFileExists = true;
     }
-}
-
-//Called when user selects a playback file from dialog box
-void playbackFileSelected(File selection) {
-    if (selection == null) {
-        println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
-    } else {
-        println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
-        //Set the name of the file
-        playbackFileSelected(selection.getAbsolutePath(), selection.getName());
-    }
-}
-
-//Called when user selects a playback file from a list
-void playbackFileSelected (String longName, int listItem) {
-    String shortName = "";
-    //look at the JSON file to set the range menu using number of recent file entries
-    try {
-        savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
-        JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-        JSONObject playbackFile = recentFilesArray.getJSONObject(-listItem + recentFilesArray.size() - 1);
-        shortName = playbackFile.getString("id");
-        playbackHistoryFileExists = true;
-    } catch (NullPointerException e) {
-        //println("Playback history JSON file does not exist. Load first file to make it.");
-        playbackHistoryFileExists = false;
-    }
-    playbackFileSelected(longName, shortName);
-}
-
-//Handles the work for the above two cases
-void playbackFileSelected (String longName, String shortName) {
-    playbackData_fname = longName;
-    playbackData_ShortName = shortName;
-    //Process the playback file
-    processNewPlaybackFile();
-    //Determine the number of channels
-    determineNumChanFromFile(playbackData_table);
-    //Output new playback settings to GUI as success
-    outputSuccess("You have selected \""
-    + shortName + "\" for playback. "
-    + str(nchan) + " channels found.");
-    //look at the JSON file to set the range menu using number of recent file entries
-    try {
-        savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
-        JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-        playbackHistoryFileExists = true;
-    } catch (NullPointerException e) {
-        //println("Playback history JSON file does not exist. Load first file to make it.");
-        playbackHistoryFileExists = false;
-    }
-    //add playback file that was processed to the JSON history
-    savePlaybackFileToHistory(playbackData_ShortName);
-}
-
-//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
-//Currently looks at the total number of Columns
-//Maybe try counting the number of columns after first index and before X...
-//...where X is the unique data type that occurs after last channel
-void determineNumChanFromFile(Table datatable) {
-    int numColumnsPlaybackFile = datatable.getColumnCount();
-    int numChannelsFoundInPlaybackFile;
-    if (numColumnsPlaybackFile > totalColumns16ChanThresh) {
-        numChannelsFoundInPlaybackFile = 16;
-    } else if (numColumnsPlaybackFile <= totalColumns4ChanThresh) {
-        numChannelsFoundInPlaybackFile = 4;
-    } else {
-        numChannelsFoundInPlaybackFile = 8;
-    }
-    updateToNChan(numChannelsFoundInPlaybackFile);
 }
