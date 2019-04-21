@@ -72,60 +72,6 @@ void openNewLogFileODF(String _fileName) {
     println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
 }
 
-//Called when user selects a playback file from dialog box
-void playbackSelectedControlPanel(File selection) {
-    if (selection == null) {
-        println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
-    } else {
-        println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
-        //Set the name of the file
-        playbackFileSelectedCP(selection.getAbsolutePath(), selection.getName());
-    }
-}
-
-void playbackFileSelectedCP (String longName, String shortName) {
-    playbackData_fname = longName;
-    playbackData_ShortName = shortName;
-    //Process the playback file
-    processNewPlaybackFile();
-    //Determine the number of channels
-    determineNumChanFromFile(playbackData_table);
-    //Output new playback settings to GUI as success
-    outputSuccess("You have selected \""
-    + shortName + "\" for playback. "
-    + str(nchan) + " channels found.");
-    //look at the JSON file to set the range menu using number of recent file entries
-    try {
-        savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
-        JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
-        playbackHistoryFileExists = true;
-    } catch (NullPointerException e) {
-        //println("Playback history JSON file does not exist. Load first file to make it.");
-        playbackHistoryFileExists = false;
-    }
-    //add playback file that was processed to the JSON history
-    savePlaybackFileToHistory(playbackData_ShortName);
-}
-
-
-
-//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
-//Currently looks at the total number of Columns
-//Maybe try counting the number of columns after first index and before X...
-//...where X is the unique data type that occurs after last channel
-void determineNumChanFromFile(Table datatable) {
-    int numColumnsPlaybackFile = datatable.getColumnCount();
-    int numChannelsFoundInPlaybackFile;
-    if (numColumnsPlaybackFile > totalColumns16ChanThresh) {
-        numChannelsFoundInPlaybackFile = 16;
-    } else if (numColumnsPlaybackFile <= totalColumns4ChanThresh) {
-        numChannelsFoundInPlaybackFile = 4;
-    } else {
-        numChannelsFoundInPlaybackFile = 8;
-    }
-    updateToNChan(numChannelsFoundInPlaybackFile);
-}
-
 void closeLogFile() {
     switch (outputDataSource) {
         case OUTPUT_SOURCE_ODF:
