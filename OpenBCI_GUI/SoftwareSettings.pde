@@ -27,7 +27,9 @@
 //      -- uses JSON keys
 //      -- Example: Expert Mode is a global boolean, so we include it under kJSONKeySettings
 //      -- We use one variable to load from JSON: loadExpertModeToggle
-//      -- And another variable to use functionally and globally: expertModeToggle
+//      -- And another variable to use in the GUI and with saving to JSON: expertModeToggle
+//      -- Example2: GUI version and settings version
+//      -- Requires new JSON key 'version` and settingsVersion
 //
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -36,6 +38,8 @@
 //   SoftwareSettings Class    //
 /////////////////////////////////
 class SoftwareSettings {
+    //Current version to save to JSON
+    String settingsVersion = "1.0.0"
     //default layout variables
     int currentLayout;
 
@@ -236,6 +240,7 @@ class SoftwareSettings {
     private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyFocus = "focus";
     private final String kJSONKeyWidget = "widget";
+    private final String kJSONKeyVersion = "version";
 
     //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
@@ -273,6 +278,8 @@ class SoftwareSettings {
         boolean defaultSettingsFileExists;
         int defaultNumChanLoaded = 0;
         int defaultLoadedDataSource = 0;
+        String defaultSettingsVersion = "";
+        String defaultGUIVersion = "";
 
         //This method is more accurate than file.exists()
         try {
@@ -283,6 +290,10 @@ class SoftwareSettings {
             defaultNumChanLoaded = loadDataSettings.getInt("Channels");
             //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
             defaultLoadedDataSource = loadDataSettings.getInt("Data Source");
+            //Check the settings Version
+            JSONObject loadSettingsVersion = loadDefaultSettingsJSONData.getJSONObject("version");
+            defaultSettingsVersion = loadSettingsVersion.getString("settings", defaultSettingsVersion);
+            defaultGUIVersion = loadSettingsVersion.getString("gui", defaultValue);
             //println("Data source loaded: " + defaultLoadedDatasource + ". Current data source: " + eegDataSource);
             defaultSettingsFileExists = true;
         } catch (Exception e) {
@@ -307,7 +318,7 @@ class SoftwareSettings {
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
             //e.printStackTrace();
-            println(settingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+            println("SoftwareSettings:Init: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
         }
     }
@@ -408,6 +419,10 @@ class SoftwareSettings {
             saveGlobalSettings.setInt("Board Mode", cyton.curBoardMode.ordinal());
         }
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
+
+        /////Setup JSON Object for gui version and settings Version
+        JSONObject saveVersionInfo = new JSONObject();
+        
 
         ///////////////////////////////////////////////Setup new JSON object to save FFT settings
         JSONObject saveFFTSettings = new JSONObject();
@@ -593,7 +608,7 @@ class SoftwareSettings {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                                Load GUI Settings                                                       //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    void load(String loadGUISettingsFileLocation) {
+    void load(String loadGUISettingsFileLocation) throws Exception {
         //Load all saved User Settings from a JSON file if it exists
         loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
@@ -1348,7 +1363,7 @@ class SoftwareSettings {
             output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
         } else if (errorUserSettingsNotFound) {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: File not found. " + millis()); //Print the error to console
-            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings not found: Default Settings Loaded."); //Show a normal message for loading Default Settings
+            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings error: Default Settings Loaded."); //Show a normal message for loading Default Settings
         } else {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
             outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
@@ -1364,8 +1379,8 @@ class SoftwareSettings {
             load(settingsFileToLoad);
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
-            println(e.getMessage());
-            println(settingsFileToLoad + " not found. Save settings with keyboard 'n' or using dropdown menu.");
+            //println(e.getMessage());
+            println(settingsFileToLoad + " not found or other error. Save settings with keyboard 'n' or using dropdown menu.");
             errorUserSettingsNotFound = true;
         }
         //Output message when Loading settings is complete
@@ -1405,21 +1420,20 @@ class SoftwareSettings {
     void defaultButtonPressed() {
         //Revert GUI to default settings that were flashed on system start!
         String defaultSettingsFileToLoad = getPath("Default", eegDataSource, nchan);
-        //This method is more accurate than file.exists()
-        boolean defaultSettingsFileExists;
         try {
             //Load all saved User Settings from a JSON file to see if it exists
             JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToLoad);
-            defaultSettingsFileExists = true;
-        } catch (Exception e) {
-            defaultSettingsFileExists = false;
-        }
-        if (defaultSettingsFileExists) {
             this.load(defaultSettingsFileToLoad);
             outputSuccess("Default Settings Loaded!");
-        } else {
-            //If the file doesn't exist, the user has likely cleared all settings
-            outputError("Default Settings not found.");
+        } catch (Exception e) {
+            outputError("Default Settings Error: New settings will be made next system start.");
+            File f = new File(sketchPath()+System.getProperty("file.separator")+defaultSettingsFileToLoad);
+            if (f.delete()) {
+                println("Old settings file succesfully deleted.");
+            } else {
+                println("Error deleting file...");
+            }
+
         }
     }
 } //end of Software Settings class
@@ -1450,7 +1464,11 @@ void loadConfigFile(File selection) {
         println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
         output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
         settings.loadDialogName = selection.getAbsolutePath();
-        settings.load(settings.loadDialogName); //load settings from JSON file in /data/
+        try {
+            settings.load(settings.loadDialogName); //load settings from JSON file in /data/
+        } catch (Exception e) {
+            println("SoftwareSettings: Incompatible settings file or other error");
+        }
         //Output success message when Loading settings is complete without errors
         if (settings.chanNumError == false
             && settings.dataSourceError == false
