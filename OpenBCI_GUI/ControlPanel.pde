@@ -3021,7 +3021,7 @@ public class MenuList extends controlP5.Controller {
     boolean updateMenu;
     int hoverItem = -1;
     int activeItem = -1;
-    PFont menuFont = h3;
+    PFont menuFont = p4;
     int padding = 7;
 
     MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
