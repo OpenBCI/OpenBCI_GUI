@@ -259,7 +259,7 @@ public void controlEvent(ControlEvent theEvent) {
             } else {
                 Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
                 //println("got a menu event from item " + value + " : " + m);
-                loadRecentPlaybackHistoryFile(m.get("copy").toString(), m.get("headline").toString());
+                userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
             }
         }
     }
@@ -267,14 +267,10 @@ public void controlEvent(ControlEvent theEvent) {
     //Check for event in PlaybackHistory Dropdown List in Control Panel
     if(theEvent.isFrom("recentFiles")) {
         int s = (int)(theEvent.getController()).getValue();
-        println("got a menu event from item " + s);
-        println(controlPanel.recentPlaybackBox.longFilePaths);
+        //println("got a menu event from item " + s);
         String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
         if (new File(filePath).isFile()) {
-            String shortFileName = controlPanel.recentPlaybackBox.shortFileNames.get(s);
-            controlPanel.recentPlaybackBox.setFilePickedShort(shortFileName);
-            //Load the playback file!
-            playbackFileSelectedCP(filePath, shortFileName);
+            playbackFileSelected(filePath, s);
         } else {
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
@@ -1458,7 +1454,7 @@ class ControlPanel {
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", "playbackSelectedControlPanel");
+            selectInput("Select a pre-recorded file for playback:", "playbackFileSelected");
         }
 
         if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
@@ -2579,19 +2575,16 @@ class RecentPlaybackBox {
             shortFileNames.clear();
             longFilePaths.clear();
             for (int i = numFilesToShow - 1; i >= 0; i--) {
-                //println(i);
                 JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-                //int fileNumber = playbackFile.getInt("recentFileNumber");
                 String shortFileName = playbackFile.getString("id");
                 String longFilePath = playbackFile.getString("filePath");
+                //truncate display name, if needed
+                shortFileName = shortenString(shortFileName, w-padding*2.f, h3);
                 //store to arrays to set recent playback buttons text and function
                 shortFileNames.append(shortFileName);
                 longFilePaths.append(longFilePath);
                 //println(shortFileName + " " + longFilePath);
             }
-            //For debugging
-            //println("OpenBCI_GUI::Control Panel: Playback history file found!!!");
-            //printArray(shortFileNames);
 
             playbackHistoryFileExists = true;
         } catch (Exception e) {
@@ -2965,7 +2958,7 @@ class InitBox {
         w = _w;
         h = 50;
         padding = _padding;
-        
+
         initSystemButton = new Button (padding, y + padding, w-padding*2, h - padding*2, "START SYSTEM", fontInfo.buttonLabel_size);
     }
 

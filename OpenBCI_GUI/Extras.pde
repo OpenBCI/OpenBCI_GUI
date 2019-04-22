@@ -176,6 +176,34 @@ void rereferenceTheMontage(float[][] data) {
     }
 }
 
+// shortens a string to a given width by adding [...] in the middle
+// make sure to pass the right font for accurate sizing
+String shortenString(String str, float maxWidth, PFont font) {
+    if (textWidth(str) <= maxWidth) {
+        return str;
+    }
+
+    pushStyle();
+    textFont(font); // set font for accurate sizing
+    int firstIndex = 0; // forward iterator
+    int lastIndex = str.length()-1; // reverse iterator
+    float spaceLeft = maxWidth - textWidth("..."); // account for the space taken by "..."
+
+    while (firstIndex < lastIndex && spaceLeft >= 0.f) {
+        spaceLeft -= textWidth(str.charAt(firstIndex)); // subtract space taken by first char
+        spaceLeft -= textWidth(str.charAt(lastIndex)); // and last char
+
+        // move interators inward
+        firstIndex ++;
+        lastIndex --;
+    }
+    popStyle(); // unset font
+
+    String s1 = str.substring(0, firstIndex); // firstIndex is excluded here
+    String s2 = str.substring(lastIndex + 1, str.length()); // manually exclude lastIndex
+    return s1 + "..." + s2;
+}
+
 //------------------------------------------------------------------------
 //                            Classes
 //------------------------------------------------------------------------
