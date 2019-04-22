@@ -2579,8 +2579,7 @@ class RecentPlaybackBox {
                 String shortFileName = playbackFile.getString("id");
                 String longFilePath = playbackFile.getString("filePath");
                 //truncate display name, if needed
-                textFont(h3, 16); // set font for accurate shortening
-                shortFileName = shortenString(shortFileName, w-padding*2.f);
+                shortFileName = shortenString(shortFileName, w-padding*2.f, h3);
                 //store to arrays to set recent playback buttons text and function
                 shortFileNames.append(shortFileName);
                 longFilePaths.append(longFilePath);
