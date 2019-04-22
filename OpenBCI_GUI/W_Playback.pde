@@ -158,7 +158,8 @@ class W_playback extends Widget {
                 String shortFileName = loadRecentPlaybackFile.getString("id");
                 String longFilePath = loadRecentPlaybackFile.getString("filePath");
 
-                shortFileName = controlPanel.recentPlaybackBox.truncateFileName(shortFileName, 75);
+                int totalPadding = padding + playbackMenuList.padding;
+                shortFileName = shortenString(shortFileName, w-totalPadding*2.f, p4);
                 //add as an item in the MenuList
                 playbackMenuList.addItem(makeItem(shortFileName, Integer.toString(fileNumber), longFilePath));
                 currentFileNameToDraw++;

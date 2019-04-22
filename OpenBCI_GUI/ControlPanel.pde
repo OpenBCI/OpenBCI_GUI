@@ -2579,7 +2579,7 @@ class RecentPlaybackBox {
                 String shortFileName = playbackFile.getString("id");
                 String longFilePath = playbackFile.getString("filePath");
                 //truncate display name, if needed
-                shortFileName = truncateFileName(shortFileName, 40);
+                shortFileName = shortenString(shortFileName, w-padding*2.f, h3);
                 //store to arrays to set recent playback buttons text and function
                 shortFileNames.append(shortFileName);
                 longFilePaths.append(longFilePath);
@@ -2596,25 +2596,6 @@ class RecentPlaybackBox {
 
     void closeAllDropdowns(){
         cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").close();
-    }
-
-    String truncateFileName(String _shortName, int maxLength) {
-        if (textWidth(_shortName) > (w-50)) {
-            String s1 = _shortName.substring(0, maxLength/2);
-            String s2 = _shortName.substring(_shortName.length() - (maxLength/2 - 6), _shortName.length());
-            String output = s1 + "..." + s2;
-            if (textWidth(output) > (w-50)) {
-                //println(textWidth(output) + " of " + w);
-                s1 = _shortName.substring(0, maxLength/3);
-                s2 = _shortName.substring(_shortName.length() - maxLength/4, _shortName.length());
-                //println(textWidth(s1 + "..." + s2) + " of " + w);
-                return s1 + "..." + s2;
-            } else {
-                return output;
-            }
-        } else {
-            return _shortName;
-        }
     }
 
     void createDropdown(String name, List<String> _items){
@@ -3040,7 +3021,7 @@ public class MenuList extends controlP5.Controller {
     boolean updateMenu;
     int hoverItem = -1;
     int activeItem = -1;
-    PFont menuFont = p4;
+    PFont menuFont = h3;
     int padding = 7;
 
     MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
