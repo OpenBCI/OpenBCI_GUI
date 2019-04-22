@@ -183,7 +183,6 @@ String shortenString(String str, float maxWidth, PFont font) {
         return str;
     }
 
-    pushStyle();
     textFont(font); // set font for accurate sizing
     int firstIndex = 0; // forward iterator
     int lastIndex = str.length()-1; // reverse iterator
@@ -197,7 +196,6 @@ String shortenString(String str, float maxWidth, PFont font) {
         firstIndex ++;
         lastIndex --;
     }
-    popStyle(); // unset font
 
     String s1 = str.substring(0, firstIndex); // firstIndex is excluded here
     String s2 = str.substring(lastIndex + 1, str.length()); // manually exclude lastIndex
