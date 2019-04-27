@@ -280,14 +280,9 @@ class SoftwareSettings {
         String defaultSettingsVersion = "";
         String defaultGUIVersion = "";
 
-        if ( //Take a snapshot of the default GUI settings on every system init
-            (defaultLoadedDataSource != eegDataSource) ||
-            (defaultNumChanLoaded != slnchan)) {
-                println("SoftwareSettings: Saving Default Settings to file!");
-                this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
-        } else {
-            println("SoftwareSettings: Default Settings file already exists!");
-        }
+        //Take a snapshot of the default GUI settings on every system init
+        println("SoftwareSettings: Saving Default Settings to file!");
+        this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
         //Otherwise, load default settings.
