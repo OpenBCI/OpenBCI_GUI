@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.0"
+    String settingsVersion = "1.0.0";
     //default layout variables
     int currentLayout;
 
@@ -275,39 +275,18 @@ class SoftwareSettings {
     ////////////////////////////////////////////////////////////////
     void init() {
         String defaultSettingsFileToSave = getPath("Default", eegDataSource, nchan);
-        boolean defaultSettingsFileExists;
         int defaultNumChanLoaded = 0;
         int defaultLoadedDataSource = 0;
         String defaultSettingsVersion = "";
         String defaultGUIVersion = "";
 
-        //This method is more accurate than file.exists()
-        try {
-            //Load all saved User Settings from a JSON file if it exists
-            JSONObject loadDefaultSettingsJSONData = loadJSONObject(defaultSettingsFileToSave);
-            //Check the number of channels saved to json first!
-            JSONObject loadDataSettings = loadDefaultSettingsJSONData.getJSONObject("dataInfo");
-            defaultNumChanLoaded = loadDataSettings.getInt("Channels");
-            //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
-            defaultLoadedDataSource = loadDataSettings.getInt("Data Source");
-            //Check the settings Version
-            JSONObject loadSettingsVersion = loadDefaultSettingsJSONData.getJSONObject("version");
-            defaultSettingsVersion = loadSettingsVersion.getString("settings", defaultSettingsVersion);
-            defaultGUIVersion = loadSettingsVersion.getString("gui", defaultValue);
-            //println("Data source loaded: " + defaultLoadedDatasource + ". Current data source: " + eegDataSource);
-            defaultSettingsFileExists = true;
-        } catch (Exception e) {
-            defaultSettingsFileExists = false;
-            //println(e);
-        }
-        if ( //Take a snapshot of the default GUI settings if needed
-            (!defaultSettingsFileExists) ||
+        if ( //Take a snapshot of the default GUI settings on every system init
             (defaultLoadedDataSource != eegDataSource) ||
             (defaultNumChanLoaded != slnchan)) {
-                println("Saving Default Settings to file!");
+                println("SoftwareSettings: Saving Default Settings to file!");
                 this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
         } else {
-            println("Default Settings file already exists!");
+            println("SoftwareSettings: Default Settings file already exists!");
         }
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
@@ -422,7 +401,9 @@ class SoftwareSettings {
 
         /////Setup JSON Object for gui version and settings Version
         JSONObject saveVersionInfo = new JSONObject();
-        
+        saveVersionInfo.setString("gui", localGUIVersionString);
+        saveVersionInfo.setString("settings", settingsVersion);
+        saveSettingsJSONData.setJSONObject(kJSONKeyVersion, saveVersionInfo);
 
         ///////////////////////////////////////////////Setup new JSON object to save FFT settings
         JSONObject saveFFTSettings = new JSONObject();
@@ -619,7 +600,7 @@ class SoftwareSettings {
         if (numChanloaded != slnchan) {
             println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
             chanNumError = true;
-            return;
+            throw new Exception();
         } else {
             chanNumError = false;
         }
@@ -630,7 +611,7 @@ class SoftwareSettings {
         if (loadDatasource != eegDataSource) {
             println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
             dataSourceError = true;
-            return;
+            throw new Exception();
         } else {
             dataSourceError = false;
         }
@@ -1462,22 +1443,25 @@ void loadConfigFile(File selection) {
         println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
     } else {
         println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
-        output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
+        //output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
         settings.loadDialogName = selection.getAbsolutePath();
         try {
             settings.load(settings.loadDialogName); //load settings from JSON file in /data/
+            //Output success message when Loading settings is complete without errors
+            if (settings.chanNumError == false
+                && settings.dataSourceError == false
+                && settings.loadErrorCytonEvent == false) {
+                    outputSuccess("Settings Loaded!");
+                }
         } catch (Exception e) {
             println("SoftwareSettings: Incompatible settings file or other error");
-        }
-        //Output success message when Loading settings is complete without errors
-        if (settings.chanNumError == false
-            && settings.dataSourceError == false
-            && settings.loadErrorCytonEvent == false) {
-                outputSuccess("Settings Loaded!");
-        } else if (settings.chanNumError == true) {
-            outputError("Channel Number Error:  Loading Default Settings");
-        } else {
-            outputError("Data Source Error: Loading Default Settings");
+            if (settings.chanNumError == true) {
+                outputError("Settings Error:  Channel Number Mismatch Detected");
+            } else if (settings.dataSourceError == true) {
+                outputError("Settings Error: Data Source Mismatch Detected");
+            } else {
+                outputError("Error trying to load settings file. Try 'Clear All Settings'");
+            }
         }
         settings.loadDialogName = null; //reset this variable for future use
     }
