@@ -756,11 +756,8 @@ class PlaybackScrollbar {
     void update() {
         num_indices = indices;
 
-        if (overEvent()) {
-            over = true;
-        } else {
-            over = false;
-        }
+        checkOverScrollbar(); // check if mouse is over 
+
         if (mousePressed && over) {
             locked = true;
         }
@@ -825,15 +822,29 @@ class PlaybackScrollbar {
     }
 
     //checks if mouse is over the playback scrollbar
-    boolean overEvent() {
+    private void checkOverScrollbar() {
         if (mouseX > xpos && mouseX < xpos+swidth &&
             mouseY > ypos && mouseY < ypos+sheight) {
-            cursor(HAND); //changes cursor icon to a hand
-            return true;
-        } else {
-            cursor(ARROW);
-            return false;
+            if(!over) {
+                onMouseEnterHandle();
+            }
         }
+        else {
+            if (over) {
+                onMouseExitHandle();
+            }
+        }
+    }
+
+    // called when the mouse enters the playback scrollbar
+    private void onMouseEnterHandle() {
+        over = true;
+        cursor(HAND); //changes cursor icon to a hand
+    }
+
+    private void onMouseExitHandle() {
+        over = false;
+        cursor(ARROW);
     }
 
     void draw() {
