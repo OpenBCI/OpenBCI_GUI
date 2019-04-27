@@ -1425,7 +1425,6 @@ void saveConfigFile(File selection) {
         println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
     } else {
         println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
-        output("You have selected \"" + selection.getAbsolutePath() + "\" to Save custom settings.");
         settings.saveDialogName = selection.getAbsolutePath();
         settings.save(settings.saveDialogName); //save current settings to JSON file in SavedData
         outputSuccess("Settings Saved!"); //print success message to screen
