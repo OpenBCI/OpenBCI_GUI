@@ -43,9 +43,24 @@ class W_BandPower extends Widget {
         plot3.startHistograms(GPlot.VERTICAL);
         plot3.getHistogram().setDrawLabels(true);
         //plot3.getHistogram().setRotateLabels(true);
+        plot3.getHistogram().setLineColors(new color[]{
+            color(245), color(245), color(245), color(245), color(245)
+          }
+        );
+
         plot3.getHistogram().setBgColors(new color[] {
-                color(0, 0, 255, 50), color(0, 0, 255, 100),
-                color(0, 0, 255, 150), color(0, 0, 255, 200)
+                // color(17,61,102), color(95, 127, 156),
+                // color(81, 88, 98), color(241, 24, 25), color(255, 71, 27)
+
+                // color(85,67,210, 100), color(211, 43, 142, 100),
+                // color(233, 95, 42, 100), color(234, 152, 39, 100), color(239, 228, 124, 100)
+
+                // color(43,90,230, 100), color(184, 43, 231, 100),
+                // color(88, 231, 43, 100), color(231, 183, 43, 100), color(230, 43, 90, 100)
+
+                color((int)channelColors[2], 150), color((int)channelColors[1], 150),
+                color((int)channelColors[3], 150), color((int)channelColors[4], 150), color((int)channelColors[6], 150)
+
             }
         );
     }
