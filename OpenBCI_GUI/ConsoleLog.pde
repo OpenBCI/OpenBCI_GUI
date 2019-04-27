@@ -14,7 +14,8 @@ import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 import java.awt.Desktop;
 
-class ConsoleWindow extends PApplet {
+static class ConsoleWindow extends PApplet {
+    private static ConsoleWindow instance = null;
 
     private ControlP5 cp5;
     private Textarea consoleTextArea;
@@ -27,9 +28,16 @@ class ConsoleWindow extends PApplet {
     private final int buttonHeight = 34;
     private int previousWidth = defaultWidth;
 
-    ConsoleWindow() {
+    public static void display() {
+        // enforce only one Console Window
+        if (instance == null) {
+            instance = new ConsoleWindow();
+            PApplet.runSketch(new String[] {instance.getClass().getSimpleName()}, instance);
+        }
+    }
+
+    private ConsoleWindow() {
         super();
-        PApplet.runSketch(new String[] {this.getClass().getSimpleName()}, this);
     }
 
     void settings() {
@@ -160,7 +168,7 @@ class ConsoleWindow extends PApplet {
 
     void exit() {
         println("ConsoleWindow: Console closed!");
-        consoleWindowExists = false;
+        instance = null;
         dispose();
     }
 

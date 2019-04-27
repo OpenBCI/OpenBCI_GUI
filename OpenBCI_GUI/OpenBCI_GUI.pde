@@ -262,8 +262,7 @@ String nodeHubName = "OpenBCIHub";
 
 PApplet ourApplet;
 
-CustomOutputStream outputStream;
-boolean consoleWindowExists = false;
+static CustomOutputStream outputStream;
 
 //Variables from TopNav.pde. Used to set text when stopping/starting data stream.
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
@@ -1359,6 +1358,11 @@ void drawStartupError() {
     textAlign(LEFT, TOP);
     text(startupErrorMessage, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight);
     popStyle();
+}
+
+void openConsole()
+{
+    ConsoleWindow.display();
 }
 
 //CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
