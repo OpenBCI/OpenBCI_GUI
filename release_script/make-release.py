@@ -26,7 +26,7 @@ LINUX = 'Linux'
 LOCAL_OS = platform.system()
 
 flavors = {
-    WINDOWS : ["application.windows64", "application.windows32"],
+    WINDOWS : ["application.windows64"], #"application.windows32"],
     LINUX : ["application.linux64"],
     MAC : ["application.macosx"]
 }
@@ -200,17 +200,41 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         else:
             print ("Successfully signed app.")
 
-    ### On Windows, just sign the app
-    ###########################################################
-    if windows_signing:
+    if LOCAL_OS == WINDOWS:
         exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
         assert(os.path.isfile(exe_dir))
+
+        ### On Windows, just sign the app
+        ###########################################################
+        if windows_signing:
+            try:
+                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+            except subprocess.CalledProcessError as err:
+                print (err)
+                print ("WARNING: Failed to sign app.")
+
+        # On Windows, set the application manifest
+        ###########################################################
         try:
-            subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
-                windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+            subprocess.check_call(["mt", "-manifest", "release_script/gui.manifest",
+                "-outputresource:" + exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
-            print ("WARNING: Failed to sign app.")
+            print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
+
+        java_exe_dir = os.path.join(build_dir, "java", "bin", "java.exe")
+        javaw_exe_dir = os.path.join(build_dir, "java", "bin", "javaw.exe")
+        assert (os.path.isfile(java_exe_dir))
+        assert (os.path.isfile(javaw_exe_dir))
+        try:
+            subprocess.check_call(["mt", "-manifest", "release_script/java.manifest",
+                "-outputresource:" + java_exe_dir + ";#1"])
+            subprocess.check_call(["mt", "-manifest", "release_script/java.manifest",
+                "-outputresource:" + javaw_exe_dir + ";#1"])
+        except subprocess.CalledProcessError as err:
+            print (err)
+            print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
 
     ### On Mac, make a .dmg and sign it
     ###########################################################
