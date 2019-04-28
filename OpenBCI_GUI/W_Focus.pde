@@ -118,10 +118,8 @@ class W_Focus extends Widget {
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
         updateFocusState(); // focus calculation
         invokeKeyStroke();  // robot keystroke
-        sendFocusSerial();  // send focus data to serial port
 
         // update sliders
         sliderAlphaMid.update();
@@ -189,19 +187,6 @@ class W_Focus extends Widget {
                 else {
                     robot.keyRelease(KeyEvent.VK_SPACE);
                 }
-            }
-        }
-    }
-
-    void sendFocusSerial() {
-        // ----------- if turned on, send the focused state to Arduino via serial port -----------
-        if (enableSerial) {
-            try {
-                serial_output.write(int(isFocused) + 48);
-                serial_output.write('\n');
-            }
-            catch(RuntimeException e) {
-                verbosePrint("serial not present, search 'serial_output' in OpenBCI.pde and check serial settings.");
             }
         }
     }
@@ -394,8 +379,10 @@ class W_Focus extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         //  about button
-        if (dist(mouseX,mouseY,xb+x,yb+y) <= rb) {
-            showAbout = !showAbout;
+        if (!this.dropdownIsActive) {
+            if (dist(mouseX,mouseY,xb+x,yb+y) <= rb) {
+                showAbout = !showAbout;
+            }
         }
 
         // sliders

@@ -19,6 +19,8 @@ class Widget{
 
     boolean isActive = false;
     boolean dropdownsShouldBeClosed = false;
+    boolean dropdownIsActive = false;
+    boolean widgetSelectorIsActive = false;
 
     ArrayList<NavBarDropdown> dropdowns;
     ControlP5 cp5_widget;
@@ -183,9 +185,13 @@ class Widget{
     void updateDropdowns(){
         //if a dropdown is open and mouseX/mouseY is outside of dropdown, then close it
         // println("dropdowns.size() = " + dropdowns.size());
+        dropdownIsActive = false;
+
         if(cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
+            dropdownIsActive = true;
+            //println("1");
             if(!cp5_widget.getController("WidgetSelector").isMouseOver()){
-                // println("2");
+                 //println("2");
                 cp5_widget.get(ScrollableList.class, "WidgetSelector").close();
             }
         }
@@ -193,7 +199,8 @@ class Widget{
         for(int i = 0; i < dropdowns.size(); i++){
             // println("i = " + i);
             if(cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
-                // println("1");
+                //println("++++++++Mouse is over " + dropdowns.get(i).id);
+                dropdownIsActive = true;
                 if(!cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
                     // println("2");
                     cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).close();

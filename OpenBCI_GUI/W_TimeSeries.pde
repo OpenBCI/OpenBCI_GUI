@@ -227,10 +227,11 @@ class W_timeSeries extends Widget {
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-
-        if(eegDataSource == DATASOURCE_CYTON){
-            if (hardwareSettingsButton.isMouseHere()) {
-                hardwareSettingsButton.setIsActive(true);
+        if (!this.dropdownIsActive) {
+            if(eegDataSource == DATASOURCE_CYTON){
+                if (hardwareSettingsButton.isMouseHere()) {
+                    hardwareSettingsButton.setIsActive(true);
+                }
             }
         }
 
@@ -241,7 +242,6 @@ class W_timeSeries extends Widget {
                 channelBars[i].mousePressed();
             }
         }
-
 
     }
 
