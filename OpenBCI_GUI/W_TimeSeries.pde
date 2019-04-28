@@ -839,7 +839,7 @@ class PlaybackScrollbar {
     // called when the mouse enters the playback scrollbar
     private void onMouseEnter() {
         over = true;
-        cursor(HAND); //changes cursor icon to a haBnd
+        cursor(HAND); //changes cursor icon to a hand
     }
 
     private void onMouseExit() {
