@@ -227,21 +227,23 @@ class W_timeSeries extends Widget {
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-
-        if(eegDataSource == DATASOURCE_CYTON){
-            if (hardwareSettingsButton.isMouseHere()) {
-                hardwareSettingsButton.setIsActive(true);
+        if (!this.dropdownIsActive) {
+            if(eegDataSource == DATASOURCE_CYTON){
+                if (hardwareSettingsButton.isMouseHere()) {
+                    hardwareSettingsButton.setIsActive(true);
+                }
             }
         }
 
         if(hsc.isVisible){
-            hsc.mousePressed();
+            if (!this.dropdownIsActive) {
+                hsc.mousePressed();
+            }
         } else {
             for(int i = 0; i < channelBars.length; i++){
                 channelBars[i].mousePressed();
             }
         }
-
 
     }
 
