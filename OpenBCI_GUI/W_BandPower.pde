@@ -14,7 +14,7 @@
 
 class W_BandPower extends Widget {
 
-    GPlot plot3;
+    GPlot bp_plot;
 
     W_BandPower(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -25,39 +25,34 @@ class W_BandPower extends Widget {
         // addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
         // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
+        addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
 
-        // Setup for the third plot
-        plot3 = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
-        plot3.setPos(x, y);
-        plot3.setDim(w, h);
-        plot3.setLogScale("y");
-        plot3.setYLim(0.1, 100);
-        plot3.setXLim(0, 5);
-        plot3.getYAxis().setNTicks(9);
-        plot3.getTitle().setTextAlignment(LEFT);
-        plot3.getTitle().setRelativePos(0);
-        plot3.getYAxis().getAxisLabel().setText("(uV)^2 / Hz per channel");
-        plot3.getYAxis().getAxisLabel().setTextAlignment(RIGHT);
-        plot3.getYAxis().getAxisLabel().setRelativePos(1);
-        // plot3.setPoints(points3);
-        plot3.startHistograms(GPlot.VERTICAL);
-        plot3.getHistogram().setDrawLabels(true);
-        //plot3.getHistogram().setRotateLabels(true);
-        plot3.getHistogram().setLineColors(new color[]{
+
+        // Setup for the BandPower plot
+        bp_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
+        // bp_plot.setPos(x, y+navHeight);
+        bp_plot.setDim(w, h);
+        bp_plot.setLogScale("y");
+        bp_plot.setYLim(0.1, 100);
+        bp_plot.setXLim(0, 5);
+        bp_plot.getYAxis().setNTicks(9);
+        bp_plot.getXAxis().setNTicks(0);
+        bp_plot.getTitle().setTextAlignment(LEFT);
+        bp_plot.getTitle().setRelativePos(0);
+        bp_plot.getYAxis().getAxisLabel().setText("Headwide Power — (uV)^2 / Hz");
+        bp_plot.getXAxis().setAxisLabelText("EEG Power Bands");
+        bp_plot.startHistograms(GPlot.VERTICAL);
+        bp_plot.getHistogram().setDrawLabels(true);
+
+        //setting border of histograms to match BG
+        bp_plot.getHistogram().setLineColors(new color[]{
             color(245), color(245), color(245), color(245), color(245)
           }
         );
 
-        plot3.getHistogram().setBgColors(new color[] {
-                // color(17,61,102), color(95, 127, 156),
-                // color(81, 88, 98), color(241, 24, 25), color(255, 71, 27)
-
-                // color(85,67,210, 100), color(211, 43, 142, 100),
-                // color(233, 95, 42, 100), color(234, 152, 39, 100), color(239, 228, 124, 100)
-
-                // color(43,90,230, 100), color(184, 43, 231, 100),
-                // color(88, 231, 43, 100), color(231, 183, 43, 100), color(230, 43, 90, 100)
-
+        //setting bg colors of histogram bars to match the color scheme of the channel colors w/ an opacity of 150/255
+        bp_plot.getHistogram().setBgColors(new color[] {
                 color((int)channelColors[2], 150), color((int)channelColors[1], 150),
                 color((int)channelColors[3], 150), color((int)channelColors[4], 150), color((int)channelColors[6], 150)
 
@@ -68,37 +63,44 @@ class W_BandPower extends Widget {
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        GPointsArray points3 = new GPointsArray(dataProcessing.headWidePower.length);
-        points3.add(DELTA + 0.5, dataProcessing.headWidePower[DELTA], "DELTA");
-        points3.add(THETA + 0.5, dataProcessing.headWidePower[THETA], "THETA");
-        points3.add(ALPHA + 0.5, dataProcessing.headWidePower[ALPHA], "ALPHA");
-        points3.add(BETA + 0.5, dataProcessing.headWidePower[BETA], "BETA");
-        points3.add(GAMMA + 0.5, dataProcessing.headWidePower[GAMMA], "GAMMA");
+        GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
+        bp_points.add(DELTA + 0.5, dataProcessing.headWidePower[DELTA], "DELTA");
+        bp_points.add(THETA + 0.5, dataProcessing.headWidePower[THETA], "THETA");
+        bp_points.add(ALPHA + 0.5, dataProcessing.headWidePower[ALPHA], "ALPHA");
+        bp_points.add(BETA + 0.5, dataProcessing.headWidePower[BETA], "BETA");
+        bp_points.add(GAMMA + 0.5, dataProcessing.headWidePower[GAMMA], "GAMMA");
 
-        plot3.setPoints(points3);
-        plot3.getTitle().setText("Band Power");
+        bp_plot.setPoints(bp_points);
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
+        pushStyle();
+
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         // Draw the third plot
-        plot3.beginDraw();
-        plot3.drawBackground();
-        plot3.drawBox();
-        plot3.drawYAxis();
-        plot3.drawTitle();
-        plot3.drawHistograms();
-        plot3.endDraw();
+        bp_plot.beginDraw();
+        bp_plot.drawBackground();
+        bp_plot.drawBox();
+        bp_plot.drawXAxis();
+        bp_plot.drawYAxis();
+        bp_plot.drawHistograms();
+        bp_plot.endDraw();
+
+        //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
+        fill(200, 200, 200);
+        rect(x, y - navHeight, w, navHeight); //button bar
+
+        popStyle();
 
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        plot3.setPos(x, y-navHeight);//update position
-        plot3.setOuterDim(w, h+navHeight);//update dimensions
+        bp_plot.setPos(x, y-navHeight);//update position
+        bp_plot.setOuterDim(w, h+navHeight);//update dimensions
     }
 
     void mousePressed(){
