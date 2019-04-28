@@ -98,12 +98,12 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_processing]. If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
 
 ### System Requirements
-####Hardware
+#### Hardware
 1.6 GHz or faster processor
 2 GB of RAM
 400 MB of hard drive space (minimum)
 
-####Platforms
+#### Platforms
 OpenBCI GUI has been tested on the following platforms:
 OS X 10.8.5 or later
 Windows 8.1 and 10 (32-bit and 64-bit)
