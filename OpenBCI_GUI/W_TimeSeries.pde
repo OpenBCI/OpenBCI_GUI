@@ -236,7 +236,9 @@ class W_timeSeries extends Widget {
         }
 
         if(hsc.isVisible){
-            hsc.mousePressed();
+            if (!this.dropdownIsActive) {
+                hsc.mousePressed();
+            }
         } else {
             for(int i = 0; i < channelBars.length; i++){
                 channelBars[i].mousePressed();
