@@ -530,17 +530,17 @@ void StrokeKeyWhenFocused(int n){
     if(n==0){
         //do this
         w_focus.enableKey = false;
-        println("The robot ignores focused state and will not press any key.");
+        //println("The robot ignores focused state and will not press any key.");
     } else if(n==1){
         //do this instead
         w_focus.enableKey = true;
         w_focus.keyNum = 0;
-        println("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
+        //println("The robot will keep pressing Arrow Up key when you are focused, and release the key when you lose focus.");
     } else if(n==2){
         //do this instead
         w_focus.enableKey = true;
         w_focus.keyNum = 1;
-        println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
+        //println("The robot will keep pressing Spacebar when you are focused, and release the key when you lose focus.");
     }
     settings.focusKeySave = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close

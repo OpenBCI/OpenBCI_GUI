@@ -33,7 +33,7 @@ class Presentation {
 
     Presentation (){
         //loading presentation images
-        println("attempting to load images for presentation...");
+        //println("attempting to load images for presentation...");
         presentationSlides[0] = loadImage("prez-images/Presentation.000.jpg");
         presentationSlides[1] = loadImage("prez-images/Presentation.001.jpg");
         presentationSlides[2] = loadImage("prez-images/Presentation.002.jpg");
@@ -51,7 +51,7 @@ class Presentation {
         // presentationSlides[14] = loadImage("prez-images/Presentation.014.jpg");
         // presentationSlides[15] = loadImage("prez-images/Presentation.015.jpg");
         // slideCount = 4;
-        println("DONE loading images!");
+        //println("DONE loading images!");
     }
 
     public void slideForward() {

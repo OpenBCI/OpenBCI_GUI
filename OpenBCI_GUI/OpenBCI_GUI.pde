@@ -740,23 +740,16 @@ void initSystem() {
         println("Failed to connect to data source... 1");
         outputError("Failed to connect to data source fail point 1");
     } else {
-        println("  3a -- " + millis());
         //initilize the GUI
-        // initializeGUI(); //will soon be destroyed... and replaced with ...  wm = new WidgetManager(this);
         topNav.initSecondaryNav();
-        println("  3b -- " + millis());
 
         //open data file
         if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
         if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
 
-        // wm = new WidgetManager(this);
         setupWidgetManager();
 
         if (!abandonInit) {
-            println("  3c -- " + millis());
-            // setupGUIWidgets(); //####
-
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
 

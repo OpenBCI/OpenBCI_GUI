@@ -930,7 +930,7 @@ boolean isNetworkingTextActive(){
             }
         }
     }
-    println("Networking Text Field Active? " + isAFieldActive);
+    //println("Networking Text Field Active? " + isAFieldActive);
     return isAFieldActive; //if not, return false
 }
 
