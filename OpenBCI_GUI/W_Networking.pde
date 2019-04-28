@@ -125,7 +125,7 @@ class W_Networking extends Widget {
         protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
-        println("comPorts = " + comPorts);
+        verbosePrint("comPorts = " + comPorts);
 
 
         initialize_UI();
@@ -178,7 +178,7 @@ class W_Networking extends Widget {
             configIsVisible = topNav.configSelector.isVisible;
             layoutIsVisible = topNav.layoutSelector.isVisible;
         }
-        
+
         if (dataDropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
         } else {

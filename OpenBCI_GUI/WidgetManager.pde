@@ -215,21 +215,17 @@ class WidgetManager{
         updating = _updating;
     }
     void setupWidgetSelectorDropdowns(){
-            //create the widgetSelector dropdown of each widget
-            println("widgets.size() = " + widgets.size());
-            //create list of WidgetTitles.. we will use this to populate the dropdown (widget selector) of each widget
-            for(int i = 0; i < widgets.size(); i++){
-                widgetOptions.add(widgets.get(i).widgetTitle);
-            }
-            println("widgetOptions.size() = " + widgetOptions.size());
-            for(int i = 0; i <widgetOptions.size(); i++){
-                widgets.get(i).setupWidgetSelectorDropdown(widgetOptions);
-                widgets.get(i).setupNavDropdowns();
-            }
-            println("widgetOptions:");
-            for (int i = 0; i < widgetOptions.size(); i++) {
-                println(widgetOptions.get(i));
-            }
+        //create the widgetSelector dropdown of each widget
+        //println("widgets.size() = " + widgets.size());
+        //create list of WidgetTitles.. we will use this to populate the dropdown (widget selector) of each widget
+        for(int i = 0; i < widgets.size(); i++){
+            widgetOptions.add(widgets.get(i).widgetTitle);
+        }
+        //println("widgetOptions.size() = " + widgetOptions.size());
+        for(int i = 0; i <widgetOptions.size(); i++){
+            widgets.get(i).setupWidgetSelectorDropdown(widgetOptions);
+            widgets.get(i).setupNavDropdowns();
+        }
     }
 
     void update(){
@@ -354,7 +350,7 @@ class WidgetManager{
             println("WM: Powering " + numToShutDown + " widgets down, and remapping.");
             for(int i = widgets.size()-1; i >= 0; i--){
                 if(widgets.get(i).isActive && counter < numToShutDown){
-                    println("WM: Deactivating widget [" + i + "]");
+                    verbosePrint("WM: Deactivating widget [" + i + "]");
                     widgets.get(i).isActive = false;
                     counter++;
                 }

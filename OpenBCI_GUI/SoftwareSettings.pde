@@ -798,7 +798,7 @@ class SoftwareSettings {
         //int numActiveWidgets = 0; //reset the counter
         for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
             if (wm.widgets.get(w).isActive) { //If a widget is active...
-                println("Deactivating widget [" + w + "]");
+                verbosePrint("Deactivating widget [" + w + "]");
                 wm.widgets.get(w).isActive = false;
                 //numActiveWidgets++; //counter the number of de-activated widgets
             }

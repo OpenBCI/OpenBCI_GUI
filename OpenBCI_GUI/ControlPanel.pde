@@ -2569,7 +2569,7 @@ class RecentPlaybackBox {
             JSONObject playbackHistory = loadJSONObject(userPlaybackHistoryFile);
             JSONArray recentFilesArray = playbackHistory.getJSONArray("playbackFileHistory");
             if (recentFilesArray.size() < 10) {
-                println("History Size = " + recentFilesArray.size());
+                println("CP: Playback History Size = " + recentFilesArray.size());
                 numFilesToShow = recentFilesArray.size();
             }
             shortFileNames.clear();
@@ -3124,7 +3124,7 @@ public class MenuList extends controlP5.Controller {
       * otherwise do whatever this item of the list is supposed to do.
       */
     public void onClick() {
-        println("MenuList: click!");
+        println(getName() + ": click! ");
         if (items.size() > 0) { //Fixes #480
             if (getPointer().x()>getWidth()-scrollerWidth) {
                 if(getHeight() != 0){
@@ -3141,8 +3141,6 @@ public class MenuList extends controlP5.Controller {
                 activeItem = index;
             }
             updateMenu = true;
-        } else {
-            println("Nothing to click...");
         }
     }
 
