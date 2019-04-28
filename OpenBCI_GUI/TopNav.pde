@@ -19,7 +19,6 @@ class TopNav {
     Button controlPanelCollapser;
     Button fpsButton;
     Button debugButton;
-    ConsoleWindow consoleWindow;
 
     Button stopButton;
 
@@ -388,9 +387,8 @@ class TopNav {
         if (fpsButton.isMouseHere() && fpsButton.isActive()) {
             toggleFrameRate();
         }
-        if (debugButton.isMouseHere() && debugButton.isActive() && (!consoleWindowExists)) {
-            consoleWindow = new ConsoleWindow();
-            consoleWindowExists = true;
+        if (debugButton.isMouseHere() && debugButton.isActive()) {
+            thread("openConsole");
         }
 
         // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
