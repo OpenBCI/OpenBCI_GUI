@@ -9,6 +9,7 @@ Use OpenBCIHub v2.0.8 please.
 * Smooth and filter dropdowns added to Band Power
 * Improved axis labels on Band Power widget
 * Cleaned up some console output
+* On windows, properly scale for High DPI displays
 
 ### Bug Fixes
 * Fix crash when opening the console window
