@@ -145,6 +145,7 @@ int lastReadDataPacketInd = -1;
 // define some timing variables for this program's operation
 long timeOfLastFrame = 0;
 long timeOfInit;
+boolean attemptingToConnect = false;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -188,7 +189,7 @@ int serial_output_baud = 9600; //baud rate from the Arduino
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
 
-//program constants
+//program variables
 boolean isRunning = false;
 boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
@@ -199,7 +200,7 @@ boolean screenHasBeenResized = false;
 float timeOfLastScreenResize = 0;
 float timeOfGUIreinitialize = 0;
 int reinitializeGUIdelay = 125;
-//Tao's variabiles
+//Tao's variables
 int widthOfLastScreen = 0;
 int heightOfLastScreen = 0;
 
@@ -216,7 +217,6 @@ PFont f1;
 PFont f2;
 PFont f3;
 PFont f4;
-
 
 PFont h1; //large Montserrat
 PFont h2; //large/medium Montserrat
@@ -235,9 +235,6 @@ PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
-
-//EMG_Widget emg_widget;
-// PulseSensor_Widget pulseWidget;
 
 boolean has_processed = false;
 boolean isOldData = false;
@@ -272,8 +269,6 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 int numSettingsPerChannel = 6; //each channel has 6 different settings
 char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 char[][] impedanceCheckValues = new char [nchan][2];
-//[Number of Channels] x 6 array of buttons for channel settings
-//Button[][] channelSettingButtons = new Button [nchan][numSettingsPerChannel];  // [channel#][Button#] ///
 
 SoftwareSettings settings = new SoftwareSettings();
 
@@ -398,7 +393,7 @@ void delayedSetup() {
     cog = loadImage("cog_1024x1024.png");
     consoleImgBlue = loadImage("console-45x45-dots_blue.png");
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
-    loadingGIF = new Gif(this, "OpenBCI-LoadingGIF-2.gif");
+    loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
     loadingGIF.loop();
     loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
     loadingGIF_blue.loop();
@@ -1254,15 +1249,15 @@ void systemDraw() { //for drawing to the screen
     }
 
     if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
-        //make out blink the text "Initalizing GUI..."
-        pushStyle();
-        imageMode(CENTER);
-        image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
-        popStyle();
-        if (millis()%1000 < 500) {
+        if (!attemptingToConnect) {
             output("Attempting to establish a connection with your OpenBCI Board...");
+            attemptingToConnect = true;
         } else {
-            output("");
+            //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
+            pushStyle();
+            imageMode(CENTER);
+            image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
+            popStyle();
         }
 
         if (millis() - timeOfInit > settings.initTimeoutThreshold) {
@@ -1270,6 +1265,7 @@ void systemDraw() { //for drawing to the screen
             initSystemButton.but_txt = "START SYSTEM";
             output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
             controlPanel.open();
+            attemptingToConnect = false;
         }
     }
 
@@ -1286,13 +1282,6 @@ void systemDraw() { //for drawing to the screen
 
     buttonHelpText.draw();
     mouseOutOfBounds(); // to fix
-
-
-    // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-    // if(highDPI) {
-    //   popMatrix();
-    //   size(currentWidth*2, currentHeight*2);
-    // }
 
 }
 
