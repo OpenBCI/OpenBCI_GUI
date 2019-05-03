@@ -1711,7 +1711,7 @@ void Protocol(int protocolIndex){
     } else if (protocolIndex==0){
         w_networking.protocolMode = "Serial";
     }
-    println(w_networking.protocolMode + " selected from Protocol Menu");
+    println("Networking: " + w_networking.protocolMode + " selected from Protocol Menu");
     w_networking.screenResized();
     w_networking.showCP5();
     closeAllDropdowns();

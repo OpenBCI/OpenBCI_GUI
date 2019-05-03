@@ -873,9 +873,8 @@ void startRunning() {
         if (ganglion != null) {
             ganglion.startDataTransfer();
         }
-    } else {
+    } else if (eegDataSource == DATASOURCE_CYTON) {
         if (cyton != null) {
-            println("DEBUG: start data transfer");
             cyton.startDataTransfer();
         }
     }

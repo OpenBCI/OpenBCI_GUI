@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Analog Read, Head Plot, EMG, and Focus
+//                       -- Accelerometer, Analog Read, Head Plot, EMG, and Focus
 //                       -- Widget/Container Pairs
 //
 //                       Created: Richard Waltman - May/June 2018
@@ -281,7 +281,7 @@ class SoftwareSettings {
         String defaultGUIVersion = "";
 
         //Take a snapshot of the default GUI settings on every system init
-        println("SoftwareSettings: Saving Default Settings to file!");
+        println("InitSettings: Saving Default Settings to file!");
         this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
@@ -292,7 +292,7 @@ class SoftwareSettings {
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
             //e.printStackTrace();
-            println("SoftwareSettings:Init: " + settingsFileToLoad + " not found or other error.");
+            println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
         }
     }
@@ -565,7 +565,7 @@ class SoftwareSettings {
                 //println("widget"+i+" is not active");
             }
         }
-        println(numActiveWidgets + " active widgets saved!");
+        println("SoftwareSettings: " + numActiveWidgets + " active widgets saved!");
         //Print what widgets are in the containers used by current layout for only the number of active widgets
         //for (int i = 0; i < numActiveWidgets; i++) {
             //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
@@ -601,7 +601,7 @@ class SoftwareSettings {
         }
         //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
         loadDatasource = loadDataSettings.getInt("Data Source");
-        println("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
+        verbosePrint("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
         //Print error if trying to load a different data source (ex. Live != Synthetic)
         if (loadDatasource != eegDataSource) {
             println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
@@ -791,7 +791,7 @@ class SoftwareSettings {
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
         //Apply Layout directly before loading and applying widgets to containers
         wm.setNewContainerLayout(loadLayoutSetting);
-        println("Layout " + loadLayoutSetting + " Loaded!");
+        verbosePrint("LoadGUISettings: Layout " + loadLayoutSetting + " Loaded!");
         numLoadedWidgets = loadWidgetSettings.size();
 
 
@@ -817,7 +817,7 @@ class SoftwareSettings {
 
                 wm.widgets.get(widgetToActivate).isActive = true;//activate the new widget
                 wm.widgets.get(widgetToActivate).setContainer(containerToApply);//map it to the container that was loaded!
-                println("Applied Widget " + widgetToActivate + " to Container " + containerToApply);
+                println("LoadGUISettings: Applied Widget " + widgetToActivate + " to Container " + containerToApply);
         }//end case for all widget/container settings
 
         /////////////////////////////////////////////////////////////

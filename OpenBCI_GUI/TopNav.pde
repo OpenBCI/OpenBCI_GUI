@@ -219,12 +219,12 @@ class TopNav {
                 tutorialSelector.update();
                 if (configButton.but_x != width - (70*2) + 3) {
                     configButton.but_x = width - (70*2) + 3;
-                    println("TopNav: Updated Settings Button Position");
+                    verbosePrint("TopNav: Updated Settings Button Position");
                 }
             } else {
                 if (configButton.but_x != width - 70 - 3) {
                     configButton.but_x = width - 70 - 3;
-                    println("TopNav: Updated Settings Button Position");
+                    verbosePrint("TopNav: Updated Settings Button Position");
                 }
             }
             configSelector.update();

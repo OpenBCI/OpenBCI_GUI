@@ -302,7 +302,7 @@ class Cyton {
             }
 
         } else {
-            println("port not open");
+            println("Cyton: Port not open");
         }
     }
 

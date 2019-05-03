@@ -81,7 +81,6 @@ class W_Accelerometer extends Widget {
         currentAccelVals = new float[NUM_ACCEL_DIMS];
 
         //create our channel bar and populate our accelerometerBar array!
-        println("Init accelerometer bar");
         accelerometerBar = new AccelerometerBar(_parent, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
