@@ -294,6 +294,10 @@ class SoftwareSettings {
             //e.printStackTrace();
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
+            File f = new File(sketchPath()+System.getProperty("file.separator")+settingsFileToLoad);
+            if (f.exists()) {
+                if (f.delete()) println("SoftwareSettings: Removed old settings file.");
+            }
         }
     }
 
@@ -1454,8 +1458,9 @@ void loadConfigFile(File selection) {
             } else if (settings.dataSourceError == true) {
                 outputError("Settings Error: Data Source Mismatch Detected");
             } else {
-                outputError("Error trying to load settings file, possibly from previous GUI. Try 'Clear All Settings'.");
+                outputError("Error trying to load settings file, possibly from previous GUI. Removing old settings.");
             }
+            if (selection.exists()) selection.delete();
         }
         settings.loadDialogName = null; //reset this variable for future use
     }
