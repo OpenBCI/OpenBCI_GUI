@@ -354,11 +354,6 @@ class TopNav {
             debugButton.setIsActive(true);
         }
 
-        // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-        // if (highRezButton.isMouseHere()){
-        //   highRezButton.setIsActive(true);
-        // }
-
         if (tutorialsButton.isMouseHere()) {
             tutorialsButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
@@ -390,11 +385,6 @@ class TopNav {
         if (debugButton.isMouseHere() && debugButton.isActive()) {
             thread("openConsole");
         }
-
-        // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-        // if (highRezButton.isMouseHere() && highRezButton.isActive()) {
-        //   toggleHighDPI();
-        // }
 
         if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
             tutorialSelector.toggleVisibility();
