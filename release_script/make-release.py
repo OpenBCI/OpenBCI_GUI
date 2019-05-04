@@ -20,15 +20,17 @@ except NameError: pass
 
 ### Define platform-specific strings
 ###########################################################
-WINDOWS = 'Windows'
 MAC = 'Darwin'
 LINUX = 'Linux'
+WINDOWS = 'Windows'
+WINDOWS32 = 'Windows32'
 LOCAL_OS = platform.system()
 
 flavors = {
-    WINDOWS : ["application.windows64", "application.windows32"],
-    LINUX : ["application.linux64"],
-    MAC : ["application.macosx"]
+    WINDOWS32 : "application.windows32",
+    WINDOWS : "application.windows64",
+    LINUX : "application.linux64",
+    MAC : "application.macosx"
 }
 
 data_dir_names = {
@@ -106,11 +108,17 @@ def ask_windows_signing():
 
 ### Function: Run a build using processing-java
 ###########################################################
-def build_app(sketch_dir):
+def build_app(sketch_dir, bit32 = False):
+    # 32-bit build requires you to have a 32-bit installation of processing
+    # then rename processing-java.exe to processing-java32.exe and add it to your PATH
+    command = "processing-java"
+    if bit32:
+        command += "32"
+
     # unfortunately, processing-java always returns exit code 1,
     # so we can't reliably check for success or failure
     print ("Using sketch: " + sketch_dir)
-    subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--export"])
+    subprocess.call([command, "--sketch=" + sketch_dir, "--export"])
 
 ### Function: Package the app in the expected file structure
 ###########################################################
@@ -200,17 +208,41 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         else:
             print ("Successfully signed app.")
 
-    ### On Windows, just sign the app
-    ###########################################################
-    if windows_signing:
+    if LOCAL_OS == WINDOWS:
         exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
         assert(os.path.isfile(exe_dir))
+
+        ### On Windows, just sign the app
+        ###########################################################
+        if windows_signing:
+            try:
+                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+            except subprocess.CalledProcessError as err:
+                print (err)
+                print ("WARNING: Failed to sign app.")
+
+        # On Windows, set the application manifest
+        ###########################################################
         try:
-            subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
-                windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+            subprocess.check_call(["mt", "-manifest", "release_script/gui.manifest",
+                "-outputresource:" + exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
-            print ("WARNING: Failed to sign app.")
+            print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
+
+        java_exe_dir = os.path.join(build_dir, "java", "bin", "java.exe")
+        javaw_exe_dir = os.path.join(build_dir, "java", "bin", "javaw.exe")
+        assert (os.path.isfile(java_exe_dir))
+        assert (os.path.isfile(javaw_exe_dir))
+        try:
+            subprocess.check_call(["mt", "-manifest", "release_script/java.manifest",
+                "-outputresource:" + java_exe_dir + ";#1"])
+            subprocess.check_call(["mt", "-manifest", "release_script/java.manifest",
+                "-outputresource:" + javaw_exe_dir + ";#1"])
+        except subprocess.CalledProcessError as err:
+            print (err)
+            print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
 
     ### On Mac, make a .dmg and sign it
     ###########################################################
@@ -258,5 +290,13 @@ cleanup_build_dirs(sketch_dir)
 # run the build (processing-java)
 build_app(sketch_dir)
 #package it up
-for flavor in flavors[LOCAL_OS]:
+flavor = flavors[LOCAL_OS]
+package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
+
+# on window, also build the 32-bit version
+if(LOCAL_OS == WINDOWS):
+    flavor = flavors[WINDOWS32]
+    # run the 32-bit build (processing-java32)
+    build_app(sketch_dir, True)
+    #package it up
     package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)

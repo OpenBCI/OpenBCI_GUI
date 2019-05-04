@@ -204,7 +204,11 @@ void LogLin(int n) {
 void Smoothing(int n) {
     smoothFac_ind = n;
     settings.fftSmoothingSave = n;
+    //since this function is called by both the BandPower and FFT Widgets the dropdown needs to be updated in both
+    w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(settings.fftSmoothingArray[n]);
+    w_bandPower.cp5_widget.getController("Smoothing").getCaptionLabel().setText(settings.fftSmoothingArray[n]);
     closeAllDropdowns();
+
 }
 
 //triggered when there is an event in the UnfiltFilt Dropdown
@@ -216,5 +220,8 @@ void UnfiltFilt(int n) {
         //have FFT use unfiltered data
         isFFTFiltered = false;
     }
+    //since this function is called by both the BandPower and FFT Widgets the dropdown needs to be updated in both
+    w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(settings.fftFilterArray[n]);
+    w_bandPower.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(settings.fftFilterArray[n]);
     closeAllDropdowns();
 }

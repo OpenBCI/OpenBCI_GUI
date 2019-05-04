@@ -55,7 +55,7 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.2-beta.0";
+String localGUIVersionString = "v4.1.2-beta.1";
 String localGUIVersionDate = "April 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -281,7 +281,6 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
-    //Set the GUI size based on screen size, can be expanded later to accomodate high res/dpi screens
     //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
     if (displayWidth == 1366 && displayHeight == 768) {
         size(976, 549, P2D);
@@ -1142,20 +1141,6 @@ void systemUpdate() { // for updating data values and variables
 }
 
 void systemDraw() { //for drawing to the screen
-
-
-    // Conor's attempt at adjusting the GUI to be 2x in size for High DPI screens ... attempt failed
-    // int currentWidth;
-    // int currentHeight;
-    // if(!highDPI) {
-    //   currentWidth = width;
-    //   currentHeight = height;
-    // }
-    // if(highDPI) {
-    //   pushMatrix();
-    //   scale(2);
-    // }
-
     //redraw the screen...not every time, get paced by when data is being plotted
     background(bgColor);  //clear the screen
     noStroke();
@@ -1282,7 +1267,6 @@ void systemDraw() { //for drawing to the screen
 
     buttonHelpText.draw();
     mouseOutOfBounds(); // to fix
-
 }
 
 void introAnimation() {

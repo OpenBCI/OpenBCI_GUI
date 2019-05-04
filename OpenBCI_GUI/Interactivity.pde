@@ -933,9 +933,3 @@ boolean isNetworkingTextActive(){
     //println("Networking Text Field Active? " + isAFieldActive);
     return isAFieldActive; //if not, return false
 }
-
-boolean highDPI = false;
-void toggleHighDPI(){
-    highDPI = !highDPI;
-    println("High DPI? " + highDPI);
-}
