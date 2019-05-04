@@ -71,7 +71,7 @@ class TopNav {
 
         //top right buttons from right to left
         debugButton = new Button(width - 33 - 3, 3, 33, 26, " ", fontInfo.buttonLabel_size);
-        debugButton.setHelpText("Click to open Console Log window.");
+        debugButton.setHelpText("Click to open the Console Log window.");
 
         tutorialsButton = new Button(debugButton.but_x - 80 - 3, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
         tutorialsButton.setFont(h3, 16);
