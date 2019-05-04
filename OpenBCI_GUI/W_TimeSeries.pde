@@ -404,6 +404,7 @@ class ChannelBar{
         }
 
         onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
+        onOffButton.setHelpText("Click to toggle channel " + channelNumber + ".");
         onOffButton.setFont(h2, 16);
         onOffButton.setCircleButton(true);
         onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]); //Set channel button background colors

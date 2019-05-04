@@ -369,10 +369,10 @@ class WidgetManager{
             //power some up
             int numToPowerUp = numActiveWidgetsNeeded - numActiveWidgets;
             int counter = 0;
-            println("WM: Powering " + numToPowerUp + " widgets up, and remapping.");
+            verbosePrint("WM: Powering " + numToPowerUp + " widgets up, and remapping.");
             for(int i = 0; i < widgets.size(); i++){
                 if(!widgets.get(i).isActive && counter < numToPowerUp){
-                    println("WM: Activating widget [" + i + "]");
+                    verbosePrint("WM: Activating widget [" + i + "]");
                     widgets.get(i).isActive = true;
                     counter++;
                 }
@@ -390,7 +390,7 @@ class WidgetManager{
 
         } else{ //if there are the same amount
             //simply remap active widgets
-            println("WM: Remapping widgets.");
+            verbosePrint("WM: Remapping widgets.");
             int counter = 0;
             for(int i = 0; i < widgets.size(); i++){
                 if(widgets.get(i).isActive){
