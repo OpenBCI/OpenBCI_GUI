@@ -1615,7 +1615,12 @@ public void initButtonPressed(){
                 }
                 midInit = true;
                 println("Calling initSystem()");
-                initSystem(); //calls the initSystem() funciton of the OpenBCI_GUI.pde file
+                try {
+                    initSystem(); //found in OpenBCI_GUI.pde
+                } catch (Exception e) {
+                    println(e.getMessage());
+                    haltSystem();
+                }
             }
         }
 

@@ -440,18 +440,10 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
     println(udpString+" from: "+ip+" and port: "+portRX);
     if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
 
-        /*  Old version with 10 markers
-        char c = value.charAt(4);
-    if ( c>= '0' && c <= '9') {
-            println("Found a valid UDP STIM of value: "+int(c)+" chr: "+c);
-            hub.sendCommand("`"+char(c-(int)'0'));
-            */
         int intValue = Integer.parseInt(udpString.substring(4));
 
         if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
-
             String sendString = "`"+char(intValue+31);
-
             println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
             hub.sendCommand(sendString);
 
@@ -651,7 +643,7 @@ void setupWidgetManager() {
 }
 
 //Initialize the system
-void initSystem() {
+void initSystem() throws Exception {
     println("");
     println("");
     println("=================================================");
@@ -659,25 +651,26 @@ void initSystem() {
     println("=================================================");
     println("");
 
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + millis());
     timeOfInit = millis(); //store this for timeout in case init takes too long
-    verbosePrint("timeOfInit = " + timeOfInit);
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
+    if (eegDataSource == DATASOURCE_CYTON) {
+        verbosePrint("OpenBCI_GUI: initSystem: Checking Cyton Connection...");
+        system_status(rcBox);
+        if (rcStringReceived.startsWith("Cyton dongle could not connect") || rcStringReceived.startsWith("Failure")) {
+            throw new Exception("OpenBCI_GUI: initSystem: Dongle failed to connect to Cyton...");
+        }
 
-    //prepare data variables
+    }
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
-
     //initialize playback file if necessary
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         initPlaybackFileToTable(); //found in W_Playback.pde
     }
-
     verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
-
     initCoreDataObjects();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
     verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
-
     initFFTObjectsAndBuffer();
 
     //prepare some signal processing stuff
