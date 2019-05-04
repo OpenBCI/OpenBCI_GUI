@@ -106,9 +106,10 @@ boolean confirm_connected(){
 boolean print_bytes(RadioConfigBox rc){
     if(board_message != null){
         println("Radios_Config: " + board_message.toString());
-        rcStringReceived = board_message.toString().equals("Failure: System is Down") ?
-            "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN." :
-            board_message.toString();
+        rcStringReceived = board_message.toString();
+        if(rcStringReceived.equals("Failure: System is Down")) {
+            rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN.";
+        }
         rc.print_onscreen(rcStringReceived);
         return true;
     } else {
