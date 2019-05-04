@@ -69,7 +69,7 @@ class Cyton {
     // needed by interfaceserial
     public int hardwareSyncStep = 0; //start this at 0...
     public String potentialFailureMessage = "";
-    public String defaultChannelSettings = "";    
+    public String defaultChannelSettings = "";
     public String daisyOrNot = "";
 
     //some get methods
@@ -107,7 +107,7 @@ class Cyton {
     public void setBoardMode(BoardMode boardMode) {
         hub.sendCommand("/" + boardMode);
         curBoardMode = boardMode;
-        print("Cyton: setBoardMode to :" + curBoardMode);
+        println("Cyton: setBoardMode to :" + curBoardMode);
     }
 
     public void setSampleRate(int _sampleRate) {

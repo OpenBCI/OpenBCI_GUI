@@ -1454,7 +1454,7 @@ void loadConfigFile(File selection) {
             } else if (settings.dataSourceError == true) {
                 outputError("Settings Error: Data Source Mismatch Detected");
             } else {
-                outputError("Error trying to load settings file. Try 'Clear All Settings'");
+                outputError("Error trying to load settings file, possibly from previous GUI. Try 'Clear All Settings'.");
             }
         }
         settings.loadDialogName = null; //reset this variable for future use
