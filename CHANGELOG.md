@@ -1,6 +1,15 @@
 # v4.1.2
 Use OpenBCIHub v2.0.8 please.
 
+## Beta 2
+
+### Improvements
+* Add additional button hover text
+* Console log message cleanup
+
+### Bug Fixes
+* Fix #418 and #493
+
 ## Beta 1
 
 ### Improvements
