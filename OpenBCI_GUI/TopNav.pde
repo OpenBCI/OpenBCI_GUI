@@ -273,7 +273,6 @@ class TopNav {
         } else {
             image(consoleImgWhite, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
         }
-        // highRezButton.draw();
         tutorialsButton.draw();
         issuesButton.draw();
         shopButton.draw();
@@ -319,10 +318,6 @@ class TopNav {
                 layoutButton.setIsActive(true);
                 //toggle layout window to enable the selection of your container layoutButton...
             }
-        }
-        if (configButton.isMouseHere()) {
-            configButton.setIsActive(true);
-            //toggle save/load window
         }
 
         //was control panel button pushed
@@ -370,6 +365,10 @@ class TopNav {
             updateGuiVersionButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
+        if (configButton.isMouseHere()) {
+            configButton.setIsActive(true);
+            //toggle save/load window
+        }
 
 
         layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
@@ -389,6 +388,7 @@ class TopNav {
         if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
             tutorialSelector.toggleVisibility();
             tutorialsButton.setIsActive(true);
+            configButton.setIgnoreHover(true);
         }
 
         if (issuesButton.isMouseHere() && issuesButton.isActive()) {
@@ -406,15 +406,13 @@ class TopNav {
             updateGuiVersionButton.goToURL();
         }
 
-        if (configButton.isMouseHere() && configButton.isActive()) {
+        //make Help button and Settings button mutually exclusive
+        if (!tutorialSelector.isVisible && configButton.isMouseHere() && configButton.isActive()) {
             configSelector.toggleVisibility();
             configButton.setIsActive(true);
         }
 
-
-
         if (systemMode == SYSTEMMODE_POSTINIT) {
-
             if (!tutorialSelector.isVisible) { //make sure that you can't open the layout selector accidentally
                 if (layoutButton.isMouseHere() && layoutButton.isActive()) {
                     layoutSelector.toggleVisibility();
@@ -423,7 +421,6 @@ class TopNav {
                     println("TopNav: Layout Dropdown Opened");
                 }
             }
-
             stopButton.setIsActive(false);
             filtBPButton.setIsActive(false);
             filtNotchButton.setIsActive(false);
@@ -1020,7 +1017,8 @@ class TutorialSelector {
 
     TutorialSelector() {
         w = 180;
-        x = width - w - 3;
+        //account for consoleLog button, help button, and spacing
+        x = width - 33 - w - 3*2;
         y = (navBarHeight) - 3;
         margin = 6;
         b_w = w - margin*2;
@@ -1084,6 +1082,7 @@ class TutorialSelector {
         if (isVisible) {
             if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()) {
                 toggleVisibility();
+                topNav.configButton.setIgnoreHover(false);
             }
             for (int i = 0; i < tutorialOptions.size(); i++) {
                 if (tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()) {
