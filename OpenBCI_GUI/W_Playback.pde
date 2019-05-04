@@ -42,6 +42,7 @@ class W_playback extends Widget {
             navHeight - 6,
             "SELECT PLAYBACK FILE",
             fontInfo.buttonLabel_size);
+        selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
         //make a MenuList
         int initialWidth = w - padding*2;
         cp5_playback = new ControlP5(pApplet);

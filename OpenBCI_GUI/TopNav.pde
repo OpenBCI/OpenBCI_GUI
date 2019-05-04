@@ -41,7 +41,7 @@ class TopNav {
     int webGUIVersionInt;
     int localGUIVersionInt;
     Boolean guiVersionIsUpToDate;
-    
+
     //constructor
     TopNav() {
         int w = 256;
@@ -945,7 +945,7 @@ class ConfigSelector {
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(newGreen);
         tempConfigButton.setFontColorNotActive(color(255));
-        tempConfigButton.setHelpText("Expert Mode enables advanced keyboard shortcuts and access to all GUI features");
+        tempConfigButton.setHelpText("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
         configOptions.add(tempConfigButton);
 
         //setup button 1 -- Save Custom Settings
@@ -974,6 +974,7 @@ class ConfigSelector {
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(cautionRed);
         tempConfigButton.setFontColorNotActive(color(255));
+        tempConfigButton.setHelpText("This will clear all user settings and playback history. You will be asked to confirm.");
         configOptions.add(tempConfigButton);
 
         //setup button 5 -- Are You Sure? No
@@ -988,6 +989,7 @@ class ConfigSelector {
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
         tempConfigButton.setFont(p5, 12);
+        tempConfigButton.setHelpText("Clicking 'Yes' will delete all user settings and stop system if running.");
         configOptions.add(tempConfigButton);
     }
 
