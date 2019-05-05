@@ -653,14 +653,16 @@ void initSystem() throws Exception {
 
     timeOfInit = millis(); //store this for timeout in case init takes too long
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
+    //Checking status here causes "error: resource busy" during init
+    /*
     if (eegDataSource == DATASOURCE_CYTON) {
         verbosePrint("OpenBCI_GUI: initSystem: Checking Cyton Connection...");
         system_status(rcBox);
         if (rcStringReceived.startsWith("Cyton dongle could not connect") || rcStringReceived.startsWith("Failure")) {
             throw new Exception("OpenBCI_GUI: initSystem: Dongle failed to connect to Cyton...");
         }
-
     }
+    */
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
     //initialize playback file if necessary
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
