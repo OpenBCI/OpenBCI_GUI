@@ -31,13 +31,6 @@ final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8
 final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
 enum BoardMode {
-<<<<<<< HEAD
-    DEFAULT,
-    DEBUG,
-    ANALOG,
-    DIGITAL,
-    MARKER
-=======
     DEFAULT(0),
     DEBUG(1),
     ANALOG(2),
@@ -49,7 +42,6 @@ enum BoardMode {
         value = newValue;
     }
     public int getValue() { return value; }
->>>>>>> origin/4.1.2-digitalreadFix
 }
 
 //------------------------------------------------------------------------
@@ -119,7 +111,7 @@ class Cyton {
     }
 
     public void setBoardMode(BoardMode boardMode) {
-        hub.sendCommand("/" + boardMode);
+        hub.sendCommand("/" + boardMode.getValue());
         curBoardMode = boardMode;
         println("Cyton: setBoardMode to :" + curBoardMode);
     }
