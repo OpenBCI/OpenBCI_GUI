@@ -940,19 +940,19 @@ void haltSystem() {
 
     if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
         if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
-            cyton.setBoardMode(BoardMode.DEFAULT);
+            cyton.setBoardMode(BoardMode.DEFAULT.getValue());
             output("Starting to read accelerometer");
             w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
             w_pulsesensor.analogReadOn = false;
             w_analogRead.analogModeButton.setString("Turn Analog Read On");
             w_analogRead.analogReadOn = false;
         } else if (w_digitalRead.digitalReadOn) {
-            cyton.setBoardMode(BoardMode.DEFAULT);
+            cyton.setBoardMode(BoardMode.DEFAULT.getValue());
             output("Starting to read accelerometer");
             w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
             w_digitalRead.digitalReadOn = false;
         } else if (w_markermode.markerModeOn) {
-            cyton.setBoardMode(BoardMode.DEFAULT);
+            cyton.setBoardMode(BoardMode.DEFAULT.getValue());
             output("Starting to read accelerometer");
             w_markermode.markerModeButton.setString("Turn Marker On");
             w_markermode.markerModeOn = false;

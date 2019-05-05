@@ -109,7 +109,7 @@ class W_DigitalRead extends Widget {
         if(visible && updating){
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //update channel bars ... this means feeding new EEG data into plots
+            //update digital read dots ... this means feeding new data into plots
             for(int i = 0; i < numDigitalReadDots; i++){
                 digitalReadDots[i].update();
             }
@@ -181,7 +181,7 @@ class W_DigitalRead extends Widget {
         if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
             if(cyton.isPortOpen()) {
                 if (cyton.getBoardMode() != BoardMode.DIGITAL) {
-                    cyton.setBoardMode(BoardMode.DIGITAL);
+                    cyton.setBoardMode(BoardMode.DIGITAL.getValue());
                     if (cyton.isWifi()) {
                         output("Starting to read digital inputs on pin marked D11, D12 and D17");
                     } else {
@@ -191,7 +191,7 @@ class W_DigitalRead extends Widget {
                     w_pulsesensor.analogReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT.getValue());
                     output("Starting to read accelerometer");
                 }
                 digitalReadOn = !digitalReadOn;
@@ -202,10 +202,8 @@ class W_DigitalRead extends Widget {
 };
 
 //========================================================================================================================
-//                      Analog Voltage BAR CLASS -- Implemented by Analog Read Widget Class
+//                      Digital Read Dot CLASS -- Implemented by Digital Read Widget Class
 //========================================================================================================================
-//this class contains the plot and buttons for a single channel of the Time Series widget
-//one of these will be created for each channel (4, 8, or 16)
 class DigitalReadDot{
 
     int digitalInputPin;

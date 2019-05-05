@@ -179,7 +179,7 @@ class W_AnalogRead extends Widget {
             // println("analogModeButton...");
             if(cyton.isPortOpen()) {
                 if (cyton.getBoardMode() != BoardMode.ANALOG) {
-                    cyton.setBoardMode(BoardMode.ANALOG);
+                    cyton.setBoardMode(BoardMode.ANALOG.getValue());
                     if (cyton.isWifi()) {
                         output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                     } else {
@@ -189,7 +189,7 @@ class W_AnalogRead extends Widget {
                     w_markermode.markerModeOn = false;
                     w_pulsesensor.analogReadOn = true;
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    cyton.setBoardMode(BoardMode.DEFAULT.getValue());
                     output("Starting to read accelerometer");
                 }
                 analogReadOn = !analogReadOn;
