@@ -38,11 +38,9 @@ enum BoardMode {
     MARKER(4);
 
     private final int value;
-
     BoardMode(final int newValue) {
         value = newValue;
     }
-
     public int getValue() { return value; }
 }
 
