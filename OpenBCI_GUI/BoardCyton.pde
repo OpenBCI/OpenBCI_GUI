@@ -31,11 +31,25 @@ final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8
 final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
 enum BoardMode {
+<<<<<<< HEAD
     DEFAULT,
     DEBUG,
     ANALOG,
     DIGITAL,
     MARKER
+=======
+    DEFAULT(0),
+    DEBUG(1),
+    ANALOG(2),
+    DIGITAL(3),
+    MARKER(4);
+
+    private final int value;
+    BoardMode(final int newValue) {
+        value = newValue;
+    }
+    public int getValue() { return value; }
+>>>>>>> origin/4.1.2-digitalreadFix
 }
 
 //------------------------------------------------------------------------
