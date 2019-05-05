@@ -917,7 +917,7 @@ class SoftwareSettings {
         //Apply Board Mode
         switch(loadBoardMode) { //Switch-case for loaded board mode
             case DEFAULT:
-                cyton.setBoardMode(BoardMode.DEFAULT);
+                cyton.setBoardMode(BoardMode.DEFAULT.getValue());
                 //outputSuccess("Starting to read accelerometer");
                 w_analogRead.analogReadOn = false;
                 w_pulsesensor.analogReadOn = false;
@@ -929,7 +929,7 @@ class SoftwareSettings {
             case ANALOG:
                 if (cyton.isPortOpen()) { //This code has been copied from AnalogRead
                     if (cyton.getBoardMode() != BoardMode.ANALOG) {
-                        cyton.setBoardMode(BoardMode.ANALOG);
+                        cyton.setBoardMode(BoardMode.ANALOG.getValue());
                         if (cyton.isWifi()) {
                             output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                         } else {
@@ -940,7 +940,7 @@ class SoftwareSettings {
                         w_pulsesensor.analogReadOn = true;
                         w_analogRead.analogReadOn = true;
                     } else {
-                        cyton.setBoardMode(BoardMode.DEFAULT);
+                        cyton.setBoardMode(BoardMode.DEFAULT.getValue());
                         output("Starting to read accelerometer");
                     }
                 }
@@ -948,7 +948,7 @@ class SoftwareSettings {
             case DIGITAL:
                 if (cyton.isPortOpen()) { //This code has been copied from DigitalRead
                     if (cyton.getBoardMode() != BoardMode.DIGITAL) {
-                        cyton.setBoardMode(BoardMode.DIGITAL);
+                        cyton.setBoardMode(BoardMode.DIGITAL.getValue());
                         if (cyton.isWifi()) {
                             output("Starting to read digital inputs on pin marked D11, D12 and D17");
                         } else {
@@ -958,7 +958,7 @@ class SoftwareSettings {
                         w_pulsesensor.analogReadOn = false;
                         w_markermode.markerModeOn = false;
                     } else {
-                        cyton.setBoardMode(BoardMode.DEFAULT);
+                        cyton.setBoardMode(BoardMode.DEFAULT.getValue());
                         outputSuccess("Starting to read accelerometer");
                     }
                 }
@@ -966,14 +966,14 @@ class SoftwareSettings {
             case MARKER:
                 if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
                     if (cyton.getBoardMode() != BoardMode.MARKER) {
-                        cyton.setBoardMode(BoardMode.MARKER);
+                        cyton.setBoardMode(BoardMode.MARKER.getValue());
                         output("Starting to read markers");
                         w_markermode.markerModeButton.setString("Turn Marker Off");
                         w_analogRead.analogReadOn = false;
                         w_pulsesensor.analogReadOn = false;
                         w_digitalRead.digitalReadOn = false;
                     } else {
-                        cyton.setBoardMode(BoardMode.DEFAULT);
+                        cyton.setBoardMode(BoardMode.DEFAULT.getValue());
                         output("Starting to read accelerometer");
                         w_markermode.markerModeButton.setString("Turn Marker On");
                         w_analogRead.analogReadOn = false;
