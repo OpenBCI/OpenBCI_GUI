@@ -54,7 +54,7 @@ Using the OpenBCI GUI allows you, the user, to quickly visualize adn use your Op
 
 ## Who are we?
 
-Mainly, we are OpenBCI. The original code writer was Chip Audette, along with Conor Russomanno and Joel Murphy. Currently AJ Keller is a main contributor to moving the GUI in a more stable direction. Wang Shu, Gabe, Colin and many other contractors/interns have contributed valuable code and widgets!  
+Mainly, we are OpenBCI. The original code writer was Chip Audette, along with Conor Russomanno and Joel Murphy. AJ Keller moved the GUI in a more stable direction. Currently, the GUI is maintained by the OpenBCI software team. Wang Shu, Gabe, Colin and many other contractors/interns have contributed valuable code and widgets!  
 
 ## What do we need?
 
@@ -75,7 +75,7 @@ Please note that it's very important to us that we maintain a positive and suppo
 
 ## Contact us
 
-If you want to report a problem or suggest an enhancement we'd love for you to [open an issue](../../issues) at this github repository because then we can get right on it. But you can also contact [AJ][link_aj_keller] by email (pushtheworldllc AT gmail DOT com) or on [twitter](https://twitter.com/aj-ptw).
+If you want to report a problem or suggest an enhancement, we'd love for you to [open an issue](../../issues) at this github repository so we can get right on it!
 
 ## Find out more
 
@@ -98,18 +98,12 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_processing]. If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
 
 ## Troubleshooting
-If you find your self saying:
-_When I run the OpenBCI UI from Processing on my Mac I don’t see the Ganglion_
-_But from the OpenBCI App (real one, not from the code), it works._
-_I feel like I need to authorize Processing to use Bluetooth… it that makes any sense at all_
-
-Please follow these instructions for getting the **critical** piece of software called the OpenBCI HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide-install-openbci-hub-on-maclinux) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-openbci-hub-on-windows). Thanks and happy hacking!
+The OpenBCI Hub comes installed in recent versions of the GUI. When running the GUI from Processing code, please follow these instructions for getting the **critical** piece of software called the OpenBCI HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide-install-openbci-hub-on-maclinux) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-openbci-hub-on-windows). Thanks and happy hacking!
 
 ## <a name="license"></a> License:
 
 MIT
 
-[link_aj_keller]: https://github.com/aj-ptw
 [link_shop_wifi_shield]: https://shop.openbci.com/collections/frontpage/products/wifi-shield?variant=44534009550
 [link_shop_ganglion]: https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board
 [link_shop_cyton]: https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel
