@@ -761,10 +761,18 @@ void initSystem() throws Exception {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-    //Init software settings: create default settings files, load user settings, etc.
-    settings.init();
+    if (eegDataSource == DATASOURCE_CYTON && hub.getFirmwareVersion().equals("v1.0.0")) {
+        abandonInit = true;
+    }
 
-    settings.initCheckPointFive();
+    if (!abandonInit) {
+        //Init software settings: create default settings files, load user settings, etc.
+        settings.init();
+        settings.initCheckPointFive();
+    } else {
+        haltSystem();
+        outputError("Failed to connect to data source. Check that the device is powered on.");
+    }
 
     //reset init variables
     midInit = false;

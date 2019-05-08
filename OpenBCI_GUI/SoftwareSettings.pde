@@ -282,7 +282,11 @@ class SoftwareSettings {
 
         //Take a snapshot of the default GUI settings on every system init
         println("InitSettings: Saving Default Settings to file!");
-        this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
+        try {
+            this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
+        } catch (Exception e) {
+            println("InitSettings: Error trying to save settings");
+        }
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
         //Otherwise, load default settings.
