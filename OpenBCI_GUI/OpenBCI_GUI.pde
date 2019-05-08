@@ -771,7 +771,8 @@ void initSystem() throws Exception {
         settings.initCheckPointFive();
     } else {
         haltSystem();
-        outputError("Failed to connect to data source. Check that the device is powered on.");
+        outputError("Failed to connect to data source. Check that the device is powered on and in range.");
+        controlPanel.open();
     }
 
     //reset init variables
