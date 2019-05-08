@@ -56,6 +56,7 @@ class W_Accelerometer extends Widget {
     private boolean updating = true;
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
+    private boolean accelerometerModeOn = true;
 
     // Synthetic data timer. Track frame count for synthetic data.
     int synthTime;
@@ -163,7 +164,7 @@ class W_Accelerometer extends Widget {
     // check the approrpiate board to see if accel mode is on
     boolean isAccelModeActive() {
         if (eegDataSource == DATASOURCE_CYTON) {
-            return cyton.getBoardMode() == BoardMode.DEFAULT;
+            return (cyton.getBoardMode() == BoardMode.DEFAULT) && accelerometerModeOn;
         }
         else if (eegDataSource == DATASOURCE_GANGLION) {
             return ganglion.isAccelModeActive();
@@ -272,17 +273,21 @@ class W_Accelerometer extends Widget {
                 } else{
                     ganglion.accelStart();
                 }
-                //accelerometerModeOn = !accelerometerModeOn;
             }
             accelModeButton.setIsActive(false);
         } else if (eegDataSource == DATASOURCE_CYTON) {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_analogRead.analogReadOn = false;
-                w_pulsesensor.analogReadOn = false;
-                w_digitalRead.digitalReadOn = false;
-                w_markermode.markerModeOn = false;
+                if (!accelerometerModeOn) {
+                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    output("Starting to read accelerometer");
+                    accelerometerModeOn = true;
+                    w_analogRead.analogReadOn = false;
+                    w_pulsesensor.analogReadOn = false;
+                    w_digitalRead.digitalReadOn = false;
+                    w_markermode.markerModeOn = false;
+                } else {
+                    accelerometerModeOn = false;
+                }
             }
             accelModeButton.setIsActive(false);
         }
