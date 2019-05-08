@@ -8,7 +8,7 @@ Use OpenBCIHub v2.0.8 please.
 * Console log message cleanup
 
 ### Bug Fixes
-* Fix #418, #493, and #506
+* Fix #418, #493, #506, #422, and #509
 
 ## Beta 1
 
