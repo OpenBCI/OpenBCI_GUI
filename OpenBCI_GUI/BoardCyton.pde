@@ -31,11 +31,17 @@ final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8
 final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
 enum BoardMode {
-    DEFAULT,
-    DEBUG,
-    ANALOG,
-    DIGITAL,
-    MARKER
+    DEFAULT(0),
+    DEBUG(1),
+    ANALOG(2),
+    DIGITAL(3),
+    MARKER(4);
+
+    private final int value;
+    BoardMode(final int newValue) {
+        value = newValue;
+    }
+    public int getValue() { return value; }
 }
 
 //------------------------------------------------------------------------
@@ -69,7 +75,7 @@ class Cyton {
     // needed by interfaceserial
     public int hardwareSyncStep = 0; //start this at 0...
     public String potentialFailureMessage = "";
-    public String defaultChannelSettings = "";    
+    public String defaultChannelSettings = "";
     public String daisyOrNot = "";
 
     //some get methods
@@ -105,9 +111,9 @@ class Cyton {
     }
 
     public void setBoardMode(BoardMode boardMode) {
-        hub.sendCommand("/" + boardMode);
+        hub.sendCommand("/" + boardMode.getValue());
         curBoardMode = boardMode;
-        print("Cyton: setBoardMode to :" + curBoardMode);
+        println("Cyton: setBoardMode to :" + curBoardMode);
     }
 
     public void setSampleRate(int _sampleRate) {

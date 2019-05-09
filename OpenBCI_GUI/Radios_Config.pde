@@ -15,6 +15,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+String rcStringReceived = "";
+
 void autoconnect(){
     //Serial locBoard; //local serial instance just to make sure it's openbci, then connect to it if it is
     String[] serialPorts = new String[Serial.list().length];
@@ -103,8 +105,12 @@ boolean confirm_connected(){
 /**** Helper function to read from the serial easily ****/
 boolean print_bytes(RadioConfigBox rc){
     if(board_message != null){
-        println(board_message.toString());
-        rc.print_onscreen(board_message.toString());
+        println("Radios_Config: " + board_message.toString());
+        rcStringReceived = board_message.toString();
+        if(rcStringReceived.equals("Failure: System is Down")) {
+            rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN.";
+        }
+        rc.print_onscreen(rcStringReceived);
         return true;
     } else {
         return false;
@@ -112,7 +118,7 @@ boolean print_bytes(RadioConfigBox rc){
 }
 
 void print_bytes_error(RadioConfigBox rcConfig){
-    println("Error reading from Serial/COM port");
+    println("Radios_Config: Error reading from Serial/COM port");
     rcConfig.print_onscreen("Error reading from Serial port. Try a different port?");
     board = null;
 }
@@ -123,11 +129,11 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
     if(openBCI_portName != "N/A"){
         output("Attempting to open Serial/COM port: " + openBCI_portName);
         try {
-            println("Radios_Config: connect_to_portName: attempting to open serial port: " + openBCI_portName);
+            println("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
             serial_output = new Serial(this, openBCI_portName, openBCI_baud); //open the com port
             serial_output.clear(); // clear anything in the com port's buffer
             // portIsOpen = true;
-            println("Radios_Config: connect_to_portName: port is open!");
+            println("Radios_Config: connect_to_portName: Port is open!");
             // changeState(HubState.COMINIT);
             board = serial_output;
             return true;
@@ -135,15 +141,14 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
         catch (RuntimeException e){
             if (e.getMessage().contains("<init>")) {
                 serial_output = null;
-                println("Radios_Config: connect_to_portName: port in use, trying again later...");
+                println("Radios_Config: connect_to_portName: Port in use, trying again later...");
                 // portIsOpen = false;
-            } else{
-                println("RunttimeException: " + e);
-                output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
+            } else {
+                println("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
                 rcConfig.print_onscreen("Error connecting to Serial port. Try a different port?");
             }
             board = null;
-            println("Radios_Config: connect_to_portName: failed to connect to " + openBCI_portName);
+            println("Failed to connect using " + openBCI_portName);
             return false;
         }
     } else {
@@ -180,6 +185,13 @@ void system_status(RadioConfigBox rcConfig){
         delay(100);
         if(!print_bytes(rcConfig)){
             print_bytes_error(rcConfig);
+        } else {
+            String[] s = split(rcStringReceived, ':');
+            if (s[0].equals("Success")) {
+                outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+            } else {
+                outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+            }
         }
     } else {
         println("Error, no board connected");
@@ -315,4 +327,3 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
         rcConfig.print_onscreen("No board connected!");
     }
 }
-

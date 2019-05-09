@@ -282,7 +282,11 @@ class SoftwareSettings {
 
         //Take a snapshot of the default GUI settings on every system init
         println("InitSettings: Saving Default Settings to file!");
-        this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
+        try {
+            this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
+        } catch (Exception e) {
+            println("InitSettings: Error trying to save settings");
+        }
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
         //Otherwise, load default settings.
@@ -294,6 +298,10 @@ class SoftwareSettings {
             //e.printStackTrace();
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
+            File f = new File(sketchPath()+System.getProperty("file.separator")+settingsFileToLoad);
+            if (f.exists()) {
+                if (f.delete()) println("SoftwareSettings: Removed old settings file.");
+            }
         }
     }
 
@@ -1454,8 +1462,9 @@ void loadConfigFile(File selection) {
             } else if (settings.dataSourceError == true) {
                 outputError("Settings Error: Data Source Mismatch Detected");
             } else {
-                outputError("Error trying to load settings file. Try 'Clear All Settings'");
+                outputError("Error trying to load settings file, possibly from previous GUI. Removing old settings.");
             }
+            if (selection.exists()) selection.delete();
         }
         settings.loadDialogName = null; //reset this variable for future use
     }

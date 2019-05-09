@@ -987,6 +987,10 @@ class Hub {
         return dataPacket.copyTo(target);
     }
 
+    public String getFirmwareVersion() {
+        return firmwareVersion;
+    }
+
     private void getRawValues(DataPacket_ADS1299 packet) {
         for (int i=0; i < nchan; i++) {
             int val = packet.values[i];

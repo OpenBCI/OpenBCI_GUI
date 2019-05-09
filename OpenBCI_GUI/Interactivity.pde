@@ -672,12 +672,14 @@ class Button {
     public boolean isMouseHere() {
         if ( overRect(but_x, but_y, but_dx, but_dy) ) {
             // cursor(HAND);
-            if(!helpTimerStarted){
-                helpTimerStarted = true;
-                mouseOverButtonStart = millis();
-            } else {
-                if(millis()-mouseOverButtonStart >= 1000){
-                    showHelpText = true;
+            if (!ignoreHover) {
+                if(!helpTimerStarted){
+                    helpTimerStarted = true;
+                    mouseOverButtonStart = millis();
+                } else {
+                    if(millis()-mouseOverButtonStart >= 1000){
+                        showHelpText = true;
+                    }
                 }
             }
             return true;
