@@ -78,6 +78,9 @@ class Cyton {
     public String defaultChannelSettings = "";
     public String daisyOrNot = "";
 
+    // used to detect and flag error during initialization
+    public boolean daisyNotAttached = false;
+
     //some get methods
     public float getSampleRate() {
         if (isSerial()) {
