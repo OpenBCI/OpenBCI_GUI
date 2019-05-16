@@ -771,7 +771,12 @@ void initSystem() throws Exception {
         settings.initCheckPointFive();
     } else {
         haltSystem();
-        outputError("Failed to connect to data source. Check that the device is powered on and in range. Also, try pressing AUTOSCAN.");
+        if (eegDataSource == DATASOURCE_CYTON) {
+            //Normally, this message appears if you have a dongle plugged in, and the Cyton is not On, or on the wrong channel.
+            outputError("Failed to connect to data source. Check that the device is powered on and in range. Also, try pressing AUTOSCAN.");
+        } else {
+            outputError("Failed to connect to data source. Check that the device is powered on and in range.");
+        }
         controlPanel.open();
     }
 
