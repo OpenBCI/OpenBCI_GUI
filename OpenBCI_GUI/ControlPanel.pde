@@ -315,7 +315,7 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
-    String bdfMessage = "Output set to BDF+ (biosemi data format based off EDF). File will require repair afterwards using the EDFbrowser Header Editor tool.";
+    String bdfMessage = "Output set to BDF+. File will need repair using the EDFbrowser Header Editor tool. Click Console Log for a link to instructions.";
     String bdfDetailedMsg = "Fix BDF file using EDFbrowser's Header Editor tool. Link to manual w/ instructions: https://www.teuniz.net/edfbrowser/EDFbrowser%20manual.html";
 
     ControlPanel(OpenBCI_GUI mainClass) {
