@@ -414,6 +414,7 @@ class ChannelBar{
         if(eegDataSource == DATASOURCE_CYTON){
             impButton_diameter = 22;
             impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
+            impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelNumber + ".");
             impCheckButton.setFont(h2, 16);
             impCheckButton.setCircleButton(true);
             impCheckButton.setColorNotPressed(color(255)); //White background
@@ -759,7 +760,7 @@ class PlaybackScrollbar {
     void update() {
         num_indices = indices;
 
-        checkMouseOver(); // check if mouse is over 
+        checkMouseOver(); // check if mouse is over
 
         if (mousePressed && over) {
             locked = true;

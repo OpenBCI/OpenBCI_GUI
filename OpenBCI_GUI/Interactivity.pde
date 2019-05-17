@@ -478,7 +478,6 @@ synchronized void mousePressed() {
                 println("OpenBCI_GUI: mousePressed: outside of CP clicked");
                 controlPanel.isOpen = false;
                 topNav.controlPanelCollapser.setIsActive(false);
-                output("Press the \"Press to Start\" button to initialize the data stream.");
             }
         }
     }

@@ -69,6 +69,7 @@ int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = 
 
 boolean midInit = false;
 boolean abandonInit = false;
+boolean systemHasHalted = false;
 
 final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
@@ -771,13 +772,24 @@ void initSystem() throws Exception {
         settings.initCheckPointFive();
     } else {
         haltSystem();
-        outputError("Failed to connect to data source. Check that the device is powered on and in range.");
+        if (eegDataSource == DATASOURCE_CYTON) {
+            //Normally, this message appears if you have a dongle plugged in, and the Cyton is not On, or on the wrong channel.
+            if (!cyton.daisyNotAttached) {
+                outputError("Failed to connect to data source. Check that the device is powered on and in range. Also, try pressing AUTOSCAN.");
+            } else {
+                outputError("Daisy is not attached to the Cyton board. Check connection or select 8 Channels.");
+            }
+        } else {
+            outputError("Failed to connect to data source. Check that the device is powered on and in range.");
+        }
         controlPanel.open();
     }
 
     //reset init variables
+    cyton.daisyNotAttached = false;
     midInit = false;
     abandonInit = false;
+    systemHasHalted = false;
 } //end initSystem
 
 /**
@@ -936,90 +948,93 @@ void stopButtonWasPressed() {
 
 //halt the data collection
 void haltSystem() {
-    println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-    if (initSystemButton.but_txt == "STOP SYSTEM") {
-        initSystemButton.but_txt = "START SYSTEM";
-    }
-
-    stopRunning();  //stop data transfer
-
-    //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
-    //This method establishes default and user settings for all data modes
-    if (systemMode == SYSTEMMODE_POSTINIT) {
-        settings.save(settings.getPath("User", eegDataSource, nchan));
-    }
-
-    if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
-        if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
-            cyton.setBoardMode(BoardMode.DEFAULT);
-            output("Starting to read accelerometer");
-            w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
-            w_pulsesensor.analogReadOn = false;
-            w_analogRead.analogModeButton.setString("Turn Analog Read On");
-            w_analogRead.analogReadOn = false;
-        } else if (w_digitalRead.digitalReadOn) {
-            cyton.setBoardMode(BoardMode.DEFAULT);
-            output("Starting to read accelerometer");
-            w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
-            w_digitalRead.digitalReadOn = false;
-        } else if (w_markermode.markerModeOn) {
-            cyton.setBoardMode(BoardMode.DEFAULT);
-            output("Starting to read accelerometer");
-            w_markermode.markerModeButton.setString("Turn Marker On");
-            w_markermode.markerModeOn = false;
+    if (!systemHasHalted) { //prevents system from halting more than once
+        println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
+        if (initSystemButton.but_txt == "STOP SYSTEM") {
+            initSystemButton.but_txt = "START SYSTEM";
         }
-    }
 
-    //reset variables for data processing
-    curDataPacketInd = -1;
-    lastReadDataPacketInd = -1;
-    pointCounter = 0;
-    currentTableRowIndex = 0;
-    prevBytes = 0;
-    prevMillis = millis();
-    byteRate_perSec = 0;
-    drawLoop_counter = 0;
-    // eegDataSource = -1;
-    //set all data source list items inactive
+        stopRunning();  //stop data transfer
 
-    //Fix issue for processing successive playback files
-    indices = 0;
-    hasRepeated = false;
-    has_processed = false;
-    settings.settingsLoaded = false; //on halt, reset this value
-
-    //reset connect loadStrings
-    openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-    ganglion_portName = "N/A";
-    wifi_portName = "N/A";
-
-    controlPanel.resetListItems();
-
-    if (eegDataSource == DATASOURCE_CYTON) {
-        closeLogFile();  //close log file
-        cyton.closeSDandPort();
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        if(ganglion.isCheckingImpedance()) {
-            ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+        //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
+        //This method establishes default and user settings for all data modes
+        if (systemMode == SYSTEMMODE_POSTINIT) {
+            settings.save(settings.getPath("User", eegDataSource, nchan));
         }
-        closeLogFile();  //close log file
-        ganglion.closePort();
-    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
+
+        if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
+            if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
+                cyton.setBoardMode(BoardMode.DEFAULT);
+                output("Starting to read accelerometer");
+                w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
+                w_pulsesensor.analogReadOn = false;
+                w_analogRead.analogModeButton.setString("Turn Analog Read On");
+                w_analogRead.analogReadOn = false;
+            } else if (w_digitalRead.digitalReadOn) {
+                cyton.setBoardMode(BoardMode.DEFAULT);
+                output("Starting to read accelerometer");
+                w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
+                w_digitalRead.digitalReadOn = false;
+            } else if (w_markermode.markerModeOn) {
+                cyton.setBoardMode(BoardMode.DEFAULT);
+                output("Starting to read accelerometer");
+                w_markermode.markerModeButton.setString("Turn Marker On");
+                w_markermode.markerModeOn = false;
+            }
+        }
+
+        //reset variables for data processing
+        curDataPacketInd = -1;
+        lastReadDataPacketInd = -1;
+        pointCounter = 0;
+        currentTableRowIndex = 0;
+        prevBytes = 0;
+        prevMillis = millis();
+        byteRate_perSec = 0;
+        drawLoop_counter = 0;
+        // eegDataSource = -1;
+        //set all data source list items inactive
+
+        //Fix issue for processing successive playback files
+        indices = 0;
+        hasRepeated = false;
+        has_processed = false;
+        settings.settingsLoaded = false; //on halt, reset this value
+
+        //reset connect loadStrings
+        openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
+        ganglion_portName = "N/A";
+        wifi_portName = "N/A";
+
+        controlPanel.resetListItems();
+
+        if (eegDataSource == DATASOURCE_CYTON) {
+            closeLogFile();  //close log file
+            cyton.closeSDandPort();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            if(ganglion.isCheckingImpedance()) {
+                ganglion.impedanceStop();
+                w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+            }
+            closeLogFile();  //close log file
+            ganglion.closePort();
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
+        }
+        systemMode = SYSTEMMODE_PREINIT;
+        hub.changeState(HubState.NOCOM);
+
+        recentPlaybackFilesHaveUpdated = false;
+
+        // bleList.items.clear();
+        // wifiList.items.clear();
+
+        // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
+        //   hub.searchDeviceStart();
+        // }
+
+        systemHasHalted = true;
     }
-    systemMode = SYSTEMMODE_PREINIT;
-    hub.changeState(HubState.NOCOM);
-    abandonInit = false;
-
-    recentPlaybackFilesHaveUpdated = false;
-
-    // bleList.items.clear();
-    // wifiList.items.clear();
-
-    // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
-    //   hub.searchDeviceStart();
-    // }
 
 }
 

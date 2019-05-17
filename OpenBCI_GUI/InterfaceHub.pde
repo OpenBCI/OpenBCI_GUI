@@ -369,6 +369,7 @@ class Hub {
             } else if (type.equals(TCP_TYPE_LOG)) {
                 String logMessage = json.getString(TCP_JSON_KEY_MESSAGE);
                 println("Hub: Log: " + logMessage);
+                if (logMessage.startsWith("no daisy to attach")) cyton.daisyNotAttached = true;
             } else if (type.equals(TCP_TYPE_PROTOCOL)) {
                 processProtocol(json);
             } else if (type.equals(TCP_TYPE_SCAN)) {
@@ -417,7 +418,7 @@ class Hub {
             case RESP_ERROR_UNABLE_TO_SET_BOARD_TYPE:
             default:
                 String msg = json.getString(TCP_JSON_KEY_MESSAGE);
-                killAndShowMsg(msg);
+                killAndShowMsg("Unable to process board type. " + msg);
                 break;
         }
     }
@@ -451,7 +452,7 @@ class Hub {
                         killAndShowMsg("WiFi Shield is connected to a Cyton. Please select LIVE (from Cyton) instead LIVE (from Cyton)");
                     }
                 } else {
-                    killAndShowMsg(message);
+                    killAndShowMsg("Unable to Connect: " + message);
                 }
                 break;
             case RESP_ERROR_WIFI_NEEDS_UPDATE:
@@ -517,11 +518,10 @@ class Hub {
     }
 
     private void killAndShowMsg(String msg) {
-        println("InterfaceHub: Stopping system...");
+        println("Hub: killAndShowMsg: " + msg);
         abandonInit = true;
         initSystemButton.setString("START SYSTEM");
         controlPanel.open();
-        outputError(msg);
         portIsOpen = false;
         haltSystem();
     }
@@ -964,7 +964,7 @@ class Hub {
                 switch (action) {
                     case TCP_ACTION_START:
                         message = json.getString(TCP_JSON_KEY_MESSAGE);
-                        killAndShowMsg(message);
+                        killAndShowMsg("ProcessSDCard: " + message);
                         break;
                     case TCP_ACTION_STOP:
                         message = json.getString(TCP_JSON_KEY_MESSAGE);

@@ -315,6 +315,8 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
+    String bdfMessage = "Output set to BDF+ (biosemi data format based off EDF). File will require repair afterwards using the EDFbrowser Header Editor tool.";
+    String bdfDetailedMsg = "Fix BDF file using EDFbrowser's Header Editor tool. Link to manual w/ instructions: https://www.teuniz.net/edfbrowser/EDFbrowser%20manual.html";
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
@@ -1345,7 +1347,8 @@ class ControlPanel {
         }
 
         if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
-            output("Output has been set to BDF+ (biosemi data format based off EDF)");
+            outputWarn(bdfMessage);
+            println(bdfDetailedMsg);
             outputDataSource = OUTPUT_SOURCE_BDF;
         }
 
@@ -1360,7 +1363,8 @@ class ControlPanel {
         }
 
         if (outputBDFGanglion.isMouseHere() && outputBDFGanglion.wasPressed) {
-            output("Output has been set to BDF+ (biosemi data format based off EDF)");
+            outputWarn(bdfMessage);
+            println(bdfDetailedMsg);
             outputDataSource = OUTPUT_SOURCE_BDF;
         }
 
@@ -3036,6 +3040,8 @@ public class MenuList extends controlP5.Controller {
         super( c, theName, 0, 0, theWidth, theHeight );
         c.register( this );
         menu = createGraphics(getWidth(),getHeight());
+        final ControlP5 cc = c; //allows check for isLocked() below
+        final String _theName = theName;
 
         menuFont = p4;
         getValueLabel().setSize(14);
@@ -3044,7 +3050,7 @@ public class MenuList extends controlP5.Controller {
         setView(new ControllerView<MenuList>() {
 
             public void display(PGraphics pg, MenuList t) {
-                if (updateMenu) {
+                if (updateMenu && !cc.get(MenuList.class, _theName).isLock()) {
                     updateMenu();
                 }
                 if (isMouseOver()) {
