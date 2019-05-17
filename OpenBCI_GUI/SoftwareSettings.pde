@@ -1435,7 +1435,7 @@ void saveConfigFile(File selection) {
         println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
         settings.saveDialogName = selection.getAbsolutePath();
         settings.save(settings.saveDialogName); //save current settings to JSON file in SavedData
-        outputSuccess("Settings Saved!"); //print success message to screen
+        outputSuccess("Settings Saved! The GUI will now load with these settings. Click \"Default\" to revert to factory settings."); //print success message to screen
         settings.saveDialogName = null; //reset this variable for future use
     }
 }

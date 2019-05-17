@@ -279,7 +279,7 @@ void parseKey(char val) {
         case 'n':
             println("Save key pressed!");
             settings.save(settings.getPath("User", eegDataSource, nchan));
-            outputSuccess("Settings Saved!");
+            outputSuccess("Settings Saved! The GUI will now load with these settings. Click \"Default\" to revert to factory settings.");
             break;
 
         ///////////////////// Load User settings uppercase N
