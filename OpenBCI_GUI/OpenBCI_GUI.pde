@@ -948,7 +948,7 @@ void stopButtonWasPressed() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) {
+    if (!systemHasHalted) { //prevents system from halting more than once
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         if (initSystemButton.but_txt == "STOP SYSTEM") {
             initSystemButton.but_txt = "START SYSTEM";
