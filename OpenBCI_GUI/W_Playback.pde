@@ -3,7 +3,7 @@
 /*
 //    W_playback.pde (ie "Playback History")
 //
-//    Allow user playback control from within GUI system and address #48 and #55 on Github
+//    Allow user to load playback files from within GUI without having to restart the system
 //                       Created: Richard Waltman - August 2018
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +30,7 @@ class W_playback extends Widget {
     private boolean visible = true;
     private boolean updating = true;
     private boolean menuHasUpdated = false;
+    private boolean menuListIsLocked = false;
 
     W_playback(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -74,7 +75,22 @@ class W_playback extends Widget {
             refreshPlaybackList();
             menuHasUpdated = true;
         }
-        playbackMenuList.updateMenu();
+        //Lock the MenuList if Widget selector is open, otherwise update
+        if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
+            if (!menuListIsLocked) {
+                cp5_playback.get(MenuList.class, "playbackMenuList").lock();
+                cp5_playback.get(MenuList.class, "playbackMenuList").setUpdate(false);
+                menuListIsLocked = true;
+            }
+        } else {
+            if (menuListIsLocked) {
+                cp5_playback.get(MenuList.class, "playbackMenuList").unlock();
+                cp5_playback.get(MenuList.class, "playbackMenuList").setUpdate(true);
+                menuListIsLocked = false;
+            }
+            playbackMenuList.updateMenu();
+        }
+
     }
 
     void draw() {
