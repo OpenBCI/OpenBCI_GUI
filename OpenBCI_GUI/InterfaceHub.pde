@@ -792,6 +792,7 @@ class Hub {
                 break;
             default:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);
+                verbosePrint("Hub: ProcessProtocol: Error Code " + code);
                 handleError(code, message);
                 break;
         }
@@ -900,7 +901,12 @@ class Hub {
             case RESP_ERROR_SCAN_COULD_NOT_START:
                 // Sent when err on search start
                 message = json.getString(TCP_JSON_KEY_MESSAGE, "");
-                handleError(code, message);
+                verbosePrint("Hub: ProcessScan: Error Code: " + code);
+                if (code == RESP_ERROR_SCAN_COULD_NOT_START) {
+                    outputError("Failed to start CSR dongle. May not be plugged in.");
+                } else {
+                    handleError(code, message);
+                }
                 searching = false;
                 break;
             case RESP_ERROR_SCAN_COULD_NOT_STOP:

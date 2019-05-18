@@ -1263,7 +1263,7 @@ class ControlPanel {
             controlPanel.hideAllBoxes();
             if (isHubObjectInitialized) {
                 if (isWindows()) {
-                    outputSuccess("Using CSR Dongle for Ganglion");
+                    output("Using CSR Dongle for Ganglion");
                 } else {
                     outputSuccess("Using built in BLE for Ganglion");
                 }
