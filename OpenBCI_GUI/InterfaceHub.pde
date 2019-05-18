@@ -903,7 +903,7 @@ class Hub {
                 message = json.getString(TCP_JSON_KEY_MESSAGE, "");
                 verbosePrint("Hub: ProcessScan: Error Code: " + code);
                 if (code == RESP_ERROR_SCAN_COULD_NOT_START) {
-                    outputError("Failed to start CSR dongle. May not be plugged in.");
+                    outputError("Failed to start dongle. It may not be plugged in.");
                 } else {
                     handleError(code, message);
                 }
