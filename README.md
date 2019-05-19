@@ -1,13 +1,11 @@
 # The OpenBCI GUI
 
 <p align="center">
-  <img alt="banner" src="/images/GUI-V2-SCREENSHOT.JPG/" width="600">
+  <img alt="banner" src="/images/GUI-V4-Screenshot.jpg/" width="600">
 </p>
 <p align="center" href="">
   Provide a stable and powerful interface for any OpenBCI device
 </p>
-
-[![Stories in Ready](https://badge.waffle.io/OpenBCI/OpenBCI_GUI_v2.0.svg?label=ready&title=Ready)](http://waffle.io/OpenBCI/OpenBCI_GUI_v2.0)
 
 ## Welcome!
 
@@ -50,7 +48,7 @@ The OpenBCI GUI will:
 * Provide a widget framework that allows users to create their own experiments.
 * Provide the ability to output data into a saved file for later offline processing.
 
-Using the OpenBCI GUI allows you, the user, to quickly visualize adn use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
+Using the OpenBCI GUI allows you, the user, to quickly visualize and use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
 
 ## Who are we?
 
@@ -96,6 +94,21 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 ## Installing
 
 Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_processing]. If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
+
+### System Requirements
+#### Hardware
+1.6 GHz or faster processor
+2 GB of RAM
+400 MB of hard drive space (minimum)
+
+#### Platforms
+OpenBCI GUI has been tested on the following platforms:
+OS X 10.8.5 or later
+Windows 8.1 and 10 (32-bit and 64-bit)
+Linux Ubuntu Desktop 18
+
+OpenGL acceleration is required.
+
 
 ## Troubleshooting
 The OpenBCI Hub comes installed in recent versions of the GUI. When running the GUI from Processing code, please follow these instructions for getting the **critical** piece of software called the OpenBCI HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide-install-openbci-hub-on-maclinux) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-openbci-hub-on-windows). Thanks and happy hacking!

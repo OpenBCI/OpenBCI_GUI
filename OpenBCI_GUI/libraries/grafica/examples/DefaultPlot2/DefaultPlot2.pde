@@ -82,8 +82,6 @@ void draw(){
   
   if (widthOfLastScreen != width || heightOfLastScreen != height) {
     println("OpenBCI_GUI: setup: RESIZED");
-    //screenHasBeenResized = true;
-    //timeOfLastScreenResize = millis();
     updateGraphs();
     widthOfLastScreen = width;
     heightOfLastScreen = height;

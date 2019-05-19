@@ -1,3 +1,61 @@
+# v4.1.2
+Use OpenBCIHub v2.0.8 please.
+
+## Beta 2
+
+### Improvements
+* Add additional button hover text
+* Console log message cleanup
+
+### Bug Fixes
+* Fix #418, #493, #506, #422, and #509
+
+## Beta 1
+
+### Improvements
+* Shorten file names in playback history when needed
+* New coloring for Band Power widget
+* Smooth and filter dropdowns added to Band Power
+* Improved axis labels on Band Power widget
+* Cleaned up some console output
+* On windows, properly scale for High DPI displays
+
+### Bug Fixes
+* Fix crash when opening the console window
+* Fix crash when selecting a playback file from the playback widget
+* Fix crash when loading old settings file
+* Fix buttons being clicked under dropdowns
+
+## Beta 0
+
+### New Features
+* Expert mode button to toggle advanced keyboard shortcuts
+* Clear GUI settings button w/ confirmation
+
+### Improvements
+* New icon for "back to start" button in Playback mode
+* Playback History widget functionality and appearance
+* Optimized playback history
+* Adjust Networking Widget appearance and scaling
+* Explicitly warn users when the HUB is not running
+
+### Bug Fixes
+* Fixed: Ganglion accelerometer starts "on" but data not streaming
+* Fixed: LSL streaming in standalone GUI
+
+# v4.1.1
+Use OpenBCIHub v2.0.7 please.
+
+## Beta 0
+
+### New Features
+* Added Console Log window in the GUI, so users can diagnose and report issues
+
+### Bug Fixes
+* Time in status line is not updated every seconds #443
+* Playback Mode: Playback slider and start data stream clears graphs #438
+* Load correct default settings for FFT X and Y axis
+
 # v4.1.0
 
 Use OpenBCIHub v2.0.6 please.
