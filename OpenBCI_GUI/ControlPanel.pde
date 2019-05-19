@@ -1995,7 +1995,7 @@ class InterfaceBoxGanglion {
             protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
             paddingCount ++;
             // Fix height for extra button
-            h += (24 + _padding);
+            h += padding;
         }
 
         protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
