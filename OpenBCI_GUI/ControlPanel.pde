@@ -155,7 +155,10 @@ public void controlEvent(ControlEvent theEvent) {
             return;
         }
 
-        protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+        // this button only used on mac
+        if(isMac()) {
+            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+        }
         protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
         protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
         protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
@@ -953,7 +956,8 @@ class ControlPanel {
                         }
                     }
 
-                    if (protocolBLEGanglion.isMouseHere()) {
+                    // this button only used on mac
+                    if (isMac() && protocolBLEGanglion.isMouseHere()) {
                         protocolBLEGanglion.setIsActive(true);
                         protocolBLEGanglion.wasPressed = true;
                         protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
@@ -966,13 +970,17 @@ class ControlPanel {
                         protocolWifiGanglion.wasPressed = true;
                         protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
                         protocolWifiGanglion.color_notPressed = isSelected_color;
-                        protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                        if(isMac()) {
+                            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                        }
                     }
 
                     if (protocolBLED112Ganglion.isMouseHere()) {
                         protocolBLED112Ganglion.setIsActive(true);
                         protocolBLED112Ganglion.wasPressed = true;
-                        protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                        if(isMac()) {
+                            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                        }
                         protocolBLED112Ganglion.color_notPressed = isSelected_color;
                         protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
                     }
@@ -1257,18 +1265,15 @@ class ControlPanel {
             println(output);
         }
 
-        if (protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
+        // this button only used on mac
+        if (isMac() && protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
             println("protocolBLEGanglion");
 
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             if (isHubObjectInitialized) {
-                if (isWindows()) {
-                    output("Using CSR Dongle for Ganglion");
-                } else {
-                    outputSuccess("Using built in BLE for Ganglion");
-                }
+                outputSuccess("Using built in BLE for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
                 ganglion.setInterface(INTERFACE_HUB_BLE);
                 // hub.searchDeviceStart();
@@ -1476,8 +1481,13 @@ class ControlPanel {
         refreshBLE.wasPressed = false;
         refreshWifi.setIsActive(false);
         refreshWifi.wasPressed = false;
-        protocolBLEGanglion.setIsActive(false);
-        protocolBLEGanglion.wasPressed = false;
+
+        // this button used on mac only
+        if (isMac()) {
+            protocolBLEGanglion.setIsActive(false);
+            protocolBLEGanglion.wasPressed = false;
+        }
+
         protocolBLED112Ganglion.setIsActive(false);
         protocolBLED112Ganglion.wasPressed = false;
         protocolWifiGanglion.setIsActive(false);
@@ -1977,18 +1987,21 @@ class InterfaceBoxGanglion {
         x = _x;
         y = _y;
         w = _w;
-        h = (24 + _padding) * 4; // Fix height for extra button for BLED112
         padding = _padding;
+        h = (24 + _padding) * 3;
 
+        int paddingCount = 1;
         if (isMac()) {
-            protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
-            protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-            protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
-        } else {
-            protocolBLEGanglion = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Bluetooth (CSR Dongle)", fontInfo.buttonLabel_size);
-            protocolBLED112Ganglion = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-            protocolWifiGanglion = new Button (x + padding, y + padding * 5 + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+            protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
+            paddingCount ++;
+            // Fix height for extra button
+            h += padding;
         }
+
+        protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+        paddingCount ++;
+        protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        paddingCount ++;
     }
 
     public void update() {}
@@ -2005,7 +2018,9 @@ class InterfaceBoxGanglion {
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
         popStyle();
 
-        protocolBLEGanglion.draw();
+        if (isMac()) {
+            protocolBLEGanglion.draw();
+        }
         protocolWifiGanglion.draw();
         protocolBLED112Ganglion.draw();
     }
