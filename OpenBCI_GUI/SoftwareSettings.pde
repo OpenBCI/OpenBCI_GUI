@@ -342,7 +342,7 @@ class SoftwareSettings {
                             tsInputTypeSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for input type
                             break;
                         case 3: //BIAS
-                        tsBiasSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for bias
+                            tsBiasSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for bias
                             break;
                         case 4: // SRB2
                             tsSrb2Setting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for srb2
@@ -374,7 +374,10 @@ class SoftwareSettings {
                 JSONObject saveTimeSeriesSettings = new JSONObject();
                 //Get integer value from char array channelSettingValues
                 tsActiveSetting = Character.getNumericValue(channelSettingValues[i][0]);
-                tsActiveSetting ^= 1;
+                //Catch case where channel settings is not 0 or 1, due to unkown error
+                tsActiveSetting = (tsActiveSetting == 0 ||  tsActiveSetting == 1) ?
+                    tsActiveSetting ^= 1 :
+                    1; //save channel setting as active if there is an error
                 saveTimeSeriesSettings.setInt("Channel_Number", (i+1));
                 saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
                 saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
@@ -1435,7 +1438,7 @@ void saveConfigFile(File selection) {
         println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
         settings.saveDialogName = selection.getAbsolutePath();
         settings.save(settings.saveDialogName); //save current settings to JSON file in SavedData
-        outputSuccess("Settings Saved!"); //print success message to screen
+        outputSuccess("Settings Saved! The GUI will now load with these settings. Click \"Default\" to revert to factory settings."); //print success message to screen
         settings.saveDialogName = null; //reset this variable for future use
     }
 }
