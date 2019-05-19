@@ -1957,8 +1957,8 @@ class InterfaceBoxCyton {
         h = (24 + _padding) * 3;
         padding = _padding;
 
-        protocolSerialCyton = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
-        protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        protocolSerialCyton = new Button (x + padding, y + padding * 3 + 4, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
+        protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
 
     public void update() {}
@@ -1989,18 +1989,19 @@ class InterfaceBoxGanglion {
         w = _w;
         padding = _padding;
         h = (24 + _padding) * 3;
+        int buttonHeight = 24;
 
         int paddingCount = 1;
         if (isMac()) {
-            protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
+            protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
             paddingCount ++;
             // Fix height for extra button
-            h += padding;
+            h += padding + buttonHeight;
         }
 
-        protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+        protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
         paddingCount ++;
-        protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
         paddingCount ++;
     }
 
