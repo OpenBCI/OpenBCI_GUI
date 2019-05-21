@@ -52,7 +52,7 @@ Using the OpenBCI GUI allows you, the user, to quickly visualize and use your Op
 
 ## Who are we?
 
-Mainly, we are OpenBCI. The original code writer was Chip Audette, along with Conor Russomanno and Joel Murphy. AJ Keller moved the GUI in a more stable direction. Currently, the GUI is maintained by the OpenBCI software team. Wang Shu, Gabe, Colin and many other contractors/interns have contributed valuable code and widgets!  
+Mainly, we are OpenBCI. The original code writer was Chip Audette, along with Conor Russomanno and Joel Murphy. AJ Keller, Gabriel Diaz, Richard Waltman, and Daniel Lasry have all made major contributions as well. 
 
 ## What do we need?
 
