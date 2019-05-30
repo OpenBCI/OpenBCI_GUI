@@ -457,6 +457,8 @@ public class OutputFile_BDF {
 
     public int nbSamplesPerAnnontation = 20;
 
+    private int totalByteCount = 0;
+
     /**
       * @description Creates an EDF writer! Name of output file based on current
       *  date and time.
@@ -574,7 +576,7 @@ public class OutputFile_BDF {
 
             // Write the annotations
             dstream.write('+');
-            String _t = str((millis() - timeDataRecordStart) / 1000);
+            String _t = Integer.toString((millis() - timeDataRecordStart) / 1000);
             int strLen = _t.length();
             for (int i = 0; i < strLen; i++) {
                 dstream.write(_t.charAt(i));
@@ -616,7 +618,13 @@ public class OutputFile_BDF {
 
         writeData(o);
         output("Data written. Closing new file.");
-        println("closeFile: wrote data");
+        try {
+            o.close();
+            println("closeFile: wrote data");
+        } catch (IOException e) {
+            println("Error closing BDF OutputStream");
+        }
+
     }
 
     public int getRecordsWritten() {
@@ -1006,7 +1014,7 @@ public class OutputFile_BDF {
         setStringArray(physicalMinimumAux, bdf_physical_minimum_ADC_Accel, nbAux);
         setStringArray(physicalMaximumAux, bdf_physical_maximum_ADC_Accel, nbAux);
         setStringArray(prefilteringAux, " ", nbAux);
-        setStringArray(nbSamplesPerDataRecordAux, str(fs_Hz), nbAux);
+        setStringArray(nbSamplesPerDataRecordAux, Integer.toString(fs_Hz), nbAux);
         setStringArray(reservedAux, " ", nbAux);
     }
 
@@ -1027,7 +1035,7 @@ public class OutputFile_BDF {
             setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit, 1);
         }
         setStringArray(prefilteringAnnotations, " ", 1);
-        nbSamplesPerDataRecordAnnotations[0] = str(nbSamplesPerAnnontation);
+        nbSamplesPerDataRecordAnnotations[0] = Integer.toString(nbSamplesPerAnnontation);
         setStringArray(reservedAnnotations, " ", 1);
     }
 
@@ -1045,7 +1053,7 @@ public class OutputFile_BDF {
         setStringArray(physicalMinimumEEG, bdf_physical_minimum_ADC_24bit, nbChan);
         setStringArray(physicalMaximumEEG, bdf_physical_maximum_ADC_24bit, nbChan);
         setStringArray(prefilteringEEG, " ", nbChan);
-        setStringArray(nbSamplesPerDataRecordEEG, str(fs_Hz), nbChan);
+        setStringArray(nbSamplesPerDataRecordEEG, Integer.toString(fs_Hz), nbChan);
         setStringArray(reservedEEG, " ", nbChan);
     }
 
@@ -1175,8 +1183,14 @@ public class OutputFile_BDF {
                 o.write(data);
                 data = input.read();
                 byteCount++;
+                if (isVerbose) {
+                    if (byteCount % (3*fs_Hz*nbChan) == 0) verbosePrint("+ 1 Second Of Data Written to BDF");
+                }
             }
-            println("writeData: finished: wrote " + byteCount + " bytes");
+            verbosePrint("writeData: finished: wrote " + byteCount + " bytes");
+            totalByteCount += byteCount;
+            verbosePrint("Estimated file size == " + totalByteCount);
+            totalByteCount = 0;
         }
         catch (IOException e) {
             print("writeData: ");
@@ -1209,11 +1223,14 @@ public class OutputFile_BDF {
             writeString(padStringRight(joinStringArray(temp2, " "), BDF_HEADER_SIZE_RECORDING_ID), o);
             writeString(getDateString(startTime, startDateFormat), o);
             writeString(getDateString(startTime, startTimeFormat), o);
-            writeString(padStringRight(str(getBytesInHeader()),BDF_HEADER_SIZE_BYTES_IN_HEADER), o);
+            writeString(padStringRight(Integer.toString(getBytesInHeader()),BDF_HEADER_SIZE_BYTES_IN_HEADER), o);
+            verbosePrint("writeHeader: Bytes in header == " + getBytesInHeader());
+            totalByteCount += getBytesInHeader();
             writeString(padStringRight("24BIT",BDF_HEADER_SIZE_RESERVED), o);//getContinuity(),BDF_HEADER_SIZE_RESERVED), o);
-            writeString(padStringRight(str(dataRecordsWritten),BDF_HEADER_SIZE_NUMBER_DATA_RECORDS), o);
+            writeString(padStringRight(Integer.toString(dataRecordsWritten),BDF_HEADER_SIZE_NUMBER_DATA_RECORDS), o);
+            println("writeHeader: Writing " + dataRecordsWritten + " Seconds of Data to BDF");
             writeString(padStringRight("1",BDF_HEADER_SIZE_DURATION_OF_DATA_RECORD), o);
-            writeString(padStringRight(str(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
+            writeString(padStringRight(Integer.toString(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
 
             writeStringArrayWithPaddingTimes(labelsEEG, BDF_HEADER_NS_SIZE_LABEL, o);
             if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
@@ -1452,7 +1469,7 @@ void convert16channelLine() {
                 intData[i] = 0;
             }
             dataWriter.print(intData[i]);
-            consoleMsg = str(int(intData[i]));
+            consoleMsg = Integer.toString(int(intData[i]));
             if(hexNums.length > 1){
                 dataWriter.print(", ");
                 consoleMsg += ", ";

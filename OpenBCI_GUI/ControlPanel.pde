@@ -318,8 +318,7 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
-    String bdfMessage = "Output set to BDF+. File will need repair using the EDFbrowser Header Editor tool. Click Console Log for a link to instructions.";
-    String bdfDetailedMsg = "Fix BDF file using EDFbrowser's Header Editor tool. Link to manual w/ instructions: https://www.teuniz.net/edfbrowser/EDFbrowser%20manual.html";
+    String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
@@ -1347,13 +1346,12 @@ class ControlPanel {
         }
 
         if (outputODF.isMouseHere() && outputODF.wasPressed) {
-            output("Output has been set to OpenBCI Data Format");
+            output("Output has been set to OpenBCI Data Format.");
             outputDataSource = OUTPUT_SOURCE_ODF;
         }
 
         if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
-            outputWarn(bdfMessage);
-            println(bdfDetailedMsg);
+            output(bdfMessage);
             outputDataSource = OUTPUT_SOURCE_BDF;
         }
 
@@ -1363,13 +1361,12 @@ class ControlPanel {
         }
 
         if (outputODFGanglion.isMouseHere() && outputODFGanglion.wasPressed) {
-            output("Output has been set to OpenBCI Data Format");
+            output("Output has been set to OpenBCI Data Format.");
             outputDataSource = OUTPUT_SOURCE_ODF;
         }
 
         if (outputBDFGanglion.isMouseHere() && outputBDFGanglion.wasPressed) {
-            outputWarn(bdfMessage);
-            println(bdfDetailedMsg);
+            output(bdfMessage);
             outputDataSource = OUTPUT_SOURCE_BDF;
         }
 
@@ -1462,12 +1459,12 @@ class ControlPanel {
         }
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
-            output("select a file for playback");
+            output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", "playbackFileSelected");
         }
 
         if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("select an SD file to convert to a playback file");
+            output("Select an SD file to convert to a playback file");
             createPlaybackFileFromSD();
             selectInput("Select an SD file to convert for playback:", "sdFileSelected");
         }
