@@ -1,3 +1,11 @@
+# v4.1.3
+Use OpenBCIHub v2.0.8 please.
+
+## Beta 0
+
+### Bug Fixes
+* GUI now produces valid BDF files #Fixes 441
+
 # v4.1.2
 Use OpenBCIHub v2.0.8 please.
 
