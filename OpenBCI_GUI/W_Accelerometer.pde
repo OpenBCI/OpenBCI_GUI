@@ -50,7 +50,7 @@ class W_Accelerometer extends Widget {
 
     float yMaxMin;
 
-    float[] currentAccelVals;
+    private float[] currentAccelVals;
 
     private boolean visible = true;
     private boolean updating = true;
@@ -159,6 +159,10 @@ class W_Accelerometer extends Widget {
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
             }
         }
+    }
+
+    public float getCurrentAccelVal(int val) {
+        return currentAccelVals[val];
     }
 
     // check the approrpiate board to see if accel mode is on

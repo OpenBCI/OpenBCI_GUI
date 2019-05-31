@@ -928,7 +928,7 @@ class W_Networking extends Widget {
         //If using a TopNav object, ignore interaction with widget objects
         if (!cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).isOpen()){
             if (cp5_networking_dropdowns.getController(dropdownName).isMouseOver()){
-                println("++++Opening dropdown " + dropdownName);
+                //println("++++Opening dropdown " + dropdownName);
                 cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).open();
             }
         }
@@ -1087,6 +1087,8 @@ class Stream extends Thread {
                                 sendEMGData();
                             } else if (this.dataType.equals("BandPower")){
                                 sendPowerBandData();
+                            } else if (this.dataType.equals("Accel")){
+                                sendAccelerometerData();
                             } else if (this.dataType.equals("Focus")){
                                 sendFocusData();
                             } else if (this.dataType.equals("Pulse")){
@@ -1119,6 +1121,8 @@ class Stream extends Thread {
                         sendEMGData();
                     } else if (this.dataType.equals("BandPower")){
                         sendPowerBandData();
+                    } else if (this.dataType.equals("Accel")){
+                        sendAccelerometerData();
                     } else if (this.dataType.equals("Focus")){
                         sendFocusData();
                     } else if (this.dataType.equals("Pulse")){
@@ -1140,6 +1144,8 @@ class Stream extends Thread {
             return dataProcessing.newDataToSend;
         } else if (this.dataType.equals("BandPower")){
             return dataProcessing.newDataToSend;
+        } else if (this.dataType.equals("Accel")){
+            return dataProcessing.newDataToSend;
         } else if (this.dataType.equals("Focus")){
             return dataProcessing.newDataToSend;
         } else if (this.dataType.equals("Pulse")){
@@ -1156,6 +1162,8 @@ class Stream extends Thread {
         } else if (this.dataType.equals("EMG")){
             dataProcessing.newDataToSend = false;
         } else if (this.dataType.equals("BandPower")){
+            dataProcessing.newDataToSend = false;
+        } else if (this.dataType.equals("Accel")){
             dataProcessing.newDataToSend = false;
         } else if (this.dataType.equals("Focus")){
             dataProcessing.newDataToSend = false;
@@ -1478,6 +1486,65 @@ class Stream extends Thread {
                         float emg_normalized = w_emg.motorWidgets[i].output_normalized;
                         String emg_normalized_3dec = String.format("%.3f", emg_normalized);
                         serialMessage += emg_normalized_3dec + "]";
+                    try {
+                    //  println(serialMessage);
+                        this.serial_networking.write(serialMessage);
+                    } catch (Exception e){
+                        println(e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+
+    void sendAccelerometerData() {
+        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+        if (this.filter==0 || this.filter==1){
+            // OSC
+            if (this.protocol.equals("OSC")){
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                    msg.clearArguments();
+                    msg.add(i+1);
+                    //ADD Accelerometer data
+                    msg.add(w_accelerometer.getCurrentAccelVal(i));
+                    // println(i + " | " + w_accelerometer.getCurrentAccelVal(i));
+                    try {
+                        this.osc.send(msg,this.netaddress);
+                    } catch (Exception e){
+                        println(e.getMessage());
+                    }
+                }
+            // UDP
+            } else if (this.protocol.equals("UDP")) {
+                String outputter = "{\"type\":\"accelerometer\",\"data\":[";
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                    float accelData = w_accelerometer.getCurrentAccelVal(i);
+                    String accelData_3dec = String.format("%.3f", accelData);
+                    outputter += accelData_3dec;
+                    if (i != NUM_ACCEL_DIMS - 1) {
+                        outputter += ",";
+                    } else {
+                        outputter += "]}\r\n";
+                    }
+                }
+                try {
+                    this.udp.send(outputter, this.ip, this.port);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+                // LSL
+            } else if (this.protocol.equals("LSL")){
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                    dataToSend[i] = w_accelerometer.getCurrentAccelVal(i);
+                }
+                outlet_data.push_sample(dataToSend);
+            } else if (this.protocol.equals("Serial")){
+                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                        serialMessage = "[" + (i+1) + ","; //clear message
+                        float accelData = w_accelerometer.getCurrentAccelVal(i);
+                        String accelData_3dec = String.format("%.3f", accelData);
+                        serialMessage += accelData_3dec + "]";
                     try {
                     //  println(serialMessage);
                         this.serial_networking.write(serialMessage);
