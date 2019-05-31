@@ -1017,6 +1017,7 @@ void haltSystem() {
                 w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
             }
             closeLogFile();  //close log file
+            ganglion.impedanceArray = new int[NCHAN_GANGLION + 1];
             ganglion.closePort();
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
