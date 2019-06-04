@@ -4,7 +4,8 @@ Use OpenBCIHub v2.0.8 please.
 ## Beta 0
 
 ### Bug Fixes
-* GUI now produces valid BDF files #Fixes 441
+* GUI now produces valid BDF files Fixes #441
+* Relocate User data to Documents folder on all OS #535
 
 # v4.1.2
 Use OpenBCIHub v2.0.8 please.
