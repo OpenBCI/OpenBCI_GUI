@@ -302,7 +302,7 @@ void parseKey(char val) {
         case 'm':
             String picfname = "OpenBCI-" + getDateString() + ".jpg";
             println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(settings.macDocumentsPath + "Screenshots/" + picfname);    // take a shot of that!
+            saveFrame(settings.macDocumentsPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             break;
 
         default:

@@ -17,7 +17,7 @@
 //        - during system initialization between checkpoints 4 and 5
 //        - in Interactivty.pde with the rest of the keyboard shortcuts
 //        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
-//    -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
+//    -- This allows User to store snapshots of most GUI settings in Users/.../Documents/OpenBCI_GUI/Settings/
 //    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
 //
 //      Tips on adding a new setting:
@@ -86,13 +86,13 @@ class SoftwareSettings {
     int nwProtocolSave;
 
     //default configuration settings file location and file name variables
-    final String macDocumentsPath = System.getProperty("user.home")+File.separator+"Documents/OpenBCI_GUI/";
-    final String savedDataPath = (isMac())
+    final String macDocumentsPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
+    final String savedDataPath = (isMac() || isWindows())
         ? macDocumentsPath
-        : "SavedData/";
-    final String settingsPath = (isMac())
-        ? macDocumentsPath+"Settings/"
-        : "SavedData/Settings/";
+        : "SavedData"+File.separator;
+    final String settingsPath = (isMac() || isWindows())
+        ? macDocumentsPath+"Settings"+File.separator
+        : "SavedData"+File.separator+"Settings"+File.separator;
     final String[] userSettingsFiles = {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
@@ -1282,7 +1282,7 @@ class SoftwareSettings {
       * Output Success message to bottom of GUI when done
       */
     void clearAll() {
-        String pathToClear = (isMac())
+        String pathToClear = (isMac() || isWindows())
             ? settingsPath
             : sketchPath()+System.getProperty("file.separator")+settingsPath;
         for (File file: new File(pathToClear).listFiles())
