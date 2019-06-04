@@ -86,13 +86,8 @@ class SoftwareSettings {
     int nwProtocolSave;
 
     //default configuration settings file location and file name variables
-    final String macDocumentsPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
-    final String savedDataPath = (isMac() || isWindows())
-        ? macDocumentsPath
-        : "SavedData"+File.separator;
-    final String settingsPath = (isMac() || isWindows())
-        ? macDocumentsPath+"Settings"+File.separator
-        : "SavedData"+File.separator+"Settings"+File.separator;
+    public final String savedDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
+    public final String settingsPath = savedDataPath+"Settings"+File.separator;
     final String[] userSettingsFiles = {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
@@ -1282,10 +1277,7 @@ class SoftwareSettings {
       * Output Success message to bottom of GUI when done
       */
     void clearAll() {
-        String pathToClear = (isMac() || isWindows())
-            ? settingsPath
-            : sketchPath()+System.getProperty("file.separator")+settingsPath;
-        for (File file: new File(pathToClear).listFiles())
+        for (File file: new File(settingsPath).listFiles())
             if (!file.isDirectory())
                 file.delete();
         outputSuccess("All settings have been cleared!");
