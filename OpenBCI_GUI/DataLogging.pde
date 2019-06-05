@@ -52,7 +52,7 @@ void openNewLogFileBDF(String _fileName) {
     fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
 
     output_fname = fileoutput_bdf.fname;
-    println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
+    println("OpenBCI_GUI: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
 }
 
 /**
@@ -69,7 +69,7 @@ void openNewLogFileODF(String _fileName) {
     fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
 
     output_fname = fileoutput_odf.fname;
-    println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
+    println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
 }
 
 void closeLogFile() {
@@ -135,7 +135,7 @@ String getDateString() {
 
 //these functions are relevant to convertSDFile
 void createPlaybackFileFromSD() {
-    logFileName = "SavedData/SDconverted-"+getDateString()+".csv";
+    logFileName = settings.savedDataPath+"SDconverted-"+getDateString()+".csv";
     dataWriter = createWriter(logFileName);
     dataWriter.println("%OBCI SD Convert - " + getDateString());
     dataWriter.println("%");
@@ -171,7 +171,7 @@ public class OutputFile_rawtxt {
     OutputFile_rawtxt(float fs_Hz) {
 
         //build up the file name
-        fname = "SavedData"+System.getProperty("file.separator")+"OpenBCI-RAW-";
+        fname = settings.savedDataPath+"OpenBCI-RAW-";
 
         //add year month day to the file name
         fname = fname + year() + "-";
@@ -204,7 +204,7 @@ public class OutputFile_rawtxt {
 
     //variation on constructor to have custom name
     OutputFile_rawtxt(float fs_Hz, String _fileName) {
-        fname = "SavedData"+System.getProperty("file.separator")+"OpenBCI-RAW-";
+        fname = settings.savedDataPath+"OpenBCI-RAW-";
         fname += _fileName;
         fname += ".txt";
         output = createWriter(fname);        //open the file
@@ -933,7 +933,7 @@ public class OutputFile_BDF {
       * @returns {String} - A fully qualified name of an output file with `str`.
       */
     private String getFileName(String s) {
-        String output = "SavedData"+System.getProperty("file.separator")+"OpenBCI-BDF-";
+        String output = settings.savedDataPath+"OpenBCI-BDF-";
         output += s;
         output += ".bdf";
         return output;
