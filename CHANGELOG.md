@@ -1,5 +1,10 @@
 # v4.1.3
-Use OpenBCIHub v2.0.8 please.
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 1
+
+### Bug Fixes
+* Fix BLED112 Impedance check in HUB by allowing 2 seconds for command/success
 
 ## Beta 0
 
