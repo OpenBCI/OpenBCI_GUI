@@ -55,8 +55,8 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.2";
-String localGUIVersionDate = "May 2019";
+String localGUIVersionString = "v4.1.3-beta.1";
+String localGUIVersionDate = "June 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -1017,6 +1017,7 @@ void haltSystem() {
                 w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
             }
             closeLogFile();  //close log file
+            ganglion.impedanceArray = new int[NCHAN_GANGLION + 1];
             ganglion.closePort();
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();

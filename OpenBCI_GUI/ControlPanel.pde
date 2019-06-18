@@ -318,8 +318,7 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
-    String bdfMessage = "Output set to BDF+. File will need repair using the EDFbrowser Header Editor tool. Click Console Log for a link to instructions.";
-    String bdfDetailedMsg = "Fix BDF file using EDFbrowser's Header Editor tool. Link to manual w/ instructions: https://www.teuniz.net/edfbrowser/EDFbrowser%20manual.html";
+    String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
@@ -1347,13 +1346,12 @@ class ControlPanel {
         }
 
         if (outputODF.isMouseHere() && outputODF.wasPressed) {
-            output("Output has been set to OpenBCI Data Format");
+            output("Output has been set to OpenBCI Data Format.");
             outputDataSource = OUTPUT_SOURCE_ODF;
         }
 
         if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
-            outputWarn(bdfMessage);
-            println(bdfDetailedMsg);
+            output(bdfMessage);
             outputDataSource = OUTPUT_SOURCE_BDF;
         }
 
@@ -1363,13 +1361,12 @@ class ControlPanel {
         }
 
         if (outputODFGanglion.isMouseHere() && outputODFGanglion.wasPressed) {
-            output("Output has been set to OpenBCI Data Format");
+            output("Output has been set to OpenBCI Data Format.");
             outputDataSource = OUTPUT_SOURCE_ODF;
         }
 
         if (outputBDFGanglion.isMouseHere() && outputBDFGanglion.wasPressed) {
-            outputWarn(bdfMessage);
-            println(bdfDetailedMsg);
+            output(bdfMessage);
             outputDataSource = OUTPUT_SOURCE_BDF;
         }
 
@@ -1462,12 +1459,12 @@ class ControlPanel {
         }
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
-            output("select a file for playback");
+            output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", "playbackFileSelected");
         }
 
         if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("select an SD file to convert to a playback file");
+            output("Select an SD file to convert to a playback file");
             createPlaybackFileFromSD();
             selectInput("Select an SD file to convert for playback:", "sdFileSelected");
         }
@@ -1957,8 +1954,8 @@ class InterfaceBoxCyton {
         h = (24 + _padding) * 3;
         padding = _padding;
 
-        protocolSerialCyton = new Button (x + padding, y + padding * 3, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
-        protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        protocolSerialCyton = new Button (x + padding, y + padding * 3 + 4, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
+        protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
 
     public void update() {}
@@ -1989,18 +1986,19 @@ class InterfaceBoxGanglion {
         w = _w;
         padding = _padding;
         h = (24 + _padding) * 3;
+        int buttonHeight = 24;
 
         int paddingCount = 1;
         if (isMac()) {
-            protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
+            protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
             paddingCount ++;
             // Fix height for extra button
-            h += padding;
+            h += padding + buttonHeight;
         }
 
-        protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + 24, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+        protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
         paddingCount ++;
-        protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + 48, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
         paddingCount ++;
     }
 

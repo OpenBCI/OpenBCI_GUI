@@ -361,7 +361,7 @@ class TopNav {
             shopButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
-        if (updateGuiVersionButton.isMouseHere()) {
+        if (updateGuiVersionButton.isMouseHere() && !guiVersionIsUpToDate) {
             updateGuiVersionButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
