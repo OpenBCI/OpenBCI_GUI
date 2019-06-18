@@ -1504,7 +1504,7 @@ class Stream extends Thread {
 
 
     void sendAccelerometerData() {
-        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+        // UNFILTERED & FILTERED, Accel data is not affected by filters anyways
         if (this.filter==0 || this.filter==1){
             // OSC
             if (this.protocol.equals("OSC")){
