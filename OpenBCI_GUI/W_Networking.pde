@@ -1483,7 +1483,6 @@ class Stream extends Thread {
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
                 serialMessage = "";
                 for (int i=0;i<numChan;i++){
-
                     float emg_normalized = w_emg.motorWidgets[i].output_normalized;
                     String emg_normalized_3dec = String.format("%.3f", emg_normalized);
                     serialMessage += emg_normalized_3dec;
@@ -1546,17 +1545,25 @@ class Stream extends Thread {
                 }
                 outlet_data.push_sample(dataToSend);
             } else if (this.protocol.equals("Serial")){
+                // Data Format: +0.900,-0.042,+0.254\n
+                // 7 chars per axis, including \n char for Z
+                serialMessage = "";
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                        serialMessage = "[" + (i+1) + ","; //clear message
-                        float accelData = w_accelerometer.getCurrentAccelVal(i);
-                        String accelData_3dec = String.format("%.3f", accelData);
-                        serialMessage += accelData_3dec + "]";
-                    try {
-                    //  println(serialMessage);
-                        this.serial_networking.write(serialMessage);
-                    } catch (Exception e){
-                        println(e.getMessage());
+                    float accelData = w_accelerometer.getCurrentAccelVal(i);
+                    String accelData_3dec = String.format("%.3f", accelData);
+                    if (accelData >= 0) serialMessage += "+";
+                    serialMessage += accelData_3dec;
+                    if (i != NUM_ACCEL_DIMS - 1) {
+                        serialMessage += ",";
+                    } else {
+                        serialMessage += "\n";
                     }
+                }
+                try {
+                    //println(serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println(e.getMessage());
                 }
             }
         }
