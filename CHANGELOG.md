@@ -1,6 +1,9 @@
 # v4.1.3
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 2
+* Update Serial EMG output in Networking
+
 ## Beta 1
 
 ### Bug Fixes
