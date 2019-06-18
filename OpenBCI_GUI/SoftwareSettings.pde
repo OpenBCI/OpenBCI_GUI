@@ -17,7 +17,7 @@
 //        - during system initialization between checkpoints 4 and 5
 //        - in Interactivty.pde with the rest of the keyboard shortcuts
 //        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
-//    -- This allows User to store snapshots of most GUI settings in /SavedData/Settings/
+//    -- This allows User to store snapshots of most GUI settings in Users/.../Documents/OpenBCI_GUI/Settings/
 //    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
 //
 //      Tips on adding a new setting:
@@ -86,7 +86,8 @@ class SoftwareSettings {
     int nwProtocolSave;
 
     //default configuration settings file location and file name variables
-    final String settingsPath = "SavedData/Settings/";
+    public final String savedDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
+    public final String settingsPath = savedDataPath+"Settings"+File.separator;
     final String[] userSettingsFiles = {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
@@ -1276,7 +1277,7 @@ class SoftwareSettings {
       * Output Success message to bottom of GUI when done
       */
     void clearAll() {
-        for (File file: new File(sketchPath()+System.getProperty("file.separator")+settingsPath).listFiles())
+        for (File file: new File(settingsPath).listFiles())
             if (!file.isDirectory())
                 file.delete();
         outputSuccess("All settings have been cleared!");
@@ -1285,7 +1286,7 @@ class SoftwareSettings {
     /**
       * @description Used in System Init, TopNav, and Interactivity
       * @params mode="User"or"Default", dataSource, and number of channels
-      * @returns {String} - filePath in SavedData/Settings/ or Error if mode not specified correctly
+      * @returns {String} - filePath or Error if mode not specified correctly
       */
     String getPath(String _mode, int dataSource, int _nchan) {
         String filePath = settingsPath;

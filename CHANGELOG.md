@@ -1,10 +1,16 @@
 # v4.1.3
-Use OpenBCIHub v2.0.8 please.
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 1
+
+### Bug Fixes
+* Fix BLED112 Impedance check in HUB by allowing 2 seconds for command/success
 
 ## Beta 0
 
 ### Bug Fixes
-* GUI now produces valid BDF files #Fixes 441
+* GUI now produces valid BDF files Fixes #441
+* Relocate User data to Documents folder on all OS #535
 
 # v4.1.2
 Use OpenBCIHub v2.0.8 please.

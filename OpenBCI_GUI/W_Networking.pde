@@ -1481,17 +1481,23 @@ class Stream extends Thread {
                     outlet_data.push_sample(dataToSend);
                 }
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+                serialMessage = "";
                 for (int i=0;i<numChan;i++){
-                        serialMessage = "[" + (i+1) + ","; //clear message
-                        float emg_normalized = w_emg.motorWidgets[i].output_normalized;
-                        String emg_normalized_3dec = String.format("%.3f", emg_normalized);
-                        serialMessage += emg_normalized_3dec + "]";
-                    try {
-                    //  println(serialMessage);
-                        this.serial_networking.write(serialMessage);
-                    } catch (Exception e){
-                        println(e.getMessage());
+
+                    float emg_normalized = w_emg.motorWidgets[i].output_normalized;
+                    String emg_normalized_3dec = String.format("%.3f", emg_normalized);
+                    serialMessage += emg_normalized_3dec;
+                    if (i != numChan - 1) {
+                        serialMessage += ",";
+                    } else {
+                        serialMessage += "\n";
                     }
+                }
+                try {
+                    //println(serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println(e.getMessage());
                 }
             }
         }
