@@ -50,7 +50,7 @@ class W_Accelerometer extends Widget {
 
     float yMaxMin;
 
-    float[] currentAccelVals;
+    private float[] currentAccelVals;
 
     private boolean visible = true;
     private boolean updating = true;
@@ -159,6 +159,10 @@ class W_Accelerometer extends Widget {
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
             }
         }
+    }
+
+    public float getCurrentAccelVal(int val) {
+        return currentAccelVals[val];
     }
 
     // check the approrpiate board to see if accel mode is on
@@ -298,7 +302,7 @@ class W_Accelerometer extends Widget {
         float displayX = 0;
         float displayY = 0;
         float displayZ = 0;
-        if(eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
+        if (eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
             displayX = currentAccelVals[1]; //Swap X and Y
             displayY = currentAccelVals[0];
             displayZ = -currentAccelVals[2]; //Invert Z
@@ -310,9 +314,9 @@ class W_Accelerometer extends Widget {
         textAlign(LEFT,CENTER);
         textFont(h1,20);
         fill(ACCEL_X_COLOR);
-        text("X = " + nf(displayY, 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
+        text("X = " + nf(displayX, 1, 3) + " g", x+accPadding , y + (h/12)*1.5 - 5);
         fill(ACCEL_Y_COLOR);
-        text("Y = " + nf(displayX, 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
+        text("Y = " + nf(displayY, 1, 3) + " g", x+accPadding, y + (h/12)*3 - 5);
         fill(ACCEL_Z_COLOR);
         text("Z = " + nf(displayZ, 1, 3) + " g", x+accPadding, y + (h/12)*4.5 - 5);
     }

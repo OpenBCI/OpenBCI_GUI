@@ -1,6 +1,15 @@
 # v4.1.3
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 2
+
+### Improvements
+* Update Serial EMG output in Networking
+* Add Accelerometer and Aux Data output to Networking Widget #532
+
+### Bug Fixes
+* Accelerometer Widget values display correct data
+
 ## Beta 1
 
 ### Bug Fixes

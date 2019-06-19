@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////,
 
 class W_DigitalRead extends Widget {
-    int numDigitalReadDots;
+    private int numDigitalReadDots;
     float xF, yF, wF, hF;
     int dot_padding;
     float dot_x, dot_y, dot_h, dot_w; //values for actual time series chart (rectangle encompassing all digitalReadDots)
@@ -89,6 +89,10 @@ class W_DigitalRead extends Widget {
         } else {
             digitalModeButton.setHelpText("Click this button to activate/deactivate digital reading on the Cyton D11, D12, D13, D17 and D18");
         }
+    }
+
+    public int getNumDigitalReads() {
+        return numDigitalReadDots;
     }
 
     public boolean isVisible() {
@@ -208,8 +212,8 @@ class W_DigitalRead extends Widget {
 //one of these will be created for each channel (4, 8, or 16)
 class DigitalReadDot{
 
-    int digitalInputPin;
-    int digitalInputVal;
+    private int digitalInputPin;
+    private int digitalInputVal;
     String digitalInputString;
     int padding;
     boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
@@ -303,6 +307,10 @@ class DigitalReadDot{
         }
 
         popStyle();
+    }
+
+    public int getDigitalReadVal() {
+        return digitalInputVal;
     }
 
     void screenResized(int _x, int _y, int _w, int _h){

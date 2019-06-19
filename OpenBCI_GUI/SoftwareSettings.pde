@@ -136,7 +136,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
