@@ -637,7 +637,7 @@ int prevMillis = millis();
 int byteRate_perSec = 0;
 int drawLoop_counter = 0;
 
-//used to init system based on initial settings...Called from the "Start System" button in the GUI's ControlPanel
+//used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
 
 void setupWidgetManager() {
     wm = new WidgetManager(this);
@@ -950,8 +950,8 @@ void stopButtonWasPressed() {
 void haltSystem() {
     if (!systemHasHalted) { //prevents system from halting more than once
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-        if (initSystemButton.but_txt == "STOP SYSTEM") {
-            initSystemButton.but_txt = "START SYSTEM";
+        if (initSystemButton.but_txt == "STOP SESSION") {
+            initSystemButton.but_txt = "START SESSION";
         }
 
         stopRunning();  //stop data transfer
@@ -1267,7 +1267,7 @@ void systemDraw() { //for drawing to the screen
 
         if (millis() - timeOfInit > settings.initTimeoutThreshold) {
             haltSystem();
-            initSystemButton.but_txt = "START SYSTEM";
+            initSystemButton.but_txt = "START SESSION";
             output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
             controlPanel.open();
             attemptingToConnect = false;

@@ -450,7 +450,7 @@ synchronized void mousePressed() {
     // println("systemMode" + systemMode);
     // controlPanel.CPmousePressed();
 
-    //if not before "Start System" ... i.e. after initial setup
+    //if not before "START SESSION" ... i.e. after initial setup
     if (systemMode >= SYSTEMMODE_POSTINIT) {
 
         //limit interactivity of main GUI if control panel is open
