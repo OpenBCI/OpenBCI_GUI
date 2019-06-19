@@ -1087,8 +1087,18 @@ class Stream extends Thread {
                                 sendEMGData();
                             } else if (this.dataType.equals("BandPower")){
                                 sendPowerBandData();
-                            } else if (this.dataType.equals("Accel")){
-                                sendAccelerometerData();
+                            } else if (this.dataType.equals("Accel/Aux")){
+                                if (eegDataSource == DATASOURCE_CYTON) {
+                                    if (cyton.getBoardMode() == BoardMode.ANALOG) {
+                                        sendAnalogReadData();
+                                    } else if (cyton.getBoardMode() == BoardMode.DIGITAL) {
+                                        sendDigitalReadData();
+                                    } else {
+                                        sendAccelerometerData();
+                                    }
+                                } else {
+                                    sendAccelerometerData();
+                                }
                             } else if (this.dataType.equals("Focus")){
                                 sendFocusData();
                             } else if (this.dataType.equals("Pulse")){
@@ -1121,8 +1131,18 @@ class Stream extends Thread {
                         sendEMGData();
                     } else if (this.dataType.equals("BandPower")){
                         sendPowerBandData();
-                    } else if (this.dataType.equals("Accel")){
-                        sendAccelerometerData();
+                    } else if (this.dataType.equals("Accel/Aux")){
+                        if (eegDataSource == DATASOURCE_CYTON) {
+                            if (cyton.getBoardMode() == BoardMode.ANALOG) {
+                                sendAnalogReadData();
+                            } else if (cyton.getBoardMode() == BoardMode.DIGITAL) {
+                                sendDigitalReadData();
+                            } else {
+                                sendAccelerometerData();
+                            }
+                        } else {
+                            sendAccelerometerData();
+                        }
                     } else if (this.dataType.equals("Focus")){
                         sendFocusData();
                     } else if (this.dataType.equals("Pulse")){
@@ -1144,7 +1164,7 @@ class Stream extends Thread {
             return dataProcessing.newDataToSend;
         } else if (this.dataType.equals("BandPower")){
             return dataProcessing.newDataToSend;
-        } else if (this.dataType.equals("Accel")){
+        } else if (this.dataType.equals("Accel/Aux")){
             return dataProcessing.newDataToSend;
         } else if (this.dataType.equals("Focus")){
             return dataProcessing.newDataToSend;
@@ -1163,7 +1183,7 @@ class Stream extends Thread {
             dataProcessing.newDataToSend = false;
         } else if (this.dataType.equals("BandPower")){
             dataProcessing.newDataToSend = false;
-        } else if (this.dataType.equals("Accel")){
+        } else if (this.dataType.equals("Accel/Aux")){
             dataProcessing.newDataToSend = false;
         } else if (this.dataType.equals("Focus")){
             dataProcessing.newDataToSend = false;
@@ -1554,6 +1574,138 @@ class Stream extends Thread {
                     if (accelData >= 0) serialMessage += "+";
                     serialMessage += accelData_3dec;
                     if (i != NUM_ACCEL_DIMS - 1) {
+                        serialMessage += ",";
+                    } else {
+                        serialMessage += "\n";
+                    }
+                }
+                try {
+                    //println(serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println(e.getMessage());
+                }
+            }
+        }
+    }
+
+    void sendAnalogReadData() {
+        final int NUM_ANALOG_READS = w_analogRead.getNumAnalogReads();
+        // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
+        if (this.filter==0 || this.filter==1){
+            // OSC
+            if (this.protocol.equals("OSC")){
+                for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                    msg.clearArguments();
+                    msg.add(i+1);
+                    //ADD Accelerometer data
+                    msg.add(hub.validAccelValues[i]);
+                    // println(i + " | " + hub.validAccelValues[i]);
+                    try {
+                        this.osc.send(msg,this.netaddress);
+                    } catch (Exception e){
+                        println(e.getMessage());
+                    }
+                }
+            // UDP
+            } else if (this.protocol.equals("UDP")) {
+                String outputter = "{\"type\":\"auxiliary\",\"data\":[";
+                for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                    int auxData = hub.validAccelValues[i];
+                    String auxData_formatted = String.format("%04d", auxData);
+                    outputter += auxData_formatted;
+                    if (i != NUM_ANALOG_READS - 1) {
+                        outputter += ",";
+                    } else {
+                        outputter += "]}\r\n";
+                    }
+                }
+                try {
+                    this.udp.send(outputter, this.ip, this.port);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+                // LSL
+            } else if (this.protocol.equals("LSL")){
+                for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                    dataToSend[i] = hub.validAccelValues[i];
+                }
+                outlet_data.push_sample(dataToSend);
+            } else if (this.protocol.equals("Serial")){
+                // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
+                // 5 chars per pin, including \n char for Z
+                serialMessage = "";
+                for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                    int auxData = hub.validAccelValues[i];
+                    String auxData_formatted = String.format("%04d", auxData);
+                    serialMessage += auxData_formatted;
+                    if (i != NUM_ANALOG_READS - 1) {
+                        serialMessage += ",";
+                    } else {
+                        serialMessage += "\n";
+                    }
+                }
+                try {
+                    //println(serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println(e.getMessage());
+                }
+            }
+        }
+    }
+
+    void sendDigitalReadData() {
+        final int NUM_DIGITAL_READS = w_digitalRead.getNumDigitalReads();
+        // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
+        if (this.filter==0 || this.filter==1){
+            // OSC
+            if (this.protocol.equals("OSC")){
+                for (int i = 0; i < NUM_DIGITAL_READS; i++) {
+                    msg.clearArguments();
+                    msg.add(i+1);
+                    //ADD Accelerometer data
+                    msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
+                    // println(i + " | " + hub.validAccelValues[i]);
+                    try {
+                        this.osc.send(msg,this.netaddress);
+                    } catch (Exception e){
+                        println(e.getMessage());
+                    }
+                }
+            // UDP
+            } else if (this.protocol.equals("UDP")) {
+                String outputter = "{\"type\":\"auxiliary\",\"data\":[";
+                for (int i = 0; i < NUM_DIGITAL_READS; i++) {
+                    int auxData = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
+                    String auxData_formatted = String.format("%d", auxData);
+                    outputter += auxData_formatted;
+                    if (i != NUM_DIGITAL_READS - 1) {
+                        outputter += ",";
+                    } else {
+                        outputter += "]}\r\n";
+                    }
+                }
+                try {
+                    this.udp.send(outputter, this.ip, this.port);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+                // LSL
+            } else if (this.protocol.equals("LSL")){
+                for (int i = 0; i < NUM_DIGITAL_READS; i++) {
+                    dataToSend[i] = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
+                }
+                outlet_data.push_sample(dataToSend);
+            } else if (this.protocol.equals("Serial")){
+                // Data Format: 0,1,0,1,0\n or 0,1,0\n depending if WiFi Shield is used
+                // 2 chars per pin, including \n char last pin
+                serialMessage = "";
+                for (int i = 0; i < NUM_DIGITAL_READS; i++) {
+                    int auxData = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
+                    String auxData_formatted = String.format("%d", auxData);
+                    serialMessage += auxData_formatted;
+                    if (i != NUM_DIGITAL_READS - 1) {
                         serialMessage += ",";
                     } else {
                         serialMessage += "\n";
