@@ -609,7 +609,7 @@ class ControlPanel {
             strokeWeight(1);
             stroke(boxStrokeColor);
             rect(x, y, w, dataSourceBox.h); //draw background of box
-            String stopInstructions = "Press the \"STOP SYSTEM\" button to change your data source or edit system settings.";
+            String stopInstructions = "Press the \"STOP SESSION\" button to change your data source or edit system settings.";
             textAlign(CENTER, TOP);
             textFont(p4, 14);
             fill(bgColor);
@@ -1563,7 +1563,7 @@ class ControlPanel {
 };
 
 public void initButtonPressed(){
-    if (initSystemButton.but_txt == "START SYSTEM") {
+    if (initSystemButton.but_txt == "START SESSION") {
             if ((eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_NONE) || (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_NONE)) {
                 output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
                 initSystemButton.wasPressed = false;
@@ -1601,7 +1601,7 @@ public void initButtonPressed(){
                 return;
             } else { //otherwise, initiate system!
                 //verbosePrint("ControlPanel: CPmouseReleased: init");
-                initSystemButton.setString("STOP SYSTEM");
+                initSystemButton.setString("STOP SESSION");
                 //global steps to START SYSTEM
                 // prepare the serial port
                 if (eegDataSource == DATASOURCE_CYTON) {
@@ -1635,10 +1635,10 @@ public void initButtonPressed(){
             }
         }
 
-        //if system is already active ... stop system and flip button state back
+        //if system is already active ... stop session and flip button state back
         else {
             outputInfo("Learn how to use this application and more at docs.openbci.com");
-            initSystemButton.setString("START SYSTEM");
+            initSystemButton.setString("START SESSION");
             cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
             cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
             cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
@@ -2983,7 +2983,7 @@ class InitBox {
         h = 50;
         padding = _padding;
 
-        initSystemButton = new Button (padding, y + padding, w-padding*2, h - padding*2, "START SYSTEM", fontInfo.buttonLabel_size);
+        initSystemButton = new Button (padding, y + padding, w-padding*2, h - padding*2, "START SESSION", fontInfo.buttonLabel_size);
     }
 
     public void update() {

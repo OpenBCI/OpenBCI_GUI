@@ -520,7 +520,7 @@ class Hub {
     private void killAndShowMsg(String msg) {
         println("Hub: killAndShowMsg: " + msg);
         abandonInit = true;
-        initSystemButton.setString("START SYSTEM");
+        initSystemButton.setString("START SESSION");
         controlPanel.open();
         portIsOpen = false;
         haltSystem();

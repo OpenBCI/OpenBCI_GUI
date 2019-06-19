@@ -6,6 +6,7 @@ Use OpenBCIHub v2.0.9 please.
 ### Improvements
 * Update Serial EMG output in Networking
 * Add Accelerometer and Aux Data output to Networking Widget #532
+* Rename "Start/Stop System" button to "Start/Stop Session"
 
 ### Bug Fixes
 * Accelerometer Widget values display correct data
