@@ -1234,7 +1234,9 @@ class Stream extends Thread {
                         dataToSend[j+numChan*i] = yLittleBuff_uV[j][i];
                     }
                 }
-                outlet_data.push_chunk(dataToSend);
+                // Add timestamp to LSL Stream
+                // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
+                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
                 // SERIAL
             } else if (this.protocol.equals("Serial")){         // Serial Output unfiltered
                 for (int i=0;i<nPointsPerUpdate;i++){
@@ -1295,7 +1297,8 @@ class Stream extends Thread {
                         dataToSend[j+numChan*i] = dataBuffY_filtY_uV[j][i];
                     }
                 }
-                outlet_data.push_chunk(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")){
                 for (int i=0;i<nPointsPerUpdate;i++){
                     serialMessage = "["; //clear message
@@ -1435,7 +1438,8 @@ class Stream extends Thread {
                         dataToSend[j+numChan*i] = dataProcessing.avgPowerInBins[i][j];
                     }
                 }
-                outlet_data.push_chunk(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")){
                 for (int i=0;i<numChan;i++){
                     serialMessage = "[" + (i+1) + ","; //clear message
@@ -1498,7 +1502,8 @@ class Stream extends Thread {
                     for (int j=0;j<numChan;j++){
                         dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
                     }
-                    outlet_data.push_sample(dataToSend);
+                    // Add timestamp to LSL Stream
+                    outlet_data.push_sample(dataToSend, System.currentTimeMillis());
                 }
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
                 serialMessage = "";
@@ -1563,7 +1568,8 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
                     dataToSend[i] = w_accelerometer.getCurrentAccelVal(i);
                 }
-                outlet_data.push_sample(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")){
                 // Data Format: +0.900,-0.042,+0.254\n
                 // 7 chars per axis, including \n char for Z
@@ -1630,7 +1636,8 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
                     dataToSend[i] = hub.validAccelValues[i];
                 }
-                outlet_data.push_sample(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")){
                 // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
                 // 5 chars per pin, including \n char for Z
@@ -1696,7 +1703,8 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                     dataToSend[i] = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
                 }
-                outlet_data.push_sample(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")){
                 // Data Format: 0,1,0,1,0\n or 0,1,0\n depending if WiFi Shield is used
                 // 2 chars per pin, including \n char last pin
@@ -1749,7 +1757,8 @@ class Stream extends Thread {
                 // convert boolean to float and only sends the first data
                 float temp = w_focus.isFocused ? 1.0 : 0.0;
                 dataToSend[0] = temp;
-                outlet_data.push_chunk(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             // Serial
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
                 serialMessage = ""; //clear message
@@ -1806,7 +1815,8 @@ class Stream extends Thread {
                     dataToSend[1] = w_pulsesensor.PulseWaveY[i];
                     dataToSend[2] = w_pulsesensor.IBI;
                 }
-                outlet_data.push_chunk(dataToSend);
+                // Add timestamp to LSL Stream
+                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
             // Serial
             } else if (this.protocol.equals("Serial")){     // Send Pulse Data (BPM,Signal,IBI) over Serial
                 for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++){
@@ -1844,7 +1854,7 @@ class Stream extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("UDP")){
-                this.udp.close();
+            this.udp.close();
         } else if (this.protocol.equals("LSL")){
             outlet_data.close();
         } else if (this.protocol.equals("Serial")){
