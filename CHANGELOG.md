@@ -9,6 +9,7 @@ Use OpenBCIHub v2.0.9 please.
 * Rename "Start/Stop System" button to "Start/Stop Session"
 
 ### Bug Fixes
+* Clear Playback History dropdown when settings are cleared #521
 * Accelerometer Widget values display correct data
 
 ## Beta 1
