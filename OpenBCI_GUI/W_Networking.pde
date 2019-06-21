@@ -925,7 +925,7 @@ class W_Networking extends Widget {
                 cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).close();
             }
         }
-        //If using a TopNav object, ignore interaction with widget objects
+        //If using a TopNav object, objects become locked and won't open
         if (!cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).isOpen()){
             if (cp5_networking_dropdowns.getController(dropdownName).isMouseOver()){
                 //println("++++Opening dropdown " + dropdownName);

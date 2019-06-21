@@ -27,9 +27,9 @@ ControlP5 cp5Popup;
 CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
     public void controlEvent(CallbackEvent theEvent) {
 
-        if (cp5.isMouseOver(cp5.get(Textfield.class, "fileName"))){
+        if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameCyton"))){
             println("CallbackListener: controlEvent: clearing cyton");
-            cp5.get(Textfield.class, "fileName").clear();
+            cp5.get(Textfield.class, "fileNameCyton").clear();
             // cp5.get(Textfield.class, "fileNameGanglion").clear();
 
         } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
@@ -98,11 +98,11 @@ Button getIpAddress;
 Button getFirmwareVersion;
 Button getMacAddress;
 Button getTypeOfAttachedBoard;
-Button sampleRate200;
+Button sampleRate200; //Ganglion
 Button sampleRate250;
 Button sampleRate500;
 Button sampleRate1000;
-Button sampleRate1600;
+Button sampleRate1600; //Ganglion
 Button latencyCyton5ms;
 Button latencyCyton10ms;
 Button latencyCyton20ms;
@@ -293,7 +293,7 @@ class ControlPanel {
     //various control panel elements that are unique to specific datasources
     DataSourceBox dataSourceBox;
     SerialBox serialBox;
-    SessionDataBox dataLogBox;
+    SessionDataBox dataLogBoxCyton;
     ChannelCountBox channelCountBox;
     InitBox initBox;
     SyntheticChannelCountBox synthChannelCountBox;
@@ -345,8 +345,8 @@ class ControlPanel {
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
         wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
 
-        dataLogBox = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON);
-        channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
+        dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON);
+        channelCountBox = new ChannelCountBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding);
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
         sampleRateCytonBox = new SampleRateCytonBox(x + w + x + w - 3, channelCountBox.y, w, h, globalPadding);
@@ -416,7 +416,7 @@ class ControlPanel {
         dataSourceBox.update();
         serialBox.update();
         bleBox.update();
-        dataLogBox.update();
+        dataLogBoxCyton.update();
         channelCountBox.update();
         synthChannelCountBox.update();
 
@@ -479,7 +479,7 @@ class ControlPanel {
                     if (cyton.getInterface() == INTERFACE_SERIAL) {
                         serialBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
                         serialBox.draw();
-                        dataLogBox.y = serialBox.y + serialBox.h;
+                        dataLogBoxCyton.y = serialBox.y + serialBox.h;
                         cp5.get(MenuList.class, "serialList").setVisible(true);
                         if (rcBox.isShowing) {
                             rcBox.draw();
@@ -493,7 +493,7 @@ class ControlPanel {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelList").setVisible(false);
-                                cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+                                cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                                 cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
@@ -504,7 +504,7 @@ class ControlPanel {
                         wifiBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
 
                         wifiBox.draw();
-                        dataLogBox.y = wifiBox.y + wifiBox.h;
+                        dataLogBoxCyton.y = wifiBox.y + wifiBox.h;
 
                         if (hub.getWiFiStyle() == WIFI_STATIC) {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
@@ -520,18 +520,16 @@ class ControlPanel {
                         latencyCytonBox.draw();
                         wifiTransferProtcolCytonBox.draw();
                     }
-                    channelCountBox.y = dataLogBox.y + dataLogBox.h;
+                    channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
                     sdBox.y = channelCountBox.y + channelCountBox.h;
                     sampleRateCytonBox.y = channelCountBox.y;
                     latencyCytonBox.y = sampleRateCytonBox.y + sampleRateCytonBox.h;
                     wifiTransferProtcolCytonBox.y = latencyCytonBox.y + latencyCytonBox.h;
-                    // dataLogBox.y = serialBox.y + serialBox.h;
-                    dataLogBox.draw();
                     channelCountBox.draw();
                     sdBox.draw();
-                    cp5.get(Textfield.class, "fileName").setVisible(true); //make sure the data file field is visible
+                    dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
+                    cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
-                    // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                     cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
@@ -540,7 +538,7 @@ class ControlPanel {
                 sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
-                // cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+                // cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
                 cp5.get(MenuList.class, "serialList").setVisible(false);
                 cp5.get(MenuList.class, "sdTimes").setVisible(false);
@@ -586,9 +584,8 @@ class ControlPanel {
                         sampleRateGanglionBox.draw();
                         wifiTransferProtcolGanglionBox.draw();
                     }
-                    // dataLogBox.y = bleBox.y + bleBox.h;
-                    dataLogBoxGanglion.draw();
-                    cp5.get(Textfield.class, "fileName").setVisible(false); //make sure the data file field is visible
+                    dataLogBoxGanglion.draw(); //Drawing here allows max file size dropdown to be drawn on top
+                    cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                 }
             } else {
@@ -620,6 +617,19 @@ class ControlPanel {
         textFont(p4, 14);
         cp5Popup.draw();
         cp5.draw();
+
+        //Drawing here allows max file size dropdown to be drawn on top of all other cp5 elements
+        if (systemMode != 10) {
+            if (eegDataSource == DATASOURCE_CYTON) {
+                if (cyton.getInterface() != INTERFACE_NONE) {
+                    dataLogBoxCyton.cp5_dataLog_dropdown.draw();
+                }
+            } else if (eegDataSource == DATASOURCE_GANGLION) {
+                if (ganglion.getInterface() != INTERFACE_NONE) {
+                    dataLogBoxGanglion.cp5_dataLog_dropdown.draw();
+                }
+            }
+        }
 
         popStyle();
     }
@@ -659,7 +669,7 @@ class ControlPanel {
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
         //
-        cp5.get(Textfield.class, "fileName").setVisible(false);
+        cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
         cp5.get(MenuList.class, "serialList").setVisible(false);
@@ -1078,7 +1088,7 @@ class ControlPanel {
             }
 
         }
-        // output("Text File Name: " + cp5.get(Textfield.class,"fileName").getText());
+        // output("Text File Name: " + cp5.get(Textfield.class,"fileNameCyton").getText());
     }
 
     //mouse released in control panel
@@ -1333,7 +1343,7 @@ class ControlPanel {
         for (int i = 0; i < autoSessionName.length; i++) {
             if (autoSessionName[i].isMouseHere() && autoSessionName[i].wasPressed) {
                 String _board = (i == 0) ? "Cyton" : "Ganglion";
-                String _textField = (i == 0) ? "fileName" : "fileNameGanglion";
+                String _textField = (i == 0) ? "fileNameCyton" : "fileNameGanglion";
                 output("Autogenerated " + _board + " \"File Name\" based on current date/time");
                 cp5.get(Textfield.class, _textField).setText(getDateString());
             }
@@ -1344,7 +1354,7 @@ class ControlPanel {
                 outputODF[i].setColorNotPressed(isSelected_color);
                 outputBDF[i].setColorNotPressed(colorNotPressed);
                 if (i == 0) {
-                    controlPanel.dataLogBox.setToODFHeight();
+                    controlPanel.dataLogBoxCyton.setToODFHeight();
                 } else {
                     controlPanel.dataLogBoxGanglion.setToODFHeight();
                 }
@@ -1356,7 +1366,7 @@ class ControlPanel {
                 outputBDF[i].setColorNotPressed(isSelected_color);
                 outputODF[i].setColorNotPressed(colorNotPressed);
                 if (i == 0) {
-                    controlPanel.dataLogBox.setToBDFHeight();
+                    controlPanel.dataLogBoxCyton.setToBDFHeight();
                 } else {
                     controlPanel.dataLogBoxGanglion.setToBDFHeight();
                 }
@@ -1607,7 +1617,7 @@ public void initButtonPressed(){
                 if(eegDataSource == DATASOURCE_GANGLION){
                     fileName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
                 } else if(eegDataSource == DATASOURCE_CYTON){
-                    fileName = cp5.get(Textfield.class, "fileName").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+                    fileName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
                 }
                 if (hub.getWiFiStyle() == WIFI_STATIC && (cyton.isWifi() || ganglion.isWifi())) {
                     wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
@@ -1628,7 +1638,7 @@ public void initButtonPressed(){
         else {
             outputInfo("Learn how to use this application and more at docs.openbci.com");
             initSystemButton.setString("START SESSION");
-            cp5.get(Textfield.class, "fileName").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
+            cp5.get(Textfield.class, "fileNameCyton").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
             cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
             cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
             haltSystem();
@@ -2016,7 +2026,7 @@ class InterfaceBoxGanglion {
 class SessionDataBox {
     int x, y, w, h, padding; //size and position
     int i; //0 for Cyton, 1 for Ganglion
-    String title;
+    String textfieldName;
     final int bdfModeHeight = 127;
     int odfModeHeight;
 
@@ -2024,8 +2034,10 @@ class SessionDataBox {
     final String[] fileDurations = {"No Limit", "10 Minutes", "20 Minutes", "40 Minutes", "60 Minutes", "90 Minutes"};
     final int maxDurTextWidth = 82;
     int maxDurText_x = 0;
+    String maxDurDropdownName;
+    boolean dropdownWasClicked = false;
 
-    SessionDataBox(int _x, int _y, int _w, int _h, int _padding, int _dataSource) {
+    SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource) {
         odfModeHeight = bdfModeHeight + 24 + _padding - 3;
         x = _x;
         y = _y;
@@ -2046,8 +2058,9 @@ class SessionDataBox {
         outputBDF[i].setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
         if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF[i].setColorNotPressed(isSelected_color); //make it appear like this one is already selected
 
-        title = (i == 0) ? "fileName" : "fileNameGanglion";
-        cp5.addTextfield(title)
+        //This textfield is controlled by the global cp5 instance
+        textfieldName = (i == 0) ? "fileNameCyton" : "fileNameGanglion";
+        cp5.addTextfield(textfieldName)
             .setPosition(x + 60, y + 32)
             .setCaptionLabel("")
             .setSize(187, 26)
@@ -2064,15 +2077,18 @@ class SessionDataBox {
             .onDoublePress(cb)
             .setAutoClear(true);
 
+        //The OpenBCI data format max duration dropdown is controlled by the local cp5 instance
         cp5_dataLog_dropdown = new ControlP5(ourApplet);
-        createDropdown("maxFileDurations", Arrays.asList(fileDurations));
+        maxDurDropdownName = (i == 0) ? "maxFileDurationCyton" : "maxFileDurationGanglion";
+        createDropdown(maxDurDropdownName, Arrays.asList(fileDurations));
         cp5_dataLog_dropdown.setGraphics(ourApplet, 0,0);
-        cp5_dataLog_dropdown.get(ScrollableList.class, "maxFileDurations").setPosition(x + padding*2 + (w-padding*3)/2, outputODF[i].but_y + 24 + padding);
-        cp5_dataLog_dropdown.get(ScrollableList.class, "maxFileDurations").setSize((w-padding*3)/2, (fileDurations.length + 1) * 24);
+        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
+        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setSize((w-padding*3)/2, (fileDurations.length + 1) * 24);
         cp5_dataLog_dropdown.setAutoDraw(false);
     }
 
     public void update() {
+        openCloseDropdown();
     }
 
     public void draw() {
@@ -2088,7 +2104,7 @@ class SessionDataBox {
         textFont(p4, 14);
         text("Name", x + padding, y + padding*2 + 14);
         popStyle();
-        cp5.get(Textfield.class, title).setPosition(x + 60, y + 32);
+        cp5.get(Textfield.class, textfieldName).setPosition(x + 60, y + 32);
         autoSessionName[i].but_y = y + 66;
         autoSessionName[i].draw();
         outputODF[i].but_y = y + padding*2 + 18 + 58;
@@ -2101,9 +2117,9 @@ class SessionDataBox {
             textFont(p4, 14);
             text("Max File Size", maxDurText_x, outputODF[i].but_y + outputODF[i].but_dy + padding*3 - 3);
             popStyle();
-            cp5_dataLog_dropdown.get(ScrollableList.class, "maxFileDurations").setVisible(true);
-            cp5_dataLog_dropdown.get(ScrollableList.class, "maxFileDurations").setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
-            cp5_dataLog_dropdown.draw();
+            cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
+            cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
+            //cp5_dataLog_dropdown.draw();
         }
     }
 
@@ -2144,6 +2160,11 @@ class SessionDataBox {
             ;
     }
 
+    //Returns: 0 for Cyton, 1 for Ganglion
+    public int getBoardType() {
+        return i;
+    }
+
     public void setToODFHeight() {
         h = odfModeHeight;
     }
@@ -2151,7 +2172,74 @@ class SessionDataBox {
     public void setToBDFHeight() {
         h = bdfModeHeight;
     }
+
+    private void openCloseDropdown() {
+        //Close the dropdown if it is open and mouse is no longer over it
+        if (cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
+            if (!cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
+                //println("----Closing dropdown " + maxDurDropdownName);
+                cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
+                if (i == 0) {
+                    //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
+                    chanButton8.setIgnoreHover(false);
+                    chanButton16.setIgnoreHover(false);
+                    cp5.get(MenuList.class, "sdTimes").unlock();
+                    cp5.get(MenuList.class, "sdTimes").setUpdate(true);
+                } else {
+                    //Ganglion + Wifi
+                    latencyGanglion5ms.setIgnoreHover(false);
+                    latencyGanglion10ms.setIgnoreHover(false);
+                    latencyGanglion20ms.setIgnoreHover(false);
+                    sampleRate200.setIgnoreHover(false);
+                    sampleRate1600.setIgnoreHover(false);
+                }
+            }
+
+        }
+        // Open the dropdown if it's not open, but not if it was recently clicked
+        if (!dropdownWasClicked) {
+            if (!cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
+                if (cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
+                    //println("++++Opening dropdown " + maxDurDropdownName);
+                    cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).open();
+                    if (i == 0) {
+                        //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
+                        chanButton8.setIgnoreHover(true);
+                        chanButton16.setIgnoreHover(true);
+                        cp5.get(MenuList.class, "sdTimes").lock();
+                        cp5.get(MenuList.class, "sdTimes").setUpdate(false);
+                    } else {
+                        //Ganglion + Wifi
+                        latencyGanglion5ms.setIgnoreHover(true);
+                        latencyGanglion10ms.setIgnoreHover(true);
+                        latencyGanglion20ms.setIgnoreHover(true);
+                        sampleRate200.setIgnoreHover(true);
+                        sampleRate1600.setIgnoreHover(true);
+                    }
+                }
+            }
+        } else {
+            // This flag is used to gate opening/closing the dropdown
+            dropdownWasClicked = false;
+        }
+    }
+
+    void closeDropdown() {
+        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
+        dropdownWasClicked = true;
+        //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
+    }
 };
+
+void maxFileDurationCyton (int n) {
+    controlPanel.dataLogBoxCyton.closeDropdown();
+    println("File Duration Selected: " + n);
+}
+
+void maxFileDurationGanglion (int n) {
+    controlPanel.dataLogBoxGanglion.closeDropdown();
+    println("File Duration Selected: " + n);
+}
 
 class ChannelCountBox {
     int x, y, w, h, padding; //size and position

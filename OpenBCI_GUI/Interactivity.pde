@@ -669,9 +669,9 @@ class Button {
     }
 
     public boolean isMouseHere() {
-        if ( overRect(but_x, but_y, but_dx, but_dy) ) {
-            // cursor(HAND);
-            if (!ignoreHover) {
+        if (!ignoreHover) {
+            if ( overRect(but_x, but_y, but_dx, but_dy) ) {
+                // cursor(HAND);
                 if(!helpTimerStarted){
                     helpTimerStarted = true;
                     mouseOverButtonStart = millis();
@@ -680,16 +680,18 @@ class Button {
                         showHelpText = true;
                     }
                 }
+                return true;
             }
-            return true;
-        }
-        else {
-            setIsActive(false);
-            if(helpTimerStarted){
-                buttonHelpText.setVisible(false);
-                showHelpText = false;
-                helpTimerStarted = false;
+            else {
+                setIsActive(false);
+                if(helpTimerStarted){
+                    buttonHelpText.setVisible(false);
+                    showHelpText = false;
+                    helpTimerStarted = false;
+                }
+                return false;
             }
+        } else {
             return false;
         }
     }
