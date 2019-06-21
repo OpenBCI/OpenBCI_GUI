@@ -619,15 +619,11 @@ class ControlPanel {
         cp5.draw();
 
         //Drawing here allows max file size dropdown to be drawn on top of all other cp5 elements
-        if (systemMode != 10) {
-            if (eegDataSource == DATASOURCE_CYTON) {
-                if (cyton.getInterface() != INTERFACE_NONE) {
-                    dataLogBoxCyton.cp5_dataLog_dropdown.draw();
-                }
-            } else if (eegDataSource == DATASOURCE_GANGLION) {
-                if (ganglion.getInterface() != INTERFACE_NONE) {
-                    dataLogBoxGanglion.cp5_dataLog_dropdown.draw();
-                }
+        if (systemMode != 10 && outputDataSource == OUTPUT_SOURCE_ODF) {
+            if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() != INTERFACE_NONE) {
+                dataLogBoxCyton.cp5_dataLog_dropdown.draw();
+            } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() != INTERFACE_NONE) {
+                dataLogBoxGanglion.cp5_dataLog_dropdown.draw();
             }
         }
 
@@ -2119,7 +2115,7 @@ class SessionDataBox {
             popStyle();
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
-            //cp5_dataLog_dropdown.draw();
+            //Dropdown is drawn at the end of ControlPanel.draw()
         }
     }
 
