@@ -282,9 +282,10 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
-    //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+    // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+    // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {
-        size(976, 549, P2D);
+        size(976, 742, P2D);
     } else {
         //default 1024x768 resolution with 2D graphics
         size(1024, 768, P2D);

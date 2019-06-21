@@ -1280,7 +1280,7 @@ class SoftwareSettings {
         for (File file: new File(settingsPath).listFiles())
             if (!file.isDirectory())
                 file.delete();
-        controlPanel.recentPlaybackBox.cp5_controlPanel_dropdown.get(ScrollableList.class, "recentFiles").clear();
+        controlPanel.recentPlaybackBox.cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
         controlPanel.recentPlaybackBox.shortFileNames.clear();
         controlPanel.recentPlaybackBox.longFilePaths.clear();
         outputSuccess("All settings have been cleared!");
