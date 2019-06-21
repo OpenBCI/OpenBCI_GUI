@@ -61,6 +61,7 @@ MenuList pollList;
 color boxColor = color(200);
 color boxStrokeColor = color(bgColor);
 color isSelected_color = color(184, 220, 105);
+color colorNotPressed = color(255);
 
 Button noHubShowDoc;
 
@@ -74,13 +75,9 @@ Button protocolBLED112Ganglion;
 Button protocolBLEGanglion;
 
 Button initSystemButton;
-Button autoFileName;
-Button outputBDF;
-Button outputODF;
-
-Button autoFileNameGanglion;
-Button outputODFGanglion;
-Button outputBDFGanglion;
+Button[] autoFileName = new Button[2]; //0 - Cyton , 1 - Ganglion
+Button[] outputBDF = new Button[2];
+Button[] outputODF = new Button[2];
 
 Button chanButton8;
 Button chanButton16;
@@ -118,7 +115,7 @@ Button wifiInternetProtocolCytonUDPBurst;
 Button wifiInternetProtocolGanglionTCP;
 Button wifiInternetProtocolGanglionUDP;
 Button wifiInternetProtocolGanglionUDPBurst;
-Button wifiIPAddressDyanmic;
+Button wifiIPAddressDynamic;
 Button wifiIPAddressStatic;
 
 Button synthChanButton4;
@@ -155,53 +152,55 @@ public void controlEvent(ControlEvent theEvent) {
             return;
         }
 
+        color _colorNotPressed = color(255);
+
         // this button only used on mac
         if(isMac()) {
-            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+            protocolBLEGanglion.setColorNotPressed(colorNotPressed);
         }
-        protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
-        protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-        protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
-        protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
+        protocolWifiGanglion.setColorNotPressed(colorNotPressed);
+        protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
+        protocolWifiCyton.setColorNotPressed(colorNotPressed);
+        protocolSerialCyton.setColorNotPressed(colorNotPressed);
 
         ganglion.setInterface(INTERFACE_NONE);
         cyton.setInterface(INTERFACE_NONE);
 
         if(newDataSource == DATASOURCE_CYTON){
             updateToNChan(8);
-            chanButton8.color_notPressed = isSelected_color;
-            chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
-            latencyCyton5ms.color_notPressed = autoFileName.color_notPressed;
-            latencyCyton10ms.color_notPressed = isSelected_color;
-            latencyCyton20ms.color_notPressed = autoFileName.color_notPressed;
+            chanButton8.setColorNotPressed(isSelected_color);
+            chanButton16.setColorNotPressed(colorNotPressed); //default color of button
+            latencyCyton5ms.setColorNotPressed(colorNotPressed);
+            latencyCyton10ms.setColorNotPressed(isSelected_color);
+            latencyCyton20ms.setColorNotPressed(colorNotPressed);
             hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color;
-            wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed;
-            wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed;
+            wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color);
+            wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed);
+            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed);
             hub.setWifiInternetProtocol(TCP);
             hub.setWiFiStyle(WIFI_DYNAMIC);
-            wifiIPAddressDyanmic.color_notPressed = isSelected_color;
-            wifiIPAddressStatic.color_notPressed = autoFileName.color_notPressed;
+            wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
+            wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_GANGLION){
             updateToNChan(4);
-            latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed;
-            latencyGanglion10ms.color_notPressed = isSelected_color;
-            latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed;
+            latencyGanglion5ms.setColorNotPressed(colorNotPressed);
+            latencyGanglion10ms.setColorNotPressed(isSelected_color);
+            latencyGanglion20ms.setColorNotPressed(colorNotPressed);
             hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color;
-            wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed;
-            wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed;
+            wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color);
+            wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed);
+            wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed);
             hub.setWifiInternetProtocol(TCP);
             hub.setWiFiStyle(WIFI_DYNAMIC);
-            wifiIPAddressDyanmic.color_notPressed = isSelected_color;
-            wifiIPAddressStatic.color_notPressed = autoFileName.color_notPressed;
+            wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
+            wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
             //GUI auto detects number of channels for playback when file is selected
         } else if(newDataSource == DATASOURCE_SYNTHETIC){
             updateToNChan(8);
-            synthChanButton4.color_notPressed = autoFileName.color_notPressed;
-            synthChanButton8.color_notPressed = isSelected_color;
-            synthChanButton16.color_notPressed = autoFileName.color_notPressed;
+            synthChanButton4.setColorNotPressed(colorNotPressed);
+            synthChanButton8.setColorNotPressed(isSelected_color);
+            synthChanButton16.setColorNotPressed(colorNotPressed);
         }
 
         //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
@@ -303,7 +302,7 @@ class ControlPanel {
     SDConverterBox sdConverterBox;
     NoHubBox noHubBox;
     BLEBox bleBox;
-    DataLogBoxGanglion dataLogBoxGanglion;
+    DataLogBox dataLogBoxGanglion;
     WifiBox wifiBox;
     InterfaceBoxCyton interfaceBoxCyton;
     InterfaceBoxGanglion interfaceBoxGanglion;
@@ -346,7 +345,7 @@ class ControlPanel {
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
         wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
 
-        dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
+        dataLogBox = new DataLogBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON);
         channelCountBox = new ChannelCountBox(x + w, (dataLogBox.y + dataLogBox.h), w, h, globalPadding);
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
@@ -370,7 +369,7 @@ class ControlPanel {
 
         // Ganglion
         bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
-        dataLogBoxGanglion = new DataLogBoxGanglion(x + w, (bleBox.y + bleBox.h), w, h, globalPadding);
+        dataLogBoxGanglion = new DataLogBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION);
         sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
         latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
         wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w, (latencyGanglionBox.y + latencyGanglionBox.h), w, h, globalPadding);
@@ -714,18 +713,18 @@ class ControlPanel {
                     popOutWifiConfigButton.wasPressed = true;
                 }
 
-                if(wifiIPAddressDyanmic.isMouseHere()) {
-                    wifiIPAddressDyanmic.setIsActive(true);
-                    wifiIPAddressDyanmic.wasPressed = true;
-                    wifiIPAddressDyanmic.color_notPressed = isSelected_color;
-                    wifiIPAddressStatic.color_notPressed = autoFileName.color_notPressed;
+                if(wifiIPAddressDynamic.isMouseHere()) {
+                    wifiIPAddressDynamic.setIsActive(true);
+                    wifiIPAddressDynamic.wasPressed = true;
+                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
+                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
                 }
 
                 if(wifiIPAddressStatic.isMouseHere()) {
                     wifiIPAddressStatic.setIsActive(true);
                     wifiIPAddressStatic.wasPressed = true;
-                    wifiIPAddressStatic.color_notPressed = isSelected_color;
-                    wifiIPAddressDyanmic.color_notPressed = autoFileName.color_notPressed;
+                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);
+                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);
                 }
             }
 
@@ -765,38 +764,37 @@ class ControlPanel {
                     }
 
 
-
-                    if (autoFileName.isMouseHere()) {
-                        autoFileName.setIsActive(true);
-                        autoFileName.wasPressed = true;
+                    if (autoFileName[0].isMouseHere()) {
+                        autoFileName[0].setIsActive(true);
+                        autoFileName[0].wasPressed = true;
                     }
 
-                    if (outputODF.isMouseHere()) {
-                        outputODF.setIsActive(true);
-                        outputODF.wasPressed = true;
-                        outputODF.color_notPressed = isSelected_color;
-                        outputBDF.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    if (outputODF[0].isMouseHere()) {
+                        outputODF[0].setIsActive(true);
+                        outputODF[0].wasPressed = true;
+                        outputODF[0].setColorNotPressed(isSelected_color);
+                        outputBDF[0].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
-                    if (outputBDF.isMouseHere()) {
-                        outputBDF.setIsActive(true);
-                        outputBDF.wasPressed = true;
-                        outputBDF.color_notPressed = isSelected_color;
-                        outputODF.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    if (outputBDF[0].isMouseHere()) {
+                        outputBDF[0].setIsActive(true);
+                        outputBDF[0].wasPressed = true;
+                        outputBDF[0].setColorNotPressed(isSelected_color);
+                        outputODF[0].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (chanButton8.isMouseHere()) {
                         chanButton8.setIsActive(true);
                         chanButton8.wasPressed = true;
-                        chanButton8.color_notPressed = isSelected_color;
-                        chanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        chanButton8.setColorNotPressed(isSelected_color);
+                        chanButton16.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (chanButton16.isMouseHere()) {
                         chanButton16.setIsActive(true);
                         chanButton16.wasPressed = true;
-                        chanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        chanButton16.color_notPressed = isSelected_color;
+                        chanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                        chanButton16.setColorNotPressed(isSelected_color);
                     }
 
                     if (getChannel.isMouseHere()){
@@ -819,15 +817,15 @@ class ControlPanel {
                     if (protocolWifiCyton.isMouseHere()) {
                         protocolWifiCyton.setIsActive(true);
                         protocolWifiCyton.wasPressed = true;
-                        protocolWifiCyton.color_notPressed = isSelected_color;
-                        protocolSerialCyton.color_notPressed = autoFileName.color_notPressed;
+                        protocolWifiCyton.setColorNotPressed(isSelected_color);
+                        protocolSerialCyton.setColorNotPressed(colorNotPressed);
                     }
 
                     if (protocolSerialCyton.isMouseHere()) {
                         protocolSerialCyton.setIsActive(true);
                         protocolSerialCyton.wasPressed = true;
-                        protocolWifiCyton.color_notPressed = autoFileName.color_notPressed;
-                        protocolSerialCyton.color_notPressed = isSelected_color;
+                        protocolWifiCyton.setColorNotPressed(colorNotPressed);
+                        protocolSerialCyton.setColorNotPressed(isSelected_color);
                     }
 
                     if (autoscan.isMouseHere()){
@@ -843,73 +841,73 @@ class ControlPanel {
                     if (sampleRate250.isMouseHere()) {
                         sampleRate250.setIsActive(true);
                         sampleRate250.wasPressed = true;
-                        sampleRate250.color_notPressed = isSelected_color;
-                        sampleRate500.color_notPressed = autoFileName.color_notPressed;
-                        sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        sampleRate250.setColorNotPressed(isSelected_color);
+                        sampleRate500.setColorNotPressed(colorNotPressed);
+                        sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (sampleRate500.isMouseHere()) {
                         sampleRate500.setIsActive(true);
                         sampleRate500.wasPressed = true;
-                        sampleRate500.color_notPressed = isSelected_color;
-                        sampleRate250.color_notPressed = autoFileName.color_notPressed;
-                        sampleRate1000.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        sampleRate500.setColorNotPressed(isSelected_color);
+                        sampleRate250.setColorNotPressed(colorNotPressed);
+                        sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (sampleRate1000.isMouseHere()) {
                         sampleRate1000.setIsActive(true);
                         sampleRate1000.wasPressed = true;
-                        sampleRate1000.color_notPressed = isSelected_color;
-                        sampleRate250.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        sampleRate500.color_notPressed = autoFileName.color_notPressed;
+                        sampleRate1000.setColorNotPressed(isSelected_color);
+                        sampleRate250.setColorNotPressed(colorNotPressed); //default color of button
+                        sampleRate500.setColorNotPressed(colorNotPressed);
                     }
 
                     if (latencyCyton5ms.isMouseHere()) {
                         latencyCyton5ms.setIsActive(true);
                         latencyCyton5ms.wasPressed = true;
-                        latencyCyton5ms.color_notPressed = isSelected_color;
-                        latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyCyton5ms.setColorNotPressed(isSelected_color);
+                        latencyCyton10ms.setColorNotPressed(colorNotPressed); //default color of button
+                        latencyCyton20ms.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (latencyCyton10ms.isMouseHere()) {
                         latencyCyton10ms.setIsActive(true);
                         latencyCyton10ms.wasPressed = true;
-                        latencyCyton10ms.color_notPressed = isSelected_color;
-                        latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        latencyCyton20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyCyton10ms.setColorNotPressed(isSelected_color);
+                        latencyCyton5ms.setColorNotPressed(colorNotPressed); //default color of button
+                        latencyCyton20ms.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (latencyCyton20ms.isMouseHere()) {
                         latencyCyton20ms.setIsActive(true);
                         latencyCyton20ms.wasPressed = true;
-                        latencyCyton20ms.color_notPressed = isSelected_color;
-                        latencyCyton5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        latencyCyton10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyCyton20ms.setColorNotPressed(isSelected_color);
+                        latencyCyton5ms.setColorNotPressed(colorNotPressed); //default color of button
+                        latencyCyton10ms.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (wifiInternetProtocolCytonTCP.isMouseHere()) {
                         wifiInternetProtocolCytonTCP.setIsActive(true);
                         wifiInternetProtocolCytonTCP.wasPressed = true;
-                        wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color;
-                        wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color);
+                        wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed); //default color of button
+                        wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (wifiInternetProtocolCytonUDP.isMouseHere()) {
                         wifiInternetProtocolCytonUDP.setIsActive(true);
                         wifiInternetProtocolCytonUDP.wasPressed = true;
-                        wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color;
-                        wifiInternetProtocolCytonTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        wifiInternetProtocolCytonUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolCytonUDP.setColorNotPressed(isSelected_color);
+                        wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed); //default color of button
+                        wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (wifiInternetProtocolCytonUDPBurst.isMouseHere()) {
                         wifiInternetProtocolCytonUDPBurst.setIsActive(true);
                         wifiInternetProtocolCytonUDPBurst.wasPressed = true;
-                        wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color;
-                        wifiInternetProtocolCytonTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        wifiInternetProtocolCytonUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
+                        wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed); //default color of button
+                        wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed); //default color of button
                     }
                 }
             }
@@ -924,23 +922,23 @@ class ControlPanel {
                     }
                 } else {
                     // This is where we check for button presses if we are searching for BLE devices
-                    if (autoFileNameGanglion.isMouseHere()) {
-                        autoFileNameGanglion.setIsActive(true);
-                        autoFileNameGanglion.wasPressed = true;
+                    if (autoFileName[1].isMouseHere()) {
+                        autoFileName[1].setIsActive(true);
+                        autoFileName[1].wasPressed = true;
                     }
 
-                    if (outputODFGanglion.isMouseHere()) {
-                        outputODFGanglion.setIsActive(true);
-                        outputODFGanglion.wasPressed = true;
-                        outputODFGanglion.color_notPressed = isSelected_color;
-                        outputBDFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    if (outputODF[1].isMouseHere()) {
+                        outputODF[1].setIsActive(true);
+                        outputODF[1].wasPressed = true;
+                        outputODF[1].setColorNotPressed(isSelected_color);
+                        outputODF[1].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
-                    if (outputBDFGanglion.isMouseHere()) {
-                        outputBDFGanglion.setIsActive(true);
-                        outputBDFGanglion.wasPressed = true;
-                        outputBDFGanglion.color_notPressed = isSelected_color;
-                        outputODFGanglion.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    if (outputBDF[1].isMouseHere()) {
+                        outputBDF[1].setIsActive(true);
+                        outputBDF[1].wasPressed = true;
+                        outputBDF[1].setColorNotPressed(isSelected_color);
+                        outputBDF[1].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (ganglion.isWifi()) {
@@ -959,18 +957,18 @@ class ControlPanel {
                     if (isMac() && protocolBLEGanglion.isMouseHere()) {
                         protocolBLEGanglion.setIsActive(true);
                         protocolBLEGanglion.wasPressed = true;
-                        protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-                        protocolBLEGanglion.color_notPressed = isSelected_color;
-                        protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+                        protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
+                        protocolBLEGanglion.setColorNotPressed(isSelected_color);
+                        protocolWifiGanglion.setColorNotPressed(colorNotPressed);
                     }
 
                     if (protocolWifiGanglion.isMouseHere()) {
                         protocolWifiGanglion.setIsActive(true);
                         protocolWifiGanglion.wasPressed = true;
-                        protocolBLED112Ganglion.color_notPressed = autoFileName.color_notPressed;
-                        protocolWifiGanglion.color_notPressed = isSelected_color;
+                        protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
+                        protocolWifiGanglion.setColorNotPressed(isSelected_color);
                         if(isMac()) {
-                            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                            protocolBLEGanglion.setColorNotPressed(colorNotPressed);
                         }
                     }
 
@@ -978,72 +976,72 @@ class ControlPanel {
                         protocolBLED112Ganglion.setIsActive(true);
                         protocolBLED112Ganglion.wasPressed = true;
                         if(isMac()) {
-                            protocolBLEGanglion.color_notPressed = autoFileName.color_notPressed;
+                            protocolBLEGanglion.setColorNotPressed(colorNotPressed);
                         }
-                        protocolBLED112Ganglion.color_notPressed = isSelected_color;
-                        protocolWifiGanglion.color_notPressed = autoFileName.color_notPressed;
+                        protocolBLED112Ganglion.setColorNotPressed(isSelected_color);
+                        protocolWifiGanglion.setColorNotPressed(colorNotPressed);
                     }
 
                     if (sampleRate200.isMouseHere()) {
                         sampleRate200.setIsActive(true);
                         sampleRate200.wasPressed = true;
-                        sampleRate200.color_notPressed = isSelected_color;
-                        sampleRate1600.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        sampleRate200.setColorNotPressed(isSelected_color);
+                        sampleRate1600.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (sampleRate1600.isMouseHere()) {
                         sampleRate1600.setIsActive(true);
                         sampleRate1600.wasPressed = true;
-                        sampleRate1600.color_notPressed = isSelected_color;
-                        sampleRate200.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        sampleRate1600.setColorNotPressed(isSelected_color);
+                        sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (latencyGanglion5ms.isMouseHere()) {
                         latencyGanglion5ms.setIsActive(true);
                         latencyGanglion5ms.wasPressed = true;
-                        latencyGanglion5ms.color_notPressed = isSelected_color;
-                        latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyGanglion5ms.setColorNotPressed(isSelected_color);
+                        latencyGanglion10ms.setColorNotPressed(colorNotPressed); //default color of button
+                        latencyGanglion20ms.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (latencyGanglion10ms.isMouseHere()) {
                         latencyGanglion10ms.setIsActive(true);
                         latencyGanglion10ms.wasPressed = true;
-                        latencyGanglion10ms.color_notPressed = isSelected_color;
-                        latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        latencyGanglion20ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyGanglion10ms.setColorNotPressed(isSelected_color);
+                        latencyGanglion5ms.setColorNotPressed(colorNotPressed); //default color of button
+                        latencyGanglion20ms.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (latencyGanglion20ms.isMouseHere()) {
                         latencyGanglion20ms.setIsActive(true);
                         latencyGanglion20ms.wasPressed = true;
-                        latencyGanglion20ms.color_notPressed = isSelected_color;
-                        latencyGanglion5ms.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        latencyGanglion10ms.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        latencyGanglion20ms.setColorNotPressed(isSelected_color);
+                        latencyGanglion5ms.setColorNotPressed(colorNotPressed); //default color of button
+                        latencyGanglion10ms.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (wifiInternetProtocolGanglionTCP.isMouseHere()) {
                         wifiInternetProtocolGanglionTCP.setIsActive(true);
                         wifiInternetProtocolGanglionTCP.wasPressed = true;
-                        wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color;
-                        wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color);
+                        wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed); //default color of button
+                        wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (wifiInternetProtocolGanglionUDP.isMouseHere()) {
                         wifiInternetProtocolGanglionUDP.setIsActive(true);
                         wifiInternetProtocolGanglionUDP.wasPressed = true;
-                        wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color;
-                        wifiInternetProtocolGanglionTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        wifiInternetProtocolGanglionUDPBurst.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolGanglionUDP.setColorNotPressed(isSelected_color);
+                        wifiInternetProtocolGanglionTCP.setColorNotPressed(colorNotPressed); //default color of button
+                        wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (wifiInternetProtocolGanglionUDPBurst.isMouseHere()) {
                         wifiInternetProtocolGanglionUDPBurst.setIsActive(true);
                         wifiInternetProtocolGanglionUDPBurst.wasPressed = true;
-                        wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color;
-                        wifiInternetProtocolGanglionTCP.color_notPressed = autoFileName.color_notPressed; //default color of button
-                        wifiInternetProtocolGanglionUDP.color_notPressed = autoFileName.color_notPressed; //default color of button
+                        wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(isSelected_color);
+                        wifiInternetProtocolGanglionTCP.setColorNotPressed(colorNotPressed); //default color of button
+                        wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed); //default color of button
                     }
                 }
             }
@@ -1065,25 +1063,25 @@ class ControlPanel {
                 if (synthChanButton4.isMouseHere()) {
                     synthChanButton4.setIsActive(true);
                     synthChanButton4.wasPressed = true;
-                    synthChanButton4.color_notPressed = isSelected_color;
-                    synthChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    synthChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    synthChanButton4.setColorNotPressed(isSelected_color);
+                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
                 }
 
                 if (synthChanButton8.isMouseHere()) {
                     synthChanButton8.setIsActive(true);
                     synthChanButton8.wasPressed = true;
-                    synthChanButton8.color_notPressed = isSelected_color;
-                    synthChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    synthChanButton16.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    synthChanButton8.setColorNotPressed(isSelected_color);
+                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
+                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
                 }
 
                 if (synthChanButton16.isMouseHere()) {
                     synthChanButton16.setIsActive(true);
                     synthChanButton16.wasPressed = true;
-                    synthChanButton16.color_notPressed = isSelected_color;
-                    synthChanButton4.color_notPressed = autoFileName.color_notPressed; //default color of button
-                    synthChanButton8.color_notPressed = autoFileName.color_notPressed; //default color of button
+                    synthChanButton16.setColorNotPressed(isSelected_color);
+                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
+                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
                 }
             }
 
@@ -1248,7 +1246,7 @@ class ControlPanel {
             }
         }
 
-        if(wifiIPAddressDyanmic.isMouseHere() && wifiIPAddressDyanmic.wasPressed) {
+        if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
             hub.setWiFiStyle(WIFI_DYNAMIC);
             wifiBox.h = 200;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
@@ -1339,35 +1337,24 @@ class ControlPanel {
             }
         }
 
-        //open or close serial port if serial port button is pressed (left button in serial widget)
-        if (autoFileName.isMouseHere() && autoFileName.wasPressed) {
-            output("Autogenerated Cyton \"File Name\" based on current date/time");
-            cp5.get(Textfield.class, "fileName").setText(getDateString());
-        }
 
-        if (outputODF.isMouseHere() && outputODF.wasPressed) {
-            output("Output has been set to OpenBCI Data Format.");
-            outputDataSource = OUTPUT_SOURCE_ODF;
-        }
+        for (int i = 0; i < autoFileName.length; i++) {
+            if (autoFileName[i].isMouseHere() && autoFileName[i].wasPressed) {
+                String _board = (i == 0) ? "Cyton" : "Ganglion";
+                String _textField = (i == 0) ? "fileName" : "fileNameGanglion";
+                output("Autogenerated " + _board + " \"File Name\" based on current date/time");
+                cp5.get(Textfield.class, _textField).setText(getDateString());
+            }
 
-        if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
-            output(bdfMessage);
-            outputDataSource = OUTPUT_SOURCE_BDF;
-        }
+            if (outputODF[i].isMouseHere() && outputODF[i].wasPressed) {
+                output("Output has been set to OpenBCI Data Format.");
+                outputDataSource = OUTPUT_SOURCE_ODF;
+            }
 
-        if (autoFileNameGanglion.isMouseHere() && autoFileNameGanglion.wasPressed) {
-            output("Autogenerated Ganglion \"File Name\" based on current date/time");
-            cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString());
-        }
-
-        if (outputODFGanglion.isMouseHere() && outputODFGanglion.wasPressed) {
-            output("Output has been set to OpenBCI Data Format.");
-            outputDataSource = OUTPUT_SOURCE_ODF;
-        }
-
-        if (outputBDFGanglion.isMouseHere() && outputBDFGanglion.wasPressed) {
-            output(bdfMessage);
-            outputDataSource = OUTPUT_SOURCE_BDF;
+            if (outputBDF[i].isMouseHere() && outputBDF[i].wasPressed) {
+                output(bdfMessage);
+                outputDataSource = OUTPUT_SOURCE_BDF;
+            }
         }
 
         if (chanButton8.isMouseHere() && chanButton8.wasPressed) {
@@ -1495,22 +1482,18 @@ class ControlPanel {
         protocolWifiCyton.wasPressed = false;
         initSystemButton.setIsActive(false);
         initSystemButton.wasPressed = false;
-        autoFileName.setIsActive(false);
-        autoFileName.wasPressed = false;
-        outputBDF.setIsActive(false);
-        outputBDF.wasPressed = false;
-        outputODF.setIsActive(false);
-        outputODF.wasPressed = false;
-        autoFileNameGanglion.setIsActive(false);
-        autoFileNameGanglion.wasPressed = false;
-        wifiIPAddressDyanmic.setIsActive(false);
-        wifiIPAddressDyanmic.wasPressed = false;
+        for (int i = 0; i < autoFileName.length; i++) {
+            autoFileName[i].setIsActive(false);
+            autoFileName[i].wasPressed = false;
+            outputBDF[i].setIsActive(false);
+            outputBDF[i].wasPressed = false;
+            outputODF[i].setIsActive(false);
+            outputODF[i].wasPressed = false;
+        }
+        wifiIPAddressDynamic.setIsActive(false);
+        wifiIPAddressDynamic.wasPressed = false;
         wifiIPAddressStatic.setIsActive(false);
         wifiIPAddressStatic.wasPressed = false;
-        outputBDFGanglion.setIsActive(false);
-        outputBDFGanglion.wasPressed = false;
-        outputODFGanglion.setIsActive(false);
-        outputODFGanglion.wasPressed = false;
         chanButton8.setIsActive(false);
         chanButton8.wasPressed = false;
         sampleRate200.setIsActive(false);
@@ -1850,10 +1833,10 @@ class WifiBox {
         h = 184 + _padding;
         padding = _padding;
 
-        wifiIPAddressDyanmic = new Button (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
-        if (hub.getWiFiStyle() == WIFI_DYNAMIC) wifiIPAddressDyanmic.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        wifiIPAddressDynamic = new Button (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
+        if (hub.getWiFiStyle() == WIFI_DYNAMIC) wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiIPAddressStatic = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
-        if (hub.getWiFiStyle() == WIFI_STATIC) wifiIPAddressStatic.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWiFiStyle() == WIFI_STATIC) wifiIPAddressStatic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
 
         refreshWifi = new Button (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
@@ -1893,10 +1876,10 @@ class WifiBox {
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WIFI SHIELDS", x + padding, y + padding);
-        wifiIPAddressDyanmic.draw();
+        wifiIPAddressDynamic.draw();
         wifiIPAddressStatic.draw();
-        wifiIPAddressDyanmic.but_y = y + padding*2 + 16;
-        wifiIPAddressStatic.but_y = wifiIPAddressDyanmic.but_y;
+        wifiIPAddressDynamic.but_y = y + padding*2 + 16;
+        wifiIPAddressStatic.but_y = wifiIPAddressDynamic.but_y;
 
         popStyle();
 
@@ -1912,7 +1895,7 @@ class WifiBox {
             popStyle();
             cp5.get(Textfield.class, "staticIPAddress").setPosition(x + padding, y + h - 24 - padding);
         } else {
-            wifiList.setPosition(x + padding, wifiIPAddressDyanmic.but_y + 24 + padding);
+            wifiList.setPosition(x + padding, wifiIPAddressDynamic.but_y + 24 + padding);
 
             refreshWifi.draw();
             refreshWifi.but_y = y + h - padding - 24;
@@ -2026,23 +2009,25 @@ class InterfaceBoxGanglion {
 
 class DataLogBox {
     int x, y, w, h, padding; //size and position
-
-    DataLogBox(int _x, int _y, int _w, int _h, int _padding) {
+    int i; //0 for Cyton, 1 for Ganglion
+    String title;
+    DataLogBox(int _x, int _y, int _w, int _h, int _padding, int _dataSource) {
         x = _x;
         y = _y;
         w = _w;
         h = 127; // Added 24 +
         padding = _padding;
+        i = (_dataSource == DATASOURCE_CYTON) ? 0 : 1;
 
         //button to autogenerate file name based on time/date
-        autoFileName = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
-        outputODF = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
-        if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.color_notPressed = isSelected_color; //make it appear like this one is already selected
-        outputBDF = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
-        if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        autoFileName[i] = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
+        outputODF[i] = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
+        if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF[i].setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        outputBDF[i] = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
+        if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF[i].setColorNotPressed(isSelected_color); //make it appear like this one is already selected
 
-
-        cp5.addTextfield("fileName")
+        title = (i == 0) ? "fileName" : "fileNameGanglion";
+        cp5.addTextfield(title)
             .setPosition(x + 90, y + 32)
             .setCaptionLabel("")
             .setSize(157, 26)
@@ -2076,77 +2061,13 @@ class DataLogBox {
         textFont(p4, 14);;
         text("File Name", x + padding, y + padding*2 + 14);
         popStyle();
-        cp5.get(Textfield.class, "fileName").setPosition(x + 90, y + 32);
-        autoFileName.but_y = y + 66;
-        autoFileName.draw();
-        outputODF.but_y = y + padding*2 + 18 + 58;
-        outputODF.draw();
-        outputBDF.but_y = y + padding*2 + 18 + 58;
-        outputBDF.draw();
-    }
-};
-
-class DataLogBoxGanglion {
-    int x, y, w, h, padding; //size and position
-
-    DataLogBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 127; // Added 24 +
-        padding = _padding;
-
-        //button to autogenerate file name based on time/date
-        autoFileNameGanglion = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
-        outputODFGanglion = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
-        if (outputDataSource == OUTPUT_SOURCE_ODF) outputODFGanglion.color_notPressed = isSelected_color; //make it appear like this one is already selected
-        outputBDFGanglion = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
-        if (outputDataSource == OUTPUT_SOURCE_BDF) outputODFGanglion.color_notPressed = isSelected_color; //make it appear like this one is already selected
-
-
-        cp5.addTextfield("fileNameGanglion")
-            .setPosition(x + 90, y + 32)
-            .setCaptionLabel("")
-            .setSize(157, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(getDateString())
-            .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setAutoClear(true);
-
-        //clear text field on double click
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("DATA LOG FILE", x + padding, y + padding);
-        textFont(p4, 14);;
-        text("File Name", x + padding, y + padding*2 + 14);
-        popStyle();
-        cp5.get(Textfield.class, "fileNameGanglion").setPosition(x + 90, y + 32);
-        autoFileNameGanglion.but_y = y + 66;
-        autoFileNameGanglion.draw();
-        outputODFGanglion.but_y = y + padding*2 + 18 + 58;
-        outputODFGanglion.draw();
-        outputBDFGanglion.but_y = y + padding*2 + 18 + 58;
-        outputBDFGanglion.draw();
+        cp5.get(Textfield.class, title).setPosition(x + 90, y + 32);
+        autoFileName[i].but_y = y + 66;
+        autoFileName[i].draw();
+        outputODF[i].but_y = y + padding*2 + 18 + 58;
+        outputODF[i].draw();
+        outputBDF[i].but_y = y + padding*2 + 18 + 58;
+        outputBDF[i].draw();
     }
 };
 
@@ -2162,9 +2083,9 @@ class ChannelCountBox {
         padding = _padding;
 
         chanButton8 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "8 CHANNELS", fontInfo.buttonLabel_size);
-        if (nchan == 8) chanButton8.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (nchan == 8) chanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         chanButton16 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "16 CHANNELS", fontInfo.buttonLabel_size);
-        if (nchan == 16) chanButton16.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (nchan == 16) chanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2205,7 +2126,7 @@ class SampleRateGanglionBox {
 
         sampleRate200 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "200Hz", fontInfo.buttonLabel_size);
         sampleRate1600 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1600Hz", fontInfo.buttonLabel_size);
-        sampleRate1600.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        sampleRate1600.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2247,7 +2168,7 @@ class SampleRateCytonBox {
         sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
         sampleRate500 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
         sampleRate1000 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
-        sampleRate1000.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        sampleRate1000.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2289,11 +2210,11 @@ class LatencyGanglionBox {
         padding = _padding;
 
         latencyGanglion5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_5_MS) latencyGanglion5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getLatency() == LATENCY_5_MS) latencyGanglion5ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         latencyGanglion10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_10_MS) latencyGanglion10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getLatency() == LATENCY_10_MS) latencyGanglion10ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         latencyGanglion20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_20_MS) latencyGanglion20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getLatency() == LATENCY_20_MS) latencyGanglion20ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2335,11 +2256,11 @@ class LatencyCytonBox {
         padding = _padding;
 
         latencyCyton5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_5_MS) latencyCyton5ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getLatency() == LATENCY_5_MS) latencyCyton5ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         latencyCyton10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_10_MS) latencyCyton10ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getLatency() == LATENCY_10_MS) latencyCyton10ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         latencyCyton20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_20_MS) latencyCyton20ms.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getLatency() == LATENCY_20_MS) latencyCyton20ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2381,11 +2302,11 @@ class WifiTransferProtcolGanglionBox {
         padding = _padding;
 
         wifiInternetProtocolGanglionTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolGanglionTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiInternetProtocolGanglionUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolGanglionUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolGanglionUDP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiInternetProtocolGanglionUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2435,11 +2356,11 @@ class WifiTransferProtcolCytonBox {
         padding = _padding;
 
         wifiInternetProtocolCytonTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolCytonTCP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiInternetProtocolCytonUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolCytonUDP.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolCytonUDP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiInternetProtocolCytonUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolCytonUDPBurst.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {
@@ -2489,11 +2410,11 @@ class SyntheticChannelCountBox {
         padding = _padding;
 
         synthChanButton4 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
-        if (nchan == 4) synthChanButton4.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (nchan == 4) synthChanButton4.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         synthChanButton8 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
-        if (nchan == 8) synthChanButton8.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (nchan == 8) synthChanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         synthChanButton16 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
-        if (nchan == 16) synthChanButton16.color_notPressed = isSelected_color; //make it appear like this one is already selected
+        if (nchan == 16) synthChanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
     public void update() {

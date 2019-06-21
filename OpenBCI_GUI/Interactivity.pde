@@ -542,7 +542,7 @@ class Button {
     color currentColor;
     color color_hover = color(177, 184, 193);//color(252, 221, 198);
     color color_pressed = color(150,170,200); //bgColor;
-    color color_notPressed = color(255); //color(227,118,37);
+    color color_notPressed = colorNotPressed; //color(255);  alt - color(227,118,37);
     color buttonStrokeColor = bgColor;
     color textColorActive = color(255);
     color textColorNotActive = bgColor;
