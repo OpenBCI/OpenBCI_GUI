@@ -2179,43 +2179,18 @@ class SessionDataBox {
             if (!cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
                 //println("----Closing dropdown " + maxDurDropdownName);
                 cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
-                if (i == 0) {
-                    //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
-                    chanButton8.setIgnoreHover(false);
-                    chanButton16.setIgnoreHover(false);
-                    cp5.get(MenuList.class, "sdTimes").unlock();
-                    cp5.get(MenuList.class, "sdTimes").setUpdate(true);
-                } else {
-                    //Ganglion + Wifi
-                    latencyGanglion5ms.setIgnoreHover(false);
-                    latencyGanglion10ms.setIgnoreHover(false);
-                    latencyGanglion20ms.setIgnoreHover(false);
-                    sampleRate200.setIgnoreHover(false);
-                    sampleRate1600.setIgnoreHover(false);
-                }
+                lockElements(false);
             }
 
         }
         // Open the dropdown if it's not open, but not if it was recently clicked
+        // Makes sure dropdown stays closed after user selects an option
         if (!dropdownWasClicked) {
             if (!cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
                 if (cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
                     //println("++++Opening dropdown " + maxDurDropdownName);
                     cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).open();
-                    if (i == 0) {
-                        //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
-                        chanButton8.setIgnoreHover(true);
-                        chanButton16.setIgnoreHover(true);
-                        cp5.get(MenuList.class, "sdTimes").lock();
-                        cp5.get(MenuList.class, "sdTimes").setUpdate(false);
-                    } else {
-                        //Ganglion + Wifi
-                        latencyGanglion5ms.setIgnoreHover(true);
-                        latencyGanglion10ms.setIgnoreHover(true);
-                        latencyGanglion20ms.setIgnoreHover(true);
-                        sampleRate200.setIgnoreHover(true);
-                        sampleRate1600.setIgnoreHover(true);
-                    }
+                    lockElements(true);
                 }
             }
         } else {
@@ -2224,9 +2199,32 @@ class SessionDataBox {
         }
     }
 
+    // True locks elements, False unlocks elements
+    void lockElements (boolean _toggle) {
+        if (i == 0) {
+            //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
+            chanButton8.setIgnoreHover(_toggle);
+            chanButton16.setIgnoreHover(_toggle);
+            if (_toggle) {
+                cp5.get(MenuList.class, "sdTimes").lock();
+            } else {
+                cp5.get(MenuList.class, "sdTimes").unlock();
+            }
+            cp5.get(MenuList.class, "sdTimes").setUpdate(!_toggle);
+        } else {
+            //Ganglion + Wifi
+            latencyGanglion5ms.setIgnoreHover(_toggle);
+            latencyGanglion10ms.setIgnoreHover(_toggle);
+            latencyGanglion20ms.setIgnoreHover(_toggle);
+            sampleRate200.setIgnoreHover(_toggle);
+            sampleRate1600.setIgnoreHover(_toggle);
+        }
+    }
+
     void closeDropdown() {
         cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
         dropdownWasClicked = true;
+        lockElements(false);
         //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
