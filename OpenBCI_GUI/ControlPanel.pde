@@ -772,15 +772,11 @@ class ControlPanel {
                     if (outputODF[0].isMouseHere()) {
                         outputODF[0].setIsActive(true);
                         outputODF[0].wasPressed = true;
-                        outputODF[0].setColorNotPressed(isSelected_color);
-                        outputBDF[0].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (outputBDF[0].isMouseHere()) {
                         outputBDF[0].setIsActive(true);
                         outputBDF[0].wasPressed = true;
-                        outputBDF[0].setColorNotPressed(isSelected_color);
-                        outputODF[0].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (chanButton8.isMouseHere()) {
@@ -930,15 +926,11 @@ class ControlPanel {
                     if (outputODF[1].isMouseHere()) {
                         outputODF[1].setIsActive(true);
                         outputODF[1].wasPressed = true;
-                        outputODF[1].setColorNotPressed(isSelected_color);
-                        outputODF[1].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (outputBDF[1].isMouseHere()) {
                         outputBDF[1].setIsActive(true);
                         outputBDF[1].wasPressed = true;
-                        outputBDF[1].setColorNotPressed(isSelected_color);
-                        outputBDF[1].setColorNotPressed(colorNotPressed); //default color of button
                     }
 
                     if (ganglion.isWifi()) {
@@ -1349,11 +1341,15 @@ class ControlPanel {
             if (outputODF[i].isMouseHere() && outputODF[i].wasPressed) {
                 output("Output has been set to OpenBCI Data Format.");
                 outputDataSource = OUTPUT_SOURCE_ODF;
+                outputODF[i].setColorNotPressed(isSelected_color);
+                outputBDF[i].setColorNotPressed(colorNotPressed);
             }
 
             if (outputBDF[i].isMouseHere() && outputBDF[i].wasPressed) {
                 output(bdfMessage);
                 outputDataSource = OUTPUT_SOURCE_BDF;
+                outputBDF[i].setColorNotPressed(isSelected_color);
+                outputODF[i].setColorNotPressed(colorNotPressed);
             }
         }
 
@@ -2022,6 +2018,7 @@ class DataLogBox {
         //button to autogenerate file name based on time/date
         autoFileName[i] = new Button (x + padding, y + 66, w-(padding*2), 24, "AUTOGENERATE FILE NAME", fontInfo.buttonLabel_size);
         outputODF[i] = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
+        //Output source is ODF by default
         if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF[i].setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         outputBDF[i] = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
         if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF[i].setColorNotPressed(isSelected_color); //make it appear like this one is already selected
