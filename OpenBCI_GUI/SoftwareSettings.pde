@@ -43,7 +43,7 @@ class SoftwareSettings {
     //default layout variables
     int currentLayout;
     //Max File Size #461, default option 4 -> 60 minutes
-    public final String[] fileDurations = {"10 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "90 Minutes", "120 Minutes"};
+    public final String[] fileDurations = {"5 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "120 Minutes", "No Limit"};
     public final int defaultOBCIMaxFileSize = 3; //4th option from the above list
     public int cytonOBCIMaxFileSize = defaultOBCIMaxFileSize;
     public int ganglionOBCIMaxFileSize = defaultOBCIMaxFileSize;

@@ -2025,7 +2025,7 @@ class SessionDataBox {
     int odfModeHeight;
 
     ControlP5 cp5_dataLog_dropdown;
-    final int maxDurTextWidth = 82;
+    int maxDurTextWidth = 82;
     int maxDurText_x = 0;
     String maxDurDropdownName;
     boolean dropdownWasClicked = false;
@@ -2038,7 +2038,8 @@ class SessionDataBox {
         h = odfModeHeight;
         padding = _padding;
         i = (_dataSource == DATASOURCE_CYTON) ? 0 : 1;
-        maxDurText_x = x + int(padding*2.5) - 1;
+        maxDurText_x = x + padding;
+        maxDurTextWidth += padding*5 + 1;
 
         //button to autogenerate file name based on time/date
         autoSessionName[i] = new Button (x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
@@ -2075,7 +2076,7 @@ class SessionDataBox {
         maxDurDropdownName = (i == 0) ? "maxFileDurationCyton" : "maxFileDurationGanglion";
         createDropdown(maxDurDropdownName, Arrays.asList(settings.fileDurations));
         cp5_dataLog_dropdown.setGraphics(ourApplet, 0,0);
-        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
+        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF[i].but_y + 24 + padding);
         cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setSize((w-padding*3)/2, (settings.fileDurations.length + 1) * 24);
         cp5_dataLog_dropdown.setAutoDraw(false);
     }
@@ -2108,10 +2109,10 @@ class SessionDataBox {
             pushStyle();
             fill(bgColor);
             textFont(p4, 14);
-            text("Max File Size", maxDurText_x, outputODF[i].but_y + outputODF[i].but_dy + padding*3 - 3);
+            text("Max File Duration", maxDurText_x, outputODF[i].but_y + outputODF[i].but_dy + padding*3 - 3);
             popStyle();
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
-            cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
+            cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF[i].but_y + 24 + padding);
             //Dropdown is drawn at the end of ControlPanel.draw()
         }
     }
