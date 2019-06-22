@@ -42,7 +42,11 @@ class SoftwareSettings {
     String settingsVersion = "1.0.0";
     //default layout variables
     int currentLayout;
-
+    //Max File Size #461, option 3 -> 60 minutes
+    public final String[] fileDurations = {"10 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "90 Minutes", "120 Minutes"};
+    public final int defaultOBCIMaxFileSize = 3;
+    public int cytonOBCIMaxFileSize = defaultOBCIMaxFileSize;
+    public int ganglionOBCIMaxFileSize = defaultOBCIMaxFileSize;
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
 

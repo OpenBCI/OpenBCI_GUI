@@ -2027,7 +2027,6 @@ class SessionDataBox {
     int odfModeHeight;
 
     ControlP5 cp5_dataLog_dropdown;
-    final String[] fileDurations = {"No Limit", "10 Minutes", "20 Minutes", "40 Minutes", "60 Minutes", "90 Minutes"};
     final int maxDurTextWidth = 82;
     int maxDurText_x = 0;
     String maxDurDropdownName;
@@ -2076,10 +2075,10 @@ class SessionDataBox {
         //The OpenBCI data format max duration dropdown is controlled by the local cp5 instance
         cp5_dataLog_dropdown = new ControlP5(ourApplet);
         maxDurDropdownName = (i == 0) ? "maxFileDurationCyton" : "maxFileDurationGanglion";
-        createDropdown(maxDurDropdownName, Arrays.asList(fileDurations));
+        createDropdown(maxDurDropdownName, Arrays.asList(settings.fileDurations));
         cp5_dataLog_dropdown.setGraphics(ourApplet, 0,0);
         cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth + padding*4, outputODF[i].but_y + 24 + padding);
-        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setSize((w-padding*3)/2, (fileDurations.length + 1) * 24);
+        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setSize((w-padding*3)/2, (settings.fileDurations.length + 1) * 24);
         cp5_dataLog_dropdown.setAutoDraw(false);
     }
 
@@ -2139,7 +2138,7 @@ class SessionDataBox {
         cp5_dataLog_dropdown.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(fileDurations[0])
+            .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
             .setFont(h4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2148,7 +2147,7 @@ class SessionDataBox {
         cp5_dataLog_dropdown.getController(name)
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText("filePickedShort")
+            .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2224,16 +2223,20 @@ class SessionDataBox {
         //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
-
+//////////////////////////////////////////////////////////////
+// Global functions used by the above SessionDataBox dropdowns
 void maxFileDurationCyton (int n) {
+    settings.cytonOBCIMaxFileSize = n;
     controlPanel.dataLogBoxCyton.closeDropdown();
-    println("File Duration Selected: " + n);
+    println("ControlPanel: OBCI Cyton Max File Size: " + n);
 }
 
 void maxFileDurationGanglion (int n) {
+    settings.ganglionOBCIMaxFileSize = n;
     controlPanel.dataLogBoxGanglion.closeDropdown();
-    println("File Duration Selected: " + n);
+    println("ControlPanel: OBCI Ganglion Max File Size: " + n);
 }
+//////////////////////////////////////////////////////////////
 
 class ChannelCountBox {
     int x, y, w, h, padding; //size and position
