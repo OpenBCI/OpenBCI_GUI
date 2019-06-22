@@ -86,8 +86,9 @@ class SoftwareSettings {
     int nwProtocolSave;
 
     //default configuration settings file location and file name variables
-    public final String savedDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
-    public final String settingsPath = savedDataPath+"Settings"+File.separator;
+    public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
+    public final String recordingsPath = guiDataPath+"Recordings"+File.separator;
+    public final String settingsPath = guiDataPath+"Settings"+File.separator;
     final String[] userSettingsFiles = {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",

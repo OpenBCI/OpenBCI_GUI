@@ -66,7 +66,7 @@ void openNewLogFileODF(String _fileName) {
         closeLogFile();
     }
     //open the new file
-    fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
+    fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), sessionName, _fileName);
 
     output_fname = fileoutput_odf.fname;
     println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
@@ -135,7 +135,7 @@ String getDateString() {
 
 //these functions are relevant to convertSDFile
 void createPlaybackFileFromSD() {
-    logFileName = settings.savedDataPath+"SDconverted-"+getDateString()+".csv";
+    logFileName = settings.guiDataPath+"SDconverted-"+getDateString()+".csv";
     dataWriter = createWriter(logFileName);
     dataWriter.println("%OBCI SD Convert - " + getDateString());
     dataWriter.println("%");
@@ -171,7 +171,7 @@ public class OutputFile_rawtxt {
     OutputFile_rawtxt(float fs_Hz) {
 
         //build up the file name
-        fname = settings.savedDataPath+"OpenBCI-RAW-";
+        fname = settings.guiDataPath+"OpenBCI-RAW-";
 
         //add year month day to the file name
         fname = fname + year() + "-";
@@ -203,8 +203,9 @@ public class OutputFile_rawtxt {
     }
 
     //variation on constructor to have custom name
-    OutputFile_rawtxt(float fs_Hz, String _fileName) {
-        fname = settings.savedDataPath+"OpenBCI-RAW-";
+    OutputFile_rawtxt(float fs_Hz, String _sessionName, String _fileName) {
+        fname = settings.recordingsPath + File.separator + "OpenBCISession_" + _sessionName + File.separator;
+        fname += "OpenBCI-RAW-";
         fname += _fileName;
         fname += ".txt";
         output = createWriter(fname);        //open the file
@@ -933,7 +934,7 @@ public class OutputFile_BDF {
       * @returns {String} - A fully qualified name of an output file with `str`.
       */
     private String getFileName(String s) {
-        String output = settings.savedDataPath+"OpenBCI-BDF-";
+        String output = settings.guiDataPath+"OpenBCI-BDF-";
         output += s;
         output += ".bdf";
         return output;

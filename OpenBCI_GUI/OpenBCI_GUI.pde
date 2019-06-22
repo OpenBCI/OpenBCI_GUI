@@ -175,7 +175,7 @@ float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual d
 OutputFile_rawtxt fileoutput_odf;
 OutputFile_BDF fileoutput_bdf;
 String output_fname;
-String fileName = "N/A";
+String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
 final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
 final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
@@ -431,9 +431,7 @@ void delayedSetup() {
 }
 
 public void copyGUISampleData(){
-    //String directoryName = settings.savedDataPath;
-    //String fileName = "testingTEST" + ".txt";
-    String directoryName = settings.savedDataPath + File.separator + "Sample_Data" + File.separator;
+    String directoryName = settings.guiDataPath + File.separator + "Sample_Data" + File.separator;
     String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
     File directory = new File(directoryName);
     File fileToCheck = new File(fileToCheckString);
@@ -771,8 +769,8 @@ void initSystem() throws Exception {
         topNav.initSecondaryNav();
 
         //open data file
-        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
-        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
+        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(sessionName);  //open a new log file
+        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(sessionName); // println("open ganglion output file");
 
         setupWidgetManager();
 
