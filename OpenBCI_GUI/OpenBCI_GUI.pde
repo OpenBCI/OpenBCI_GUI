@@ -408,7 +408,7 @@ void delayedSetup() {
     int portRX = 51000;  // this is the UDP port the application will be listening on
     String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
-    //create new object for receiving
+    // Create new object for receiving
     udpRX=new UDP(this,portRX,ip);
     udpRX.setReceiveHandler("udpReceiveHandler");
     udpRX.log(true);
@@ -417,6 +417,9 @@ void delayedSetup() {
     println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
     println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
+    // Create GUI data folder and copy sample data if meditation file doesn't exist
+    copyGUISampleData();
+
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
@@ -424,6 +427,39 @@ void delayedSetup() {
         controlPanel = new ControlPanel(this);
 
         setupComplete = true; // signal that the setup thread has finished
+    }
+}
+
+public void copyGUISampleData(){
+    //String directoryName = settings.savedDataPath;
+    //String fileName = "testingTEST" + ".txt";
+    String directoryName = settings.savedDataPath + File.separator + "Sample_Data" + File.separator;
+    String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
+    File directory = new File(directoryName);
+    File fileToCheck = new File(fileToCheckString);
+    if (!fileToCheck.exists()){
+        println("OpenBCI_GUI::Setup: Copying sample data to Documents/OpenBCI_GUI/Sample_Data");
+        // Make the entire directory path including parents
+        directory.mkdirs();
+        try {
+            List<File> results = new ArrayList<File>();
+            File[] filesFound = new File(dataPath("EEG_Sample_Data")).listFiles();
+            //If this pathname does not denote a directory, then listFiles() returns null.
+            for (File file : filesFound) {
+                if (file.isFile()) {
+                    results.add(file);
+                }
+            }
+            for(File file : results) {
+                Files.copy(file.toPath(),
+                    (new File(directoryName + file.getName())).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            outputError("Setup: Error trying to copy Sample Data to Documents directory.");
+        }
+    } else {
+        println("OpenBCI_GUI::Setup: Sample Data exists in Documents folder.");
     }
 }
 
