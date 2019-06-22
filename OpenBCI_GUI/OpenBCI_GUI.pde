@@ -769,10 +769,6 @@ void initSystem() throws Exception {
         //initilize the GUI
         topNav.initSecondaryNav();
 
-        //open data file
-        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(sessionName);
-        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(sessionName);
-
         setupWidgetManager();
 
         if (!abandonInit) {
