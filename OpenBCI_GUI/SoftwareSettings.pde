@@ -44,10 +44,13 @@ class SoftwareSettings {
     int currentLayout;
     //Max File Size #461, default option 4 -> 60 minutes
     public final String[] fileDurations = {"5 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "120 Minutes", "No Limit"};
+    public final int[] fileDurationInts = {5, 15, 30, 60, 120, -1};
     public final int defaultOBCIMaxFileSize = 3; //4th option from the above list
     public int cytonOBCIMaxFileSize = defaultOBCIMaxFileSize;
     public int ganglionOBCIMaxFileSize = defaultOBCIMaxFileSize;
     private boolean logFileIsOpen = false;
+    private long logFileStartTime;
+    private long logFileMaxDuration;
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
 
@@ -274,8 +277,12 @@ class SoftwareSettings {
     final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
     SoftwareSettings() {
-
+        //Instantiated on app start in OpenBCI_GUI.pde
     }
+
+    ///////////////////////////////////
+    // OpenBCI Data Format Functions //
+    ///////////////////////////////////
 
     public void setLogFileIsOpen (boolean _toggle) {
         logFileIsOpen = _toggle;
@@ -283,6 +290,36 @@ class SoftwareSettings {
 
     public boolean isLogFileOpen() {
         return logFileIsOpen;
+    }
+
+    public void setLogFileStartTime(long _time) {
+        logFileStartTime = _time;
+        verbosePrint("Settings: LogFileStartTime = " + _time);
+    }
+
+    public void setLogFileMaxDuration() {
+        int _maxFileSize = (eegDataSource == DATASOURCE_CYTON) ? cytonOBCIMaxFileSize : ganglionOBCIMaxFileSize;
+        logFileMaxDuration = fileDurationInts[_maxFileSize] * 1000000000L * 60;
+        println("Settings: LogFileMaxDuration = " + fileDurationInts[_maxFileSize] + " minutes");
+    }
+
+    //Only called during live mode && using OpenBCI Data Format
+    public boolean maxLogTimeReached() {
+        if (logFileMaxDuration < 0) {
+            return false;
+        } else {
+            return (System.nanoTime() - logFileStartTime) > (logFileMaxDuration);
+        }
+    }
+
+    //Called in OpenBCI_GUI.pde to gate the above function
+    public boolean limitOBCILogFileDuration() {
+        if (logFileMaxDuration > 0) {
+            return true;
+        } else {
+            //If the value is less than zero, don't call maxLogTimeReached()
+            return false;
+        }
     }
 
     public void setSessionPath (String _path) {

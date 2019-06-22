@@ -962,6 +962,7 @@ void stopButtonWasPressed() {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
+        //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
@@ -986,6 +987,7 @@ void stopButtonWasPressed() {
                 if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
                 if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
             }
+            settings.setLogFileStartTime(System.nanoTime());
         }
     }
 }
@@ -1159,6 +1161,16 @@ void systemUpdate() { // for updating data values and variables
             } else {
                 //not enough data has arrived yet... only update the channel controller
             }
+
+            //New feature to address #461, defined in DataLogging.pde
+            //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
+            //Don't check duration if user has selected "No Limit"
+            if (outputDataSource == OUTPUT_SOURCE_ODF
+                && eegDataSource < DATASOURCE_PLAYBACKFILE
+                && settings.limitOBCILogFileDuration()) {
+                    fileoutput_odf.limitRecordingFileDuration();
+            }
+
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
             pointCounter = 0;

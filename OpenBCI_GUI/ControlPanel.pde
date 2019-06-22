@@ -1597,24 +1597,26 @@ public void initButtonPressed(){
         } else { //otherwise, initiate system!
             //verbosePrint("ControlPanel: CPmouseReleased: init");
             initSystemButton.setString("STOP SESSION");
-            //global steps to START SYSTEM
-            // prepare the serial port
+            // Global steps to START SESSION
+            // Prepare the serial port
             if (eegDataSource == DATASOURCE_CYTON) {
                 verbosePrint("ControlPanel — port is open: " + cyton.isPortOpen());
                 if (cyton.isPortOpen() == true) {
                     cyton.closePort();
                 }
+                sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             } else if(eegDataSource == DATASOURCE_GANGLION){
                 verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
                 if (ganglion.isPortOpen()) {
                     ganglion.closePort();
                 }
-            }
-            if(eegDataSource == DATASOURCE_GANGLION){
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
-            } else if(eegDataSource == DATASOURCE_CYTON){
-                sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             }
+
+            if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+                settings.setLogFileMaxDuration();
+            }
+
             if (hub.getWiFiStyle() == WIFI_STATIC && (cyton.isWifi() || ganglion.isWifi())) {
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
