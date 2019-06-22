@@ -332,6 +332,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
+    println("Console Log Started at Local Time: " + getDateString());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
@@ -769,8 +770,8 @@ void initSystem() throws Exception {
         topNav.initSecondaryNav();
 
         //open data file
-        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(sessionName);  //open a new log file
-        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(sessionName); // println("open ganglion output file");
+        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(sessionName);
+        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(sessionName);
 
         setupWidgetManager();
 
@@ -961,6 +962,7 @@ void stopButtonWasPressed() {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
+        if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
@@ -976,6 +978,14 @@ void stopButtonWasPressed() {
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+        }
+
+        if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+            //open data file if it has not already been opened
+            if (!settings.isLogFileOpen()) {
+                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
+                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
+            }
         }
     }
 }

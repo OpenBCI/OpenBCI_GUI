@@ -42,11 +42,12 @@ class SoftwareSettings {
     String settingsVersion = "1.0.0";
     //default layout variables
     int currentLayout;
-    //Max File Size #461, option 3 -> 60 minutes
+    //Max File Size #461, default option 4 -> 60 minutes
     public final String[] fileDurations = {"10 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "90 Minutes", "120 Minutes"};
-    public final int defaultOBCIMaxFileSize = 3;
+    public final int defaultOBCIMaxFileSize = 3; //4th option from the above list
     public int cytonOBCIMaxFileSize = defaultOBCIMaxFileSize;
     public int ganglionOBCIMaxFileSize = defaultOBCIMaxFileSize;
+    private boolean logFileIsOpen = false;
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
 
@@ -93,6 +94,8 @@ class SoftwareSettings {
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
     public final String recordingsPath = guiDataPath+"Recordings"+File.separator;
     public final String settingsPath = guiDataPath+"Settings"+File.separator;
+    public final String consoleDataPath = guiDataPath+"Console_Data"+File.separator;
+    private String sessionPath = "";
     final String[] userSettingsFiles = {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
@@ -272,6 +275,22 @@ class SoftwareSettings {
 
     SoftwareSettings() {
 
+    }
+
+    public void setLogFileIsOpen (boolean _toggle) {
+        logFileIsOpen = _toggle;
+    }
+
+    public boolean isLogFileOpen() {
+        return logFileIsOpen;
+    }
+
+    public void setSessionPath (String _path) {
+        sessionPath = _path;
+    }
+
+    public String getSessionPath() {
+        return sessionPath;
     }
 
     ////////////////////////////////////////////////////////////////

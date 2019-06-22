@@ -36,6 +36,7 @@ void openNewLogFile(String _fileName) {
             // Do nothing...
             break;
     }
+    settings.setLogFileIsOpen(true);
 }
 
 /**
@@ -85,6 +86,7 @@ void closeLogFile() {
             // Do nothing...
             break;
     }
+    settings.setLogFileIsOpen(false);
 }
 
 /**
@@ -204,7 +206,8 @@ public class OutputFile_rawtxt {
 
     //variation on constructor to have custom name
     OutputFile_rawtxt(float fs_Hz, String _sessionName, String _fileName) {
-        fname = settings.recordingsPath + File.separator + "OpenBCISession_" + _sessionName + File.separator;
+        settings.setSessionPath(settings.recordingsPath + "OpenBCISession_" + _sessionName + File.separator);
+        fname = settings.getSessionPath();
         fname += "OpenBCI-RAW-";
         fname += _fileName;
         fname += ".txt";
@@ -301,8 +304,6 @@ public class OutputFile_rawtxt {
                 output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
             }
         }
-
-
     }
 
     public void closeFile() {
@@ -436,7 +437,7 @@ public class OutputFile_BDF {
     private String nbSamplesPerDataRecordEEG[] = new String[nbChan];
     private String reservedEEG[] = new String[nbChan];
 
-    private String tempWriterPrefix = "temp.txt";
+    private String tempWriterPrefix = settings.recordingsPath+"temp.txt";
 
     private int fs_Hz = 250;
     private int accel_Hz = 25;
@@ -622,6 +623,12 @@ public class OutputFile_BDF {
         try {
             o.close();
             println("closeFile: wrote data");
+            File tempFile = new File(tempWriterPrefix);
+            if (Files.deleteIfExists(tempFile.toPath())) {
+                println("closeFile: BDF temp file deleted");
+            } else {
+                println("closeFile: error deleting temp file");
+            }
         } catch (IOException e) {
             println("Error closing BDF OutputStream");
         }
@@ -934,7 +941,7 @@ public class OutputFile_BDF {
       * @returns {String} - A fully qualified name of an output file with `str`.
       */
     private String getFileName(String s) {
-        String output = settings.guiDataPath+"OpenBCI-BDF-";
+        String output = settings.recordingsPath+"OpenBCI-BDF-";
         output += s;
         output += ".bdf";
         return output;

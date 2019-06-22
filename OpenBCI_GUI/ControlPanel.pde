@@ -1559,86 +1559,84 @@ class ControlPanel {
 
 public void initButtonPressed(){
     if (initSystemButton.but_txt == "START SESSION") {
-            if ((eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_NONE) || (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_NONE)) {
-                output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
-                output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
-                output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) && ganglion_portName == "N/A") {
-                output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == -1) {//if no data source selected
-                output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else { //otherwise, initiate system!
-                //verbosePrint("ControlPanel: CPmouseReleased: init");
-                initSystemButton.setString("STOP SESSION");
-                //global steps to START SYSTEM
-                // prepare the serial port
-                if (eegDataSource == DATASOURCE_CYTON) {
-                    verbosePrint("ControlPanel — port is open: " + cyton.isPortOpen());
-                    if (cyton.isPortOpen() == true) {
-                        cyton.closePort();
-                    }
-                } else if(eegDataSource == DATASOURCE_GANGLION){
-                    verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
-                    if (ganglion.isPortOpen()) {
-                        ganglion.closePort();
-                    }
+        if ((eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_NONE) || (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_NONE)) {
+            output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+            output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+            output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
+            output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else if (eegDataSource == DATASOURCE_GANGLION && (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) && ganglion_portName == "N/A") {
+            output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+            output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else if (eegDataSource == -1) {//if no data source selected
+            output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
+            initSystemButton.wasPressed = false;
+            initSystemButton.setIsActive(false);
+            return;
+        } else { //otherwise, initiate system!
+            //verbosePrint("ControlPanel: CPmouseReleased: init");
+            initSystemButton.setString("STOP SESSION");
+            //global steps to START SYSTEM
+            // prepare the serial port
+            if (eegDataSource == DATASOURCE_CYTON) {
+                verbosePrint("ControlPanel — port is open: " + cyton.isPortOpen());
+                if (cyton.isPortOpen() == true) {
+                    cyton.closePort();
                 }
-                if(eegDataSource == DATASOURCE_GANGLION){
-                    sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
-                } else if(eegDataSource == DATASOURCE_CYTON){
-                    sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
-                }
-                if (hub.getWiFiStyle() == WIFI_STATIC && (cyton.isWifi() || ganglion.isWifi())) {
-                    wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-                    println("Static IP address of " + wifi_ipAddress);
-                }
-                midInit = true;
-                println("Calling initSystem()");
-                try {
-                    initSystem(); //found in OpenBCI_GUI.pde
-                } catch (Exception e) {
-                    println(e.getMessage());
-                    haltSystem();
+            } else if(eegDataSource == DATASOURCE_GANGLION){
+                verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
+                if (ganglion.isPortOpen()) {
+                    ganglion.closePort();
                 }
             }
+            if(eegDataSource == DATASOURCE_GANGLION){
+                sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+            } else if(eegDataSource == DATASOURCE_CYTON){
+                sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+            }
+            if (hub.getWiFiStyle() == WIFI_STATIC && (cyton.isWifi() || ganglion.isWifi())) {
+                wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
+                println("Static IP address of " + wifi_ipAddress);
+            }
+            midInit = true;
+            println("Calling initSystem()");
+            try {
+                initSystem(); //found in OpenBCI_GUI.pde
+            } catch (Exception e) {
+                println(e.getMessage());
+                haltSystem();
+            }
         }
-
+    } else {
         //if system is already active ... stop session and flip button state back
-        else {
-            outputInfo("Learn how to use this application and more at docs.openbci.com");
-            initSystemButton.setString("START SESSION");
-            cp5.get(Textfield.class, "fileNameCyton").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
-            cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
-            cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
-            haltSystem();
-        }
+        outputInfo("Learn how to use this application and more at docs.openbci.com");
+        initSystemButton.setString("START SESSION");
+        cp5.get(Textfield.class, "fileNameCyton").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
+        cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
+        cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
+        haltSystem();
+    }
 }
 
 void updateToNChan(int _nchan) {
