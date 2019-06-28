@@ -7,7 +7,7 @@
 //                       -- Networking Mode and All settings for active networking protocol
 //                       -- Accelerometer, Analog Read, Head Plot, EMG, and Focus
 //                       -- Widget/Container Pairs
-//
+//                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
 //
 //    -- Start System first!
