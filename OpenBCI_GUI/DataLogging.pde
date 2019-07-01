@@ -95,9 +95,9 @@ void closeLogFile() {
   */
 void closeLogFileBDF() {
     if (fileoutput_bdf != null) {
-        //TODO: Need to update the rows written in the header
         fileoutput_bdf.closeFile();
     }
+    fileoutput_bdf = null;
 }
 
 /**
@@ -107,6 +107,7 @@ void closeLogFileODF() {
     if (fileoutput_odf != null) {
         fileoutput_odf.closeFile();
     }
+    fileoutput_odf = null;
 }
 
 void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
