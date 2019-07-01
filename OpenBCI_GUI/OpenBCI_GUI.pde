@@ -55,7 +55,7 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.3-beta.1";
+String localGUIVersionString = "v4.1.3-beta.2";
 String localGUIVersionDate = "June 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -175,7 +175,7 @@ float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual d
 OutputFile_rawtxt fileoutput_odf;
 OutputFile_BDF fileoutput_bdf;
 String output_fname;
-String fileName = "N/A";
+String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
 final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
 final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
@@ -282,9 +282,10 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
-    //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+    // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+    // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {
-        size(976, 549, P2D);
+        size(976, 742, P2D);
     } else {
         //default 1024x768 resolution with 2D graphics
         size(1024, 768, P2D);
@@ -331,6 +332,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
+    println("Console Log Started at Local Time: " + getDateString());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
@@ -407,7 +409,7 @@ void delayedSetup() {
     int portRX = 51000;  // this is the UDP port the application will be listening on
     String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
-    //create new object for receiving
+    // Create new object for receiving
     udpRX=new UDP(this,portRX,ip);
     udpRX.setReceiveHandler("udpReceiveHandler");
     udpRX.log(true);
@@ -416,6 +418,9 @@ void delayedSetup() {
     println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
     println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
+    // Create GUI data folder and copy sample data if meditation file doesn't exist
+    copyGUISampleData();
+
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
@@ -423,6 +428,37 @@ void delayedSetup() {
         controlPanel = new ControlPanel(this);
 
         setupComplete = true; // signal that the setup thread has finished
+    }
+}
+
+public void copyGUISampleData(){
+    String directoryName = settings.guiDataPath + File.separator + "Sample_Data" + File.separator;
+    String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
+    File directory = new File(directoryName);
+    File fileToCheck = new File(fileToCheckString);
+    if (!fileToCheck.exists()){
+        println("OpenBCI_GUI::Setup: Copying sample data to Documents/OpenBCI_GUI/Sample_Data");
+        // Make the entire directory path including parents
+        directory.mkdirs();
+        try {
+            List<File> results = new ArrayList<File>();
+            File[] filesFound = new File(dataPath("EEG_Sample_Data")).listFiles();
+            //If this pathname does not denote a directory, then listFiles() returns null.
+            for (File file : filesFound) {
+                if (file.isFile()) {
+                    results.add(file);
+                }
+            }
+            for(File file : results) {
+                Files.copy(file.toPath(),
+                    (new File(directoryName + file.getName())).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            outputError("Setup: Error trying to copy Sample Data to Documents directory.");
+        }
+    } else {
+        println("OpenBCI_GUI::Setup: Sample Data exists in Documents folder.");
     }
 }
 
@@ -733,10 +769,6 @@ void initSystem() throws Exception {
         //initilize the GUI
         topNav.initSecondaryNav();
 
-        //open data file
-        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
-        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
-
         setupWidgetManager();
 
         if (!abandonInit) {
@@ -926,6 +958,8 @@ void stopButtonWasPressed() {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
+        //Close the log file when using OpenBCI Data Format (.txt)
+        if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
@@ -941,6 +975,15 @@ void stopButtonWasPressed() {
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
+        }
+
+        if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+            //open data file if it has not already been opened
+            if (!settings.isLogFileOpen()) {
+                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
+                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
+            }
+            settings.setLogFileStartTime(System.nanoTime());
         }
     }
 }
@@ -1114,6 +1157,16 @@ void systemUpdate() { // for updating data values and variables
             } else {
                 //not enough data has arrived yet... only update the channel controller
             }
+
+            //New feature to address #461, defined in DataLogging.pde
+            //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
+            //Don't check duration if user has selected "No Limit"
+            if (outputDataSource == OUTPUT_SOURCE_ODF
+                && eegDataSource < DATASOURCE_PLAYBACKFILE
+                && settings.limitOBCILogFileDuration()) {
+                    fileoutput_odf.limitRecordingFileDuration();
+            }
+
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
             pointCounter = 0;

@@ -4,10 +4,12 @@ Use OpenBCIHub v2.0.9 please.
 ## Beta 2
 
 ### Improvements
-* Update Serial EMG output in Networking
+* Update Serial EMG output in Networking Widget
 * Add Accelerometer and Aux Data output to Networking Widget #532
 * Rename "Start/Stop System" button to "Start/Stop Session"
 * Add absolute timestamp to LSL stream for all data types #530
+* Update OpenBCI Data Format using Sessions #483
+* Add dropdown to limit recording duration for OpenBCI Data Format #461
 
 ### Bug Fixes
 * Clear Playback History dropdown when settings are cleared #521
