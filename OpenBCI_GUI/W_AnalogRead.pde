@@ -75,7 +75,6 @@ class W_AnalogRead extends Widget {
 
         //create our channel bars and populate our analogReadBars array!
         for(int i = 0; i < numAnalogReadBars; i++) {
-            println("init analog read bar " + i);
             int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
             AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
             analogReadBars[i] = tempBar;
