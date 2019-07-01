@@ -960,6 +960,7 @@ void stopButtonWasPressed() {
         }
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
+        //BDF+ allows for breaks in the file, so leave the temp file open!
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
@@ -977,7 +978,7 @@ void stopButtonWasPressed() {
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
 
-        if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
                 if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
@@ -1231,10 +1232,14 @@ void systemDraw() { //for drawing to the screen
             case DATASOURCE_CYTON:
                 switch (outputDataSource) {
                 case OUTPUT_SOURCE_ODF:
-                    surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
+                    if (fileoutput_odf != null) {
+                        surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
+                    }
                     break;
                 case OUTPUT_SOURCE_BDF:
-                    surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+                    if (fileoutput_bdf != null) {
+                        surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+                    }
                     break;
                 case OUTPUT_SOURCE_NONE:
                 default:

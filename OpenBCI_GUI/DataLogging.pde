@@ -614,32 +614,32 @@ public class OutputFile_BDF {
 
     public void closeFile() {
 
-        output("Closed the temp data file. Now opening a new file");
+        println("Closed the temp data file. Now opening a new file.");
         try {
             dstream.close();
         } catch (Exception e) {
             println("closeFile: dstream close exception ");
             e.printStackTrace();
         }
-        println("closeFile: started...");
+        println("closeFile: Started...");
 
         OutputStream o = createOutput(fname);
-        println("closeFile: made file");
+        println("closeFile: Made file");
 
         // Create a new writer with the same file name
         // Write the header
         writeHeader(o);
-        output("Header writen, now writing data.");
-        println("closeFile: wrote header");
+        println("closeFile: Wrote header");
 
         writeData(o);
-        output("Data written. Closing new file.");
+        println("closeFile: Data written. Closing new BDF+ file.");
         try {
             o.close();
             println("closeFile: wrote data");
             File tempFile = new File(tempWriterPrefix);
             if (Files.deleteIfExists(tempFile.toPath())) {
-                println("closeFile: BDF temp file deleted");
+                println("closeFile: BDF+ temporary file deleted.");
+                output("BDF+ file has been made.");
             } else {
                 println("closeFile: error deleting temp file");
             }
