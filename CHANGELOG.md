@@ -14,6 +14,7 @@ Use OpenBCIHub v2.0.9 please.
 ### Bug Fixes
 * Clear Playback History dropdown when settings are cleared #521
 * Accelerometer Widget values display correct data
+* Fix NullPointerExceptions caused by Data Log updates #548
 
 ## Beta 1
 
