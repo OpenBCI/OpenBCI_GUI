@@ -1,23 +1,11 @@
 
 ////////////////////////////////////////////////////////////
-// Class: OutputFile_rawtxt
-// Purpose: handle file creation and writing for the text log file
+// Purpose: Handle OpenBCI Data Format and BDF+ file writing
 // Created: Chip Audette  May 2, 2014
-//
-// DATA FORMAT:
+// Modified: Richard Waltman July 1, 2019
 //
 ////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.io.OutputStream;
-
-
-DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

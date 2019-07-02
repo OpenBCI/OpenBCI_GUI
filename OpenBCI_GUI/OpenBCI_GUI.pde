@@ -30,8 +30,11 @@ import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
+import java.io.OutputStream;
 import java.awt.MouseInfo;
 import java.lang.Process;
+import java.text.DateFormat; //Used in DataLogging.pde
+import java.text.SimpleDateFormat;
 // import java.net.InetAddress; // Used for ping, however not working right now.
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
@@ -59,6 +62,7 @@ String localGUIVersionString = "v4.1.3-beta.2";
 String localGUIVersionDate = "June 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
+DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -108,7 +112,6 @@ int nextPlayback_millis = -100; //any negative number
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
 // Intialize interface protocols
-InterfaceSerial iSerial = new InterfaceSerial();
 Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
 
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
@@ -1096,15 +1099,6 @@ void systemUpdate() { // for updating data values and variables
         isHubObjectInitialized = true;
         thread("delayedInit");
     }
-
-    // //update the sync state with the OpenBCI hardware
-    // if (iSerial.get_state() == iSerial.HubState.NOCOM || iSerial.get_state() == iSerial.HubState.COMINIT || iSerial.get_state() == iSerial.HubState.SYNCWITHHARDWARE) {
-    //   iSerial.updateSyncState(sdSetting);
-    // }
-
-    // if (hub.get_state() == HubState.NOCOM || hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) {
-    //   hub.updateSyncState(sdSetting);
-    // }
 
     //prepare for updating the GUI
     win_x = width;
