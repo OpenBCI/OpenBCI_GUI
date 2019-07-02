@@ -12,6 +12,10 @@
 //
 // Note: this class now expects the data format produced by OpenBCI V3.
 //
+// Update July 2019:
+//      - Portions of this are DEPRECATED
+//      - serialEvent() is still used when checking Cyton status from Control Panel
+//
 /////////////////////////////////////////////////////////////////////////////
 
 //------------------------------------------------------------------------
