@@ -664,27 +664,26 @@ class Hub {
                     copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
                     // KILL SPIKES!!!
-                    // if(werePacketsDroppedHub){
-                    //   // println("Packets Dropped ... doing some stuff...");
-                    //   for(int i = numPacketsDroppedHub; i > 0; i--){
-                    //     int tempDataPacketInd = curDataPacketInd - i; //
-                    //     if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-                    //       // println("i = " + i);
-                    //       copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                    //     } else {
-                    //       if (eegDataSource == DATASOURCE_GANGLION) {
-                    //         copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                    //       } else {
-                    //         copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
-                    //       }
-                    //     }
-                    //     //put the last stored packet in # of packets dropped after that packet
-                    //   }
-                    //
-                    //   //reset werePacketsDropped & numPacketsDropped
-                    //   werePacketsDroppedHub = false;
-                    //   numPacketsDroppedHub = 0;
-                    // }
+                    if(werePacketsDroppedHub){
+                        println("Packets Dropped ... doing some stuff...");
+                        for (int i = numPacketsDroppedHub; i > 0; i--){
+                            int tempDataPacketInd = curDataPacketInd - i; //
+                            if (tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length) {
+                                  // println("i = " + i);
+                                   copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+                            } else {
+                               if (eegDataSource == DATASOURCE_GANGLION) {
+                                 copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+                               } else {
+                                 copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
+                               }
+                            }
+                            //put the last stored packet in # of packets dropped after that packet
+                       }
+                       //reset werePacketsDropped & numPacketsDropped
+                       werePacketsDroppedHub = false;
+                       numPacketsDroppedHub = 0;
+                     }
 
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
@@ -1066,7 +1065,7 @@ class Hub {
         json.setString(TCP_JSON_KEY_NAME, id);
         json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
         writeJSON(json);
-        verbosePrint("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
+        println("OpenBCI_GUI: hub : Sent connect to Hub - Id: " + id + " SampleRate: " + requestedSampleRate + "Hz Latency: " + curLatency + "ms");
     }
 
     public void examineWifi(String id) {
