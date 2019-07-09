@@ -10,6 +10,7 @@ Use OpenBCIHub v2.0.9 please.
 * Add absolute timestamp to LSL stream for all data types #530
 * Update OpenBCI Data Format using Sessions #483
 * Add dropdown to limit recording duration for OpenBCI Data Format #461
+* Show intro animation on launch instead of grey screen
 
 ### Bug Fixes
 * Clear Playback History dropdown when settings are cleared #521

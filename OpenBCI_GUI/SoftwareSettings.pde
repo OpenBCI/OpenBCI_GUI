@@ -42,6 +42,9 @@ class SoftwareSettings {
     String settingsVersion = "1.0.0";
     //default layout variables
     int currentLayout;
+    //Used to time the GUI intro animation
+    int introAnimationInit = 0;
+    final int introAnimationDuration = 2500;
     //Max File Size #461, default option 4 -> 60 minutes
     public final String[] fileDurations = {"5 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "120 Minutes", "No Limit"};
     public final int[] fileDurationInts = {5, 15, 30, 60, 120, -1};

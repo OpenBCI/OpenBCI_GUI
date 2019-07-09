@@ -152,7 +152,6 @@ final static String UDP_BURST = "udpBurst";
 final static String WIFI_DYNAMIC = "dynamic";
 final static String WIFI_STATIC = "static";
 
-
 void clientEvent(Client someClient) {
     int p;
     char newChar;
@@ -664,6 +663,7 @@ class Hub {
                     copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
                     // KILL SPIKES!!!
+                    /*
                     if(werePacketsDroppedHub){
                         println("Packets Dropped ... doing some stuff...");
                         for (int i = numPacketsDroppedHub; i > 0; i--){
@@ -684,6 +684,7 @@ class Hub {
                        werePacketsDroppedHub = false;
                        numPacketsDroppedHub = 0;
                      }
+                     */
 
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
