@@ -319,6 +319,8 @@ void setup() {
     p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
     p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
+    cog = loadImage("cog_1024x1024.png");
+
     // check if the current directory is writable
     File dummy = new File(sketchPath());
     if (!dummy.canWrite()) {
@@ -396,7 +398,6 @@ void delayedSetup() {
 
     logo_blue = loadImage("logo_blue.png");
     logo_white = loadImage("logo_white.png");
-    cog = loadImage("cog_1024x1024.png");
     consoleImgBlue = loadImage("console-45x45-dots_blue.png");
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
     loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
@@ -432,6 +433,7 @@ void delayedSetup() {
         controlPanel = new ControlPanel(this);
 
         setupComplete = true; // signal that the setup thread has finished
+        println("OpenBCI_GUI::Setup: Setup is complete!");
     }
 }
 
@@ -502,11 +504,16 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
 synchronized void draw() {
     if (showStartupError) {
         drawStartupError();
-    }
-    else if (setupComplete) {
+    } else if (setupComplete && systemMode != SYSTEMMODE_INTROANIMATION) {
         drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
+    } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
+        if (settings.introAnimationInit == 0) {
+            settings.introAnimationInit = millis();
+        } else {
+            introAnimation();
+        }
     }
 }
 
@@ -1301,11 +1308,6 @@ void systemDraw() { //for drawing to the screen
         helpWidget.draw();
     }
 
-
-    if (systemMode == SYSTEMMODE_INTROANIMATION) {
-        introAnimation();
-    }
-
     if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
         if (!attemptingToConnect) {
             output("Attempting to establish a connection with your OpenBCI Board...");
@@ -1346,13 +1348,12 @@ void introAnimation() {
     pushStyle();
     imageMode(CENTER);
     background(255);
-    int t1 = 4000;
-    int t2 = 6000;
-    int t3 = 8000;
+    int t1 = 0;
     float transparency = 0;
 
-    if (millis() >= t1) {
-        transparency = map(millis(), t1, t2, 0, 255);
+    if (millis() >= settings.introAnimationInit) {
+        transparency = map(millis() - settings.introAnimationInit, t1, settings.introAnimationDuration, 0, 255);
+        verbosePrint(String.valueOf(transparency));
         tint(255, transparency);
         //draw OpenBCI Logo Front & Center
         image(cog, width/2, height/2, width/6, width/6);
@@ -1365,8 +1366,9 @@ void introAnimation() {
         text(localGUIVersionDate, width/2, height/2 + ((width/8) * 1.125));
     }
 
-    //exit intro animation at t2
-    if (millis() >= t3) {
+    //Exit intro animation when the duration has expired AND the Control Panel is ready
+    if ((millis() >= settings.introAnimationInit + settings.introAnimationDuration)
+        && controlPanel != null) {
         systemMode = SYSTEMMODE_PREINIT;
         controlPanel.isOpen = true;
     }
