@@ -511,8 +511,7 @@ synchronized void draw() {
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
             settings.introAnimationInit = millis();
-        }
-        synchronized(this) {
+        } else {
             introAnimation();
         }
     }
