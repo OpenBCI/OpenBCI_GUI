@@ -1435,7 +1435,7 @@ class Stream extends Thread {
                 float[] avgPowerLSL = new float[numChan*numBandPower];
                 for (int i=0; i<numChan;i++){
                     for (int j=0;j<numBandPower;j++){
-                        dataToSend[j+numChan*i] = dataProcessing.avgPowerInBins[i][j];
+                        dataToSend[j+numBandPower*i] = dataProcessing.avgPowerInBins[i][j];
                     }
                 }
                 // Add timestamp to LSL Stream
