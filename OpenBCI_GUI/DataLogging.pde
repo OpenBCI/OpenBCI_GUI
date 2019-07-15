@@ -1,23 +1,11 @@
 
 ////////////////////////////////////////////////////////////
-// Class: OutputFile_rawtxt
-// Purpose: handle file creation and writing for the text log file
+// Purpose: Handle OpenBCI Data Format and BDF+ file writing
 // Created: Chip Audette  May 2, 2014
-//
-// DATA FORMAT:
+// Modified: Richard Waltman July 1, 2019
 //
 ////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.io.OutputStream;
-
-
-DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -36,6 +24,7 @@ void openNewLogFile(String _fileName) {
             // Do nothing...
             break;
     }
+    settings.setLogFileIsOpen(true);
 }
 
 /**
@@ -66,7 +55,7 @@ void openNewLogFileODF(String _fileName) {
         closeLogFile();
     }
     //open the new file
-    fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
+    fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), sessionName, _fileName);
 
     output_fname = fileoutput_odf.fname;
     println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
@@ -85,6 +74,7 @@ void closeLogFile() {
             // Do nothing...
             break;
     }
+    settings.setLogFileIsOpen(false);
 }
 
 /**
@@ -93,9 +83,9 @@ void closeLogFile() {
   */
 void closeLogFileBDF() {
     if (fileoutput_bdf != null) {
-        //TODO: Need to update the rows written in the header
         fileoutput_bdf.closeFile();
     }
+    fileoutput_bdf = null;
 }
 
 /**
@@ -105,6 +95,7 @@ void closeLogFileODF() {
     if (fileoutput_odf != null) {
         fileoutput_odf.closeFile();
     }
+    fileoutput_odf = null;
 }
 
 void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
@@ -135,7 +126,7 @@ String getDateString() {
 
 //these functions are relevant to convertSDFile
 void createPlaybackFileFromSD() {
-    logFileName = settings.savedDataPath+"SDconverted-"+getDateString()+".csv";
+    logFileName = settings.guiDataPath+"SDconverted-"+getDateString()+".csv";
     dataWriter = createWriter(logFileName);
     dataWriter.println("%OBCI SD Convert - " + getDateString());
     dataWriter.println("%");
@@ -167,11 +158,12 @@ public class OutputFile_rawtxt {
     PrintWriter output;
     String fname;
     private int rowsWritten;
+    private long logFileStartTime;
 
     OutputFile_rawtxt(float fs_Hz) {
 
         //build up the file name
-        fname = settings.savedDataPath+"OpenBCI-RAW-";
+        fname = settings.guiDataPath+"OpenBCI-RAW-";
 
         //add year month day to the file name
         fname = fname + year() + "-";
@@ -203,8 +195,10 @@ public class OutputFile_rawtxt {
     }
 
     //variation on constructor to have custom name
-    OutputFile_rawtxt(float fs_Hz, String _fileName) {
-        fname = settings.savedDataPath+"OpenBCI-RAW-";
+    OutputFile_rawtxt(float fs_Hz, String _sessionName, String _fileName) {
+        settings.setSessionPath(settings.recordingsPath + "OpenBCISession_" + _sessionName + File.separator);
+        fname = settings.getSessionPath();
+        fname += "OpenBCI-RAW-";
         fname += _fileName;
         fname += ".txt";
         output = createWriter(fname);        //open the file
@@ -300,8 +294,6 @@ public class OutputFile_rawtxt {
                 output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
             }
         }
-
-
     }
 
     public void closeFile() {
@@ -311,6 +303,19 @@ public class OutputFile_rawtxt {
 
     public int getRowsWritten() {
         return rowsWritten;
+    }
+
+    public void limitRecordingFileDuration() {
+        if (settings.maxLogTimeReached()) {
+            println("DataLogging: Max recording duration reached for OpenBCI data format. Creating a new recording file in the session folder.");
+            closeLogFile();
+            //open data file if it has not already been opened
+            if (!settings.isLogFileOpen()) {
+                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
+                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
+            }
+            settings.setLogFileStartTime(System.nanoTime());
+        }
     }
 };
 
@@ -435,7 +440,7 @@ public class OutputFile_BDF {
     private String nbSamplesPerDataRecordEEG[] = new String[nbChan];
     private String reservedEEG[] = new String[nbChan];
 
-    private String tempWriterPrefix = "temp.txt";
+    private String tempWriterPrefix = settings.recordingsPath+"temp.txt";
 
     private int fs_Hz = 250;
     private int accel_Hz = 25;
@@ -598,29 +603,35 @@ public class OutputFile_BDF {
 
     public void closeFile() {
 
-        output("Closed the temp data file. Now opening a new file");
+        println("Closed the temp data file. Now opening a new file.");
         try {
             dstream.close();
         } catch (Exception e) {
             println("closeFile: dstream close exception ");
             e.printStackTrace();
         }
-        println("closeFile: started...");
+        println("closeFile: Started...");
 
         OutputStream o = createOutput(fname);
-        println("closeFile: made file");
+        println("closeFile: Made file");
 
         // Create a new writer with the same file name
         // Write the header
         writeHeader(o);
-        output("Header writen, now writing data.");
-        println("closeFile: wrote header");
+        println("closeFile: Wrote header");
 
         writeData(o);
-        output("Data written. Closing new file.");
+        println("closeFile: Data written. Closing new BDF+ file.");
         try {
             o.close();
             println("closeFile: wrote data");
+            File tempFile = new File(tempWriterPrefix);
+            if (Files.deleteIfExists(tempFile.toPath())) {
+                println("closeFile: BDF+ temporary file deleted.");
+                output("BDF+ file has been made.");
+            } else {
+                println("closeFile: error deleting temp file");
+            }
         } catch (IOException e) {
             println("Error closing BDF OutputStream");
         }
@@ -933,7 +944,7 @@ public class OutputFile_BDF {
       * @returns {String} - A fully qualified name of an output file with `str`.
       */
     private String getFileName(String s) {
-        String output = settings.savedDataPath+"OpenBCI-BDF-";
+        String output = settings.recordingsPath+"OpenBCI-BDF-";
         output += s;
         output += ".bdf";
         return output;

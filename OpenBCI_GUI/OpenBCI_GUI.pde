@@ -30,8 +30,11 @@ import processing.net.*; // For TCP networking
 import grafica.*;
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
+import java.io.OutputStream;
 import java.awt.MouseInfo;
 import java.lang.Process;
+import java.text.DateFormat; //Used in DataLogging.pde
+import java.text.SimpleDateFormat;
 // import java.net.InetAddress; // Used for ping, however not working right now.
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
@@ -55,10 +58,11 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.3-beta.1";
-String localGUIVersionDate = "June 2019";
+String localGUIVersionString = "v4.1.3-beta.3";
+String localGUIVersionDate = "July 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
+DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -175,7 +179,7 @@ float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual d
 OutputFile_rawtxt fileoutput_odf;
 OutputFile_BDF fileoutput_bdf;
 String output_fname;
-String fileName = "N/A";
+String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
 final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
 final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
@@ -282,9 +286,10 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
-    //If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+    // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
+    // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {
-        size(976, 549, P2D);
+        size(976, 742, P2D);
     } else {
         //default 1024x768 resolution with 2D graphics
         size(1024, 768, P2D);
@@ -314,6 +319,8 @@ void setup() {
     p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
     p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
+    cog = loadImage("cog_1024x1024.png");
+
     // check if the current directory is writable
     File dummy = new File(sketchPath());
     if (!dummy.canWrite()) {
@@ -331,6 +338,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
+    println("Console Log Started at Local Time: " + getDateString());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
@@ -390,7 +398,6 @@ void delayedSetup() {
 
     logo_blue = loadImage("logo_blue.png");
     logo_white = loadImage("logo_white.png");
-    cog = loadImage("cog_1024x1024.png");
     consoleImgBlue = loadImage("console-45x45-dots_blue.png");
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
     loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
@@ -407,7 +414,7 @@ void delayedSetup() {
     int portRX = 51000;  // this is the UDP port the application will be listening on
     String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
-    //create new object for receiving
+    // Create new object for receiving
     udpRX=new UDP(this,portRX,ip);
     udpRX.setReceiveHandler("udpReceiveHandler");
     udpRX.log(true);
@@ -416,6 +423,9 @@ void delayedSetup() {
     println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
     println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
 
+    // Create GUI data folder and copy sample data if meditation file doesn't exist
+    copyGUISampleData();
+
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
@@ -423,6 +433,38 @@ void delayedSetup() {
         controlPanel = new ControlPanel(this);
 
         setupComplete = true; // signal that the setup thread has finished
+        println("OpenBCI_GUI::Setup: Setup is complete!");
+    }
+}
+
+public void copyGUISampleData(){
+    String directoryName = settings.guiDataPath + File.separator + "Sample_Data" + File.separator;
+    String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
+    File directory = new File(directoryName);
+    File fileToCheck = new File(fileToCheckString);
+    if (!fileToCheck.exists()){
+        println("OpenBCI_GUI::Setup: Copying sample data to Documents/OpenBCI_GUI/Sample_Data");
+        // Make the entire directory path including parents
+        directory.mkdirs();
+        try {
+            List<File> results = new ArrayList<File>();
+            File[] filesFound = new File(dataPath("EEG_Sample_Data")).listFiles();
+            //If this pathname does not denote a directory, then listFiles() returns null.
+            for (File file : filesFound) {
+                if (file.isFile()) {
+                    results.add(file);
+                }
+            }
+            for(File file : results) {
+                Files.copy(file.toPath(),
+                    (new File(directoryName + file.getName())).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            outputError("Setup: Error trying to copy Sample Data to Documents directory.");
+        }
+    } else {
+        println("OpenBCI_GUI::Setup: Sample Data exists in Documents folder.");
     }
 }
 
@@ -462,11 +504,16 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
 synchronized void draw() {
     if (showStartupError) {
         drawStartupError();
-    }
-    else if (setupComplete) {
+    } else if (setupComplete && systemMode != SYSTEMMODE_INTROANIMATION) {
         drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
+    } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
+        if (settings.introAnimationInit == 0) {
+            settings.introAnimationInit = millis();
+        } else {
+            introAnimation();
+        }
     }
 }
 
@@ -637,7 +684,7 @@ int prevMillis = millis();
 int byteRate_perSec = 0;
 int drawLoop_counter = 0;
 
-//used to init system based on initial settings...Called from the "Start System" button in the GUI's ControlPanel
+//used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
 
 void setupWidgetManager() {
     wm = new WidgetManager(this);
@@ -732,10 +779,6 @@ void initSystem() throws Exception {
     } else {
         //initilize the GUI
         topNav.initSecondaryNav();
-
-        //open data file
-        if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(fileName);  //open a new log file
-        if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(fileName); // println("open ganglion output file");
 
         setupWidgetManager();
 
@@ -926,6 +969,9 @@ void stopButtonWasPressed() {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
+        //Close the log file when using OpenBCI Data Format (.txt)
+        if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
+        //BDF+ allows for breaks in the file, so leave the temp file open!
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
@@ -942,6 +988,15 @@ void stopButtonWasPressed() {
             ganglion.impedanceStop();
             w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
+
+        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+            //open data file if it has not already been opened
+            if (!settings.isLogFileOpen()) {
+                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
+                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
+            }
+            settings.setLogFileStartTime(System.nanoTime());
+        }
     }
 }
 
@@ -950,8 +1005,8 @@ void stopButtonWasPressed() {
 void haltSystem() {
     if (!systemHasHalted) { //prevents system from halting more than once
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-        if (initSystemButton.but_txt == "STOP SYSTEM") {
-            initSystemButton.but_txt = "START SYSTEM";
+        if (initSystemButton.but_txt == "STOP SESSION") {
+            initSystemButton.but_txt = "START SESSION";
         }
 
         stopRunning();  //stop data transfer
@@ -1053,15 +1108,6 @@ void systemUpdate() { // for updating data values and variables
         thread("delayedInit");
     }
 
-    // //update the sync state with the OpenBCI hardware
-    // if (iSerial.get_state() == iSerial.HubState.NOCOM || iSerial.get_state() == iSerial.HubState.COMINIT || iSerial.get_state() == iSerial.HubState.SYNCWITHHARDWARE) {
-    //   iSerial.updateSyncState(sdSetting);
-    // }
-
-    // if (hub.get_state() == HubState.NOCOM || hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) {
-    //   hub.updateSyncState(sdSetting);
-    // }
-
     //prepare for updating the GUI
     win_x = width;
     win_y = height;
@@ -1114,6 +1160,16 @@ void systemUpdate() { // for updating data values and variables
             } else {
                 //not enough data has arrived yet... only update the channel controller
             }
+
+            //New feature to address #461, defined in DataLogging.pde
+            //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
+            //Don't check duration if user has selected "No Limit"
+            if (outputDataSource == OUTPUT_SOURCE_ODF
+                && eegDataSource < DATASOURCE_PLAYBACKFILE
+                && settings.limitOBCILogFileDuration()) {
+                    fileoutput_odf.limitRecordingFileDuration();
+            }
+
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
             pointCounter = 0;
@@ -1178,10 +1234,14 @@ void systemDraw() { //for drawing to the screen
             case DATASOURCE_CYTON:
                 switch (outputDataSource) {
                 case OUTPUT_SOURCE_ODF:
-                    surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
+                    if (fileoutput_odf != null) {
+                        surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
+                    }
                     break;
                 case OUTPUT_SOURCE_BDF:
-                    surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+                    if (fileoutput_bdf != null) {
+                        surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+                    }
                     break;
                 case OUTPUT_SOURCE_NONE:
                 default:
@@ -1248,11 +1308,6 @@ void systemDraw() { //for drawing to the screen
         helpWidget.draw();
     }
 
-
-    if (systemMode == SYSTEMMODE_INTROANIMATION) {
-        introAnimation();
-    }
-
     if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
         if (!attemptingToConnect) {
             output("Attempting to establish a connection with your OpenBCI Board...");
@@ -1267,7 +1322,7 @@ void systemDraw() { //for drawing to the screen
 
         if (millis() - timeOfInit > settings.initTimeoutThreshold) {
             haltSystem();
-            initSystemButton.but_txt = "START SYSTEM";
+            initSystemButton.but_txt = "START SESSION";
             output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
             controlPanel.open();
             attemptingToConnect = false;
@@ -1293,13 +1348,12 @@ void introAnimation() {
     pushStyle();
     imageMode(CENTER);
     background(255);
-    int t1 = 4000;
-    int t2 = 6000;
-    int t3 = 8000;
+    int t1 = 0;
     float transparency = 0;
 
-    if (millis() >= t1) {
-        transparency = map(millis(), t1, t2, 0, 255);
+    if (millis() >= settings.introAnimationInit) {
+        transparency = map(millis() - settings.introAnimationInit, t1, settings.introAnimationDuration, 0, 255);
+        verbosePrint(String.valueOf(transparency));
         tint(255, transparency);
         //draw OpenBCI Logo Front & Center
         image(cog, width/2, height/2, width/6, width/6);
@@ -1312,8 +1366,9 @@ void introAnimation() {
         text(localGUIVersionDate, width/2, height/2 + ((width/8) * 1.125));
     }
 
-    //exit intro animation at t2
-    if (millis() >= t3) {
+    //Exit intro animation when the duration has expired AND the Control Panel is ready
+    if ((millis() >= settings.introAnimationInit + settings.introAnimationDuration)
+        && controlPanel != null) {
         systemMode = SYSTEMMODE_PREINIT;
         controlPanel.isOpen = true;
     }

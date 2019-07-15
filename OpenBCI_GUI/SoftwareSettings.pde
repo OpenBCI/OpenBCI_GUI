@@ -7,7 +7,7 @@
 //                       -- Networking Mode and All settings for active networking protocol
 //                       -- Accelerometer, Analog Read, Head Plot, EMG, and Focus
 //                       -- Widget/Container Pairs
-//
+//                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
 //
 //    -- Start System first!
@@ -42,7 +42,18 @@ class SoftwareSettings {
     String settingsVersion = "1.0.0";
     //default layout variables
     int currentLayout;
-
+    //Used to time the GUI intro animation
+    int introAnimationInit = 0;
+    final int introAnimationDuration = 2500;
+    //Max File Size #461, default option 4 -> 60 minutes
+    public final String[] fileDurations = {"5 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "120 Minutes", "No Limit"};
+    public final int[] fileDurationInts = {5, 15, 30, 60, 120, -1};
+    public final int defaultOBCIMaxFileSize = 3; //4th option from the above list
+    public int cytonOBCIMaxFileSize = defaultOBCIMaxFileSize;
+    public int ganglionOBCIMaxFileSize = defaultOBCIMaxFileSize;
+    private boolean logFileIsOpen = false;
+    private long logFileStartTime;
+    private long logFileMaxDuration;
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
 
@@ -86,8 +97,11 @@ class SoftwareSettings {
     int nwProtocolSave;
 
     //default configuration settings file location and file name variables
-    public final String savedDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
-    public final String settingsPath = savedDataPath+"Settings"+File.separator;
+    public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
+    public final String recordingsPath = guiDataPath+"Recordings"+File.separator;
+    public final String settingsPath = guiDataPath+"Settings"+File.separator;
+    public final String consoleDataPath = guiDataPath+"Console_Data"+File.separator;
+    private String sessionPath = "";
     final String[] userSettingsFiles = {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
@@ -136,7 +150,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Focus", "Pulse"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -266,7 +280,57 @@ class SoftwareSettings {
     final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
     SoftwareSettings() {
+        //Instantiated on app start in OpenBCI_GUI.pde
+    }
 
+    ///////////////////////////////////
+    // OpenBCI Data Format Functions //
+    ///////////////////////////////////
+
+    public void setLogFileIsOpen (boolean _toggle) {
+        logFileIsOpen = _toggle;
+    }
+
+    public boolean isLogFileOpen() {
+        return logFileIsOpen;
+    }
+
+    public void setLogFileStartTime(long _time) {
+        logFileStartTime = _time;
+        verbosePrint("Settings: LogFileStartTime = " + _time);
+    }
+
+    public void setLogFileMaxDuration() {
+        int _maxFileSize = (eegDataSource == DATASOURCE_CYTON) ? cytonOBCIMaxFileSize : ganglionOBCIMaxFileSize;
+        logFileMaxDuration = fileDurationInts[_maxFileSize] * 1000000000L * 60;
+        println("Settings: LogFileMaxDuration = " + fileDurationInts[_maxFileSize] + " minutes");
+    }
+
+    //Only called during live mode && using OpenBCI Data Format
+    public boolean maxLogTimeReached() {
+        if (logFileMaxDuration < 0) {
+            return false;
+        } else {
+            return (System.nanoTime() - logFileStartTime) > (logFileMaxDuration);
+        }
+    }
+
+    //Called in OpenBCI_GUI.pde to gate the above function
+    public boolean limitOBCILogFileDuration() {
+        if (logFileMaxDuration > 0) {
+            return true;
+        } else {
+            //If the value is less than zero, don't call maxLogTimeReached()
+            return false;
+        }
+    }
+
+    public void setSessionPath (String _path) {
+        sessionPath = _path;
+    }
+
+    public String getSessionPath() {
+        return sessionPath;
     }
 
     ////////////////////////////////////////////////////////////////
@@ -1280,6 +1344,9 @@ class SoftwareSettings {
         for (File file: new File(settingsPath).listFiles())
             if (!file.isDirectory())
                 file.delete();
+        controlPanel.recentPlaybackBox.cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
+        controlPanel.recentPlaybackBox.shortFileNames.clear();
+        controlPanel.recentPlaybackBox.longFilePaths.clear();
         outputSuccess("All settings have been cleared!");
     }
 

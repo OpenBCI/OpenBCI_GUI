@@ -10,7 +10,6 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-// import java.io.OutputStream; //for logging raw bytes to an output file
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -52,7 +51,7 @@ class Ganglion {
             return hub.getSampleRate();
         }
     }
-    
+
     public float get_scale_fac_uVolts_per_count() {
         return scale_fac_uVolts_per_count;
     }
@@ -252,7 +251,7 @@ class Ganglion {
         delay(500);
         closePort();
         haltSystem();
-        initSystemButton.setString("START SYSTEM");
+        initSystemButton.setString("START SESSION");
         controlPanel.open();
         output("Ganglion now in bootloader mode! Enjoy!");
     }
