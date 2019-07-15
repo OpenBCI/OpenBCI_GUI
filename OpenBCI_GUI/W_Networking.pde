@@ -1486,7 +1486,7 @@ class Stream extends Thread {
                     }
                 }
                 try {
-                    //println(serialMessage);
+                    println(serialMessage);
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println(e.getMessage());
