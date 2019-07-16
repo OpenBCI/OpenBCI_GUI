@@ -82,6 +82,24 @@ class W_SSVEP extends Widget {
             layoutIsVisible = topNav.layoutSelector.isVisible;
         }
 
+        if(ssvepDisplay == 0) {  // 1 SSVEP
+            freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7;
+        }
+        else if (ssvepDisplay == 1) {
+            freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7;
+            freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7;
+        }
+        else if (ssvepDisplay == 2) {
+            freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7;
+            freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7;
+            freq3 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").getValue() + 7;
+        }
+        else if (ssvepDisplay == 3) {
+            freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7;
+            freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7;
+            freq3 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").getValue() + 7;
+            freq4 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").getValue() + 7;
+        }
 
     }
 
@@ -146,9 +164,9 @@ class W_SSVEP extends Widget {
             .setOpen(false)
 
             .setColorBackground(color(0)) // text field bg color
-            .setColorValueLabel(color(100))       // text color
-            .setColorCaptionLabel(color(100))
-            .setColorForeground(color(125))    // border color when not selected
+            .setColorValueLabel(color(130))       // text color
+            .setColorCaptionLabel(color(130))
+            .setColorForeground(color(60))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
             .addItems(_items)
             .setVisible(false)
@@ -189,8 +207,6 @@ class W_SSVEP extends Widget {
                              .setItemHeight(20)
                              ;
 
-     freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7; //returns index of selected value
-
      if(millis()%(2*(500/freq1)) >= (500/freq1)) {
        fill(0,0,255);
        rect(x+ w/2 - h/8, y + h/2- h/8, h/4 ,h/4);
@@ -229,8 +245,6 @@ class W_SSVEP extends Widget {
                                  .setVisible(true)
                                  ;
 
-         freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7; //returns index of selected value
-
          //left SSVEP
          if(millis()%(2*(500/freq1)) >= (500/freq1)) {
            fill(0,0,255);
@@ -255,7 +269,6 @@ class W_SSVEP extends Widget {
                            .setPosition(x + 10, y + (3*h/4) - s/8);
 
          cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-         freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7; //returns index of selected value
 
 
          //right side
@@ -287,7 +300,6 @@ class W_SSVEP extends Widget {
                                .setVisible(true)
                                ;
 
-       freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7; //returns index of selected value
 
        //left SSVEP
        if(millis()%(2*(500/freq1)) >= (500/freq1)) {
@@ -313,7 +325,6 @@ class W_SSVEP extends Widget {
                          .setPosition(x + (3*w/4) - s/8, y + 30);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7; //returns index of selected value
 
 
        //right side
@@ -352,8 +363,6 @@ class W_SSVEP extends Widget {
                          .setPosition(x + 10, y + 10);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7; //returns index of selected value
-
 
        //left SSVEP
        if(millis()%(2*(500/freq1)) >= (500/freq1)) {
@@ -379,8 +388,6 @@ class W_SSVEP extends Widget {
                          .setPosition(x + 10, y + h/3);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7; //returns index of selected value
-
 
        //middle SSVEP
        if(millis()%(2*(500/freq2)) >= (500/freq2)) {
@@ -405,10 +412,9 @@ class W_SSVEP extends Widget {
                          .setPosition(x + 10, y + (2*h/3));
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq3 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").getValue() + 7; //returns index of selected value
 
        //right side
-       if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+       if(millis()%(2*(500/freq3)) >= (500/freq3)) {
          fill(0,255,0);
          rect(x + w/2 - s/8,y + (7*h/8) - s/8, s/4,s/4);
          pushStyle();
@@ -431,7 +437,6 @@ class W_SSVEP extends Widget {
                          .setPosition(x + w/8 - s/8, y + 30);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7; //returns index of selected value
 
 
        //left SSVEP
@@ -458,8 +463,6 @@ class W_SSVEP extends Widget {
                          .setPosition(x + w/2 - s/8, y + 30);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7; //returns index of selected value
-
 
        //middle SSVEP
        if(millis()%(2*(500/freq2)) >= (500/freq2)) {
@@ -484,10 +487,9 @@ class W_SSVEP extends Widget {
                          .setPosition(x + (7*w/8) - s/8, y + 30);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       freq3 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").getValue() + 7; //returns index of selected value
 
        //right side
-       if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+       if(millis()%(2*(500/freq3)) >= (500/freq3)) {
          fill(0,255,0);
          rect(x + (7*w/8) - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -510,10 +512,9 @@ class W_SSVEP extends Widget {
 
    void setup_4_SSVEP() {
      cp5_ssvepDropdowns.getController("Frequency 1")
-                       .setPosition(x + 30, y + h/4 - h/12);
+                       .setPosition(x + 10, y + 10);
 
      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
-     freq1 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").getValue() + 7; //returns index of selected value
 
      //upper - left SSVEP
      if(millis()%(2*(500/freq1)) >= (500/freq1)) {
@@ -535,17 +536,10 @@ class W_SSVEP extends Widget {
        popStyle();
      }
 
-     // upper - right label
-     // textSize(15);
-     // fill(100);
-     // text("Frequency (Hz)", x + (3*w/4) - h/12, y + h/4 - 70);
-
      cp5_ssvepDropdowns.getController("Frequency 2")
-                       .setPosition(x + w - h/6 - 20, y + h/4 - h/12);
+                       .setPosition(x + w - h/6 - 10, y + 10);
 
      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
-     freq2 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").getValue() + 7; //returns index of selected value
-
 
      //upper - right SSVEP
      if(millis()%(2*(500/freq2)) >= (500/freq2)) {
@@ -566,20 +560,14 @@ class W_SSVEP extends Widget {
        popStyle();
      }
 
-     // lower-left label
-     // textSize(15);
-     // fill(100);
-     // text("Frequency (Hz)", x + w/4 - h/12, y + (3*h/4) - 70);
-
      cp5_ssvepDropdowns.getController("Frequency 3")
-                       .setPosition(x + 15, y + (3*h/4) - h/12);
+                       .setPosition(x + 10, y + h/2);
 
      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
-     freq3 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").getValue() + 7; //returns index of selected value
 
 
-     //upper - left SSVEP
-     if(millis()%(2*(500/freq2)) >= (500/freq3)) {
+     //lower - left SSVEP
+     if(millis()%(2*(500/freq3)) >= (500/freq3)) {
        fill(0,255,0);
        rect(x + w/4 - h/12,y + (3*h/4) - h/12, h/6,h/6);
        pushStyle();
@@ -598,19 +586,14 @@ class W_SSVEP extends Widget {
      }
 
      // lower-right label
-     // textSize(15);
-     // fill(100);
-     // text("Frequency (Hz)", x + (3*w/4) - h/12, y + (3*h/4) - 70);
-
      cp5_ssvepDropdowns.getController("Frequency 4")
-                       .setPosition(x + w -h/6 - 20, y + (3*h/4) - h/12);
+                       .setPosition(x + w - h/6 - 10, y + h/2);
 
      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
-     freq4 = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").getValue() + 7; //returns index of selected value
 
 
      //right side
-     if(millis()%(2*(500/freq2)) >= (500/freq4)) {
+     if(millis()%(2*(500/freq4)) >= (500/freq4)) {
        fill(255,255,0);
        rect(x + (3*w/4) - h/12,y + (3*h/4) - h/12, h/6,h/6);
        pushStyle();
