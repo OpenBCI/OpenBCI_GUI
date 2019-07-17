@@ -590,8 +590,8 @@ class Hub {
                     // Sample number stuff
                     dataPacket.sampleIndex = json.getInt(TCP_JSON_KEY_SAMPLE_NUMBER);
 
-                    if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-                        if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
+                    if ((dataPacket.sampleIndex - prevSampleIndex) != 1
+                        && dataPacket.sampleIndex != 0) {  // if we rolled over, don't count as error
                             bleErrorCounter++;
 
                             werePacketsDroppedHub = true; //set this true to activate packet duplication in serialEvent
@@ -602,89 +602,68 @@ class Hub {
                             }
                             println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
                             println("numPacketsDropped = " + numPacketsDroppedHub);
-                        }
-                    }
-                    prevSampleIndex = dataPacket.sampleIndex;
-
-                    // Channel data storage
-                    JSONArray eegChannelDataCounts = json.getJSONArray(TCP_JSON_KEY_CHANNEL_DATA_COUNTS);
-                    for (int i = 0; i < nEEGValuesPerPacket; i++) {
-                        dataPacket.values[i] = eegChannelDataCounts.getInt(i);
-                    }
-                    if (newAccelData) {
-                        newAccelData = false;
-                        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                            dataPacket.auxValues[i] = accelArray[i];
-                            dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
-                        }
                     } else {
-                        stopByte = json.getInt(TCP_JSON_KEY_STOP_BYTE);
-                        if (stopByte == 0xC0) {
-                            JSONArray accelValues = json.getJSONArray(TCP_JSON_KEY_ACCEL_DATA_COUNTS);
-                            for (int i = 0; i < accelValues.size(); i++) {
-                                accelArray[i] = accelValues.getInt(i);
+                        // Channel data storage
+                        JSONArray eegChannelDataCounts = json.getJSONArray(TCP_JSON_KEY_CHANNEL_DATA_COUNTS);
+                        for (int i = 0; i < nEEGValuesPerPacket; i++) {
+                            dataPacket.values[i] = eegChannelDataCounts.getInt(i);
+                        }
+                        if (newAccelData) {
+                            newAccelData = false;
+                            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
                                 dataPacket.auxValues[i] = accelArray[i];
                                 dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
-                                dataPacket.rawAuxValues[i][1] = byte(accelArray[i] >> 8);
-                            }
-                            if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
-                                // println(msg);
-                                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                                    validAccelValues[i] = accelArray[i];
-                                }
                             }
                         } else {
-                            JSONObject auxData = json.getJSONObject(TCP_JSON_KEY_AUX_DATA);
-                            JSONArray auxDataValues;
-                            if (nchan == NCHAN_CYTON_DAISY) {
-                                JSONObject lowerAuxData = auxData.getJSONObject(TCP_JSON_KEY_LOWER);
-                                auxDataValues = lowerAuxData.getJSONArray(TCP_JSON_KEY_DATA);
+                            stopByte = json.getInt(TCP_JSON_KEY_STOP_BYTE);
+                            if (stopByte == 0xC0) {
+                                JSONArray accelValues = json.getJSONArray(TCP_JSON_KEY_ACCEL_DATA_COUNTS);
+                                for (int i = 0; i < accelValues.size(); i++) {
+                                    accelArray[i] = accelValues.getInt(i);
+                                    dataPacket.auxValues[i] = accelArray[i];
+                                    dataPacket.rawAuxValues[i][0] = byte(accelArray[i]);
+                                    dataPacket.rawAuxValues[i][1] = byte(accelArray[i] >> 8);
+                                }
+                                if (accelArray[0] > 0 || accelArray[1] > 0 || accelArray[2] > 0) {
+                                    // println(msg);
+                                    for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                                        validAccelValues[i] = accelArray[i];
+                                    }
+                                }
                             } else {
-                                auxDataValues = auxData.getJSONArray(TCP_JSON_KEY_DATA);
-                            }
-                            int j = 0;
-                            for (int i = 0; i < auxDataValues.size(); i+=2) {
-                                int val1 = auxDataValues.getInt(i);
-                                int val2 = auxDataValues.getInt(i+1);
+                                JSONObject auxData = json.getJSONObject(TCP_JSON_KEY_AUX_DATA);
+                                JSONArray auxDataValues;
+                                if (nchan == NCHAN_CYTON_DAISY) {
+                                    JSONObject lowerAuxData = auxData.getJSONObject(TCP_JSON_KEY_LOWER);
+                                    auxDataValues = lowerAuxData.getJSONArray(TCP_JSON_KEY_DATA);
+                                } else {
+                                    auxDataValues = auxData.getJSONArray(TCP_JSON_KEY_DATA);
+                                }
+                                int j = 0;
+                                for (int i = 0; i < auxDataValues.size(); i+=2) {
+                                    int val1 = auxDataValues.getInt(i);
+                                    int val2 = auxDataValues.getInt(i+1);
 
-                                dataPacket.auxValues[j] = (val1 << 8) | val2;
-                                validAccelValues[j] = (val1 << 8) | val2;
+                                    dataPacket.auxValues[j] = (val1 << 8) | val2;
+                                    validAccelValues[j] = (val1 << 8) | val2;
 
-                                dataPacket.rawAuxValues[j][0] = byte(val2);
-                                dataPacket.rawAuxValues[j][1] = byte(val1 << 8);
-                                j++;
+                                    dataPacket.rawAuxValues[j][0] = byte(val2);
+                                    dataPacket.rawAuxValues[j][1] = byte(val1 << 8);
+                                    j++;
+                                }
                             }
                         }
+                        getRawValues(dataPacket);
                     }
-                    getRawValues(dataPacket);
+
+                    prevSampleIndex = dataPacket.sampleIndex;
+
                     // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
                     // println(dataPacket.values[7]);
                     curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
                     copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
-                    // KILL SPIKES!!!
-                    /*
-                    if(werePacketsDroppedHub){
-                        println("Packets Dropped ... doing some stuff...");
-                        for (int i = numPacketsDroppedHub; i > 0; i--){
-                            int tempDataPacketInd = curDataPacketInd - i; //
-                            if (tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length) {
-                                  // println("i = " + i);
-                                   copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                            } else {
-                               if (eegDataSource == DATASOURCE_GANGLION) {
-                                 copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                               } else {
-                                 copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
-                               }
-                            }
-                            //put the last stored packet in # of packets dropped after that packet
-                       }
-                       //reset werePacketsDropped & numPacketsDropped
-                       werePacketsDroppedHub = false;
-                       numPacketsDroppedHub = 0;
-                     }
-                     */
+                    killSpikes();
 
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
@@ -724,6 +703,30 @@ class Hub {
         } catch (Exception e) {
             println("\n\n" + json + "\nHub: parseMessage: error: " + e);
         }
+    }
+
+    void killSpikes() {
+        // KILL SPIKES!!!
+        if (werePacketsDroppedHub){
+            println("Packets Dropped ... doing some stuff...");
+            for (int i = numPacketsDroppedHub; i > 0; i--){
+                int tempDataPacketInd = curDataPacketInd - i; //
+                if (tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length) {
+                      // println("i = " + i);
+                       copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+                } else {
+                   if (eegDataSource == DATASOURCE_GANGLION) {
+                     copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
+                   } else {
+                     copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
+                   }
+                }
+                //put the last stored packet in # of packets dropped after that packet
+           }
+           //reset werePacketsDropped & numPacketsDropped
+           werePacketsDroppedHub = false;
+           numPacketsDroppedHub = 0;
+         }
     }
 
     private void processDisconnect(JSONObject json) {
