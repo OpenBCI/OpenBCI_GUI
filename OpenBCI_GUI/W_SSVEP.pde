@@ -134,19 +134,15 @@ class W_SSVEP extends Widget {
 
         //left side
         if(ssvepDisplay == 0) {  // 1 SSVEP
-            resetDropdowns();   //set all dropdowns invisble
             setup_1_SSVEP();
         }
         else if (ssvepDisplay == 1) {
-            resetDropdowns();   //set all dropdowns invisble
             setup_2_SSVEP();
         }
         else if (ssvepDisplay == 2) {
-            resetDropdowns();   //set all dropdowns invisble
             setup_3_SSVEP();
         }
         else if (ssvepDisplay == 3) {
-            resetDropdowns();   //set all dropdowns invisble
             setup_4_SSVEP();
         }
 
