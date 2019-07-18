@@ -271,7 +271,7 @@ class W_SSVEP extends Widget {
        whiteBG = true;
      }
 
-     if (millis()%(2*(500/freq1)) >= (500/freq1)) {
+     if (millis()%(2*(500/freq)) >= (500/freq)) {
        int r = 0;
        int g = 0;
        int b = 0;
@@ -286,7 +286,7 @@ class W_SSVEP extends Widget {
          g = 255;
        }
        else if(colour.equals("yellow")){
-         b = 255;
+         r = 255;
          g = 255;
        }
 
