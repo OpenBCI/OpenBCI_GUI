@@ -14,7 +14,7 @@ int ssvepDisplay;
 class W_SSVEP extends Widget {
 
     //frequency variables offered
-    float freq1, freq2, freq3, freq4;
+    int freq1, freq2, freq3, freq4;
 
     //Limiting dimension variable
     int s;
@@ -87,12 +87,14 @@ class W_SSVEP extends Widget {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").unlock();
             }
 
+            //lock/unlock dropdowns when Widget Selector is in use
             if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").lock();
             } else {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").unlock();
             }
 
+            //lock/unlock lower Freq4 dropdown when Freq2 dropdown is in use in 4 SSVEP use case
             if (cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()) {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").lock();
                 print("!!!!!!!!");
@@ -101,13 +103,16 @@ class W_SSVEP extends Widget {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setVisible(true).unlock();
             }
 
+            //lock/unlock lower Freq3 dropdown when Freq1 dropdown is in use in 4 SSVEP use case
             if (cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen() && ssvepDisplay == 3) {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
             } else {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").unlock();
             }
 
+            //manage dropdowns in 3 SSVEP use case
             if (heightLarger && ssvepDisplay == 2) {
+               // lock freq2 if freq1 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
                }
@@ -115,6 +120,7 @@ class W_SSVEP extends Widget {
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
                }
 
+               // lock freq3 if freq2 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
                }
@@ -156,13 +162,30 @@ class W_SSVEP extends Widget {
 
         //left side
         if (ssvepDisplay == 0) {  // 1 SSVEP
-            setup_1_SSVEP();
-        } else if (ssvepDisplay == 1) {
-            setup_2_SSVEP();
+            drawSSVEP("blue", freq1, 0.5, 0.5, s/4);
+        } else if (ssvepDisplay == 1) { // 2 SSVEPs
+            if (heightLarger) {
+                drawSSVEP("blue", freq1, 0.5, 0.25, s/4);
+                drawSSVEP("red", freq2, 0.5, 0.75, s/4);
+            } else {
+              drawSSVEP("blue", freq1, 0.25, 0.5, s/4);
+              drawSSVEP("red", freq2, 0.75, 0.5, s/4);
+            }
         } else if (ssvepDisplay == 2) {
-            setup_3_SSVEP();
+            if (heightLarger) {
+              drawSSVEP("blue", freq1, 0.5, 0.125, s/4);
+              drawSSVEP("red", freq2, 0.5, 0.5, s/4);
+              drawSSVEP("green", freq3, 0.5, 0.875, s/4);
+            } else {
+              drawSSVEP("blue", freq1, 0.125, 0.5, s/4);
+              drawSSVEP("red", freq2, 0.5, 0.5, s/4);
+              drawSSVEP("green", freq3, 0.875, 0.5, s/4);
+            }
         } else if (ssvepDisplay == 3) {
-            setup_4_SSVEP();
+            drawSSVEP("blue", freq1, 0.25, 0,25, s/6);
+            drawSSVEP("red", freq2, 0.75, 0.25, s/6);
+            drawSSVEP("green", freq3, 0.25, 0.75, s/6);
+            drawSSVEP("yellow", freq4, 0.75, 0.75, s/6);
         }
 
         cp5_ssvepDropdowns.draw();
@@ -240,316 +263,51 @@ class W_SSVEP extends Widget {
      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setVisible(false);
    }
 
+   void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float size){
+     boolean whiteBG = false;
+     if(colour.equals("blue")){
+       whiteBG = true;
+     }
 
-
-   void setup_1_SSVEP() {
      if (millis()%(2*(500/freq1)) >= (500/freq1)) {
-       fill(0,0,255);
-       rect(x+ w/2 - h/8, y + h/2- h/8, h/4 ,h/4);
+       int r = 0;
+       int g = 0;
+       int b = 0;
+
+       if(colour.equals("blue")){
+         b = 255;
+       }
+       else if(colour.equals("red")){
+         r = 255;
+       }
+       else if(colour.equals("green")){
+         g = 255;
+       }
+       else if(colour.equals("yellow")){
+         b = 255;
+         g = 255;
+       }
+
+       fill(r,g,b);
+       rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
        pushStyle();
          noFill();
-         stroke(255);
-        rect(x + w/2 - h/16, y + h/2 - h/16, h/8, h/8);
+         if(whiteBG){
+           stroke(255);
+         }
+         else{
+           stroke(0);
+         }
+         rect(x + (w * wFactor) - (size/4), y + (h*hFactor) - (size/4), size/2, size/2);
        popStyle();
 
      } else {
        fill(0);
-       rect(x + w/2 - h/8, y + h/2 - h/8, h/4,h/4);
+       rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
        pushStyle();
          noFill();
          stroke(0,0,255);
-         rect(x + w/2 - h/40, y + h/2 - h/40, h/20, h/20);
-       popStyle();
-     }
-   }
-
-   void setup_2_SSVEP() {
-     int s = h;       // Let s be a variable that represents the lesser of the widget's dimensions
-     if (h > w) {
-       s = w;
-     }
-
-     if (heightLarger) {
-         //left SSVEP
-         if (millis()%(2*(500/freq1)) >= (500/freq1)) {
-           fill(0,0,255);
-           rect(x + w/2 - s/8,y + h/4 - s/8, s/4,s/4);
-           pushStyle();
-             noFill();
-             stroke(255);
-             rect(x + w/2 - s/16, y + h/4 - s/16, s/8, s/8);
-           popStyle();
-
-         } else {
-           fill(0);
-           rect(x+ w/2 - s/8, y + h/4 -s/8, s/4,s/4);
-           pushStyle();
-             noFill();
-             stroke(0,0,255);
-             rect(x + w/2 - s/40, y + h/4 - s/40, s/20, s/20);
-           popStyle();
-         }
-
-         //right side
-         if (millis()%(2*(500/freq2)) >= (500/freq2)) {
-           fill(255,0,0);
-           rect(x + w/2 - s/8,y + (3*h/4) - s/8, s/4,s/4);
-           pushStyle();
-             noFill();
-             stroke(0);
-             rect(x + w/2 - s/16, y + (3*h/4) - s/16, s/8, s/8);
-           popStyle();
-         } else {
-           fill(0);
-           rect(x + w/2 - s/8,y + (3*h/4) - s/8, s/4,s/4);
-           pushStyle();
-             noFill();
-             stroke(255,0,0);
-             rect(x + w/2 - s/40, y + (3*h/4) - s/40, s/20, s/20);
-           popStyle();
-         }
-     } else {
-       //left SSVEP
-       if (millis()%(2*(500/freq1)) >= (500/freq1)) {
-         fill(0,0,255);
-         rect(x + w/4 - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(255);
-           rect(x + w/4 - s/16, y + h/2 - s/16, s/8, s/8);
-         popStyle();
-
-       } else {
-         fill(0);
-         rect(x+ w/4 - s/8, y + h/2 -s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0,0,255);
-           rect(x + w/4 - s/40, y + h/2 - s/40, s/20, s/20);
-         popStyle();
-       }
-
-       //right side
-       if (millis()%(2*(500/freq2)) >= (500/freq2)) {
-         fill(255,0,0);
-         rect(x + (3*w/4) - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0);
-           rect(x + (3*w/4) - s/16, y + h/2 - s/16, s/8, s/8);
-         popStyle();
-       } else {
-         fill(0);
-         rect(x + (3*w/4) - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(255,0,0);
-           rect(x + (3*w/4) - s/40, y + h/2 - s/40, s/20, s/20);
-         popStyle();
-       }
-     }
-   }
-
-   void setup_3_SSVEP() {
-     int s = h;       // Let s be a variable that represents the lesser of the widget's dimensions
-     if (h > w) {
-       s = w;
-     }
-
-     if (heightLarger) {
-       //left SSVEP
-       if (millis()%(2*(500/freq1)) >= (500/freq1)) {
-         fill(0,0,255);
-         rect(x + w/2 - s/8, y + h/8 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(255);
-           rect(x + w/2 - s/16, y + h/8 - s/16, s/8, s/8);
-         popStyle();
-
-       } else {
-         fill(0);
-         rect(x+ w/2 - s/8, y + h/8 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0,0,255);
-           rect(x + w/2 - s/40, y + h/8 - s/40, s/20, s/20);
-         popStyle();
-       }
-
-       //middle SSVEP
-       if (millis()%(2*(500/freq2)) >= (500/freq2)) {
-         fill(255,0,0);
-         rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0);
-           rect(x + w/2 - s/16, y + h/2 - s/16, s/8, s/8);
-         popStyle();
-       } else {
-         fill(0);
-         rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(255,0,0);
-           rect(x + w/2 - s/40, y + h/2 - s/40, s/20, s/20);
-         popStyle();
-       }
-
-       //right side
-       if (millis()%(2*(500/freq3)) >= (500/freq3)) {
-         fill(0,255,0);
-         rect(x + w/2 - s/8,y + (7*h/8) - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0);
-           rect(x + w/2 - s/16, y + (7*h/8) - s/16, s/8, s/8);
-         popStyle();
-       } else {
-         fill(0);
-         rect(x + w/2 - s/8,y + (7*h/8) - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0,255,0);
-           rect(x + w/2 - s/40, y + (7*h/8) - s/40, s/20, s/20);
-         popStyle();
-       }
-     } else {
-       //left SSVEP
-       if (millis()%(2*(500/freq1)) >= (500/freq1)) {
-         fill(0,0,255);
-         rect(x + w/8 - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(255);
-           rect(x + w/8 - s/16, y + h/2 - s/16, s/8, s/8);
-         popStyle();
-
-       } else {
-         fill(0);
-         rect(x+ w/8 - s/8, y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0,0,255);
-           rect(x + w/8 - s/40, y + h/2 - s/40, s/20, s/20);
-         popStyle();
-       }
-
-       //middle SSVEP
-       if (millis()%(2*(500/freq2)) >= (500/freq2)) {
-         fill(255,0,0);
-         rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0);
-           rect(x + w/2 - s/16, y + h/2 - s/16, s/8, s/8);
-         popStyle();
-       } else {
-         fill(0);
-         rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(255,0,0);
-           rect(x + w/2 - s/40, y + h/2 - s/40, s/20, s/20);
-         popStyle();
-       }
-
-       //right side
-       if (millis()%(2*(500/freq3)) >= (500/freq3)) {
-         fill(0,255,0);
-         rect(x + (7*w/8) - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0);
-           rect(x + (7*w/8) - s/16, y + h/2 - s/16, s/8, s/8);
-         popStyle();
-       } else {
-         fill(0);
-         rect(x + (7*w/8) - s/8,y + h/2 - s/8, s/4,s/4);
-         pushStyle();
-           noFill();
-           stroke(0,255,0);
-           rect(x + (7*w/8) - s/40, y + h/2 - s/40, s/20, s/20);
-         popStyle();
-       }
-     }
-   }
-
-   void setup_4_SSVEP() {
-     //upper - left SSVEP
-     if (millis()%(2*(500/freq1)) >= (500/freq1)) {
-       fill(0,0,255);
-       rect(x + w/4 - h/12,y + h/4 - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(255);
-         rect(x + w/4 - h/24, y + h/4 - h/24, h/12, h/12);
-       popStyle();
-     } else {
-       fill(0);
-       rect(x+ w/4 - h/12, y + h/4 -h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(0,0,255);
-         rect(x + w/4 - h/60, y + h/4 - h/60, h/30, h/30);
-       popStyle();
-     }
-
-     //upper - right SSVEP
-     if (millis()%(2*(500/freq2)) >= (500/freq2)) {
-       fill(255,0,0);
-       rect(x + (3*w/4) - h/12,y + h/4 - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(0);
-         rect(x + (3*w/4) - h/24, y + h/4 - h/24, h/12, h/12);
-       popStyle();
-     } else {
-       fill(0);
-       rect(x + (3*w/4) - h/12,y + h/4 - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(255,0,0);
-         rect(x + (3*w/4) - h/60, y + h/4 - h/60, h/30, h/30);
-       popStyle();
-     }
-
-     //lower - left SSVEP
-     if (millis()%(2*(500/freq3)) >= (500/freq3)) {
-       fill(0,255,0);
-       rect(x + w/4 - h/12,y + (3*h/4) - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(0);
-         rect(x + w/4 - h/24, y + (3*h/4) - h/24, h/12, h/12);
-       popStyle();
-     } else {
-       fill(0);
-       rect(x + w/4 - h/12,y + (3*h/4) - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(0,255,0);
-         rect(x + w/4 - h/60, y + (3*h/4) - h/60, h/30, h/30);
-       popStyle();
-     }
-
-     // lower-right label
-     //right side
-     if (millis()%(2*(500/freq4)) >= (500/freq4)) {
-       fill(255,255,0);
-       rect(x + (3*w/4) - h/12,y + (3*h/4) - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(0);
-         rect(x + (3*w/4) - h/24, y + (3*h/4) - h/24, h/12, h/12);
-       popStyle();
-     } else {
-       fill(0);
-       rect(x + (3*w/4) - h/12,y + (3*h/4) - h/12, h/6,h/6);
-       pushStyle();
-         noFill();
-         stroke(255,255,0);
-         rect(x + (3*w/4) - h/60, y + (3*h/4) - h/60, h/30, h/30);
+         rect(x + (w * wFactor) - (size/10), y + (h*hFactor) - (size/10), size/5, size/5);
        popStyle();
      }
    }
