@@ -212,10 +212,10 @@ class W_SSVEP extends Widget {
 
         if (h > w) {
           heightLarger = true;
-          s = h;
+          s = w;
         } else {
           heightLarger = false;
-          s = w;
+          s = h;
         }
     }
 
