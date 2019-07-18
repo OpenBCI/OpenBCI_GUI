@@ -182,10 +182,12 @@ class W_SSVEP extends Widget {
               drawSSVEP("green", freq3, 0.875, 0.5, s/4);
             }
         } else if (ssvepDisplay == 3) {
-            drawSSVEP("blue", freq1, 0.25, 0,25, s/6);
-            drawSSVEP("red", freq2, 0.75, 0.25, s/6);
-            drawSSVEP("green", freq3, 0.25, 0.75, s/6);
+            float sz = s/6;
+            drawSSVEP("blue", freq1, 0.25, 0.25, s/6);
+            drawSSVEP("red", freq2, 0.25, 0.75, s/6);
+            drawSSVEP("green", freq3, 0.75, 0.25, s/6);
             drawSSVEP("yellow", freq4, 0.75, 0.75, s/6);
+
         }
 
         cp5_ssvepDropdowns.draw();
