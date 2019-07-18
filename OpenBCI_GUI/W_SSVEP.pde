@@ -93,6 +93,36 @@ class W_SSVEP extends Widget {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").unlock();
             }
 
+            if (cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()) {
+                cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").lock();
+                print("!!!!!!!!");
+
+            } else {
+                cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setVisible(true).unlock();
+            }
+
+            if (cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen() && ssvepDisplay == 3) {
+                cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
+            } else {
+                cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").unlock();
+            }
+
+            if (heightLarger && ssvepDisplay == 2) {
+               if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen()){
+                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
+               }
+               else{
+                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
+               }
+
+               if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()){
+                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
+               }
+               else{
+                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").unlock();
+               }
+            }
+
             configIsVisible = topNav.configSelector.isVisible;
             layoutIsVisible = topNav.layoutSelector.isVisible;
         }
@@ -525,12 +555,12 @@ class W_SSVEP extends Widget {
    }
 
    void setDropdownPositions() {
-     //resetDropdowns();
+     resetDropdowns();
 
-     setDropdown1();
-     setDropdown2();
-     setDropdown3();
      setDropdown4();
+     setDropdown3();
+     setDropdown2();
+     setDropdown1();
    }
 
    void setDropdown1() {
@@ -624,7 +654,7 @@ class W_SSVEP extends Widget {
      } else if (ssvepDisplay == 3) {
        //Freq2 Dropdown
        cp5_ssvepDropdowns.getController("Frequency 2")
-                         .setPosition(x + w - h/6 - 10, y + 10);
+                         .setPosition(x + w - h/6 - 70, y + 10);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setVisible(true);   // set visual settings for dropdown
      }
@@ -657,7 +687,7 @@ class W_SSVEP extends Widget {
    void setDropdown4() {
      if (ssvepDisplay == 3) {
       cp5_ssvepDropdowns.getController("Frequency 4")
-                        .setPosition(x + w - h/6 - 10, y + h/2);
+                        .setPosition(x + w - h/6 - 70, y + h/2);
 
       cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setVisible(true);   // set visual settings for dropdown
      }
