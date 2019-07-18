@@ -61,17 +61,12 @@ class W_SSVEP extends Widget {
 
         if (h > w) {
           heightLarger = true;
-        }
-        else {
-          heightLarger = false;
-        }
-
-        if (heightLarger) {
           s = h;
-        }
-        else {
+        } else {
+          heightLarger = false;
           s = w;
         }
+
     }
 
     void update() {
@@ -104,17 +99,14 @@ class W_SSVEP extends Widget {
 
         if(ssvepDisplay == 0) {  // 1 SSVEP
             freq1 = updateFreq(1);
-        }
-        else if (ssvepDisplay == 1) {
+        } else if (ssvepDisplay == 1) {
             freq1 = updateFreq(1);
             freq2 = updateFreq(2);
-        }
-        else if (ssvepDisplay == 2) {
+        } else if (ssvepDisplay == 2) {
             freq1 = updateFreq(1);
             freq2 = updateFreq(2);
             freq3 = updateFreq(3);
-        }
-        else if (ssvepDisplay == 3) {
+        } else if (ssvepDisplay == 3) {
             freq1 = updateFreq(1);
             freq2 = updateFreq(2);
             freq3 = updateFreq(3);
@@ -135,14 +127,11 @@ class W_SSVEP extends Widget {
         //left side
         if(ssvepDisplay == 0) {  // 1 SSVEP
             setup_1_SSVEP();
-        }
-        else if (ssvepDisplay == 1) {
+        } else if (ssvepDisplay == 1) {
             setup_2_SSVEP();
-        }
-        else if (ssvepDisplay == 2) {
+        } else if (ssvepDisplay == 2) {
             setup_3_SSVEP();
-        }
-        else if (ssvepDisplay == 3) {
+        } else if (ssvepDisplay == 3) {
             setup_4_SSVEP();
         }
 
