@@ -49,7 +49,7 @@ class W_SSVEP extends Widget {
         dropdownNames = new String[] {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
         dropdownOptions = new ArrayList<String>();
 
-        for(int i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
           dropdownOptions.add(String.valueOf(i+7) + " Hz");
         }
 
@@ -61,15 +61,9 @@ class W_SSVEP extends Widget {
 
         if (h > w) {
           heightLarger = true;
-        }
-        else {
-          heightLarger = false;
-        }
-
-        if (heightLarger) {
           s = h;
-        }
-        else {
+        } else {
+          heightLarger = false;
           s = w;
         }
     }
@@ -102,19 +96,16 @@ class W_SSVEP extends Widget {
             layoutIsVisible = topNav.layoutSelector.isVisible;
         }
 
-        if(ssvepDisplay == 0) {  // 1 SSVEP
+        if (ssvepDisplay == 0) {  // 1 SSVEP
             freq1 = updateFreq(1);
-        }
-        else if (ssvepDisplay == 1) {
+        } else if (ssvepDisplay == 1) {
             freq1 = updateFreq(1);
             freq2 = updateFreq(2);
-        }
-        else if (ssvepDisplay == 2) {
+        } else if (ssvepDisplay == 2) {
             freq1 = updateFreq(1);
             freq2 = updateFreq(2);
             freq3 = updateFreq(3);
-        }
-        else if (ssvepDisplay == 3) {
+        } else if (ssvepDisplay == 3) {
             freq1 = updateFreq(1);
             freq2 = updateFreq(2);
             freq3 = updateFreq(3);
@@ -133,16 +124,13 @@ class W_SSVEP extends Widget {
         pushStyle();
 
         //left side
-        if(ssvepDisplay == 0) {  // 1 SSVEP
+        if (ssvepDisplay == 0) {  // 1 SSVEP
             setup_1_SSVEP();
-        }
-        else if (ssvepDisplay == 1) {
+        } else if (ssvepDisplay == 1) {
             setup_2_SSVEP();
-        }
-        else if (ssvepDisplay == 2) {
+        } else if (ssvepDisplay == 2) {
             setup_3_SSVEP();
-        }
-        else if (ssvepDisplay == 3) {
+        } else if (ssvepDisplay == 3) {
             setup_4_SSVEP();
         }
 
@@ -165,11 +153,13 @@ class W_SSVEP extends Widget {
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
+        //Resets the CP5 origin when the app is resized
+        cp5_ssvepDropdowns.setGraphics(pApplet, 0, 0);
+
         if (h > w) {
           heightLarger = true;
           s = h;
-        }
-        else {
+        } else {
           heightLarger = false;
           s = w;
         }
@@ -186,7 +176,6 @@ class W_SSVEP extends Widget {
     void createDropdown(String name, List<String> _items) {
       cp5_ssvepDropdowns.addScrollableList(name)
             .setOpen(false)
-
             .setColorBackground(color(0)) // text field bg color
             .setColorValueLabel(color(130))       // text color
             .setColorCaptionLabel(color(130))
@@ -223,7 +212,7 @@ class W_SSVEP extends Widget {
 
 
    void setup_1_SSVEP() {
-     if(millis()%(2*(500/freq1)) >= (500/freq1)) {
+     if (millis()%(2*(500/freq1)) >= (500/freq1)) {
        fill(0,0,255);
        rect(x+ w/2 - h/8, y + h/2- h/8, h/4 ,h/4);
        pushStyle();
@@ -232,7 +221,7 @@ class W_SSVEP extends Widget {
         rect(x + w/2 - h/16, y + h/2 - h/16, h/8, h/8);
        popStyle();
 
-     } else{
+     } else {
        fill(0);
        rect(x + w/2 - h/8, y + h/2 - h/8, h/4,h/4);
        pushStyle();
@@ -245,13 +234,13 @@ class W_SSVEP extends Widget {
 
    void setup_2_SSVEP() {
      int s = h;       // Let s be a variable that represents the lesser of the widget's dimensions
-     if(h > w){
+     if (h > w) {
        s = w;
      }
 
      if (heightLarger) {
          //left SSVEP
-         if(millis()%(2*(500/freq1)) >= (500/freq1)) {
+         if (millis()%(2*(500/freq1)) >= (500/freq1)) {
            fill(0,0,255);
            rect(x + w/2 - s/8,y + h/4 - s/8, s/4,s/4);
            pushStyle();
@@ -260,7 +249,7 @@ class W_SSVEP extends Widget {
              rect(x + w/2 - s/16, y + h/4 - s/16, s/8, s/8);
            popStyle();
 
-         } else{
+         } else {
            fill(0);
            rect(x+ w/2 - s/8, y + h/4 -s/8, s/4,s/4);
            pushStyle();
@@ -271,7 +260,7 @@ class W_SSVEP extends Widget {
          }
 
          //right side
-         if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+         if (millis()%(2*(500/freq2)) >= (500/freq2)) {
            fill(255,0,0);
            rect(x + w/2 - s/8,y + (3*h/4) - s/8, s/4,s/4);
            pushStyle();
@@ -279,7 +268,7 @@ class W_SSVEP extends Widget {
              stroke(0);
              rect(x + w/2 - s/16, y + (3*h/4) - s/16, s/8, s/8);
            popStyle();
-         } else{
+         } else {
            fill(0);
            rect(x + w/2 - s/8,y + (3*h/4) - s/8, s/4,s/4);
            pushStyle();
@@ -288,10 +277,9 @@ class W_SSVEP extends Widget {
              rect(x + w/2 - s/40, y + (3*h/4) - s/40, s/20, s/20);
            popStyle();
          }
-     }
-     else{
+     } else {
        //left SSVEP
-       if(millis()%(2*(500/freq1)) >= (500/freq1)) {
+       if (millis()%(2*(500/freq1)) >= (500/freq1)) {
          fill(0,0,255);
          rect(x + w/4 - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -300,7 +288,7 @@ class W_SSVEP extends Widget {
            rect(x + w/4 - s/16, y + h/2 - s/16, s/8, s/8);
          popStyle();
 
-       } else{
+       } else {
          fill(0);
          rect(x+ w/4 - s/8, y + h/2 -s/8, s/4,s/4);
          pushStyle();
@@ -311,7 +299,7 @@ class W_SSVEP extends Widget {
        }
 
        //right side
-       if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+       if (millis()%(2*(500/freq2)) >= (500/freq2)) {
          fill(255,0,0);
          rect(x + (3*w/4) - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -319,7 +307,7 @@ class W_SSVEP extends Widget {
            stroke(0);
            rect(x + (3*w/4) - s/16, y + h/2 - s/16, s/8, s/8);
          popStyle();
-       } else{
+       } else {
          fill(0);
          rect(x + (3*w/4) - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -333,13 +321,13 @@ class W_SSVEP extends Widget {
 
    void setup_3_SSVEP() {
      int s = h;       // Let s be a variable that represents the lesser of the widget's dimensions
-     if(h > w){
+     if (h > w) {
        s = w;
      }
 
-     if(heightLarger){
+     if (heightLarger) {
        //left SSVEP
-       if(millis()%(2*(500/freq1)) >= (500/freq1)) {
+       if (millis()%(2*(500/freq1)) >= (500/freq1)) {
          fill(0,0,255);
          rect(x + w/2 - s/8, y + h/8 - s/8, s/4,s/4);
          pushStyle();
@@ -348,7 +336,7 @@ class W_SSVEP extends Widget {
            rect(x + w/2 - s/16, y + h/8 - s/16, s/8, s/8);
          popStyle();
 
-       } else{
+       } else {
          fill(0);
          rect(x+ w/2 - s/8, y + h/8 - s/8, s/4,s/4);
          pushStyle();
@@ -359,7 +347,7 @@ class W_SSVEP extends Widget {
        }
 
        //middle SSVEP
-       if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+       if (millis()%(2*(500/freq2)) >= (500/freq2)) {
          fill(255,0,0);
          rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -367,7 +355,7 @@ class W_SSVEP extends Widget {
            stroke(0);
            rect(x + w/2 - s/16, y + h/2 - s/16, s/8, s/8);
          popStyle();
-       } else{
+       } else {
          fill(0);
          rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -378,7 +366,7 @@ class W_SSVEP extends Widget {
        }
 
        //right side
-       if(millis()%(2*(500/freq3)) >= (500/freq3)) {
+       if (millis()%(2*(500/freq3)) >= (500/freq3)) {
          fill(0,255,0);
          rect(x + w/2 - s/8,y + (7*h/8) - s/8, s/4,s/4);
          pushStyle();
@@ -386,7 +374,7 @@ class W_SSVEP extends Widget {
            stroke(0);
            rect(x + w/2 - s/16, y + (7*h/8) - s/16, s/8, s/8);
          popStyle();
-       } else{
+       } else {
          fill(0);
          rect(x + w/2 - s/8,y + (7*h/8) - s/8, s/4,s/4);
          pushStyle();
@@ -395,10 +383,9 @@ class W_SSVEP extends Widget {
            rect(x + w/2 - s/40, y + (7*h/8) - s/40, s/20, s/20);
          popStyle();
        }
-     }
-     else{
+     } else {
        //left SSVEP
-       if(millis()%(2*(500/freq1)) >= (500/freq1)) {
+       if (millis()%(2*(500/freq1)) >= (500/freq1)) {
          fill(0,0,255);
          rect(x + w/8 - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -407,7 +394,7 @@ class W_SSVEP extends Widget {
            rect(x + w/8 - s/16, y + h/2 - s/16, s/8, s/8);
          popStyle();
 
-       } else{
+       } else {
          fill(0);
          rect(x+ w/8 - s/8, y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -418,7 +405,7 @@ class W_SSVEP extends Widget {
        }
 
        //middle SSVEP
-       if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+       if (millis()%(2*(500/freq2)) >= (500/freq2)) {
          fill(255,0,0);
          rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -426,7 +413,7 @@ class W_SSVEP extends Widget {
            stroke(0);
            rect(x + w/2 - s/16, y + h/2 - s/16, s/8, s/8);
          popStyle();
-       } else{
+       } else {
          fill(0);
          rect(x + w/2 - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -437,7 +424,7 @@ class W_SSVEP extends Widget {
        }
 
        //right side
-       if(millis()%(2*(500/freq3)) >= (500/freq3)) {
+       if (millis()%(2*(500/freq3)) >= (500/freq3)) {
          fill(0,255,0);
          rect(x + (7*w/8) - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -445,7 +432,7 @@ class W_SSVEP extends Widget {
            stroke(0);
            rect(x + (7*w/8) - s/16, y + h/2 - s/16, s/8, s/8);
          popStyle();
-       } else{
+       } else {
          fill(0);
          rect(x + (7*w/8) - s/8,y + h/2 - s/8, s/4,s/4);
          pushStyle();
@@ -455,12 +442,11 @@ class W_SSVEP extends Widget {
          popStyle();
        }
      }
-
    }
 
    void setup_4_SSVEP() {
      //upper - left SSVEP
-     if(millis()%(2*(500/freq1)) >= (500/freq1)) {
+     if (millis()%(2*(500/freq1)) >= (500/freq1)) {
        fill(0,0,255);
        rect(x + w/4 - h/12,y + h/4 - h/12, h/6,h/6);
        pushStyle();
@@ -468,8 +454,7 @@ class W_SSVEP extends Widget {
          stroke(255);
          rect(x + w/4 - h/24, y + h/4 - h/24, h/12, h/12);
        popStyle();
-
-     } else{
+     } else {
        fill(0);
        rect(x+ w/4 - h/12, y + h/4 -h/12, h/6,h/6);
        pushStyle();
@@ -480,7 +465,7 @@ class W_SSVEP extends Widget {
      }
 
      //upper - right SSVEP
-     if(millis()%(2*(500/freq2)) >= (500/freq2)) {
+     if (millis()%(2*(500/freq2)) >= (500/freq2)) {
        fill(255,0,0);
        rect(x + (3*w/4) - h/12,y + h/4 - h/12, h/6,h/6);
        pushStyle();
@@ -488,7 +473,7 @@ class W_SSVEP extends Widget {
          stroke(0);
          rect(x + (3*w/4) - h/24, y + h/4 - h/24, h/12, h/12);
        popStyle();
-     } else{
+     } else {
        fill(0);
        rect(x + (3*w/4) - h/12,y + h/4 - h/12, h/6,h/6);
        pushStyle();
@@ -499,7 +484,7 @@ class W_SSVEP extends Widget {
      }
 
      //lower - left SSVEP
-     if(millis()%(2*(500/freq3)) >= (500/freq3)) {
+     if (millis()%(2*(500/freq3)) >= (500/freq3)) {
        fill(0,255,0);
        rect(x + w/4 - h/12,y + (3*h/4) - h/12, h/6,h/6);
        pushStyle();
@@ -507,7 +492,7 @@ class W_SSVEP extends Widget {
          stroke(0);
          rect(x + w/4 - h/24, y + (3*h/4) - h/24, h/12, h/12);
        popStyle();
-     } else{
+     } else {
        fill(0);
        rect(x + w/4 - h/12,y + (3*h/4) - h/12, h/6,h/6);
        pushStyle();
@@ -519,7 +504,7 @@ class W_SSVEP extends Widget {
 
      // lower-right label
      //right side
-     if(millis()%(2*(500/freq4)) >= (500/freq4)) {
+     if (millis()%(2*(500/freq4)) >= (500/freq4)) {
        fill(255,255,0);
        rect(x + (3*w/4) - h/12,y + (3*h/4) - h/12, h/6,h/6);
        pushStyle();
@@ -527,7 +512,7 @@ class W_SSVEP extends Widget {
          stroke(0);
          rect(x + (3*w/4) - h/24, y + (3*h/4) - h/24, h/12, h/12);
        popStyle();
-     } else{
+     } else {
        fill(0);
        rect(x + (3*w/4) - h/12,y + (3*h/4) - h/12, h/6,h/6);
        pushStyle();
@@ -538,8 +523,8 @@ class W_SSVEP extends Widget {
      }
    }
 
-   void setDropdownPositions(){
-     resetDropdowns();
+   void setDropdownPositions() {
+     //resetDropdowns();
 
      setDropdown1();
      setDropdown2();
@@ -547,19 +532,15 @@ class W_SSVEP extends Widget {
      setDropdown4();
    }
 
-   void setDropdown1(){
+   void setDropdown1() {
      if (ssvepDisplay == 0) {
        cp5_ssvepDropdowns.getController("Frequency 1")
                          .setPosition(x + w/2 - h/8, y + 30);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1") // set visual settings for dropdown
-                               .setWidth(h/4)
                                .setVisible(true)
-                               .setBarHeight(20)
-                               .setItemHeight(20)
                                ;
-     }
-     else if (ssvepDisplay == 1){
+     } else if (ssvepDisplay == 1) {
        if (heightLarger) {
         //freq1 dropdown
          cp5_ssvepDropdowns.getController("Frequency 1")
@@ -567,23 +548,19 @@ class W_SSVEP extends Widget {
                            ;
 
          cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1") // set visual settings for dropdown
-                           .setWidth(s/4)
                            .setVisible(true)
                            ;
-       }
-       else{
+       } else {
          //Freq1 Dropdown
          cp5_ssvepDropdowns.getController("Frequency 1")
                            .setPosition(x + w/4 - s/8, y + 30)
                            ;
 
          cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1") // set visual settings for dropdown
-                           .setWidth(s/4)
                            .setVisible(true)
                            ;
        }
-     }
-     else if (ssvepDisplay == 2) {
+     } else if (ssvepDisplay == 2) {
          if (heightLarger) {
            //Freq1 Dropdown
            cp5_ssvepDropdowns.getController("Frequency 1")
@@ -591,115 +568,103 @@ class W_SSVEP extends Widget {
                              ;
 
            cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1")
-                             .setWidth(s/4)
                              .setVisible(true)
                              ;
-         }
-         else {
+         } else {
            //Freq1 Dropdown
            cp5_ssvepDropdowns.getController("Frequency 1")
                              .setPosition(x + w/8 - s/8, y + 30);
 
            cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1")
-                             .setWidth(s/4)
                              .setVisible(true)
                              ;
 
         }
-     }
-     else if (ssvepDisplay == 3) {
+     } else if (ssvepDisplay == 3) {
        cp5_ssvepDropdowns.getController("Frequency 1")
                            .setPosition(x + 10, y + 10);
 
        cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1")
-                           .setWidth(h/6)
                            .setVisible(true)
                            ;
      }
    }
 
-   void setDropdown2(){
-     if (ssvepDisplay == 1){
+   void setDropdown2() {
+     if (ssvepDisplay == 1) {
        if (heightLarger) {
         //freq2 dropdown
          cp5_ssvepDropdowns.getController("Frequency 2")
                            .setPosition(x + 10, y + (3*h/4) - s/8);
 
-         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       }
-       else{
+         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setVisible(true);   // set visual settings for dropdown
+       } else {
          //Freq2 Dropdown
          cp5_ssvepDropdowns.getController("Frequency 2")
                            .setPosition(x + (3*w/4) - s/8, y + 30);
 
          cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2")
-                            .setWidth(s/4)
                             .setVisible(true);   // set visual settings for dropdown
        }
-     }
-     else if (ssvepDisplay == 2) {
+     } else if (ssvepDisplay == 2) {
        if (heightLarger) {
          //Freq2 Dropdown
          cp5_ssvepDropdowns.getController("Frequency 2")
                            .setPosition(x + 10, y + h/3);
 
-         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       }
-       else{
+         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setVisible(true);   // set visual settings for dropdown
+       } else {
          //Freq2 Dropdown
          cp5_ssvepDropdowns.getController("Frequency 2")
                            .setPosition(x + w/2 - s/8, y + 30);
 
-         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
+         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setVisible(true);   // set visual settings for dropdown
        }
-     }
-     else if(ssvepDisplay == 3){
+     } else if (ssvepDisplay == 3) {
        //Freq2 Dropdown
        cp5_ssvepDropdowns.getController("Frequency 2")
                          .setPosition(x + w - h/6 - 10, y + 10);
 
-       cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
+       cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").setVisible(true);   // set visual settings for dropdown
      }
    }
 
-   void setDropdown3(){
+   void setDropdown3() {
      if (ssvepDisplay == 2) {
        if (heightLarger) {
          //Freq3 Dropdown
          cp5_ssvepDropdowns.getController("Frequency 3")
                            .setPosition(x + 10, y + (2*h/3));
 
-         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
-       }
-       else{
+         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setVisible(true);   // set visual settings for dropdown
+       } else {
          //Freq3 Dropdown
          cp5_ssvepDropdowns.getController("Frequency 3")
                            .setPosition(x + (7*w/8) - s/8, y + 30);
 
-         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setWidth(s/4).setVisible(true);   // set visual settings for dropdown
+         cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setVisible(true);   // set visual settings for dropdown
        }
-     }
-     else if(ssvepDisplay == 3){
+     } else if (ssvepDisplay == 3) {
       //Freq3 Dropdown
       cp5_ssvepDropdowns.getController("Frequency 3")
                         .setPosition(x + 10, y + h/2);
 
-      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
+      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").setVisible(true);   // set visual settings for dropdown
      }
    }
 
-   void setDropdown4(){
-     if(ssvepDisplay == 3){
+   void setDropdown4() {
+     if (ssvepDisplay == 3) {
       cp5_ssvepDropdowns.getController("Frequency 4")
                         .setPosition(x + w - h/6 - 10, y + h/2);
 
-      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setWidth(h/6).setVisible(true);   // set visual settings for dropdown
+      cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").setVisible(true);   // set visual settings for dropdown
      }
    }
 
-   int updateFreq(int controllerNum){
+   int updateFreq(int controllerNum) {
      String s = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
-     if(!s.equals("Frequency "+controllerNum)){
+     if (!s.equals("Frequency "+controllerNum)) {
        s = s.substring(0,s.indexOf(" "));
        return Integer.valueOf(s);
      }
@@ -711,16 +676,15 @@ class W_SSVEP extends Widget {
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void NumberSSVEP(int n) {
     println("Item " + (n+1) + " selected from Dropdown 1");
-    if(n==0) {
+    if (n==0) {
         ssvepDisplay = 0;
-    } else if(n==1) {
+    } else if (n==1) {
         ssvepDisplay = 1;
-    } else if(n==2) {
+    } else if (n==2) {
         ssvepDisplay = 2;
-    } else if(n==3) {
+    } else if (n==3) {
         ssvepDisplay = 3;
     }
-
 
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
