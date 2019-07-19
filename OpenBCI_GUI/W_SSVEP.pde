@@ -29,6 +29,7 @@ class W_SSVEP extends Widget {
     ControlP5 cp5_ssvepDropdowns;
     String[] dropdownNames;
     List<String> dropdownOptions;
+    float[] ssvepData = new float[4];
 
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
@@ -61,7 +62,6 @@ class W_SSVEP extends Widget {
           heightLarger = false;
           s = w;
         }
-
     }
 
     void update() {
@@ -143,6 +143,8 @@ class W_SSVEP extends Widget {
         }
 
         setDropdownPositions();
+
+        ssvepData = processData();
     }
 
     void draw() {
@@ -197,7 +199,6 @@ class W_SSVEP extends Widget {
         //     String s = "The SSVEP Widget is designed to display set frequencies ";
         //     text(s, x + 40, y + 40, w - 80, h -80);
         // }
-        processData();
     }
 
     void screenResized() {
@@ -369,7 +370,7 @@ class W_SSVEP extends Widget {
       float[] finalData = new float[4];
 
       for (int i = 0; i < freqs.length; i++) {
-          float sum = fftBuff[7].getFreq(freqs[i]) + fftBuff[8].getFreq(freqs[i]);
+          float sum = fftBuff[nchan-2].getFreq(freqs[i]) + fftBuff[nchan-1].getFreq(freqs[i]);
           float avg = sum/2;
           finalData[i] = avg;
       }
