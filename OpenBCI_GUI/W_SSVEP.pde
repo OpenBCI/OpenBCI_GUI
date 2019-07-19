@@ -37,7 +37,7 @@ class W_SSVEP extends Widget {
     W_SSVEP(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2","3","4"), 0);
+        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2", "3", "4"), 0);
 
         // showAbout = true;
         cp5_ssvepDropdowns = new ControlP5(pApplet);
@@ -74,7 +74,6 @@ class W_SSVEP extends Widget {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").lock();
-
             } else {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").unlock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
@@ -108,16 +107,14 @@ class W_SSVEP extends Widget {
                // lock freq2 if freq1 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
-               }
-               else{
+               } else {
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
                }
 
                // lock freq3 if freq2 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
-               }
-               else{
+               } else {
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").unlock();
                }
             }
@@ -143,8 +140,10 @@ class W_SSVEP extends Widget {
         }
 
         setDropdownPositions();
-
-        ssvepData = processData();
+        if (isRunning) {
+            ssvepData = processData();
+            //println(ssvepData);
+        }
     }
 
     void draw() {
