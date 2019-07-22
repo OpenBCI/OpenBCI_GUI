@@ -29,6 +29,7 @@ class W_SSVEP extends Widget {
     ControlP5 cp5_ssvepDropdowns;
     String[] dropdownNames;
     List<String> dropdownOptions;
+    float[] ssvepData = new float[4];
 
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
@@ -36,7 +37,7 @@ class W_SSVEP extends Widget {
     W_SSVEP(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2","3","4"), 0);
+        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2", "3", "4"), 0);
 
         // showAbout = true;
         cp5_ssvepDropdowns = new ControlP5(pApplet);
@@ -61,7 +62,6 @@ class W_SSVEP extends Widget {
           heightLarger = false;
           s = w;
         }
-
     }
 
     void update() {
@@ -74,7 +74,6 @@ class W_SSVEP extends Widget {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").lock();
-
             } else {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").unlock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
@@ -108,16 +107,14 @@ class W_SSVEP extends Widget {
                // lock freq2 if freq1 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
-               }
-               else{
+               } else {
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
                }
 
                // lock freq3 if freq2 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
-               }
-               else{
+               } else {
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").unlock();
                }
             }
@@ -143,6 +140,10 @@ class W_SSVEP extends Widget {
         }
 
         setDropdownPositions();
+        if (isRunning) {
+            ssvepData = processData();
+            //println(ssvepData);
+        }
     }
 
     void draw() {
@@ -197,7 +198,6 @@ class W_SSVEP extends Widget {
         //     String s = "The SSVEP Widget is designed to display set frequencies ";
         //     text(s, x + 40, y + 40, w - 80, h -80);
         // }
-        processData();
     }
 
     void screenResized() {
@@ -369,7 +369,7 @@ class W_SSVEP extends Widget {
       float[] finalData = new float[4];
 
       for (int i = 0; i < freqs.length; i++) {
-          float sum = fftBuff[7].getFreq(freqs[i]) + fftBuff[8].getFreq(freqs[i]);
+          float sum = fftBuff[nchan-2].getFreq(freqs[i]) + fftBuff[nchan-1].getFreq(freqs[i]);
           float avg = sum/2;
           finalData[i] = avg;
       }
