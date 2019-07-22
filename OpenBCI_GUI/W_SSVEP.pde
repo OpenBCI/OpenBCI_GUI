@@ -27,8 +27,10 @@ class W_SSVEP extends Widget {
 
     //Widget CP5s
     ControlP5 cp5_ssvepDropdowns;
+    ControlP5 cp5_checks;
     String[] dropdownNames;
     List<String> dropdownOptions;
+
     float[] ssvepData = new float[4];
 
     boolean configIsVisible = false;
@@ -37,13 +39,14 @@ class W_SSVEP extends Widget {
     W_SSVEP(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2", "3", "4"), 0);
+        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2","3","4"), 0);
 
         // showAbout = true;
         cp5_ssvepDropdowns = new ControlP5(pApplet);
 
         dropdownNames = new String[] {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
         dropdownOptions = new ArrayList<String>();
+        dropdownOptions.add("Pause");
 
         for (int i = 0; i < 9; i++) {
           dropdownOptions.add(String.valueOf(i+7) + " Hz");
@@ -62,6 +65,8 @@ class W_SSVEP extends Widget {
           heightLarger = false;
           s = w;
         }
+
+        showAbout = false;
     }
 
     void update() {
@@ -74,6 +79,7 @@ class W_SSVEP extends Widget {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 4").lock();
+
             } else {
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").unlock();
                 cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
@@ -107,14 +113,16 @@ class W_SSVEP extends Widget {
                // lock freq2 if freq1 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 1").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").lock();
-               } else {
+               }
+               else{
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").unlock();
                }
 
                // lock freq3 if freq2 is in use
                if(cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 2").isOpen()){
                   cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").lock();
-               } else {
+               }
+               else{
                  cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency 3").unlock();
                }
             }
@@ -140,9 +148,10 @@ class W_SSVEP extends Widget {
         }
 
         setDropdownPositions();
+
         if (isRunning) {
             ssvepData = processData();
-            //println(ssvepData);
+            println(ssvepData);
         }
     }
 
@@ -186,18 +195,18 @@ class W_SSVEP extends Widget {
 
         cp5_ssvepDropdowns.draw();
 
-        //show about details
-        // if (showAbout) {
-        //     stroke(70,70,70);
-        //     fill(100,100,100);
-        //
-        //     rect(x + 20, y + 20, w - 40, h- 40);
-        //     textAlign(LEFT, TOP);
-        //     textSize(10);
-        //     fill(255,255,255);
-        //     String s = "The SSVEP Widget is designed to display set frequencies ";
-        //     text(s, x + 40, y + 40, w - 80, h -80);
-        // }
+        // show about details
+        if (showAbout) {
+            stroke(70,70,70);
+            fill(100,100,100);
+
+            rect(x + 20, y + 20, w - 40, h- 40);
+            textAlign(LEFT, TOP);
+            textSize(10);
+            fill(255,255,255);
+            String s = "The SSVEP Widget, allows for visual stimulation at specific frequencies, which in turn produce “steady state visually evoked potentials.” This means that in response to looking at one of the SSVEPs set at a given frequency, you will see an increase in brain activity at that frequency in the FFT plot.\n\nFor best results, set the frame rate to 60fps.\n\nAdditionally, select the electrodes that align with the back of your head, where the visual stimulus will be recognized. Refer to OpenBCI GUI Widget Guide for more details.\n\nTo pause a single SSVEP, click on it.";
+            text(s, x + 40, y + 40, w - 80, h -80);
+        }
     }
 
     void screenResized() {
@@ -366,9 +375,10 @@ class W_SSVEP extends Widget {
 
    float[] processData(){
       int[] freqs = {freq1, freq2, freq3, freq4};
+      int activeFreqs = ssvepDisplay + 1;
       float[] finalData = new float[4];
 
-      for (int i = 0; i < freqs.length; i++) {
+      for (int i = 0; i < activeFreqs; i++) {
           float sum = fftBuff[nchan-2].getFreq(freqs[i]) + fftBuff[nchan-1].getFreq(freqs[i]);
           float avg = sum/2;
           finalData[i] = avg;
