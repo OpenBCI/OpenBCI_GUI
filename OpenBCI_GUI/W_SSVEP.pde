@@ -32,6 +32,7 @@ class W_SSVEP extends Widget {
 
 
     ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
+    CheckBox checkList;
     int numChecks = nchan;
     int checkHeight = y0 + navH;
 
@@ -80,17 +81,16 @@ class W_SSVEP extends Widget {
                               .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
                               .setColorBackground(color(0,0,250)) //checkbox background color
                               .setColorActive(color(184,220,105)) //checkbox color when active
-                              .addItem("Ch 1", 1)
-                              .setVisible(true)
                               ;
 
 
+                              cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
+                                            .addItem(String.valueOf(1), 1)
+                                            .setVisible(true)
+                                            ;
         for (int i = 0; i < numChecks; i++) {
           int chNum = i+1;
-          cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
-                        .addItem(String.valueOf(chNum), chNum)
-                        .setVisible(true)
-                        ;
+
         }
 
         cp5_ssvep.setAutoDraw(false);
@@ -438,11 +438,6 @@ class W_SSVEP extends Widget {
       return finalData;
    }
 
-   // void addCheckbox(int chNum){
-   //   cp5_ssvepCheckboxes.get(CheckBox.class, "checkList")
-   //                 .addItem("Ch "+chNum, chNum)
-   //                 ;
-   // }
 }
 
 void NumberSSVEP(int n) {
