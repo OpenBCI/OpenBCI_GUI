@@ -402,6 +402,9 @@ class W_SSVEP extends Widget {
    int updateFreq(int controllerNum) {
      String s = cp5_ssvepDropdowns.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
      if (!s.equals("Frequency "+controllerNum)) {
+       if(s.equals("Pause")){
+         return 0;
+       }
        s = s.substring(0,s.indexOf(" "));
        return Integer.valueOf(s);
      }
