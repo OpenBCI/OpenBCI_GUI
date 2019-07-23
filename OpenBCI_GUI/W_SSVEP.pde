@@ -73,20 +73,20 @@ class W_SSVEP extends Widget {
         text("Input Channel Select", x, y - navH);
 
         checkList = cp5_ssvep.addCheckBox("channelList")
-                              .setPosition(x + 20, y - navH+2)
+                              .setPosition(x + 100, y - navH + 2)
                               .setSize(navH-4, navH-4)
                               .setItemsPerRow(numChecks)
-                              .setSpacingRow(13)
+                              .setSpacingColumn(13)
                               .setColorLabel(color(0)) //Set the color of the text label
                               .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
-                              .setColorBackground(color(0,0,250)) //checkbox background color
-                              .setColorActive(color(184,220,105)) //checkbox color when active
+                              .setColorBackground(color(150)) //checkbox background color
+                              .setColorActive(color(57, 128, 204)) //checkbox color when active
                               ;
 
 
         for (int i = 0; i < numChecks; i++) {
           int chNum = i+1;
-          cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
+          cp5_ssvep.get(CheckBox.class, "channelList")
                         .addItem(String.valueOf(chNum), chNum)
                         .setVisible(true)
                         ;
@@ -256,7 +256,7 @@ class W_SSVEP extends Widget {
         }
 
         //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
-        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 20, y - navH+2);
+        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 100, y - navH+2);
     }
 
     void mousePressed() {
