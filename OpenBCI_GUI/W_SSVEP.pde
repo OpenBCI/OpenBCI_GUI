@@ -27,9 +27,13 @@ class W_SSVEP extends Widget {
 
     //Widget CP5s
     ControlP5 cp5_ssvepDropdowns;
-    ControlP5 cp5_checks;
     String[] dropdownNames;
     List<String> dropdownOptions;
+
+    ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
+    CheckBox checkList;
+    int numChecks = nchan;
+    int checkHeight = y0 + navH;
 
     float[] ssvepData = new float[4];
 
@@ -57,6 +61,7 @@ class W_SSVEP extends Widget {
         }
 
         cp5_ssvepDropdowns.setAutoDraw(false);
+        cp5_ssvepCheckboxes.setAutoDraw(false);
 
         if (h > w) {
           heightLarger = true;
@@ -66,7 +71,25 @@ class W_SSVEP extends Widget {
           s = w;
         }
 
-        showAbout = false;
+        textSize(12);
+        text("Input Channel Select", x, y - navH);
+
+        cp5_ssvepCheckboxes = new ControlP5(pApplet);
+        checkList = cp5_ssvepCheckboxes.addCheckBox("channelList")
+                                  .setPosition(x + 20, y - navH+2)
+                                  .setSize(navH-4, navH-4)
+                                  // .setItemsPerRow(numChecks)
+                                  // .setSpacingRow(5)
+                                  .addItem("Ch 1",1)
+                                  ;
+
+
+        // for (int i = 0; i < numChecks; i++) {
+        //   int chNum = i+1;
+        //   addCheckbox(chNum);
+        // }
+
+        showAbout = false;        //set Default start value for showing about section as fault
     }
 
     void update() {
@@ -194,6 +217,7 @@ class W_SSVEP extends Widget {
         }
 
         cp5_ssvepDropdowns.draw();
+        cp5_ssvepCheckboxes.draw();
 
         // show about details
         if (showAbout) {
@@ -259,6 +283,16 @@ class W_SSVEP extends Widget {
             .setFont(h4)
             .setSize(12)
             ;
+   }
+
+   void createStartButton(int wFactor, int hFactor, int ssvepNo) {
+      int d;
+      if (ssvepDisplay != 3){
+        d = h/4;
+      } else {
+        d = h/6;
+      }
+
    }
 
    void resetDropdowns() {
@@ -387,6 +421,11 @@ class W_SSVEP extends Widget {
       return finalData;
    }
 
+   // void addCheckbox(int chNum){
+   //   cp5_checkboxes.get(CheckBox.class, "checkList")
+   //                 .addItem("Ch "+chNum, chNum)
+   //                 ;
+   // }
 }
 
 void NumberSSVEP(int n) {
