@@ -61,7 +61,6 @@ class W_SSVEP extends Widget {
         }
 
         cp5_ssvepDropdowns.setAutoDraw(false);
-        cp5_ssvepCheckboxes.setAutoDraw(false);
 
         if (h > w) {
           heightLarger = true;
@@ -72,6 +71,7 @@ class W_SSVEP extends Widget {
         }
 
         textSize(12);
+        fill(0);
         text("Input Channel Select", x, y - navH);
 
         cp5_ssvepCheckboxes = new ControlP5(pApplet);
@@ -83,6 +83,7 @@ class W_SSVEP extends Widget {
                                   .addItem("Ch 1",1)
                                   ;
 
+        cp5_ssvepCheckboxes.setAutoDraw(false);
 
         // for (int i = 0; i < numChecks; i++) {
         //   int chNum = i+1;
