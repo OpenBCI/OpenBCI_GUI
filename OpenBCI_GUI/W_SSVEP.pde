@@ -35,6 +35,8 @@ class W_SSVEP extends Widget {
     CheckBox checkList;
     int numChecks = nchan;
     int checkHeight = y0 + navH;
+    int numActiveChannels;
+    List<Integer> activeChannels = new ArrayList<Integer>();
 
     float[] ssvepData = new float[4];
 
@@ -91,6 +93,13 @@ class W_SSVEP extends Widget {
                         .setVisible(true)
                         ;
         }
+
+        checkList.activate(6);
+        checkList.activate(7);
+
+        numActiveChannels = 2;
+        activeChannels.add(6);
+        activeChannels.add(7);
 
         cp5_ssvep.setAutoDraw(false);
         showAbout = false;        //set Default start value for showing about section as fault
@@ -178,8 +187,22 @@ class W_SSVEP extends Widget {
 
         if (isRunning) {
             ssvepData = processData();
-            println(ssvepData);
+            // println(ssvepData);
         }
+
+        //Update the number of active checks
+        int count = 0;
+        activeChannels.clear();
+        for (int i = 0; i < numChecks; i++) {
+            if(checkList.getState(i)){
+                count++;
+                activeChannels.add(i);
+            }
+        }
+        numActiveChannels = count;
+        println(activeChannels);
+        println(numActiveChannels);
+
     }
 
     void draw() {
@@ -425,10 +448,10 @@ class W_SSVEP extends Widget {
 
    float[] processData(){
       int[] freqs = {freq1, freq2, freq3, freq4};
-      int activeFreqs = ssvepDisplay + 1;
+      int activeSSVEPs = ssvepDisplay + 1;
       float[] finalData = new float[4];
 
-      for (int i = 0; i < activeFreqs; i++) {
+      for (int i = 0; i < activeSSVEPs; i++) {
           float sum = fftBuff[nchan-2].getFreq(freqs[i]) + fftBuff[nchan-1].getFreq(freqs[i]);
           float avg = sum/2;
           finalData[i] = avg;
