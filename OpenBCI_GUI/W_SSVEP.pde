@@ -84,13 +84,12 @@ class W_SSVEP extends Widget {
                               ;
 
 
-                              cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
-                                            .addItem(String.valueOf(1), 1)
-                                            .setVisible(true)
-                                            ;
         for (int i = 0; i < numChecks; i++) {
           int chNum = i+1;
-
+          cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
+                        .addItem(String.valueOf(chNum), chNum)
+                        .setVisible(true)
+                        ;
         }
 
         cp5_ssvep.setAutoDraw(false);
