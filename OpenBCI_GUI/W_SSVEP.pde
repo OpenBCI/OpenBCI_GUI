@@ -73,7 +73,7 @@ class W_SSVEP extends Widget {
         text("Input Channel Select", x, y - navH);
 
         checkList = cp5_ssvep.addCheckBox("channelList")
-                              .setPosition(x + 100, y - navH + 2)
+                              .setPosition(x + 97, y - navH + 2)
                               .setSize(navH-4, navH-4)
                               .setItemsPerRow(numChecks)
                               .setSpacingColumn(13)
@@ -256,7 +256,7 @@ class W_SSVEP extends Widget {
         }
 
         //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
-        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 100, y - navH+2);
+        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 97, y - navH+2);
     }
 
     void mousePressed() {
