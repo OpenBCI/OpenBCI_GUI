@@ -30,7 +30,8 @@ class W_SSVEP extends Widget {
     String[] dropdownNames;
     List<String> dropdownOptions;
 
-    CheckBox checkList;
+
+    ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
     int numChecks = nchan;
     int checkHeight = y0 + navH;
 
@@ -73,8 +74,8 @@ class W_SSVEP extends Widget {
         checkList = cp5_ssvep.addCheckBox("channelList")
                               .setPosition(x + 20, y - navH+2)
                               .setSize(navH-4, navH-4)
-                              // .setItemsPerRow(numChecks)
-                              // .setSpacingRow(5)
+                              .setItemsPerRow(numChecks)
+                              .setSpacingRow(13)
                               .setColorLabel(color(0)) //Set the color of the text label
                               .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
                               .setColorBackground(color(0,0,250)) //checkbox background color
@@ -84,10 +85,13 @@ class W_SSVEP extends Widget {
                               ;
 
 
-        // for (int i = 0; i < numChecks; i++) {
-        //   int chNum = i+1;
-        //   addCheckbox(chNum);
-        // }
+        for (int i = 0; i < numChecks; i++) {
+          int chNum = i+1;
+          cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
+                        .addItem(String.valueOf(chNum), chNum)
+                        .setVisible(true)
+                        ;
+        }
 
         cp5_ssvep.setAutoDraw(false);
         showAbout = false;        //set Default start value for showing about section as fault
@@ -187,6 +191,10 @@ class W_SSVEP extends Widget {
         rect(x,y, w, h);
         pushStyle();
 
+        textSize(12);
+        fill(0);
+        text("Select Channels", x, y -5);
+
         //left side
         if (ssvepDisplay == 0) {  // 1 SSVEP
             drawSSVEP("blue", freq1, 0.5, 0.5, s/4);
@@ -214,7 +222,6 @@ class W_SSVEP extends Widget {
             drawSSVEP("red", freq2, 0.25, 0.75, s/6);
             drawSSVEP("green", freq3, 0.75, 0.25, s/6);
             drawSSVEP("yellow", freq4, 0.75, 0.75, s/6);
-
         }
 
         //Draw all cp5 elements within the SSVEP widget
@@ -242,11 +249,11 @@ class W_SSVEP extends Widget {
         cp5_ssvep.setGraphics(pApplet, 0, 0);
 
         if (h > w) {
-          heightLarger = true;
-          s = w;
+            heightLarger = true;
+            s = w;
         } else {
-          heightLarger = false;
-          s = h;
+            heightLarger = false;
+            s = h;
         }
 
         //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
@@ -331,7 +338,7 @@ class W_SSVEP extends Widget {
        g = 255;
      }
 
-     if (millis()%(2*(500/freq)) >= (500/freq)) {
+     if (freq == 0 || millis()%(2*(500/freq)) >= (500/freq)) {
        fill(r,g,b);
        rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
        pushStyle();
@@ -406,8 +413,13 @@ class W_SSVEP extends Widget {
    int updateFreq(int controllerNum) {
      String s = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
      if (!s.equals("Frequency "+controllerNum)) {
-       s = s.substring(0,s.indexOf(" "));
-       return Integer.valueOf(s);
+       if(s.equals("Pause")){
+         return 0;
+       }
+       else{
+         s = s.substring(0,s.indexOf(" "));
+         return Integer.valueOf(s);
+       }
      }
      return -1;
    }
@@ -427,7 +439,7 @@ class W_SSVEP extends Widget {
    }
 
    // void addCheckbox(int chNum){
-   //   cp5_checkboxes.get(CheckBox.class, "checkList")
+   //   cp5_ssvepCheckboxes.get(CheckBox.class, "checkList")
    //                 .addItem("Ch "+chNum, chNum)
    //                 ;
    // }
