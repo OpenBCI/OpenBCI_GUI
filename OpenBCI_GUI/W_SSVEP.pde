@@ -31,7 +31,6 @@ class W_SSVEP extends Widget {
     List<String> dropdownOptions;
 
     ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
-    CheckBox checkList;
     int numChecks = nchan;
     int checkHeight = y0 + navH;
 
@@ -70,25 +69,23 @@ class W_SSVEP extends Widget {
           s = w;
         }
 
-        textSize(12);
-        fill(0);
-        text("Input Channel Select", x, y - navH);
-
         cp5_ssvepCheckboxes = new ControlP5(pApplet);
-        checkList = cp5_ssvepCheckboxes.addCheckBox("channelList")
-                                  .setPosition(x + 20, y - navH+2)
+        cp5_ssvepCheckboxes.addCheckBox("channelList")
+                                  .setPosition(x, y - navH + 2)
                                   .setSize(navH-4, navH-4)
-                                  // .setItemsPerRow(numChecks)
-                                  // .setSpacingRow(5)
-                                  .addItem("Ch 1",1)
+                                  .setItemsPerRow(numChecks)
+                                  .setSpacingColumn(13)
                                   ;
 
         cp5_ssvepCheckboxes.setAutoDraw(false);
 
-        // for (int i = 0; i < numChecks; i++) {
-        //   int chNum = i+1;
-        //   addCheckbox(chNum);
-        // }
+        for (int i = 0; i < numChecks; i++) {
+          int chNum = i+1;
+          cp5_ssvepCheckboxes.get(CheckBox.class, "channelList")
+                        .addItem(String.valueOf(chNum), chNum)
+                        .setVisible(true)
+                        ;
+        }
 
         showAbout = false;        //set Default start value for showing about section as fault
     }
@@ -187,6 +184,10 @@ class W_SSVEP extends Widget {
         rect(x,y, w, h);
         pushStyle();
 
+        textSize(12);
+        fill(0);
+        text("Select Channels", x, y -5);
+
         //left side
         if (ssvepDisplay == 0) {  // 1 SSVEP
             drawSSVEP("blue", freq1, 0.5, 0.5, s/4);
@@ -214,7 +215,6 @@ class W_SSVEP extends Widget {
             drawSSVEP("red", freq2, 0.25, 0.75, s/6);
             drawSSVEP("green", freq3, 0.75, 0.25, s/6);
             drawSSVEP("yellow", freq4, 0.75, 0.75, s/6);
-
         }
 
         cp5_ssvepDropdowns.draw();
@@ -241,11 +241,11 @@ class W_SSVEP extends Widget {
         cp5_ssvepDropdowns.setGraphics(pApplet, 0, 0);
 
         if (h > w) {
-          heightLarger = true;
-          s = w;
+            heightLarger = true;
+            s = w;
         } else {
-          heightLarger = false;
-          s = h;
+            heightLarger = false;
+            s = h;
         }
     }
 
@@ -327,7 +327,7 @@ class W_SSVEP extends Widget {
        g = 255;
      }
 
-     if (millis()%(2*(500/freq)) >= (500/freq)) {
+     if (freq == 0 || millis()%(2*(500/freq)) >= (500/freq)) {
        fill(r,g,b);
        rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
        pushStyle();
@@ -405,8 +405,10 @@ class W_SSVEP extends Widget {
        if(s.equals("Pause")){
          return 0;
        }
-       s = s.substring(0,s.indexOf(" "));
-       return Integer.valueOf(s);
+       else{
+         s = s.substring(0,s.indexOf(" "));
+         return Integer.valueOf(s);
+       }
      }
      return -1;
    }
@@ -426,7 +428,7 @@ class W_SSVEP extends Widget {
    }
 
    // void addCheckbox(int chNum){
-   //   cp5_checkboxes.get(CheckBox.class, "checkList")
+   //   cp5_ssvepCheckboxes.get(CheckBox.class, "checkList")
    //                 .addItem("Ch "+chNum, chNum)
    //                 ;
    // }
