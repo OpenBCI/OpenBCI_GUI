@@ -14,7 +14,15 @@ int ssvepDisplay;
 class W_SSVEP extends Widget {
 
     //frequency variables offered
-    int freq1, freq2, freq3, freq4;
+    int[] freqs = new int[4];
+
+    //coords for each SSVEP — FORMAT {x0, y0, x1, y1}
+    float[][] ssvepCoords = {
+                             {0,0,0,0},
+                             {0,0,0,0},
+                             {0,0,0,0},
+                             {0,0,0,0}
+                                        };
 
     //Limiting dimension variable
     int s;
@@ -34,6 +42,7 @@ class W_SSVEP extends Widget {
     ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
     CheckBox checkList;
     int numChecks = nchan;
+    int offset;                      //offset on nav bar of checks
     int checkHeight = y0 + navH;
     int numActiveChannels;
     List<Integer> activeChannels = new ArrayList<Integer>();
@@ -74,11 +83,18 @@ class W_SSVEP extends Widget {
         textSize(12);
         text("Input Channel Select", x, y - navH);
 
+        int checkSize = navH - 4;
+        if(numChecks > 8){
+            checkSize = (int)Math.floor(navH*0.5);
+        }
+        offset = (navH - checkSize)/2;
+
         checkList = cp5_ssvep.addCheckBox("channelList")
-                              .setPosition(x + 97, y - navH + 2)
-                              .setSize(navH-4, navH-4)
+                              .setPosition(x + 57, y - navH + offset)
+                              .setSize(checkSize, checkSize)
                               .setItemsPerRow(numChecks)
                               .setSpacingColumn(13)
+                              .setSpacingRow(2)
                               .setColorLabel(color(0)) //Set the color of the text label
                               .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
                               .setColorBackground(color(150)) //checkbox background color
@@ -168,27 +184,22 @@ class W_SSVEP extends Widget {
         }
 
         if (ssvepDisplay == 0) {  // 1 SSVEP
-            freq1 = updateFreq(1);
+            freqs[0] = updateFreq(1);
         } else if (ssvepDisplay == 1) {
-            freq1 = updateFreq(1);
-            freq2 = updateFreq(2);
+            freqs[0] = updateFreq(1);
+            freqs[1] = updateFreq(2);
         } else if (ssvepDisplay == 2) {
-            freq1 = updateFreq(1);
-            freq2 = updateFreq(2);
-            freq3 = updateFreq(3);
+            freqs[0] = updateFreq(1);
+            freqs[1] = updateFreq(2);
+            freqs[2] = updateFreq(3);
         } else if (ssvepDisplay == 3) {
-            freq1 = updateFreq(1);
-            freq2 = updateFreq(2);
-            freq3 = updateFreq(3);
-            freq4 = updateFreq(4);
+            freqs[0] = updateFreq(1);
+            freqs[1] = updateFreq(2);
+            freqs[2] = updateFreq(3);
+            freqs[3] = updateFreq(4);
         }
 
         setDropdownPositions();
-
-        if (isRunning) {
-            ssvepData = processData();
-            // println(ssvepData);
-        }
 
         //Update the number of active checks
         int count = 0;
@@ -200,9 +211,10 @@ class W_SSVEP extends Widget {
             }
         }
         numActiveChannels = count;
-        println(activeChannels);
-        println(numActiveChannels);
-
+        if (isRunning) {
+            ssvepData = processData();
+            println(ssvepData);
+        }
     }
 
     void draw() {
@@ -215,35 +227,36 @@ class W_SSVEP extends Widget {
 
         textSize(12);
         fill(0);
-        text("Select Channels", x, y -5);
+        text("Channels", x + 2, y - 6);
+        pushStyle();
 
         //left side
         if (ssvepDisplay == 0) {  // 1 SSVEP
-            drawSSVEP("blue", freq1, 0.5, 0.5, s/4);
+            drawSSVEP("blue", freqs[0], 0.5, 0.5, s/4);
         } else if (ssvepDisplay == 1) { // 2 SSVEPs
             if (heightLarger) {
-                drawSSVEP("blue", freq1, 0.5, 0.25, s/4);
-                drawSSVEP("red", freq2, 0.5, 0.75, s/4);
+                drawSSVEP("blue", freqs[0], 0.5, 0.25, s/4);
+                drawSSVEP("red", freqs[1], 0.5, 0.75, s/4);
             } else {
-              drawSSVEP("blue", freq1, 0.25, 0.5, s/4);
-              drawSSVEP("red", freq2, 0.75, 0.5, s/4);
+              drawSSVEP("blue", freqs[0], 0.25, 0.5, s/4);
+              drawSSVEP("red", freqs[1], 0.75, 0.5, s/4);
             }
         } else if (ssvepDisplay == 2) {
             if (heightLarger) {
-              drawSSVEP("blue", freq1, 0.5, 0.125, s/4);
-              drawSSVEP("red", freq2, 0.5, 0.5, s/4);
-              drawSSVEP("green", freq3, 0.5, 0.875, s/4);
+              drawSSVEP("blue", freqs[0], 0.5, 0.125, s/4);
+              drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
+              drawSSVEP("green", freqs[2], 0.5, 0.875, s/4);
             } else {
-              drawSSVEP("blue", freq1, 0.125, 0.5, s/4);
-              drawSSVEP("red", freq2, 0.5, 0.5, s/4);
-              drawSSVEP("green", freq3, 0.875, 0.5, s/4);
+              drawSSVEP("blue", freqs[0], 0.125, 0.5, s/4);
+              drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
+              drawSSVEP("green", freqs[2], 0.875, 0.5, s/4);
             }
         } else if (ssvepDisplay == 3) {
             float sz = s/6;
-            drawSSVEP("blue", freq1, 0.25, 0.25, s/6);
-            drawSSVEP("red", freq2, 0.25, 0.75, s/6);
-            drawSSVEP("green", freq3, 0.75, 0.25, s/6);
-            drawSSVEP("yellow", freq4, 0.75, 0.75, s/6);
+            drawSSVEP("blue", freqs[0], 0.25, 0.25, s/6);
+            drawSSVEP("red", freqs[1], 0.25, 0.75, s/6);
+            drawSSVEP("green", freqs[2], 0.75, 0.25, s/6);
+            drawSSVEP("yellow", freqs[3], 0.75, 0.75, s/6);
         }
 
         //Draw all cp5 elements within the SSVEP widget
@@ -252,16 +265,29 @@ class W_SSVEP extends Widget {
 
         // show about details
         if (showAbout) {
-            stroke(70,70,70);
-            fill(100,100,100);
+            stroke(220);
+            fill(20);
 
             rect(x + 20, y + 20, w - 40, h- 40);
             textAlign(LEFT, TOP);
-            textSize(10);
-            fill(255,255,255);
-            String s = "The SSVEP Widget, allows for visual stimulation at specific frequencies, which in turn produce “steady state visually evoked potentials.” This means that in response to looking at one of the SSVEPs set at a given frequency, you will see an increase in brain activity at that frequency in the FFT plot.\n\nFor best results, set the frame rate to 60fps.\n\nAdditionally, select the electrodes that align with the back of your head, where the visual stimulus will be recognized. Refer to OpenBCI GUI Widget Guide for more details.\n\nTo pause a single SSVEP, click on it.";
-            text(s, x + 40, y + 40, w - 80, h -80);
+            textSize(11.5);
+            fill(250);
+            String s = "The SSVEP Widget, allows for visual stimulation at specific frequencies. This means that in response to looking at one of the SSVEPs set at a given frequency, you will see an increase in brain activity at that frequency in the FFT plot. For best results, set the frame rate to 60fps.\n\nAdditionally, select the electrodes that align with the back of your head, where the visual stimulus will be recognized. Refer to OpenBCI GUI Widget Guide for more details.\n\nTo pause a single SSVEP, click on it.";
+            text(s, x + 30, y + 30, w - 60, h -60);
         }
+
+        stroke(190);
+        fill(20);
+        ellipse(x + w - 12, y + navH/2 + 7, 18, 18);
+        fill(250);
+        textAlign(CENTER, CENTER);
+        if (showAbout) {
+            text("x", x + w - 12, y + navH/2 + 5);
+        }
+        else {
+            text("?", x + w - 12, y + navH/2 + 5);
+        }
+
     }
 
     void screenResized() {
@@ -279,11 +305,22 @@ class W_SSVEP extends Widget {
         }
 
         //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
-        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 97, y - navH+2);
+        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 57, y - navH + offset);
     }
-
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+
+        if(!this.dropdownIsActive) {
+            if (dist(mouseX, mouseY, x + w - 12, y + navH/2 + 7) <= 9){
+                showAbout = !showAbout;
+            }
+
+            for(int i = 0; i <= ssvepDisplay; i++){
+                if(mouseX > ssvepCoords[i][0] && mouseY > ssvepCoords[i][1] && mouseX < ssvepCoords[i][2] && mouseY < ssvepCoords[i][3]){
+
+                }
+            }
+        }
     }
 
     void mouseReleased() {
@@ -346,18 +383,23 @@ class W_SSVEP extends Widget {
      int g = 0;
      int b = 0;
 
+     int ind = 0;
+
      if(colour.equals("blue")){
        b = 255;
      }
      else if(colour.equals("red")){
        r = 255;
+       ind = 1;
      }
      else if(colour.equals("green")){
        g = 255;
+       ind = 2;
      }
      else if(colour.equals("yellow")){
        r = 255;
        g = 255;
+       ind = 3;
      }
 
      if (freq == 0 || millis()%(2*(500/freq)) >= (500/freq)) {
@@ -383,6 +425,13 @@ class W_SSVEP extends Widget {
          rect(x + (w * wFactor) - (size/10), y + (h*hFactor) - (size/10), size/5, size/5);
        popStyle();
      }
+
+     //---------- Store Coords
+     ssvepCoords[ind][0] = x + w * wFactor - size/2;
+     ssvepCoords[ind][1] = y + h * hFactor - size/2;
+     ssvepCoords[ind][2] = x + w * wFactor + size/2;
+     ssvepCoords[ind][3] = y + h * hFactor + size/2;
+
    }
 
    void setDropdownPositions() {
@@ -418,8 +467,8 @@ class W_SSVEP extends Widget {
            setDropdown(3, 0.825, -s/8, 0.0, 30.0);
         }
      } else if (ssvepDisplay == 3) {
-       setDropdown(1, 0.0, 10.0, 0.0, 10.0);
-       setDropdown(2, 1.0, -h/6 - 70.0, 0.0, 10.0);
+       setDropdown(1, 0.0, 10.0, 0.0, 20.0);
+       setDropdown(2, 1.0, -h/6 - 70.0, 0.0, 20.0);
        setDropdown(3, 0.0, 10.0, 0.5, 0.0);
        setDropdown(4, 1.0, - h/6 - 70, 0.5, 0);
      }
@@ -447,16 +496,25 @@ class W_SSVEP extends Widget {
    }
 
    float[] processData(){
-      int[] freqs = {freq1, freq2, freq3, freq4};
       int activeSSVEPs = ssvepDisplay + 1;
       float[] finalData = new float[4];
 
       for (int i = 0; i < activeSSVEPs; i++) {
-          float sum = fftBuff[nchan-2].getFreq(freqs[i]) + fftBuff[nchan-1].getFreq(freqs[i]);
-          float avg = sum/2;
-          finalData[i] = avg;
-      }
+          if(freqs[i] > 0) {
+              float sum = 0;
 
+              for (int j = 0; j < activeChannels.size(); j++){
+                  int chan = activeChannels.get(j);
+                  sum+= fftBuff[j].getFreq(freqs[i]);
+              }
+
+              float avg = sum/numActiveChannels;
+              finalData[i] = avg;
+          } else {
+              finalData[i] = 0;
+          }
+
+      }
       return finalData;
    }
 
