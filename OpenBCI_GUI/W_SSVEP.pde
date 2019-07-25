@@ -15,6 +15,7 @@ class W_SSVEP extends Widget {
 
     //frequency variables offered
     int[] freqs = new int[4];
+    boolean[] ssvepOn = {true, true, true, true};
 
     //coords for each SSVEP — FORMAT {x0, y0, x1, y1}
     float[][] ssvepCoords = {
@@ -62,7 +63,6 @@ class W_SSVEP extends Widget {
 
         dropdownNames = new String[] {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
         dropdownOptions = new ArrayList<String>();
-        dropdownOptions.add("Pause");
 
         for (int i = 0; i < 9; i++) {
           dropdownOptions.add(String.valueOf(i+7) + " Hz");
@@ -317,7 +317,7 @@ class W_SSVEP extends Widget {
 
             for(int i = 0; i <= ssvepDisplay; i++){
                 if(mouseX > ssvepCoords[i][0] && mouseY > ssvepCoords[i][1] && mouseX < ssvepCoords[i][2] && mouseY < ssvepCoords[i][3]){
-
+                    ssvepOn[i] = !ssvepOn[i];
                 }
             }
         }
@@ -402,7 +402,7 @@ class W_SSVEP extends Widget {
        ind = 3;
      }
 
-     if (freq == 0 || millis()%(2*(500/freq)) >= (500/freq)) {
+     if (freq == 0 || !ssvepOn[ind] || millis()%(2*(500/freq)) >= (500/freq)) {
        fill(r,g,b);
        rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
        pushStyle();
@@ -483,15 +483,12 @@ class W_SSVEP extends Widget {
 
    int updateFreq(int controllerNum) {
      String s = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
+
      if (!s.equals("Frequency "+controllerNum)) {
-       if(s.equals("Pause")){
-         return 0;
-       }
-       else{
          s = s.substring(0,s.indexOf(" "));
          return Integer.valueOf(s);
-       }
      }
+
      return -1;
    }
 
