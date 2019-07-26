@@ -68,6 +68,7 @@ class W_SSVEP extends Widget {
           dropdownOptions.add(String.valueOf(i+7) + " Hz");
         }
 
+        //init cp5 dropdowns in reverse so ssvep dropdwns 1 & 2 draw over 3 & 4
         for (int i = dropdownNames.length - 1; i >= 0; i--) {
             createDropdown(dropdownNames[i], dropdownOptions);
         }
