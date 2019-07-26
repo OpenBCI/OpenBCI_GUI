@@ -96,8 +96,11 @@ class W_SSVEP extends Widget {
         }
         offset = (navH - checkSize)/2;
 
+        channelSelectHover = false;
+        channelSelectPressed = false;
+
         checkList = cp5_ssvep.addCheckBox("channelList")
-                              .setPosition(x + 57, y - navH + offset)
+                              .setPosition(x + 5, y + offset)
                               .setSize(checkSize, checkSize)
                               .setItemsPerRow(numChecks)
                               .setSpacingColumn(13)
@@ -113,8 +116,9 @@ class W_SSVEP extends Widget {
           int chNum = i+1;
           cp5_ssvep.get(CheckBox.class, "channelList")
                         .addItem(String.valueOf(chNum), chNum)
-                        .setVisible(false)
                         ;
+
+          checkList.getItem(chNum - 1).setVisible(false);           //set invisible after adding items, so make sure they won't stay invisible
         }
 
         checkList.activate(6);
@@ -155,6 +159,7 @@ class W_SSVEP extends Widget {
 
             //lock/unlock lower Freq4 dropdown when Freq2 dropdown is in use in 4 SSVEP use case
             if (cp5_ssvep.get(ScrollableList.class, "Frequency 2").isOpen()) {
+                cp5_ssvep.getController("Frequency 2").bringToFront();
                 cp5_ssvep.get(ScrollableList.class, "Frequency 4").lock();
             } else {
                 cp5_ssvep.get(ScrollableList.class, "Frequency 4").setVisible(true).unlock();
@@ -162,7 +167,9 @@ class W_SSVEP extends Widget {
 
             //lock/unlock lower Freq3 dropdown when Freq1 dropdown is in use in 4 SSVEP use case
             if (cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen() && ssvepDisplay == 3) {
+                cp5_ssvep.getController("Frequency 1").bringToFront();
                 cp5_ssvep.get(ScrollableList.class, "Frequency 3").lock();
+
             } else {
                 cp5_ssvep.get(ScrollableList.class, "Frequency 3").unlock();
             }
@@ -171,7 +178,10 @@ class W_SSVEP extends Widget {
             if (heightLarger && ssvepDisplay == 2) {
                // lock freq2 if freq1 is in use
                if(cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen()){
+                   cp5_ssvep.get(ScrollableList.class, "Frequency 2").bringToFront();
+
                   cp5_ssvep.get(ScrollableList.class, "Frequency 2").lock();
+
                }
                else{
                  cp5_ssvep.get(ScrollableList.class, "Frequency 2").unlock();
@@ -180,6 +190,7 @@ class W_SSVEP extends Widget {
                // lock freq3 if freq2 is in use
                if(cp5_ssvep.get(ScrollableList.class, "Frequency 2").isOpen()){
                   cp5_ssvep.get(ScrollableList.class, "Frequency 3").lock();
+                  cp5_ssvep.getController("Frequency 2").bringToFront();
                }
                else{
                  cp5_ssvep.get(ScrollableList.class, "Frequency 3").unlock();
@@ -256,6 +267,8 @@ class W_SSVEP extends Widget {
                 fill(130);
             }
             triangle(x + 57.0, y - navH*0.25, x + 62.0, y - navH*0.65, x + 67.0, y - navH*0.25);
+            fill(180);
+            rect(x,y,w,navH);
         }
 
         textSize(12);
@@ -287,8 +300,8 @@ class W_SSVEP extends Widget {
         } else if (ssvepDisplay == 3) {
             float sz = s/6;
             drawSSVEP("blue", freqs[0], 0.25, 0.25, s/6);
-            drawSSVEP("red", freqs[1], 0.25, 0.75, s/6);
-            drawSSVEP("green", freqs[2], 0.75, 0.25, s/6);
+            drawSSVEP("red", freqs[1], 0.75, 0.25, s/6);
+            drawSSVEP("green", freqs[2], 0.25, 0.75, s/6);
             drawSSVEP("yellow", freqs[3], 0.75, 0.75, s/6);
         }
 
@@ -338,7 +351,7 @@ class W_SSVEP extends Widget {
         }
 
         //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
-        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 57, y - navH + offset);
+        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 5, y + offset);
     }
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
@@ -353,6 +366,22 @@ class W_SSVEP extends Widget {
                     ssvepOn[i] = !ssvepOn[i];
                 }
             }
+
+            if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+                channelSelectPressed = !channelSelectPressed;
+                // println(1);
+                if(channelSelectPressed){
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
+            }
+
+
         }
     }
 
@@ -467,48 +496,40 @@ class W_SSVEP extends Widget {
 
    }
 
+   //------set position of all dropdowns
    void setDropdownPositions() {
      resetDropdowns();
-
-     // cp5_ssvep.getController("Frequency 1")
-     //                   .setPosition(x + w/2 -s/8, y + 30);
-     //                   println(cp5_ssvep.getController("Frequency 1")
-     //                                     .getPosition());
-     //
-     // cp5_ssvep.get(ScrollableList.class, "Frequency 1")
-     //                   .setVisible(true);
 
      if (ssvepDisplay == 0) {
          setDropdown(1, 0.5, - s/8, 0, 30.0);
      } else if (ssvepDisplay == 1) {
        if (heightLarger) {
-         setDropdown(1, 1, 10.0, 0.25, -s/8);
-         setDropdown(2, 1, 10.0, 0.75, -s/8);
+         setDropdown(1, 0, 10.0, 0.25, -s/8);
+         setDropdown(2, 0, 10.0, 0.75, -s/8);
        } else {
-         setDropdown(1, 0.25, -s/8, 1, 30.0);
-         setDropdown(2, 0.75, -s/8, 1, 30.0);
+         setDropdown(1, 0.25, -s/8, 0, 30.0);
+         setDropdown(2, 0.75, -s/8, 0, 30.0);
        }
      } else if (ssvepDisplay == 2) {
          if (heightLarger) {
-            setDropdown(1, 1, 10.0, 1, 10.0);
-            setDropdown(2, 1, 10.0, 1/3, 0.0);
-            setDropdown(3, 1, 10.0, 2/3, 0.0);
+            setDropdown(1, 0, 10.0, 0.0, 10.0);
+            setDropdown(2, 0, 10.0, 1.0/3, 0.0);
+            setDropdown(3, 0, 10.0, 2.0/3, 0.0);
          } else {
            //Freq1 Dropdown
-           setDropdown(1, 0.125, -s/8, 1.0, 30.0);
-           setDropdown(2, 0.5, -s/8, 1.0, 30.0);
-           setDropdown(3, 0.825, -s/8, 1.0, 30.0);
+           setDropdown(1, 0.125, -s/8, 0, 30.0);
+           setDropdown(2, 0.5, -s/8, 0.0, 30.0);
+           setDropdown(3, 0.825, -s/8, 0.0, 30.0);
         }
      } else if (ssvepDisplay == 3) {
-       setDropdown(4, 1.0, - h/6 - 70, 0.5, 0);
-       setDropdown(3, 1.0, 10.0, 0.5, 0.0);
-       setDropdown(1, 1.0, 10.0, 1.0, 20.0);
-       setDropdown(2, 1.0, -h/6 - 70.0, 0.0, 20.0);
-
-
+       setDropdown(4, 1.0, (-1.0/6) - 100.0, 0.5, -15);
+       setDropdown(3, 0.0, 10.0, 0.5, -15);
+       setDropdown(1, 0.0, 10.0, 0.0, 30.0);
+       setDropdown(2, 1.0, (-1.0/6) - 100.0, 0.0, 30.0);
      }
    }
 
+   //------- set the Position of an individual dropdown
    void setDropdown(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset){
      cp5_ssvep.getController("Frequency "+dropdownNo)
                        .setPosition(x + (w * wFactor) + wOffset, y + (h * hFactor) + hOffset);
