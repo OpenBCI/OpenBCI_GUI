@@ -88,9 +88,6 @@ class W_SSVEP extends Widget {
           s = w;
         }
 
-        textSize(12);
-        text("Input Channel Select", x, y - navH);
-
         int checkSize = navH - 4;
         offset = (navH - checkSize)/2;
 
