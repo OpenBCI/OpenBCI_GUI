@@ -68,8 +68,8 @@ class W_SSVEP extends Widget {
           dropdownOptions.add(String.valueOf(i+7) + " Hz");
         }
 
-        for (int i = 0; i < dropdownNames.length; i++) {
-          createDropdown(dropdownNames[i], dropdownOptions);
+        for (int i = dropdownNames.length - 1; i >= 0; i--) {
+            createDropdown(dropdownNames[i], dropdownOptions);
         }
 
         if (h > w) {
