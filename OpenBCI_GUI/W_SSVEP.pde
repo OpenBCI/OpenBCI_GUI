@@ -39,16 +39,23 @@ class W_SSVEP extends Widget {
     String[] dropdownNames;
     List<String> dropdownOptions;
 
-
+    //----------CHANNEL SELECT INFRASTRUCTURE
     ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
     CheckBox checkList;
+    //draw checkboxes vars
     int numChecks = nchan;
     int offset;                      //offset on nav bar of checks
     int checkHeight = y0 + navH;
+
+    //checkbox dropdown vars
+    boolean channelSelectPressed;
+    boolean channelSelectHover;
+
+    //---------NETWORKING VARS
+    float[] ssvepData = new float[4];
+    //data from checkboxes vars
     int numActiveChannels;
     List<Integer> activeChannels = new ArrayList<Integer>();
-
-    float[] ssvepData = new float[4];
 
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
@@ -106,7 +113,7 @@ class W_SSVEP extends Widget {
           int chNum = i+1;
           cp5_ssvep.get(CheckBox.class, "channelList")
                         .addItem(String.valueOf(chNum), chNum)
-                        .setVisible(true)
+                        .setVisible(false)
                         ;
         }
 
@@ -181,6 +188,7 @@ class W_SSVEP extends Widget {
 
             configIsVisible = topNav.configSelector.isVisible;
             layoutIsVisible = topNav.layoutSelector.isVisible;
+
         }
 
         if (ssvepDisplay == 0) {  // 1 SSVEP
@@ -197,6 +205,14 @@ class W_SSVEP extends Widget {
             freqs[1] = updateFreq(2);
             freqs[2] = updateFreq(3);
             freqs[3] = updateFreq(4);
+        }
+
+        if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+            channelSelectHover = true;
+            // println(1);
+        } else {
+            channelSelectHover = false;
+            // println(2);
         }
 
         setDropdownPositions();
@@ -224,6 +240,23 @@ class W_SSVEP extends Widget {
         fill(0);
         rect(x,y, w, h);
         pushStyle();
+
+        //channel select button
+        if (!channelSelectPressed) {
+            if(!channelSelectHover){
+                fill(0);
+            } else {
+                fill(130);
+            }
+            triangle(x + 57.0, y - navH*0.65, x + 62.0, y - navH*0.25, x + 67.0, y - navH*0.65);
+        } else {
+            if(!channelSelectHover){
+                fill(0);
+            } else {
+                fill(130);
+            }
+            triangle(x + 57.0, y - navH*0.25, x + 62.0, y - navH*0.65, x + 67.0, y - navH*0.25);
+        }
 
         textSize(12);
         fill(0);
@@ -449,28 +482,30 @@ class W_SSVEP extends Widget {
          setDropdown(1, 0.5, - s/8, 0, 30.0);
      } else if (ssvepDisplay == 1) {
        if (heightLarger) {
-         setDropdown(1, 0, 10.0, 0.25, -s/8);
-         setDropdown(2, 0, 10.0, 0.75, -s/8);
+         setDropdown(1, 1, 10.0, 0.25, -s/8);
+         setDropdown(2, 1, 10.0, 0.75, -s/8);
        } else {
-         setDropdown(1, 0.25, -s/8, 0, 30.0);
-         setDropdown(2, 0.75, -s/8, 0, 30.0);
+         setDropdown(1, 0.25, -s/8, 1, 30.0);
+         setDropdown(2, 0.75, -s/8, 1, 30.0);
        }
      } else if (ssvepDisplay == 2) {
          if (heightLarger) {
-            setDropdown(1, 0, 10.0, 0, 10.0);
-            setDropdown(2, 0, 10.0, 1/3, 0.0);
-            setDropdown(3, 0, 10.0, 2/3, 0.0);
+            setDropdown(1, 1, 10.0, 1, 10.0);
+            setDropdown(2, 1, 10.0, 1/3, 0.0);
+            setDropdown(3, 1, 10.0, 2/3, 0.0);
          } else {
            //Freq1 Dropdown
-           setDropdown(1, 0.125, -s/8, 0.0, 30.0);
-           setDropdown(2, 0.5, -s/8, 0.0, 30.0);
-           setDropdown(3, 0.825, -s/8, 0.0, 30.0);
+           setDropdown(1, 0.125, -s/8, 1.0, 30.0);
+           setDropdown(2, 0.5, -s/8, 1.0, 30.0);
+           setDropdown(3, 0.825, -s/8, 1.0, 30.0);
         }
      } else if (ssvepDisplay == 3) {
-       setDropdown(1, 0.0, 10.0, 0.0, 20.0);
-       setDropdown(2, 1.0, -h/6 - 70.0, 0.0, 20.0);
-       setDropdown(3, 0.0, 10.0, 0.5, 0.0);
        setDropdown(4, 1.0, - h/6 - 70, 0.5, 0);
+       setDropdown(3, 1.0, 10.0, 0.5, 0.0);
+       setDropdown(1, 1.0, 10.0, 1.0, 20.0);
+       setDropdown(2, 1.0, -h/6 - 70.0, 0.0, 20.0);
+
+
      }
    }
 
