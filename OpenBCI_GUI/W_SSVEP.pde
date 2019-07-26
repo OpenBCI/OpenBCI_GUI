@@ -92,9 +92,6 @@ class W_SSVEP extends Widget {
         text("Input Channel Select", x, y - navH);
 
         int checkSize = navH - 4;
-        if(numChecks > 8){
-            checkSize = (int)Math.floor(navH*0.5);
-        }
         offset = (navH - checkSize)/2;
 
         channelSelectHover = false;
@@ -323,16 +320,16 @@ class W_SSVEP extends Widget {
             text(s, x + 30, y + 30, w - 60, h -60);
         }
 
-        stroke(190);
-        fill(20);
-        ellipse(x + w - 12, y + navH/2 + 7, 18, 18);
-        fill(250);
+        stroke(0);
+        noFill();
+        ellipse(x + w - 80, y - navH/2 , 18, 18);
+        fill(0);
         textAlign(CENTER, CENTER);
         if (showAbout) {
-            text("x", x + w - 12, y + navH/2 + 5);
+            text("x", x + w - 80, y - navH/2 - 2);
         }
         else {
-            text("?", x + w - 12, y + navH/2 + 5);
+            text("?", x + w - 80, y - navH/2 - 2);
         }
 
     }
@@ -358,7 +355,7 @@ class W_SSVEP extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         if(!this.dropdownIsActive) {
-            if (dist(mouseX, mouseY, x + w - 12, y + navH/2 + 7) <= 9){
+            if (dist(mouseX, mouseY, x + w - 80, y - navH/2) <= 9){
                 showAbout = !showAbout;
             }
 

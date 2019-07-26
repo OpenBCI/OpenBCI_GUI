@@ -75,7 +75,6 @@ class W_BandPower extends Widget {
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
         pushStyle();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
