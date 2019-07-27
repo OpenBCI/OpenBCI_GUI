@@ -6,10 +6,15 @@ OpenBCI_GUI/temp.txt
 OpenBCI_GUI/t-temp.txt
 OpenBCI_GUI/build/source/*.java
 *.app
-OpenBCI_GUI/SavedData
+OpenBCI_GUI/SavedData/*.txt
+OpenBCI_GUI/SavedData/*.bdf
+OpenBCI_GUI/SavedData/*.csv
+OpenBCI_GUI/SavedData/Settings
+OpenBCI_GUI/SavedData/Screenshots
 OpenBCI_GUI/SavedData/EEG_Data/SDconverted-*
 OpenBCI_GUI/data/EEG_Data/*
 OpenBCI_GUI/data/OpenBCIHub/*
-OpenBCI_GUI/application.*.zip
 OpenBCI_GUI/application.*
+OpenBCI_GUI/openbcigui_*
 *.autosave
+.vscode/*
