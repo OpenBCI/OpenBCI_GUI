@@ -361,7 +361,7 @@ class TopNav {
             shopButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
-        if (updateGuiVersionButton.isMouseHere()) {
+        if (updateGuiVersionButton.isMouseHere() && !guiVersionIsUpToDate) {
             updateGuiVersionButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
@@ -976,7 +976,7 @@ class ConfigSelector {
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
         tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setHelpText("Clicking 'Yes' will delete all user settings and stop system if running.");
+        tempConfigButton.setHelpText("Clicking 'Yes' will delete all user settings and stop the session if running.");
         configOptions.add(tempConfigButton);
     }
 

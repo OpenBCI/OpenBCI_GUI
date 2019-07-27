@@ -302,7 +302,7 @@ void parseKey(char val) {
         case 'm':
             String picfname = "OpenBCI-" + getDateString() + ".jpg";
             println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame("./SavedData/Screenshots/" + picfname);    // take a shot of that!
+            saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             break;
 
         default:
@@ -450,7 +450,7 @@ synchronized void mousePressed() {
     // println("systemMode" + systemMode);
     // controlPanel.CPmousePressed();
 
-    //if not before "Start System" ... i.e. after initial setup
+    //if not before "START SESSION" ... i.e. after initial setup
     if (systemMode >= SYSTEMMODE_POSTINIT) {
 
         //limit interactivity of main GUI if control panel is open
@@ -542,7 +542,7 @@ class Button {
     color currentColor;
     color color_hover = color(177, 184, 193);//color(252, 221, 198);
     color color_pressed = color(150,170,200); //bgColor;
-    color color_notPressed = color(255); //color(227,118,37);
+    color color_notPressed = colorNotPressed; //color(255);  alt - color(227,118,37);
     color buttonStrokeColor = bgColor;
     color textColorActive = color(255);
     color textColorNotActive = bgColor;
@@ -669,9 +669,9 @@ class Button {
     }
 
     public boolean isMouseHere() {
-        if ( overRect(but_x, but_y, but_dx, but_dy) ) {
-            // cursor(HAND);
-            if (!ignoreHover) {
+        if (!ignoreHover) {
+            if ( overRect(but_x, but_y, but_dx, but_dy) ) {
+                // cursor(HAND);
                 if(!helpTimerStarted){
                     helpTimerStarted = true;
                     mouseOverButtonStart = millis();
@@ -680,16 +680,18 @@ class Button {
                         showHelpText = true;
                     }
                 }
+                return true;
             }
-            return true;
-        }
-        else {
-            setIsActive(false);
-            if(helpTimerStarted){
-                buttonHelpText.setVisible(false);
-                showHelpText = false;
-                helpTimerStarted = false;
+            else {
+                setIsActive(false);
+                if(helpTimerStarted){
+                    buttonHelpText.setVisible(false);
+                    showHelpText = false;
+                    helpTimerStarted = false;
+                }
+                return false;
             }
+        } else {
             return false;
         }
     }

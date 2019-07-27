@@ -17,7 +17,6 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-import java.io.OutputStream; //for logging raw bytes to an output file
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -282,9 +281,6 @@ class Cyton {
     }
 
     public boolean write(char val, boolean _readyToSend) {
-        // if (isSerial()) {
-        //   iSerial.setReadyToSend(_readyToSend);
-        // }
         return write(val);
     }
 
@@ -303,7 +299,6 @@ class Cyton {
             if (isSerial()) {
                 hub.changeState(HubState.NORMAL);  // make sure it's now interpretting as binary
                 println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
-                // if (isSerial()) iSerial.clear();  // clear anything in the com port's buffer
                 write(command_startBinary);
             } else if (isWifi()) {
                 println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");

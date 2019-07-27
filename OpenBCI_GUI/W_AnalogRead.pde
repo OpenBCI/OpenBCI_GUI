@@ -13,7 +13,7 @@ class W_AnalogRead extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
 
-    int numAnalogReadBars;
+    private int numAnalogReadBars;
     float xF, yF, wF, hF;
     float arPadding;
     float ar_x, ar_y, ar_h, ar_w; // values for actual time series chart (rectangle encompassing all analogReadBars)
@@ -75,7 +75,6 @@ class W_AnalogRead extends Widget {
 
         //create our channel bars and populate our analogReadBars array!
         for(int i = 0; i < numAnalogReadBars; i++) {
-            println("init analog read bar " + i);
             int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
             AnalogReadBar tempBar = new AnalogReadBar(_parent, i+5, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
             analogReadBars[i] = tempBar;
@@ -102,6 +101,10 @@ class W_AnalogRead extends Widget {
     }
     public boolean isUpdating() {
         return updating;
+    }
+
+    public int getNumAnalogReads() {
+        return numAnalogReadBars;
     }
 
     public void setVisible(boolean _visible) {
@@ -340,7 +343,7 @@ class AnalogReadBar{
     void update() {
 
         //update the voltage value text string
-        String fmt; float val;
+        float val;
 
         //update the voltage values
         val = hub.validAccelValues[auxValuesPosition];

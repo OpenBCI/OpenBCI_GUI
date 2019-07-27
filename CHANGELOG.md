@@ -1,3 +1,39 @@
+# v4.1.3
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 3
+
+###  Bug fixes
+* Fix app crash when streaming 16ch over LSL #557
+
+## Beta 2
+
+### Improvements
+* Update Serial EMG output in Networking Widget
+* Add Accelerometer and Aux Data output to Networking Widget #532
+* Rename "Start/Stop System" button to "Start/Stop Session"
+* Add absolute timestamp to LSL stream for all data types #530
+* Update OpenBCI Data Format using Sessions #483
+* Add dropdown to limit recording duration for OpenBCI Data Format #461
+* Show intro animation on launch instead of grey screen
+
+### Bug Fixes
+* Clear Playback History dropdown when settings are cleared #521
+* Accelerometer Widget values display correct data
+* Fix NullPointerExceptions caused by Data Log updates #548
+
+
+## Beta 1
+
+### Bug Fixes
+* Fix BLED112 Impedance check in HUB by allowing 2 seconds for command/success
+
+## Beta 0
+
+### Bug Fixes
+* GUI now produces valid BDF files Fixes #441
+* Relocate User data to Documents folder on all OS #535
+
 # v4.1.2
 Use OpenBCIHub v2.0.8 please.
 

@@ -12,15 +12,17 @@
 //
 // Note: this class now expects the data format produced by OpenBCI V3.
 //
+// Update July 2019:
+//      - Portions of this are DEPRECATED
+//      - serialEvent() is still used when checking Cyton status from Control Panel
+//
 /////////////////////////////////////////////////////////////////////////////
-
-import java.io.OutputStream; //for logging raw bytes to an output file
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
-int dollaBillz;
+int _myCounter;
 int newPacketCounter = 0;
 boolean no_start_connection = false;
 byte inByte = -1;    // Incoming serial data
@@ -116,9 +118,9 @@ void serialEvent(Serial port){
         if (no_start_connection) {
 
 
-            if (board_message == null || dollaBillz>2) {
+            if (board_message == null || _myCounter>2) {
                 board_message = new StringBuilder();
-                dollaBillz = 0;
+                _myCounter = 0;
             }
 
             inByte = byte(port.read());
@@ -133,10 +135,10 @@ void serialEvent(Serial port){
                         else hexToInt = Integer.parseInt(String.format("%02X", inByte), 16);
 
                         if (char(inByte) == ' ') spaceFound = true;
-                    } else dollaBillz++;
+                    } else _myCounter++;
                 } else {
                     if (inByte != '$') board_message.append(char(inByte));
-                    else dollaBillz++;
+                    else _myCounter++;
                 }
             }
         } else {
@@ -144,13 +146,13 @@ void serialEvent(Serial port){
             inByte = byte(port.read());
             if (isOpenBCI) {
 
-                if (board_message == null || dollaBillz >2) {
+                if (board_message == null || _myCounter >2) {
                     board_message = new StringBuilder();
-                    dollaBillz=0;
+                    _myCounter=0;
                 }
                 if(inByte != '$'){
                     board_message.append(char(inByte));
-                } else { dollaBillz++; }
+                } else { _myCounter++; }
             } else if(char(inByte) == 'S' || char(inByte) == 'F'){
                 isOpenBCI = true;
                 if(board_message == null){

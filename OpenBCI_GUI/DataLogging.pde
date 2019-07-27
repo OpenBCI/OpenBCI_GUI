@@ -1,23 +1,11 @@
 
 ////////////////////////////////////////////////////////////
-// Class: OutputFile_rawtxt
-// Purpose: handle file creation and writing for the text log file
+// Purpose: Handle OpenBCI Data Format and BDF+ file writing
 // Created: Chip Audette  May 2, 2014
-//
-// DATA FORMAT:
+// Modified: Richard Waltman July 1, 2019
 //
 ////////////////////////////////////////////////////////////
 
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.io.OutputStream;
-
-
-DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -36,6 +24,7 @@ void openNewLogFile(String _fileName) {
             // Do nothing...
             break;
     }
+    settings.setLogFileIsOpen(true);
 }
 
 /**
@@ -52,7 +41,7 @@ void openNewLogFileBDF(String _fileName) {
     fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
 
     output_fname = fileoutput_bdf.fname;
-    println("cyton: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
+    println("OpenBCI_GUI: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
 }
 
 /**
@@ -66,10 +55,10 @@ void openNewLogFileODF(String _fileName) {
         closeLogFile();
     }
     //open the new file
-    fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), _fileName);
+    fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), sessionName, _fileName);
 
     output_fname = fileoutput_odf.fname;
-    println("cyton: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
+    println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
 }
 
 void closeLogFile() {
@@ -85,6 +74,7 @@ void closeLogFile() {
             // Do nothing...
             break;
     }
+    settings.setLogFileIsOpen(false);
 }
 
 /**
@@ -93,9 +83,9 @@ void closeLogFile() {
   */
 void closeLogFileBDF() {
     if (fileoutput_bdf != null) {
-        //TODO: Need to update the rows written in the header
         fileoutput_bdf.closeFile();
     }
+    fileoutput_bdf = null;
 }
 
 /**
@@ -105,6 +95,7 @@ void closeLogFileODF() {
     if (fileoutput_odf != null) {
         fileoutput_odf.closeFile();
     }
+    fileoutput_odf = null;
 }
 
 void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
@@ -135,7 +126,7 @@ String getDateString() {
 
 //these functions are relevant to convertSDFile
 void createPlaybackFileFromSD() {
-    logFileName = "SavedData/SDconverted-"+getDateString()+".csv";
+    logFileName = settings.guiDataPath+"SDconverted-"+getDateString()+".csv";
     dataWriter = createWriter(logFileName);
     dataWriter.println("%OBCI SD Convert - " + getDateString());
     dataWriter.println("%");
@@ -167,11 +158,12 @@ public class OutputFile_rawtxt {
     PrintWriter output;
     String fname;
     private int rowsWritten;
+    private long logFileStartTime;
 
     OutputFile_rawtxt(float fs_Hz) {
 
         //build up the file name
-        fname = "SavedData"+System.getProperty("file.separator")+"OpenBCI-RAW-";
+        fname = settings.guiDataPath+"OpenBCI-RAW-";
 
         //add year month day to the file name
         fname = fname + year() + "-";
@@ -203,8 +195,10 @@ public class OutputFile_rawtxt {
     }
 
     //variation on constructor to have custom name
-    OutputFile_rawtxt(float fs_Hz, String _fileName) {
-        fname = "SavedData"+System.getProperty("file.separator")+"OpenBCI-RAW-";
+    OutputFile_rawtxt(float fs_Hz, String _sessionName, String _fileName) {
+        settings.setSessionPath(settings.recordingsPath + "OpenBCISession_" + _sessionName + File.separator);
+        fname = settings.getSessionPath();
+        fname += "OpenBCI-RAW-";
         fname += _fileName;
         fname += ".txt";
         output = createWriter(fname);        //open the file
@@ -300,8 +294,6 @@ public class OutputFile_rawtxt {
                 output.print(", " + ((data.auxValues[i] & 0xFF00) >> 8));
             }
         }
-
-
     }
 
     public void closeFile() {
@@ -311,6 +303,19 @@ public class OutputFile_rawtxt {
 
     public int getRowsWritten() {
         return rowsWritten;
+    }
+
+    public void limitRecordingFileDuration() {
+        if (settings.maxLogTimeReached()) {
+            println("DataLogging: Max recording duration reached for OpenBCI data format. Creating a new recording file in the session folder.");
+            closeLogFile();
+            //open data file if it has not already been opened
+            if (!settings.isLogFileOpen()) {
+                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
+                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
+            }
+            settings.setLogFileStartTime(System.nanoTime());
+        }
     }
 };
 
@@ -435,7 +440,7 @@ public class OutputFile_BDF {
     private String nbSamplesPerDataRecordEEG[] = new String[nbChan];
     private String reservedEEG[] = new String[nbChan];
 
-    private String tempWriterPrefix = "temp.txt";
+    private String tempWriterPrefix = settings.recordingsPath+"temp.txt";
 
     private int fs_Hz = 250;
     private int accel_Hz = 25;
@@ -456,6 +461,8 @@ public class OutputFile_BDF {
     public String fname = "";
 
     public int nbSamplesPerAnnontation = 20;
+
+    private int totalByteCount = 0;
 
     /**
       * @description Creates an EDF writer! Name of output file based on current
@@ -574,7 +581,7 @@ public class OutputFile_BDF {
 
             // Write the annotations
             dstream.write('+');
-            String _t = str((millis() - timeDataRecordStart) / 1000);
+            String _t = Integer.toString((millis() - timeDataRecordStart) / 1000);
             int strLen = _t.length();
             for (int i = 0; i < strLen; i++) {
                 dstream.write(_t.charAt(i));
@@ -596,27 +603,39 @@ public class OutputFile_BDF {
 
     public void closeFile() {
 
-        output("Closed the temp data file. Now opening a new file");
+        println("Closed the temp data file. Now opening a new file.");
         try {
             dstream.close();
         } catch (Exception e) {
             println("closeFile: dstream close exception ");
             e.printStackTrace();
         }
-        println("closeFile: started...");
+        println("closeFile: Started...");
 
         OutputStream o = createOutput(fname);
-        println("closeFile: made file");
+        println("closeFile: Made file");
 
         // Create a new writer with the same file name
         // Write the header
         writeHeader(o);
-        output("Header writen, now writing data.");
-        println("closeFile: wrote header");
+        println("closeFile: Wrote header");
 
         writeData(o);
-        output("Data written. Closing new file.");
-        println("closeFile: wrote data");
+        println("closeFile: Data written. Closing new BDF+ file.");
+        try {
+            o.close();
+            println("closeFile: wrote data");
+            File tempFile = new File(tempWriterPrefix);
+            if (Files.deleteIfExists(tempFile.toPath())) {
+                println("closeFile: BDF+ temporary file deleted.");
+                output("BDF+ file has been made.");
+            } else {
+                println("closeFile: error deleting temp file");
+            }
+        } catch (IOException e) {
+            println("Error closing BDF OutputStream");
+        }
+
     }
 
     public int getRecordsWritten() {
@@ -925,7 +944,7 @@ public class OutputFile_BDF {
       * @returns {String} - A fully qualified name of an output file with `str`.
       */
     private String getFileName(String s) {
-        String output = "SavedData"+System.getProperty("file.separator")+"OpenBCI-BDF-";
+        String output = settings.recordingsPath+"OpenBCI-BDF-";
         output += s;
         output += ".bdf";
         return output;
@@ -1006,7 +1025,7 @@ public class OutputFile_BDF {
         setStringArray(physicalMinimumAux, bdf_physical_minimum_ADC_Accel, nbAux);
         setStringArray(physicalMaximumAux, bdf_physical_maximum_ADC_Accel, nbAux);
         setStringArray(prefilteringAux, " ", nbAux);
-        setStringArray(nbSamplesPerDataRecordAux, str(fs_Hz), nbAux);
+        setStringArray(nbSamplesPerDataRecordAux, Integer.toString(fs_Hz), nbAux);
         setStringArray(reservedAux, " ", nbAux);
     }
 
@@ -1027,7 +1046,7 @@ public class OutputFile_BDF {
             setStringArray(physicalMaximumAnnotations, bdf_physical_maximum_ADC_24bit, 1);
         }
         setStringArray(prefilteringAnnotations, " ", 1);
-        nbSamplesPerDataRecordAnnotations[0] = str(nbSamplesPerAnnontation);
+        nbSamplesPerDataRecordAnnotations[0] = Integer.toString(nbSamplesPerAnnontation);
         setStringArray(reservedAnnotations, " ", 1);
     }
 
@@ -1045,7 +1064,7 @@ public class OutputFile_BDF {
         setStringArray(physicalMinimumEEG, bdf_physical_minimum_ADC_24bit, nbChan);
         setStringArray(physicalMaximumEEG, bdf_physical_maximum_ADC_24bit, nbChan);
         setStringArray(prefilteringEEG, " ", nbChan);
-        setStringArray(nbSamplesPerDataRecordEEG, str(fs_Hz), nbChan);
+        setStringArray(nbSamplesPerDataRecordEEG, Integer.toString(fs_Hz), nbChan);
         setStringArray(reservedEEG, " ", nbChan);
     }
 
@@ -1175,8 +1194,14 @@ public class OutputFile_BDF {
                 o.write(data);
                 data = input.read();
                 byteCount++;
+                if (isVerbose) {
+                    if (byteCount % (3*fs_Hz*nbChan) == 0) verbosePrint("+ 1 Second Of Data Written to BDF");
+                }
             }
-            println("writeData: finished: wrote " + byteCount + " bytes");
+            verbosePrint("writeData: finished: wrote " + byteCount + " bytes");
+            totalByteCount += byteCount;
+            verbosePrint("Estimated file size == " + totalByteCount);
+            totalByteCount = 0;
         }
         catch (IOException e) {
             print("writeData: ");
@@ -1209,11 +1234,14 @@ public class OutputFile_BDF {
             writeString(padStringRight(joinStringArray(temp2, " "), BDF_HEADER_SIZE_RECORDING_ID), o);
             writeString(getDateString(startTime, startDateFormat), o);
             writeString(getDateString(startTime, startTimeFormat), o);
-            writeString(padStringRight(str(getBytesInHeader()),BDF_HEADER_SIZE_BYTES_IN_HEADER), o);
+            writeString(padStringRight(Integer.toString(getBytesInHeader()),BDF_HEADER_SIZE_BYTES_IN_HEADER), o);
+            verbosePrint("writeHeader: Bytes in header == " + getBytesInHeader());
+            totalByteCount += getBytesInHeader();
             writeString(padStringRight("24BIT",BDF_HEADER_SIZE_RESERVED), o);//getContinuity(),BDF_HEADER_SIZE_RESERVED), o);
-            writeString(padStringRight(str(dataRecordsWritten),BDF_HEADER_SIZE_NUMBER_DATA_RECORDS), o);
+            writeString(padStringRight(Integer.toString(dataRecordsWritten),BDF_HEADER_SIZE_NUMBER_DATA_RECORDS), o);
+            println("writeHeader: Writing " + dataRecordsWritten + " Seconds of Data to BDF");
             writeString(padStringRight("1",BDF_HEADER_SIZE_DURATION_OF_DATA_RECORD), o);
-            writeString(padStringRight(str(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
+            writeString(padStringRight(Integer.toString(getNbSignals()),BDF_HEADER_SIZE_NUMBER_SIGNALS), o);
 
             writeStringArrayWithPaddingTimes(labelsEEG, BDF_HEADER_NS_SIZE_LABEL, o);
             if (eegDataSource == DATASOURCE_CYTON) writeStringArrayWithPaddingTimes(labelsAux, BDF_HEADER_NS_SIZE_LABEL, o);
@@ -1452,7 +1480,7 @@ void convert16channelLine() {
                 intData[i] = 0;
             }
             dataWriter.print(intData[i]);
-            consoleMsg = str(int(intData[i]));
+            consoleMsg = Integer.toString(int(intData[i]));
             if(hexNums.length > 1){
                 dataWriter.print(", ");
                 consoleMsg += ", ";
