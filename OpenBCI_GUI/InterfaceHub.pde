@@ -765,6 +765,12 @@ class Hub {
             case RESP_SUCCESS:
                 action = json.getString(TCP_JSON_KEY_ACTION);
                 output("Success: Impedance " + action + ".");
+                if (eegDataSource == DATASOURCE_GANGLION && action.equals("stop")) {
+                    //Change the ganglion impedance button text when the user clicks start data stream
+                    if (!w_ganglionImpedance.startStopCheck.getButtonText().equals("Start Impedance Check")) {
+                        w_ganglionImpedance.startStopCheck.setString("Start Impedance Check");
+                    }
+                }
                 break;
             default:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);
