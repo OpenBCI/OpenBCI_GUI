@@ -50,31 +50,7 @@ void parseKey(char val) {
             stopButtonWasPressed();
             break;
         case '.':
-
-            if(drawEMG){
-                drawAccel = true;
-                drawPulse = false;
-                drawHead = false;
-                drawEMG = false;
-            }
-            else if(drawAccel){
-                drawAccel = false;
-                drawPulse = true;
-                drawHead = false;
-                drawEMG = false;
-            }
-            else if(drawPulse){
-                drawAccel = false;
-                drawPulse = false;
-                drawHead = true;
-                drawEMG = false;
-            }
-            else if(drawHead){
-                drawAccel = false;
-                drawPulse = false;
-                drawHead = false;
-                drawEMG = true;
-            }
+            //This keyboard shortcut is not being used!
             break;
         case ',':
             drawContainers = !drawContainers;
@@ -99,12 +75,10 @@ void parseKey(char val) {
             println("Changing color scheme.");
             break;
         case '/':
-            drawAccel = !drawAccel;
-            drawPulse = !drawPulse;
+            //Not being used
             break;
         case '\\':
-            drawFFT = !drawFFT;
-            drawBionics = !drawBionics;
+            //Not being used
             break;
         case '1':
             deactivateChannel(1-1);

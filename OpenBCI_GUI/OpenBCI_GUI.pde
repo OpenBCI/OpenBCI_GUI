@@ -967,7 +967,6 @@ void stopButtonWasPressed() {
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
@@ -986,9 +985,7 @@ void stopButtonWasPressed() {
         nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
-
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
