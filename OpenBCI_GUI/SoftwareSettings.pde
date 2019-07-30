@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.1";
+    String settingsVersion = "1.0.2";
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation
@@ -247,7 +247,7 @@ class SoftwareSettings {
     private JSONObject loadSettingsJSONData;
 
     private final String kJSONKeyDataInfo = "dataInfo";
-    private final String kJSONKeyChannelSettings = "channelSettings";
+    private final String kJSONKeyTimeSeries = "timeSeries";
     private final String kJSONKeySettings = "settings";
     private final String kJSONKeyFFT = "fft";
     private final String kJSONKeyAccel = "accelerometer";
@@ -386,6 +386,10 @@ class SoftwareSettings {
         //println(slnchan);
         saveSettingsJSONData.setJSONObject(kJSONKeyDataInfo, saveNumChannelsData);
 
+        //Make a new JSON Object for Time Series Settings
+        JSONObject saveTSSettings = new JSONObject();
+        saveTSSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
+        saveTSSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
         ////////////////////////////////////////////////////////////////////////////////////
         //                 Case for saving TS settings in Cyton Data Modes                //
         if (eegDataSource == DATASOURCE_CYTON)  {
@@ -428,7 +432,7 @@ class SoftwareSettings {
                     saveTSSettingsJSONArray.setJSONObject(i, saveChannelSettings);
                 } //end channel settings for loop
             } //end all channels for loop
-            saveSettingsJSONData.setJSONArray(kJSONKeyChannelSettings, saveTSSettingsJSONArray); //Set the JSON array for all channels
+            saveSettingsJSONData.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
@@ -448,8 +452,9 @@ class SoftwareSettings {
                 saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
                 saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
             } //end loop for all channels
-            saveSettingsJSONData.setJSONArray(kJSONKeyChannelSettings, saveTSSettingsJSONArray); //Set the JSON array for all channels
+            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
         }
+        saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
@@ -457,9 +462,7 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
-        saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
-        saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-        saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.isAccelModeActive());
+        saveGlobalSettings.setBoolean("Accelerometer Mode", w_accelerometer.isAccelModeActive());
         if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
             saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
             saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
@@ -696,10 +699,8 @@ class SoftwareSettings {
         loadNotchSetting = loadGlobalSettings.getInt("Notch");
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
         loadFramerate = loadGlobalSettings.getInt("Framerate");
-        boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
-        loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
-        loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
-        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
+        Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
+        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
         if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
             loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
             loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
@@ -1063,12 +1064,7 @@ class SoftwareSettings {
 
     private void loadApplyWidgetDropdownText() {
 
-        ////////Apply Time Series widget settings
-        VertScale_TS(loadTimeSeriesVertScale);// changes back-end
-            w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
-
-        Duration(loadTimeSeriesHorizScale);
-            w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
+        ////////Apply Time Series dropdown settings in loadApplyTimeSeriesSettings() instead of here
 
         ////////Apply FFT settings
         MaxFreq(fftMaxFrqLoad); //This changes the back-end
@@ -1241,8 +1237,19 @@ class SoftwareSettings {
     } //end of loadApplyWidgetDropdownText()
 
     private void loadApplyTimeSeriesSettings() {
+
+        JSONObject loadTimeSeriesSettings = loadSettingsJSONData.getJSONObject(kJSONKeyTimeSeries);
+        loadTimeSeriesVertScale = loadTimeSeriesSettings.getInt("Time Series Vert Scale");
+        loadTimeSeriesHorizScale = loadTimeSeriesSettings.getInt("Time Series Horiz Scale");
+
+        ////////Apply Time Series widget settings
+        VertScale_TS(loadTimeSeriesVertScale);// changes back-end
+            w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
+        Duration(loadTimeSeriesHorizScale);
+            w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
+
         //Make a JSON object to load channel setting array
-        JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings");
+        JSONArray loadTimeSeriesJSONArray = loadTimeSeriesSettings.getJSONArray("channelSettings");
 
         //Case for loading time series settings in Live Data mode
         if (eegDataSource == DATASOURCE_CYTON)  {
