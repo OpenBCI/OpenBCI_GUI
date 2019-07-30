@@ -1,3 +1,15 @@
+# v4.1.4
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 0
+
+### Improvements
+* Add Networking serial baud rate and port name to Settings
+
+###  Bug fixes
+* Networking settings not being saved/loaded properly
+* Update Ganglion Impedance button text when successfully stopped
+
 # v4.1.3
 Use OpenBCIHub v2.0.9 please.
 
