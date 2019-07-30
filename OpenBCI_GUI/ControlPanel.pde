@@ -1249,7 +1249,7 @@ class ControlPanel {
             wifiBox.h = 200;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
-            println(output);
+            println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
@@ -1257,7 +1257,7 @@ class ControlPanel {
             wifiBox.h = 120;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
-            println(output);
+            println("CP: WiFi IP: " + output);
         }
 
         // this button only used on mac

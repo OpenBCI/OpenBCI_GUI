@@ -498,7 +498,7 @@ class InterfaceSerial {
                 prev3chars[2] = '#';
                 if (cyton.hardwareSyncStep == 3) {
                     println("InterfaceSerial: read(): x");
-                    println(cyton.defaultChannelSettings);
+                    println("InterfaceSerial: defaultChanSettings: " + cyton.defaultChannelSettings);
                     println("InterfaceSerial: read(): y");
                     w_timeSeries.hsc.loadDefaultChannelSettings();
                     println("InterfaceSerial: read(): z");

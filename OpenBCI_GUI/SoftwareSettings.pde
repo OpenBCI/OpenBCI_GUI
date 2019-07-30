@@ -383,7 +383,7 @@ class SoftwareSettings {
         JSONObject saveNumChannelsData = new JSONObject();
         saveNumChannelsData.setInt("Channels", slnchan);
         saveNumChannelsData.setInt("Data Source", eegDataSource);
-        //println(slnchan);
+        //println("Settings: NumChan: " + slnchan);
         saveSettingsJSONData.setJSONObject(kJSONKeyDataInfo, saveNumChannelsData);
 
         //Make a new JSON Object for Time Series Settings
