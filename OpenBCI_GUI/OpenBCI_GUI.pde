@@ -526,17 +526,22 @@ private void prepareExitHandler () {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         public void run () {
             System.out.println("SHUTDOWN HOOK");
+            //If user starts system and quits the app,
+            //save user settings for current mode!
+            try {
+                if (systemMode == SYSTEMMODE_POSTINIT) {
+                    settings.save(settings.getPath("User", eegDataSource, nchan));
+                }
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
             try {
                 if (hubStop()) {
                     System.out.println("SHUTDOWN HUB");
                 } else {
                     System.out.println("FAILED TO SHUTDOWN HUB");
                 }
-                //If user starts system and quits the app,
-                //save user settings for current mode!
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    settings.save(settings.getPath("User", eegDataSource, nchan));
-                }
+
             } catch (Exception ex) {
                 ex.printStackTrace(); // not much else to do at this point
             }
