@@ -258,6 +258,7 @@ class SoftwareSettings {
     private final String kJSONKeyHeadplot = "headplot";
     private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyFocus = "focus";
+    private final String kJSONKeySSVEP = 'ssvep';
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
 
@@ -640,9 +641,20 @@ class SoftwareSettings {
             saveActiveChannels.setJSONObject(i, saveChannelActivity);
         }
 
-        
+        JSONArray saveFrequencies = new JSONArray();
 
-        saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
+        for(int i = 0; i < nchan; i++){
+            JSONObject saveFrequencies = new JSONObject();
+            saveChannelActivity.setInt("SSVEP_Number", (i+1));
+            int frequency = w_ssvep.freqs[i];
+            saveChannelActivity.setBoolean("Frequency", frequency);
+            saveActiveChannels.setJSONObject(i, saveFrequencies);
+        }
+
+        saveChannelActivity.setInt("NumSSVEPs", ssvepDisplay);
+
+
+        saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSSVEPSettings);
 
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
