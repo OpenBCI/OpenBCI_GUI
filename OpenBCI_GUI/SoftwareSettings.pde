@@ -95,6 +95,10 @@ class SoftwareSettings {
     int nwDataType3;
     int nwDataType4;
     int nwProtocolSave;
+    //SSVEP Widget settings
+    int[] freqsSave;
+    boolean[] channelActivitySave;
+    int numSSVEP_Save;
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
@@ -622,6 +626,24 @@ class SoftwareSettings {
         saveFocusSettings.setInt("Focus_keypress", focusKeySave);
         //Set the Focus JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
+
+        ///////////////////////////////////////////////Setup new JSON object to save SSVEP settings
+        JSONObject saveSSVEPSettings = new JSONObject();
+
+        JSONArray saveActiveChannels = new JSONArray();
+
+        for(int i = 0; i < nchan; i++){
+            JSONObject saveChannelActivity = new JSONObject();
+            saveChannelActivity.setInt("Channel_Number", (i+1));
+            boolean activeState = w_ssvep.cp5_ssvep.get(CheckBox.class, "checkList").getState(i);
+            saveChannelActivity.setBoolean("Active", activeState);
+            saveActiveChannels.setJSONObject(i, saveChannelActivity);
+        }
+
+        
+
+        saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
+
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
