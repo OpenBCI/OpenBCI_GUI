@@ -7,6 +7,7 @@ Use OpenBCIHub v2.0.9 please.
 * Add Networking serial port name to Settings
 
 ###  Bug fixes
+* Close network streams when session is ended or app is closed
 * Networking settings not being saved/loaded properly
 * Update Ganglion Impedance button text when successfully stopped
 

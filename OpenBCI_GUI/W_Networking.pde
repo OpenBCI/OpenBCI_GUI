@@ -730,6 +730,10 @@ class W_Networking extends Widget {
         startButton.setString("Stop");
     }
 
+    boolean getNetworkActive() {
+        return networkActive;
+    }
+
     /* Call to shutdown some UI stuff. Called from W_manager, maybe do this differently.. */
     void shutDown() {
         hideElements();
@@ -1771,7 +1775,7 @@ class Stream extends Thread {
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println("SerialMessage: Focus Error");
-                    //println(e.getMessage());
+                    println(e.getMessage());
                 }
             }
         }

@@ -535,6 +535,12 @@ private void prepareExitHandler () {
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }
+            //Close network streams
+            if (w_networking != null && w_networking.getNetworkActive()) {
+                w_networking.stopNetwork();
+                println("openBCI_GUI: shutDown: Network streams stopped");
+            }
+            //Shutdown the hub
             try {
                 if (hubStop()) {
                     System.out.println("SHUTDOWN HUB");
@@ -1009,6 +1015,11 @@ void haltSystem() {
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         if (initSystemButton.but_txt == "STOP SESSION") {
             initSystemButton.but_txt = "START SESSION";
+        }
+
+        if (w_networking != null && w_networking.getNetworkActive()) {
+            w_networking.stopNetwork();
+            println("openBCI_GUI: haltSystem: Network streams stopped");
         }
 
         stopRunning();  //stop data transfer
