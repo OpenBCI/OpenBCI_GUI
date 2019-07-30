@@ -4,7 +4,7 @@ Use OpenBCIHub v2.0.9 please.
 ## Beta 0
 
 ### Improvements
-* Add Networking serial port name to Settings
+* Update/restructure settings for TimeSeries and Networking
 
 ###  Bug fixes
 * Close network streams when session is ended or app is closed
