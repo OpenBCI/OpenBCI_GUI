@@ -116,6 +116,7 @@ class W_Networking extends Widget {
         settings.nwDataType2 = 0;
         settings.nwDataType3 = 0;
         settings.nwDataType4 = 0;
+        settings.nwSerialPort = "None";
         settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
 
         dataTypes = Arrays.asList(settings.nwDataTypesArray); //Add any new widgets capable of streaming here
@@ -1953,7 +1954,7 @@ void Protocol(int protocolIndex){
     } else if (protocolIndex==0){
         w_networking.protocolMode = "Serial";
     }
-    println("Networking: " + w_networking.protocolMode + " selected from Protocol Menu");
+    println("Networking: Protocol mode set to " + w_networking.protocolMode);
     w_networking.screenResized();
     w_networking.showCP5();
     closeAllDropdowns();

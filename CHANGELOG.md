@@ -4,7 +4,7 @@ Use OpenBCIHub v2.0.9 please.
 ## Beta 0
 
 ### Improvements
-* Add Networking serial baud rate and port name to Settings
+* Add Networking serial port name to Settings
 
 ###  Bug fixes
 * Networking settings not being saved/loaded properly

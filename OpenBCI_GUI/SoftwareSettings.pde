@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.0";
+    String settingsVersion = "1.0.1";
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation
@@ -94,6 +94,7 @@ class SoftwareSettings {
     int nwDataType2;
     int nwDataType3;
     int nwDataType4;
+    String nwSerialPort;
     int nwProtocolSave;
 
     //default configuration settings file location and file name variables
@@ -580,6 +581,8 @@ class SoftwareSettings {
                 saveNetworkingSettings.setInt("Serial_baudrate", int(w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()));
                 //Save Serial filter
                 saveNetworkingSettings.setInt("Serial_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
+                //Save port name
+                saveNetworkingSettings.setString("Serial_portName", w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getLabel());
                 break;
         }//end of switch
         //Set Networking Settings JSON Object
@@ -813,6 +816,7 @@ class SoftwareSettings {
                 nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
                 nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
                 nwSerialFilter1Load = loadNetworkingSettings.getInt("Serial_filter1");
+                nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
                 break;
         } //end switch case for all networking types
 
@@ -1142,6 +1146,7 @@ class SoftwareSettings {
         w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
         switch (nwProtocolLoad) {
             case 3:  //Apply OSC if loaded
+                println("Apply OSC Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1168,7 +1173,7 @@ class SoftwareSettings {
                 w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(nwOscFilter4Load);
                 break;
             case 2:  //Apply UDP if loaded
-                println("apply UDP nw mode");
+                println("Apply UDP Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1186,7 +1191,7 @@ class SoftwareSettings {
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwUdpFilter3Load);
                 break;
             case 1:  //Apply LSL if loaded
-                println("apply LSL nw mode");
+                println("Apply LSL Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1207,12 +1212,26 @@ class SoftwareSettings {
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwLSLFilter3Load);
                 break;
             case 0:  //Apply Serial if loaded
-                println("apply Serial nw mode");
+                println("Apply Serial Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //Set text
                 w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwSerialFilter1Load);
+
+                //Look for the portName in the dropdown list
+                int listSize = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItems().size();
+                for (int i = 0; i < listSize; i++) {
+                    String s = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItem(i).get("name").toString();
+                    if (s.equals(nwSerialPort)) {
+                        verbosePrint("Settings: NWSerial: Found com port " + s + " !");
+                        w_networking.cp5_networking_portName.getController("port_name").getCaptionLabel().setText(s);
+                        w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").setValue(i);
+                        break;
+                    } else {
+                        if (i == listSize - 1) verbosePrint("Settings: NWSerial: Port not found...");
+                    }
+                }
                 break;
         }//end switch-case for networking settings for all networking protocols
 
