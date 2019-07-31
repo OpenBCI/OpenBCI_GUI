@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.2";
+    String settingsVersion = "1.0.4";
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation
