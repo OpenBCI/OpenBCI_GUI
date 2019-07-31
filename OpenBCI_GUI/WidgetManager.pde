@@ -329,7 +329,7 @@ class WidgetManager{
                 layoutString += layouts.get(i).myContainers[j].w + ", ";
                 layoutString += layouts.get(i).myContainers[j].h;
             }
-            println(layoutString);
+            println("WM:printLayouts: " + layoutString);
         }
     }
 

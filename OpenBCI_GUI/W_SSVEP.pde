@@ -1,4 +1,3 @@
-
 ////////////////////////////////////////////////////
 //
 //    W_SSVEP
@@ -8,7 +7,7 @@
 //
 //    Created by: Leanne Pichay, July 2019
 //
-///////////////////////////////////////////////////,
+////////////////////////////////////////////////////
 int ssvepDisplay;
 
 class W_SSVEP extends Widget {
@@ -36,14 +35,13 @@ class W_SSVEP extends Widget {
 
     //Widget CP5s
     ControlP5 cp5_ssvep; //For all CP5 elements within the SSVEP widget
-    String[] dropdownNames;
-    List<String> dropdownOptions;
+    String[] dropdownNames = {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
+    List<String> dropdownOptions = new ArrayList<String>();
 
     //----------CHANNEL SELECT INFRASTRUCTURE
     ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
     CheckBox checkList;
     //draw checkboxes vars
-    int numChecks = nchan;
     int offset;                      //offset on nav bar of checks
     int checkHeight = y0 + navH;
 
@@ -63,13 +61,9 @@ class W_SSVEP extends Widget {
     W_SSVEP(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2","3","4"), 0);
-
+        addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2", "3", "4"), 0);
         // showAbout = true;
         cp5_ssvep = new ControlP5(pApplet);
-
-        dropdownNames = new String[] {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
-        dropdownOptions = new ArrayList<String>();
 
         for (int i = 0; i < 9; i++) {
           dropdownOptions.add(String.valueOf(i+7) + " Hz");
@@ -97,7 +91,7 @@ class W_SSVEP extends Widget {
         checkList = cp5_ssvep.addCheckBox("channelList")
                               .setPosition(x + 5, y + offset)
                               .setSize(checkSize, checkSize)
-                              .setItemsPerRow(numChecks)
+                              .setItemsPerRow(nchan)
                               .setSpacingColumn(13)
                               .setSpacingRow(2)
                               .setColorLabel(color(0)) //Set the color of the text label
@@ -107,7 +101,7 @@ class W_SSVEP extends Widget {
                               ;
 
 
-        for (int i = 0; i < numChecks; i++) {
+        for (int i = 0; i < nchan; i++) {
           int chNum = i+1;
           cp5_ssvep.get(CheckBox.class, "channelList")
                         .addItem(String.valueOf(chNum), chNum)
@@ -226,7 +220,7 @@ class W_SSVEP extends Widget {
         //Update the number of active checks
         int count = 0;
         activeChannels.clear();
-        for (int i = 0; i < numChecks; i++) {
+        for (int i = 0; i < nchan; i++) {
             if(checkList.getState(i)){
                 count++;
                 activeChannels.add(i);
@@ -533,14 +527,12 @@ class W_SSVEP extends Widget {
    }
 
    int updateFreq(int controllerNum) {
-     String s = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
-
-     if (!s.equals("Frequency "+controllerNum)) {
-         s = s.substring(0,s.indexOf(" "));
-         return Integer.valueOf(s);
-     }
-
-     return -1;
+       String label = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
+       if (!label.equals("Frequency "+controllerNum)) {
+           String[] s = split(label, " ");
+           return Integer.valueOf(s[0]);
+       }
+       return -1;
    }
 
    float[] processData(){
@@ -569,16 +561,7 @@ class W_SSVEP extends Widget {
 }
 
 void NumberSSVEP(int n) {
-    println("Item " + (n+1) + " selected from Dropdown 1");
-    if (n==0) {
-        ssvepDisplay = 0;
-    } else if (n==1) {
-        ssvepDisplay = 1;
-    } else if (n==2) {
-        ssvepDisplay = 2;
-    } else if (n==3) {
-        ssvepDisplay = 3;
-    }
-
+    verbosePrint("NumberSSVEP: Item " + n + " selected from dropdown");
+    ssvepDisplay = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
