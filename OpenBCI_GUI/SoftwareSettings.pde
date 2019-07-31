@@ -226,6 +226,11 @@ class SoftwareSettings {
     int focusThemeLoad;
     int focusKeyLoad;
 
+    //SSVEP widget settings
+    int numSSVEPsLoad;
+    int[] ssvepFreqsLoad = new int[4];
+    List<Integer> loadSSVEPActiveChans = new ArrayList<Integer>();
+
     //Networking Settings save/load variables
     int nwProtocolLoad;
     //OSC load variables
@@ -258,7 +263,7 @@ class SoftwareSettings {
     private final String kJSONKeyHeadplot = "headplot";
     private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyFocus = "focus";
-    private final String kJSONKeySSVEP = 'ssvep';
+    private final String kJSONKeySSVEP = "ssvep";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
 
@@ -631,28 +636,25 @@ class SoftwareSettings {
         ///////////////////////////////////////////////Setup new JSON object to save SSVEP settings
         JSONObject saveSSVEPSettings = new JSONObject();
 
+        int numSSVEPs = ssvepDisplay + 1; //add 1 here, dropdown items start count from 0
+        saveSSVEPSettings.setInt("NumSSVEPs", numSSVEPs);
+        //Save data from the Active channel checkBoxes
         JSONArray saveActiveChannels = new JSONArray();
-
+        int numActiveSSVEPChan = 0;
         for(int i = 0; i < nchan; i++){
-            JSONObject saveChannelActivity = new JSONObject();
-            saveChannelActivity.setInt("Channel_Number", (i+1));
-            boolean activeState = w_ssvep.cp5_ssvep.get(CheckBox.class, "checkList").getState(i);
-            saveChannelActivity.setBoolean("Active", activeState);
-            saveActiveChannels.setJSONObject(i, saveChannelActivity);
+            boolean activeState = w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").getState(i);
+            if (activeState) {
+                saveActiveChannels.setInt(numActiveSSVEPChan, i + 1); //add 1 here so channel numbers are correct
+                numActiveSSVEPChan++;
+            }
         }
-
-        JSONArray saveFrequencies = new JSONArray();
-
-        for(int i = 0; i < nchan; i++){
-            JSONObject saveFrequencies = new JSONObject();
-            saveChannelActivity.setInt("SSVEP_Number", (i+1));
-            int frequency = w_ssvep.freqs[i];
-            saveChannelActivity.setBoolean("Frequency", frequency);
-            saveActiveChannels.setJSONObject(i, saveFrequencies);
+        saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChannels);
+        //Save data from the 1 to 4 ssvep frequency dropdowns inside the widget
+        JSONObject ssvepFrequencies = new JSONObject();
+        for(int i = 0; i < numSSVEPs; i++){
+            ssvepFrequencies.setInt("SSVEP_" + (i+1), w_ssvep.freqs[i]);
         }
-
-        saveChannelActivity.setInt("NumSSVEPs", ssvepDisplay);
-
+        saveSSVEPSettings.setJSONObject("SSVEP_frequencies", ssvepFrequencies);
 
         saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSSVEPSettings);
 
@@ -896,6 +898,23 @@ class SoftwareSettings {
             };
         //Print the EMG settings
         //printArray(loadedFocusSettings);
+
+        //Clear the list and array for holding SSVEP settings
+        loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
+        ssvepFreqsLoad = new int[4]; //clear the dropdown settings array
+        //get the ssvep settings
+        JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject("ssvep");
+        numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
+        JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
+        for (int i = 0; i < numSSVEPsLoad; i++) {
+            int f = loadSSVEPFreqs.getInt("SSVEP_" + (i+1));
+            ssvepFreqsLoad[i] = f;
+        }
+        JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");
+        for (int i = 0; i < loadSSVEPChan.size(); i++) {
+            loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
+        }
+        //println(loadSSVEPActiveChans);
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
@@ -1168,6 +1187,37 @@ class SoftwareSettings {
 
         StrokeKeyWhenFocused(focusKeyLoad);
             w_focus.cp5_widget.getController("StrokeKeyWhenFocused").getCaptionLabel().setText(focusKeyArray[focusKeyLoad]);
+
+        ////////////////////////////Apply SSVEP settings
+        //Apply number ssveps dropdown
+        NumberSSVEP(numSSVEPsLoad - 1); //subtract 1 here because dropdowns count from 0
+            w_ssvep.cp5_widget.getController("NumberSSVEP").getCaptionLabel().setText(String.valueOf(numSSVEPsLoad));
+        //Apply ssvep frequency dropdowns
+        for (int i = 0; i < numSSVEPsLoad; i++) {
+            if (ssvepFreqsLoad[i] > 1) {
+                w_ssvep.cp5_ssvep.getController("Frequency "+(i+1)).getCaptionLabel().setText(ssvepFreqsLoad[i]+" Hz");
+                w_ssvep.cp5_ssvep.get(ScrollableList.class, "Frequency "+(i+1)).setValue(ssvepFreqsLoad[i] - 7);
+                w_ssvep.freqs[i] = ssvepFreqsLoad[i];
+            } else { // -1 - none selected
+                w_ssvep.cp5_ssvep.getController("Frequency "+(i+1)).getCaptionLabel().setText("Frequency "+(i+1));
+            }
+        }
+        //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
+        if (loadSSVEPActiveChans.size() > 0) {
+            int activeChanCounter = 0;
+            for (int i = 0; i < nchan; i++) {
+                //subtract 1 because cp5 starts count from 0
+                if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
+                    w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").activate(i);
+                    ++activeChanCounter;
+                } else {
+                    w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivate(i);
+                }
+            }
+        } else {
+            w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivateAll();
+        }
+        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 
         ///////////Apply Networking Settings
         //Update protocol with loaded value
