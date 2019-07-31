@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, and Focus
+//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, and SSVEP
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
