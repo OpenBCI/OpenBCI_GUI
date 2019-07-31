@@ -116,6 +116,7 @@ class W_Networking extends Widget {
         settings.nwDataType2 = 0;
         settings.nwDataType3 = 0;
         settings.nwDataType4 = 0;
+        settings.nwSerialPort = "None";
         settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
 
         dataTypes = Arrays.asList(settings.nwDataTypesArray); //Add any new widgets capable of streaming here
@@ -729,6 +730,10 @@ class W_Networking extends Widget {
         startButton.setString("Stop");
     }
 
+    boolean getNetworkActive() {
+        return networkActive;
+    }
+
     /* Call to shutdown some UI stuff. Called from W_manager, maybe do this differently.. */
     void shutDown() {
         hideElements();
@@ -849,8 +854,8 @@ class W_Networking extends Widget {
         } else if (protocolMode.equals("Serial")){
             // %%%%%
             if (!dt1.equals("None")){
-                println(comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue())));
                 name = comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
+                println("ComPort: " + name);
                 // name = cp5_networking_portName.get(ScrollableList.class, "port_name").getItem((int)cp5_networking_portName.get(ScrollableList.class, "port_name").getValue());
                 println("Baudrate: " + Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
                 baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
@@ -1770,7 +1775,7 @@ class Stream extends Thread {
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println("SerialMessage: Focus Error");
-                    //println(e.getMessage());
+                    println(e.getMessage());
                 }
             }
         }
@@ -1828,7 +1833,7 @@ class Stream extends Thread {
                     serialMessage += Signal + ",";
                     serialMessage += IBI;
                     try {
-                        println(serialMessage);
+                        //println(serialMessage);
                         this.serial_networking.write(serialMessage);
                     } catch (Exception e){
                         println(e.getMessage());
@@ -1870,7 +1875,7 @@ class Stream extends Thread {
     }
 
     void openNetwork() {
-        println(getAttributes());
+        println("Networking: " + getAttributes());
         if (this.protocol.equals("OSC")){
             //Possibly enter a nice custom exception here
             //try {
@@ -1953,7 +1958,7 @@ void Protocol(int protocolIndex){
     } else if (protocolIndex==0){
         w_networking.protocolMode = "Serial";
     }
-    println("Networking: " + w_networking.protocolMode + " selected from Protocol Menu");
+    println("Networking: Protocol mode set to " + w_networking.protocolMode);
     w_networking.screenResized();
     w_networking.showCP5();
     closeAllDropdowns();

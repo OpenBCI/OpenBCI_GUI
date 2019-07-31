@@ -465,7 +465,7 @@ public class FocusSlider extends BasicSlider {
             float newVal = map(mouseY, yBot, yTop, 0, 1);
             val = constrain(newVal, valMin, valMax);
             y = map(val, 0, 1, yBot, yTop);
-            println(val);
+            println("Focus: " + val);
         }
     }
 
@@ -501,7 +501,7 @@ public class FocusSlider_Static extends BasicSlider {
         if (isPressed) {
             float diff = map(mouseY, yBot, yTop, -0.07, 0);
             val = constrain(val + diff, valMin, valMax);
-            println(val);
+            println("Focus: " + val);
         }
     }
 
