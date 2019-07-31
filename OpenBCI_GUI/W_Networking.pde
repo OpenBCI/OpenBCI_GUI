@@ -101,6 +101,8 @@ class W_Networking extends Widget {
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
+    List<String> cp5TextfieldData;
+
     W_Networking(PApplet _parent){
         super(_parent);
         // ourApplet = _parent;
@@ -135,6 +137,31 @@ class W_Networking extends Widget {
         cp5_networking_portName.setAutoDraw(false);
         cp5_networking_baudRate.setAutoDraw(false);
 
+
+    }
+
+    void fetchCP5Data () {
+        HashMap<String, Object> cp5Map = new HashMap<String, Object>();
+        for (int i = 0; i < dropdownNames.length; i++) {
+            //datatypes
+            cp5Map.put(dropdownNames[i], cp5_networking_dropdowns.get(ScrollableList.class, dropdownNames[i]).getValue());
+            //filter radio buttons
+            String filterName = "filter" + (i+1);
+            cp5Map.put(filterName, cp5_networking.get(RadioButton.class, filterName).getValue());
+        }
+        //osc textfields
+        copyCP5TextToMap(oscTextFieldNames, cp5Map);
+        //udp textfields
+        copyCP5TextToMap(udpTextFieldNames, cp5Map);
+        //lsl textfields
+        copyCP5TextToMap(lslTextFieldNames, cp5Map);
+        println(cp5Map);
+    }
+
+    void copyCP5TextToMap(String[] keys, HashMap m) {
+        for (int i = 0; i < keys.length; i++) {
+            m.put(keys[i], cp5_networking.get(Textfield.class, keys[i]).getText());
+        }
     }
 
     /* ----- USER INTERFACE ----- */
@@ -212,6 +239,9 @@ class W_Networking extends Widget {
                 }
             }
         }
+
+        //copy the initial cp5 data into lists for use by SoftwareSettings.pde
+        fetchCP5Data();
     } //end update()
 
     void draw() {
