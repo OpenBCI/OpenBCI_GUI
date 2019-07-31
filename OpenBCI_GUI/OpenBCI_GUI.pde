@@ -526,17 +526,28 @@ private void prepareExitHandler () {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         public void run () {
             System.out.println("SHUTDOWN HOOK");
+            //If user starts system and quits the app,
+            //save user settings for current mode!
+            try {
+                if (systemMode == SYSTEMMODE_POSTINIT) {
+                    settings.save(settings.getPath("User", eegDataSource, nchan));
+                }
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            //Close network streams
+            if (w_networking != null && w_networking.getNetworkActive()) {
+                w_networking.stopNetwork();
+                println("openBCI_GUI: shutDown: Network streams stopped");
+            }
+            //Shutdown the hub
             try {
                 if (hubStop()) {
                     System.out.println("SHUTDOWN HUB");
                 } else {
                     System.out.println("FAILED TO SHUTDOWN HUB");
                 }
-                //If user starts system and quits the app,
-                //save user settings for current mode!
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    settings.save(settings.getPath("User", eegDataSource, nchan));
-                }
+
             } catch (Exception ex) {
                 ex.printStackTrace(); // not much else to do at this point
             }
@@ -967,7 +978,6 @@ void stopButtonWasPressed() {
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
@@ -986,9 +996,7 @@ void stopButtonWasPressed() {
         nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
-
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
@@ -1007,6 +1015,11 @@ void haltSystem() {
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         if (initSystemButton.but_txt == "STOP SESSION") {
             initSystemButton.but_txt = "START SESSION";
+        }
+
+        if (w_networking != null && w_networking.getNetworkActive()) {
+            w_networking.stopNetwork();
+            println("openBCI_GUI: haltSystem: Network streams stopped");
         }
 
         stopRunning();  //stop data transfer

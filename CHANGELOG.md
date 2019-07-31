@@ -1,3 +1,16 @@
+# v4.1.4
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 0
+
+### Improvements
+* Update/restructure settings for TimeSeries and Networking
+
+###  Bug fixes
+* Close network streams when session is ended or app is closed
+* Networking settings not being saved/loaded properly
+* Update Ganglion Impedance button text when successfully stopped
+
 # v4.1.3
 Use OpenBCIHub v2.0.9 please.
 
