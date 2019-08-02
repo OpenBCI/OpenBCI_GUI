@@ -56,6 +56,8 @@ class W_Networking extends Widget {
     Boolean serial_visible;
     List<String> dataTypes;
     Button startButton;
+    Boolean cp5ElementsAreActive = false;
+    Boolean previousCP5State = false;
 
     /* Networking */
     Boolean networkActive;
@@ -69,7 +71,7 @@ class W_Networking extends Widget {
     List<String> baudRates;
     List<String> comPorts;
     String defaultBaud;
-    String[] dropdownNames = {"dataType1","dataType2","dataType3","dataType4"};
+    String[] datatypeNames = {"dataType1","dataType2","dataType3","dataType4"};
     String[] oscTextFieldNames = {
         "OSC_ip1","OSC_port1","OSC_address1",
         "OSC_ip2","OSC_port2","OSC_address2",
@@ -140,10 +142,11 @@ class W_Networking extends Widget {
 
     }
 
-    void fetchCP5Data () {
-        for (int i = 0; i < dropdownNames.length; i++) {
+    //Used to update the Hashmap
+    public void fetchCP5Data () {
+        for (int i = 0; i < datatypeNames.length; i++) {
             //datatypes
-            cp5Map.put(dropdownNames[i], cp5_networking_dropdowns.get(ScrollableList.class, dropdownNames[i]).getValue());
+            cp5Map.put(datatypeNames[i], cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).getValue());
             //filter radio buttons
             String filterName = "filter" + (i+1);
             cp5Map.put(filterName, cp5_networking.get(RadioButton.class, filterName).getValue());
@@ -157,10 +160,14 @@ class W_Networking extends Widget {
         println(cp5Map);
     }
 
-    void copyCP5TextToMap(String[] keys, HashMap m) {
+    private void copyCP5TextToMap(String[] keys, HashMap m) {
         for (int i = 0; i < keys.length; i++) {
             m.put(keys[i], cp5_networking.get(Textfield.class, keys[i]).getText());
         }
+    }
+
+    public Map getCP5Map() {
+        return cp5Map;
     }
 
     /* ----- USER INTERFACE ----- */
@@ -179,69 +186,42 @@ class W_Networking extends Widget {
             }
         }
 
-        //Check if a change has occured in TopNav
-        if ((topNav.configSelector.isVisible != configIsVisible) || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
-            //lock/unlock the controllers within networking widget when using TopNav Objects
-            if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").lock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").lock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").lock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").lock();
-                cp5_networking_portName.getController("port_name").lock();
-                lockTextFields(oscTextFieldNames, true);
-                lockTextFields(udpTextFieldNames, true);
-                lockTextFields(lslTextFieldNames, true);
-                //println("##LOCKED NETWORKING CP5 CONTROLLERS##");
-            } else {
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").unlock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").unlock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").unlock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").unlock();
-                cp5_networking_portName.getController("port_name").unlock();
-                lockTextFields(oscTextFieldNames, false);
-                lockTextFields(udpTextFieldNames, false);
-                lockTextFields(lslTextFieldNames, false);
-            }
-            configIsVisible = topNav.configSelector.isVisible;
-            layoutIsVisible = topNav.layoutSelector.isVisible;
-        }
+        checkTopNovEvents();
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
         } else {
-            for (int i = 0; i < dropdownNames.length; i++) {
-                openCloseDropdowns(dropdownNames[i]);
-            }
-            if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
-                if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
-                }
-            }
-            if (!cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
-                if (cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").open();
-                }
-            }
-
-            if (cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()) {
-                if (!cp5_networking_portName.getController("port_name").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_portName.get(ScrollableList.class, "port_name").close();
-                }
-            }
-            if (!cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()) {
-                if (cp5_networking_portName.getController("port_name").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_portName.get(ScrollableList.class, "port_name").open();
-                }
-            }
+            openCloseDropdowns();
         }
 
-        //copy the initial cp5 data into lists for use by SoftwareSettings.pde
-        //fetchCP5Data();
+        if (protocolMode.equals("OSC")) {
+            cp5ElementsAreActive = textfieldsAreActive(oscTextFieldNames);
+        } else if (protocolMode.equals("UDP")) {
+            cp5ElementsAreActive = textfieldsAreActive(udpTextFieldNames);
+        } else if (protocolMode.equals("LSL")) {
+            cp5ElementsAreActive = textfieldsAreActive(lslTextFieldNames);
+        }
+
+        if (cp5ElementsAreActive != previousCP5State) {
+            if (!cp5ElementsAreActive) {
+                println("*******Cp5 textfield elements state change from 1 to 0");
+                fetchCP5Data();
+            }
+            previousCP5State = cp5ElementsAreActive;
+        }
+
+
     } //end update()
+
+    Boolean textfieldsAreActive(String[] names) {
+        boolean isActive = false;
+        for (String name : names) {
+            if (cp5_networking.get(Textfield.class, name).isFocus()) {
+                isActive = true;
+            }
+        }
+        return isActive;
+    }
 
     void draw() {
         super.draw();
@@ -255,8 +235,8 @@ class W_Networking extends Widget {
         pushStyle();
         fill(255);
         if (!protocolMode.equals("Serial")) {
-            for (int i = 0; i < dropdownNames.length; i++) {
-                rect(cp5_networking_dropdowns.getController(dropdownNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(dropdownNames[i]).getPosition()[1] - 1, itemWidth + 2, cp5_networking_dropdowns.getController(dropdownNames[i]).getHeight()+2);
+            for (int i = 0; i < datatypeNames.length; i++) {
+                rect(cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[1] - 1, itemWidth + 2, cp5_networking_dropdowns.getController(datatypeNames[i]).getHeight()+2);
             }
         } else {
             rect(cp5_networking_portName.getController("port_name").getPosition()[0] - 1, cp5_networking_portName.getController("port_name").getPosition()[1] - 1, cp5_networking_portName.getController("port_name").getWidth() + 2, cp5_networking_portName.getController("port_name").getHeight()+2);
@@ -344,8 +324,8 @@ class W_Networking extends Widget {
         createRadioButtons("filter3");
         createRadioButtons("filter4");
 
-        for (int i = 0; i < dropdownNames.length; i++) {
-            createDropdown(dropdownNames[i], dataTypes);
+        for (int i = 0; i < datatypeNames.length; i++) {
+            createDropdown(datatypeNames[i], dataTypes);
         }
 
         // Start Button
@@ -411,14 +391,14 @@ class W_Networking extends Widget {
         }
     }
 
-    void setTextFieldVisible(String[] textFieldNames, Boolean isVisible) {
+    void setTextFieldVisible(String[] textFieldNames, boolean isVisible) {
         for (int i = 0; i < textFieldNames.length; i++) {
             cp5_networking.get(Textfield.class, textFieldNames[i]).setVisible(isVisible);
         }
     }
 
     //Lock text fields by setting _lock = true, unlock using false
-    void lockTextFields(String[] textFieldNames, Boolean _lock) {
+    void lockTextFields(String[] textFieldNames, boolean _lock) {
         for (int i = 0; i < textFieldNames.length; i++) {
             if (_lock) {
                 cp5_networking.get(Textfield.class, textFieldNames[i]).lock();
@@ -615,8 +595,8 @@ class W_Networking extends Widget {
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
-        for (String dropdownName : dropdownNames) {
-            cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).setWidth(itemWidth);
+        for (String datatypeName : datatypeNames) {
+            cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).setWidth(itemWidth);
         }
 
         if (protocolMode.equals("OSC")) {
@@ -950,21 +930,81 @@ class W_Networking extends Widget {
         w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").close();
         w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
         w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").close();
+        //since this method is called when items are selected, go ahead and save settings to HashMap via fetchCP5Data
+        fetchCP5Data();
     }
 
-    void openCloseDropdowns(String dropdownName) {
-        if (cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).isOpen()) {
-            if (!cp5_networking_dropdowns.getController(dropdownName).isMouseOver()) {
-                // println("2");
-                cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).close();
+    void openCloseDropdowns() {
+        //datatype dropdowns
+        for (int i = 0; i < datatypeNames.length; i++) {
+            if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).isOpen()) {
+                if (!cp5_networking_dropdowns.getController(datatypeNames[i]).isMouseOver()) {
+                    cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).close();
+                }
+            }
+            //If using a TopNav object, objects become locked and won't open
+            if (!cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).isOpen()) {
+                if (cp5_networking_dropdowns.getController(datatypeNames[i]).isMouseOver()) {
+                    cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).open();
+                }
             }
         }
-        //If using a TopNav object, objects become locked and won't open
-        if (!cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).isOpen()) {
-            if (cp5_networking_dropdowns.getController(dropdownName).isMouseOver()) {
-                //println("++++Opening dropdown " + dropdownName);
-                cp5_networking_dropdowns.get(ScrollableList.class, dropdownName).open();
+        if (protocolMode.equals("Serial")) {
+            //baud rate
+            if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
+                if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
+                    // println("2");
+                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
+                }
             }
+            if (!cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
+                if (cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
+                    // println("2");
+                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").open();
+                }
+            }
+            //port name
+            if (cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()) {
+                if (!cp5_networking_portName.getController("port_name").isMouseOver()) {
+                    // println("2");
+                    cp5_networking_portName.get(ScrollableList.class, "port_name").close();
+                }
+            }
+            if (!cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()) {
+                if (cp5_networking_portName.getController("port_name").isMouseOver()) {
+                    // println("2");
+                    cp5_networking_portName.get(ScrollableList.class, "port_name").open();
+                }
+            }
+        }
+    }
+
+    void checkTopNovEvents() {
+        //Check if a change has occured in TopNav
+        if ((topNav.configSelector.isVisible != configIsVisible) || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
+            //lock/unlock the controllers within networking widget when using TopNav Objects
+            if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").lock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").lock();
+                cp5_networking_portName.getController("port_name").lock();
+                lockTextFields(oscTextFieldNames, true);
+                lockTextFields(udpTextFieldNames, true);
+                lockTextFields(lslTextFieldNames, true);
+                //println("##LOCKED NETWORKING CP5 CONTROLLERS##");
+            } else {
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").unlock();
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").unlock();
+                cp5_networking_portName.getController("port_name").unlock();
+                lockTextFields(oscTextFieldNames, false);
+                lockTextFields(udpTextFieldNames, false);
+                lockTextFields(lslTextFieldNames, false);
+            }
+            configIsVisible = topNav.configSelector.isVisible;
+            layoutIsVisible = topNav.layoutSelector.isVisible;
         }
     }
 };
@@ -2009,5 +2049,17 @@ void port_name(int n) {
     w_networking.closeAllDropdowns();
 }
 void baud_rate(int n) {
+    w_networking.closeAllDropdowns();
+}
+void filter1(int n) {
+    w_networking.closeAllDropdowns();
+}
+void filter2(int n) {
+    w_networking.closeAllDropdowns();
+}
+void filter3(int n) {
+    w_networking.closeAllDropdowns();
+}
+void filter4(int n) {
     w_networking.closeAllDropdowns();
 }
