@@ -24,6 +24,7 @@ import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's
 import processing.core.PApplet;
 import java.util.*; //for Array.copyOfRange()
 import java.util.Map.Entry;
+import java.util.Map;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 import processing.net.*; // For TCP networking
