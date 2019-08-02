@@ -371,7 +371,7 @@ class SoftwareSettings {
             this.load(settingsFileToLoad);
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
             File f = new File(sketchPath()+System.getProperty("file.separator")+settingsFileToLoad);
@@ -870,7 +870,7 @@ class SoftwareSettings {
         for (int i = 0; i < loadSSVEPChan.size(); i++) {
             loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
         }
-        //println(loadSSVEPActiveChans);
+        println("LOAD SSVEP ACTIVE CHANS " + loadSSVEPActiveChans);
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
@@ -1156,15 +1156,22 @@ class SoftwareSettings {
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
         //deactivate all channels and then activate the active channels
         w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivateAll();
-        if (loadSSVEPActiveChans.size() > 0) {
-            int activeChanCounter = 0;
-            for (int i = 0; i < nchan; i++) {
-                //subtract 1 because cp5 starts count from 0
-                if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
-                    w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").activate(i);
-                    ++activeChanCounter;
+        try {
+            if (loadSSVEPActiveChans.size() > 0) {
+                int activeChanCounter = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounter  < loadSSVEPActiveChans.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
+                                w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").activate(i);
+                                activeChanCounter++;
+                        }
+                    }
                 }
             }
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+            println("Settings: Exception caught applying ssvep settings");
         }
         verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 
