@@ -70,6 +70,7 @@ class W_Networking extends Widget {
 
     List<String> baudRates;
     List<String> comPorts;
+    private int comPortToSave;
     String defaultBaud;
     String[] datatypeNames = {"dataType1","dataType2","dataType3","dataType4"};
     String[] oscTextFieldNames = {
@@ -131,6 +132,7 @@ class W_Networking extends Widget {
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
         verbosePrint("comPorts = " + comPorts);
+        comPortToSave = 0;
 
 
         initialize_UI();
@@ -143,13 +145,13 @@ class W_Networking extends Widget {
     }
 
     //Used to update the Hashmap
-    public void fetchCP5Data () {
+    public void fetchCP5Data() {
         for (int i = 0; i < datatypeNames.length; i++) {
             //datatypes
-            cp5Map.put(datatypeNames[i], cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).getValue());
+            cp5Map.put(datatypeNames[i], int(cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).getValue()));
             //filter radio buttons
             String filterName = "filter" + (i+1);
-            cp5Map.put(filterName, cp5_networking.get(RadioButton.class, filterName).getValue());
+            cp5Map.put(filterName, int(cp5_networking.get(RadioButton.class, filterName).getValue()));
         }
         //osc textfields
         copyCP5TextToMap(oscTextFieldNames, cp5Map);
@@ -157,7 +159,11 @@ class W_Networking extends Widget {
         copyCP5TextToMap(udpTextFieldNames, cp5Map);
         //lsl textfields
         copyCP5TextToMap(lslTextFieldNames, cp5Map);
-        println(cp5Map);
+        //Serial baud rate and port name
+        cp5Map.put("baud_rate", int(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()));
+        String s = cp5_networking_portName.get(ScrollableList.class, "port_name").getItem(comPortToSave).get("name").toString();
+        cp5Map.put("port_name", s);
+        //println(cp5Map);
     }
 
     private void copyCP5TextToMap(String[] keys, HashMap m) {
@@ -204,7 +210,7 @@ class W_Networking extends Widget {
 
         if (cp5ElementsAreActive != previousCP5State) {
             if (!cp5ElementsAreActive) {
-                println("*******Cp5 textfield elements state change from 1 to 0");
+                //Cp5 textfield elements state change from 1 to 0, so save cp5 data
                 fetchCP5Data();
             }
             previousCP5State = cp5ElementsAreActive;
@@ -1007,7 +1013,14 @@ class W_Networking extends Widget {
             layoutIsVisible = topNav.layoutSelector.isVisible;
         }
     }
-};
+
+    public void setComPortToSave(int n) {
+        comPortToSave = n;
+    }
+}; //End of w_networking class
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 class Stream extends Thread {
     String protocol;
@@ -2046,6 +2059,7 @@ void dataType4(int n) {
     w_networking.closeAllDropdowns();
 }
 void port_name(int n) {
+    w_networking.setComPortToSave(n);
     w_networking.closeAllDropdowns();
 }
 void baud_rate(int n) {
