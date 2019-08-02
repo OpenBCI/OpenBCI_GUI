@@ -1780,6 +1780,57 @@ class Stream extends Thread {
             }
         }
     }
+    //////////////////////////////////////Stream SSVEP data from W_SSVEP
+    void sendSSVEPData() {
+        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+        if (this.filter==0 || this.filter==1){
+            // OSC
+            if (this.protocol.equals("OSC")){
+                msg.clearArguments();
+                //ADD Focus Data
+                msg.add(w_ssvep.ssvepData);
+                try {
+                    this.osc.send(msg,this.netaddress);
+                } catch (Exception e){
+                    println(e.getMessage());
+                }
+            // UDP
+            } else if (this.protocol.equals("UDP")){
+                String outputter = "{\"type\":\"SSVEP\",\"data\":";
+                for (int i = 0; i < w_ssvep.ssvepData.length; i++) {
+                    outputter += str(w_ssvep.ssvepData[i]);
+                    outputter += ",";
+                }
+                outputter += "]}\r\n";
+                try {
+                    this.udp.send(outputter, this.ip, this.port);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            // LSL
+            } else if (this.protocol.equals("LSL")){
+                // convert boolean to float and only sends the first data
+                dataToSend = w_ssvep.ssvepData;
+                // Add timestamp to LSL Stream
+                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+            // Serial
+            } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+                serialMessage = ""; //clear message
+                for (int i = 0; i < w_ssvep.ssvepData.length; i++) {
+                    serialMessage += str(w_ssvep.ssvepData[i]);
+                    serialMessage += ",";
+                }
+                serialMessage += "\n";
+                try {
+                    //println("SerialMessage: " + serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e){
+                    println("SerialMessage: Focus Error");
+                    println(e.getMessage());
+                }
+            }
+        }
+    }
     ////////////////////////////////////// Stream pulse data from W_PulseSensor
     void sendPulseData() {
         if (this.filter==0 || this.filter==1){
