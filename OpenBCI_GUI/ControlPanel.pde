@@ -1336,7 +1336,7 @@ class ControlPanel {
         }
 
 
-        
+
         if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
             String _board = (eegDataSource == DATASOURCE_CYTON) ? "Cyton" : "Ganglion";
             String _textField = (eegDataSource == DATASOURCE_CYTON) ? "fileNameCyton" : "fileNameGanglion";

@@ -518,86 +518,40 @@ class SoftwareSettings {
         JSONObject saveNetworkingSettings = new JSONObject();
         //Save Protocol
         saveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
-
         switch(nwProtocolSave) {
             case 3:
-                //Save Data Types for OSC
-                saveNetworkingSettings.setInt("OSC_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                saveNetworkingSettings.setInt("OSC_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-                saveNetworkingSettings.setInt("OSC_DataType3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-                saveNetworkingSettings.setInt("OSC_DataType4", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));
-                //Save IP addresses for OSC
-                saveNetworkingSettings.setString("OSC_ip1", w_networking.cp5_networking.get(Textfield.class, "osc_ip1").getText());
-                saveNetworkingSettings.setString("OSC_ip2", w_networking.cp5_networking.get(Textfield.class, "osc_ip2").getText());
-                saveNetworkingSettings.setString("OSC_ip3", w_networking.cp5_networking.get(Textfield.class, "osc_ip3").getText());
-                saveNetworkingSettings.setString("OSC_ip4", w_networking.cp5_networking.get(Textfield.class, "osc_ip4").getText());
-                //Save Ports for OSC
-                saveNetworkingSettings.setString("OSC_port1", w_networking.cp5_networking.get(Textfield.class, "osc_port1").getText());
-                saveNetworkingSettings.setString("OSC_port2", w_networking.cp5_networking.get(Textfield.class, "osc_port2").getText());
-                saveNetworkingSettings.setString("OSC_port3", w_networking.cp5_networking.get(Textfield.class, "osc_port3").getText());
-                saveNetworkingSettings.setString("OSC_port4", w_networking.cp5_networking.get(Textfield.class, "osc_port4").getText());
-                //Save addresses for OSC
-                saveNetworkingSettings.setString("OSC_address1", w_networking.cp5_networking.get(Textfield.class, "osc_address1").getText());
-                saveNetworkingSettings.setString("OSC_address2", w_networking.cp5_networking.get(Textfield.class, "osc_address2").getText());
-                saveNetworkingSettings.setString("OSC_address3", w_networking.cp5_networking.get(Textfield.class, "osc_address3").getText());
-                saveNetworkingSettings.setString("OSC_address4", w_networking.cp5_networking.get(Textfield.class, "osc_address4").getText());
-                //Save filters for OSC
-                saveNetworkingSettings.setInt("OSC_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                saveNetworkingSettings.setInt("OSC_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
-                saveNetworkingSettings.setInt("OSC_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
-                saveNetworkingSettings.setInt("OSC_filter4", int(w_networking.cp5_networking.get(RadioButton.class, "filter4").getValue()));
+                for (int i = 1; i <= 4; i++) {
+                    saveNetworkingSettings.setInt("OSC_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setString("OSC_ip"+i, (String) w_networking.getCP5Map().get("OSC_ip"+i));
+                    saveNetworkingSettings.setString("OSC_port"+i, (String) w_networking.getCP5Map().get("OSC_port"+i));
+                    saveNetworkingSettings.setString("OSC_address"+i, (String) w_networking.getCP5Map().get("OSC_address"+i));
+                    saveNetworkingSettings.setInt("OSC_filter"+i, (Integer) w_networking.getCP5Map().get("filter"+i));
+                }
                 break;
             case 2:
-                //Save UDP data types
-                saveNetworkingSettings.setInt("UDP_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                saveNetworkingSettings.setInt("UDP_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-                saveNetworkingSettings.setInt("UDP_DataType3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-                //Save UDP IPs
-                saveNetworkingSettings.setString("UDP_ip1", w_networking.cp5_networking.get(Textfield.class, "udp_ip1").getText());
-                saveNetworkingSettings.setString("UDP_ip2", w_networking.cp5_networking.get(Textfield.class, "udp_ip2").getText());
-                saveNetworkingSettings.setString("UDP_ip3", w_networking.cp5_networking.get(Textfield.class, "udp_ip3").getText());
-                //Save UDP Ports
-                saveNetworkingSettings.setString("UDP_port1", w_networking.cp5_networking.get(Textfield.class, "udp_port1").getText());
-                saveNetworkingSettings.setString("UDP_port2", w_networking.cp5_networking.get(Textfield.class, "udp_port2").getText());
-                saveNetworkingSettings.setString("UDP_port3", w_networking.cp5_networking.get(Textfield.class, "udp_port3").getText());
-                //Save UDP Filters
-                saveNetworkingSettings.setInt("UDP_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                saveNetworkingSettings.setInt("UDP_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
-                saveNetworkingSettings.setInt("UDP_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
+                for (int i = 1; i <= 3; i++) {
+                    saveNetworkingSettings.setInt("UDP_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setString("UDP_ip"+i, (String) w_networking.getCP5Map().get("UDP_ip"+i));
+                    saveNetworkingSettings.setString("UDP_port"+i, (String) w_networking.getCP5Map().get("UDP_port"+i));
+                    saveNetworkingSettings.setInt("UDP_filter"+i, (Integer) w_networking.getCP5Map().get("filter"+i));
+                }
                 break;
             case 1:
-                //Save LSL data types
-                saveNetworkingSettings.setInt("LSL_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                saveNetworkingSettings.setInt("LSL_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-                saveNetworkingSettings.setInt("LSL_DataType3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-                //Save LSL stream names
-                saveNetworkingSettings.setString("LSL_name1", w_networking.cp5_networking.get(Textfield.class, "lsl_name1").getText());
-                saveNetworkingSettings.setString("LSL_name2", w_networking.cp5_networking.get(Textfield.class, "lsl_name2").getText());
-                saveNetworkingSettings.setString("LSL_name3", w_networking.cp5_networking.get(Textfield.class, "lsl_name3").getText());
-                //Save LSL type names
-                saveNetworkingSettings.setString("LSL_type1", w_networking.cp5_networking.get(Textfield.class, "lsl_type1").getText());
-                saveNetworkingSettings.setString("LSL_type2", w_networking.cp5_networking.get(Textfield.class, "lsl_type2").getText());
-                saveNetworkingSettings.setString("LSL_type3", w_networking.cp5_networking.get(Textfield.class, "lsl_type3").getText());
-                //Save LSL stream # Chan
-                saveNetworkingSettings.setString("LSL_numchan1", w_networking.cp5_networking.get(Textfield.class, "lsl_numchan1").getText());
-                saveNetworkingSettings.setString("LSL_numchan2", w_networking.cp5_networking.get(Textfield.class, "lsl_numchan2").getText());
-                saveNetworkingSettings.setString("LSL_numchan3", w_networking.cp5_networking.get(Textfield.class, "lsl_numchan3").getText());
-                //Save LSL filters
-                saveNetworkingSettings.setInt("LSL_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                saveNetworkingSettings.setInt("LSL_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
-                saveNetworkingSettings.setInt("LSL_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
+                for (int i = 1; i <= 3; i++) {
+                    saveNetworkingSettings.setInt("LSL_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setString("LSL_name"+i, (String) w_networking.getCP5Map().get("LSL_name"+i));
+                    saveNetworkingSettings.setString("LSL_type"+i, (String) w_networking.getCP5Map().get("LSL_type"+i));
+                    saveNetworkingSettings.setString("LSL_numchan"+i, (String) w_networking.getCP5Map().get("LSL_numchan"+i));
+                    saveNetworkingSettings.setInt("LSL_filter"+i, (Integer) w_networking.getCP5Map().get("filter"+i));
+                }
                 break;
             case 0:
-                //Save Serial data type
-                saveNetworkingSettings.setInt("Serial_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                //Save Serial baud rate. Not saving serial port. cp5_networking_baudRate.
-                saveNetworkingSettings.setInt("Serial_baudrate", int(w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()));
-                //Save Serial filter
-                saveNetworkingSettings.setInt("Serial_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                //Save port name
-                saveNetworkingSettings.setString("Serial_portName", w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getLabel());
+                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[0]));
+                saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
+                saveNetworkingSettings.setInt("Serial_filter1", (Integer) w_networking.getCP5Map().get("filter1"));
+                saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
                 break;
-        }//end of switch
+        }//end of networking proctocol switch
         //Set Networking Settings JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyNetworking, saveNetworkingSettings);
 
