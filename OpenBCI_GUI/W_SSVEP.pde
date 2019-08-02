@@ -545,7 +545,6 @@ class W_SSVEP extends Widget {
 } //end of ssvep class
 
 void NumberSSVEP(int n) {
-    verbosePrint("NumberSSVEP: Item " + n + " selected from dropdown");
     ssvepDisplay = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }

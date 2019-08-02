@@ -546,7 +546,7 @@ class SoftwareSettings {
                 }
                 break;
             case 0:
-                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[0]));
+                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get("dataType1"));
                 saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
                 saveNetworkingSettings.setInt("Serial_filter1", (Integer) w_networking.getCP5Map().get("filter1"));
                 saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
@@ -600,13 +600,10 @@ class SoftwareSettings {
         saveSSVEPSettings.setInt("NumSSVEPs", numSSVEPs);
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChannels = new JSONArray();
-        int numActiveSSVEPChan = 0;
-        for(int i = 0; i < nchan; i++){
-            boolean activeState = w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").getState(i);
-            if (activeState) {
-                saveActiveChannels.setInt(numActiveSSVEPChan, i + 1); //add 1 here so channel numbers are correct
-                numActiveSSVEPChan++;
-            }
+        int numActiveSSVEPChan = w_ssvep.numActiveChannels;
+        for(int i = 0; i < numActiveSSVEPChan; i++){
+            int activeChan = w_ssvep.activeChannels.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChannels.setInt(i, activeChan);
         }
         saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChannels);
         //Save data from the 1 to 4 ssvep frequency dropdowns inside the widget
@@ -1157,6 +1154,8 @@ class SoftwareSettings {
             }
         }
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
+        //deactivate all channels and then activate the active channels
+        w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivateAll();
         if (loadSSVEPActiveChans.size() > 0) {
             int activeChanCounter = 0;
             for (int i = 0; i < nchan; i++) {
@@ -1164,12 +1163,8 @@ class SoftwareSettings {
                 if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
                     w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").activate(i);
                     ++activeChanCounter;
-                } else {
-                    w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivate(i);
                 }
             }
-        } else {
-            w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivateAll();
         }
         verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 

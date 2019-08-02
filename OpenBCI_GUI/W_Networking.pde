@@ -141,7 +141,7 @@ class W_Networking extends Widget {
         cp5_networking_portName.setAutoDraw(false);
         cp5_networking_baudRate.setAutoDraw(false);
 
-
+        fetchCP5Data();
     }
 
     //Used to update the Hashmap
