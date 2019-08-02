@@ -278,9 +278,9 @@ class W_SSVEP extends Widget {
             }
         } else if (ssvepDisplay == 2) {
             if (heightLarger) {
-              drawSSVEP("blue", freqs[0], 0.5, 0.125, s/4);
-              drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
-              drawSSVEP("green", freqs[2], 0.5, 0.875, s/4);
+              drawSSVEP("blue", freqs[0], 0.5, 0.135, s/4);
+              drawSSVEP("red", freqs[1], 0.5, 0.51, s/4);
+              drawSSVEP("green", freqs[2], 0.5, 0.885, s/4);
             } else {
               drawSSVEP("blue", freqs[0], 0.125, 0.5, s/4);
               drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
