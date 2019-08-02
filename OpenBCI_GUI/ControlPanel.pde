@@ -277,6 +277,7 @@ public void controlEvent(ControlEvent theEvent) {
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
     }
+    /*
     if (systemMode >= SYSTEMMODE_POSTINIT) {
         for (String name: w_networking.oscTextFieldNames) {
             if(theEvent.isFrom(name)) {
@@ -286,6 +287,7 @@ public void controlEvent(ControlEvent theEvent) {
             }
         }
     }
+    */
 }
 
 //------------------------------------------------------------------------
