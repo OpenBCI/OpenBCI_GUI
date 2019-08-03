@@ -1155,7 +1155,7 @@ class SoftwareSettings {
         }
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
         //deactivate all channels and then activate the active channels
-        w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivateAll();
+        w_ssvep.cp5_ssvep.get(CheckBox.class, "channelListSSVEP").deactivateAll();
         try {
             if (loadSSVEPActiveChans.size() > 0) {
                 int activeChanCounter = 0;
@@ -1163,7 +1163,7 @@ class SoftwareSettings {
                     if (activeChanCounter  < loadSSVEPActiveChans.size()) {
                         //subtract 1 because cp5 starts count from 0
                         if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
-                                w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").activate(i);
+                                w_ssvep.cp5_ssvep.get(CheckBox.class, "channelListSSVEP").activate(i);
                                 activeChanCounter++;
                         }
                     }

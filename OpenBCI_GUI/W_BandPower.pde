@@ -79,7 +79,7 @@ class W_BandPower extends Widget {
 
         channelSelectHover = false;
         channelSelectPressed = false;
-        checkList = cp5_channelCheckboxes.addCheckBox("channelList")
+        checkList = cp5_channelCheckboxes.addCheckBox("channelListBP")
                               .setPosition(x + 5, y + offset)
                               .setSize(checkSize, checkSize)
                               .setItemsPerRow(numChecks)
@@ -94,7 +94,7 @@ class W_BandPower extends Widget {
 
         for (int i = 0; i < numChecks; i++) {
           int chNum = i+1;
-          cp5_channelCheckboxes.get(CheckBox.class, "channelList")
+          cp5_channelCheckboxes.get(CheckBox.class, "channelListBP")
                         .addItem(String.valueOf(chNum), chNum)
                         ;
 
@@ -199,7 +199,7 @@ class W_BandPower extends Widget {
         bp_plot.setOuterDim(w, h+navHeight);//update dimensions
 
         cp5_channelCheckboxes.setGraphics(pApplet, 0, 0);
-        cp5_channelCheckboxes.get(CheckBox.class, "channelList").setPosition(x + 2, y + offset);
+        cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").setPosition(x + 2, y + offset);
     }
 
     void mousePressed(){

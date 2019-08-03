@@ -88,7 +88,7 @@ class W_SSVEP extends Widget {
         channelSelectHover = false;
         channelSelectPressed = false;
 
-        checkList = cp5_ssvep.addCheckBox("channelList")
+        checkList = cp5_ssvep.addCheckBox("channelListSSVEP")
                               .setPosition(x + 5, y + offset)
                               .setSize(checkSize, checkSize)
                               .setItemsPerRow(nchan)
@@ -103,7 +103,7 @@ class W_SSVEP extends Widget {
 
         for (int i = 0; i < nchan; i++) {
             int chNum = i+1;
-            cp5_ssvep.get(CheckBox.class, "channelList")
+            cp5_ssvep.get(CheckBox.class, "channelListSSVEP")
                     .addItem(String.valueOf(chNum), chNum)
                     ;
             //set invisible after adding items, so make sure they won't stay invisible
@@ -336,7 +336,7 @@ class W_SSVEP extends Widget {
         }
 
         //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
-        cp5_ssvep.get(CheckBox.class, "channelList").setPosition(x + 5, y + offset);
+        cp5_ssvep.get(CheckBox.class, "channelListSSVEP").setPosition(x + 5, y + offset);
     }
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
