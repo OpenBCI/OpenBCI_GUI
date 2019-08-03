@@ -52,17 +52,19 @@ class W_SSVEP extends Widget {
     float[] ssvepData = new float[4];
     //data from checkboxes vars
     int numActiveChannels;
-    List<Integer> activeChannels = new ArrayList<Integer>();
+    List<Integer> activeChannels;
 
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
     W_SSVEP(PApplet _parent) {
+
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2", "3", "4"), 0);
         // showAbout = true;
         cp5_ssvep = new ControlP5(pApplet);
+        activeChannels = new ArrayList<Integer>();
 
         for (int i = 0; i < 9; i++) {
             dropdownOptions.add(String.valueOf(i+7) + " Hz");
