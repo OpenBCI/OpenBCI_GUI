@@ -264,31 +264,33 @@ class W_SSVEP extends Widget {
 
         //left side
         if (settings.numSSVEPs == 0) {  // 1 SSVEP
-            drawSSVEP("blue", freqs[0], 0.5, 0.5, s/4);
+            //(String colour, int freq, float wFactor, float hFactor, float hOffset, float size)
+            drawSSVEP("blue", freqs[0], 0.5, 0.5, 0.0, s/4);
         } else if (settings.numSSVEPs == 1) { // 2 SSVEPs
             if (heightLarger) {
-                drawSSVEP("blue", freqs[0], 0.5, 0.25, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.75, s/4);
+                drawSSVEP("blue", freqs[0], 0.5, 0.25, 0.0, s/4);
+                drawSSVEP("red", freqs[1], 0.5, 0.75, 0.0, s/4);
             } else {
-                drawSSVEP("blue", freqs[0], 0.25, 0.5, s/4);
-                drawSSVEP("red", freqs[1], 0.75, 0.5, s/4);
+                drawSSVEP("blue", freqs[0], 0.25, 0.5, 0.0, s/4);
+                drawSSVEP("red", freqs[1], 0.75, 0.5, 0.0, s/4);
             }
-        } else if (settings.numSSVEPs == 2) {
+        } else if (settings.numSSVEPs == 2) { // 3 SSVEPs
             if (heightLarger) {
-                drawSSVEP("blue", freqs[0], 0.5, 0.125, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
-                drawSSVEP("green", freqs[2], 0.5, 0.875, s/4);
+                //If ssveps are arranged vertically, Add 0.1 to heightFactor with height offset of 30
+                drawSSVEP("blue", freqs[0], 0.5, 0.1, 30.0, s/4);
+                drawSSVEP("red", freqs[1], 0.5, 1.0/3 + 0.1, 30.0, s/4);
+                drawSSVEP("green", freqs[2], 0.5, 2.0/3 + 0.1, 30.0, s/4);
             } else {
-                drawSSVEP("blue", freqs[0], 0.125, 0.5, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
-                drawSSVEP("green", freqs[2], 0.875, 0.5, s/4);
+                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0.0, s/4);
+                drawSSVEP("red", freqs[1], 0.5, 0.5, 0.0, s/4);
+                drawSSVEP("green", freqs[2], 0.875, 0.5, 0.0, s/4);
             }
-        } else if (settings.numSSVEPs == 3) {
+        } else if (settings.numSSVEPs == 3) { // 4 SSVEPs
             float sz = s/6;
-            drawSSVEP("blue", freqs[0], 0.25, 0.25, s/6);
-            drawSSVEP("red", freqs[1], 0.75, 0.25, s/6);
-            drawSSVEP("green", freqs[2], 0.25, 0.75, s/6);
-            drawSSVEP("yellow", freqs[3], 0.75, 0.75, s/6);
+            drawSSVEP("blue", freqs[0], 0.25, 0.25, 0.0, s/6);
+            drawSSVEP("red", freqs[1], 0.75, 0.25, 0.0, s/6);
+            drawSSVEP("green", freqs[2], 0.25, 0.75, 0.0, s/6);
+            drawSSVEP("yellow", freqs[3], 0.75, 0.75, 0.0, s/6);
         }
 
         //Draw all cp5 elements within the SSVEP widget
@@ -420,7 +422,7 @@ class W_SSVEP extends Widget {
        cp5_ssvep.get(ScrollableList.class, "Frequency 4").setVisible(false);
    }
 
-   void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float size){
+   void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float hOffset, float size) {
        boolean whiteBG = false;
        if (colour.equals("blue")){
            whiteBG = true;
@@ -448,7 +450,7 @@ class W_SSVEP extends Widget {
 
        if (freq == 0 || !ssvepOn[ind] || millis()%(2*(500/freq)) >= (500/freq)) {
            fill(r,g,b);
-           rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
+           rect(x + (w * wFactor) - (size/2), y + (h*hFactor) + hOffset - (size/2), size, size);
            pushStyle();
            noFill();
            if (whiteBG) {
@@ -456,15 +458,15 @@ class W_SSVEP extends Widget {
            } else {
                stroke(0);
            }
-           rect(x + (w * wFactor) - (size/4), y + (h*hFactor) - (size/4), size/2, size/2);
+           rect(x + (w * wFactor) - (size/4), y + (h*hFactor) + hOffset - (size/4), size/2, size/2);
            popStyle();
        } else {
            fill(0);
-           rect(x + (w * wFactor) - (size/2), y + (h*hFactor) - (size/2), size, size);
+           rect(x + (w * wFactor) - (size/2), y + (h*hFactor) + hOffset - (size/2), size, size);
            pushStyle();
            noFill();
            stroke(r,g,b);
-           rect(x + (w * wFactor) - (size/10), y + (h*hFactor) - (size/10), size/5, size/5);
+           rect(x + (w * wFactor) - (size/10), y + (h*hFactor) + hOffset - (size/10), size/5, size/5);
            popStyle();
        }
 
@@ -481,6 +483,7 @@ class W_SSVEP extends Widget {
        resetDropdowns();
 
        if (settings.numSSVEPs == 0) {
+           //(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset)
            setDropdown(1, 0.5, - s/8, 0, 30.0);
        } else if (settings.numSSVEPs == 1) {
            if (heightLarger) {
@@ -492,9 +495,9 @@ class W_SSVEP extends Widget {
            }
        } else if (settings.numSSVEPs == 2) {
            if (heightLarger) {
-               setDropdown(1, 0, 10.0, 0.0, 10.0);
-               setDropdown(2, 0, 10.0, 1.0/3, 0.0);
-               setDropdown(3, 0, 10.0, 2.0/3, 0.0);
+               setDropdown(1, 0, 10.0, 0.0, 30.0);
+               setDropdown(2, 0, 10.0, 1.0/3, 30.0);
+               setDropdown(3, 0, 10.0, 2.0/3, 30.0);
            } else {
                //Freq1 Dropdown
                setDropdown(1, 0.125, -s/8, 0, 30.0);
