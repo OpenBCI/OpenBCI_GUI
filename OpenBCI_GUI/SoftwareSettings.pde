@@ -99,7 +99,7 @@ class SoftwareSettings {
     //SSVEP Widget settings
     int[] freqsSave;
     boolean[] channelActivitySave;
-    int numSSVEP_Save;
+    int numSSVEPs;
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
@@ -155,7 +155,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse", "SSVEP"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -596,20 +596,20 @@ class SoftwareSettings {
         ///////////////////////////////////////////////Setup new JSON object to save SSVEP settings
         JSONObject saveSSVEPSettings = new JSONObject();
 
-        int numSSVEPs = ssvepDisplay + 1; //add 1 here, dropdown items start count from 0
-        saveSSVEPSettings.setInt("NumSSVEPs", numSSVEPs);
+        int num_ssveps = numSSVEPs + 1; //add 1 here, dropdown items start count from 0
+        saveSSVEPSettings.setInt("NumSSVEPs", num_ssveps);
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChannels = new JSONArray();
         int numActiveSSVEPChan = w_ssvep.numActiveChannels;
-        for(int i = 0; i < numActiveSSVEPChan; i++){
+        for (int i = 0; i < numActiveSSVEPChan; i++) {
             int activeChan = w_ssvep.activeChannels.get(i) + 1; //add 1 here so channel numbers are correct
             saveActiveChannels.setInt(i, activeChan);
         }
         saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChannels);
         //Save data from the 1 to 4 ssvep frequency dropdowns inside the widget
         JSONObject ssvepFrequencies = new JSONObject();
-        for(int i = 0; i < numSSVEPs; i++){
-            ssvepFrequencies.setInt("SSVEP_" + (i+1), w_ssvep.freqs[i]);
+        for (int i = 0; i < num_ssveps; i++) {
+            ssvepFrequencies.setInt("SSVEP_"+i, w_ssvep.freqs[i]);
         }
         saveSSVEPSettings.setJSONObject("SSVEP_frequencies", ssvepFrequencies);
 
@@ -863,7 +863,7 @@ class SoftwareSettings {
         numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
         JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
         for (int i = 0; i < numSSVEPsLoad; i++) {
-            int f = loadSSVEPFreqs.getInt("SSVEP_" + (i+1));
+            int f = loadSSVEPFreqs.getInt("SSVEP_" + i);
             ssvepFreqsLoad[i] = f;
         }
         JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");

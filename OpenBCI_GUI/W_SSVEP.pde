@@ -8,7 +8,6 @@
 //    Created by: Leanne Pichay, July 2019
 //
 ////////////////////////////////////////////////////
-int ssvepDisplay;
 
 class W_SSVEP extends Widget {
 
@@ -155,7 +154,7 @@ class W_SSVEP extends Widget {
             }
 
             //lock/unlock lower Freq3 dropdown when Freq1 dropdown is in use in 4 SSVEP use case
-            if (cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen() && ssvepDisplay == 3) {
+            if (cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen() && settings.numSSVEPs == 3) {
                 cp5_ssvep.getController("Frequency 1").bringToFront();
                 cp5_ssvep.get(ScrollableList.class, "Frequency 3").lock();
 
@@ -164,7 +163,7 @@ class W_SSVEP extends Widget {
             }
 
             //manage dropdowns in 3 SSVEP use case
-            if (heightLarger && ssvepDisplay == 2) {
+            if (heightLarger && settings.numSSVEPs == 2) {
                // lock freq2 if freq1 is in use
                if (cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen()){
                    cp5_ssvep.get(ScrollableList.class, "Frequency 2").bringToFront();
@@ -187,16 +186,16 @@ class W_SSVEP extends Widget {
 
         }
 
-        if (ssvepDisplay == 0) {  // 1 SSVEP
+        if (settings.numSSVEPs == 0) {  // 1 SSVEP
             freqs[0] = updateFreq(1);
-        } else if (ssvepDisplay == 1) {
+        } else if (settings.numSSVEPs == 1) {
             freqs[0] = updateFreq(1);
             freqs[1] = updateFreq(2);
-        } else if (ssvepDisplay == 2) {
+        } else if (settings.numSSVEPs == 2) {
             freqs[0] = updateFreq(1);
             freqs[1] = updateFreq(2);
             freqs[2] = updateFreq(3);
-        } else if (ssvepDisplay == 3) {
+        } else if (settings.numSSVEPs == 3) {
             freqs[0] = updateFreq(1);
             freqs[1] = updateFreq(2);
             freqs[2] = updateFreq(3);
@@ -225,7 +224,7 @@ class W_SSVEP extends Widget {
         numActiveChannels = count;
         if (isRunning) {
             ssvepData = processData();
-            println(ssvepData);
+            //println(ssvepData);
         }
     }
 
@@ -262,9 +261,9 @@ class W_SSVEP extends Widget {
         pushStyle();
 
         //left side
-        if (ssvepDisplay == 0) {  // 1 SSVEP
+        if (settings.numSSVEPs == 0) {  // 1 SSVEP
             drawSSVEP("blue", freqs[0], 0.5, 0.5, s/4);
-        } else if (ssvepDisplay == 1) { // 2 SSVEPs
+        } else if (settings.numSSVEPs == 1) { // 2 SSVEPs
             if (heightLarger) {
                 drawSSVEP("blue", freqs[0], 0.5, 0.25, s/4);
                 drawSSVEP("red", freqs[1], 0.5, 0.75, s/4);
@@ -272,7 +271,7 @@ class W_SSVEP extends Widget {
                 drawSSVEP("blue", freqs[0], 0.25, 0.5, s/4);
                 drawSSVEP("red", freqs[1], 0.75, 0.5, s/4);
             }
-        } else if (ssvepDisplay == 2) {
+        } else if (settings.numSSVEPs == 2) {
             if (heightLarger) {
                 drawSSVEP("blue", freqs[0], 0.5, 0.125, s/4);
                 drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
@@ -282,7 +281,7 @@ class W_SSVEP extends Widget {
                 drawSSVEP("red", freqs[1], 0.5, 0.5, s/4);
                 drawSSVEP("green", freqs[2], 0.875, 0.5, s/4);
             }
-        } else if (ssvepDisplay == 3) {
+        } else if (settings.numSSVEPs == 3) {
             float sz = s/6;
             drawSSVEP("blue", freqs[0], 0.25, 0.25, s/6);
             drawSSVEP("red", freqs[1], 0.75, 0.25, s/6);
@@ -346,7 +345,7 @@ class W_SSVEP extends Widget {
                 showAbout = !showAbout;
             }
 
-            for(int i = 0; i <= ssvepDisplay; i++){
+            for(int i = 0; i <= settings.numSSVEPs; i++){
                 if(mouseX > ssvepCoords[i][0] && mouseY > ssvepCoords[i][1] && mouseX < ssvepCoords[i][2] && mouseY < ssvepCoords[i][3]){
                     ssvepOn[i] = !ssvepOn[i];
                 }
@@ -405,7 +404,7 @@ class W_SSVEP extends Widget {
 
    void createStartButton(int wFactor, int hFactor, int ssvepNo) {
        int d;
-       if (ssvepDisplay != 3) {
+       if (settings.numSSVEPs != 3) {
            d = h/4;
        } else {
            d = h/6;
@@ -479,9 +478,9 @@ class W_SSVEP extends Widget {
    void setDropdownPositions() {
        resetDropdowns();
 
-       if (ssvepDisplay == 0) {
+       if (settings.numSSVEPs == 0) {
            setDropdown(1, 0.5, - s/8, 0, 30.0);
-       } else if (ssvepDisplay == 1) {
+       } else if (settings.numSSVEPs == 1) {
            if (heightLarger) {
                setDropdown(1, 0, 10.0, 0.25, -s/8);
                setDropdown(2, 0, 10.0, 0.75, -s/8);
@@ -489,7 +488,7 @@ class W_SSVEP extends Widget {
                setDropdown(1, 0.25, -s/8, 0, 30.0);
                setDropdown(2, 0.75, -s/8, 0, 30.0);
            }
-       } else if (ssvepDisplay == 2) {
+       } else if (settings.numSSVEPs == 2) {
            if (heightLarger) {
                setDropdown(1, 0, 10.0, 0.0, 10.0);
                setDropdown(2, 0, 10.0, 1.0/3, 0.0);
@@ -500,7 +499,7 @@ class W_SSVEP extends Widget {
                setDropdown(2, 0.5, -s/8, 0.0, 30.0);
                setDropdown(3, 0.825, -s/8, 0.0, 30.0);
            }
-       } else if (ssvepDisplay == 3) {
+       } else if (settings.numSSVEPs == 3) {
            setDropdown(4, 1.0, (-1.0/6) - 100.0, 0.5, -15);
            setDropdown(3, 0.0, 10.0, 0.5, -15);
            setDropdown(1, 0.0, 10.0, 0.0, 30.0);
@@ -524,7 +523,7 @@ class W_SSVEP extends Widget {
    }
 
    float[] processData() {
-       int activeSSVEPs = ssvepDisplay + 1;
+       int activeSSVEPs = settings.numSSVEPs + 1;
        float[] finalData = new float[4];
 
        for (int i = 0; i < activeSSVEPs; i++) {
@@ -545,6 +544,6 @@ class W_SSVEP extends Widget {
 } //end of ssvep class
 
 void NumberSSVEP(int n) {
-    ssvepDisplay = n;
+    settings.numSSVEPs = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }

@@ -1190,6 +1190,8 @@ class Stream extends Thread {
                                 sendFocusData();
                             } else if (this.dataType.equals("Pulse")) {
                                 sendPulseData();
+                            } else if (this.dataType.equals("SSVEP")) {
+                                sendSSVEPData();
                             }
                             setDataFalse();
                         } else {
@@ -1234,6 +1236,8 @@ class Stream extends Thread {
                         sendFocusData();
                     } else if (this.dataType.equals("Pulse")) {
                         sendPulseData();
+                    } else if (this.dataType.equals("SSVEP")) {
+                        sendSSVEPData();
                     }
                     setDataFalse();
                     // newData = false;
@@ -1257,6 +1261,8 @@ class Stream extends Thread {
             return dataProcessing.newDataToSend;
         } else if (this.dataType.equals("Pulse")) {
             return dataProcessing.newDataToSend;
+        } else if (this.dataType.equals("SSVEP")) {
+            return dataProcessing.newDataToSend;
         }
         return false;
     }
@@ -1275,6 +1281,8 @@ class Stream extends Thread {
         } else if (this.dataType.equals("Focus")) {
             dataProcessing.newDataToSend = false;
         } else if (this.dataType.equals("Pulse")) {
+            dataProcessing.newDataToSend = false;
+        } else if (this.dataType.equals("SSVEP")) {
             dataProcessing.newDataToSend = false;
         }
     }
@@ -1868,13 +1876,17 @@ class Stream extends Thread {
         if (this.filter==0 || this.filter==1){
             // OSC
             if (this.protocol.equals("OSC")){
-                msg.clearArguments();
-                //ADD Focus Data
-                msg.add(w_ssvep.ssvepData);
-                try {
-                    this.osc.send(msg,this.netaddress);
-                } catch (Exception e){
-                    println(e.getMessage());
+                for (int i=0;i<w_ssvep.ssvepData.length;i++) {
+                    msg.clearArguments();
+                    msg.add(i+1);
+                    //ADD NORMALIZED EMG CHANNEL DATA
+                    msg.add(w_ssvep.ssvepData[i]);
+                    // println(i + " | " + w_emg.motorWidgets[i].output_normalized);
+                    try {
+                        this.osc.send(msg,this.netaddress);
+                    } catch (Exception e) {
+                        println(e.getMessage());
+                    }
                 }
             // UDP
             } else if (this.protocol.equals("UDP")){
@@ -1891,20 +1903,21 @@ class Stream extends Thread {
                 }
             // LSL
             } else if (this.protocol.equals("LSL")){
-                // convert boolean to float and only sends the first data
-                dataToSend = w_ssvep.ssvepData;
+                for (int i = 0; i < w_ssvep.ssvepData.length; i++) {
+                    dataToSend[i] = w_ssvep.ssvepData[i];
+                }
                 // Add timestamp to LSL Stream
                 outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             // Serial
             } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
                 serialMessage = ""; //clear message
                 for (int i = 0; i < w_ssvep.ssvepData.length; i++) {
-                    serialMessage += str(w_ssvep.ssvepData[i]);
+                    serialMessage += String.format("%.3f", w_ssvep.ssvepData[i]);
                     serialMessage += ",";
                 }
                 serialMessage += "\n";
                 try {
-                    //println("SerialMessage: " + serialMessage);
+                    println("SerialMessage: SSVEP = " + serialMessage);
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println("SerialMessage: Focus Error");
