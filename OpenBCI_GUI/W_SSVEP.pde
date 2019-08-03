@@ -216,7 +216,7 @@ class W_SSVEP extends Widget {
         int count = 0;
         activeChannels.clear();
         for (int i = 0; i < nchan; i++) {
-            if(checkList.getState(i)){
+            if (checkList.getState(i)) {
                 count++;
                 activeChannels.add(i);
             }
@@ -340,13 +340,13 @@ class W_SSVEP extends Widget {
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
-        if(!this.dropdownIsActive) {
+        if (!this.dropdownIsActive) {
             if (dist(mouseX, mouseY, x + w - 80, y - navH/2) <= 9){
                 showAbout = !showAbout;
             }
 
             for(int i = 0; i <= settings.numSSVEPs; i++){
-                if(mouseX > ssvepCoords[i][0] && mouseY > ssvepCoords[i][1] && mouseX < ssvepCoords[i][2] && mouseY < ssvepCoords[i][3]){
+                if (mouseX > ssvepCoords[i][0] && mouseY > ssvepCoords[i][1] && mouseX < ssvepCoords[i][2] && mouseY < ssvepCoords[i][3]){
                     ssvepOn[i] = !ssvepOn[i];
                 }
             }
@@ -354,7 +354,7 @@ class W_SSVEP extends Widget {
             if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
                 channelSelectPressed = !channelSelectPressed;
                 // println(1);
-                if(channelSelectPressed){
+                if (channelSelectPressed){
                     for (int i = 0; i < nchan; i++) {
                         checkList.getItem(i).setVisible(true);
                     }
@@ -420,7 +420,7 @@ class W_SSVEP extends Widget {
 
    void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float size){
        boolean whiteBG = false;
-       if(colour.equals("blue")){
+       if (colour.equals("blue")){
            whiteBG = true;
        }
 
@@ -430,7 +430,7 @@ class W_SSVEP extends Widget {
 
        int ind = 0;
 
-       if(colour.equals("blue")){
+       if (colour.equals("blue")){
            b = 255;
        } else if (colour.equals("red")) {
            r = 255;
@@ -527,7 +527,7 @@ class W_SSVEP extends Widget {
        float[] finalData = new float[4];
 
        for (int i = 0; i < activeSSVEPs; i++) {
-           if(freqs[i] > 0) {
+           if (freqs[i] > 0) {
                float sum = 0;
                for (int j = 0; j < activeChannels.size(); j++) {
                    int chan = activeChannels.get(j);
