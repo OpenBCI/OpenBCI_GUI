@@ -50,6 +50,8 @@ class W_SSVEP extends Widget {
 
     //---------NETWORKING VARS
     float[] ssvepData = new float[4];
+    float[] backgroundData = new float[4];
+
     //data from checkboxes vars
     int numActiveChannels;
     List<Integer> activeChannels;
@@ -533,19 +535,38 @@ class W_SSVEP extends Widget {
 
        for (int i = 0; i < activeSSVEPs; i++) {
            if (freqs[i] > 0) {
+               //calculate peak uV
                float sum = 0;
                for (int j = 0; j < activeChannels.size(); j++) {
                    int chan = activeChannels.get(j);
-                   sum+= fftBuff[j].getFreq(freqs[i]);
+                   sum += fftBuff[chan].getFreq(freqs[i]);
                }
               float avg = sum/numActiveChannels;
               finalData[i] = avg;
+
+              //calculate background uV in all channels but the given channel
+              sum = 0;
+              for (int f = 7; f <= 15; f++) {         //where f represents any of the frequencies selectable
+                  if (f <  freqs[i] || f > freqs[i]) {
+                      freqSum = 0;
+                      for (int j = 0; j < activeChannels.size(); j++) {
+                          int chan = activeChannels.get(j);
+                          freqSum += fftBuff[chan].getFreq(f);
+                      }
+                      sum += freqSum/8;
+                  }
+              }
+
+             backgroundData[i] = sum;
+
           } else {
               finalData[i] = 0;
           }
         }
+
         return finalData;
    }
+
 } //end of ssvep class
 
 void NumberSSVEP(int n) {
