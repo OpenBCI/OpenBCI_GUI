@@ -16,9 +16,21 @@ class W_BandPower extends Widget {
 
     GPlot bp_plot;
 
+    //----------CHANNEL SELECT INFRASTRUCTURE
+    ControlP5 cp5_channelCheckboxes;   //ControlP5 for which channels to use
+    CheckBox checkList;
+    //draw checkboxes vars
+    int offset;                      //offset on nav bar of checks
+    int checkHeight = y0 + navH;
+    //checkbox dropdown vars
+    boolean channelSelectHover;
+    boolean channelSelectPressed;
+    public List<Integer> activeChannels;
+
     W_BandPower(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+        activeChannels = new ArrayList<Integer>();
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
@@ -58,24 +70,84 @@ class W_BandPower extends Widget {
 
             }
         );
+
+        //setup for checkboxes
+        cp5_channelCheckboxes = new ControlP5(pApplet);
+
+        int checkSize = navH - 4;
+        offset = (navH - checkSize)/2;
+
+        channelSelectHover = false;
+        channelSelectPressed = false;
+        checkList = cp5_channelCheckboxes.addCheckBox("channelListBP")
+                              .setPosition(x + 5, y + offset)
+                              .setSize(checkSize, checkSize)
+                              .setItemsPerRow(nchan)
+                              .setSpacingColumn(13)
+                              .setSpacingRow(2)
+                              .setColorLabel(color(0)) //Set the color of the text label
+                              .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
+                              .setColorBackground(color(150)) //checkbox background color
+                              .setColorActive(color(57, 128, 204)) //checkbox color when active
+                              ;
+
+
+        for (int i = 0; i < nchan; i++) {
+          int chNum = i+1;
+          cp5_channelCheckboxes.get(CheckBox.class, "channelListBP")
+                        .addItem(String.valueOf(chNum), chNum)
+                        ;
+
+          checkList.getItem(i).setVisible(false);           //set invisible after adding items, so make sure they won't stay invisible
+          checkList.activate(i);
+          activeChannels.add(i);
+        }
+
+        cp5_channelCheckboxes.setAutoDraw(false);
     }
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        float[] activePower = new float[nchan];
+
+        for (int i = 0; i < 5; i++){
+            float sum = 0;
+
+            for (int j = 0; j < activeChannels.size(); j++){
+                int chan = activeChannels.get(j);
+                sum += dataProcessing.avgPowerInBins[chan][i];
+                activePower[i] = sum/activeChannels.size();
+            }
+        }
+
         GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
-        bp_points.add(DELTA + 0.5, dataProcessing.headWidePower[DELTA], "DELTA");
-        bp_points.add(THETA + 0.5, dataProcessing.headWidePower[THETA], "THETA");
-        bp_points.add(ALPHA + 0.5, dataProcessing.headWidePower[ALPHA], "ALPHA");
-        bp_points.add(BETA + 0.5, dataProcessing.headWidePower[BETA], "BETA");
-        bp_points.add(GAMMA + 0.5, dataProcessing.headWidePower[GAMMA], "GAMMA");
+        bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA");
+        bp_points.add(THETA + 0.5, activePower[THETA], "THETA");
+        bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA");
+        bp_points.add(BETA + 0.5, activePower[BETA], "BETA");
+        bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA");
 
         bp_plot.setPoints(bp_points);
+
+        //Toggle open/closed the channel menu
+        if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+            channelSelectHover = true;
+        } else {
+            channelSelectHover = false;
+        }
+
+        //Update the active channels to include in data processing
+        activeChannels.clear();
+        for (int i = 0; i < nchan; i++) {
+            if(checkList.getState(i)){
+                activeChannels.add(i);
+            }
+        }
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
         pushStyle();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
@@ -94,6 +166,30 @@ class W_BandPower extends Widget {
 
         popStyle();
 
+        textSize(12);
+        fill(0);
+        text("Channels", x + 2, y - 6);
+
+        if (!channelSelectPressed) {
+            if(!channelSelectHover){
+                fill(0);
+            } else {
+                fill(130);
+            }
+            triangle(x + 57.0, y - navH*0.65, x + 62.0, y - navH*0.25, x + 67.0, y - navH*0.65);
+        } else {
+            if(!channelSelectHover){
+                fill(0);
+            } else {
+                fill(130);
+            }
+            triangle(x + 57.0, y - navH*0.25, x + 62.0, y - navH*0.65, x + 67.0, y - navH*0.25);
+            fill(180);
+            rect(x,y,w,navH);
+        }
+        pushStyle();
+
+        cp5_channelCheckboxes.draw();
     }
 
     void screenResized(){
@@ -101,10 +197,28 @@ class W_BandPower extends Widget {
 
         bp_plot.setPos(x, y-navHeight);//update position
         bp_plot.setOuterDim(w, h+navHeight);//update dimensions
+
+        cp5_channelCheckboxes.setGraphics(pApplet, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").setPosition(x + 2, y + offset);
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+
+        if(!this.dropdownIsActive) {
+            if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+                channelSelectPressed = !channelSelectPressed;
+                if(channelSelectPressed){
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
+            }
+        }
     }
 
     void mouseReleased(){
