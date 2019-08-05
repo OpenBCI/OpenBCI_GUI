@@ -50,7 +50,6 @@ class W_SSVEP extends Widget {
 
     //---------NETWORKING VARS
     float[] ssvepData = new float[4];
-    float[] backgroundData = new float[4];
 
     //data from checkboxes vars
     int numActiveChannels;
@@ -531,7 +530,10 @@ class W_SSVEP extends Widget {
 
    float[] processData() {
        int activeSSVEPs = settings.numSSVEPs + 1;
-       float[] finalData = new float[4];
+
+       float[] peakData = new float[4];     //uV at the selected SSVEP freqencies
+       float[] backgroundData = new float[4];   //uV at all other frequencies
+       float[] finalData = new float[4];    //ratio between peak and background
 
        for (int i = 0; i < activeSSVEPs; i++) {
            if (freqs[i] > 0) {
@@ -556,13 +558,15 @@ class W_SSVEP extends Widget {
                       sum += freqSum/8;
                   }
               }
-
              backgroundData[i] = sum;
 
+             finalData[i] = peakData[i]/backgroundData[i];
           } else {
               finalData[i] = 0;
           }
         }
+
+
 
         return finalData;
    }
