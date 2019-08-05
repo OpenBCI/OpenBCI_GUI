@@ -236,17 +236,16 @@ public void controlEvent(ControlEvent theEvent) {
         verbosePrint("SD setting = " + sdSetting);
     }
 
-    if (theEvent.isFrom("channelList")){
+    if (theEvent.isFrom("channelListCP")) {
         int setChannelInt = int(theEvent.getValue()) + 1;
         //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
-        if(setChannel.wasPressed){
-            set_channel(rcBox,setChannelInt);
+        if (setChannel.wasPressed) {
+            set_channel(rcBox, setChannelInt);
             setChannel.wasPressed = false;
-        }
-        else if(ovrChannel.wasPressed){
-            set_channel_over(rcBox,setChannelInt);
+        } else if(ovrChannel.wasPressed) {
+            set_channel_over(rcBox, setChannelInt);
             ovrChannel.wasPressed = false;
         }
     }
@@ -267,7 +266,7 @@ public void controlEvent(ControlEvent theEvent) {
     }
 
     //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if(theEvent.isFrom("recentFiles")) {
+    if (theEvent.isFrom("recentFiles")) {
         int s = (int)(theEvent.getController()).getValue();
         //println("got a menu event from item " + s);
         String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
@@ -485,14 +484,14 @@ class ControlPanel {
                             rcBox.draw();
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
-                                cp5Popup.get(MenuList.class, "channelList").setVisible(true);
+                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                                 cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-                                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
@@ -542,7 +541,7 @@ class ControlPanel {
                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
                 cp5.get(MenuList.class, "serialList").setVisible(false);
                 cp5.get(MenuList.class, "sdTimes").setVisible(false);
-                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
@@ -633,7 +632,7 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
         // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOutRadioConfigButton.setString(">");
@@ -672,7 +671,7 @@ class ControlPanel {
         cp5.get(MenuList.class, "bleList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
     }
 
@@ -2987,7 +2986,7 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, p4);
+        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p4);
         channelList.setPosition(x+padding, y+padding*3);
 
         for (int i = 1; i < 26; i++) {

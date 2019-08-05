@@ -20,17 +20,17 @@ class W_BandPower extends Widget {
     ControlP5 cp5_channelCheckboxes;   //ControlP5 for which channels to use
     CheckBox checkList;
     //draw checkboxes vars
-    int numChecks = nchan;
     int offset;                      //offset on nav bar of checks
     int checkHeight = y0 + navH;
     //checkbox dropdown vars
     boolean channelSelectHover;
     boolean channelSelectPressed;
-    List<Integer> activeChannels = new ArrayList<Integer>();
+    public List<Integer> activeChannels;
 
     W_BandPower(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+        activeChannels = new ArrayList<Integer>();
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
@@ -79,10 +79,10 @@ class W_BandPower extends Widget {
 
         channelSelectHover = false;
         channelSelectPressed = false;
-        checkList = cp5_channelCheckboxes.addCheckBox("channelList")
+        checkList = cp5_channelCheckboxes.addCheckBox("channelListBP")
                               .setPosition(x + 5, y + offset)
                               .setSize(checkSize, checkSize)
-                              .setItemsPerRow(numChecks)
+                              .setItemsPerRow(nchan)
                               .setSpacingColumn(13)
                               .setSpacingRow(2)
                               .setColorLabel(color(0)) //Set the color of the text label
@@ -92,9 +92,9 @@ class W_BandPower extends Widget {
                               ;
 
 
-        for (int i = 0; i < numChecks; i++) {
+        for (int i = 0; i < nchan; i++) {
           int chNum = i+1;
-          cp5_channelCheckboxes.get(CheckBox.class, "channelList")
+          cp5_channelCheckboxes.get(CheckBox.class, "channelListBP")
                         .addItem(String.valueOf(chNum), chNum)
                         ;
 
@@ -139,7 +139,7 @@ class W_BandPower extends Widget {
 
         //Update the active channels to include in data processing
         activeChannels.clear();
-        for (int i = 0; i < numChecks; i++) {
+        for (int i = 0; i < nchan; i++) {
             if(checkList.getState(i)){
                 activeChannels.add(i);
             }
@@ -199,7 +199,7 @@ class W_BandPower extends Widget {
         bp_plot.setOuterDim(w, h+navHeight);//update dimensions
 
         cp5_channelCheckboxes.setGraphics(pApplet, 0, 0);
-        cp5_channelCheckboxes.get(CheckBox.class, "channelList").setPosition(x + 2, y + offset);
+        cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").setPosition(x + 2, y + offset);
     }
 
     void mousePressed(){

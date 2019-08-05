@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, and SSVEP
+//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, Band Power, and SSVEP
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.4";
+    String settingsVersion = "1.0.5";
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation
@@ -99,7 +99,7 @@ class SoftwareSettings {
     //SSVEP Widget settings
     int[] freqsSave;
     boolean[] channelActivitySave;
-    int numSSVEP_Save;
+    int numSSVEPs;
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
@@ -155,7 +155,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse", "SSVEP"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -232,6 +232,10 @@ class SoftwareSettings {
     int[] ssvepFreqsLoad = new int[4];
     List<Integer> loadSSVEPActiveChans = new ArrayList<Integer>();
 
+    //Band Power widget settings
+    //smoothing and filter dropdowns are linked to FFT, so no need to save again
+    List<Integer> loadBPActiveChans = new ArrayList<Integer>();
+
     //Networking Settings save/load variables
     int nwProtocolLoad;
     //OSC load variables
@@ -264,6 +268,7 @@ class SoftwareSettings {
     private final String kJSONKeyHeadplot = "headplot";
     private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyFocus = "focus";
+    private final String kJSONKeyBandPower = "bandPower";
     private final String kJSONKeySSVEP = "ssvep";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
@@ -371,7 +376,7 @@ class SoftwareSettings {
             this.load(settingsFileToLoad);
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
             File f = new File(sketchPath()+System.getProperty("file.separator")+settingsFileToLoad);
@@ -546,7 +551,7 @@ class SoftwareSettings {
                 }
                 break;
             case 0:
-                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[0]));
+                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get("dataType1"));
                 saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
                 saveNetworkingSettings.setInt("Serial_filter1", (Integer) w_networking.getCP5Map().get("filter1"));
                 saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
@@ -596,28 +601,36 @@ class SoftwareSettings {
         ///////////////////////////////////////////////Setup new JSON object to save SSVEP settings
         JSONObject saveSSVEPSettings = new JSONObject();
 
-        int numSSVEPs = ssvepDisplay + 1; //add 1 here, dropdown items start count from 0
-        saveSSVEPSettings.setInt("NumSSVEPs", numSSVEPs);
+        int num_ssveps = numSSVEPs + 1; //add 1 here, dropdown items start count from 0
+        saveSSVEPSettings.setInt("NumSSVEPs", num_ssveps);
         //Save data from the Active channel checkBoxes
-        JSONArray saveActiveChannels = new JSONArray();
-        int numActiveSSVEPChan = 0;
-        for(int i = 0; i < nchan; i++){
-            boolean activeState = w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").getState(i);
-            if (activeState) {
-                saveActiveChannels.setInt(numActiveSSVEPChan, i + 1); //add 1 here so channel numbers are correct
-                numActiveSSVEPChan++;
-            }
+        JSONArray saveActiveChanSSVEP = new JSONArray();
+        int numActiveSSVEPChan = w_ssvep.numActiveChannels;
+        for (int i = 0; i < numActiveSSVEPChan; i++) {
+            int activeChan = w_ssvep.activeChannels.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChanSSVEP.setInt(i, activeChan);
         }
-        saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChannels);
+        saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChanSSVEP);
         //Save data from the 1 to 4 ssvep frequency dropdowns inside the widget
         JSONObject ssvepFrequencies = new JSONObject();
-        for(int i = 0; i < numSSVEPs; i++){
-            ssvepFrequencies.setInt("SSVEP_" + (i+1), w_ssvep.freqs[i]);
+        for (int i = 0; i < num_ssveps; i++) {
+            ssvepFrequencies.setInt("SSVEP_"+i, w_ssvep.freqs[i]);
         }
         saveSSVEPSettings.setJSONObject("SSVEP_frequencies", ssvepFrequencies);
-
         saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSSVEPSettings);
 
+        ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
+        JSONObject saveBPSettings = new JSONObject();
+
+        //Save data from the Active channel checkBoxes
+        JSONArray saveActiveChanBP = new JSONArray();
+        int numActiveBPChan = w_bandPower.activeChannels.size();
+        for (int i = 0; i < numActiveBPChan; i++) {
+            int activeChan = w_bandPower.activeChannels.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChanBP.setInt(i, activeChan);
+        }
+        saveBPSettings.setJSONArray("activeChannels", saveActiveChanBP);
+        saveSettingsJSONData.setJSONObject(kJSONKeyBandPower, saveBPSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
@@ -661,7 +674,7 @@ class SoftwareSettings {
         loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
         //Check the number of channels saved to json first!
-        JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject("dataInfo");
+        JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
         numChanloaded = loadDataSettings.getInt("Channels");
         //Print error if trying to load a different number of channels
         if (numChanloaded != slnchan) {
@@ -684,7 +697,7 @@ class SoftwareSettings {
         }
 
         //get the global settings JSON object
-        JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject("settings");
+        JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject(kJSONKeySettings);
         loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
         loadNotchSetting = loadGlobalSettings.getInt("Notch");
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
@@ -719,7 +732,7 @@ class SoftwareSettings {
         //printArray(loadedGlobalSettings);
 
         //get the FFT settings
-        JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject("fft");
+        JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
         fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
         fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
         fftLogLinLoad = loadFFTSettings.getInt("FFT_LogLin");
@@ -738,7 +751,7 @@ class SoftwareSettings {
         //printArray(loadedFFTSettings);
 
         //get the Accelerometer settings
-        JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject("accelerometer");
+        JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
         loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
         loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
         String[] loadedAccSettings = {
@@ -747,7 +760,7 @@ class SoftwareSettings {
         };
 
         //get the Networking Settings
-        JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject("networking");
+        JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
         nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
         switch (nwProtocolLoad)  {
             case 3:
@@ -812,7 +825,7 @@ class SoftwareSettings {
         } //end switch case for all networking types
 
         //get the  Headplot settings
-        JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject("headplot");
+        JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
         hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
         hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
         hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
@@ -829,7 +842,7 @@ class SoftwareSettings {
         //printArray(loadedHPSettings);
 
         //get the EMG settings
-        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject("emg");
+        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
         emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
         emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
         emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
@@ -846,7 +859,7 @@ class SoftwareSettings {
         //printArray(loadedEMGSettings);
 
         //get the  Focus settings
-        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject("focus");
+        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
         focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
         focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
 
@@ -862,21 +875,30 @@ class SoftwareSettings {
         loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
         ssvepFreqsLoad = new int[4]; //clear the dropdown settings array
         //get the ssvep settings
-        JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject("ssvep");
+        JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject(kJSONKeySSVEP);
         numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
         JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
         for (int i = 0; i < numSSVEPsLoad; i++) {
-            int f = loadSSVEPFreqs.getInt("SSVEP_" + (i+1));
+            int f = loadSSVEPFreqs.getInt("SSVEP_" + i);
             ssvepFreqsLoad[i] = f;
         }
         JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");
         for (int i = 0; i < loadSSVEPChan.size(); i++) {
             loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
         }
-        //println(loadSSVEPActiveChans);
+        //println("Settings: ssvep active chans loaded = " + loadSSVEPActiveChans);
+
+        //get band power settings
+        loadBPActiveChans.clear();
+        JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
+        JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
+        for (int i = 0; i < loadBPChan.size(); i++) {
+            loadBPActiveChans.add(loadBPChan.getInt(i));
+        }
+        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
 
         //get the  Widget/Container settings
-        JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
+        JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
         //Apply Layout directly before loading and applying widgets to containers
         wm.setNewContainerLayout(loadLayoutSetting);
         verbosePrint("LoadGUISettings: Layout " + loadLayoutSetting + " Loaded!");
@@ -1157,19 +1179,45 @@ class SoftwareSettings {
             }
         }
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
-        if (loadSSVEPActiveChans.size() > 0) {
-            int activeChanCounter = 0;
-            for (int i = 0; i < nchan; i++) {
-                //subtract 1 because cp5 starts count from 0
-                if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
-                    w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").activate(i);
-                    ++activeChanCounter;
-                } else {
-                    w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivate(i);
+        //deactivate all channels and then activate the active channels
+        w_ssvep.cp5_ssvep.get(CheckBox.class, "channelListSSVEP").deactivateAll();
+        try {
+            if (loadSSVEPActiveChans.size() > 0) {
+                int activeChanCounter = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounter  < loadSSVEPActiveChans.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
+                            w_ssvep.cp5_ssvep.get(CheckBox.class, "channelListSSVEP").activate(i);
+                            activeChanCounter++;
+                        }
+                    }
                 }
             }
-        } else {
-            w_ssvep.cp5_ssvep.get(CheckBox.class, "channelList").deactivateAll();
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+            println("Settings: Exception caught applying ssvep settings");
+        }
+        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
+
+        ////////////////////////////Apply Band Power settings
+        w_bandPower.cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").deactivateAll();
+        try {
+            if (loadBPActiveChans.size() > 0) {
+                int activeChanCounterBP = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounterBP  < loadBPActiveChans.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadBPActiveChans.get(activeChanCounterBP) - 1)) {
+                            w_bandPower.cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").activate(i);
+                            activeChanCounterBP++;
+                        }
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+            println("Settings: Exception caught applying band power settings");
         }
         verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 
