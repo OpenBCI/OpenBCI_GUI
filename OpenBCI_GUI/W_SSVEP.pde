@@ -269,22 +269,22 @@ class W_SSVEP extends Widget {
             drawSSVEP("blue", freqs[0], 0.5, 0.5, 0.0, s/4);
         } else if (settings.numSSVEPs == 1) { // 2 SSVEPs
             if (heightLarger) {
-                drawSSVEP("blue", freqs[0], 0.5, 0.25, 0.0, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.75, 0.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.5, 0.20, 0.0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 0.70, 0.0, s/5);
             } else {
-                drawSSVEP("blue", freqs[0], 0.25, 0.5, 0.0, s/4);
-                drawSSVEP("red", freqs[1], 0.75, 0.5, 0.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.20, 0.5, 0.0, s/5);
+                drawSSVEP("red", freqs[1], 0.70, 0.5, 0.0, s/5);
             }
         } else if (settings.numSSVEPs == 2) { // 3 SSVEPs
             if (heightLarger) {
                 //If ssveps are arranged vertically, Add 0.1 to heightFactor with height offset of 30
-                drawSSVEP("blue", freqs[0], 0.5, 0.1, 30.0, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 1.0/3 + 0.1, 30.0, s/4);
-                drawSSVEP("green", freqs[2], 0.5, 2.0/3 + 0.1, 30.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.5, 0.1, 30.0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 1.0/3 + 0.1, 30.0, s/5);
+                drawSSVEP("green", freqs[2], 0.5, 2.0/3 + 0.1, 30.0, s/5);
             } else {
-                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0.0, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.5, 0.0, s/4);
-                drawSSVEP("green", freqs[2], 0.875, 0.5, 0.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0.0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 0.5, 0.0, s/5);
+                drawSSVEP("green", freqs[2], 0.875, 0.5, 0.0, s/5);
             }
         } else if (settings.numSSVEPs == 3) { // 4 SSVEPs
             float sz = s/6;
@@ -550,7 +550,7 @@ class W_SSVEP extends Widget {
               sum = 0;
               for (int f = 7; f <= 15; f++) {         //where f represents any of the frequencies selectable
                   if (f <  freqs[i] || f > freqs[i]) {
-                      freqSum = 0;
+                      int freqSum = 0;
                       for (int j = 0; j < activeChannels.size(); j++) {
                           int chan = activeChannels.get(j);
                           freqSum += fftBuff[chan].getFreq(f);
@@ -565,9 +565,7 @@ class W_SSVEP extends Widget {
               finalData[i] = 0;
           }
         }
-
-
-
+        // println(finalData);
         return finalData;
    }
 
