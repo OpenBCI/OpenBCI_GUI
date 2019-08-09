@@ -538,21 +538,19 @@ class W_Networking extends Widget {
 
     void createPortDropdown(String name, List<String> _items) {
         cp5_networking_portName.addScrollableList(name)
-                .setOpen(false)
-
-                .setColorBackground(color(31,69,110)) // text field bg color
-                .setColorValueLabel(color(255))       // text color
-                .setColorCaptionLabel(color(255))
-                .setColorForeground(color(125))    // border color when not selected
-                .setColorActive(color(150, 170, 200))       // border color when selected
-                // .setColorCursor(color(26,26,26))
-
-                .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
-                .setBarHeight(navH-4) //height of top/primary bar
-                .setItemHeight(navH-4) //height of all item/dropdown bars
-                .addItems(_items) // used to be .addItems(maxFreqList)
-                .setVisible(false)
-                ;
+            .setOpen(false)
+            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorValueLabel(color(255))       // text color
+            .setColorCaptionLabel(color(255))
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(color(150, 170, 200))       // border color when selected
+            // .setColorCursor(color(26,26,26))
+            .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+            .setBarHeight(navH-4) //height of top/primary bar
+            .setItemHeight(navH-4) //height of all item/dropdown bars
+            .addItems(_items) // used to be .addItems(maxFreqList)
+            .setVisible(false)
+            ;
         cp5_networking_portName.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
@@ -1917,7 +1915,7 @@ class Stream extends Thread {
                 }
                 serialMessage += "\n";
                 try {
-                    // println("SerialMessage: SSVEP = " + serialMessage);
+                    //println("SerialMessage: SSVEP = " + serialMessage);
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println("SerialMessage: Focus Error");

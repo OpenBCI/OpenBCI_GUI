@@ -530,6 +530,7 @@ class W_SSVEP extends Widget {
 
     float[] processData() {
         int activeSSVEPs = settings.numSSVEPs + 1;
+        //println("NUM SSVEPs = " + activeSSVEPs);
 
         float[] peakData = new float[4];     //uV at the selected SSVEP freqencies
         float[] backgroundData = new float[4];   //uV at all other frequencies
@@ -544,7 +545,8 @@ class W_SSVEP extends Widget {
                     sum += fftBuff[chan].getFreq(freqs[i]);
                 }
                 float avg = sum/numActiveChannels;
-                finalData[i] = avg;
+                peakData[i] = avg;
+                //println("PEAK DATA: " + backgroundData[i]);
 
                 //calculate background uV in all channels but the given channel
                 sum = 0;
@@ -559,13 +561,14 @@ class W_SSVEP extends Widget {
                     }
                 }
                 backgroundData[i] = sum;
+                //println("BACKGROUND DATA: " + backgroundData[i]);
 
                 finalData[i] = peakData[i]/backgroundData[i];
             } else {
                 finalData[i] = 0;
             }
         }
-        // println(finalData);
+        //println(finalData);
         return finalData;
     }
 

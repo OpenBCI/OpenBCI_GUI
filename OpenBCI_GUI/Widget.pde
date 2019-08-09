@@ -13,7 +13,7 @@ class Widget{
     PApplet pApplet;
 
     int x0, y0, w0, h0; //true x,y,w,h of container
-    int x, y, w, h; //adjusted x,y,w,h of white space (blank rectangle) under the nav...
+    int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
     int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
@@ -25,7 +25,8 @@ class Widget{
     ArrayList<NavBarDropdown> dropdowns;
     ControlP5 cp5_widget;
     String widgetTitle = "No Title Set";
-    Button widgetSelector;
+    //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
+    private final int NUM_WIDGETS_TO_SHOW = 6;
 
     //some variables for the dropdowns
     int navH = 22;
@@ -106,7 +107,7 @@ class Widget{
             // .setFont(h2)
             .setOpen(false)
             .setColor(dropdownColors)
-            .setSize(widgetSelectorWidth, (_widgetOptions.size()+1)*(navH-4) )// + maxFreqList.size())
+            .setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
             .setBarHeight(navH-4) //height of top/primary bar
             .setItemHeight(navH-4) //height of all item/dropdown bars
