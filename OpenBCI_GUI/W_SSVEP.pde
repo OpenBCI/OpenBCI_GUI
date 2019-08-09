@@ -405,169 +405,169 @@ class W_SSVEP extends Widget {
             .setFont(h4)
             .setSize(12)
             ;
-   }
+    }
 
-   void createStartButton(int wFactor, int hFactor, int ssvepNo) {
-       int d;
-       if (settings.numSSVEPs != 3) {
-           d = h/4;
-       } else {
-           d = h/6;
-       }
-   }
+    void createStartButton(int wFactor, int hFactor, int ssvepNo) {
+        int d;
+        if (settings.numSSVEPs != 3) {
+            d = h/4;
+        } else {
+            d = h/6;
+        }
+    }
 
-   void resetDropdowns() {
-       cp5_ssvep.get(ScrollableList.class, "Frequency 1").setVisible(false);
-       cp5_ssvep.get(ScrollableList.class, "Frequency 2").setVisible(false);
-       cp5_ssvep.get(ScrollableList.class, "Frequency 3").setVisible(false);
-       cp5_ssvep.get(ScrollableList.class, "Frequency 4").setVisible(false);
-   }
+    void resetDropdowns() {
+        cp5_ssvep.get(ScrollableList.class, "Frequency 1").setVisible(false);
+        cp5_ssvep.get(ScrollableList.class, "Frequency 2").setVisible(false);
+        cp5_ssvep.get(ScrollableList.class, "Frequency 3").setVisible(false);
+        cp5_ssvep.get(ScrollableList.class, "Frequency 4").setVisible(false);
+    }
 
-   void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float hOffset, float size) {
-       boolean whiteBG = false;
-       if (colour.equals("blue")){
-           whiteBG = true;
-       }
+    void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float hOffset, float size) {
+        boolean whiteBG = false;
+        if (colour.equals("blue")){
+            whiteBG = true;
+        }
 
-       int r = 0;
-       int g = 0;
-       int b = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
 
-       int ind = 0;
+        int ind = 0;
 
-       if (colour.equals("blue")){
-           b = 255;
-       } else if (colour.equals("red")) {
-           r = 255;
-           ind = 1;
-       } else if (colour.equals("green")) {
-           g = 255;
-           ind = 2;
-       } else if (colour.equals("yellow")) {
-           r = 255;
-           g = 255;
-           ind = 3;
-       }
+        if (colour.equals("blue")){
+            b = 255;
+        } else if (colour.equals("red")) {
+            r = 255;
+            ind = 1;
+        } else if (colour.equals("green")) {
+            g = 255;
+            ind = 2;
+        } else if (colour.equals("yellow")) {
+            r = 255;
+            g = 255;
+            ind = 3;
+        }
 
        if (freq == 0 || !ssvepOn[ind] || millis()%(2*(500/freq)) >= (500/freq)) {
-           fill(r,g,b);
-           rect(x + (w * wFactor) - (size/2), y + (h*hFactor) + hOffset - (size/2), size, size);
-           pushStyle();
-           noFill();
-           if (whiteBG) {
+            fill(r,g,b);
+            rect(x + (w * wFactor) - (size/2), y + (h*hFactor) + hOffset - (size/2), size, size);
+            pushStyle();
+            noFill();
+            if (whiteBG) {
                stroke(255);
-           } else {
+            } else {
                stroke(0);
-           }
-           rect(x + (w * wFactor) - (size/4), y + (h*hFactor) + hOffset - (size/4), size/2, size/2);
-           popStyle();
-       } else {
-           fill(0);
-           rect(x + (w * wFactor) - (size/2), y + (h*hFactor) + hOffset - (size/2), size, size);
-           pushStyle();
-           noFill();
-           stroke(r,g,b);
-           rect(x + (w * wFactor) - (size/10), y + (h*hFactor) + hOffset - (size/10), size/5, size/5);
-           popStyle();
-       }
+            }
+            rect(x + (w * wFactor) - (size/4), y + (h*hFactor) + hOffset - (size/4), size/2, size/2);
+            popStyle();
+        } else {
+            fill(0);
+            rect(x + (w * wFactor) - (size/2), y + (h*hFactor) + hOffset - (size/2), size, size);
+            pushStyle();
+            noFill();
+            stroke(r,g,b);
+            rect(x + (w * wFactor) - (size/10), y + (h*hFactor) + hOffset - (size/10), size/5, size/5);
+            popStyle();
+        }
 
-       //---------- Store Coords
-       ssvepCoords[ind][0] = x + w * wFactor - size/2;
-       ssvepCoords[ind][1] = y + h * hFactor - size/2;
-       ssvepCoords[ind][2] = x + w * wFactor + size/2;
-       ssvepCoords[ind][3] = y + h * hFactor + size/2;
+        //---------- Store Coords
+        ssvepCoords[ind][0] = x + w * wFactor - size/2;
+        ssvepCoords[ind][1] = y + h * hFactor - size/2;
+        ssvepCoords[ind][2] = x + w * wFactor + size/2;
+        ssvepCoords[ind][3] = y + h * hFactor + size/2;
 
-   }
+    }
 
    //------set position of all dropdowns
    void setDropdownPositions() {
-       resetDropdowns();
+        resetDropdowns();
 
-       if (settings.numSSVEPs == 0) {
-           //(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset)
-           setDropdown(1, 0.5, - s/8, 0, 30.0);
-       } else if (settings.numSSVEPs == 1) {
-           if (heightLarger) {
-               setDropdown(1, 0, 10.0, 0.25, -s/8);
-               setDropdown(2, 0, 10.0, 0.75, -s/8);
-           } else {
-               setDropdown(1, 0.25, -s/8, 0, 30.0);
-               setDropdown(2, 0.75, -s/8, 0, 30.0);
-           }
-       } else if (settings.numSSVEPs == 2) {
-           if (heightLarger) {
-               setDropdown(1, 0, 10.0, 0.0, 30.0);
-               setDropdown(2, 0, 10.0, 1.0/3, 30.0);
-               setDropdown(3, 0, 10.0, 2.0/3, 30.0);
-           } else {
-               //Freq1 Dropdown
-               setDropdown(1, 0.125, -s/8, 0, 30.0);
-               setDropdown(2, 0.5, -s/8, 0.0, 30.0);
-               setDropdown(3, 0.825, -s/8, 0.0, 30.0);
-           }
-       } else if (settings.numSSVEPs == 3) {
-           setDropdown(4, 1.0, (-1.0/6) - 100.0, 0.5, -15);
-           setDropdown(3, 0.0, 10.0, 0.5, -15);
-           setDropdown(1, 0.0, 10.0, 0.0, 30.0);
-           setDropdown(2, 1.0, (-1.0/6) - 100.0, 0.0, 30.0);
-       }
+        if (settings.numSSVEPs == 0) {
+            //(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset)
+            setDropdown(1, 0.5, - s/8, 0, 30.0);
+        } else if (settings.numSSVEPs == 1) {
+            if (heightLarger) {
+                setDropdown(1, 0, 10.0, 0.25, -s/8);
+                setDropdown(2, 0, 10.0, 0.75, -s/8);
+            } else {
+                setDropdown(1, 0.25, -s/8, 0, 30.0);
+                setDropdown(2, 0.75, -s/8, 0, 30.0);
+            }
+        } else if (settings.numSSVEPs == 2) {
+            if (heightLarger) {
+                setDropdown(1, 0, 10.0, 0.0, 30.0);
+                setDropdown(2, 0, 10.0, 1.0/3, 30.0);
+                setDropdown(3, 0, 10.0, 2.0/3, 30.0);
+            } else {
+                //Freq1 Dropdown
+                setDropdown(1, 0.125, -s/8, 0, 30.0);
+                setDropdown(2, 0.5, -s/8, 0.0, 30.0);
+                setDropdown(3, 0.825, -s/8, 0.0, 30.0);
+            }
+        } else if (settings.numSSVEPs == 3) {
+            setDropdown(4, 1.0, (-1.0/6) - 100.0, 0.5, -15);
+            setDropdown(3, 0.0, 10.0, 0.5, -15);
+            setDropdown(1, 0.0, 10.0, 0.0, 30.0);
+            setDropdown(2, 1.0, (-1.0/6) - 100.0, 0.0, 30.0);
+        }
    }
 
-   //------- set the Position of an individual dropdown
-   void setDropdown(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset){
-       cp5_ssvep.getController("Frequency "+dropdownNo).setPosition(x + (w * wFactor) + wOffset, y + (h * hFactor) + hOffset);
-       cp5_ssvep.get(ScrollableList.class, "Frequency "+dropdownNo).setVisible(true);
-   }
+    //------- set the Position of an individual dropdown
+    void setDropdown(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset){
+        cp5_ssvep.getController("Frequency "+dropdownNo).setPosition(x + (w * wFactor) + wOffset, y + (h * hFactor) + hOffset);
+        cp5_ssvep.get(ScrollableList.class, "Frequency "+dropdownNo).setVisible(true);
+    }
 
-   int updateFreq(int controllerNum) {
-       String label = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
-       if (!label.equals("Frequency "+controllerNum)) {
-           String[] s = split(label, " ");
-           return Integer.valueOf(s[0]);
-       }
-       return -1;
-   }
+    int updateFreq(int controllerNum) {
+        String label = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
+        if (!label.equals("Frequency "+controllerNum)) {
+            String[] s = split(label, " ");
+            return Integer.valueOf(s[0]);
+        }
+        return -1;
+    }
 
-   float[] processData() {
-       int activeSSVEPs = settings.numSSVEPs + 1;
+    float[] processData() {
+        int activeSSVEPs = settings.numSSVEPs + 1;
 
-       float[] peakData = new float[4];     //uV at the selected SSVEP freqencies
-       float[] backgroundData = new float[4];   //uV at all other frequencies
-       float[] finalData = new float[4];    //ratio between peak and background
+        float[] peakData = new float[4];     //uV at the selected SSVEP freqencies
+        float[] backgroundData = new float[4];   //uV at all other frequencies
+        float[] finalData = new float[4];    //ratio between peak and background
 
-       for (int i = 0; i < activeSSVEPs; i++) {
-           if (freqs[i] > 0) {
-               //calculate peak uV
-               float sum = 0;
-               for (int j = 0; j < activeChannels.size(); j++) {
-                   int chan = activeChannels.get(j);
-                   sum += fftBuff[chan].getFreq(freqs[i]);
-               }
-              float avg = sum/numActiveChannels;
-              finalData[i] = avg;
+        for (int i = 0; i < activeSSVEPs; i++) {
+            if (freqs[i] > 0) {
+                //calculate peak uV
+                float sum = 0;
+                for (int j = 0; j < activeChannels.size(); j++) {
+                    int chan = activeChannels.get(j);
+                    sum += fftBuff[chan].getFreq(freqs[i]);
+                }
+                float avg = sum/numActiveChannels;
+                finalData[i] = avg;
 
-              //calculate background uV in all channels but the given channel
-              sum = 0;
-              for (int f = 7; f <= 15; f++) {         //where f represents any of the frequencies selectable
-                  if (f <  freqs[i] || f > freqs[i]) {
-                      int freqSum = 0;
-                      for (int j = 0; j < activeChannels.size(); j++) {
-                          int chan = activeChannels.get(j);
-                          freqSum += fftBuff[chan].getFreq(f);
-                      }
-                      sum += freqSum/8;
-                  }
-              }
-             backgroundData[i] = sum;
+                //calculate background uV in all channels but the given channel
+                sum = 0;
+                for (int f = 7; f <= 15; f++) {         //where f represents any of the frequencies selectable
+                    if (f <  freqs[i] || f > freqs[i]) {
+                        int freqSum = 0;
+                        for (int j = 0; j < activeChannels.size(); j++) {
+                            int chan = activeChannels.get(j);
+                            freqSum += fftBuff[chan].getFreq(f);
+                        }
+                        sum += freqSum/8;
+                    }
+                }
+                backgroundData[i] = sum;
 
-             finalData[i] = peakData[i]/backgroundData[i];
-          } else {
-              finalData[i] = 0;
-          }
+                finalData[i] = peakData[i]/backgroundData[i];
+            } else {
+                finalData[i] = 0;
+            }
         }
         // println(finalData);
         return finalData;
-   }
+    }
 
 } //end of ssvep class
 

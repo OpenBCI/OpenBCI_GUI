@@ -1108,10 +1108,10 @@ void haltSystem() {
 
 }
 
-void delayedInit() {
+//void delayedInit() {
     // Initialize a plot
-    GPlot plot = new GPlot(this);
-}
+    //GPlot plot = new GPlot(this);
+//}
 
 void systemUpdate() { // for updating data values and variables
 
@@ -1119,7 +1119,7 @@ void systemUpdate() { // for updating data values and variables
         hub = new Hub(this);
         println("Instantiating hub object...");
         isHubObjectInitialized = true;
-        thread("delayedInit");
+        //thread("delayedInit");
     }
 
     //prepare for updating the GUI

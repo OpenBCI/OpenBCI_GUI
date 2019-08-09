@@ -152,8 +152,6 @@ public void controlEvent(ControlEvent theEvent) {
             return;
         }
 
-        color _colorNotPressed = color(255);
-
         // this button only used on mac
         if(isMac()) {
             protocolBLEGanglion.setColorNotPressed(colorNotPressed);
