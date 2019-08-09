@@ -50,6 +50,7 @@ class W_SSVEP extends Widget {
 
     //---------NETWORKING VARS
     float[] ssvepData = new float[4];
+
     //data from checkboxes vars
     int numActiveChannels;
     List<Integer> activeChannels;
@@ -268,22 +269,22 @@ class W_SSVEP extends Widget {
             drawSSVEP("blue", freqs[0], 0.5, 0.5, 0.0, s/4);
         } else if (settings.numSSVEPs == 1) { // 2 SSVEPs
             if (heightLarger) {
-                drawSSVEP("blue", freqs[0], 0.5, 0.25, 0.0, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.75, 0.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.5, 0.20, 0.0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 0.70, 0.0, s/5);
             } else {
-                drawSSVEP("blue", freqs[0], 0.25, 0.5, 0.0, s/4);
-                drawSSVEP("red", freqs[1], 0.75, 0.5, 0.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.20, 0.5, 0.0, s/5);
+                drawSSVEP("red", freqs[1], 0.70, 0.5, 0.0, s/5);
             }
         } else if (settings.numSSVEPs == 2) { // 3 SSVEPs
             if (heightLarger) {
                 //If ssveps are arranged vertically, Add 0.1 to heightFactor with height offset of 30
-                drawSSVEP("blue", freqs[0], 0.5, 0.1, 30.0, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 1.0/3 + 0.1, 30.0, s/4);
-                drawSSVEP("green", freqs[2], 0.5, 2.0/3 + 0.1, 30.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.5, 0.1, 30.0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 1.0/3 + 0.1, 30.0, s/5);
+                drawSSVEP("green", freqs[2], 0.5, 2.0/3 + 0.1, 30.0, s/5);
             } else {
-                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0.0, s/4);
-                drawSSVEP("red", freqs[1], 0.5, 0.5, 0.0, s/4);
-                drawSSVEP("green", freqs[2], 0.875, 0.5, 0.0, s/4);
+                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0.0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 0.5, 0.0, s/5);
+                drawSSVEP("green", freqs[2], 0.875, 0.5, 0.0, s/5);
             }
         } else if (settings.numSSVEPs == 3) { // 4 SSVEPs
             float sz = s/6;
@@ -529,23 +530,45 @@ class W_SSVEP extends Widget {
 
    float[] processData() {
        int activeSSVEPs = settings.numSSVEPs + 1;
-       float[] finalData = new float[4];
+
+       float[] peakData = new float[4];     //uV at the selected SSVEP freqencies
+       float[] backgroundData = new float[4];   //uV at all other frequencies
+       float[] finalData = new float[4];    //ratio between peak and background
 
        for (int i = 0; i < activeSSVEPs; i++) {
            if (freqs[i] > 0) {
+               //calculate peak uV
                float sum = 0;
                for (int j = 0; j < activeChannels.size(); j++) {
                    int chan = activeChannels.get(j);
-                   sum+= fftBuff[j].getFreq(freqs[i]);
+                   sum += fftBuff[chan].getFreq(freqs[i]);
                }
               float avg = sum/numActiveChannels;
               finalData[i] = avg;
+
+              //calculate background uV in all channels but the given channel
+              sum = 0;
+              for (int f = 7; f <= 15; f++) {         //where f represents any of the frequencies selectable
+                  if (f <  freqs[i] || f > freqs[i]) {
+                      int freqSum = 0;
+                      for (int j = 0; j < activeChannels.size(); j++) {
+                          int chan = activeChannels.get(j);
+                          freqSum += fftBuff[chan].getFreq(f);
+                      }
+                      sum += freqSum/8;
+                  }
+              }
+             backgroundData[i] = sum;
+
+             finalData[i] = peakData[i]/backgroundData[i];
           } else {
               finalData[i] = 0;
           }
         }
+        // println(finalData);
         return finalData;
    }
+
 } //end of ssvep class
 
 void NumberSSVEP(int n) {

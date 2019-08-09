@@ -1917,7 +1917,7 @@ class Stream extends Thread {
                 }
                 serialMessage += "\n";
                 try {
-                    println("SerialMessage: SSVEP = " + serialMessage);
+                    // println("SerialMessage: SSVEP = " + serialMessage);
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println("SerialMessage: Focus Error");
