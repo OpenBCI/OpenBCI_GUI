@@ -1144,7 +1144,7 @@ class TutorialSelector {
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
+        tempTutorialButton.setURL("https://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-impedance-testing");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 2;

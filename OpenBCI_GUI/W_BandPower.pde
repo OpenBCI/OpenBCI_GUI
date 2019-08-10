@@ -52,6 +52,7 @@ class W_BandPower extends Widget {
         bp_plot.getXAxis().setNTicks(0);
         bp_plot.getTitle().setTextAlignment(LEFT);
         bp_plot.getTitle().setRelativePos(0);
+        bp_plot.setAllFontProperties("Arial", 0, 14);
         bp_plot.getYAxis().getAxisLabel().setText("Headwide Power — (uV)^2 / Hz");
         bp_plot.getXAxis().setAxisLabelText("EEG Power Bands");
         bp_plot.startHistograms(GPlot.VERTICAL);
