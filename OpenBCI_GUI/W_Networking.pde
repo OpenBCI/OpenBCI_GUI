@@ -48,6 +48,7 @@ class W_Networking extends Widget {
     int row4;
     int row5;
     int itemWidth = 96;
+    private final float datatypeDropdownScaling = .35;
 
     /* UI */
     Boolean osc_visible;
@@ -599,8 +600,15 @@ class W_Networking extends Widget {
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
+        
+        int dropdownsItemsToShow = int((this.h0 * datatypeDropdownScaling) / (this.navH - 4));
+        println("Networking Data Types || show num dropdowns = " + dropdownsItemsToShow);
+        int dropdownHeight = (dropdownsItemsToShow + 1) * (this.navH - 4);
+        int maxDropdownHeight = (settings.nwDataTypesArray.length + 1) * (this.navH - 4);
+        if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
+
         for (String datatypeName : datatypeNames) {
-            cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).setWidth(itemWidth);
+            cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).setSize(itemWidth, dropdownHeight);
         }
 
         if (protocolMode.equals("OSC")) {

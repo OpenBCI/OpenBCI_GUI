@@ -26,7 +26,7 @@ class Widget{
     ControlP5 cp5_widget;
     String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
-    private final float widgetDropdownPercentOfHeight = .35;
+    private final float widgetDropdownScaling = .35;
 
     //some variables for the dropdowns
     int navH = 22;
@@ -107,7 +107,7 @@ class Widget{
             // .setFont(h2)
             .setOpen(false)
             .setColor(dropdownColors)
-            .setSize(widgetSelectorWidth, int(h0 * widgetDropdownPercentOfHeight) )// + maxFreqList.size())
+            .setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
             .setBarHeight(navH-4) //height of top/primary bar
@@ -308,10 +308,9 @@ class Widget{
         //This line resets the origin for all cp5 elements under "cp5_widget" when the screen is resized, otherwise there will be drawing errors
         cp5_widget.setGraphics(pApplet, 0, 0);
 
-        
-        int dropdownsToShow = int((h0 * widgetDropdownPercentOfHeight) / (navH - 4));
-        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsToShow);
-        int dropdownHeight = (dropdownsToShow + 1) * (navH - 4);
+        int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
+        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
+        int dropdownHeight = (dropdownsItemsToShow + 1) * (navH - 4);
         if (wm != null) {
             int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
             if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
