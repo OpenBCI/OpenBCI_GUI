@@ -962,6 +962,14 @@ class W_Networking extends Widget {
             }
         }
         if (protocolMode.equals("Serial")) {
+            //When using serial mode, lock baud rate dropdown when datatype dropdown is in use
+            if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[0]).isOpen()) {
+                cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").lock();
+            } else {
+                if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isLock()) {
+                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").unlock();
+                }
+            }
             //baud rate
             if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
                 if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
