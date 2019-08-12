@@ -817,8 +817,15 @@ class PlaybackScrollbar {
         }
 
         if (curTimestamp != null) {
-            currentAbsoluteTimeToDisplay = getCurrentTimeStamp();
-            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " s";
+            long t = new Long(getCurrentTimeStamp());
+            Date d =  new Date(t);
+            currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+            //int numSecondsInFile = getElapsedTimeInSeconds(playbackData_table.getRowCount() - 1);
+            int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+            int elapsedTime = int(float(currentTableRowIndex)/getSampleRateSafe());
+            //currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
+            currentTimeInSecondsToDisplay = elapsedTime + " of " + numSecondsInFile + " s";
+
         }
     } //end update loop for PlaybackScrollbar
 
@@ -957,15 +964,16 @@ class PlaybackScrollbar {
     void playbackScrubbing() {
         num_indices = indices;
         //println("INDEXES: "+num_indices);
-        if(has_processed){
+        if(has_processed) {
             //This updates Time Series playback position and the value at the top of the GUI in title bar
             currentTableRowIndex = getIndex();
-            String[] newTimeStamp = split(index_of_times.get(currentTableRowIndex), '.');
+            String newTimeStamp = index_of_times.get(currentTableRowIndex);
+            if (currentTableRowIndex >= playbackData_table.getRowCount()) newTimeStamp = index_of_times.get(playbackData_table.getRowCount());
             //If system is stopped, success print detailed position to bottom of GUI
             if (!isRunning) {
                 outputSuccess("New Position{ " + getPos() + "/" + sposMax
                 + " Index: " + currentTableRowIndex
-                + " } --- Time: " + newTimeStamp[0]
+                + " } --- Time: " + newTimeStamp
                 + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
                 + " seconds" );
             }
@@ -977,8 +985,11 @@ class PlaybackScrollbar {
         //update the value for the number of indices
         num_indices = indices;
         //return current playback time
-        String[] timeStamp = split(curTimestamp, '.');
-        return timeStamp[0];
+        if (currentTableRowIndex > playbackData_table.getRowCount()) {
+            return index_of_times.get(playbackData_table.getRowCount());
+        } else {
+            return index_of_times.get(currentTableRowIndex);
+        }
     }
 
     //This function scrubs to the beginning of the playback file
@@ -1010,15 +1021,11 @@ class PlaybackScrollbar {
 int getElapsedTimeInSeconds(int tableRowIndex) {
     String startTime = index_of_times.get(0);
     String currentTime = index_of_times.get(tableRowIndex);
-    DateFormat df = new SimpleDateFormat("hh:mm:ss");
-    long time1 = 0;
-    long time2 = 0;
-    try {
-        time1 = df.parse(startTime).getTime();
-        time2 = df.parse(currentTime).getTime();
-    } catch (Exception e) {
-    }
+    if (tableRowIndex > playbackData_table.getRowCount()) currentTime = index_of_times.get(playbackData_table.getRowCount());
+    long time1 = new Long(startTime);
+    long time2 = new Long(currentTime);
     int delta = int((time2 - time1)*0.001);
+    if (delta < 0) delta = 0; 
     return delta;
 }
 
