@@ -262,6 +262,11 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
 String nodeHubName = "OpenBCIHub";
+Timer hubTimer = new Timer(true);
+boolean hubTimerHasStarted = false;
+int hubTimerElapsedSeconds;
+int hubTimerInterval = 2000; //try every 2 seconds
+int hubTimerLimit = 14; //up to 14 seconds
 
 PApplet ourApplet;
 
@@ -1105,13 +1110,7 @@ void haltSystem() {
 
         systemHasHalted = true;
     }
-
-}
-
-//void delayedInit() {
-    // Initialize a plot
-    //GPlot plot = new GPlot(this);
-//}
+} //end of halt system
 
 void systemUpdate() { // for updating data values and variables
 
@@ -1119,7 +1118,19 @@ void systemUpdate() { // for updating data values and variables
         hub = new Hub(this);
         println("Instantiating hub object...");
         isHubObjectInitialized = true;
-        //thread("delayedInit");
+    }
+
+    if (!hub.isHubRunning()) {
+        if (!hubTimerHasStarted) {
+            hubTimer.schedule(new CheckHubInit(), 0, hubTimerInterval);
+            hubTimerHasStarted = true;
+        } else {
+            if (hubTimerElapsedSeconds == hubTimerLimit) {
+                hubTimer.cancel();
+                println("GUI: Unable to find or connect to Hub...");
+                hubTimerElapsedSeconds = 0;
+            }
+        }
     }
 
     //prepare for updating the GUI

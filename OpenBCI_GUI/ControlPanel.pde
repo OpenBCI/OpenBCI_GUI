@@ -149,6 +149,7 @@ public void controlEvent(ControlEvent theEvent) {
 
         if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
             outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
+            println("ControlEvent: Hub error");
             return;
         }
 
