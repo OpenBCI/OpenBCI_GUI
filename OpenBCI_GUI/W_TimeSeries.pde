@@ -823,7 +823,7 @@ class PlaybackScrollbar {
             currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
             //update elapsed time to display
             int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-            currentTimeInSecondsToDisplay = elapsedTime(currentTableRowIndex) + " of " + numSecondsInFile + " s";
+            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
 
         }
     } //end update loop for PlaybackScrollbar
@@ -973,7 +973,7 @@ class PlaybackScrollbar {
                 outputSuccess("New Position{ " + getPos() + "/" + sposMax
                 + " Index: " + currentTableRowIndex
                 + " } --- Time: " + newTimeStamp
-                + " --- " + elapsedTime(currentTableRowIndex)
+                + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
                 + " seconds" );
             }
         }
@@ -1008,7 +1008,7 @@ class PlaybackScrollbar {
                 outputSuccess("New Position{ " + getPos() + "/" + sposMax
                 + " Index: " + getIndex()
                 + " } --- Time: " +  getCurrentTimeStamp()
-                + " --- " + elapsedTime(currentTableRowIndex)
+                + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
                 + " seconds" );
             }
         }
@@ -1018,7 +1018,7 @@ class PlaybackScrollbar {
 //Used in the above PlaybackScrollbar class
 //Also used in OpenBCI_GUI in the app's title bar
 int getElapsedTimeInSeconds(int tableRowIndex) {
-    int elapsedTime = int(float(tableRowIndex)/getSampleRateSafe();
+    int elapsedTime = int(float(tableRowIndex)/getSampleRateSafe());
     return elapsedTime;
 }
 
