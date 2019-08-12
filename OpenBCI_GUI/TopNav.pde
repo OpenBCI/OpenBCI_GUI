@@ -749,8 +749,9 @@ class ConfigSelector {
     int buttonSpacer = 0;
 
     ConfigSelector() {
+        int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
         w = 120;
-        x = width - 70*2 + 20;
+        x = width - 70*2 - _padding + 20;
         y = (navBarHeight * 2) - 3;
         margin = 6;
         b_w = w - margin*2;
@@ -771,7 +772,7 @@ class ConfigSelector {
     }
 
     void draw() {
-        if (isVisible == true) { //only draw if visible
+        if (isVisible) { //only draw if visible
             pushStyle();
 
             stroke(bgColor);
@@ -796,6 +797,7 @@ class ConfigSelector {
 
             fill(57, 128, 204);
             noStroke();
+            //This makes the dropdown box look like it's apart of the button by drawing over the bottom edge of the button
             rect(x+w-(topNav.configButton.but_dx-1), y, (topNav.configButton.but_dx-1), 1);
 
             popStyle();
@@ -938,7 +940,7 @@ class ConfigSelector {
         //setup button 1 -- Save Custom Settings
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
-        tempConfigButton.setFont(p5, 12);
+        tempConfigButton.setFont(p5, 12); 
         configOptions.add(tempConfigButton);
 
         //setup button 2 -- Load Custom Settings
@@ -954,7 +956,7 @@ class ConfigSelector {
         configOptions.add(tempConfigButton);
 
         //setup button 4 -- Clear All Settings
-        buttonNumber = 1;
+        buttonNumber = 0;
         //Update the height of the Settings dropdown
         h = margin*(buttonNumber+1) + b_h*(buttonNumber+1);
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
@@ -1144,7 +1146,7 @@ class TutorialSelector {
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
+        tempTutorialButton.setURL("https://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-impedance-testing");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 2;

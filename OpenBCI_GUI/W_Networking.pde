@@ -48,6 +48,7 @@ class W_Networking extends Widget {
     int row4;
     int row5;
     int itemWidth = 96;
+    private final float datatypeDropdownScaling = .35;
 
     /* UI */
     Boolean osc_visible;
@@ -538,21 +539,19 @@ class W_Networking extends Widget {
 
     void createPortDropdown(String name, List<String> _items) {
         cp5_networking_portName.addScrollableList(name)
-                .setOpen(false)
-
-                .setColorBackground(color(31,69,110)) // text field bg color
-                .setColorValueLabel(color(255))       // text color
-                .setColorCaptionLabel(color(255))
-                .setColorForeground(color(125))    // border color when not selected
-                .setColorActive(color(150, 170, 200))       // border color when selected
-                // .setColorCursor(color(26,26,26))
-
-                .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
-                .setBarHeight(navH-4) //height of top/primary bar
-                .setItemHeight(navH-4) //height of all item/dropdown bars
-                .addItems(_items) // used to be .addItems(maxFreqList)
-                .setVisible(false)
-                ;
+            .setOpen(false)
+            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorValueLabel(color(255))       // text color
+            .setColorCaptionLabel(color(255))
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(color(150, 170, 200))       // border color when selected
+            // .setColorCursor(color(26,26,26))
+            .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
+            .setBarHeight(navH-4) //height of top/primary bar
+            .setItemHeight(navH-4) //height of all item/dropdown bars
+            .addItems(_items) // used to be .addItems(maxFreqList)
+            .setVisible(false)
+            ;
         cp5_networking_portName.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
@@ -601,8 +600,15 @@ class W_Networking extends Widget {
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
+        
+        int dropdownsItemsToShow = int((this.h0 * datatypeDropdownScaling) / (this.navH - 4));
+        println("Networking Data Types || show num dropdowns = " + dropdownsItemsToShow);
+        int dropdownHeight = (dropdownsItemsToShow + 1) * (this.navH - 4);
+        int maxDropdownHeight = (settings.nwDataTypesArray.length + 1) * (this.navH - 4);
+        if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
+
         for (String datatypeName : datatypeNames) {
-            cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).setWidth(itemWidth);
+            cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).setSize(itemWidth, dropdownHeight);
         }
 
         if (protocolMode.equals("OSC")) {
@@ -956,6 +962,14 @@ class W_Networking extends Widget {
             }
         }
         if (protocolMode.equals("Serial")) {
+            //When using serial mode, lock baud rate dropdown when datatype dropdown is in use
+            if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[0]).isOpen()) {
+                cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").lock();
+            } else {
+                if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isLock()) {
+                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").unlock();
+                }
+            }
             //baud rate
             if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
                 if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
@@ -1917,7 +1931,7 @@ class Stream extends Thread {
                 }
                 serialMessage += "\n";
                 try {
-                    // println("SerialMessage: SSVEP = " + serialMessage);
+                    //println("SerialMessage: SSVEP = " + serialMessage);
                     this.serial_networking.write(serialMessage);
                 } catch (Exception e){
                     println("SerialMessage: Focus Error");

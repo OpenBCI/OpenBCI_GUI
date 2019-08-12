@@ -13,7 +13,7 @@ class Widget{
     PApplet pApplet;
 
     int x0, y0, w0, h0; //true x,y,w,h of container
-    int x, y, w, h; //adjusted x,y,w,h of white space (blank rectangle) under the nav...
+    int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
     int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
@@ -25,7 +25,8 @@ class Widget{
     ArrayList<NavBarDropdown> dropdowns;
     ControlP5 cp5_widget;
     String widgetTitle = "No Title Set";
-    Button widgetSelector;
+    //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
+    private final float widgetDropdownScaling = .35;
 
     //some variables for the dropdowns
     int navH = 22;
@@ -106,7 +107,8 @@ class Widget{
             // .setFont(h2)
             .setOpen(false)
             .setColor(dropdownColors)
-            .setSize(widgetSelectorWidth, (_widgetOptions.size()+1)*(navH-4) )// + maxFreqList.size())
+            .setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
+            //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
             .setBarHeight(navH-4) //height of top/primary bar
             .setItemHeight(navH-4) //height of all item/dropdown bars
@@ -303,12 +305,24 @@ class Widget{
         w = w0;
         h = h0 - navH*2;
 
+        //This line resets the origin for all cp5 elements under "cp5_widget" when the screen is resized, otherwise there will be drawing errors
         cp5_widget.setGraphics(pApplet, 0, 0);
 
-        // println("testing... 1. 2. 3....");
+        int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
+        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
+        int dropdownHeight = (dropdownsItemsToShow + 1) * (navH - 4);
+        if (wm != null) {
+            int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
+            if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
+        }
+
+
         try {
             cp5_widget.getController("WidgetSelector")
                 .setPosition(x0+2, y0+2) //upper left corner
+                ;
+            cp5_widget.getController("WidgetSelector")
+                .setSize(widgetSelectorWidth, dropdownHeight);
                 ;
         }
         catch (Exception e) {

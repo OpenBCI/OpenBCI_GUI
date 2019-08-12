@@ -434,6 +434,7 @@ class ChannelBar{
         plot.setYLim(-200,200);
         plot.setPointSize(2);
         plot.setPointColor(0);
+        plot.setAllFontProperties("Arial", 0, 14);
         if(channelNumber == nchan){
             plot.getXAxis().setAxisLabelText("Time (s)");
         }
@@ -732,6 +733,7 @@ class PlaybackScrollbar {
     float ps_Padding = 50.0; //used to make room for skip to start button
     String currentAbsoluteTimeToDisplay = "";
     String currentTimeInSecondsToDisplay = "";
+    Boolean updatePosition = false;
 
     PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
         swidth = sw;
@@ -771,34 +773,39 @@ class PlaybackScrollbar {
         //if the slider is being used, update new position based on user mouseX
         if (locked) {
             newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
-            try {
-                clearAllTimeSeriesGPlots();
-                clearAllAccelGPlots();
-                playbackScrubbing(); //perform scrubbing
-            } catch (Exception e) {
-                println("PlaybackScrollbar: Error: " + e);
-            }
-        }
-
-        //if the slider is not being used, let playback control it when (isRunning)
-        if (!locked && isRunning){
-            //process the file
-            if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
-                lastReadDataPacketInd = 0;
-                pointCounter = 0;
+            if (updatePosition) { //if the slider has been moved
                 try {
-                    process_input_file();
-                    ///println("TimeSeriesFileProcessed");
-                } catch(Exception e) {
-                    isOldData = true;
-                    output("###Error processing timestamps, are you using old data?");
+                    clearAllTimeSeriesGPlots();
+                    clearAllAccelGPlots();
+                    playbackScrubbing(); //perform scrubbing
+                } catch (Exception e) {
+                    println("PlaybackScrollbar: Error: " + e);
                 }
+                updatePosition = false;
             }
-            //Set the new position of playback indicator using mapped value
-            newspos = updatePos();
+        } else {
+            //if the slider is not being used, let playback control it when (isRunning)
+            if (isRunning){
+                //process the file
+                if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
+                    lastReadDataPacketInd = 0;
+                    pointCounter = 0;
+                    try {
+                        process_input_file();
+                        ///println("TimeSeriesFileProcessed");
+                    } catch(Exception e) {
+                        isOldData = true;
+                        output("###Error processing timestamps, are you using old data?");
+                    }
+                }
+                //Set the new position of playback indicator using mapped value
+                newspos = updatePos();
+                updatePosition = false;
+            }
         }
         if (abs(newspos - spos) > 1) { //if the slider has been moved
             spos = spos + (newspos-spos); //update position
+            updatePosition = true;
         }
         if (getIndex() == 0) { //if the current index is 0, the indicator is at start
             indicatorAtStart = true;
@@ -816,8 +823,14 @@ class PlaybackScrollbar {
         }
 
         if (curTimestamp != null) {
-            currentAbsoluteTimeToDisplay = getCurrentTimeStamp();
-            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " s";
+            //update absolute time to display
+            long t = new Long(getCurrentTimeStamp());
+            Date d =  new Date(t);
+            currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+            //update elapsed time to display
+            int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
+
         }
     } //end update loop for PlaybackScrollbar
 
@@ -956,15 +969,16 @@ class PlaybackScrollbar {
     void playbackScrubbing() {
         num_indices = indices;
         //println("INDEXES: "+num_indices);
-        if(has_processed){
+        if(has_processed) {
             //This updates Time Series playback position and the value at the top of the GUI in title bar
             currentTableRowIndex = getIndex();
-            String[] newTimeStamp = split(index_of_times.get(currentTableRowIndex), '.');
+            String newTimeStamp = index_of_times.get(currentTableRowIndex);
+            if (currentTableRowIndex >= playbackData_table.getRowCount()) newTimeStamp = index_of_times.get(playbackData_table.getRowCount());
             //If system is stopped, success print detailed position to bottom of GUI
             if (!isRunning) {
                 outputSuccess("New Position{ " + getPos() + "/" + sposMax
                 + " Index: " + currentTableRowIndex
-                + " } --- Time: " + newTimeStamp[0]
+                + " } --- Time: " + newTimeStamp
                 + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
                 + " seconds" );
             }
@@ -976,8 +990,11 @@ class PlaybackScrollbar {
         //update the value for the number of indices
         num_indices = indices;
         //return current playback time
-        String[] timeStamp = split(curTimestamp, '.');
-        return timeStamp[0];
+        if (currentTableRowIndex > playbackData_table.getRowCount()) {
+            return index_of_times.get(playbackData_table.getRowCount());
+        } else {
+            return index_of_times.get(currentTableRowIndex);
+        }
     }
 
     //This function scrubs to the beginning of the playback file
@@ -1007,18 +1024,8 @@ class PlaybackScrollbar {
 //Used in the above PlaybackScrollbar class
 //Also used in OpenBCI_GUI in the app's title bar
 int getElapsedTimeInSeconds(int tableRowIndex) {
-    String startTime = index_of_times.get(0);
-    String currentTime = index_of_times.get(tableRowIndex);
-    DateFormat df = new SimpleDateFormat("hh:mm:ss");
-    long time1 = 0;
-    long time2 = 0;
-    try {
-        time1 = df.parse(startTime).getTime();
-        time2 = df.parse(currentTime).getTime();
-    } catch (Exception e) {
-    }
-    int delta = int((time2 - time1)*0.001);
-    return delta;
+    int elapsedTime = int(float(tableRowIndex)/getSampleRateSafe());
+    return elapsedTime;
 }
 
 void clearAllTimeSeriesGPlots() {

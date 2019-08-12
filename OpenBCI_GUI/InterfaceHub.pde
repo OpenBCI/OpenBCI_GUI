@@ -283,6 +283,7 @@ class Hub {
         // Able to start tcpClient connection?
         if(!startTCPClient()) {
             outputWarn("Failed to connect to OpenBCIHub background application. LIVE functionality will be disabled.");
+            println("InterfaceHub: Hub error");
         }
     }
 
@@ -1272,3 +1273,16 @@ class Hub {
     }
 
 };
+
+class CheckHubInit extends TimerTask {
+    public void run() {
+        if (hub.startTCPClient()) {
+            //outputSuccess("The GUI is now connected to the Hub!");
+            hub.setHubIsRunning(true);
+            this.cancel();
+        } else {
+            println("________ Hub not found yet :( ________");
+        }
+        hubTimerElapsedSeconds++;
+    }
+}

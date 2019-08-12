@@ -58,6 +58,13 @@ class W_SSVEP extends Widget {
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
+    String ssvepHelpText = "The SSVEP Widget allows for visual stimulation at specific frequencies.\n\n"
+                            + "In response to looking at one of the SSVEPs, you will see an increase in brain activity at that frequency in the FFT plot. "
+                            + "Make sure to select the electrodes that align with the back of your head, where the visual stimulus will be recognized.\n\n"
+                            + "You can stop/start each SSVEP by clicking on it.\n\n"
+                            + "For best results, set the GUI framerate to 60fps.\n\n";
+    int ssvepHelpTextFontSize = 16;
+
     W_SSVEP(PApplet _parent) {
 
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -302,13 +309,11 @@ class W_SSVEP extends Widget {
         if (showAbout) {
             stroke(220);
             fill(20);
-
             rect(x + 20, y + 20, w - 40, h- 40);
             textAlign(LEFT, TOP);
-            textSize(11.5);
+            textSize(ssvepHelpTextFontSize);
             fill(250);
-            String s = "The SSVEP Widget, allows for visual stimulation at specific frequencies. This means that in response to looking at one of the SSVEPs set at a given frequency, you will see an increase in brain activity at that frequency in the FFT plot. For best results, set the frame rate to 60fps.\n\nAdditionally, select the electrodes that align with the back of your head, where the visual stimulus will be recognized. Refer to OpenBCI GUI Widget Guide for more details.\n\nTo pause a single SSVEP, click on it.";
-            text(s, x + 30, y + 30, w - 60, h -60);
+            text(ssvepHelpText, x + 30, y + 30, w - 60, h -60);
         }
 
         stroke(0);
@@ -530,6 +535,7 @@ class W_SSVEP extends Widget {
 
     float[] processData() {
         int activeSSVEPs = settings.numSSVEPs + 1;
+        //println("NUM SSVEPs = " + activeSSVEPs);
 
         float[] peakData = new float[4];     //uV at the selected SSVEP freqencies
         float[] backgroundData = new float[4];   //uV at all other frequencies
@@ -544,7 +550,8 @@ class W_SSVEP extends Widget {
                     sum += fftBuff[chan].getFreq(freqs[i]);
                 }
                 float avg = sum/numActiveChannels;
-                finalData[i] = avg;
+                peakData[i] = avg;
+                //println("PEAK DATA: " + backgroundData[i]);
 
                 //calculate background uV in all channels but the given channel
                 sum = 0;
@@ -559,13 +566,14 @@ class W_SSVEP extends Widget {
                     }
                 }
                 backgroundData[i] = sum;
+                //println("BACKGROUND DATA: " + backgroundData[i]);
 
                 finalData[i] = peakData[i]/backgroundData[i];
             } else {
                 finalData[i] = 0;
             }
         }
-        // println(finalData);
+        //println(finalData);
         return finalData;
     }
 

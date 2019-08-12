@@ -149,6 +149,7 @@ public void controlEvent(ControlEvent theEvent) {
 
         if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
             outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
+            println("ControlEvent: Hub error");
             return;
         }
 
@@ -673,6 +674,16 @@ class ControlPanel {
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
     }
 
+    private void hideChannelListCP() {
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
+        channelPopup.setClicked(false);
+        if (setChannel.wasPressed) {
+            setChannel.wasPressed = false;
+        } else if(ovrChannel.wasPressed) {
+            ovrChannel.wasPressed = false;
+        }
+    }
+
     //mouse pressed in control panel
     public void CPmousePressed() {
         // verbosePrint("CPmousePressed");
@@ -804,11 +815,13 @@ class ControlPanel {
                     if (setChannel.isMouseHere()){
                         setChannel.setIsActive(true);
                         setChannel.wasPressed = true;
+                        ovrChannel.wasPressed = false;
                     }
 
                     if (ovrChannel.isMouseHere()){
                         ovrChannel.setIsActive(true);
                         ovrChannel.wasPressed = true;
+                        setChannel.wasPressed = false;
                     }
 
 
@@ -1105,18 +1118,21 @@ class ControlPanel {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
                 // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
                 get_channel(rcBox);
-                getChannel.wasPressed=false;
+                getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
+                hideChannelListCP();
             }
 
             if (setChannel.isMouseHere() && setChannel.wasPressed){
                 channelPopup.setClicked(true);
+                channelPopup.setTitle("Change Channel");
                 pollPopup.setClicked(false);
                 setChannel.setIsActive(false);
             }
 
             if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
                 channelPopup.setClicked(true);
+                channelPopup.setTitle("Override Dongle");
                 pollPopup.setClicked(false);
                 ovrChannel.setIsActive(false);
             }
@@ -1125,12 +1141,14 @@ class ControlPanel {
                 autoscan.wasPressed = false;
                 autoscan.setIsActive(false);
                 scan_channels(rcBox);
+                hideChannelListCP();
             }
 
             if(systemStatus.isMouseHere() && systemStatus.wasPressed){
                 system_status(rcBox);
                 systemStatus.setIsActive(false);
                 systemStatus.wasPressed = false;
+                hideChannelListCP();
             }
         }
 
@@ -2829,22 +2847,24 @@ class RadioConfigBox {
         x = _x + _w;
         y = _y;
         w = _w;
-        h = 255;
+        h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
 
-        getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-        setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        autoscan = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
-        ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        
+        getChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        systemStatus = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        setChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+        ovrChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        //typical button height + 20 for larger autoscan button
+        autoscan = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
 
         //Set help text
-        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
-        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle");
-        ovrChannel.setHelpText("Change the channel of the USB Dongle only");
-        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton");
-        systemStatus.setHelpText("Get the connection status of your Cyton system");
+        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
+        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
+        ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
+        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
+        systemStatus.setHelpText("Get the connection status of your Cyton system.");
     }
     public void update() {}
 
@@ -2871,9 +2891,9 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
+        rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
         fill(255);
-        text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+        text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
         this.last_message = localstring;
     }
 };
@@ -2975,6 +2995,7 @@ class SDConverterBox {
 class ChannelPopup {
     int x, y, w, h, padding; //size and position
     boolean clicked;
+    String title = "";
 
     ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w * 2;
@@ -3004,13 +3025,14 @@ class ChannelPopup {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("CHANNEL SELECTION", x + padding, y + padding);
+        text(title, x + padding, y + padding);
         popStyle();
         refreshPort.draw();
     }
 
     public void setClicked(boolean click) { this.clicked = click; }
     public boolean wasClicked() { return this.clicked; }
+    public void setTitle(String s) { title = s; }
 };
 
 class PollPopup {

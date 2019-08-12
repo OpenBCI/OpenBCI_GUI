@@ -19,7 +19,7 @@ W_BandPower w_bandPower;
 W_Accelerometer w_accelerometer;
 W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
-//W_template w_template1; //Hide widget template from future stable releases
+W_template w_template1;
 W_emg w_emg;
 W_openBionics w_openbionics;
 W_Focus w_focus;
@@ -125,12 +125,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
 
     
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
-    //DEVELOPERS: HERE IS AN EXAMPLE WIDGET, UNCOMMENT TO VIEW
-    /*
+    //DEVELOPERS: Here is an example widget with the essentials/structure in place
     w_template1 = new W_template(_this);
     w_template1.setTitle("Widget Template 1");
     addWidget(w_template1, w);
-    */
 
     // w_template2 = new W_template(_this);
     // w_template2.setTitle("Widget Template 2");
