@@ -817,14 +817,13 @@ class PlaybackScrollbar {
         }
 
         if (curTimestamp != null) {
+            //update absolute time to display
             long t = new Long(getCurrentTimeStamp());
             Date d =  new Date(t);
             currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
-            //int numSecondsInFile = getElapsedTimeInSeconds(playbackData_table.getRowCount() - 1);
+            //update elapsed time to display
             int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-            int elapsedTime = int(float(currentTableRowIndex)/getSampleRateSafe());
-            //currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
-            currentTimeInSecondsToDisplay = elapsedTime + " of " + numSecondsInFile + " s";
+            currentTimeInSecondsToDisplay = elapsedTime(currentTableRowIndex) + " of " + numSecondsInFile + " s";
 
         }
     } //end update loop for PlaybackScrollbar
@@ -974,7 +973,7 @@ class PlaybackScrollbar {
                 outputSuccess("New Position{ " + getPos() + "/" + sposMax
                 + " Index: " + currentTableRowIndex
                 + " } --- Time: " + newTimeStamp
-                + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
+                + " --- " + elapsedTime(currentTableRowIndex)
                 + " seconds" );
             }
         }
@@ -1009,7 +1008,7 @@ class PlaybackScrollbar {
                 outputSuccess("New Position{ " + getPos() + "/" + sposMax
                 + " Index: " + getIndex()
                 + " } --- Time: " +  getCurrentTimeStamp()
-                + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
+                + " --- " + elapsedTime(currentTableRowIndex)
                 + " seconds" );
             }
         }
@@ -1019,14 +1018,8 @@ class PlaybackScrollbar {
 //Used in the above PlaybackScrollbar class
 //Also used in OpenBCI_GUI in the app's title bar
 int getElapsedTimeInSeconds(int tableRowIndex) {
-    String startTime = index_of_times.get(0);
-    String currentTime = index_of_times.get(tableRowIndex);
-    if (tableRowIndex > playbackData_table.getRowCount()) currentTime = index_of_times.get(playbackData_table.getRowCount());
-    long time1 = new Long(startTime);
-    long time2 = new Long(currentTime);
-    int delta = int((time2 - time1)*0.001);
-    if (delta < 0) delta = 0; 
-    return delta;
+    int elapsedTime = int(float(tableRowIndex)/getSampleRateSafe();
+    return elapsedTime;
 }
 
 void clearAllTimeSeriesGPlots() {
