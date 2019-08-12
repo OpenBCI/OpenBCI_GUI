@@ -733,6 +733,7 @@ class PlaybackScrollbar {
     float ps_Padding = 50.0; //used to make room for skip to start button
     String currentAbsoluteTimeToDisplay = "";
     String currentTimeInSecondsToDisplay = "";
+    Boolean updatePosition = false;
 
     PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
         swidth = sw;
@@ -772,34 +773,39 @@ class PlaybackScrollbar {
         //if the slider is being used, update new position based on user mouseX
         if (locked) {
             newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
-            try {
-                clearAllTimeSeriesGPlots();
-                clearAllAccelGPlots();
-                playbackScrubbing(); //perform scrubbing
-            } catch (Exception e) {
-                println("PlaybackScrollbar: Error: " + e);
-            }
-        }
-
-        //if the slider is not being used, let playback control it when (isRunning)
-        if (!locked && isRunning){
-            //process the file
-            if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
-                lastReadDataPacketInd = 0;
-                pointCounter = 0;
+            if (updatePosition) { //if the slider has been moved
                 try {
-                    process_input_file();
-                    ///println("TimeSeriesFileProcessed");
-                } catch(Exception e) {
-                    isOldData = true;
-                    output("###Error processing timestamps, are you using old data?");
+                    clearAllTimeSeriesGPlots();
+                    clearAllAccelGPlots();
+                    playbackScrubbing(); //perform scrubbing
+                } catch (Exception e) {
+                    println("PlaybackScrollbar: Error: " + e);
                 }
+                updatePosition = false;
             }
-            //Set the new position of playback indicator using mapped value
-            newspos = updatePos();
+        } else {
+            //if the slider is not being used, let playback control it when (isRunning)
+            if (isRunning){
+                //process the file
+                if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
+                    lastReadDataPacketInd = 0;
+                    pointCounter = 0;
+                    try {
+                        process_input_file();
+                        ///println("TimeSeriesFileProcessed");
+                    } catch(Exception e) {
+                        isOldData = true;
+                        output("###Error processing timestamps, are you using old data?");
+                    }
+                }
+                //Set the new position of playback indicator using mapped value
+                newspos = updatePos();
+                updatePosition = false;
+            }
         }
         if (abs(newspos - spos) > 1) { //if the slider has been moved
             spos = spos + (newspos-spos); //update position
+            updatePosition = true;
         }
         if (getIndex() == 0) { //if the current index is 0, the indicator is at start
             indicatorAtStart = true;
