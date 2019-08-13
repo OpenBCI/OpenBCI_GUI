@@ -822,16 +822,16 @@ class PlaybackScrollbar {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
-        if (curTimestamp != null) {
-            //update absolute time to display
+        if (!getCurrentTimeStamp().equals("TimeNotFound")) {
             long t = new Long(getCurrentTimeStamp());
             Date d =  new Date(t);
             currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
-            //update elapsed time to display
-            int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
-
         }
+
+        //update elapsed time to display
+        int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+        currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
+
     } //end update loop for PlaybackScrollbar
 
     float constrain(float val, float minv, float maxv) {
@@ -990,10 +990,14 @@ class PlaybackScrollbar {
         //update the value for the number of indices
         num_indices = indices;
         //return current playback time
-        if (currentTableRowIndex > playbackData_table.getRowCount()) {
-            return index_of_times.get(playbackData_table.getRowCount());
+        if (index_of_times.get(0) != null) {
+            if (currentTableRowIndex > playbackData_table.getRowCount()) {
+                return index_of_times.get(playbackData_table.getRowCount());
+            } else {
+                return index_of_times.get(currentTableRowIndex);
+            }
         } else {
-            return index_of_times.get(currentTableRowIndex);
+            return "TimeNotFound";
         }
     }
 
