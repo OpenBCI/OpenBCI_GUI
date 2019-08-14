@@ -119,7 +119,7 @@ boolean print_bytes(RadioConfigBox rc){
 
 void print_bytes_error(RadioConfigBox rcConfig){
     println("Radios_Config: Error reading from Serial/COM port");
-    rcConfig.print_onscreen("Error reading from Serial port. Try a different port?");
+    rcConfig.print_onscreen("Error reading from Serial port.\n\nTry a different port?");
     board = null;
 }
 
@@ -145,7 +145,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
                 // portIsOpen = false;
             } else {
                 println("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
-                rcConfig.print_onscreen("Error connecting to Serial port. Try a different port?");
+                rcConfig.print_onscreen("Error connecting to Serial port.\n\nTry a different port?");
             }
             board = null;
             println("Failed to connect using " + openBCI_portName);
@@ -153,7 +153,7 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
         }
     } else {
         output("No Serial/COM port selected. Please select your Serial/COM port and retry");
-        rcConfig.print_onscreen("Select a Serial/COM port, then try again");
+        rcConfig.print_onscreen("Select a Serial/COM port, then try again.");
         return false;
     }
 }
@@ -280,7 +280,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
                 print_bytes_error(rcConfig);
             }
         }
-        else rcConfig.print_onscreen("Please Select a Channel");
+        else rcConfig.print_onscreen("Please Select a Channel.");
     }
     else {
         println("Error, no board connected");
@@ -319,7 +319,7 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
             }
         }
 
-        else rcConfig.print_onscreen("Please Select a Channel");
+        else rcConfig.print_onscreen("Please Select a Channel.");
     }
 
     else {
