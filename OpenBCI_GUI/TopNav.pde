@@ -858,11 +858,13 @@ class ConfigSelector {
                             configOptions.get(0).setString("Expert Mode On");
                             configOptions.get(0).setColorNotPressed(expertPurple);
                             println("TopNav: Expert Mode On");
+                            output("Expert Mode ON: All keyboard shortcuts and features are enabled!");
                             settings.expertModeToggle = true;
                         } else {
                             configOptions.get(0).setString("Expert Mode Off");
                             configOptions.get(0).setColorNotPressed(newGreen);
                             println("TopNav: Expert Mode Off");
+                            output("Expert Mode OFF: Use spacebar to start/stop the data stream.");
                             settings.expertModeToggle = false;
                         }
                     } else if (configSelected == 1) { ////Save Button
