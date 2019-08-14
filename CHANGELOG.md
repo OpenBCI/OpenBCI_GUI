@@ -5,6 +5,7 @@ Use OpenBCIHub v2.0.9 please.
 
 ### Improvements
 * Add reusable ChannelSelect class to Widget.pde #573
+* Update Radio Config tools and UI to be more user-friendly
 
 ## Beta 0
 
