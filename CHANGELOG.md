@@ -1,6 +1,11 @@
 # v4.1.4
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 1
+
+### Improvements
+* Add reusable ChannelSelect class to Widget.pde #573
+
 ## Beta 0
 
 ### Improvements

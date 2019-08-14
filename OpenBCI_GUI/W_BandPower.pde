@@ -1,5 +1,5 @@
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //    W_BandPowers.pde
 //
@@ -10,36 +10,21 @@
 //
 //    Created by: Wangshu Sun, May 2017
 //
-///////////////////////////////////////////////////,
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class W_BandPower extends Widget {
-
+    
+    private final int NUM_BANDS = 5;
     GPlot bp_plot;
+    public ChannelSelect bpChanSelect;
 
-    //----------CHANNEL SELECT INFRASTRUCTURE
-    ControlP5 cp5_channelCheckboxes;   //ControlP5 for which channels to use
-    CheckBox checkList;
-    //draw checkboxes vars
-    int offset;                      //offset on nav bar of checks
-    int checkHeight = y0 + navH;
-    //checkbox dropdown vars
-    boolean channelSelectHover;
-    boolean channelSelectPressed;
-    public List<Integer> activeChannels;
-
-    W_BandPower(PApplet _parent){
+    W_BandPower(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-        activeChannels = new ArrayList<Integer>();
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        // addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-        // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-        // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+        bpChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "BP_Channels");
+        
+        //Add settings dropdowns
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
         addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
-
 
         // Setup for the BandPower plot
         bp_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
@@ -72,55 +57,30 @@ class W_BandPower extends Widget {
             }
         );
 
-        //setup for checkboxes
-        cp5_channelCheckboxes = new ControlP5(pApplet);
-
-        int checkSize = navH - 4;
-        offset = (navH - checkSize)/2;
-
-        channelSelectHover = false;
-        channelSelectPressed = false;
-        checkList = cp5_channelCheckboxes.addCheckBox("channelListBP")
-                              .setPosition(x + 5, y + offset)
-                              .setSize(checkSize, checkSize)
-                              .setItemsPerRow(nchan)
-                              .setSpacingColumn(13)
-                              .setSpacingRow(2)
-                              .setColorLabel(color(0)) //Set the color of the text label
-                              .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
-                              .setColorBackground(color(150)) //checkbox background color
-                              .setColorActive(color(57, 128, 204)) //checkbox color when active
-                              ;
-
-
+        //Activate all channel checkboxes by default for this widget
         for (int i = 0; i < nchan; i++) {
-          int chNum = i+1;
-          cp5_channelCheckboxes.get(CheckBox.class, "channelListBP")
-                        .addItem(String.valueOf(chNum), chNum)
-                        ;
-
-          checkList.getItem(i).setVisible(false);           //set invisible after adding items, so make sure they won't stay invisible
-          checkList.activate(i);
-          activeChannels.add(i);
+            bpChanSelect.checkList.activate(i);
+            bpChanSelect.activeChan.add(i);
         }
+    } //end of constructor
 
-        cp5_channelCheckboxes.setAutoDraw(false);
-    }
-
-    void update(){
+    void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        float[] activePower = new float[nchan];
+        float[] activePower = new float[NUM_BANDS];
 
-        for (int i = 0; i < 5; i++){
+        for (int i = 0; i < NUM_BANDS; i++) {
             float sum = 0;
 
-            for (int j = 0; j < activeChannels.size(); j++){
-                int chan = activeChannels.get(j);
+            for (int j = 0; j < bpChanSelect.activeChan.size(); j++) {
+                int chan = bpChanSelect.activeChan.get(j);
                 sum += dataProcessing.avgPowerInBins[chan][i];
-                activePower[i] = sum/activeChannels.size();
+                activePower[i] = sum / bpChanSelect.activeChan.size();
             }
         }
+        
+        //Update channel checkboxes and active channels
+        bpChanSelect.update(x, y, w);
 
         GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
         bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA");
@@ -128,26 +88,10 @@ class W_BandPower extends Widget {
         bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA");
         bp_points.add(BETA + 0.5, activePower[BETA], "BETA");
         bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA");
-
         bp_plot.setPoints(bp_points);
+    } //end of update
 
-        //Toggle open/closed the channel menu
-        if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-            channelSelectHover = true;
-        } else {
-            channelSelectHover = false;
-        }
-
-        //Update the active channels to include in data processing
-        activeChannels.clear();
-        for (int i = 0; i < nchan; i++) {
-            if(checkList.getState(i)){
-                activeChannels.add(i);
-            }
-        }
-    }
-
-    void draw(){
+    void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
         pushStyle();
 
@@ -166,63 +110,25 @@ class W_BandPower extends Widget {
         rect(x, y - navHeight, w, navHeight); //button bar
 
         popStyle();
-
-        textSize(12);
-        fill(0);
-        text("Channels", x + 2, y - 6);
-
-        if (!channelSelectPressed) {
-            if(!channelSelectHover){
-                fill(0);
-            } else {
-                fill(130);
-            }
-            triangle(x + 57.0, y - navH*0.65, x + 62.0, y - navH*0.25, x + 67.0, y - navH*0.65);
-        } else {
-            if(!channelSelectHover){
-                fill(0);
-            } else {
-                fill(130);
-            }
-            triangle(x + 57.0, y - navH*0.25, x + 62.0, y - navH*0.65, x + 67.0, y - navH*0.25);
-            fill(180);
-            rect(x,y,w,navH);
-        }
+        bpChanSelect.draw();
         pushStyle();
-
-        cp5_channelCheckboxes.draw();
     }
 
-    void screenResized(){
+    void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         bp_plot.setPos(x, y-navHeight);//update position
         bp_plot.setOuterDim(w, h+navHeight);//update dimensions
 
-        cp5_channelCheckboxes.setGraphics(pApplet, 0, 0);
-        cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").setPosition(x + 2, y + offset);
+        bpChanSelect.screenResized(pApplet);
     }
 
-    void mousePressed(){
+    void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        if(!this.dropdownIsActive) {
-            if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-                channelSelectPressed = !channelSelectPressed;
-                if(channelSelectPressed){
-                    for (int i = 0; i < nchan; i++) {
-                        checkList.getItem(i).setVisible(true);
-                    }
-                } else {
-                    for (int i = 0; i < nchan; i++) {
-                        checkList.getItem(i).setVisible(false);
-                    }
-                }
-            }
-        }
+        bpChanSelect.mousePressed(this.dropdownIsActive);
     }
 
-    void mouseReleased(){
+    void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
     }
 };

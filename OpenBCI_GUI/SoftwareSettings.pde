@@ -607,7 +607,7 @@ class SoftwareSettings {
         JSONArray saveActiveChanSSVEP = new JSONArray();
         int numActiveSSVEPChan = w_ssvep.numActiveChannels;
         for (int i = 0; i < numActiveSSVEPChan; i++) {
-            int activeChan = w_ssvep.activeChannels.get(i) + 1; //add 1 here so channel numbers are correct
+            int activeChan = w_ssvep.ssvepChanSelect.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
             saveActiveChanSSVEP.setInt(i, activeChan);
         }
         saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChanSSVEP);
@@ -624,9 +624,9 @@ class SoftwareSettings {
 
         //Save data from the Active channel checkBoxes
         JSONArray saveActiveChanBP = new JSONArray();
-        int numActiveBPChan = w_bandPower.activeChannels.size();
+        int numActiveBPChan = w_bandPower.bpChanSelect.activeChan.size();
         for (int i = 0; i < numActiveBPChan; i++) {
-            int activeChan = w_bandPower.activeChannels.get(i) + 1; //add 1 here so channel numbers are correct
+            int activeChan = w_bandPower.bpChanSelect.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
             saveActiveChanBP.setInt(i, activeChan);
         }
         saveBPSettings.setJSONArray("activeChannels", saveActiveChanBP);
@@ -1179,45 +1179,44 @@ class SoftwareSettings {
             }
         }
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
-        //deactivate all channels and then activate the active channels
-        w_ssvep.cp5_ssvep.get(CheckBox.class, "channelListSSVEP").deactivateAll();
         try {
+            //deactivate all channels and then activate the active channels
+            w_ssvep.ssvepChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "SSVEP_Channels").deactivateAll();
             if (loadSSVEPActiveChans.size() > 0) {
                 int activeChanCounter = 0;
                 for (int i = 0; i < nchan; i++) {
                     if (activeChanCounter  < loadSSVEPActiveChans.size()) {
                         //subtract 1 because cp5 starts count from 0
                         if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
-                            w_ssvep.cp5_ssvep.get(CheckBox.class, "channelListSSVEP").activate(i);
+                            w_ssvep.ssvepChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "SSVEP_Channels").activate(i);
                             activeChanCounter++;
                         }
                     }
                 }
             }
-        } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
-            println("Settings: Exception caught applying ssvep settings");
+        } catch (Exception e) {
+            println("Settings: Exception caught applying ssvep settings" + e);
         }
         verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 
         ////////////////////////////Apply Band Power settings
-        w_bandPower.cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").deactivateAll();
         try {
+            //use the same process as ssvep to apply channel checkbox settings
+            w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").deactivateAll();
             if (loadBPActiveChans.size() > 0) {
                 int activeChanCounterBP = 0;
                 for (int i = 0; i < nchan; i++) {
                     if (activeChanCounterBP  < loadBPActiveChans.size()) {
                         //subtract 1 because cp5 starts count from 0
                         if (i == (loadBPActiveChans.get(activeChanCounterBP) - 1)) {
-                            w_bandPower.cp5_channelCheckboxes.get(CheckBox.class, "channelListBP").activate(i);
+                            w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").activate(i);
                             activeChanCounterBP++;
                         }
                     }
                 }
             }
-        } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
-            println("Settings: Exception caught applying band power settings");
+        } catch (Exception e) {
+            println("Settings: Exception caught applying band power settings " + e);
         }
         verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 

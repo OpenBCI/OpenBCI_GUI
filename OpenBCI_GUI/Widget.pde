@@ -436,3 +436,133 @@ void WidgetSelector(int n){
 
     closeAllDropdowns();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//    ChannelSelect is currently used by BandPower and SSVEP Widgets         //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+class ChannelSelect {
+
+    //----------CHANNEL SELECT INFRASTRUCTURE
+    private int x, y, w, navH;
+    private float tri_xpos = 0;
+    public ControlP5 cp5_channelCheckboxes;   //ControlP5 to contain our checkboxes
+    public CheckBox checkList;
+    private int offset;  //offset on nav bar of checkboxes
+    private boolean channelSelectHover;
+    private boolean channelSelectPressed;
+    public List<Integer> activeChan;
+    public String chanDropdownName;
+
+    ChannelSelect(PApplet _parent, int _x, int _y, int _w, int _navH, String checkBoxName) {
+        x = _x;
+        y = _y;
+        w = _w;
+        navH = _navH;
+        activeChan = new ArrayList<Integer>();
+        chanDropdownName = checkBoxName;
+
+        //setup for checkboxes
+        cp5_channelCheckboxes = new ControlP5(_parent);
+
+        int checkSize = _navH - 4;
+        offset = (_navH - checkSize)/2;
+
+        channelSelectHover = false;
+        channelSelectPressed = false;
+
+        //Go ahead and just name the checkbox the same as the text display on screen
+        checkList = cp5_channelCheckboxes.addCheckBox(chanDropdownName)
+                        .setPosition(x + 5, y + offset)
+                        .setSize(checkSize, checkSize)
+                        .setItemsPerRow(nchan)
+                        .setSpacingColumn(13)
+                        .setSpacingRow(2)
+                        .setColorLabel(color(0)) //Set the color of the text label
+                        .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
+                        .setColorBackground(color(150)) //checkbox background color
+                        .setColorActive(color(57, 128, 204)) //checkbox color when active
+                        ;
+        //nchan is a global variable, so we can use it here with no problems
+        for (int i = 0; i < nchan; i++) {
+            int chNum = i+1;
+            cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName)
+                            .addItem(String.valueOf(chNum), chNum)
+                            ;
+            //start all items as invisible until user clicks dropdown to show checkboxes
+            checkList.getItem(i).setVisible(false);
+        }
+
+        cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
+        //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void update(int _x, int _y, int _w) {
+        //update the x,y,w for this class using the parent class
+        x = _x;
+        y = _y;
+        w = _w;
+        //Toggle open/closed the channel menu
+        if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+            channelSelectHover = true;
+        } else {
+            channelSelectHover = false;
+        }
+        //Update the active channels to include in data processing
+        activeChan.clear();
+        for (int i = 0; i < nchan; i++) {
+            if(checkList.getState(i)){
+                activeChan.add(i);
+            }
+        }
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void draw() {
+        textSize(12);
+        fill(0);
+        text("Channels", x + 2, y - 6);
+        tri_xpos = x + textWidth("Channels") + 7;
+
+        if(!channelSelectHover){
+            fill(0);
+        } else {
+            fill(130);
+        }
+
+        if (!channelSelectPressed) {
+            triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
+        } else {
+            triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
+            fill(180);
+            rect(x,y,w,navH);
+        }
+
+        cp5_channelCheckboxes.draw();
+    }
+
+    void screenResized(PApplet _parent) {
+        cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void mousePressed(boolean dropdownIsActive) {
+        if (!dropdownIsActive) {
+            if (mouseX > (tri_xpos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+                channelSelectPressed = !channelSelectPressed;
+                if (channelSelectPressed) {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
+            }
+        }
+    }
+} //end of ChannelSelect class

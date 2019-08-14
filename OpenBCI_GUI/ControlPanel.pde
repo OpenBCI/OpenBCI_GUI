@@ -264,16 +264,25 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if (theEvent.isFrom("recentFiles")) {
-        int s = (int)(theEvent.getController()).getValue();
-        //println("got a menu event from item " + s);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-        if (new File(filePath).isFile()) {
-            playbackFileSelected(filePath, s);
-        } else {
-            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+    //Check control events from widgets
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
+        //Check for event in PlaybackHistory Dropdown List in Control Panel
+        if (theEvent.isFrom("recentFiles")) {
+            int s = (int)(theEvent.getController()).getValue();
+            //println("got a menu event from item " + s);
+            String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
+            if (new File(filePath).isFile()) {
+                playbackFileSelected(filePath, s);
+            } else {
+                outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+            }
         }
+        //Check for event in band power channel select checkBoxes, if needed
+        /*
+        if (theEvent.isFrom(w_bandPower.bpChanSelect.checkList)) {
+            println(w_bandPower.bpChanSelect.checkList.getArrayValue());
+        }
+        */
     }
 }
 

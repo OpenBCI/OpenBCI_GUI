@@ -29,7 +29,9 @@ void process_input_file() throws Exception {
     try {
         while (!hasRepeated) {
             currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-            index_of_times.put(indices,curTimestamp.substring(1)); //remove white space from timestamp
+            if (!curTimestamp.equals("null")) {
+                index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
+            }
             indices++;
         }
     }

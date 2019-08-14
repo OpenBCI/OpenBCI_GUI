@@ -48,7 +48,7 @@ class W_timeSeries extends Widget {
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
     boolean updateNumberOfChannelBars = false; //used if user selects new playback file using playback widget
 
-    W_timeSeries(PApplet _parent){
+    W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
@@ -77,7 +77,7 @@ class W_timeSeries extends Widget {
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
-        if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
+        if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
             playbackWidgetHeight = 50.0;
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
@@ -94,13 +94,13 @@ class W_timeSeries extends Widget {
         channelBars = new ChannelBar[numChannelBars];
 
         //create our channel bars and populate our channelBars array!
-        for(int i = 0; i < numChannelBars; i++){
+        for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
             ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
             channelBars[i] = tempBar;
         }
 
-        if(eegDataSource == DATASOURCE_CYTON){
+        if(eegDataSource == DATASOURCE_CYTON) {
             hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p6,10);
@@ -135,13 +135,13 @@ class W_timeSeries extends Widget {
         updating = _updating;
     }
 
-    void update(){
-        if(visible && updating){
+    void update() {
+        if(visible && updating) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             hsc.update(); //update channel controller
 
-            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){
+            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
                 //scrub playback file
                 scrollbar.update();
             }
@@ -151,29 +151,29 @@ class W_timeSeries extends Widget {
                 updateNumChannelBars(ourApplet);
             }
             //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numChannelBars; i++){
+            for(int i = 0; i < numChannelBars; i++) {
                 channelBars[i].update();
             }
         }
     }
 
-    void draw(){
-        if(visible){
+    void draw() {
+        if(visible) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
-            for(int i = 0; i < numChannelBars; i++){
+            for(int i = 0; i < numChannelBars; i++) {
                 channelBars[i].draw();
             }
 
-            if(eegDataSource == DATASOURCE_CYTON){
+            if(eegDataSource == DATASOURCE_CYTON) {
                 hardwareSettingsButton.draw();
             }
 
             //temporary placeholder for playback controller widget
-            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar){ //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
                 stroke(31,69,110);
                 rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
@@ -189,7 +189,7 @@ class W_timeSeries extends Widget {
         }
     }
 
-    void screenResized(){
+    void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
@@ -203,14 +203,14 @@ class W_timeSeries extends Widget {
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
         channelBarHeight = int(ts_h/numChannelBars);
 
-        for(int i = 0; i < numChannelBars; i++){
+        for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
             channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
 
         hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-        if(eegDataSource == DATASOURCE_CYTON){
+        if(eegDataSource == DATASOURCE_CYTON) {
             hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
             ///////////////////////////////////////////////////
@@ -224,36 +224,36 @@ class W_timeSeries extends Widget {
         }
     }
 
-    void mousePressed(){
+    void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         if (!this.dropdownIsActive) {
-            if(eegDataSource == DATASOURCE_CYTON){
+            if(eegDataSource == DATASOURCE_CYTON) {
                 if (hardwareSettingsButton.isMouseHere()) {
                     hardwareSettingsButton.setIsActive(true);
                 }
             }
         }
 
-        if(hsc.isVisible){
+        if(hsc.isVisible) {
             if (!this.dropdownIsActive) {
                 hsc.mousePressed();
             }
         } else {
-            for(int i = 0; i < channelBars.length; i++){
+            for(int i = 0; i < channelBars.length; i++) {
                 channelBars[i].mousePressed();
             }
         }
 
     }
 
-    void mouseReleased(){
+    void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        if(eegDataSource == DATASOURCE_CYTON){
-            if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()){
+        if(eegDataSource == DATASOURCE_CYTON) {
+            if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
-                if(showHardwareSettings){
+                if(showHardwareSettings) {
                     showHardwareSettings = false;
                     hsc.isVisible = false;
                     hardwareSettingsButton.setString("Hardware Settings");
@@ -266,10 +266,10 @@ class W_timeSeries extends Widget {
             hardwareSettingsButton.setIsActive(false);
         }
 
-        if(hsc.isVisible){
+        if(hsc.isVisible) {
             hsc.mouseReleased();
         } else {
-            for(int i = 0; i < channelBars.length; i++){
+            for(int i = 0; i < channelBars.length; i++) {
                 channelBars[i].mouseReleased();
             }
         }
@@ -289,7 +289,7 @@ class W_timeSeries extends Widget {
         channelBars = new ChannelBar[numChannelBars];
 
         //Create our channel bars and populate our channelBars array!
-        for(int i = 0; i < numChannelBars; i++){
+        for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
             ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
             channelBars[i] = tempBar;
@@ -299,7 +299,7 @@ class W_timeSeries extends Widget {
         //this resizes all of the chanel bars
         channelBarHeight = int(ts_h/numChannelBars);
 
-        for(int i = 0; i < numChannelBars; i++){
+        for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
             channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
@@ -312,7 +312,7 @@ class W_timeSeries extends Widget {
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
     settings.tsVertScaleSave = n;
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
     }
     closeAllDropdowns();
@@ -324,7 +324,7 @@ void Duration(int n) {
     // println("adjust duration to: " + xLimOptions[n]);
     //set time series x axis to the duration selected from dropdown
     int newDuration = w_timeSeries.xLimOptions[n];
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
     }
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
@@ -333,9 +333,9 @@ void Duration(int n) {
         w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
     }
     if (cyton.getBoardMode() == BoardMode.ANALOG) {
-        if (settings.arHorizScaleSave == 0){
+        if (settings.arHorizScaleSave == 0) {
             //set analog read x axis to the duration selected from dropdown
-            for(int i = 0; i < w_analogRead.numAnalogReadBars; i++){
+            for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
                 w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
             }
         }
@@ -386,7 +386,7 @@ class ChannelBar{
     boolean drawVoltageValue;
     boolean drawImpValue;
 
-    ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h){ // channel number, x/y location, height, width
+    ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
         channelNumber = _channelNumber;
         channelString = str(channelNumber);
@@ -397,7 +397,7 @@ class ChannelBar{
         w = _w;
         h = _h;
 
-        if(h > 26){
+        if(h > 26) {
             onOff_diameter = 26;
         } else{
             onOff_diameter = h - 2;
@@ -411,7 +411,7 @@ class ChannelBar{
         onOffButton.textColorNotActive = color(255); //Set channel button text to white
         onOffButton.hasStroke(false);
 
-        if(eegDataSource == DATASOURCE_CYTON){
+        if(eegDataSource == DATASOURCE_CYTON) {
             impButton_diameter = 22;
             impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
             impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelNumber + ".");
@@ -435,7 +435,7 @@ class ChannelBar{
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
-        if(channelNumber == nchan){
+        if(channelNumber == nchan) {
             plot.getXAxis().setAxisLabelText("Time (s)");
         }
         // plot.setBgColor(color(31,69,110));
@@ -475,7 +475,7 @@ class ChannelBar{
 
     }
 
-    void update(){
+    void update() {
 
         //update the voltage value text string
         String fmt; float val;
@@ -502,7 +502,7 @@ class ChannelBar{
 
         // update data in plot
         updatePlotPoints();
-        if(isAutoscale){
+        if(isAutoscale) {
             autoScale();
         }
     }
@@ -519,9 +519,9 @@ class ChannelBar{
             return fmt;
     }
 
-    void updatePlotPoints(){
+    void updatePlotPoints() {
         // update data in plot
-        if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints){
+        if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints) {
             for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
                 float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
                 float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
@@ -533,7 +533,7 @@ class ChannelBar{
         }
     }
 
-    void draw(){
+    void draw() {
         pushStyle();
 
         //draw channel holder background
@@ -544,7 +544,7 @@ class ChannelBar{
         //draw onOff Button
         onOffButton.draw();
         //draw impedance check Button
-        if(eegDataSource == DATASOURCE_CYTON){
+        if(eegDataSource == DATASOURCE_CYTON) {
             impCheckButton.draw();
         }
 
@@ -560,49 +560,49 @@ class ChannelBar{
         plot.drawLines();
         // plot.drawPoints();
         // plot.drawYAxis();
-        if(channelNumber == nchan){ //only draw the x axis label on the bottom channel bar
+        if(channelNumber == nchan) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
         plot.endDraw();
 
-        if(drawImpValue){
+        if(drawImpValue) {
             impValue.draw();
         }
-        if(drawVoltageValue){
+        if(drawVoltageValue) {
             voltageValue.draw();
         }
 
         popStyle();
     }
 
-    void setDrawImp(boolean _trueFalse){
+    void setDrawImp(boolean _trueFalse) {
         drawImpValue = _trueFalse;
     }
 
-    int nPointsBasedOnDataSource(){
+    int nPointsBasedOnDataSource() {
         return numSeconds * (int)getSampleRateSafe();
     }
 
-    void adjustTimeAxis(int _newTimeSize){
+    void adjustTimeAxis(int _newTimeSize) {
         numSeconds = _newTimeSize;
         plot.setXLim(-_newTimeSize,0);
 
         nPoints = nPointsBasedOnDataSource();
         channelPoints = new GPointsArray(nPoints);
-        if(_newTimeSize > 1){
+        if(_newTimeSize > 1) {
             plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
         }else{
             plot.getXAxis().setNTicks(10);
         }
-        if(w_timeSeries.isUpdating()){
+        if(w_timeSeries.isUpdating()) {
             updatePlotPoints();
         }
         // println("New X axis = " + _newTimeSize);
     }
 
-    void adjustVertScale(int _vertScaleValue){
-        if(_vertScaleValue == 0){
+    void adjustVertScale(int _vertScaleValue) {
+        if(_vertScaleValue == 0) {
             isAutoscale = true;
         } else {
             isAutoscale = false;
@@ -610,23 +610,23 @@ class ChannelBar{
         }
     }
 
-    void autoScale(){
+    void autoScale() {
         autoScaleYLim = 0;
-        for(int i = 0; i < nPoints; i++){
-            if(int(abs(channelPoints.getY(i))) > autoScaleYLim){
+        for(int i = 0; i < nPoints; i++) {
+            if(int(abs(channelPoints.getY(i))) > autoScaleYLim) {
                 autoScaleYLim = int(abs(channelPoints.getY(i)));
             }
         }
         plot.setYLim(-autoScaleYLim, autoScaleYLim);
     }
 
-    void screenResized(int _x, int _y, int _w, int _h){
+    void screenResized(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
         w = _w;
         h = _h;
 
-        if(h > 26){
+        if(h > 26) {
             onOff_diameter = 26;
             onOffButton.but_dx = onOff_diameter;
             onOffButton.but_dy = onOff_diameter;
@@ -640,7 +640,7 @@ class ChannelBar{
         onOffButton.but_x = x + 6;
         onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
 
-        if(eegDataSource == DATASOURCE_CYTON){
+        if(eegDataSource == DATASOURCE_CYTON) {
             impCheckButton.but_x = x + 36;
             impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
         }
@@ -656,14 +656,14 @@ class ChannelBar{
 
     }
 
-    void mousePressed(){
-        if(onOffButton.isMouseHere()){
+    void mousePressed() {
+        if(onOffButton.isMouseHere()) {
             println("[" + channelNumber + "] onOff pressed");
             onOffButton.setIsActive(true);
         }
 
-        if(eegDataSource == DATASOURCE_CYTON){
-            if(impCheckButton.isMouseHere()){
+        if(eegDataSource == DATASOURCE_CYTON) {
+            if(impCheckButton.isMouseHere()) {
                 println("[" + channelNumber + "] imp pressed");
                 impCheckButton.setIsActive(true);
             }
@@ -671,10 +671,10 @@ class ChannelBar{
 
     }
 
-    void mouseReleased(){
-        if(onOffButton.isMouseHere()){
+    void mouseReleased() {
+        if(onOffButton.isMouseHere()) {
             println("[" + channelNumber + "] onOff released");
-            if(isOn){  // if channel is active
+            if(isOn) {  // if channel is active
                 isOn = false; // deactivate it
                 deactivateChannel(channelNumber - 1); //got to - 1 to make 0 indexed
                 onOffButton.setColorNotPressed(color(50));
@@ -688,11 +688,11 @@ class ChannelBar{
 
         onOffButton.setIsActive(false);
 
-        if(eegDataSource == DATASOURCE_CYTON){
-            if(impCheckButton.isMouseHere() && impCheckButton.isActive()){
+        if(eegDataSource == DATASOURCE_CYTON) {
+            if(impCheckButton.isMouseHere() && impCheckButton.isActive()) {
                 println("[" + channelNumber + "] imp released");
                 w_timeSeries.hsc.toggleImpedanceCheck(channelNumber);  // 'n' indicates the N inputs and '1' indicates test impedance
-                if(drawImpValue){
+                if(drawImpValue) {
                     drawImpValue = false;
                     impCheckButton.setColorNotPressed(color(255)); //White background
                     impCheckButton.textColorNotActive = color(0); //Black text
@@ -785,7 +785,7 @@ class PlaybackScrollbar {
             }
         } else {
             //if the slider is not being used, let playback control it when (isRunning)
-            if (isRunning){
+            if (isRunning) {
                 //process the file
                 if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
                     lastReadDataPacketInd = 0;
@@ -813,7 +813,7 @@ class PlaybackScrollbar {
             indicatorAtStart = false;
         }
 
-        if (mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart){
+        if (mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart) {
             //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
             skipToStartButton.setIsActive(true);
             skipToStartButtonAction(); //skip to start
@@ -822,16 +822,16 @@ class PlaybackScrollbar {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
-        if (curTimestamp != null) {
-            //update absolute time to display
+        if (!getCurrentTimeStamp().equals("TimeNotFound")) {
             long t = new Long(getCurrentTimeStamp());
             Date d =  new Date(t);
             currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
-            //update elapsed time to display
-            int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-            currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
-
         }
+
+        //update elapsed time to display
+        int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
+        currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
+
     } //end update loop for PlaybackScrollbar
 
     float constrain(float val, float minv, float maxv) {
@@ -897,7 +897,7 @@ class PlaybackScrollbar {
         popStyle();
     }
 
-    void screenResized(float _x, float _y, float _w, float _h){
+    void screenResized(float _x, float _y, float _w, float _h) {
         swidth = int(_w);
         sheight = int(_h);
         xpos = _x + ps_Padding; //add lots of padding for use
@@ -915,7 +915,7 @@ class PlaybackScrollbar {
     }
 
     //Fetch index using playback indicator position
-    int getIndex(){
+    int getIndex() {
         //Divide the width (Max - Min) by the number of indices
         //Store this value for scrollbar step size as a float
         float scrollbarStepSize = (sposMax-sposMin) / num_indices;
@@ -990,10 +990,14 @@ class PlaybackScrollbar {
         //update the value for the number of indices
         num_indices = indices;
         //return current playback time
-        if (currentTableRowIndex > playbackData_table.getRowCount()) {
-            return index_of_times.get(playbackData_table.getRowCount());
+        if (index_of_times.get(0) != null) {
+            if (currentTableRowIndex > playbackData_table.getRowCount()) {
+                return index_of_times.get(playbackData_table.getRowCount());
+            } else {
+                return index_of_times.get(currentTableRowIndex);
+            }
         } else {
-            return index_of_times.get(currentTableRowIndex);
+            return "TimeNotFound";
         }
     }
 
@@ -1031,7 +1035,7 @@ int getElapsedTimeInSeconds(int tableRowIndex) {
 void clearAllTimeSeriesGPlots() {
     dataBuffY_uV = new float[nchan][dataBuffX.length];
     dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++){
+    for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         for(int j = 0; j < dataBuffY_filtY_uV[i].length; j++) {
             dataBuffY_uV[i][j] = 0.0;
             dataBuffY_filtY_uV[i][j] = 0.0;

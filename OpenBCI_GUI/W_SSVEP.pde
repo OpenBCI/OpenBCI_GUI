@@ -37,23 +37,11 @@ class W_SSVEP extends Widget {
     String[] dropdownNames = {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
     List<String> dropdownOptions = new ArrayList<String>();
 
-    //----------CHANNEL SELECT INFRASTRUCTURE
-    ControlP5 cp5_ssvepCheckboxes;   //ControlP5 for which channels to use
-    CheckBox checkList;
-    //draw checkboxes vars
-    int offset;                      //offset on nav bar of checks
-    int checkHeight = y0 + navH;
-
-    //checkbox dropdown vars
-    boolean channelSelectPressed;
-    boolean channelSelectHover;
+    public ChannelSelect ssvepChanSelect;
 
     //---------NETWORKING VARS
     float[] ssvepData = new float[4];
-
-    //data from checkboxes vars
-    int numActiveChannels;
-    List<Integer> activeChannels;
+    public int  numActiveChannels;
 
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
@@ -68,11 +56,11 @@ class W_SSVEP extends Widget {
     W_SSVEP(PApplet _parent) {
 
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
+        
         addDropdown("NumberSSVEP", "# SSVEPs", Arrays.asList("1", "2", "3", "4"), 0);
         // showAbout = true;
         cp5_ssvep = new ControlP5(pApplet);
-        activeChannels = new ArrayList<Integer>();
+        ssvepChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "SSVEP_Channels");
 
         for (int i = 0; i < 9; i++) {
             dropdownOptions.add(String.valueOf(i+7) + " Hz");
@@ -91,40 +79,21 @@ class W_SSVEP extends Widget {
             s = w;
         }
 
-        int checkSize = navH - 4;
-        offset = (navH - checkSize)/2;
-
-        channelSelectHover = false;
-        channelSelectPressed = false;
-
-        checkList = cp5_ssvep.addCheckBox("channelListSSVEP")
-                              .setPosition(x + 5, y + offset)
-                              .setSize(checkSize, checkSize)
-                              .setItemsPerRow(nchan)
-                              .setSpacingColumn(13)
-                              .setSpacingRow(2)
-                              .setColorLabel(color(0)) //Set the color of the text label
-                              .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
-                              .setColorBackground(color(150)) //checkbox background color
-                              .setColorActive(color(57, 128, 204)) //checkbox color when active
-                              ;
-
-
-        for (int i = 0; i < nchan; i++) {
-            int chNum = i+1;
-            cp5_ssvep.get(CheckBox.class, "channelListSSVEP")
-                    .addItem(String.valueOf(chNum), chNum)
-                    ;
-            //set invisible after adding items, so make sure they won't stay invisible
-            checkList.getItem(chNum - 1).setVisible(false);
-        }
-
-        checkList.activate(6);
-        checkList.activate(7);
-
+        //Activate default channels
         numActiveChannels = 2;
-        activeChannels.add(6);
-        activeChannels.add(7);
+        int firstChan;
+        int secondChan;
+        if (nchan == 4) {
+            firstChan = 2;
+            secondChan = 3;
+        } else {
+            firstChan = 6;
+            secondChan = 7;
+        }
+        ssvepChanSelect.checkList.activate(firstChan);
+        ssvepChanSelect.checkList.activate(secondChan);
+        ssvepChanSelect.activeChan.add(firstChan);
+        ssvepChanSelect.activeChan.add(secondChan);
 
         cp5_ssvep.setAutoDraw(false);
         showAbout = false;        //set Default start value for showing about section as fault
@@ -212,26 +181,12 @@ class W_SSVEP extends Widget {
             freqs[3] = updateFreq(4);
         }
 
-        if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-            channelSelectHover = true;
-            // println(1);
-        } else {
-            channelSelectHover = false;
-            // println(2);
-        }
-
         setDropdownPositions();
 
-        //Update the number of active checks
-        int count = 0;
-        activeChannels.clear();
-        for (int i = 0; i < nchan; i++) {
-            if (checkList.getState(i)) {
-                count++;
-                activeChannels.add(i);
-            }
-        }
-        numActiveChannels = count;
+        //Update channel checkboxes and active channels
+        ssvepChanSelect.update(x, y, w);
+
+        numActiveChannels = ssvepChanSelect.activeChan.size();
         if (isRunning) {
             ssvepData = processData();
             //println(ssvepData);
@@ -243,31 +198,11 @@ class W_SSVEP extends Widget {
 
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         fill(0);
-        rect(x,y, w, h);
+        rect(x, y, w, h);
         pushStyle();
 
-        //channel select button
-        if (!channelSelectPressed) {
-            if (!channelSelectHover) {
-                fill(0);
-            } else {
-                fill(130);
-            }
-            triangle(x + 57.0, y - navH*0.65, x + 62.0, y - navH*0.25, x + 67.0, y - navH*0.65);
-        } else {
-            if (!channelSelectHover) {
-                fill(0);
-            } else {
-                fill(130);
-            }
-            triangle(x + 57.0, y - navH*0.25, x + 62.0, y - navH*0.65, x + 67.0, y - navH*0.25);
-            fill(180);
-            rect(x,y,w,navH);
-        }
-
-        textSize(12);
-        fill(0);
-        text("Channels", x + 2, y - 6);
+        popStyle();
+        ssvepChanSelect.draw();
         pushStyle();
 
         //left side
@@ -344,8 +279,7 @@ class W_SSVEP extends Widget {
             s = h;
         }
 
-        //Re-Setting the position of the checkBoxes here ensures it draws within the SSVEP widget
-        cp5_ssvep.get(CheckBox.class, "channelListSSVEP").setPosition(x + 5, y + offset);
+        ssvepChanSelect.screenResized(pApplet);
     }
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
@@ -360,23 +294,9 @@ class W_SSVEP extends Widget {
                     ssvepOn[i] = !ssvepOn[i];
                 }
             }
-
-            if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-                channelSelectPressed = !channelSelectPressed;
-                // println(1);
-                if (channelSelectPressed){
-                    for (int i = 0; i < nchan; i++) {
-                        checkList.getItem(i).setVisible(true);
-                    }
-                } else {
-                    for (int i = 0; i < nchan; i++) {
-                        checkList.getItem(i).setVisible(false);
-                    }
-                }
-            }
-
-
         }
+
+        ssvepChanSelect.mousePressed(this.dropdownIsActive);
     }
 
     void mouseReleased() {
@@ -545,8 +465,8 @@ class W_SSVEP extends Widget {
             if (freqs[i] > 0) {
                 //calculate peak uV
                 float sum = 0;
-                for (int j = 0; j < activeChannels.size(); j++) {
-                    int chan = activeChannels.get(j);
+                for (int j = 0; j < ssvepChanSelect.activeChan.size(); j++) {
+                    int chan = ssvepChanSelect.activeChan.get(j);
                     sum += fftBuff[chan].getFreq(freqs[i]);
                 }
                 float avg = sum/numActiveChannels;
@@ -558,8 +478,8 @@ class W_SSVEP extends Widget {
                 for (int f = 7; f <= 15; f++) {         //where f represents any of the frequencies selectable
                     if (f <  freqs[i] || f > freqs[i]) {
                         int freqSum = 0;
-                        for (int j = 0; j < activeChannels.size(); j++) {
-                            int chan = activeChannels.get(j);
+                        for (int j = 0; j < ssvepChanSelect.activeChan.size(); j++) {
+                            int chan = ssvepChanSelect.activeChan.get(j);
                             freqSum += fftBuff[chan].getFreq(f);
                         }
                         sum += freqSum/8;
@@ -575,7 +495,7 @@ class W_SSVEP extends Widget {
         }
         //println(finalData);
         return finalData;
-    }
+    } //end of processData
 
 } //end of ssvep class
 
