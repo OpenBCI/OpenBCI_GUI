@@ -280,11 +280,13 @@ class Hub {
     Hub(PApplet applet) {
         mainApplet = applet;
 
+        /*
         // Able to start tcpClient connection?
         if(!startTCPClient()) {
             outputWarn("Failed to connect to OpenBCIHub background application. LIVE functionality will be disabled.");
             println("InterfaceHub: Hub error");
         }
+        */
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -310,6 +312,8 @@ class Hub {
         return tcpClient.active();
     }
 
+    public String getHubIP() { return tcpHubIP; }
+    public int getHubPort() { return tcpHubPort; }
 
     /**
       * Sends a status message to the node process.
@@ -1276,13 +1280,24 @@ class Hub {
 
 class CheckHubInit extends TimerTask {
     public void run() {
-        if (hub.startTCPClient()) {
-            //outputSuccess("The GUI is now connected to the Hub!");
-            hub.setHubIsRunning(true);
-            this.cancel();
-        } else {
-            println("________ Hub not found yet :( ________");
+        //Every X seconds at Y interval, try to open a new socket. If successful, close the socket and try to startTCPClient.
+        try {
+            Socket socket = new Socket(hub.getHubIP(), hub.getHubPort());
+            if (socket != null) {
+                socket.close();
+                socket = null;
+                if (hub.startTCPClient()) {
+                    outputSuccess("The GUI is now connected to the Hub!");
+                    hub.setHubIsRunning(true);
+                    this.cancel();
+                } else {
+                    println("Hub: CheckHubInit: Unable to startTCPClient even though a socket was opened...");
+                }
+            }
+        } catch (Exception e) {
+            println("Hub: CheckHubInit: Unable to establish Coms with the OpenBCI Hub, trying again...");
         }
+        
         hubTimerElapsedSeconds++;
     }
 }

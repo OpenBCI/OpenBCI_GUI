@@ -1114,12 +1114,13 @@ void haltSystem() {
 
 void systemUpdate() { // for updating data values and variables
 
+    //Instantiate Hub Object, wait until next step to try to startTCPClient
     if (isHubInitialized && isHubObjectInitialized == false) {
         hub = new Hub(this);
         println("Instantiating hub object...");
         isHubObjectInitialized = true;
     }
-
+    //Then, immediately start trying to connect to Hub for X seconds
     if (!hub.isHubRunning()) {
         if (!hubTimerHasStarted) {
             hubTimer.schedule(new CheckHubInit(), 0, hubTimerInterval);
