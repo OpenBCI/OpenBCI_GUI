@@ -603,7 +603,9 @@ class Hub {
                             if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
                                 numPacketsDroppedHub = (dataPacket.sampleIndex+(curProtocol == PROTOCOL_BLE ? 200 : 255)) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
                             } else {
-                                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+                                //calculate how many times the last received packet should be duplicated...
+                                //Subtract 1 so this value is accurate (example 50->52, 52-50 = 2-1 = 1)
+                                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex - 1;
                             }
                             println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
                             println("numPacketsDropped = " + numPacketsDroppedHub);

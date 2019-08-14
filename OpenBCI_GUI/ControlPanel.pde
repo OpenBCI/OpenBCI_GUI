@@ -2904,7 +2904,7 @@ class RadioConfigBox {
         fill(bgColor);
         rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
         fill(255);
-        textFont(h4, 14);
+        textFont(h3, 15);
         text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
         this.last_message = localstring;
     }
@@ -2967,6 +2967,7 @@ class WifiConfigBox {
         fill(bgColor);
         rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
         fill(255);
+        textFont(h3, 15);
         text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     }
 };
