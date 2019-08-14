@@ -264,7 +264,7 @@ Process nodeHubby;
 String nodeHubName = "OpenBCIHub";
 Timer hubTimer = new Timer(true);
 boolean hubTimerHasStarted = false;
-int hubTimerElapsedSeconds;
+int hubTimerCounter;
 int hubTimerInterval = 2000; //try every 2 seconds
 int hubTimerLimit = 14; //up to 14 seconds
 
@@ -1126,10 +1126,10 @@ void systemUpdate() { // for updating data values and variables
             hubTimer.schedule(new CheckHubInit(), 0, hubTimerInterval);
             hubTimerHasStarted = true;
         } else {
-            if (hubTimerElapsedSeconds == hubTimerLimit) {
+            if (hubTimerCounter == hubTimerLimit) {
                 hubTimer.cancel();
-                println("GUI: Unable to find or connect to Hub...");
-                hubTimerElapsedSeconds = 0;
+                outputError("Unable to find or connect to Hub. LIVE functionality will be disabled.");
+                hubTimerCounter = 0;
             }
         }
     }

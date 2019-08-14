@@ -1280,24 +1280,28 @@ class Hub {
 
 class CheckHubInit extends TimerTask {
     public void run() {
-        //Every X seconds at Y interval, try to open a new socket. If successful, close the socket and try to startTCPClient.
+        //Every X seconds until Y limit, try to open a new socket. If successful, close the socket and try to startTCPClient.
         try {
             Socket socket = new Socket(hub.getHubIP(), hub.getHubPort());
             if (socket != null) {
                 socket.close();
                 socket = null;
                 if (hub.startTCPClient()) {
-                    outputSuccess("The GUI is now connected to the Hub!");
+                    if (hubTimerCounter > 1) {
+                        outputSuccess("The GUI is connected to the Hub!");
+                    } else {
+                        println("Hub: CheckHubInit: The GUI is connected to the Hub!");
+                    }
                     hub.setHubIsRunning(true);
                     this.cancel();
                 } else {
-                    println("Hub: CheckHubInit: Unable to startTCPClient even though a socket was opened...");
+                    outputError("Hub: CheckHubInit: Unable to startTCPClient even though a socket was opened...");
                 }
             }
-        } catch (Exception e) {
-            println("Hub: CheckHubInit: Unable to establish Coms with the OpenBCI Hub, trying again...");
+        } catch (IOException e) {
+            outputWarn("Unable to establish link with the OpenBCI Hub, trying again...");
         }
         
-        hubTimerElapsedSeconds++;
+        hubTimerCounter++;
     }
 }
