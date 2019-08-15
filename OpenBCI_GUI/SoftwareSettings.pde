@@ -1610,10 +1610,12 @@ class SoftwareSettings {
 } //end of Software Settings class
 
 void imposeMinimumGUIDimensions() {
-        //impose minimum gui dimensions
+    //impose minimum gui dimensions
+    if (width < settings.minGUIWidth || height < settings.minGUIHeight) {
         if (width < settings.minGUIWidth) win_x = settings.minGUIWidth;
         if (height < settings.minGUIHeight) win_y = settings.minGUIHeight;
         surface.setSize(win_x, win_y);
+    }
 }
 
 
