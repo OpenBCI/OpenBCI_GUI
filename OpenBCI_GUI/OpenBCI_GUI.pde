@@ -59,7 +59,7 @@ import gifAnimation.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.4-beta.0";
+String localGUIVersionString = "v4.1.5-beta.0";
 String localGUIVersionDate = "August 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -1145,9 +1145,11 @@ void systemUpdate() { // for updating data values and variables
         controlPanel.update();
 
         if (widthOfLastScreen != width || heightOfLastScreen != height) {
+            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             widthOfLastScreen = width;
             heightOfLastScreen = height;
+            println("W = " + width + " || H = " + height);
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -1157,31 +1159,11 @@ void systemUpdate() { // for updating data values and variables
 
             //has enough data arrived to process it and update the GUI?
             if (pointCounter >= nPointsPerUpdate) {
-                pointCounter = 0;  //reset for next time
-
+                 //reset for next time
+                pointCounter = 0;
                 //process the data
                 processNewData();
-
-                if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { //wait 1 second for GUI to reinitialize
-                    try {
-
-                        //-----------------------------------------------------------
-                        //-----------------------------------------------------------
-                        // gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
-                        // topNav.update();
-                        // updateGUIWidgets(); //####
-                        //-----------------------------------------------------------
-                        //-----------------------------------------------------------
-                    }
-                    catch (Exception e) {
-                        println(e.getMessage());
-                        reinitializeGUIdelay = reinitializeGUIdelay * 2;
-                        println("OpenBCI_GUI: systemUpdate: New GUI reinitialize delay = " + reinitializeGUIdelay);
-                    }
-                } else {
-                    println("OpenBCI_GUI: systemUpdate: reinitializing GUI after resize... not updating GUI");
-                }
-
+                //set this flag to true, checked at the beginning of systemDraw()
                 redrawScreenNow=true;
             } else {
                 //not enough data has arrived yet... only update the channel controller
@@ -1223,8 +1205,8 @@ void systemUpdate() { // for updating data values and variables
 
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
         if (screenHasBeenResized) {
-            // GUIWidgets_screenResized(width, height);
             ourApplet = this; //reset PApplet...
+            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
         }
@@ -1232,8 +1214,6 @@ void systemUpdate() { // for updating data values and variables
             screenHasBeenResized = false;
             println("systemUpdate: reinitializing GUI");
             timeOfGUIreinitialize = millis();
-            // initializeGUI();
-            // GUIWidgets_screenResized(width, height);
         }
 
         if (wm.isWMInitialized) {
@@ -1292,21 +1272,9 @@ void systemDraw() { //for drawing to the screen
             // println("attempting to draw GUI...");
             try {
                 // println("GUI DRAW!!! " + millis());
-
-                //----------------------------
-                // gui.draw(); //draw the GUI
-
+                //draw GUI widgets (visible/invisible) using widget manager
                 wm.draw();
-                //updateGUIWidgets(); //####
-                // drawGUIWidgets();
-
-                // topNav.draw();
-
-                //----------------------------
-
-                // playground.draw();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 println(e.getMessage());
                 reinitializeGUIdelay = reinitializeGUIdelay * 2;
                 println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + reinitializeGUIdelay);

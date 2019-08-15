@@ -1,11 +1,14 @@
-# v4.1.4
+# v4.1.5
 Use OpenBCIHub v2.0.9 please.
 
-## Beta 1
+## Beta 0
 
 ### Improvements
 * Add reusable ChannelSelect class to Widget.pde #573
 * Update Radio Config tools and UI to be more user-friendly
+* Establish minimum GUI app size of 705x400
+
+# v4.1.4
 
 ## Beta 0
 
