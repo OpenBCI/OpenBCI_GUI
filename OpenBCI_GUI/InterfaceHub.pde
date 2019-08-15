@@ -1282,7 +1282,8 @@ class Hub {
 
 class CheckHubInit extends TimerTask {
     public void run() {
-        //Every X seconds until Y limit, try to open a new socket. If successful, close the socket and try to startTCPClient.
+        //Every hubTimerInterval seconds until hubTimerLimit is reached
+        //try to open a new socket. If successful, close the socket and try to startTCPClient.
         try {
             Socket socket = new Socket(hub.getHubIP(), hub.getHubPort());
             if (socket != null) {
