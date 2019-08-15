@@ -9,7 +9,7 @@ Use OpenBCIHub v2.0.9 please.
 
 ### Bug fixes
 * Add reusable ChannelSelect class to Widget.pde #573
-* Allow up to 15 seconds for GUI to connect to Hub #531
+* Allow up to 20 seconds for GUI to connect to Hub #531
 
 # v4.1.4
 

@@ -265,8 +265,8 @@ String nodeHubName = "OpenBCIHub";
 Timer hubTimer = new Timer(true);
 boolean hubTimerHasStarted = false;
 int hubTimerCounter; //Count how many times GUI tries to connect to Hub
-int hubTimerLimit = 6; //Allow up to 6 trys for GUI to connect to Hub
-int hubTimerInterval = 2500; //try every 2.5 seconds, 6*2.5=15seconds
+int hubTimerLimit = 8; //Allow up to 8 tries for GUI to connect to Hub
+int hubTimerInterval = 2500; //try every 2.5 seconds, 8*2.5=20seconds
 
 
 PApplet ourApplet;
