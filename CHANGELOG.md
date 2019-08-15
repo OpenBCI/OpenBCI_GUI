@@ -7,6 +7,7 @@ Use OpenBCIHub v2.0.9 please.
 * Add reusable ChannelSelect class to Widget.pde #573
 * Update Radio Config tools and UI to be more user-friendly
 * Establish minimum GUI app size of 705x400
+* Allow up to 14 seconds for GUI to connect to Hub
 
 # v4.1.4
 
