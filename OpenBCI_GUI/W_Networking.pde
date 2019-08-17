@@ -1923,7 +1923,7 @@ class Stream extends Thread {
                 // Add timestamp to LSL Stream
                 outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             // Serial
-            } else if (this.protocol.equals("Serial")){     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+            } else if (this.protocol.equals("Serial")){     // Send SSVEP Data over Serial ...
                 serialMessage = ""; //clear message
                 for (int i = 0; i < w_ssvep.ssvepData.length; i++) {
                     serialMessage += String.format("%.3f", w_ssvep.ssvepData[i]);
