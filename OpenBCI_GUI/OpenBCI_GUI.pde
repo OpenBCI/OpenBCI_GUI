@@ -28,7 +28,8 @@ import java.util.Map;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 import processing.net.*; // For TCP networking
-import grafica.*;
+import grafica.*; //used for graphs
+import gifAnimation.*;  //for animated gifs
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
 import java.io.OutputStream;
@@ -50,10 +51,6 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
-
-
-import gifAnimation.*;
-
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances

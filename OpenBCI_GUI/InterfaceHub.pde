@@ -1290,7 +1290,7 @@ class CheckHubInit extends TimerTask {
                 socket.close();
                 socket = null;
                 if (hub.startTCPClient()) {
-                    if (hubTimerCounter > 1) {
+                    if (hubTimerCounter > 0) {
                         outputSuccess("The GUI is connected to the Hub!");
                     } else {
                         println("Hub: CheckHubInit: The GUI is connected to the Hub!");
