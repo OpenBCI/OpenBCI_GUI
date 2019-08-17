@@ -40,6 +40,9 @@
 class SoftwareSettings {
     //Current version to save to JSON
     String settingsVersion = "1.0.5";
+    //impose minimum gui width and height in openBCI_GUI.pde
+    int minGUIWidth = 705;
+    int minGUIHeight = 400;
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation
@@ -1602,7 +1605,18 @@ class SoftwareSettings {
 
         }
     }
+
+    
 } //end of Software Settings class
+
+void imposeMinimumGUIDimensions() {
+    //impose minimum gui dimensions
+    if (width < settings.minGUIWidth || height < settings.minGUIHeight) {
+        if (width < settings.minGUIWidth) win_x = settings.minGUIWidth;
+        if (height < settings.minGUIHeight) win_y = settings.minGUIHeight;
+        surface.setSize(win_x, win_y);
+    }
+}
 
 
 //////////////////////////////////////////

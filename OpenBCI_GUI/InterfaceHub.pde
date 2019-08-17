@@ -280,11 +280,13 @@ class Hub {
     Hub(PApplet applet) {
         mainApplet = applet;
 
+        /*
         // Able to start tcpClient connection?
         if(!startTCPClient()) {
             outputWarn("Failed to connect to OpenBCIHub background application. LIVE functionality will be disabled.");
             println("InterfaceHub: Hub error");
         }
+        */
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -310,6 +312,8 @@ class Hub {
         return tcpClient.active();
     }
 
+    public String getHubIP() { return tcpHubIP; }
+    public int getHubPort() { return tcpHubPort; }
 
     /**
       * Sends a status message to the node process.
@@ -599,7 +603,9 @@ class Hub {
                             if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
                                 numPacketsDroppedHub = (dataPacket.sampleIndex+(curProtocol == PROTOCOL_BLE ? 200 : 255)) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
                             } else {
-                                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
+                                //calculate how many times the last received packet should be duplicated...
+                                //Subtract 1 so this value is accurate (example 50->52, 52-50 = 2-1 = 1)
+                                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex - 1;
                             }
                             println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
                             println("numPacketsDropped = " + numPacketsDroppedHub);
@@ -1276,13 +1282,29 @@ class Hub {
 
 class CheckHubInit extends TimerTask {
     public void run() {
-        if (hub.startTCPClient()) {
-            //outputSuccess("The GUI is now connected to the Hub!");
-            hub.setHubIsRunning(true);
-            this.cancel();
-        } else {
-            println("________ Hub not found yet :( ________");
+        //Every hubTimerInterval seconds until hubTimerLimit is reached
+        //try to open a new socket. If successful, close the socket and try to startTCPClient.
+        try {
+            Socket socket = new Socket(hub.getHubIP(), hub.getHubPort());
+            if (socket != null) {
+                socket.close();
+                socket = null;
+                if (hub.startTCPClient()) {
+                    if (hubTimerCounter > 0) {
+                        outputSuccess("The GUI is connected to the Hub!");
+                    } else {
+                        println("Hub: CheckHubInit: The GUI is connected to the Hub!");
+                    }
+                    hub.setHubIsRunning(true);
+                    this.cancel();
+                } else {
+                    outputError("Hub: CheckHubInit: Unable to startTCPClient even though a socket was opened...");
+                }
+            }
+        } catch (IOException e) {
+            outputWarn("Unable to establish link with the OpenBCI Hub, trying again...");
         }
-        hubTimerElapsedSeconds++;
+        
+        hubTimerCounter++;
     }
 }

@@ -1118,6 +1118,7 @@ class ControlPanel {
                 }
                 else{
                     rcBox.isShowing = true;
+                    rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("<");
                 }
             }
@@ -1770,6 +1771,7 @@ class SerialBox {
         // autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
         refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+        popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
 
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
         // println(w-padding*2);
@@ -2849,17 +2851,17 @@ class SDBox {
 
 class RadioConfigBox {
     int x, y, w, h, padding; //size and position
-    String last_message = "";
+    String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    String last_message = initial_message;
     boolean isShowing;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
         y = _y;
-        w = _w;
+        w = _w + 10;
         h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
-
         
         getChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
         systemStatus = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
@@ -2902,7 +2904,8 @@ class RadioConfigBox {
         fill(bgColor);
         rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
         fill(255);
-        text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
+        textFont(h3, 15);
+        text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
         this.last_message = localstring;
     }
 };
@@ -2964,6 +2967,7 @@ class WifiConfigBox {
         fill(bgColor);
         rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
         fill(255);
+        textFont(h3, 15);
         text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     }
 };
