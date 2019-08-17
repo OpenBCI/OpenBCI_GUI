@@ -1927,9 +1927,12 @@ class Stream extends Thread {
                 serialMessage = ""; //clear message
                 for (int i = 0; i < w_ssvep.ssvepData.length; i++) {
                     serialMessage += String.format("%.3f", w_ssvep.ssvepData[i]);
-                    serialMessage += ",";
+                    if (i != w_ssvep.ssvepData.length - 1) {
+                        serialMessage += ",";
+                    } else {
+                        serialMessage += "\n";
+                    }
                 }
-                serialMessage += "\n";
                 try {
                     //println("SerialMessage: SSVEP = " + serialMessage);
                     this.serial_networking.write(serialMessage);
