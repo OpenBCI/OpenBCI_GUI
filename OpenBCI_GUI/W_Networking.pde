@@ -1034,7 +1034,7 @@ class W_Networking extends Widget {
     public void setComPortToSave(int n) {
         comPortToSave = n;
     }
-    
+
     public void disableCertainOutputs(int n) {
         //Disable serial fft ouput and display message, it's too much data for serial coms
         if (w_networking.protocolMode.equals("Serial")) {
@@ -1487,11 +1487,19 @@ class Stream extends Thread {
                 }
                 // LSL
             } else if (this.protocol.equals("LSL")) {
-              /* */
+                float[] _dataToSend = new float[numChan * 125];
+                for (int i = 0; i < numChan; i++) {
+                    for (int j = 0; j < 125; j++) {
+                        _dataToSend[j+125*i] = fftBuff[i].getBand(j);
+                    }
+                }
+                // Add timestamp to LSL Stream
+                // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
+                outlet_data.push_chunk(_dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")) {
-                println("Sending FFT data over Serial...");
+                /////////////////////////////////THIS OUTPUT IS DISABLED
+                // Send FFT Data over Serial ... 
                 /*
-                // Send FFT Data over Serial ... %%%%%
                 for (int i=0;i<numChan;i++) {
                     serialMessage = "[" + (i+1) + ","; //clear message
                     for (int j=0;j<125;j++) {

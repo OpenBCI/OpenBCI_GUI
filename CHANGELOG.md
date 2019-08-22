@@ -4,9 +4,7 @@ Use OpenBCIHub v2.0.9 please.
 ## Beta 1
 
 ### Improvements
-* 
-
-### Bug Fixes
+* Networking: Implement FFT over LSL
 * Networking: Auto-switch to Band Power instead of FFT for Serial output
 
 ## Beta 0
