@@ -1,6 +1,14 @@
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 1
+
+### Improvements
+* 
+
+### Bug Fixes
+* Networking: Auto-switch to Band Power instead of FFT for Serial output
+
 ## Beta 0
 
 ### Improvements

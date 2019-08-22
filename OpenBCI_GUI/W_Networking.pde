@@ -207,6 +207,9 @@ class W_Networking extends Widget {
             cp5ElementsAreActive = textfieldsAreActive(udpTextFieldNames);
         } else if (protocolMode.equals("LSL")) {
             cp5ElementsAreActive = textfieldsAreActive(lslTextFieldNames);
+        } else {
+            //For serial mode, disable fft output by switching to bandpower instead
+            this.disableCertainOutputs((int)getCP5Map().get(datatypeNames[0]));
         }
 
         if (cp5ElementsAreActive != previousCP5State) {
@@ -1031,6 +1034,19 @@ class W_Networking extends Widget {
     public void setComPortToSave(int n) {
         comPortToSave = n;
     }
+    
+    public void disableCertainOutputs(int n) {
+        //Disable serial fft ouput and display message, it's too much data for serial coms
+        if (w_networking.protocolMode.equals("Serial")) {
+            if (n == Arrays.asList(settings.nwDataTypesArray).indexOf("FFT")) {
+                output("Please use Band Power instead of FFT for Serial Output. Changing data type...");
+                println("Networking: Changing data type from FFT to BandPower. FFT data is too large to send over Serial coms.");
+                cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText("BandPower");
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1")
+                            .setValue(Arrays.asList(settings.nwDataTypesArray).indexOf("BandPower"));
+            };
+        }
+    }
 }; //End of w_networking class
 
 ////////////////////////////////////////////////////////////////
@@ -1473,8 +1489,9 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
               /* */
             } else if (this.protocol.equals("Serial")) {
+                println("Sending FFT data over Serial...");
+                /*
                 // Send FFT Data over Serial ... %%%%%
-                // println("Sending FFT data over Serial...");
                 for (int i=0;i<numChan;i++) {
                     serialMessage = "[" + (i+1) + ","; //clear message
                     for (int j=0;j<125;j++) {
@@ -1493,6 +1510,7 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 }
+                */
             }
         }
     }
@@ -2120,6 +2138,7 @@ void Protocol(int protocolIndex) {
         w_networking.protocolMode = "LSL";
     } else if (protocolIndex==0) {
         w_networking.protocolMode = "Serial";
+        w_networking.disableCertainOutputs((int)w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
     }
     println("Networking: Protocol mode set to " + w_networking.protocolMode);
     w_networking.screenResized();

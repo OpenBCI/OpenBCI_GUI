@@ -471,7 +471,7 @@ class W_SSVEP extends Widget {
                 }
                 float avg = sum/numActiveChannels;
                 peakData[i] = avg;
-                //println("PEAK DATA: " + backgroundData[i]);
+                println("PEAK DATA: " + peakData[i]);
 
                 //calculate background uV in all channels but the given channel
                 sum = 0;
@@ -486,9 +486,12 @@ class W_SSVEP extends Widget {
                     }
                 }
                 backgroundData[i] = sum;
-                //println("BACKGROUND DATA: " + backgroundData[i]);
-
-                finalData[i] = peakData[i]/backgroundData[i];
+                println("BACKGROUND DATA: " + backgroundData[i]);
+                if (backgroundData[i] != 0) {
+                    finalData[i] = peakData[i]/backgroundData[i];
+                } else {
+                    finalData[i] = peakData[i];
+                }
             } else {
                 finalData[i] = 0;
             }
