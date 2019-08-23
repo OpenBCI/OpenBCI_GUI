@@ -59,6 +59,7 @@ class W_Networking extends Widget {
     Button startButton;
     Boolean cp5ElementsAreActive = false;
     Boolean previousCP5State = false;
+    Button guideButton;
 
     /* Networking */
     Boolean networkActive;
@@ -101,7 +102,7 @@ class W_Networking extends Widget {
         "obci_eeg1","EEG",Integer.toString(nchan),
         "obci_eeg2","EEG",Integer.toString(nchan),
         "obci_eeg3","EEG",Integer.toString(nchan)};
-
+    String networkingGuideURL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
@@ -274,6 +275,7 @@ class W_Networking extends Widget {
         text("Data Type",column0,row1);
 
         startButton.draw();
+        guideButton.draw();
 
         if (protocolMode.equals("OSC")) {
             textFont(f4,40);
@@ -342,6 +344,15 @@ class W_Networking extends Widget {
         startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
         startButton.setFont(p4,14);
         startButton.setColorNotPressed(color(184,220,105));
+        startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
+
+        // Networking Data Type Guide button
+        guideButton = new Button(x0 + 2, y0 + navH + 2, 200, navH - 6,"Open Networking Guide",14);
+        guideButton.setFont(p4,14);
+        guideButton.setColorNotPressed(color(31,69,110));
+        guideButton.setFontColorNotActive(color(255));
+        guideButton.setHelpText("Click this button to open the Networking Output Guide in your default browser.");
+        guideButton.setURL(networkingGuideURL);
     }
 
     /* Shows and Hides appropriate CP5 elements within widget */
@@ -599,7 +610,9 @@ class W_Networking extends Widget {
         row5 = y+8*h/10;
         int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
 
+        //reset the button positions using new x and y
         startButton.setPos(x + w/2 - 70, y + h - 40 );
+        guideButton.setPos(x0 + 2, y0 + navH + 2);
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
@@ -685,13 +698,15 @@ class W_Networking extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         if (startButton.isMouseHere()) {
             startButton.setIsActive(true);
+        } else if (guideButton.isMouseHere()) {
+            guideButton.setIsActive(true);
         }
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        /* If start button was pressed */
+        // If start button was pressed...
         if (startButton.isActive && startButton.isMouseHere()) {
             if (!networkActive) {
                 try {
@@ -708,13 +723,14 @@ class W_Networking extends Widget {
                     networkActive = false;
                     return;
                 }
-            } else {
-                turnOffButton();        // Change apppearance of button
-                stopNetwork();          // Stop streams
-                output("Network Stream Stopped");
             }
+        // or if the networking guide button was pressed...
+        } else if (guideButton.isActive && guideButton.isMouseHere()) {
+            guideButton.goToURL();
+            output("Opening Networking Output Guide using default browser.");
         }
         startButton.setIsActive(false);
+        guideButton.setIsActive(false);
     }
 
     void hideAllTextFields(String[] textFieldNames) {
