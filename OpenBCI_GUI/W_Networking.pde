@@ -196,6 +196,14 @@ class W_Networking extends Widget {
 
         checkTopNovEvents();
 
+        if (dropdownIsActive) {
+            guideButton.setIgnoreHover(true);
+        } else {
+            if (guideButton.getIgnoreHover()) {
+                guideButton.setIgnoreHover(false);
+            }
+        }
+
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
         } else {
