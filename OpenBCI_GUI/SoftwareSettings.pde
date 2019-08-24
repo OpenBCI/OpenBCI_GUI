@@ -1239,18 +1239,18 @@ class SoftwareSettings {
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
                 w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(nwDataTypesArray[nwDataType4]);
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setValue(nwDataType4);
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(nwOscIp2Load); //The strings are referenced on command
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip3").setText(nwOscIp3Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip4").setText(nwOscIp4Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port1").setText(nwOscPort1Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port2").setText(nwOscPort2Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port3").setText(nwOscPort3Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port4").setText(nwOscPort4Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address1").setText(nwOscAddress1Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address2").setText(nwOscAddress2Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address3").setText(nwOscAddress3Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address4").setText(nwOscAddress4Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip2").setText(nwOscIp2Load); //The strings are referenced on command
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip3").setText(nwOscIp3Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip4").setText(nwOscIp4Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port1").setText(nwOscPort1Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port2").setText(nwOscPort2Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port3").setText(nwOscPort3Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port4").setText(nwOscPort4Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address1").setText(nwOscAddress1Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address2").setText(nwOscAddress2Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address3").setText(nwOscAddress3Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address4").setText(nwOscAddress4Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwOscFilter1Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwOscFilter2Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwOscFilter3Load);
@@ -1264,12 +1264,12 @@ class SoftwareSettings {
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
                 w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking.get(Textfield.class, "udp_ip1").setText(nwUdpIp1Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_ip2").setText(nwUdpIp2Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_ip3").setText(nwUdpIp3Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_port1").setText(nwUdpPort1Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_port2").setText(nwUdpPort2Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_port3").setText(nwUdpPort3Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_ip1").setText(nwUdpIp1Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_ip2").setText(nwUdpIp2Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_ip3").setText(nwUdpIp3Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_port1").setText(nwUdpPort1Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_port2").setText(nwUdpPort2Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_port3").setText(nwUdpPort3Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwUdpFilter1Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwUdpFilter2Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwUdpFilter3Load);
@@ -1282,15 +1282,15 @@ class SoftwareSettings {
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
                 w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_name1").setText(nwLSLName1Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_name2").setText(nwLSLName2Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_name3").setText(nwLSLName3Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_type1").setText(nwLSLType1Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_type2").setText(nwLSLType2Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_type3").setText(nwLSLType3Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_numchan1").setText(nwLSLNumChan1Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_numchan2").setText(nwLSLNumChan2Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_numchan3").setText(nwLSLNumChan3Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_name1").setText(nwLSLName1Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_name2").setText(nwLSLName2Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_name3").setText(nwLSLName3Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_type1").setText(nwLSLType1Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_type2").setText(nwLSLType2Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_type3").setText(nwLSLType3Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_numchan1").setText(nwLSLNumChan1Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_numchan2").setText(nwLSLNumChan2Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_numchan3").setText(nwLSLNumChan3Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwLSLFilter1Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwLSLFilter2Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwLSLFilter3Load);
