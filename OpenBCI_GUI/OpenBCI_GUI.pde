@@ -430,6 +430,9 @@ void delayedSetup() {
     // Create GUI data folder and copy sample data if meditation file doesn't exist
     copyGUISampleData();
 
+    // import brainflow
+    brainflowTest();
+
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
