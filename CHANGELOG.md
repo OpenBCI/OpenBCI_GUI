@@ -5,6 +5,9 @@ Use OpenBCIHub v2.0.9 please.
 
 ### Improvements
 
+#### SSVEP
+* Place this widget in BETA mode w/ description in widget help text
+
 #### Networking Widget
 * Implement FFT over LSL
 * Auto-switch to Band Power instead of FFT for Serial output

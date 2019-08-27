@@ -96,7 +96,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets focus widget -- " + millis());
 
     w_ssvep = new W_SSVEP(_this);
-    w_ssvep.setTitle("SSVEP Widget");
+    w_ssvep.setTitle("SSVEP_beta");
     addWidget(w_ssvep, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
