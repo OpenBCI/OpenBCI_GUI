@@ -3,6 +3,10 @@ Use OpenBCIHub v2.0.9 please.
 
 ## Beta 1
 
+### Bug fixes
+* Fix 'Open Log as Text' feature in ConsoleLog
+* Delete old/broken user and default settings when attempting to load
+
 ### Improvements
 
 #### SSVEP

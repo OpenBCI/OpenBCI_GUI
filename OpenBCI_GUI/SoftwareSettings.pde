@@ -379,12 +379,12 @@ class SoftwareSettings {
             this.load(settingsFileToLoad);
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
-            File f = new File(sketchPath()+System.getProperty("file.separator")+settingsFileToLoad);
+            File f = new File(settingsFileToLoad);
             if (f.exists()) {
-                if (f.delete()) println("SoftwareSettings: Removed old settings file.");
+                if (f.delete()) println("SoftwareSettings: Removed old/broken settings file.");
             }
         }
     }
@@ -1532,7 +1532,7 @@ class SoftwareSettings {
             output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
         } else if (errorUserSettingsNotFound) {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: File not found. " + millis()); //Print the error to console
-            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings error: Default Settings Loaded."); //Show a normal message for loading Default Settings
+            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User Settings Error: Default Settings Loaded."); //Show a normal message for loading Default Settings
         } else {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
             outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
@@ -1553,14 +1553,27 @@ class SoftwareSettings {
             errorUserSettingsNotFound = true;
         }
         //Output message when Loading settings is complete
+        String err = null;
         if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
             outputSuccess("Settings Loaded!");
         } else if (chanNumError) {
-            outputError("Load Settings Error: Invalid number of channels");
+            err = "Invalid number of channels";
         } else if (dataSourceError) {
-            outputError("Load Settings Error: Invalid data source");
-        } else {
-            outputError("Load settings error: " + settingsFileToLoad + " not found. ");
+            err = "Invalid data source";
+        } else if (errorUserSettingsNotFound) {
+            err = settingsFileToLoad + " not found.";
+        }
+
+        if (err != null) {
+            println("Load Settings Error: " + err);
+            File f = new File(settingsFileToLoad);
+            if (f.exists()) {
+                if (f.delete()) {
+                    outputError("Found old/broken GUI settings. Please reconfigure the GUI and save new settings.");
+                } else {
+                    outputError("SoftwareSettings: Error deleting old/broken settings file...");
+                }
+            }
         }
     }
 
@@ -1595,14 +1608,15 @@ class SoftwareSettings {
             this.load(defaultSettingsFileToLoad);
             outputSuccess("Default Settings Loaded!");
         } catch (Exception e) {
-            outputError("Default Settings Error: New settings will be made next system start.");
-            File f = new File(sketchPath()+System.getProperty("file.separator")+defaultSettingsFileToLoad);
-            if (f.delete()) {
-                println("Old settings file succesfully deleted.");
-            } else {
-                println("Error deleting file...");
+            outputError("Default Settings Error: Valid Default Settings will be saved next system start.");
+            File f = new File(defaultSettingsFileToLoad);
+            if (f.exists()) {
+                if (f.delete()) {
+                    println("SoftwareSettings: Old/Broken Default Settings file succesfully deleted.");
+                } else {
+                    println("SoftwareSettings: Error deleting Default Settings file...");
+                }
             }
-
         }
     }
 
@@ -1659,8 +1673,8 @@ void loadConfigFile(File selection) {
                 outputError("Settings Error: Data Source Mismatch Detected");
             } else {
                 outputError("Error trying to load settings file, possibly from previous GUI. Removing old settings.");
+                if (selection.exists()) selection.delete();
             }
-            if (selection.exists()) selection.delete();
         }
         settings.loadDialogName = null; //reset this variable for future use
     }
