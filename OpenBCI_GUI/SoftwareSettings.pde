@@ -383,8 +383,12 @@ class SoftwareSettings {
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
             File f = new File(settingsFileToLoad);
-            if (f.exists()) {
-                if (f.delete()) println("SoftwareSettings: Removed old/broken settings file.");
+            //Only delete the settings file for other errors
+            //Leave file if it's just a channelNumber error or DataSource mismatch
+            if (!chanNumError && !dataSourceError) {
+                if (f.exists()) {
+                    if (f.delete()) println("SoftwareSettings: Removed old/broken settings file.");
+                }
             }
         }
     }
@@ -1564,7 +1568,8 @@ class SoftwareSettings {
             err = settingsFileToLoad + " not found.";
         }
 
-        if (err != null) {
+        //Only try to delete file for SettingsNotFound/Broken settings
+        if (err != null && (!chanNumError && !dataSourceError)) {
             println("Load Settings Error: " + err);
             File f = new File(settingsFileToLoad);
             if (f.exists()) {

@@ -1,6 +1,11 @@
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 2
+
+### Bug fixes
+* Only delete settings files if they are old/broken
+
 ## Beta 1
 
 ### Bug fixes
