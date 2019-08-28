@@ -1141,28 +1141,28 @@ class TutorialSelector {
         int buttonNumber = 0;
         Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide");
+        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 1;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-impedance-testing");
+        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 2;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.com/index.php/forum/");
+        tempTutorialButton.setURL("https://openbci.com/forum/");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 3;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/16-Custom_Widgets");
+        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
         tutorialOptions.add(tempTutorialButton);
     }
 }

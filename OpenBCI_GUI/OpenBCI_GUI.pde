@@ -56,7 +56,7 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.5-beta.2";
+String localGUIVersionString = "v4.1.5-beta.3";
 String localGUIVersionDate = "August 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -345,7 +345,7 @@ void setup() {
     println("Console Log Started at Local Time: " + getDateString());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-    println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
+    println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
 
     //open window
     ourApplet = this;

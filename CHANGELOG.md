@@ -1,6 +1,11 @@
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 3
+
+### Bug fixes
+* Update links to OpenBCI Forum and new Docs at GitHub Pages
+
 ## Beta 2
 
 ### Bug fixes
