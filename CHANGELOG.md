@@ -1,6 +1,22 @@
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.
 
+## Beta 1
+
+### Bug fixes
+* Fix 'Open Log as Text' feature in ConsoleLog
+* Delete old/broken user and default settings when attempting to load
+
+### Improvements
+
+#### SSVEP
+* Place this widget in BETA mode w/ description in widget help text
+
+#### Networking Widget
+* Implement FFT over LSL
+* Auto-switch to Band Power instead of FFT for Serial output
+* Add link to networking output guide for all data types
+
 ## Beta 0
 
 ### Improvements

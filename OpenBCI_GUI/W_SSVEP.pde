@@ -46,11 +46,11 @@ class W_SSVEP extends Widget {
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
-    String ssvepHelpText = "The SSVEP Widget allows for visual stimulation at specific frequencies.\n\n"
+    String ssvepHelpText = "The SSVEP Widget(BETA) allows for visual stimulation at specific frequencies.\n\n"
                             + "In response to looking at one of the SSVEPs, you will see an increase in brain activity at that frequency in the FFT plot. "
                             + "Make sure to select the electrodes that align with the back of your head, where the visual stimulus will be recognized.\n\n"
                             + "You can stop/start each SSVEP by clicking on it.\n\n"
-                            + "For best results, set the GUI framerate to 60fps.\n\n";
+                            + "For best results, set the GUI framerate to 60fps. This widget is currently in beta mode and requires more input and testing from the OpenBCI Community.";
     int ssvepHelpTextFontSize = 16;
 
     W_SSVEP(PApplet _parent) {
@@ -471,7 +471,7 @@ class W_SSVEP extends Widget {
                 }
                 float avg = sum/numActiveChannels;
                 peakData[i] = avg;
-                //println("PEAK DATA: " + backgroundData[i]);
+                //println("PEAK DATA: " + peakData[i]);
 
                 //calculate background uV in all channels but the given channel
                 sum = 0;
@@ -487,8 +487,11 @@ class W_SSVEP extends Widget {
                 }
                 backgroundData[i] = sum;
                 //println("BACKGROUND DATA: " + backgroundData[i]);
-
-                finalData[i] = peakData[i]/backgroundData[i];
+                if (backgroundData[i] != 0) {
+                    finalData[i] = peakData[i]/backgroundData[i];
+                } else {
+                    finalData[i] = peakData[i];
+                }
             } else {
                 finalData[i] = 0;
             }

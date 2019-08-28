@@ -131,17 +131,19 @@ static class ConsoleWindow extends PApplet {
 
     void openLogFileAsText() {
         try {
-            println("Opening console log as text file!");
+            println("ConsoleLog: Opening console log as text file!");
             File file = new File (outputStream.getFilePath());
             Desktop desktop = Desktop.getDesktop();
-            if(file.exists()) {
+            if (file.exists()) {
                 desktop.open(file);
+            } else {
+                println("ConsoleLog: ERROR - Unable to open console log as text file...");
             }
         } catch (IOException e) {}
     }
 
     void copyFullTextToClipboard() {
-        println("Copying console log to clipboard!");
+        println("ConsoleLog: Copying console log to clipboard!");
         String stringToCopy = outputStream.getFullLog();
         String formattedCodeBlock = "```\n" + stringToCopy + "\n```";
         clipboardCopy.copyString(formattedCodeBlock);
@@ -149,7 +151,7 @@ static class ConsoleWindow extends PApplet {
 
     void copyLastLineToClipboard() {
         clipboardCopy.copyString(outputStream.getLastLine());
-        println("Previous line copied to clipboard.");
+        println("ConsoleLog: Previous line copied to clipboard.");
     }
 
     void updateButtonPositions() {
@@ -167,7 +169,7 @@ static class ConsoleWindow extends PApplet {
     }
 
     void exit() {
-        println("ConsoleWindow: Console closed!");
+        println("ConsoleLog: Console closed!");
         instance = null;
         dispose();
     }
@@ -215,7 +217,7 @@ static class ConsoleWindow extends PApplet {
                 data = (String)pasteObject(DataFlavor.stringFlavor);
             }
             catch (Exception e) {
-                println("Error getting String from clipboard: " + e);
+                println("ConsoleLog: Error getting String from clipboard: " + e);
             }
             return data;
         }
@@ -300,7 +302,7 @@ class CustomOutputStream extends PrintStream {
     }
 
     public String getFilePath() {
-        return sketchPath() + System.getProperty("file.separator") + filePath;
+        return filePath;
     }
 
     public String getLastLine() {
