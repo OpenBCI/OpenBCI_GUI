@@ -459,7 +459,7 @@ class Hub {
                 break;
             case RESP_ERROR_WIFI_NEEDS_UPDATE:
                 println("Error in processConnect: RESP_ERROR_WIFI_NEEDS_UPDATE");
-                killAndShowMsg("WiFi Shield Firmware is out of date. Learn to update: docs.openbci.com/Hardware/12-Wifi_Programming_Tutorial");
+                killAndShowMsg("WiFi Shield Firmware is out of date. Learn to update: https://openbci.github.io/Documentation/docs/05ThirdParty/03-WiFiShield/WiFiProgam");
                 break;
             default:
                 println("Error in processConnect");
@@ -485,7 +485,7 @@ class Hub {
                 output("WiFi Shield is still connected to " + wifi_portName);
                 break;
             case RESP_ERROR_UNABLE_TO_CONNECT:
-                output("No WiFi Shield found, visit docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide to learn how to connect.");
+                output("No WiFi Shield found. Please visit https://openbci.github.io/Documentation/docs/01GettingStarted/01-Boards/WiFiGS");
                 break;
             default:
                 if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
@@ -799,7 +799,7 @@ class Hub {
                 }
                 break;
             case RESP_ERROR_PROTOCOL_BLE_START:
-                outputError("Failed to start Ganglion BLE Driver, please see http://docs.openbci.com/Tutorials/02-Ganglion_Getting%20Started_Guide");
+                outputError("Failed to start Ganglion BLE Driver, please see https://openbci.github.io/Documentation/docs/01GettingStarted/01-Boards/GanglionGS");
                 break;
             default:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);

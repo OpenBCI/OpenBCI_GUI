@@ -1178,7 +1178,7 @@ class ControlPanel {
                         popOutWifiConfigButton.setString("<");
                     } else {
                         if (wifi_portName == "N/A") {
-                            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
+                            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at openbci.github.io/Documentation/");
                         } else {
                             output("Attempting to connect to WiFi Shield named " + wifi_portName);
                             hub.examineWifi(wifi_portName);
@@ -1654,7 +1654,7 @@ public void initButtonPressed(){
         }
     } else {
         //if system is already active ... stop session and flip button state back
-        outputInfo("Learn how to use this application and more at docs.openbci.com");
+        outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
         initSystemButton.setString("START SESSION");
         cp5.get(Textfield.class, "fileNameCyton").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
         cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
@@ -1691,7 +1691,7 @@ class NoHubBox {
         padding = _padding;
 
         noHubShowDoc = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "OPENBCI GUI INSTALL GUIDE", fontInfo.buttonLabel_size);
-        noHubShowDoc.setURL("http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
+        noHubShowDoc.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
     }
 
     public void draw() {
