@@ -149,10 +149,9 @@ public void controlEvent(ControlEvent theEvent) {
 
         if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
             outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
+            println("ControlEvent: Hub error");
             return;
         }
-
-        color _colorNotPressed = color(255);
 
         // this button only used on mac
         if(isMac()) {
@@ -236,17 +235,16 @@ public void controlEvent(ControlEvent theEvent) {
         verbosePrint("SD setting = " + sdSetting);
     }
 
-    if (theEvent.isFrom("channelList")){
+    if (theEvent.isFrom("channelListCP")) {
         int setChannelInt = int(theEvent.getValue()) + 1;
         //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
-        if(setChannel.wasPressed){
-            set_channel(rcBox,setChannelInt);
+        if (setChannel.wasPressed) {
+            set_channel(rcBox, setChannelInt);
             setChannel.wasPressed = false;
-        }
-        else if(ovrChannel.wasPressed){
-            set_channel_over(rcBox,setChannelInt);
+        } else if(ovrChannel.wasPressed) {
+            set_channel_over(rcBox, setChannelInt);
             ovrChannel.wasPressed = false;
         }
     }
@@ -266,16 +264,25 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if(theEvent.isFrom("recentFiles")) {
-        int s = (int)(theEvent.getController()).getValue();
-        //println("got a menu event from item " + s);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-        if (new File(filePath).isFile()) {
-            playbackFileSelected(filePath, s);
-        } else {
-            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+    //Check control events from widgets
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
+        //Check for event in PlaybackHistory Dropdown List in Control Panel
+        if (theEvent.isFrom("recentFiles")) {
+            int s = (int)(theEvent.getController()).getValue();
+            //println("got a menu event from item " + s);
+            String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
+            if (new File(filePath).isFile()) {
+                playbackFileSelected(filePath, s);
+            } else {
+                outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+            }
         }
+        //Check for event in band power channel select checkBoxes, if needed
+        /*
+        if (theEvent.isFrom(w_bandPower.bpChanSelect.checkList)) {
+            println(w_bandPower.bpChanSelect.checkList.getArrayValue());
+        }
+        */
     }
 }
 
@@ -485,14 +492,14 @@ class ControlPanel {
                             rcBox.draw();
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
-                                cp5Popup.get(MenuList.class, "channelList").setVisible(true);
+                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                                 cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-                                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
@@ -542,7 +549,7 @@ class ControlPanel {
                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
                 cp5.get(MenuList.class, "serialList").setVisible(false);
                 cp5.get(MenuList.class, "sdTimes").setVisible(false);
-                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
@@ -633,7 +640,7 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
         // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOutRadioConfigButton.setString(">");
@@ -672,8 +679,18 @@ class ControlPanel {
         cp5.get(MenuList.class, "bleList").setVisible(false);
         cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+    }
+
+    private void hideChannelListCP() {
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
+        channelPopup.setClicked(false);
+        if (setChannel.wasPressed) {
+            setChannel.wasPressed = false;
+        } else if(ovrChannel.wasPressed) {
+            ovrChannel.wasPressed = false;
+        }
     }
 
     //mouse pressed in control panel
@@ -807,11 +824,13 @@ class ControlPanel {
                     if (setChannel.isMouseHere()){
                         setChannel.setIsActive(true);
                         setChannel.wasPressed = true;
+                        ovrChannel.wasPressed = false;
                     }
 
                     if (ovrChannel.isMouseHere()){
                         ovrChannel.setIsActive(true);
                         ovrChannel.wasPressed = true;
+                        setChannel.wasPressed = false;
                     }
 
 
@@ -1099,6 +1118,7 @@ class ControlPanel {
                 }
                 else{
                     rcBox.isShowing = true;
+                    rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("<");
                 }
             }
@@ -1108,18 +1128,21 @@ class ControlPanel {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
                 // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
                 get_channel(rcBox);
-                getChannel.wasPressed=false;
+                getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
+                hideChannelListCP();
             }
 
             if (setChannel.isMouseHere() && setChannel.wasPressed){
                 channelPopup.setClicked(true);
+                channelPopup.setTitle("Change Channel");
                 pollPopup.setClicked(false);
                 setChannel.setIsActive(false);
             }
 
             if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
                 channelPopup.setClicked(true);
+                channelPopup.setTitle("Override Dongle");
                 pollPopup.setClicked(false);
                 ovrChannel.setIsActive(false);
             }
@@ -1128,12 +1151,14 @@ class ControlPanel {
                 autoscan.wasPressed = false;
                 autoscan.setIsActive(false);
                 scan_channels(rcBox);
+                hideChannelListCP();
             }
 
             if(systemStatus.isMouseHere() && systemStatus.wasPressed){
                 system_status(rcBox);
                 systemStatus.setIsActive(false);
                 systemStatus.wasPressed = false;
+                hideChannelListCP();
             }
         }
 
@@ -1249,7 +1274,7 @@ class ControlPanel {
             wifiBox.h = 200;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
-            println(output);
+            println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
@@ -1257,7 +1282,7 @@ class ControlPanel {
             wifiBox.h = 120;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
-            println(output);
+            println("CP: WiFi IP: " + output);
         }
 
         // this button only used on mac
@@ -1336,7 +1361,7 @@ class ControlPanel {
         }
 
 
-        
+
         if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
             String _board = (eegDataSource == DATASOURCE_CYTON) ? "Cyton" : "Ganglion";
             String _textField = (eegDataSource == DATASOURCE_CYTON) ? "fileNameCyton" : "fileNameGanglion";
@@ -1746,6 +1771,7 @@ class SerialBox {
         // autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
         refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+        popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
 
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
         // println(w-padding*2);
@@ -2825,29 +2851,31 @@ class SDBox {
 
 class RadioConfigBox {
     int x, y, w, h, padding; //size and position
-    String last_message = "";
+    String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    String last_message = initial_message;
     boolean isShowing;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
         y = _y;
-        w = _w;
-        h = 255;
+        w = _w + 10;
+        h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
-
-        getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-        setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        autoscan = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
-        ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        
+        getChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        systemStatus = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        setChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+        ovrChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        //typical button height + 20 for larger autoscan button
+        autoscan = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
 
         //Set help text
-        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
-        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle");
-        ovrChannel.setHelpText("Change the channel of the USB Dongle only");
-        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton");
-        systemStatus.setHelpText("Get the connection status of your Cyton system");
+        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
+        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
+        ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
+        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
+        systemStatus.setHelpText("Get the connection status of your Cyton system.");
     }
     public void update() {}
 
@@ -2874,9 +2902,10 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
+        rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
         fill(255);
-        text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+        textFont(h3, 15);
+        text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
         this.last_message = localstring;
     }
 };
@@ -2938,6 +2967,7 @@ class WifiConfigBox {
         fill(bgColor);
         rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
         fill(255);
+        textFont(h3, 15);
         text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     }
 };
@@ -2978,6 +3008,7 @@ class SDConverterBox {
 class ChannelPopup {
     int x, y, w, h, padding; //size and position
     boolean clicked;
+    String title = "";
 
     ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w * 2;
@@ -2987,7 +3018,7 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, p4);
+        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p4);
         channelList.setPosition(x+padding, y+padding*3);
 
         for (int i = 1; i < 26; i++) {
@@ -3007,13 +3038,14 @@ class ChannelPopup {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("CHANNEL SELECTION", x + padding, y + padding);
+        text(title, x + padding, y + padding);
         popStyle();
         refreshPort.draw();
     }
 
     public void setClicked(boolean click) { this.clicked = click; }
     public boolean wasClicked() { return this.clicked; }
+    public void setTitle(String s) { title = s; }
 };
 
 class PollPopup {

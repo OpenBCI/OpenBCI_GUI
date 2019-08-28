@@ -1,3 +1,33 @@
+# v4.1.5
+Use OpenBCIHub v2.0.9 please.
+
+## Beta 0
+
+### Improvements
+* Update Radio Config tools and UI to be more user-friendly
+* Establish minimum GUI app size of 705x400
+
+### Bug fixes
+* Add reusable ChannelSelect class to Widget.pde #573
+* Allow up to 20 seconds for GUI to connect to Hub #531
+
+# v4.1.4
+
+## Beta 0
+
+### Improvements
+* Added SSVEP widget! (Thanks @leanneapichay)
+* Update/restructure settings for TimeSeries and Networking
+* Update Cyton RadioConfig in Control Panel to be more user friendly
+* Scale widget selector dropdown based on widget height to allow for more widgets
+
+###  Bug fixes
+* Close network streams when session is ended or app is closed
+* Networking settings not being saved/loaded properly
+* Update Ganglion Impedance button text when successfully stopped
+* Check Hub connect on app start using TimerTask #531
+* Calculate playback mode time using last column for backwards compatibility #546
+
 # v4.1.3
 Use OpenBCIHub v2.0.9 please.
 

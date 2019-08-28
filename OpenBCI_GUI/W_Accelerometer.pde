@@ -422,6 +422,7 @@ class AccelerometerBar {
         plot.setPointColor(0);
         plot.getXAxis().setAxisLabelText("Time (s)");
         plot.getYAxis().setAxisLabelText("Acceleration (g)");
+        plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().getAxisLabel().setOffset(float(accBarPadding));
         plot.getYAxis().getAxisLabel().setOffset(float(accBarPadding));
 

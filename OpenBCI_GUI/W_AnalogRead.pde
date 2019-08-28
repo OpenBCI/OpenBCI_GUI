@@ -296,6 +296,7 @@ class AnalogReadBar{
         plot.setYLim(-200,200);
         plot.setPointSize(2);
         plot.setPointColor(0);
+        plot.setAllFontProperties("Arial", 0, 14);
         if (cyton.isWifi()) {
             if(auxValuesPosition == 1) {
                 plot.getXAxis().setAxisLabelText("Time (s)");

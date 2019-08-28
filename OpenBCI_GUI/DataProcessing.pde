@@ -29,7 +29,9 @@ void process_input_file() throws Exception {
     try {
         while (!hasRepeated) {
             currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-            index_of_times.put(indices,curTimestamp);
+            if (!curTimestamp.equals("null")) {
+                index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
+            }
             indices++;
         }
     }
@@ -308,7 +310,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
         // if available, get time stamp for use in playback
         if (row.getColumnCount() == nchan + NUM_ACCEL_DIMS + 2) {
             try{
-                if (!isOldData) curTimestamp = row.getString(nchan+3);
+                if (!isOldData) curTimestamp = row.getString(row.getColumnCount() - 1);
             } catch (ArrayIndexOutOfBoundsException e) {
                 println("Data does not exist... possibly an old file.");
             }
