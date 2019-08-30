@@ -1147,7 +1147,7 @@ void systemUpdate() { // for updating data values and variables
             topNav.screenHasBeenResized(width, height);
             widthOfLastScreen = width;
             heightOfLastScreen = height;
-            println("W = " + width + " || H = " + height);
+            //println("W = " + width + " || H = " + height);
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
