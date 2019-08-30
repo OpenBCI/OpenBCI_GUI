@@ -57,9 +57,10 @@ class SoftwareSettings {
     private boolean logFileIsOpen = false;
     private long logFileStartTime;
     private long logFileMaxDuration;
+    //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
+    CColor dropdownColors = new CColor();
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
-
     //Notch and Bandpass filter variables for save
     int dataProcessingNotchSave = 0;
     int dataProcessingBandpassSave = 3;
@@ -300,6 +301,12 @@ class SoftwareSettings {
 
     SoftwareSettings() {
         //Instantiated on app start in OpenBCI_GUI.pde
+        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
+        dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
+        dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
+        dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
+        // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
+        dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
     }
 
     ///////////////////////////////////
