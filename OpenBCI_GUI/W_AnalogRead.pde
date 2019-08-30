@@ -83,16 +83,16 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         }
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
+        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
-        analogModeButton.setFont(p6,10);
+        analogModeButton.setFont(p5,12);
         analogModeButton.setColorNotPressed(color(57,128,204));
         analogModeButton.textColorNotActive = color(255);
         analogModeButton.hasStroke(false);
         if (cyton.isWifi()) {
-            analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11) and A6(D12)");
+            analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12).");
         } else {
-            analogModeButton.setHelpText("Click this button to activate/deactivate the analog read of your Cyton board from A5(D11), A6(D12) and A7(D13)");
+            analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).");
         }
     }
 
@@ -122,6 +122,9 @@ class W_AnalogRead extends Widget {
             for(int i = 0; i < numAnalogReadBars; i++) {
                 analogReadBars[i].update();
             }
+
+            //ignore top left button interaction when widgetSelector dropdown is active
+            ignoreButtonCheck(analogModeButton);
         }
     }
 
