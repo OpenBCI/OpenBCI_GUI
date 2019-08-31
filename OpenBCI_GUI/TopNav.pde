@@ -242,8 +242,11 @@ class TopNav {
             stroke(bgColor);
             fill(255);
             rect(-1, 0, width+2, navBarHeight);
-            //this is the center logo
-            image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+            //hide the center logo if buttons would overlap it
+            if (width > 860) {
+                //this is the center logo
+                image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+            }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             noStroke();
             fill(100);
@@ -252,7 +255,11 @@ class TopNav {
             stroke(bgColor);
             fill(31, 69, 110);
             rect(-1, 0, width+2, navBarHeight);
-            image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
+            //hide the center logo if buttons would overlap it
+            if (width > 860) {
+                //this is the center logo
+                image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
+            }
         }
 
         popStyle();
