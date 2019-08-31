@@ -569,4 +569,8 @@ class ChannelSelect {
             }
         }
     }
+
+    boolean isVisible() {
+        return channelSelectPressed;
+    }
 } //end of ChannelSelect class
