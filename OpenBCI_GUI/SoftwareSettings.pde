@@ -963,12 +963,12 @@ class SoftwareSettings {
 
         //Apply Expert Mode toggle
         if (loadExpertModeToggle) {
-            topNav.configSelector.configOptions.get(0).setString("Expert Mode On");
+            topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode Off");
             topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.expertPurple);
             println("LoadGUISettings: Expert Mode On");
             expertModeToggle = true;
         } else {
-            topNav.configSelector.configOptions.get(0).setString("Expert Mode Off");
+            topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode On");
             topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
             println("LoadGUISettings: Expert Mode Off");
             expertModeToggle = false;
