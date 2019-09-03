@@ -33,8 +33,6 @@ class Widget{
     int widgetSelectorWidth = 160;
     int dropdownWidth = 64;
 
-    CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
-
     Widget(PApplet _parent){
         pApplet = _parent;
         cp5_widget = new ControlP5(pApplet);
@@ -94,19 +92,12 @@ class Widget{
         //      SETUP the widgetSelector dropdown
         //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-        dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
-        dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
-        dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
-        // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
-        dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
-
-        cp5_widget.setColor(dropdownColors);
+        cp5_widget.setColor(settings.dropdownColors);
         cp5_widget.addScrollableList("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
-            .setColor(dropdownColors)
+            .setColor(settings.dropdownColors)
             .setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
@@ -143,6 +134,7 @@ class Widget{
         //      SETUP all NavBarDropdowns
         //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /*
         dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
         dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
         // dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
@@ -150,8 +142,9 @@ class Widget{
         dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
         // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
         dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
+        */
 
-        cp5_widget.setColor(dropdownColors);
+        cp5_widget.setColor(settings.dropdownColors);
         // println("Setting up dropdowns...");
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
@@ -160,7 +153,7 @@ class Widget{
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
-                .setColor(dropdownColors)
+                .setColor(settings.dropdownColors)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
                 .setItemHeight(navH-4)
@@ -350,6 +343,17 @@ class Widget{
             }
         } else {
             return false;
+        }
+    }
+
+    void ignoreButtonCheck(Button b) {
+        //ignore top left button interaction when widgetSelector dropdown is active
+        if (dropdownIsActive) {
+            b.setIgnoreHover(true);
+        } else {
+            if (b.getIgnoreHover()) {
+                b.setIgnoreHover(false);
+            }
         }
     }
 };
@@ -564,5 +568,9 @@ class ChannelSelect {
                 }
             }
         }
+    }
+
+    boolean isVisible() {
+        return channelSelectPressed;
     }
 } //end of ChannelSelect class

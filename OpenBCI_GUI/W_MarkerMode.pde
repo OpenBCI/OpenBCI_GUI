@@ -61,9 +61,9 @@ class W_MarkerMode extends Widget {
         // for synthesizing values
         synthTime = 0.0;
 
-        markerModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn MarkerMode On", 12);
+        markerModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn MarkerMode On", 12);
         markerModeButton.setCornerRoundess((int)(navHeight-6));
-        markerModeButton.setFont(p6,10);
+        markerModeButton.setFont(p5,12);
         markerModeButton.setColorNotPressed(color(57,128,204));
         markerModeButton.textColorNotActive = color(255);
         markerModeButton.hasStroke(false);

@@ -2145,11 +2145,14 @@ class SessionDataBox {
 
         cp5_dataLog_dropdown.addScrollableList(name)
             .setOpen(false)
+            .setColor(settings.dropdownColors)
+            /*
             .setColorBackground(color(31,69,110)) // text field bg color
-            .setColorValueLabel(color(255))       // text color
+            .setColorValueLabel(color(0))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
+            */
             // .setColorCursor(color(26,26,26))
 
             .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())

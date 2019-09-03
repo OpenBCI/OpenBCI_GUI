@@ -17,9 +17,12 @@ class W_BandPower extends Widget {
     private final int NUM_BANDS = 5;
     GPlot bp_plot;
     public ChannelSelect bpChanSelect;
+    boolean prevChanSelectIsVisible = false;
 
     W_BandPower(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        //Add channel select dropdown to this widget
         bpChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "BP_Channels");
         
         //Add settings dropdowns
@@ -81,6 +84,12 @@ class W_BandPower extends Widget {
         
         //Update channel checkboxes and active channels
         bpChanSelect.update(x, y, w);
+        
+        //Flex the Gplot graph when channel select dropdown is open/closed
+        if (bpChanSelect.isVisible() != prevChanSelectIsVisible) {
+            flexGPlotSizeAndPosition();
+            prevChanSelectIsVisible = bpChanSelect.isVisible();
+        }
 
         GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
         bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA");
@@ -117,18 +126,27 @@ class W_BandPower extends Widget {
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        bp_plot.setPos(x, y-navHeight);//update position
-        bp_plot.setOuterDim(w, h+navHeight);//update dimensions
+        flexGPlotSizeAndPosition();
 
         bpChanSelect.screenResized(pApplet);
     }
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        bpChanSelect.mousePressed(this.dropdownIsActive);
+        bpChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
+
+    void flexGPlotSizeAndPosition() {
+        if (bpChanSelect.isVisible()) {
+                bp_plot.setPos(x, y);
+                bp_plot.setOuterDim(w, h);
+        } else {
+            bp_plot.setPos(x, y - navHeight);
+            bp_plot.setOuterDim(w, h + navHeight);
+        }
     }
 };

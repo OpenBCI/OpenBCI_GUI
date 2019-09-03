@@ -56,8 +56,8 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.5-beta.3";
-String localGUIVersionDate = "August 2019";
+String localGUIVersionString = "v4.1.5-beta.4";
+String localGUIVersionDate = "September 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -1147,7 +1147,7 @@ void systemUpdate() { // for updating data values and variables
             topNav.screenHasBeenResized(width, height);
             widthOfLastScreen = width;
             heightOfLastScreen = height;
-            println("W = " + width + " || H = " + height);
+            //println("W = " + width + " || H = " + height);
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {

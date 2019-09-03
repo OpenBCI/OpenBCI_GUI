@@ -102,7 +102,7 @@ class W_Networking extends Widget {
         "obci_eeg1","EEG",Integer.toString(nchan),
         "obci_eeg2","EEG",Integer.toString(nchan),
         "obci_eeg3","EEG",Integer.toString(nchan)};
-    String networkingGuideURL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
+    String networkingGuideURL = "https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#networking";
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
@@ -196,13 +196,8 @@ class W_Networking extends Widget {
 
         checkTopNovEvents();
 
-        if (dropdownIsActive) {
-            guideButton.setIgnoreHover(true);
-        } else {
-            if (guideButton.getIgnoreHover()) {
-                guideButton.setIgnoreHover(false);
-            }
-        }
+        //ignore top left button interaction when widgetSelector dropdown is active
+        ignoreButtonCheck(guideButton);
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -355,12 +350,14 @@ class W_Networking extends Widget {
         startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
 
         // Networking Data Type Guide button
-        guideButton = new Button(x0 + 2, y0 + navH + 2, 200, navH - 6,"Open Networking Guide",14);
-        guideButton.setFont(p4,14);
-        guideButton.setColorNotPressed(color(31,69,110));
+        guideButton = new Button(x0 + 2, y0 + navH + 2, 150, navH - 6,"Open Networking Guide",14);
+        guideButton.setCornerRoundess((int)(navHeight-6));
+        guideButton.setFont(p5,12);
+        guideButton.setColorNotPressed(color(57,128,204));
         guideButton.setFontColorNotActive(color(255));
-        guideButton.setHelpText("Click this button to open the Networking Output Guide in your default browser.");
+        guideButton.setHelpText("Click this button to open the Networking Widget Guide in your default browser.");
         guideButton.setURL(networkingGuideURL);
+        guideButton.hasStroke(false);
     }
 
     /* Shows and Hides appropriate CP5 elements within widget */
@@ -2046,7 +2043,7 @@ class Stream extends Thread {
                     serialMessage += Signal + ",";
                     serialMessage += IBI;
                     try {
-                        //println(serialMessage);
+                        println(serialMessage);
                         this.serial_networking.write(serialMessage);
                     } catch (Exception e) {
                         println(e.getMessage());

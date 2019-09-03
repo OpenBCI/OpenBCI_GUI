@@ -500,6 +500,75 @@ class W_SSVEP extends Widget {
         return finalData;
     } //end of processData
 
+    /*
+    void findPeakFrequency(FFT[] fftData, int Ichan) {
+
+        //loop over each EEG channel and find the frequency with the peak amplitude
+        float FFT_freq_Hz, FFT_value_uV;
+        //for (int Ichan=0;Ichan < nchan; Ichan++) {
+
+        //clear the data structure that will hold the peak for this channel
+        detectedPeak[Ichan].clear();
+
+        //loop over each frequency bin to find the one with the strongest peak
+        int nBins =  fftData[Ichan].specSize();
+        for (int Ibin=0; Ibin < nBins; Ibin++) {
+        FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin); //here is the frequency of htis bin
+
+            //is this bin within the frequency band of interest?
+        if ((FFT_freq_Hz >= min_allowed_peak_freq_Hz) && (FFT_freq_Hz <= max_allowed_peak_freq_Hz)) {
+            //we are within the frequency band of interest
+
+            //get the RMS voltage (per bin)
+            FFT_value_uV = fftData[Ichan].getBand(Ibin) / ((float)nBins); 
+            //FFT_value_uV = fftData[Ichan].getBand(Ibin);
+
+            //decide if this is the maximum, compared to previous bins for this channel
+            if (FFT_value_uV > detectedPeak[Ichan].rms_uV_perBin) {
+            //this is bigger, so hold onto this value as the new "maximum"
+            detectedPeak[Ichan].bin  = Ibin;
+            detectedPeak[Ichan].freq_Hz = FFT_freq_Hz;
+            detectedPeak[Ichan].rms_uV_perBin = FFT_value_uV;
+            }
+        } //close if within frequency band
+        } //close loop over bins
+
+        //loop over the bins again (within the sense band) to get the average background power, excluding the bins on either side of the peak
+        float sum_pow=0.0;
+        int count=0;
+        for (int Ibin=0; Ibin < nBins; Ibin++) {
+        FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin);
+        if ((FFT_freq_Hz >= min_allowed_peak_freq_Hz) && (FFT_freq_Hz <= max_allowed_peak_freq_Hz)) {
+            if ((Ibin < detectedPeak[Ichan].bin - 1) || (Ibin > detectedPeak[Ichan].bin + 1)) {
+            FFT_value_uV = fftData[Ichan].getBand(Ibin) / ((float)nBins);  //get the RMS per bin
+            sum_pow+=pow(FFT_value_uV, 2.0f);
+            count++;
+            }
+        }
+        }
+        //compute mean
+        detectedPeak[Ichan].background_rms_uV_perBin = sqrt(sum_pow / count);
+
+        //decide if peak is big enough to be detected
+        detectedPeak[Ichan].SNR_dB = 20.0f*(float)java.lang.Math.log10(detectedPeak[Ichan].rms_uV_perBin / detectedPeak[Ichan].background_rms_uV_perBin);
+
+        //kludge
+        //if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[0]) && (detectedPeak[Ichan].freq_Hz <= processing_band_high_Hz[0])) {
+        //  if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB-2.0) {
+        //    detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+        //    detectedPeak[Ichan].isDetected = true;
+        //  }
+        //} else {
+        //  if (detectedPeak[Ichan].SNR_dB >= detection_thresh_dB) {
+        //    detectedPeak[Ichan].threshold_dB = detection_thresh_dB;
+        //    detectedPeak[Ichan].isDetected = true;
+        //  }
+        //}
+
+        //} // end loop over channels
+    } //end method findPeakFrequency
+    */
+
 } //end of ssvep class
 
 void NumberSSVEP(int n) {
