@@ -207,11 +207,13 @@ void scan_channels(RadioConfigBox rcConfig){
             return;
         }
     }
-    for(int i = 1; i < 26; i++){
+    if (!confirm_connected()) {
+        for(int i = 1; i < 26; i++){
 
-        set_channel_over(rcConfig,i);
-        system_status(rcConfig);
-        if(confirm_connected()) return; // break;
+            set_channel_over(rcConfig,i);
+            system_status(rcConfig);
+            if(confirm_connected()) return; // break;
+        }
     }
 }
 

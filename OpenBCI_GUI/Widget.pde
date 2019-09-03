@@ -528,6 +528,7 @@ class ChannelSelect {
     void draw() {
         textSize(12);
         fill(0);
+        textFont(p5, 12);
         text("Channels", x + 2, y - 6);
         tri_xpos = x + textWidth("Channels") + 7;
 
