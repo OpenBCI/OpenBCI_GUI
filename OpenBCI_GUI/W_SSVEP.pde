@@ -46,11 +46,12 @@ class W_SSVEP extends Widget {
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
-    String ssvepHelpText = "The SSVEP Widget(BETA) allows for visual stimulation at specific frequencies.\n\n"
+    String ssvepHelpText = "For best results, set the GUI framerate to 60fps.\n\n"
+                            + "The SSVEP Widget(BETA) provides visual stimulation at specific frequencies."
                             + "In response to looking at one of the SSVEPs, you will see an increase in brain activity at that frequency in the FFT plot. "
                             + "Make sure to select the electrodes that align with the back of your head, where the visual stimulus will be recognized.\n\n"
                             + "You can stop/start each SSVEP by clicking on it.\n\n"
-                            + "For best results, set the GUI framerate to 60fps. This widget is currently in beta mode and requires more input and testing from the OpenBCI Community.";
+                            + "This widget is currently in beta mode and requires more input and testing from the OpenBCI Community.";
     int ssvepHelpTextFontSize = 16;
 
     W_SSVEP(PApplet _parent) {
@@ -246,7 +247,7 @@ class W_SSVEP extends Widget {
             fill(20);
             rect(x + 20, y + 20, w - 40, h- 40);
             textAlign(LEFT, TOP);
-            textSize(ssvepHelpTextFontSize);
+            textFont(p3, ssvepHelpTextFontSize);
             fill(250);
             text(ssvepHelpText, x + 30, y + 30, w - 60, h -60);
         }

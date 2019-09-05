@@ -827,10 +827,15 @@ class PlaybackScrollbar {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
-        if (!getCurrentTimeStamp().equals("TimeNotFound")) {
-            long t = new Long(getCurrentTimeStamp());
-            Date d =  new Date(t);
-            currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+        //Catch error when trying to fetch current timestamp
+        try {
+            if (!getCurrentTimeStamp().equals("TimeNotFound")) {
+                long t = new Long(getCurrentTimeStamp());
+                Date d =  new Date(t);
+                currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+            }
+        } catch (NullPointerException e) {
+            println("TimeSeries: Timestamp error...");
         }
 
         //update elapsed time to display
