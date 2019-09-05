@@ -475,7 +475,7 @@ class ControlPanel {
             cp5.setVisible(true);//make sure controlP5 elements are visible
             cp5Popup.setVisible(true);
 
-             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
+            if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
                 if(!hub.isHubRunning()) {
                     noHubBox.draw();
                 }
@@ -534,10 +534,10 @@ class ControlPanel {
                     wifiTransferProtcolCytonBox.y = latencyCytonBox.y + latencyCytonBox.h;
                     channelCountBox.draw();
                     sdBox.draw();
-                    dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
                     cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+                    dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
@@ -2069,7 +2069,7 @@ class SessionDataBox {
         autoSessionName = new Button (x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
         autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
         outputODF = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
-        outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file size is reached.");
+        outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
         //Output source is ODF by default
         if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         outputBDF = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
@@ -2131,6 +2131,9 @@ class SessionDataBox {
         outputBDF.draw();
         if (outputDataSource == OUTPUT_SOURCE_ODF) {
             pushStyle();
+            //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
+            fill(200);
+            rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
             fill(bgColor);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, outputODF.but_y + outputODF.but_dy + padding*3 - 3);
@@ -2165,7 +2168,7 @@ class SessionDataBox {
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
-            .setFont(h4)
+            .setFont(p4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
