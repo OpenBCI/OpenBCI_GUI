@@ -4,6 +4,7 @@ Use OpenBCIHub v2.0.9 please.
 ## Beta 4
 ### Improvements
 * Minor UI/UX edits for style and clarity
+* Convert Cyton SD card duration select from MenuList to ScrollableList
 
 ## Beta 3
 
