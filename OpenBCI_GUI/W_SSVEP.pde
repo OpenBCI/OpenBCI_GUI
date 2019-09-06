@@ -34,8 +34,10 @@ class W_SSVEP extends Widget {
 
     //Widget CP5s
     ControlP5 cp5_ssvep; //For all CP5 elements within the SSVEP widget
-    String[] dropdownNames = {"Frequency 1", "Frequency 2", "Frequency 3", "Frequency 4"};
+    int dropdownWidth_freq = 115;
+    String[] dropdownNames = {"Frequency_1", "Frequency_2", "Frequency_3", "Frequency_4"};
     List<String> dropdownOptions = new ArrayList<String>();
+    boolean freqDropdownsShouldBeClosed = false;
 
     public ChannelSelect ssvepChanSelect;
 
@@ -66,7 +68,7 @@ class W_SSVEP extends Widget {
         for (int i = 0; i < 9; i++) {
             dropdownOptions.add(String.valueOf(i+7) + " Hz");
         }
-
+        
         //init cp5 dropdowns in reverse so ssvep dropdwns 1 & 2 draw over 3 & 4
         for (int i = dropdownNames.length - 1; i >= 0; i--) {
             createDropdown(dropdownNames[i], dropdownOptions);
@@ -103,68 +105,9 @@ class W_SSVEP extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if ((topNav.configSelector.isVisible != configIsVisible) || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
-            //lock/unlock the controllers within networking widget when using TopNav Objects
-            if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
-                cp5_ssvep.get(ScrollableList.class, "Frequency 1").lock();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 2").lock();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 3").lock();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 4").lock();
-
-            } else {
-                cp5_ssvep.get(ScrollableList.class, "Frequency 1").unlock();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 2").unlock();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 3").unlock();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 4").unlock();
-            }
-
-            //lock/unlock dropdowns when Widget Selector is in use
-            if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
-                cp5_ssvep.get(ScrollableList.class, "Frequency 1").lock();
-            } else {
-                cp5_ssvep.get(ScrollableList.class, "Frequency 1").unlock();
-            }
-
-            //lock/unlock lower Freq4 dropdown when Freq2 dropdown is in use in 4 SSVEP use case
-            if (cp5_ssvep.get(ScrollableList.class, "Frequency 2").isOpen()) {
-                cp5_ssvep.getController("Frequency 2").bringToFront();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 4").lock();
-            } else {
-                cp5_ssvep.get(ScrollableList.class, "Frequency 4").setVisible(true).unlock();
-            }
-
-            //lock/unlock lower Freq3 dropdown when Freq1 dropdown is in use in 4 SSVEP use case
-            if (cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen() && settings.numSSVEPs == 3) {
-                cp5_ssvep.getController("Frequency 1").bringToFront();
-                cp5_ssvep.get(ScrollableList.class, "Frequency 3").lock();
-
-            } else {
-                cp5_ssvep.get(ScrollableList.class, "Frequency 3").unlock();
-            }
-
-            //manage dropdowns in 3 SSVEP use case
-            if (heightLarger && settings.numSSVEPs == 2) {
-               // lock freq2 if freq1 is in use
-               if (cp5_ssvep.get(ScrollableList.class, "Frequency 1").isOpen()){
-                   cp5_ssvep.get(ScrollableList.class, "Frequency 2").bringToFront();
-                   cp5_ssvep.get(ScrollableList.class, "Frequency 2").lock();
-               } else {
-                   cp5_ssvep.get(ScrollableList.class, "Frequency 2").unlock();
-               }
-
-               // lock freq3 if freq2 is in use
-               if (cp5_ssvep.get(ScrollableList.class, "Frequency 2").isOpen()){
-                   cp5_ssvep.get(ScrollableList.class, "Frequency 3").lock();
-                   cp5_ssvep.getController("Frequency 2").bringToFront();
-               } else {
-                   cp5_ssvep.get(ScrollableList.class, "Frequency 3").unlock();
-               }
-            }
-
-            configIsVisible = topNav.configSelector.isVisible;
-            layoutIsVisible = topNav.layoutSelector.isVisible;
-
-        }
+        //Lock/unlock the controllers within networking widget when using TopNav Objects
+        //Also locks dropdown 2 when #SSVEPs dropdown is open
+        lockUnlockControllersAsNeeded();
 
         if (settings.numSSVEPs == 0) {  // 1 SSVEP
             freqs[0] = updateFreq(1);
@@ -182,41 +125,54 @@ class W_SSVEP extends Widget {
             freqs[3] = updateFreq(4);
         }
 
+        //put the frequency dropdowns in the right place
         setDropdownPositions();
+        if (freqDropdownsShouldBeClosed) {
+            freqDropdownsShouldBeClosed = false;
+        } else {
+            //and open or close dropdowns based on user interaction on hover
+            openCloseDropdowns();
+        }
 
         //Update channel checkboxes and active channels
         ssvepChanSelect.update(x, y, w);
 
+        //save the number of active channels to be analyzed (e.g. ch7+ch8 = 2 active channels)
         numActiveChannels = ssvepChanSelect.activeChan.size();
+        
+        //if the system is running, process SSVEP data
         if (isRunning) {
             ssvepData = processData();
             //println(ssvepData);
         }
-    }
+
+        
+    } //end of update loop
 
     void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
+        pushStyle();
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         fill(0);
         rect(x, y, w, h);
-        pushStyle();
-
         popStyle();
-        ssvepChanSelect.draw();
+
         pushStyle();
+        ssvepChanSelect.draw();
+        popStyle();
 
         //left side
         if (settings.numSSVEPs == 0) {  // 1 SSVEP
             //(String colour, int freq, float wFactor, float hFactor, float hOffset, float size)
-            drawSSVEP("blue", freqs[0], 0.5, 0.5, 0.0, s/4);
+            drawSSVEP("blue", freqs[0], 0.5, 0.5, 0, s/4);
         } else if (settings.numSSVEPs == 1) { // 2 SSVEPs
             if (heightLarger) {
-                drawSSVEP("blue", freqs[0], 0.5, 0.20, 0.0, s/5);
-                drawSSVEP("red", freqs[1], 0.5, 0.70, 0.0, s/5);
+                drawSSVEP("blue", freqs[0], 0.5, 0.20, 0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 0.70, 0, s/5);
             } else {
-                drawSSVEP("blue", freqs[0], 0.20, 0.5, 0.0, s/5);
-                drawSSVEP("red", freqs[1], 0.70, 0.5, 0.0, s/5);
+                drawSSVEP("blue", freqs[0], 0.20, 0.5, 0, s/5);
+                drawSSVEP("red", freqs[1], 0.70, 0.5, 0, s/5);
             }
         } else if (settings.numSSVEPs == 2) { // 3 SSVEPs
             if (heightLarger) {
@@ -225,23 +181,32 @@ class W_SSVEP extends Widget {
                 drawSSVEP("red", freqs[1], 0.5, 1.0/3 + 0.1, 30.0, s/5);
                 drawSSVEP("green", freqs[2], 0.5, 2.0/3 + 0.1, 30.0, s/5);
             } else {
-                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0.0, s/5);
-                drawSSVEP("red", freqs[1], 0.5, 0.5, 0.0, s/5);
-                drawSSVEP("green", freqs[2], 0.875, 0.5, 0.0, s/5);
+                drawSSVEP("blue", freqs[0], 0.125, 0.5, 0, s/5);
+                drawSSVEP("red", freqs[1], 0.5, 0.5, 0, s/5);
+                drawSSVEP("green", freqs[2], 0.875, 0.5, 0, s/5);
             }
         } else if (settings.numSSVEPs == 3) { // 4 SSVEPs
             float sz = s/6;
-            drawSSVEP("blue", freqs[0], 0.25, 0.25, 0.0, s/6);
-            drawSSVEP("red", freqs[1], 0.75, 0.25, 0.0, s/6);
-            drawSSVEP("green", freqs[2], 0.25, 0.75, 0.0, s/6);
-            drawSSVEP("yellow", freqs[3], 0.75, 0.75, 0.0, s/6);
+            drawSSVEP("blue", freqs[0], 0.25, 0.25, 0, s/6);
+            drawSSVEP("red", freqs[1], 0.75, 0.25, 0, s/6);
+            drawSSVEP("green", freqs[2], 0.25, 0.75, 0, s/6);
+            drawSSVEP("yellow", freqs[3], 0.75, 0.75, 0, s/6);
+        }
+
+        //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
+        pushStyle();
+        fill(100);
+        for (int i = 1; i <= settings.numSSVEPs + 1; i++) {
+            String c = "Frequency_" + i;
+            rect(cp5_ssvep.getController(c).getPosition()[0] - 1, cp5_ssvep.getController(c).getPosition()[1] - 1, dropdownWidth_freq + 2, cp5_ssvep.getController(c).getHeight()+2);
         }
 
         //Draw all cp5 elements within the SSVEP widget
         //Only draws elements that are visible
+        //Drawing here draws on top of scrollableList background rectangles that were just drawn
         cp5_ssvep.draw();
 
-        // show about details
+        //If widget help button was clicked, show about details
         if (showAbout) {
             stroke(220);
             fill(20);
@@ -252,6 +217,7 @@ class W_SSVEP extends Widget {
             text(ssvepHelpText, x + 30, y + 30, w - 60, h -60);
         }
 
+        //Draw widget help button
         stroke(0);
         noFill();
         ellipse(x + w - 80, y - navH/2 , 18, 18);
@@ -263,8 +229,9 @@ class W_SSVEP extends Widget {
         else {
             text("?", x + w - 80, y - navH/2 - 2);
         }
+        popStyle();
 
-    }
+    } //end of draw loop
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
@@ -279,6 +246,8 @@ class W_SSVEP extends Widget {
             heightLarger = false;
             s = h;
         }
+        
+        setFreqDropdownSizes();
 
         ssvepChanSelect.screenResized(pApplet);
     }
@@ -296,7 +265,6 @@ class W_SSVEP extends Widget {
                 }
             }
         }
-
         ssvepChanSelect.mousePressed(this.dropdownIsActive);
     }
 
@@ -305,6 +273,7 @@ class W_SSVEP extends Widget {
     }
 
     void createDropdown(String name, List<String> _items) {
+        int _dropdownHeight = (dropdownOptions.size() + 1) * (navH - 2);
         cp5_ssvep.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(0)) // text field bg color
@@ -312,6 +281,7 @@ class W_SSVEP extends Widget {
             .setColorCaptionLabel(color(130))
             .setColorForeground(color(60))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
+            .setSize(dropdownWidth_freq, _dropdownHeight)
             .addItems(_items)
             .setVisible(false)
             .setBarHeight(20)
@@ -323,6 +293,8 @@ class W_SSVEP extends Widget {
             .toUpperCase(false)
             .setFont(h4)
             .setSize(14)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
 
         cp5_ssvep.getController(name)
@@ -330,6 +302,8 @@ class W_SSVEP extends Widget {
             .toUpperCase(false)
             .setFont(h4)
             .setSize(12)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
     }
 
@@ -342,11 +316,14 @@ class W_SSVEP extends Widget {
         }
     }
 
-    void resetDropdowns() {
-        cp5_ssvep.get(ScrollableList.class, "Frequency 1").setVisible(false);
-        cp5_ssvep.get(ScrollableList.class, "Frequency 2").setVisible(false);
-        cp5_ssvep.get(ScrollableList.class, "Frequency 3").setVisible(false);
-        cp5_ssvep.get(ScrollableList.class, "Frequency 4").setVisible(false);
+    void setFreqDropdownSizes() {
+        //int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
+        int _dropdownHeight = (dropdownOptions.size() + 1) * (navH - 2);
+        for(int i = 0; i <= settings.numSSVEPs; i++){
+            cp5_ssvep.getController(dropdownNames[i])
+                    .setSize(dropdownWidth_freq, _dropdownHeight);
+                    ;
+        }
     }
 
     void drawSSVEP(String colour, int freq, float wFactor, float hFactor, float hOffset, float size) {
@@ -409,6 +386,8 @@ class W_SSVEP extends Widget {
    void setDropdownPositions() {
         resetDropdowns();
 
+        int _wOffset = -dropdownWidth_freq/2;
+
         if (settings.numSSVEPs == 0) {
             //(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset)
             setDropdown(1, 0.5, - s/8, 0, 30.0);
@@ -417,37 +396,145 @@ class W_SSVEP extends Widget {
                 setDropdown(1, 0, 10.0, 0.25, -s/8);
                 setDropdown(2, 0, 10.0, 0.75, -s/8);
             } else {
-                setDropdown(1, 0.25, -s/8, 0, 30.0);
-                setDropdown(2, 0.75, -s/8, 0, 30.0);
+                setDropdown(1, 0.2, _wOffset, 0, 30.0);
+                setDropdown(2, 0.7, _wOffset, 0, 30.0);
             }
         } else if (settings.numSSVEPs == 2) {
             if (heightLarger) {
-                setDropdown(1, 0, 10.0, 0.0, 30.0);
+                setDropdown(1, 0, 10.0, 0, 30.0);
                 setDropdown(2, 0, 10.0, 1.0/3, 30.0);
                 setDropdown(3, 0, 10.0, 2.0/3, 30.0);
             } else {
                 //Freq1 Dropdown
-                setDropdown(1, 0.125, -s/8, 0, 30.0);
-                setDropdown(2, 0.5, -s/8, 0.0, 30.0);
-                setDropdown(3, 0.825, -s/8, 0.0, 30.0);
+                setDropdown(1, 0.125, _wOffset, 0, 30.0);
+                setDropdown(2, 0.5, _wOffset, 0, 30.0);
+                setDropdown(3, 0.875, _wOffset, 0, 30.0);
             }
         } else if (settings.numSSVEPs == 3) {
-            setDropdown(4, 1.0, (-1.0/6) - 100.0, 0.5, -15);
-            setDropdown(3, 0.0, 10.0, 0.5, -15);
-            setDropdown(1, 0.0, 10.0, 0.0, 30.0);
-            setDropdown(2, 1.0, (-1.0/6) - 100.0, 0.0, 30.0);
+            setDropdown(1, 0, 10.0, 0, 15f);
+            setDropdown(2, 1.0, (-1.0/6) - 130f, 0, 15f);
+            setDropdown(3, 0, 10.0, 0.55, 0);
+            setDropdown(4, 1.0, (-1.0/6) - 130f, 0.55, 0);
         }
    }
 
     //------- set the Position of an individual dropdown
     void setDropdown(int dropdownNo, float wFactor, float wOffset, float hFactor, float hOffset){
-        cp5_ssvep.getController("Frequency "+dropdownNo).setPosition(x + (w * wFactor) + wOffset, y + (h * hFactor) + hOffset);
-        cp5_ssvep.get(ScrollableList.class, "Frequency "+dropdownNo).setVisible(true);
+        cp5_ssvep.getController("Frequency_"+dropdownNo).setPosition(x + (w * wFactor) + wOffset, y + (h * hFactor) + hOffset);
+        cp5_ssvep.get(ScrollableList.class, "Frequency_"+dropdownNo).setVisible(true);
+    }
+
+    void resetDropdowns() {
+        cp5_ssvep.get(ScrollableList.class, "Frequency_1").setVisible(false);
+        cp5_ssvep.get(ScrollableList.class, "Frequency_2").setVisible(false);
+        cp5_ssvep.get(ScrollableList.class, "Frequency_3").setVisible(false);
+        cp5_ssvep.get(ScrollableList.class, "Frequency_4").setVisible(false);
+    }
+
+    void openCloseDropdowns() {
+        for(int i = 1; i <= settings.numSSVEPs + 1; i++){
+            if (cp5_ssvep.get(ScrollableList.class, "Frequency_"+i).isOpen()) {
+                if (!cp5_ssvep.get(ScrollableList.class, "Frequency_"+i).isMouseOver()) {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_"+i).close();
+                }
+            } else {
+                if (cp5_ssvep.get(ScrollableList.class, "Frequency_"+i).isMouseOver()) {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_"+i).open();
+                }
+            }
+        }
+    }
+
+    void closeAllDropdowns() {
+        freqDropdownsShouldBeClosed = true;
+        this.cp5_ssvep.get(ScrollableList.class, "Frequency_1").close();
+        this.cp5_ssvep.get(ScrollableList.class, "Frequency_2").close();
+        this.cp5_ssvep.get(ScrollableList.class, "Frequency_3").close();
+        this.cp5_ssvep.get(ScrollableList.class, "Frequency_4").close();
+    }
+
+    void lockUnlockControllersAsNeeded() {
+        //If neither widget selection or #SSVEPs dropdown is active...
+        if (!dropdownIsActive) {
+            //Unlock all Frequency dropdowns and proceed to check for other cases
+            cp5_ssvep.get(ScrollableList.class, "Frequency_1").unlock();
+            cp5_ssvep.get(ScrollableList.class, "Frequency_2").unlock();
+            cp5_ssvep.get(ScrollableList.class, "Frequency_3").unlock();
+            cp5_ssvep.get(ScrollableList.class, "Frequency_4").unlock();
+            //Check for state change in topNav objects
+            if ((topNav.configSelector.isVisible != configIsVisible) || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
+                //Lock/unlock the controllers within networking widget when using TopNav Objects
+                if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_1").lock();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_2").lock();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_3").lock();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_4").lock();
+
+                } else {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_1").unlock();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_2").unlock();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_3").unlock();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_4").unlock();
+                }
+
+                //lock/unlock dropdowns when Widget Selector is in use
+                if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_1").lock();
+                } else {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_1").unlock();
+                }
+
+                //lock/unlock lower Freq4 dropdown when Freq2 dropdown is in use in 4 SSVEP use case
+                if (cp5_ssvep.get(ScrollableList.class, "Frequency_2").isOpen()) {
+                    cp5_ssvep.getController("Frequency_2").bringToFront();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_4").lock();
+                } else {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_4").setVisible(true).unlock();
+                }
+
+                //lock/unlock lower Freq3 dropdown when Freq1 dropdown is in use in 4 SSVEP use case
+                if (cp5_ssvep.get(ScrollableList.class, "Frequency_1").isOpen() && settings.numSSVEPs == 3) {
+                    cp5_ssvep.getController("Frequency_1").bringToFront();
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_3").lock();
+
+                } else {
+                    cp5_ssvep.get(ScrollableList.class, "Frequency_3").unlock();
+                }
+
+                //manage dropdowns in 3 SSVEP use case
+                if (heightLarger && settings.numSSVEPs == 2) {
+                    // lock freq2 if freq1 is in use
+                    if (cp5_ssvep.get(ScrollableList.class, "Frequency_1").isOpen()){
+                        cp5_ssvep.get(ScrollableList.class, "Frequency_2").bringToFront();
+                        cp5_ssvep.get(ScrollableList.class, "Frequency_2").lock();
+                    } else {
+                        cp5_ssvep.get(ScrollableList.class, "Frequency_2").unlock();
+                    }
+
+                    // lock freq3 if freq2 is in use
+                    if (cp5_ssvep.get(ScrollableList.class, "Frequency_2").isOpen()){
+                        cp5_ssvep.get(ScrollableList.class, "Frequency_3").lock();
+                        cp5_ssvep.getController("Frequency_2").bringToFront();
+                    } else {
+                        cp5_ssvep.get(ScrollableList.class, "Frequency_3").unlock();
+                    }
+                }
+
+                configIsVisible = topNav.configSelector.isVisible;
+                layoutIsVisible = topNav.layoutSelector.isVisible;
+            } //end topNav state change check
+        } else {
+            //If using the widget selector or #SSVEPs dropdowns, lock frequency dropdowns
+            cp5_ssvep.get(ScrollableList.class, "Frequency_1").lock();
+            cp5_ssvep.get(ScrollableList.class, "Frequency_2").lock();
+            cp5_ssvep.get(ScrollableList.class, "Frequency_3").lock();
+            cp5_ssvep.get(ScrollableList.class, "Frequency_4").lock();
+        }
     }
 
     int updateFreq(int controllerNum) {
-        String label = cp5_ssvep.get(ScrollableList.class, "Frequency "+controllerNum).getLabel();
-        if (!label.equals("Frequency "+controllerNum)) {
+        String label = cp5_ssvep.get(ScrollableList.class, "Frequency_"+controllerNum).getLabel();
+        if (!label.equals("Frequency_"+controllerNum)) {
             String[] s = split(label, " ");
             return Integer.valueOf(s[0]);
         }
@@ -535,14 +622,14 @@ class W_SSVEP extends Widget {
         } //close loop over bins
 
         //loop over the bins again (within the sense band) to get the average background power, excluding the bins on either side of the peak
-        float sum_pow=0.0;
+        float sum_pow=0;
         int count=0;
         for (int Ibin=0; Ibin < nBins; Ibin++) {
         FFT_freq_Hz = fftData[Ichan].indexToFreq(Ibin);
         if ((FFT_freq_Hz >= min_allowed_peak_freq_Hz) && (FFT_freq_Hz <= max_allowed_peak_freq_Hz)) {
             if ((Ibin < detectedPeak[Ichan].bin - 1) || (Ibin > detectedPeak[Ichan].bin + 1)) {
             FFT_value_uV = fftData[Ichan].getBand(Ibin) / ((float)nBins);  //get the RMS per bin
-            sum_pow+=pow(FFT_value_uV, 2.0f);
+            sum_pow+=pow(FFT_value_uV, 2.0);
             count++;
             }
         }
@@ -551,7 +638,7 @@ class W_SSVEP extends Widget {
         detectedPeak[Ichan].background_rms_uV_perBin = sqrt(sum_pow / count);
 
         //decide if peak is big enough to be detected
-        detectedPeak[Ichan].SNR_dB = 20.0f*(float)java.lang.Math.log10(detectedPeak[Ichan].rms_uV_perBin / detectedPeak[Ichan].background_rms_uV_perBin);
+        detectedPeak[Ichan].SNR_dB = 20.0*(float)java.lang.Math.log10(detectedPeak[Ichan].rms_uV_perBin / detectedPeak[Ichan].background_rms_uV_perBin);
 
         //kludge
         //if ((detectedPeak[Ichan].freq_Hz >= processing_band_low_Hz[0]) && (detectedPeak[Ichan].freq_Hz <= processing_band_high_Hz[0])) {
@@ -572,7 +659,26 @@ class W_SSVEP extends Widget {
 
 } //end of ssvep class
 
+//Corresponds to the number of SSVEPs dropdown menu at the top right of the SSVEP widget
 void NumberSSVEP(int n) {
     settings.numSSVEPs = n;
     closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
+
+///The following functions correspond to the ScrollableLists of the same name in the SSVEP widget
+void Frequency_1(int n) {
+    w_ssvep.closeAllDropdowns();
+}
+
+void Frequency_2(int n) {
+    w_ssvep.closeAllDropdowns();
+}
+
+void Frequency_3(int n) {
+    w_ssvep.closeAllDropdowns();
+}
+
+void Frequency_4(int n) {
+    w_ssvep.closeAllDropdowns();
+}
+

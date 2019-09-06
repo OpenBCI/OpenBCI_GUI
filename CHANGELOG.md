@@ -6,6 +6,7 @@ Use OpenBCIHub v2.0.9 please.
 * Minor UI/UX edits for style and clarity
 * Convert Cyton SD card duration select from MenuList to ScrollableList
 * Update UI/UX in ChannelSelect Class in Widget.pde
+* Update SSVEP UI/UX to match GUI style
 
 ## Beta 3
 

@@ -1185,11 +1185,11 @@ class SoftwareSettings {
         //Apply ssvep frequency dropdowns
         for (int i = 0; i < numSSVEPsLoad; i++) {
             if (ssvepFreqsLoad[i] > 1) {
-                w_ssvep.cp5_ssvep.getController("Frequency "+(i+1)).getCaptionLabel().setText(ssvepFreqsLoad[i]+" Hz");
-                w_ssvep.cp5_ssvep.get(ScrollableList.class, "Frequency "+(i+1)).setValue(ssvepFreqsLoad[i] - 7);
+                w_ssvep.cp5_ssvep.getController("Frequency_"+(i+1)).getCaptionLabel().setText(ssvepFreqsLoad[i]+" Hz");
+                w_ssvep.cp5_ssvep.get(ScrollableList.class, "Frequency_"+(i+1)).setValue(ssvepFreqsLoad[i] - 7);
                 w_ssvep.freqs[i] = ssvepFreqsLoad[i];
             } else { // -1 - none selected
-                w_ssvep.cp5_ssvep.getController("Frequency "+(i+1)).getCaptionLabel().setText("Frequency "+(i+1));
+                w_ssvep.cp5_ssvep.getController("Frequency_"+(i+1)).getCaptionLabel().setText("Frequency_"+(i+1));
             }
         }
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
