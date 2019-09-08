@@ -213,6 +213,13 @@ class TopNav {
     }
 
     void update() {
+        //ignore settings button when help dropdown is open
+        if (tutorialSelector.isVisible) {
+            configButton.setIgnoreHover(true);
+        } else {
+            configButton.setIgnoreHover(false);
+        }
+
         if (previousSystemMode != systemMode) {
             if (systemMode >= SYSTEMMODE_POSTINIT) {
                 layoutSelector.update();
@@ -395,7 +402,6 @@ class TopNav {
         if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
             tutorialSelector.toggleVisibility();
             tutorialsButton.setIsActive(true);
-            configButton.setIgnoreHover(true);
         }
 
         if (issuesButton.isMouseHere() && issuesButton.isActive()) {

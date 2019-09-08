@@ -452,6 +452,7 @@ class ChannelSelect {
     //----------CHANNEL SELECT INFRASTRUCTURE
     private int x, y, w, navH;
     private float tri_xpos = 0;
+    private float chanSelectXPos = 0;
     public ControlP5 cp5_channelCheckboxes;   //ControlP5 to contain our checkboxes
     public CheckBox checkList;
     private int offset;  //offset on nav bar of checkboxes
@@ -510,7 +511,7 @@ class ChannelSelect {
         y = _y;
         w = _w;
         //Toggle open/closed the channel menu
-        if (mouseX > (x + 57) && mouseX < (x + 67) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+        if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
             channelSelectHover = true;
         } else {
             channelSelectHover = false;
@@ -526,22 +527,24 @@ class ChannelSelect {
     }
 
     void draw() {
-        textSize(12);
-        fill(0);
+
+        //change "Channels" text color and triangle color on hover
+        if (channelSelectHover) {
+            fill(openbciBlue);
+        } else {
+            fill(0);
+        }
         textFont(p5, 12);
-        text("Channels", x + 2, y - 6);
+        chanSelectXPos = x + 2;
+        text("Channels", chanSelectXPos, y - 6);
         tri_xpos = x + textWidth("Channels") + 7;
 
-        if(!channelSelectHover){
-            fill(0);
-        } else {
-            fill(130);
-        }
-
+        //draw triangle as pointing up or down, depending on if channel Select is active or closed
         if (!channelSelectPressed) {
             triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
         } else {
             triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
+            //if active, draw a grey background for the channel select checkboxes
             fill(180);
             rect(x,y,w,navH);
         }
@@ -556,7 +559,7 @@ class ChannelSelect {
 
     void mousePressed(boolean dropdownIsActive) {
         if (!dropdownIsActive) {
-            if (mouseX > (tri_xpos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+            if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
                 channelSelectPressed = !channelSelectPressed;
                 if (channelSelectPressed) {
                     for (int i = 0; i < nchan; i++) {
