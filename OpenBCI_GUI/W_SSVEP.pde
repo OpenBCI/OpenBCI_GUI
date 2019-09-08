@@ -418,8 +418,8 @@ class W_SSVEP extends Widget {
                 setDropdown(3, 0.875, _wOffset, 0, 30.0);
             }
         } else if (settings.numSSVEPs == 3) {
-            setDropdown(1, 0, 10.0, 0, 15f);
-            setDropdown(2, 1.0, (-1.0/6) - 130f, 0, 15f);
+            setDropdown(1, 0, 10.0, 0, navH + 4);
+            setDropdown(2, 1.0, (-1.0/6) - 130f, 0, navH + 4);
             setDropdown(3, 0, 10.0, 0.55, 0);
             setDropdown(4, 1.0, (-1.0/6) - 130f, 0.55, 0);
         }
