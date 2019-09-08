@@ -149,10 +149,9 @@ public void controlEvent(ControlEvent theEvent) {
 
         if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
             outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
+            println("ControlEvent: Hub error");
             return;
         }
-
-        color _colorNotPressed = color(255);
 
         // this button only used on mac
         if(isMac()) {
@@ -224,6 +223,20 @@ public void controlEvent(ControlEvent theEvent) {
         output("Wifi Device Name = " + wifi_portName);
     }
 
+    /*
+    if (theEvent.isFrom("sdTimes")) {
+        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+        sdSettingString = (String)bob.get("headline");
+        sdSetting = int(theEvent.getValue());
+        if (sdSetting != 0) {
+            output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
+        } else {
+            output("OpenBCI microSD Setting = " + sdSettingString);
+        }
+        verbosePrint("SD setting = " + sdSetting);
+    }
+    */
+
     if (theEvent.isFrom("sdTimes")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         sdSettingString = (String)bob.get("headline");
@@ -236,17 +249,16 @@ public void controlEvent(ControlEvent theEvent) {
         verbosePrint("SD setting = " + sdSetting);
     }
 
-    if (theEvent.isFrom("channelList")){
+    if (theEvent.isFrom("channelListCP")) {
         int setChannelInt = int(theEvent.getValue()) + 1;
         //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
-        if(setChannel.wasPressed){
-            set_channel(rcBox,setChannelInt);
+        if (setChannel.wasPressed) {
+            set_channel(rcBox, setChannelInt);
             setChannel.wasPressed = false;
-        }
-        else if(ovrChannel.wasPressed){
-            set_channel_over(rcBox,setChannelInt);
+        } else if(ovrChannel.wasPressed) {
+            set_channel_over(rcBox, setChannelInt);
             ovrChannel.wasPressed = false;
         }
     }
@@ -266,16 +278,25 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if(theEvent.isFrom("recentFiles")) {
-        int s = (int)(theEvent.getController()).getValue();
-        //println("got a menu event from item " + s);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-        if (new File(filePath).isFile()) {
-            playbackFileSelected(filePath, s);
-        } else {
-            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+    //Check control events from widgets
+    if (systemMode >= SYSTEMMODE_POSTINIT) {
+        //Check for event in PlaybackHistory Dropdown List in Control Panel
+        if (theEvent.isFrom("recentFiles")) {
+            int s = (int)(theEvent.getController()).getValue();
+            //println("got a menu event from item " + s);
+            String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
+            if (new File(filePath).isFile()) {
+                playbackFileSelected(filePath, s);
+            } else {
+                outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+            }
         }
+        //Check for event in band power channel select checkBoxes, if needed
+        /*
+        if (theEvent.isFrom(w_bandPower.bpChanSelect.checkList)) {
+            println(w_bandPower.bpChanSelect.checkList.getArrayValue());
+        }
+        */
     }
 }
 
@@ -468,7 +489,7 @@ class ControlPanel {
             cp5.setVisible(true);//make sure controlP5 elements are visible
             cp5Popup.setVisible(true);
 
-             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
+            if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
                 if(!hub.isHubRunning()) {
                     noHubBox.draw();
                 }
@@ -485,18 +506,18 @@ class ControlPanel {
                             rcBox.draw();
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
-                                cp5Popup.get(MenuList.class, "channelList").setVisible(true);
+                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-                                cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+                                //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-                                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-                                cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+                                //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -527,10 +548,10 @@ class ControlPanel {
                     wifiTransferProtcolCytonBox.y = latencyCytonBox.y + latencyCytonBox.h;
                     channelCountBox.draw();
                     sdBox.draw();
-                    dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
-                    cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+                    //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
+                    dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
@@ -541,8 +562,8 @@ class ControlPanel {
                 // cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
                 // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
                 cp5.get(MenuList.class, "serialList").setVisible(false);
-                cp5.get(MenuList.class, "sdTimes").setVisible(false);
-                cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+                //cp5.get(MenuList.class, "sdTimes").setVisible(false);
+                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
@@ -633,7 +654,7 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
         // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOutRadioConfigButton.setString(">");
@@ -670,10 +691,20 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
-        cp5.get(MenuList.class, "sdTimes").setVisible(false);
+        //cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
-        cp5Popup.get(MenuList.class, "channelList").setVisible(false);
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+    }
+
+    private void hideChannelListCP() {
+        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
+        channelPopup.setClicked(false);
+        if (setChannel.wasPressed) {
+            setChannel.wasPressed = false;
+        } else if(ovrChannel.wasPressed) {
+            ovrChannel.wasPressed = false;
+        }
     }
 
     //mouse pressed in control panel
@@ -807,11 +838,13 @@ class ControlPanel {
                     if (setChannel.isMouseHere()){
                         setChannel.setIsActive(true);
                         setChannel.wasPressed = true;
+                        ovrChannel.wasPressed = false;
                     }
 
                     if (ovrChannel.isMouseHere()){
                         ovrChannel.setIsActive(true);
                         ovrChannel.wasPressed = true;
+                        setChannel.wasPressed = false;
                     }
 
 
@@ -1099,6 +1132,7 @@ class ControlPanel {
                 }
                 else{
                     rcBox.isShowing = true;
+                    rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("<");
                 }
             }
@@ -1108,18 +1142,21 @@ class ControlPanel {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
                 // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
                 get_channel(rcBox);
-                getChannel.wasPressed=false;
+                getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
+                hideChannelListCP();
             }
 
             if (setChannel.isMouseHere() && setChannel.wasPressed){
                 channelPopup.setClicked(true);
+                channelPopup.setTitle("Change Channel");
                 pollPopup.setClicked(false);
                 setChannel.setIsActive(false);
             }
 
             if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
                 channelPopup.setClicked(true);
+                channelPopup.setTitle("Override Dongle");
                 pollPopup.setClicked(false);
                 ovrChannel.setIsActive(false);
             }
@@ -1128,12 +1165,14 @@ class ControlPanel {
                 autoscan.wasPressed = false;
                 autoscan.setIsActive(false);
                 scan_channels(rcBox);
+                hideChannelListCP();
             }
 
             if(systemStatus.isMouseHere() && systemStatus.wasPressed){
                 system_status(rcBox);
                 systemStatus.setIsActive(false);
                 systemStatus.wasPressed = false;
+                hideChannelListCP();
             }
         }
 
@@ -1153,7 +1192,7 @@ class ControlPanel {
                         popOutWifiConfigButton.setString("<");
                     } else {
                         if (wifi_portName == "N/A") {
-                            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at docs.openbci.com/Tutorials/03-Wifi_Getting_Started_Guide");
+                            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at openbci.github.io/Documentation/");
                         } else {
                             output("Attempting to connect to WiFi Shield named " + wifi_portName);
                             hub.examineWifi(wifi_portName);
@@ -1249,7 +1288,7 @@ class ControlPanel {
             wifiBox.h = 200;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
-            println(output);
+            println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
@@ -1257,7 +1296,7 @@ class ControlPanel {
             wifiBox.h = 120;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
-            println(output);
+            println("CP: WiFi IP: " + output);
         }
 
         // this button only used on mac
@@ -1336,7 +1375,7 @@ class ControlPanel {
         }
 
 
-        
+
         if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
             String _board = (eegDataSource == DATASOURCE_CYTON) ? "Cyton" : "Ganglion";
             String _textField = (eegDataSource == DATASOURCE_CYTON) ? "fileNameCyton" : "fileNameGanglion";
@@ -1629,7 +1668,7 @@ public void initButtonPressed(){
         }
     } else {
         //if system is already active ... stop session and flip button state back
-        outputInfo("Learn how to use this application and more at docs.openbci.com");
+        outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
         initSystemButton.setString("START SESSION");
         cp5.get(Textfield.class, "fileNameCyton").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
         cp5.get(Textfield.class, "fileNameGanglion").setText(getDateString()); //creates new data file name so that you don't accidentally overwrite the old one
@@ -1666,7 +1705,7 @@ class NoHubBox {
         padding = _padding;
 
         noHubShowDoc = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "OPENBCI GUI INSTALL GUIDE", fontInfo.buttonLabel_size);
-        noHubShowDoc.setURL("http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI");
+        noHubShowDoc.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
     }
 
     public void draw() {
@@ -1746,6 +1785,7 @@ class SerialBox {
         // autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
         refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
+        popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
 
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
         // println(w-padding*2);
@@ -2043,7 +2083,7 @@ class SessionDataBox {
         autoSessionName = new Button (x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
         autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
         outputODF = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
-        outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file size is reached.");
+        outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
         //Output source is ODF by default
         if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         outputBDF = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
@@ -2105,6 +2145,9 @@ class SessionDataBox {
         outputBDF.draw();
         if (outputDataSource == OUTPUT_SOURCE_ODF) {
             pushStyle();
+            //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
+            fill(150);
+            rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
             fill(bgColor);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, outputODF.but_y + outputODF.but_dy + padding*3 - 3);
@@ -2119,11 +2162,14 @@ class SessionDataBox {
 
         cp5_dataLog_dropdown.addScrollableList(name)
             .setOpen(false)
+            .setColor(settings.dropdownColors)
+            /*
             .setColorBackground(color(31,69,110)) // text field bg color
-            .setColorValueLabel(color(255))       // text color
+            .setColorValueLabel(color(0))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
+            */
             // .setColorCursor(color(26,26,26))
 
             .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
@@ -2136,7 +2182,7 @@ class SessionDataBox {
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
-            .setFont(h4)
+            .setFont(p4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
@@ -2197,12 +2243,20 @@ class SessionDataBox {
             //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
             chanButton8.setIgnoreHover(_toggle);
             chanButton16.setIgnoreHover(_toggle);
+            /*
             if (_toggle) {
                 cp5.get(MenuList.class, "sdTimes").lock();
             } else {
                 cp5.get(MenuList.class, "sdTimes").unlock();
             }
             cp5.get(MenuList.class, "sdTimes").setUpdate(!_toggle);
+            */
+            if (_toggle) {
+                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
+            } else {
+                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).unlock();
+            }
+            controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
         } else {
             //Ganglion + Wifi
             latencyGanglion5ms.setIgnoreHover(_toggle);
@@ -2777,19 +2831,41 @@ class PlaybackFileBox {
 };
 
 class SDBox {
+    final private String sdBoxDropdownName = "sdCardTimes";
+    final private String[] sdTimesStrings = {
+                        "Do not write to SD...", 
+                        "5 minute maximum", 
+                        "15 minute maximum", 
+                        "30 minute maximum",
+                        "1 hour maximum",
+                        "2 hours maximum",
+                        "4 hour maximum",
+                        "12 hour maximum",
+                        "24 hour maximum"
+                        };
     int x, y, w, h, padding; //size and position
+    ControlP5 cp5_sdBox;
+    boolean dropdownWasClicked = false;
 
     SDBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 150;
+        h = 73;
         padding = _padding;
 
-        sdTimes = new MenuList(cp5, "sdTimes", w - padding*2, 108, p4);
-        sdTimes.setPosition(x + padding, y + padding*2 + 13);
+        cp5_sdBox = new ControlP5(ourApplet);
+        createDropdown(sdBoxDropdownName, Arrays.asList(sdTimesStrings));
+        cp5_sdBox.setGraphics(ourApplet, 0,0);
+        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
+        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setSize(w - padding*2, int((sdTimesStrings.length / 2) + 1) * 24);
+        cp5_sdBox.setAutoDraw(false);
+        //sdTimes = new MenuList(cp5, "sdTimes", w - padding*2, 108, p4);
+        //sdTimes.setPosition(x + padding, y + padding*2 + 13);
+        
         serialPorts = Serial.list();
 
+        /*
         //add items for the various SD times
         sdTimes.addItem(makeItem("Do not write to SD..."));
         sdTimes.addItem(makeItem("5 minute maximum"));
@@ -2802,9 +2878,11 @@ class SDBox {
         sdTimes.addItem(makeItem("24 hour maximum"));
 
         sdTimes.activeItem = sdSetting; //added to indicate default choice (sdSetting is in OpenBCI_GUI)
+        */
     }
 
     public void update() {
+        openCloseDropdown();
     }
 
     public void draw() {
@@ -2816,38 +2894,142 @@ class SDBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("WRITE TO SD (Y/N)?", x + padding, y + padding);
+        text("WRITE TO SD CARD?", x + padding, y + padding);
+        //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
         popStyle();
-        sdTimes.setPosition(x + padding, y + padding*2 + 13);
+
+        pushStyle();
+        fill(150);
+        rect(cp5_sdBox.getController(sdBoxDropdownName).getPosition()[0]-1, cp5_sdBox.getController(sdBoxDropdownName).getPosition()[1]-1, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getWidth()+2, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getHeight()+2);
+        //cp5_sdBox.draw();
+        popStyle();
+
+        //set the correct position of the dropdown and make it visible if the SDBox class is being drawn
+        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
+        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setVisible(true);
+        cp5_sdBox.draw();
+        
+        //sdTimes.setPosition(x + padding, y + padding*2 + 13);
         //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
+    }
+
+    void createDropdown(String name, List<String> _items){
+
+        cp5_sdBox.addScrollableList(name)
+            .setOpen(false)
+            .setColor(settings.dropdownColors)
+            /*
+            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorValueLabel(color(0))       // text color
+            .setColorCaptionLabel(color(255))
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(color(150, 170, 200))       // border color when selected
+            */
+            // .setColorCursor(color(26,26,26))
+
+            .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
+            .setBarHeight(24) //height of top/primary bar
+            .setItemHeight(24) //height of all item/dropdown bars
+            .addItems(_items) // used to be .addItems(maxFreqList)
+            .setVisible(false)
+            ;
+        cp5_sdBox.getController(name)
+            .getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(sdTimesStrings[0])
+            .setFont(p4)
+            .setSize(14)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        cp5_sdBox.getController(name)
+            .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(sdTimesStrings[0])
+            .setFont(h5)
+            .setSize(12) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
+    }
+
+    private void openCloseDropdown() {
+        //Close the dropdown if it is open and mouse is no longer over it
+        if (cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).isOpen()){
+            if (!cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
+                //println("----Closing dropdown " + maxDurDropdownName);
+                cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
+                //lockElements(false);
+            }
+
+        }
+        // Open the dropdown if it's not open, but not if it was recently clicked
+        // Makes sure dropdown stays closed after user selects an option
+        if (!dropdownWasClicked) {
+            if (!cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).isOpen()){
+                if (cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
+                    //println("++++Opening dropdown " + maxDurDropdownName);
+                    cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).open();
+                    //lockElements(true);
+                }
+            }
+        } else {
+            // This flag is used to gate opening/closing the dropdown
+            dropdownWasClicked = false;
+        }
+    }
+
+    void closeDropdown() {
+        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
+        dropdownWasClicked = true;
+        //lockElements(false);
+        //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
 
+//////////////////////////////////////////////////////////////
+// Global function used by the above SDBox dropdown
+void sdCardTimes (int n) {
+    //settings.cytonOBCIMaxFileSize = n;
+    sdSetting = n;
+    if (sdSetting != 0) {
+        output("OpenBCI microSD Setting = " + controlPanel.sdBox.sdTimesStrings[n] + " recording time");
+    } else {
+        output("OpenBCI microSD Setting = " + controlPanel.sdBox.sdTimesStrings[n]);
+    }
+    verbosePrint("SD setting = " + controlPanel.sdBox.sdTimesStrings[n]);
+
+    controlPanel.sdBox.closeDropdown();
+    //println("ControlPanel: Cyton SD Card Duration: " + controlPanel.sdBox.sdTimesStrings[n]);
+}
+
 class RadioConfigBox {
     int x, y, w, h, padding; //size and position
-    String last_message = "";
+    String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    String last_message = initial_message;
     boolean isShowing;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
         y = _y;
-        w = _w;
-        h = 255;
+        w = _w + 10;
+        h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
-
-        getChannel = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-        setChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        autoscan = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "AUTOSCAN", fontInfo.buttonLabel_size);
-        ovrChannel = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        
+        getChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        systemStatus = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        setChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+        ovrChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        //typical button height + 20 for larger autoscan button
+        autoscan = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
 
         //Set help text
-        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle");
-        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle");
-        ovrChannel.setHelpText("Change the channel of the USB Dongle only");
-        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton");
-        systemStatus.setHelpText("Get the connection status of your Cyton system");
+        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
+        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
+        ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
+        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
+        systemStatus.setHelpText("Get the connection status of your Cyton system.");
     }
     public void update() {}
 
@@ -2874,9 +3056,10 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
+        rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
         fill(255);
-        text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
+        textFont(h3, 15);
+        text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
         this.last_message = localstring;
     }
 };
@@ -2938,6 +3121,7 @@ class WifiConfigBox {
         fill(bgColor);
         rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
         fill(255);
+        textFont(h3, 15);
         text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     }
 };
@@ -2978,6 +3162,7 @@ class SDConverterBox {
 class ChannelPopup {
     int x, y, w, h, padding; //size and position
     boolean clicked;
+    String title = "";
 
     ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w * 2;
@@ -2987,7 +3172,7 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelList", w - padding*2, 140, p4);
+        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p4);
         channelList.setPosition(x+padding, y+padding*3);
 
         for (int i = 1; i < 26; i++) {
@@ -3007,13 +3192,14 @@ class ChannelPopup {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("CHANNEL SELECTION", x + padding, y + padding);
+        text(title, x + padding, y + padding);
         popStyle();
         refreshPort.draw();
     }
 
     public void setClicked(boolean click) { this.clicked = click; }
     public boolean wasClicked() { return this.clicked; }
+    public void setTitle(String s) { title = s; }
 };
 
 class PollPopup {

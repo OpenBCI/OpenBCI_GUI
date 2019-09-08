@@ -1,5 +1,5 @@
 
-////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //    W_BandPowers.pde
 //
@@ -10,24 +10,24 @@
 //
 //    Created by: Wangshu Sun, May 2017
 //
-///////////////////////////////////////////////////,
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class W_BandPower extends Widget {
-
+    
+    private final int NUM_BANDS = 5;
     GPlot bp_plot;
+    public ChannelSelect bpChanSelect;
+    boolean prevChanSelectIsVisible = false;
 
-    W_BandPower(PApplet _parent){
+    W_BandPower(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        // addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-        // addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-        // addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
+        //Add channel select dropdown to this widget
+        bpChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "BP_Channels");
+        
+        //Add settings dropdowns
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
         addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
-
 
         // Setup for the BandPower plot
         bp_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight);
@@ -40,7 +40,8 @@ class W_BandPower extends Widget {
         bp_plot.getXAxis().setNTicks(0);
         bp_plot.getTitle().setTextAlignment(LEFT);
         bp_plot.getTitle().setRelativePos(0);
-        bp_plot.getYAxis().getAxisLabel().setText("Headwide Power — (uV)^2 / Hz");
+        bp_plot.setAllFontProperties("Arial", 0, 14);
+        bp_plot.getYAxis().getAxisLabel().setText("Power — (uV)^2 / Hz");
         bp_plot.getXAxis().setAxisLabelText("EEG Power Bands");
         bp_plot.startHistograms(GPlot.VERTICAL);
         bp_plot.getHistogram().setDrawLabels(true);
@@ -58,24 +59,49 @@ class W_BandPower extends Widget {
 
             }
         );
-    }
 
-    void update(){
+        //Activate all channel checkboxes by default for this widget
+        for (int i = 0; i < nchan; i++) {
+            bpChanSelect.checkList.activate(i);
+            bpChanSelect.activeChan.add(i);
+        }
+    } //end of constructor
+
+    void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        float[] activePower = new float[NUM_BANDS];
+
+        for (int i = 0; i < NUM_BANDS; i++) {
+            float sum = 0;
+
+            for (int j = 0; j < bpChanSelect.activeChan.size(); j++) {
+                int chan = bpChanSelect.activeChan.get(j);
+                sum += dataProcessing.avgPowerInBins[chan][i];
+                activePower[i] = sum / bpChanSelect.activeChan.size();
+            }
+        }
+        
+        //Update channel checkboxes and active channels
+        bpChanSelect.update(x, y, w);
+        
+        //Flex the Gplot graph when channel select dropdown is open/closed
+        if (bpChanSelect.isVisible() != prevChanSelectIsVisible) {
+            flexGPlotSizeAndPosition();
+            prevChanSelectIsVisible = bpChanSelect.isVisible();
+        }
+
         GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
-        bp_points.add(DELTA + 0.5, dataProcessing.headWidePower[DELTA], "DELTA");
-        bp_points.add(THETA + 0.5, dataProcessing.headWidePower[THETA], "THETA");
-        bp_points.add(ALPHA + 0.5, dataProcessing.headWidePower[ALPHA], "ALPHA");
-        bp_points.add(BETA + 0.5, dataProcessing.headWidePower[BETA], "BETA");
-        bp_points.add(GAMMA + 0.5, dataProcessing.headWidePower[GAMMA], "GAMMA");
-
+        bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA");
+        bp_points.add(THETA + 0.5, activePower[THETA], "THETA");
+        bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA");
+        bp_points.add(BETA + 0.5, activePower[BETA], "BETA");
+        bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA");
         bp_plot.setPoints(bp_points);
-    }
+    } //end of update
 
-    void draw(){
+    void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
         pushStyle();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
@@ -93,21 +119,34 @@ class W_BandPower extends Widget {
         rect(x, y - navHeight, w, navHeight); //button bar
 
         popStyle();
-
+        bpChanSelect.draw();
+        pushStyle();
     }
 
-    void screenResized(){
+    void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        bp_plot.setPos(x, y-navHeight);//update position
-        bp_plot.setOuterDim(w, h+navHeight);//update dimensions
+        flexGPlotSizeAndPosition();
+
+        bpChanSelect.screenResized(pApplet);
     }
 
-    void mousePressed(){
+    void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        bpChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
-    void mouseReleased(){
+    void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
+
+    void flexGPlotSizeAndPosition() {
+        if (bpChanSelect.isVisible()) {
+                bp_plot.setPos(x, y);
+                bp_plot.setOuterDim(w, h);
+        } else {
+            bp_plot.setPos(x, y - navHeight);
+            bp_plot.setOuterDim(w, h + navHeight);
+        }
     }
 };

@@ -111,7 +111,7 @@ OpenGL acceleration is required.
 
 
 ## Troubleshooting
-The OpenBCI Hub comes installed in recent versions of the GUI. When running the GUI from Processing code, please follow these instructions for getting the **critical** piece of software called the OpenBCI HUB [Mac/Linux](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide-install-openbci-hub-on-maclinux) [Windows](http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-install-openbci-hub-on-windows). Thanks and happy hacking!
+The OpenBCI Hub comes installed in recent versions of the GUI. When running the GUI from Processing code, [please follow these instructions](https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#install-openbci-hub-on-mac-linux-windows) for getting the **critical** piece of software called the OpenBCI HUB for Mac/Linux/Windows. Thanks and happy hacking!
 
 ## <a name="license"></a> License:
 
@@ -123,5 +123,5 @@ MIT
 [link_shop_cyton_daisy]: https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel
 [link_ptw]: https://www.pushtheworldllc.com
 [link_openbci]: http://www.openbci.com
-[link_gui_widget_tutorial]: http://docs.openbci.com/Tutorials/15-Custom_Widgets
-[link_gui_run_from_processing]: http://docs.openbci.com/OpenBCI%20Software/01-OpenBCI_GUI#the-openbci-gui-running-the-openbci-gui-from-the-processing-ide
+[link_gui_widget_tutorial]: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget
+[link_gui_run_from_processing]: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#running-the-openbci-gui-from-the-processing-ide

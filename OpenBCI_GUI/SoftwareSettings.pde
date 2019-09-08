@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, and Focus
+//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, Band Power, and SSVEP
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
@@ -39,7 +39,10 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.0";
+    String settingsVersion = "1.0.5";
+    //impose minimum gui width and height in openBCI_GUI.pde
+    int minGUIWidth = 705;
+    int minGUIHeight = 400;
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation
@@ -54,9 +57,10 @@ class SoftwareSettings {
     private boolean logFileIsOpen = false;
     private long logFileStartTime;
     private long logFileMaxDuration;
+    //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
+    CColor dropdownColors = new CColor();
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
-
     //Notch and Bandpass filter variables for save
     int dataProcessingNotchSave = 0;
     int dataProcessingBandpassSave = 3;
@@ -94,7 +98,12 @@ class SoftwareSettings {
     int nwDataType2;
     int nwDataType3;
     int nwDataType4;
+    String nwSerialPort;
     int nwProtocolSave;
+    //SSVEP Widget settings
+    int[] freqsSave;
+    boolean[] channelActivitySave;
+    int numSSVEPs;
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
@@ -150,7 +159,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse", "SSVEP"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -222,6 +231,15 @@ class SoftwareSettings {
     int focusThemeLoad;
     int focusKeyLoad;
 
+    //SSVEP widget settings
+    int numSSVEPsLoad;
+    int[] ssvepFreqsLoad = new int[4];
+    List<Integer> loadSSVEPActiveChans = new ArrayList<Integer>();
+
+    //Band Power widget settings
+    //smoothing and filter dropdowns are linked to FFT, so no need to save again
+    List<Integer> loadBPActiveChans = new ArrayList<Integer>();
+
     //Networking Settings save/load variables
     int nwProtocolLoad;
     //OSC load variables
@@ -246,7 +264,7 @@ class SoftwareSettings {
     private JSONObject loadSettingsJSONData;
 
     private final String kJSONKeyDataInfo = "dataInfo";
-    private final String kJSONKeyChannelSettings = "channelSettings";
+    private final String kJSONKeyTimeSeries = "timeSeries";
     private final String kJSONKeySettings = "settings";
     private final String kJSONKeyFFT = "fft";
     private final String kJSONKeyAccel = "accelerometer";
@@ -254,6 +272,8 @@ class SoftwareSettings {
     private final String kJSONKeyHeadplot = "headplot";
     private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyFocus = "focus";
+    private final String kJSONKeyBandPower = "bandPower";
+    private final String kJSONKeySSVEP = "ssvep";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
 
@@ -281,6 +301,12 @@ class SoftwareSettings {
 
     SoftwareSettings() {
         //Instantiated on app start in OpenBCI_GUI.pde
+        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
+        dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
+        dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
+        dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
+        // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
+        dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
     }
 
     ///////////////////////////////////
@@ -363,9 +389,13 @@ class SoftwareSettings {
             //e.printStackTrace();
             println("InitSettings: " + settingsFileToLoad + " not found or other error.");
             errorUserSettingsNotFound = true;
-            File f = new File(sketchPath()+System.getProperty("file.separator")+settingsFileToLoad);
-            if (f.exists()) {
-                if (f.delete()) println("SoftwareSettings: Removed old settings file.");
+            File f = new File(settingsFileToLoad);
+            //Only delete the settings file for other errors
+            //Leave file if it's just a channelNumber error or DataSource mismatch
+            if (!chanNumError && !dataSourceError) {
+                if (f.exists()) {
+                    if (f.delete()) println("SoftwareSettings: Removed old/broken settings file.");
+                }
             }
         }
     }
@@ -382,9 +412,13 @@ class SoftwareSettings {
         JSONObject saveNumChannelsData = new JSONObject();
         saveNumChannelsData.setInt("Channels", slnchan);
         saveNumChannelsData.setInt("Data Source", eegDataSource);
-        //println(slnchan);
+        //println("Settings: NumChan: " + slnchan);
         saveSettingsJSONData.setJSONObject(kJSONKeyDataInfo, saveNumChannelsData);
 
+        //Make a new JSON Object for Time Series Settings
+        JSONObject saveTSSettings = new JSONObject();
+        saveTSSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
+        saveTSSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
         ////////////////////////////////////////////////////////////////////////////////////
         //                 Case for saving TS settings in Cyton Data Modes                //
         if (eegDataSource == DATASOURCE_CYTON)  {
@@ -427,7 +461,7 @@ class SoftwareSettings {
                     saveTSSettingsJSONArray.setJSONObject(i, saveChannelSettings);
                 } //end channel settings for loop
             } //end all channels for loop
-            saveSettingsJSONData.setJSONArray(kJSONKeyChannelSettings, saveTSSettingsJSONArray); //Set the JSON array for all channels
+            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
@@ -447,8 +481,9 @@ class SoftwareSettings {
                 saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
                 saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
             } //end loop for all channels
-            saveSettingsJSONData.setJSONArray(kJSONKeyChannelSettings, saveTSSettingsJSONArray); //Set the JSON array for all channels
+            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
         }
+        saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
@@ -456,9 +491,7 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
-        saveGlobalSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
-        saveGlobalSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-        saveGlobalSettings.setBoolean("Accelerometer", w_accelerometer.isAccelModeActive());
+        saveGlobalSettings.setBoolean("Accelerometer Mode", w_accelerometer.isAccelModeActive());
         if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
             saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
             saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
@@ -504,84 +537,40 @@ class SoftwareSettings {
         JSONObject saveNetworkingSettings = new JSONObject();
         //Save Protocol
         saveNetworkingSettings.setInt("Protocol", nwProtocolSave);//***Save User networking protocol mode
-
         switch(nwProtocolSave) {
-            case 4:
-                //Save Data Types for OSC
-                saveNetworkingSettings.setInt("OSC_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                saveNetworkingSettings.setInt("OSC_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-                saveNetworkingSettings.setInt("OSC_DataType3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-                saveNetworkingSettings.setInt("OSC_DataType4", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").getValue()));
-                //Save IP addresses for OSC
-                saveNetworkingSettings.setString("OSC_ip1", w_networking.cp5_networking.get(Textfield.class, "osc_ip1").getText());
-                saveNetworkingSettings.setString("OSC_ip2", w_networking.cp5_networking.get(Textfield.class, "osc_ip2").getText());
-                saveNetworkingSettings.setString("OSC_ip3", w_networking.cp5_networking.get(Textfield.class, "osc_ip3").getText());
-                saveNetworkingSettings.setString("OSC_ip4", w_networking.cp5_networking.get(Textfield.class, "osc_ip4").getText());
-                //Save Ports for OSC
-                saveNetworkingSettings.setString("OSC_port1", w_networking.cp5_networking.get(Textfield.class, "osc_port1").getText());
-                saveNetworkingSettings.setString("OSC_port2", w_networking.cp5_networking.get(Textfield.class, "osc_port2").getText());
-                saveNetworkingSettings.setString("OSC_port3", w_networking.cp5_networking.get(Textfield.class, "osc_port3").getText());
-                saveNetworkingSettings.setString("OSC_port4", w_networking.cp5_networking.get(Textfield.class, "osc_port4").getText());
-                //Save addresses for OSC
-                saveNetworkingSettings.setString("OSC_address1", w_networking.cp5_networking.get(Textfield.class, "osc_address1").getText());
-                saveNetworkingSettings.setString("OSC_address2", w_networking.cp5_networking.get(Textfield.class, "osc_address2").getText());
-                saveNetworkingSettings.setString("OSC_address3", w_networking.cp5_networking.get(Textfield.class, "osc_address3").getText());
-                saveNetworkingSettings.setString("OSC_address4", w_networking.cp5_networking.get(Textfield.class, "osc_address4").getText());
-                //Save filters for OSC
-                saveNetworkingSettings.setInt("OSC_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                saveNetworkingSettings.setInt("OSC_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
-                saveNetworkingSettings.setInt("OSC_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
-                saveNetworkingSettings.setInt("OSC_filter4", int(w_networking.cp5_networking.get(RadioButton.class, "filter4").getValue()));
-                break;
             case 3:
-                //Save UDP data types
-                saveNetworkingSettings.setInt("UDP_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                saveNetworkingSettings.setInt("UDP_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-                saveNetworkingSettings.setInt("UDP_DataType3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-                //Save UDP IPs
-                saveNetworkingSettings.setString("UDP_ip1", w_networking.cp5_networking.get(Textfield.class, "udp_ip1").getText());
-                saveNetworkingSettings.setString("UDP_ip2", w_networking.cp5_networking.get(Textfield.class, "udp_ip2").getText());
-                saveNetworkingSettings.setString("UDP_ip3", w_networking.cp5_networking.get(Textfield.class, "udp_ip3").getText());
-                //Save UDP Ports
-                saveNetworkingSettings.setString("UDP_port1", w_networking.cp5_networking.get(Textfield.class, "udp_port1").getText());
-                saveNetworkingSettings.setString("UDP_port2", w_networking.cp5_networking.get(Textfield.class, "udp_port2").getText());
-                saveNetworkingSettings.setString("UDP_port3", w_networking.cp5_networking.get(Textfield.class, "udp_port3").getText());
-                //Save UDP Filters
-                saveNetworkingSettings.setInt("UDP_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                saveNetworkingSettings.setInt("UDP_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
-                saveNetworkingSettings.setInt("UDP_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
+                for (int i = 1; i <= 4; i++) {
+                    saveNetworkingSettings.setInt("OSC_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setString("OSC_ip"+i, (String) w_networking.getCP5Map().get("OSC_ip"+i));
+                    saveNetworkingSettings.setString("OSC_port"+i, (String) w_networking.getCP5Map().get("OSC_port"+i));
+                    saveNetworkingSettings.setString("OSC_address"+i, (String) w_networking.getCP5Map().get("OSC_address"+i));
+                    saveNetworkingSettings.setInt("OSC_filter"+i, (Integer) w_networking.getCP5Map().get("filter"+i));
+                }
                 break;
             case 2:
-                //Save LSL data types
-                saveNetworkingSettings.setInt("LSL_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                saveNetworkingSettings.setInt("LSL_DataType2", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue()));
-                saveNetworkingSettings.setInt("LSL_DataType3", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").getValue()));
-                //Save LSL stream names
-                saveNetworkingSettings.setString("LSL_name1", w_networking.cp5_networking.get(Textfield.class, "lsl_name1").getText());
-                saveNetworkingSettings.setString("LSL_name2", w_networking.cp5_networking.get(Textfield.class, "lsl_name2").getText());
-                saveNetworkingSettings.setString("LSL_name3", w_networking.cp5_networking.get(Textfield.class, "lsl_name3").getText());
-                //Save LSL type names
-                saveNetworkingSettings.setString("LSL_type1", w_networking.cp5_networking.get(Textfield.class, "lsl_type1").getText());
-                saveNetworkingSettings.setString("LSL_type2", w_networking.cp5_networking.get(Textfield.class, "lsl_type2").getText());
-                saveNetworkingSettings.setString("LSL_type3", w_networking.cp5_networking.get(Textfield.class, "lsl_type3").getText());
-                //Save LSL stream # Chan
-                saveNetworkingSettings.setString("LSL_numchan1", w_networking.cp5_networking.get(Textfield.class, "lsl_numchan1").getText());
-                saveNetworkingSettings.setString("LSL_numchan2", w_networking.cp5_networking.get(Textfield.class, "lsl_numchan2").getText());
-                saveNetworkingSettings.setString("LSL_numchan3", w_networking.cp5_networking.get(Textfield.class, "lsl_numchan3").getText());
-                //Save LSL filters
-                saveNetworkingSettings.setInt("LSL_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
-                saveNetworkingSettings.setInt("LSL_filter2", int(w_networking.cp5_networking.get(RadioButton.class, "filter2").getValue()));
-                saveNetworkingSettings.setInt("LSL_filter3", int(w_networking.cp5_networking.get(RadioButton.class, "filter3").getValue()));
+                for (int i = 1; i <= 3; i++) {
+                    saveNetworkingSettings.setInt("UDP_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setString("UDP_ip"+i, (String) w_networking.getCP5Map().get("UDP_ip"+i));
+                    saveNetworkingSettings.setString("UDP_port"+i, (String) w_networking.getCP5Map().get("UDP_port"+i));
+                    saveNetworkingSettings.setInt("UDP_filter"+i, (Integer) w_networking.getCP5Map().get("filter"+i));
+                }
                 break;
             case 1:
-                //Save Serial data type
-                saveNetworkingSettings.setInt("Serial_DataType1", int(w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue()));
-                //Save Serial baud rate. Not saving serial port. cp5_networking_baudRate.
-                saveNetworkingSettings.setInt("Serial_baudrate", int(w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()));
-                //Save Serial filter
-                saveNetworkingSettings.setInt("Serial_filter1", int(w_networking.cp5_networking.get(RadioButton.class, "filter1").getValue()));
+                for (int i = 1; i <= 3; i++) {
+                    saveNetworkingSettings.setInt("LSL_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setString("LSL_name"+i, (String) w_networking.getCP5Map().get("LSL_name"+i));
+                    saveNetworkingSettings.setString("LSL_type"+i, (String) w_networking.getCP5Map().get("LSL_type"+i));
+                    saveNetworkingSettings.setString("LSL_numchan"+i, (String) w_networking.getCP5Map().get("LSL_numchan"+i));
+                    saveNetworkingSettings.setInt("LSL_filter"+i, (Integer) w_networking.getCP5Map().get("filter"+i));
+                }
                 break;
-        }//end of switch
+            case 0:
+                saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get("dataType1"));
+                saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
+                saveNetworkingSettings.setInt("Serial_filter1", (Integer) w_networking.getCP5Map().get("filter1"));
+                saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
+                break;
+        }//end of networking proctocol switch
         //Set Networking Settings JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyNetworking, saveNetworkingSettings);
 
@@ -622,6 +611,40 @@ class SoftwareSettings {
         saveFocusSettings.setInt("Focus_keypress", focusKeySave);
         //Set the Focus JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
+
+        ///////////////////////////////////////////////Setup new JSON object to save SSVEP settings
+        JSONObject saveSSVEPSettings = new JSONObject();
+
+        int num_ssveps = numSSVEPs + 1; //add 1 here, dropdown items start count from 0
+        saveSSVEPSettings.setInt("NumSSVEPs", num_ssveps);
+        //Save data from the Active channel checkBoxes
+        JSONArray saveActiveChanSSVEP = new JSONArray();
+        int numActiveSSVEPChan = w_ssvep.numActiveChannels;
+        for (int i = 0; i < numActiveSSVEPChan; i++) {
+            int activeChan = w_ssvep.ssvepChanSelect.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChanSSVEP.setInt(i, activeChan);
+        }
+        saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChanSSVEP);
+        //Save data from the 1 to 4 ssvep frequency dropdowns inside the widget
+        JSONObject ssvepFrequencies = new JSONObject();
+        for (int i = 0; i < num_ssveps; i++) {
+            ssvepFrequencies.setInt("SSVEP_"+i, w_ssvep.freqs[i]);
+        }
+        saveSSVEPSettings.setJSONObject("SSVEP_frequencies", ssvepFrequencies);
+        saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSSVEPSettings);
+
+        ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
+        JSONObject saveBPSettings = new JSONObject();
+
+        //Save data from the Active channel checkBoxes
+        JSONArray saveActiveChanBP = new JSONArray();
+        int numActiveBPChan = w_bandPower.bpChanSelect.activeChan.size();
+        for (int i = 0; i < numActiveBPChan; i++) {
+            int activeChan = w_bandPower.bpChanSelect.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChanBP.setInt(i, activeChan);
+        }
+        saveBPSettings.setJSONArray("activeChannels", saveActiveChanBP);
+        saveSettingsJSONData.setJSONObject(kJSONKeyBandPower, saveBPSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
@@ -665,7 +688,7 @@ class SoftwareSettings {
         loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
         //Check the number of channels saved to json first!
-        JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject("dataInfo");
+        JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
         numChanloaded = loadDataSettings.getInt("Channels");
         //Print error if trying to load a different number of channels
         if (numChanloaded != slnchan) {
@@ -688,15 +711,13 @@ class SoftwareSettings {
         }
 
         //get the global settings JSON object
-        JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject("settings");
+        JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject(kJSONKeySettings);
         loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
         loadNotchSetting = loadGlobalSettings.getInt("Notch");
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
         loadFramerate = loadGlobalSettings.getInt("Framerate");
-        boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
-        loadTimeSeriesVertScale = loadGlobalSettings.getInt("Time Series Vert Scale");
-        loadTimeSeriesHorizScale = loadGlobalSettings.getInt("Time Series Horiz Scale");
-        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer");
+        Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
+        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
         if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
             loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
             loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
@@ -725,7 +746,7 @@ class SoftwareSettings {
         //printArray(loadedGlobalSettings);
 
         //get the FFT settings
-        JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject("fft");
+        JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
         fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
         fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
         fftLogLinLoad = loadFFTSettings.getInt("FFT_LogLin");
@@ -744,7 +765,7 @@ class SoftwareSettings {
         //printArray(loadedFFTSettings);
 
         //get the Accelerometer settings
-        JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject("accelerometer");
+        JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
         loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
         loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
         String[] loadedAccSettings = {
@@ -753,10 +774,10 @@ class SoftwareSettings {
         };
 
         //get the Networking Settings
-        JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject("networking");
+        JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
         nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
         switch (nwProtocolLoad)  {
-            case 4:
+            case 3:
                 nwDataType1 = loadNetworkingSettings.getInt("OSC_DataType1");
                 nwDataType2 = loadNetworkingSettings.getInt("OSC_DataType2");
                 nwDataType3 = loadNetworkingSettings.getInt("OSC_DataType3");
@@ -778,7 +799,7 @@ class SoftwareSettings {
                 nwOscFilter3Load = loadNetworkingSettings.getInt("OSC_filter3");
                 nwOscFilter4Load = loadNetworkingSettings.getInt("OSC_filter4");
                 break;
-            case 3:
+            case 2:
                 nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
                 nwDataType2 = loadNetworkingSettings.getInt("UDP_DataType2");
                 nwDataType3 = loadNetworkingSettings.getInt("UDP_DataType3");
@@ -792,7 +813,7 @@ class SoftwareSettings {
                 nwUdpFilter2Load = loadNetworkingSettings.getInt("UDP_filter2");
                 nwUdpFilter3Load = loadNetworkingSettings.getInt("UDP_filter3");
                 break;
-            case 2:
+            case 1:
                 nwDataType1 = loadNetworkingSettings.getInt("LSL_DataType1");
                 nwDataType2 = loadNetworkingSettings.getInt("LSL_DataType2");
                 nwDataType3 = loadNetworkingSettings.getInt("LSL_DataType3");
@@ -809,15 +830,16 @@ class SoftwareSettings {
                 nwLSLFilter2Load = loadNetworkingSettings.getInt("LSL_filter2");
                 nwLSLFilter3Load = loadNetworkingSettings.getInt("LSL_filter3");
                 break;
-            case 1:
+            case 0:
                 nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
                 nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
                 nwSerialFilter1Load = loadNetworkingSettings.getInt("Serial_filter1");
+                nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
                 break;
         } //end switch case for all networking types
 
         //get the  Headplot settings
-        JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject("headplot");
+        JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
         hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
         hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
         hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
@@ -834,7 +856,7 @@ class SoftwareSettings {
         //printArray(loadedHPSettings);
 
         //get the EMG settings
-        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject("emg");
+        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
         emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
         emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
         emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
@@ -851,7 +873,7 @@ class SoftwareSettings {
         //printArray(loadedEMGSettings);
 
         //get the  Focus settings
-        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject("focus");
+        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
         focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
         focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
 
@@ -863,8 +885,34 @@ class SoftwareSettings {
         //Print the EMG settings
         //printArray(loadedFocusSettings);
 
+        //Clear the list and array for holding SSVEP settings
+        loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
+        ssvepFreqsLoad = new int[4]; //clear the dropdown settings array
+        //get the ssvep settings
+        JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject(kJSONKeySSVEP);
+        numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
+        JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
+        for (int i = 0; i < numSSVEPsLoad; i++) {
+            int f = loadSSVEPFreqs.getInt("SSVEP_" + i);
+            ssvepFreqsLoad[i] = f;
+        }
+        JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");
+        for (int i = 0; i < loadSSVEPChan.size(); i++) {
+            loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
+        }
+        //println("Settings: ssvep active chans loaded = " + loadSSVEPActiveChans);
+
+        //get band power settings
+        loadBPActiveChans.clear();
+        JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
+        JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
+        for (int i = 0; i < loadBPChan.size(); i++) {
+            loadBPActiveChans.add(loadBPChan.getInt(i));
+        }
+        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
+
         //get the  Widget/Container settings
-        JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject("widget");
+        JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
         //Apply Layout directly before loading and applying widgets to containers
         wm.setNewContainerLayout(loadLayoutSetting);
         verbosePrint("LoadGUISettings: Layout " + loadLayoutSetting + " Loaded!");
@@ -915,12 +963,12 @@ class SoftwareSettings {
 
         //Apply Expert Mode toggle
         if (loadExpertModeToggle) {
-            topNav.configSelector.configOptions.get(0).setString("Expert Mode On");
+            topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode Off");
             topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.expertPurple);
             println("LoadGUISettings: Expert Mode On");
             expertModeToggle = true;
         } else {
-            topNav.configSelector.configOptions.get(0).setString("Expert Mode Off");
+            topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode On");
             topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
             println("LoadGUISettings: Expert Mode Off");
             expertModeToggle = false;
@@ -1059,12 +1107,7 @@ class SoftwareSettings {
 
     private void loadApplyWidgetDropdownText() {
 
-        ////////Apply Time Series widget settings
-        VertScale_TS(loadTimeSeriesVertScale);// changes back-end
-            w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
-
-        Duration(loadTimeSeriesHorizScale);
-            w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
+        ////////Apply Time Series dropdown settings in loadApplyTimeSeriesSettings() instead of here
 
         ////////Apply FFT settings
         MaxFreq(fftMaxFrqLoad); //This changes the back-end
@@ -1135,13 +1178,70 @@ class SoftwareSettings {
         StrokeKeyWhenFocused(focusKeyLoad);
             w_focus.cp5_widget.getController("StrokeKeyWhenFocused").getCaptionLabel().setText(focusKeyArray[focusKeyLoad]);
 
+        ////////////////////////////Apply SSVEP settings
+        //Apply number ssveps dropdown
+        NumberSSVEP(numSSVEPsLoad - 1); //subtract 1 here because dropdowns count from 0
+            w_ssvep.cp5_widget.getController("NumberSSVEP").getCaptionLabel().setText(String.valueOf(numSSVEPsLoad));
+        //Apply ssvep frequency dropdowns
+        for (int i = 0; i < numSSVEPsLoad; i++) {
+            if (ssvepFreqsLoad[i] > 1) {
+                w_ssvep.cp5_ssvep.getController("Frequency_"+(i+1)).getCaptionLabel().setText(ssvepFreqsLoad[i]+" Hz");
+                w_ssvep.cp5_ssvep.get(ScrollableList.class, "Frequency_"+(i+1)).setValue(ssvepFreqsLoad[i] - 7);
+                w_ssvep.freqs[i] = ssvepFreqsLoad[i];
+            } else { // -1 - none selected
+                w_ssvep.cp5_ssvep.getController("Frequency_"+(i+1)).getCaptionLabel().setText("Frequency_"+(i+1));
+            }
+        }
+        //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
+        try {
+            //deactivate all channels and then activate the active channels
+            w_ssvep.ssvepChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "SSVEP_Channels").deactivateAll();
+            if (loadSSVEPActiveChans.size() > 0) {
+                int activeChanCounter = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounter  < loadSSVEPActiveChans.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
+                            w_ssvep.ssvepChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "SSVEP_Channels").activate(i);
+                            activeChanCounter++;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying ssvep settings" + e);
+        }
+        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
+
+        ////////////////////////////Apply Band Power settings
+        try {
+            //use the same process as ssvep to apply channel checkbox settings
+            w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").deactivateAll();
+            if (loadBPActiveChans.size() > 0) {
+                int activeChanCounterBP = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounterBP  < loadBPActiveChans.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadBPActiveChans.get(activeChanCounterBP) - 1)) {
+                            w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").activate(i);
+                            activeChanCounterBP++;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying band power settings " + e);
+        }
+        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
+
         ///////////Apply Networking Settings
         //Update protocol with loaded value
         Protocol(nwProtocolLoad);
         //Update dropdowns and textfields in the Networking widget with loaded values
         w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
         switch (nwProtocolLoad) {
-            case 4:  //Apply OSC if loaded
+            case 3:  //Apply OSC if loaded
+                println("Apply OSC Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
@@ -1150,69 +1250,83 @@ class SoftwareSettings {
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
                 w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(nwDataTypesArray[nwDataType4]);
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setValue(nwDataType4);
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip2").setText(nwOscIp2Load); //The strings are referenced on command
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip3").setText(nwOscIp3Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_ip4").setText(nwOscIp4Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port1").setText(nwOscPort1Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port2").setText(nwOscPort2Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port3").setText(nwOscPort3Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_port4").setText(nwOscPort4Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address1").setText(nwOscAddress1Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address2").setText(nwOscAddress2Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address3").setText(nwOscAddress3Load);
-                w_networking.cp5_networking.get(Textfield.class, "osc_address4").setText(nwOscAddress4Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip2").setText(nwOscIp2Load); //The strings are referenced on command
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip3").setText(nwOscIp3Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_ip4").setText(nwOscIp4Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port1").setText(nwOscPort1Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port2").setText(nwOscPort2Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port3").setText(nwOscPort3Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_port4").setText(nwOscPort4Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address1").setText(nwOscAddress1Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address2").setText(nwOscAddress2Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address3").setText(nwOscAddress3Load);
+                w_networking.cp5_networking.get(Textfield.class, "OSC_address4").setText(nwOscAddress4Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwOscFilter1Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwOscFilter2Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwOscFilter3Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter4").activate(nwOscFilter4Load);
                 break;
-            case 3:  //Apply UDP if loaded
-                println("apply UDP nw mode");
+            case 2:  //Apply UDP if loaded
+                println("Apply UDP Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
                 w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking.get(Textfield.class, "udp_ip1").setText(nwUdpIp1Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_ip2").setText(nwUdpIp2Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_ip3").setText(nwUdpIp3Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_port1").setText(nwUdpPort1Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_port2").setText(nwUdpPort2Load);
-                w_networking.cp5_networking.get(Textfield.class, "udp_port3").setText(nwUdpPort3Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_ip1").setText(nwUdpIp1Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_ip2").setText(nwUdpIp2Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_ip3").setText(nwUdpIp3Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_port1").setText(nwUdpPort1Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_port2").setText(nwUdpPort2Load);
+                w_networking.cp5_networking.get(Textfield.class, "UDP_port3").setText(nwUdpPort3Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwUdpFilter1Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwUdpFilter2Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwUdpFilter3Load);
                 break;
-            case 2:  //Apply LSL if loaded
-                println("apply LSL nw mode");
+            case 1:  //Apply LSL if loaded
+                println("Apply LSL Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
                 w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_name1").setText(nwLSLName1Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_name2").setText(nwLSLName2Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_name3").setText(nwLSLName3Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_type1").setText(nwLSLType1Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_type2").setText(nwLSLType2Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_type3").setText(nwLSLType3Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_numchan1").setText(nwLSLNumChan1Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_numchan2").setText(nwLSLNumChan2Load);
-                w_networking.cp5_networking.get(Textfield.class, "lsl_numchan3").setText(nwLSLNumChan3Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_name1").setText(nwLSLName1Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_name2").setText(nwLSLName2Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_name3").setText(nwLSLName3Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_type1").setText(nwLSLType1Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_type2").setText(nwLSLType2Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_type3").setText(nwLSLType3Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_numchan1").setText(nwLSLNumChan1Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_numchan2").setText(nwLSLNumChan2Load);
+                w_networking.cp5_networking.get(Textfield.class, "LSL_numchan3").setText(nwLSLNumChan3Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwLSLFilter1Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter2").activate(nwLSLFilter2Load);
                 w_networking.cp5_networking.get(RadioButton.class, "filter3").activate(nwLSLFilter3Load);
                 break;
-            case 1:  //Apply Serial if loaded
-                println("apply Serial nw mode");
+            case 0:  //Apply Serial if loaded
+                println("Apply Serial Networking Mode");
                 w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //Set text
                 w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
                 w_networking.cp5_networking.get(RadioButton.class, "filter1").activate(nwSerialFilter1Load);
+
+                //Look for the portName in the dropdown list
+                int listSize = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItems().size();
+                for (int i = 0; i < listSize; i++) {
+                    String s = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItem(i).get("name").toString();
+                    if (s.equals(nwSerialPort)) {
+                        verbosePrint("Settings: NWSerial: Found com port " + s + " !");
+                        w_networking.cp5_networking_portName.getController("port_name").getCaptionLabel().setText(s);
+                        w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").setValue(i);
+                        break;
+                    } else {
+                        if (i == listSize - 1) verbosePrint("Settings: NWSerial: Port not found...");
+                    }
+                }
                 break;
         }//end switch-case for networking settings for all networking protocols
 
@@ -1222,8 +1336,19 @@ class SoftwareSettings {
     } //end of loadApplyWidgetDropdownText()
 
     private void loadApplyTimeSeriesSettings() {
+
+        JSONObject loadTimeSeriesSettings = loadSettingsJSONData.getJSONObject(kJSONKeyTimeSeries);
+        loadTimeSeriesVertScale = loadTimeSeriesSettings.getInt("Time Series Vert Scale");
+        loadTimeSeriesHorizScale = loadTimeSeriesSettings.getInt("Time Series Horiz Scale");
+
+        ////////Apply Time Series widget settings
+        VertScale_TS(loadTimeSeriesVertScale);// changes back-end
+            w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
+        Duration(loadTimeSeriesHorizScale);
+            w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
+
         //Make a JSON object to load channel setting array
-        JSONArray loadTimeSeriesJSONArray = loadSettingsJSONData.getJSONArray("channelSettings");
+        JSONArray loadTimeSeriesJSONArray = loadTimeSeriesSettings.getJSONArray("channelSettings");
 
         //Case for loading time series settings in Live Data mode
         if (eegDataSource == DATASOURCE_CYTON)  {
@@ -1418,7 +1543,7 @@ class SoftwareSettings {
             output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
         } else if (errorUserSettingsNotFound) {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: File not found. " + millis()); //Print the error to console
-            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User settings error: Default Settings Loaded."); //Show a normal message for loading Default Settings
+            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User Settings Error: Default Settings Loaded."); //Show a normal message for loading Default Settings
         } else {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
             outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
@@ -1439,14 +1564,28 @@ class SoftwareSettings {
             errorUserSettingsNotFound = true;
         }
         //Output message when Loading settings is complete
+        String err = null;
         if (chanNumError == false && dataSourceError == false && errorUserSettingsNotFound == false && loadErrorCytonEvent == false) {
             outputSuccess("Settings Loaded!");
         } else if (chanNumError) {
-            outputError("Load Settings Error: Invalid number of channels");
+            err = "Invalid number of channels";
         } else if (dataSourceError) {
-            outputError("Load Settings Error: Invalid data source");
-        } else {
-            outputError("Load settings error: " + settingsFileToLoad + " not found. ");
+            err = "Invalid data source";
+        } else if (errorUserSettingsNotFound) {
+            err = settingsFileToLoad + " not found.";
+        }
+
+        //Only try to delete file for SettingsNotFound/Broken settings
+        if (err != null && (!chanNumError && !dataSourceError)) {
+            println("Load Settings Error: " + err);
+            File f = new File(settingsFileToLoad);
+            if (f.exists()) {
+                if (f.delete()) {
+                    outputError("Found old/broken GUI settings. Please reconfigure the GUI and save new settings.");
+                } else {
+                    outputError("SoftwareSettings: Error deleting old/broken settings file...");
+                }
+            }
         }
     }
 
@@ -1481,17 +1620,29 @@ class SoftwareSettings {
             this.load(defaultSettingsFileToLoad);
             outputSuccess("Default Settings Loaded!");
         } catch (Exception e) {
-            outputError("Default Settings Error: New settings will be made next system start.");
-            File f = new File(sketchPath()+System.getProperty("file.separator")+defaultSettingsFileToLoad);
-            if (f.delete()) {
-                println("Old settings file succesfully deleted.");
-            } else {
-                println("Error deleting file...");
+            outputError("Default Settings Error: Valid Default Settings will be saved next system start.");
+            File f = new File(defaultSettingsFileToLoad);
+            if (f.exists()) {
+                if (f.delete()) {
+                    println("SoftwareSettings: Old/Broken Default Settings file succesfully deleted.");
+                } else {
+                    println("SoftwareSettings: Error deleting Default Settings file...");
+                }
             }
-
         }
     }
+
+    
 } //end of Software Settings class
+
+void imposeMinimumGUIDimensions() {
+    //impose minimum gui dimensions
+    if (width < settings.minGUIWidth || height < settings.minGUIHeight) {
+        if (width < settings.minGUIWidth) win_x = settings.minGUIWidth;
+        if (height < settings.minGUIHeight) win_y = settings.minGUIHeight;
+        surface.setSize(win_x, win_y);
+    }
+}
 
 
 //////////////////////////////////////////
@@ -1534,8 +1685,8 @@ void loadConfigFile(File selection) {
                 outputError("Settings Error: Data Source Mismatch Detected");
             } else {
                 outputError("Error trying to load settings file, possibly from previous GUI. Removing old settings.");
+                if (selection.exists()) selection.delete();
             }
-            if (selection.exists()) selection.delete();
         }
         settings.loadDialogName = null; //reset this variable for future use
     }

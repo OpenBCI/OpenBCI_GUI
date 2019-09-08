@@ -87,7 +87,7 @@ class W_Accelerometer extends Widget {
 
         accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
-        accelModeButton.setFont(p6,10);
+        accelModeButton.setFont(p5,12);
         accelModeButton.setColorNotPressed(color(57,128,204));
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
@@ -422,6 +422,7 @@ class AccelerometerBar {
         plot.setPointColor(0);
         plot.getXAxis().setAxisLabelText("Time (s)");
         plot.getYAxis().setAxisLabelText("Acceleration (g)");
+        plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().getAxisLabel().setOffset(float(accBarPadding));
         plot.getYAxis().getAxisLabel().setOffset(float(accBarPadding));
 

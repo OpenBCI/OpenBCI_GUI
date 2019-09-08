@@ -77,17 +77,17 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
+        digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
         digitalModeButton.setCornerRoundess((int)(navHeight-6));
-        digitalModeButton.setFont(p6,10);
+        digitalModeButton.setFont(p5,12);
         digitalModeButton.setColorNotPressed(color(57,128,204));
         digitalModeButton.textColorNotActive = color(255);
         digitalModeButton.hasStroke(false);
 
         if (cyton.isWifi()) {
-            digitalModeButton.setHelpText("Click this button to activate/deactivate digital reading on the Cyton D11, D12, and D17");
+            digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, and D17.");
         } else {
-            digitalModeButton.setHelpText("Click this button to activate/deactivate digital reading on the Cyton D11, D12, D13, D17 and D18");
+            digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18.");
         }
     }
 
@@ -117,6 +117,9 @@ class W_DigitalRead extends Widget {
             for(int i = 0; i < numDigitalReadDots; i++){
                 digitalReadDots[i].update();
             }
+
+            //ignore top left button interaction when widgetSelector dropdown is active
+            ignoreButtonCheck(digitalModeButton);
         }
     }
 

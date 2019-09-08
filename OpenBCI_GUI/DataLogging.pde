@@ -1487,7 +1487,7 @@ void convert16channelLine() {
             }
         }
         dataWriter.println();
-        println(consoleMsg);
+        println("convert16channelLine: " + consoleMsg);
         return;
     }
     for (int i=0; i<hexNums.length; i++) {

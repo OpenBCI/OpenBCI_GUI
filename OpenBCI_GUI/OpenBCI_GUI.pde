@@ -24,10 +24,12 @@ import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's
 import processing.core.PApplet;
 import java.util.*; //for Array.copyOfRange()
 import java.util.Map.Entry;
+import java.util.Map;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 import processing.net.*; // For TCP networking
-import grafica.*;
+import grafica.*; //used for graphs
+import gifAnimation.*;  //for animated gifs
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
 import java.io.OutputStream;
@@ -50,16 +52,12 @@ import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
 
-
-import gifAnimation.*;
-
-
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.3";
-String localGUIVersionDate = "July 2019";
+String localGUIVersionString = "v4.1.5";
+String localGUIVersionDate = "September 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -261,6 +259,12 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 Process nodeHubby;
 String nodeHubName = "OpenBCIHub";
+Timer hubTimer = new Timer(true);
+boolean hubTimerHasStarted = false;
+int hubTimerCounter; //Count how many times GUI tries to connect to Hub
+int hubTimerLimit = 8; //Allow up to 8 tries for GUI to connect to Hub
+int hubTimerInterval = 2500; //try every 2.5 seconds, 8*2.5=20seconds
+
 
 PApplet ourApplet;
 
@@ -341,7 +345,7 @@ void setup() {
     println("Console Log Started at Local Time: " + getDateString());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-    println("For more information, please visit: https://docs.openbci.com/OpenBCI%20Software/");
+    println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
 
     //open window
     ourApplet = this;
@@ -526,17 +530,28 @@ private void prepareExitHandler () {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         public void run () {
             System.out.println("SHUTDOWN HOOK");
+            //If user starts system and quits the app,
+            //save user settings for current mode!
+            try {
+                if (systemMode == SYSTEMMODE_POSTINIT) {
+                    settings.save(settings.getPath("User", eegDataSource, nchan));
+                }
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
+            //Close network streams
+            if (w_networking != null && w_networking.getNetworkActive()) {
+                w_networking.stopNetwork();
+                println("openBCI_GUI: shutDown: Network streams stopped");
+            }
+            //Shutdown the hub
             try {
                 if (hubStop()) {
                     System.out.println("SHUTDOWN HUB");
                 } else {
                     System.out.println("FAILED TO SHUTDOWN HUB");
                 }
-                //If user starts system and quits the app,
-                //save user settings for current mode!
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    settings.save(settings.getPath("User", eegDataSource, nchan));
-                }
+
             } catch (Exception ex) {
                 ex.printStackTrace(); // not much else to do at this point
             }
@@ -967,7 +982,6 @@ void stopButtonWasPressed() {
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
@@ -986,9 +1000,7 @@ void stopButtonWasPressed() {
         nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
-            w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
         }
-
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
@@ -1007,6 +1019,11 @@ void haltSystem() {
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         if (initSystemButton.but_txt == "STOP SESSION") {
             initSystemButton.but_txt = "START SESSION";
+        }
+
+        if (w_networking != null && w_networking.getNetworkActive()) {
+            w_networking.stopNetwork();
+            println("openBCI_GUI: haltSystem: Network streams stopped");
         }
 
         stopRunning();  //stop data transfer
@@ -1091,21 +1108,28 @@ void haltSystem() {
 
         systemHasHalted = true;
     }
-
-}
-
-void delayedInit() {
-    // Initialize a plot
-    GPlot plot = new GPlot(this);
-}
+} //end of halt system
 
 void systemUpdate() { // for updating data values and variables
 
+    //Instantiate Hub Object, wait until next step to try to startTCPClient
     if (isHubInitialized && isHubObjectInitialized == false) {
         hub = new Hub(this);
         println("Instantiating hub object...");
         isHubObjectInitialized = true;
-        thread("delayedInit");
+    }
+    //Then, immediately start trying to connect to Hub for X seconds
+    if (!hub.isHubRunning()) {
+        if (!hubTimerHasStarted) {
+            hubTimer.schedule(new CheckHubInit(), 0, hubTimerInterval);
+            hubTimerHasStarted = true;
+        } else {
+            if (hubTimerCounter == hubTimerLimit) {
+                hubTimer.cancel();
+                outputError("Unable to find or connect to Hub. LIVE functionality will be disabled.");
+                hubTimerCounter = 0;
+            }
+        }
     }
 
     //prepare for updating the GUI
@@ -1119,9 +1143,11 @@ void systemUpdate() { // for updating data values and variables
         controlPanel.update();
 
         if (widthOfLastScreen != width || heightOfLastScreen != height) {
+            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             widthOfLastScreen = width;
             heightOfLastScreen = height;
+            //println("W = " + width + " || H = " + height);
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -1131,31 +1157,11 @@ void systemUpdate() { // for updating data values and variables
 
             //has enough data arrived to process it and update the GUI?
             if (pointCounter >= nPointsPerUpdate) {
-                pointCounter = 0;  //reset for next time
-
+                 //reset for next time
+                pointCounter = 0;
                 //process the data
                 processNewData();
-
-                if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) { //wait 1 second for GUI to reinitialize
-                    try {
-
-                        //-----------------------------------------------------------
-                        //-----------------------------------------------------------
-                        // gui.update(dataProcessing.data_std_uV, data_elec_imp_ohm);
-                        // topNav.update();
-                        // updateGUIWidgets(); //####
-                        //-----------------------------------------------------------
-                        //-----------------------------------------------------------
-                    }
-                    catch (Exception e) {
-                        println(e.getMessage());
-                        reinitializeGUIdelay = reinitializeGUIdelay * 2;
-                        println("OpenBCI_GUI: systemUpdate: New GUI reinitialize delay = " + reinitializeGUIdelay);
-                    }
-                } else {
-                    println("OpenBCI_GUI: systemUpdate: reinitializing GUI after resize... not updating GUI");
-                }
-
+                //set this flag to true, checked at the beginning of systemDraw()
                 redrawScreenNow=true;
             } else {
                 //not enough data has arrived yet... only update the channel controller
@@ -1197,8 +1203,8 @@ void systemUpdate() { // for updating data values and variables
 
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
         if (screenHasBeenResized) {
-            // GUIWidgets_screenResized(width, height);
             ourApplet = this; //reset PApplet...
+            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
         }
@@ -1206,8 +1212,6 @@ void systemUpdate() { // for updating data values and variables
             screenHasBeenResized = false;
             println("systemUpdate: reinitializing GUI");
             timeOfGUIreinitialize = millis();
-            // initializeGUI();
-            // GUIWidgets_screenResized(width, height);
         }
 
         if (wm.isWMInitialized) {
@@ -1266,21 +1270,9 @@ void systemDraw() { //for drawing to the screen
             // println("attempting to draw GUI...");
             try {
                 // println("GUI DRAW!!! " + millis());
-
-                //----------------------------
-                // gui.draw(); //draw the GUI
-
+                //draw GUI widgets (visible/invisible) using widget manager
                 wm.draw();
-                //updateGUIWidgets(); //####
-                // drawGUIWidgets();
-
-                // topNav.draw();
-
-                //----------------------------
-
-                // playground.draw();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 println(e.getMessage());
                 reinitializeGUIdelay = reinitializeGUIdelay * 2;
                 println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + reinitializeGUIdelay);
