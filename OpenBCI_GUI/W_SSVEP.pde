@@ -55,6 +55,7 @@ class W_SSVEP extends Widget {
                             + "You can stop/start each SSVEP by clicking on it.\n\n"
                             + "This widget is currently in beta mode and requires more input and testing from the OpenBCI Community.";
     int ssvepHelpTextFontSize = 16;
+    Button infoButton;
 
     W_SSVEP(PApplet _parent) {
 
@@ -100,6 +101,14 @@ class W_SSVEP extends Widget {
 
         cp5_ssvep.setAutoDraw(false);
         showAbout = false;        //set Default start value for showing about section as fault
+
+        infoButton = new Button(x + w - 80, y - navH + 2, 18, 18, "?", 14);
+        infoButton.setCornerRoundess((int)(navHeight-6));
+        infoButton.setFont(p5,12);
+        infoButton.setColorNotPressed(color(57,128,204));
+        infoButton.setFontColorNotActive(color(255));
+        infoButton.setHelpText("Click this button to view details on the SSVEP Widget.");
+        infoButton.hasStroke(false);
     }
 
     void update() {
@@ -160,6 +169,7 @@ class W_SSVEP extends Widget {
 
         pushStyle();
         ssvepChanSelect.draw();
+        infoButton.draw();
         popStyle();
 
         //left side
@@ -217,18 +227,6 @@ class W_SSVEP extends Widget {
             text(ssvepHelpText, x + 30, y + 30, w - 60, h -60);
         }
 
-        //Draw widget help button
-        stroke(0);
-        noFill();
-        ellipse(x + w - 80, y - navH/2 , 18, 18);
-        fill(0);
-        textAlign(CENTER, CENTER);
-        if (showAbout) {
-            text("x", x + w - 80, y - navH/2 - 2);
-        }
-        else {
-            text("?", x + w - 80, y - navH/2 - 2);
-        }
         popStyle();
 
     } //end of draw loop
@@ -246,6 +244,8 @@ class W_SSVEP extends Widget {
             heightLarger = false;
             s = h;
         }
+
+        infoButton.setPos(x + w - 100, y - navH + 2);
         
         setFreqDropdownSizes();
 
@@ -255,9 +255,11 @@ class W_SSVEP extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         if (!this.dropdownIsActive) {
-            if (dist(mouseX, mouseY, x + w - 80, y - navH/2) <= 9){
-                showAbout = !showAbout;
+
+            if (infoButton.isMouseHere()) {
+                infoButton.setIsActive(true);
             }
+
 
             for(int i = 0; i <= settings.numSSVEPs; i++){
                 if (mouseX > ssvepCoords[i][0] && mouseY > ssvepCoords[i][1] && mouseX < ssvepCoords[i][2] && mouseY < ssvepCoords[i][3]){
@@ -270,6 +272,11 @@ class W_SSVEP extends Widget {
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+        if (infoButton.isActive && infoButton.isMouseHere()) {
+            showAbout = !showAbout;
+        }
+        infoButton.setIsActive(false);
     }
 
     void createDropdown(String name, List<String> _items) {
@@ -589,6 +596,9 @@ class W_SSVEP extends Widget {
     } //end of processData
 
     /*
+    
+    ///Here is another algorithm from older code that finds peak frequencies...
+
     void findPeakFrequency(FFT[] fftData, int Ichan) {
 
         //loop over each EEG channel and find the frequency with the peak amplitude
