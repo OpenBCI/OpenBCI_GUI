@@ -4,7 +4,7 @@ Use OpenBCIHub v2.0.9 please.
 ## Beta 0
 
 ### Bug Fixes
-* Cyton+WiFi unable to start session #555
+* Cyton+WiFi unable to start session #555 #590
 
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.
