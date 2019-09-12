@@ -1128,6 +1128,10 @@ class Hub {
         writeJSON(json);
     }
 
+    public String getProtocol() {
+        return curProtocol;
+    }
+
     public int getSampleRate() {
         return requestedSampleRate;
     }

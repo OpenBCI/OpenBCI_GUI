@@ -819,9 +819,15 @@ void initSystem() throws Exception {
     }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-
-    if (eegDataSource == DATASOURCE_CYTON && hub.getFirmwareVersion().equals("v1.0.0")) {
-        abandonInit = true;
+    
+    if (eegDataSource == DATASOURCE_CYTON) {
+        if (hub.getFirmwareVersion() == null && hub.getProtocol() == PROTOCOL_WIFI) {
+            println("Cyton+WiFi: Unable to find board firmware version");
+        } else if (hub.getFirmwareVersion() == "v1.0.0") {
+            abandonInit = true;
+        } else {
+            //println("FOUND FIRMWARE FROM HUB == " + hub.getFirmwareVersion());
+        }
     }
 
     if (!abandonInit) {
