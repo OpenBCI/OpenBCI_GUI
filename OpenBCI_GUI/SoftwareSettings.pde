@@ -114,6 +114,7 @@ class SoftwareSettings {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
         "GanglionUserSettings.json",
+        "NovaXRUserSettings.json",
         "PlaybackUserSettings.json",
         "SynthFourUserSettings.json",
         "SynthEightUserSettings.json",
@@ -123,6 +124,7 @@ class SoftwareSettings {
         "CytonDefaultSettings.json",
         "DaisyDefaultSettings.json",
         "GanglionDefaultSettings.json",
+        "NovaXRDefaultSettings.json",
         "PlaybackDefaultSettings.json",
         "SynthFourDefaultSettings.json",
         "SynthEightDefaultSettings.json",
@@ -673,350 +675,351 @@ class SoftwareSettings {
     //                                                Load GUI Settings                                                       //
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void load(String loadGUISettingsFileLocation) throws Exception {
-        //Load all saved User Settings from a JSON file if it exists
-        loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
+        //Load all saved User Settings from a JSON file if it exists3
 
-        //Check the number of channels saved to json first!
-        JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
-        numChanloaded = loadDataSettings.getInt("Channels");
-        //Print error if trying to load a different number of channels
-        if (numChanloaded != slnchan) {
-            println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
-            chanNumError = true;
-            throw new Exception();
-        } else {
-            chanNumError = false;
-        }
-        //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
-        loadDatasource = loadDataSettings.getInt("Data Source");
-        verbosePrint("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
-        //Print error if trying to load a different data source (ex. Live != Synthetic)
-        if (loadDatasource != eegDataSource) {
-            println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
-            dataSourceError = true;
-            throw new Exception();
-        } else {
-            dataSourceError = false;
-        }
+        // loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
-        //get the global settings JSON object
-        JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject(kJSONKeySettings);
-        loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
-        loadNotchSetting = loadGlobalSettings.getInt("Notch");
-        loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
-        loadFramerate = loadGlobalSettings.getInt("Framerate");
-        Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
-        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
-        if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
-            loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
-            loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
-            loadBoardMode = BoardMode.values()[loadGlobalSettings.getInt("Board Mode")];
-        }
-        //Store loaded layout to current layout variable
-        currentLayout = loadLayoutSetting;
-        //Load more global settings after this line, if needed
+        // //Check the number of channels saved to json first!
+        // JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
+        // numChanloaded = loadDataSettings.getInt("Channels");
+        // //Print error if trying to load a different number of channels
+        // if (numChanloaded != slnchan) {
+        //     println("Channels being loaded from " + loadGUISettingsFileLocation + " don't match channels being used!");
+        //     chanNumError = true;
+        //     throw new Exception();
+        // } else {
+        //     chanNumError = false;
+        // }
+        // //Check the Data Source integer next: Cyton = 0, Ganglion = 1, Playback = 2, Synthetic = 3
+        // loadDatasource = loadDataSettings.getInt("Data Source");
+        // verbosePrint("loadGUISettings: Data source loaded: " + loadDatasource + ". Current data source: " + eegDataSource);
+        // //Print error if trying to load a different data source (ex. Live != Synthetic)
+        // if (loadDatasource != eegDataSource) {
+        //     println("Data source being loaded from " + loadGUISettingsFileLocation + " doesn't match current data source.");
+        //     dataSourceError = true;
+        //     throw new Exception();
+        // } else {
+        //     dataSourceError = false;
+        // }
 
-        //Create a string array to print global settings to console
-        String[] loadedGlobalSettings = {
-            "Using Layout Number: " + loadLayoutSetting,
-            "Default Notch: " + loadNotchSetting, //default notch
-            "Default BP: " + loadBandpassSetting, //default bp
-            "Default Framerate: " + loadFramerate, //default framerate
-            "Expert Mode: " + loadExpertModeToggle,
-            "TS Vert Scale: " + loadTimeSeriesVertScale,
-            "TS Horiz Scale: " + loadTimeSeriesHorizScale,
-            "Analog Vert Scale: " + loadAnalogReadVertScale,
-            "Analog Horiz Scale: " + loadAnalogReadHorizScale,
-            "Accelerometer: " + loadAccelerometer,
-            "Board Mode: " + loadBoardMode,
-            //Add new global settings above this line to print to console
-            };
-        //Print the global settings that have been loaded to the console
-        //printArray(loadedGlobalSettings);
+        // //get the global settings JSON object
+        // JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject(kJSONKeySettings);
+        // loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
+        // loadNotchSetting = loadGlobalSettings.getInt("Notch");
+        // loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
+        // loadFramerate = loadGlobalSettings.getInt("Framerate");
+        // Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
+        // Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
+        // if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
+        //     loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
+        //     loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
+        //     loadBoardMode = BoardMode.values()[loadGlobalSettings.getInt("Board Mode")];
+        // }
+        // //Store loaded layout to current layout variable
+        // currentLayout = loadLayoutSetting;
+        // //Load more global settings after this line, if needed
 
-        //get the FFT settings
-        JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
-        fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
-        fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
-        fftLogLinLoad = loadFFTSettings.getInt("FFT_LogLin");
-        fftSmoothingLoad = loadFFTSettings.getInt("FFT_Smoothing");
-        fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
+        // //Create a string array to print global settings to console
+        // String[] loadedGlobalSettings = {
+        //     "Using Layout Number: " + loadLayoutSetting,
+        //     "Default Notch: " + loadNotchSetting, //default notch
+        //     "Default BP: " + loadBandpassSetting, //default bp
+        //     "Default Framerate: " + loadFramerate, //default framerate
+        //     "Expert Mode: " + loadExpertModeToggle,
+        //     "TS Vert Scale: " + loadTimeSeriesVertScale,
+        //     "TS Horiz Scale: " + loadTimeSeriesHorizScale,
+        //     "Analog Vert Scale: " + loadAnalogReadVertScale,
+        //     "Analog Horiz Scale: " + loadAnalogReadHorizScale,
+        //     "Accelerometer: " + loadAccelerometer,
+        //     "Board Mode: " + loadBoardMode,
+        //     //Add new global settings above this line to print to console
+        //     };
+        // //Print the global settings that have been loaded to the console
+        // //printArray(loadedGlobalSettings);
 
-        //Create a string array to print to console
-        String[] loadedFFTSettings = {
-            "FFT_Max Frequency: " + fftMaxFrqLoad,
-            "FFT_Max uV: " + fftMaxuVLoad,
-            "FFT_Log/Lin: " + fftLogLinLoad,
-            "FFT_Smoothing: " + fftSmoothingLoad,
-            "FFT_Filter: " + fftFilterLoad
-            };
-        //Print the FFT settings that have been loaded to the console
-        //printArray(loadedFFTSettings);
+        // //get the FFT settings
+        // JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
+        // fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
+        // fftMaxuVLoad = loadFFTSettings.getInt("FFT_Max uV");
+        // fftLogLinLoad = loadFFTSettings.getInt("FFT_LogLin");
+        // fftSmoothingLoad = loadFFTSettings.getInt("FFT_Smoothing");
+        // fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
 
-        //get the Accelerometer settings
-        JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
-        loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
-        loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
-        String[] loadedAccSettings = {
-            "Accelerometer Vert Scale: " + loadAccelVertScale,
-            "Accelerometer Horiz Scale: " + loadAccelHorizScale
-        };
+        // //Create a string array to print to console
+        // String[] loadedFFTSettings = {
+        //     "FFT_Max Frequency: " + fftMaxFrqLoad,
+        //     "FFT_Max uV: " + fftMaxuVLoad,
+        //     "FFT_Log/Lin: " + fftLogLinLoad,
+        //     "FFT_Smoothing: " + fftSmoothingLoad,
+        //     "FFT_Filter: " + fftFilterLoad
+        //     };
+        // //Print the FFT settings that have been loaded to the console
+        // //printArray(loadedFFTSettings);
 
-        //get the Networking Settings
-        JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
-        nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
-        switch (nwProtocolLoad)  {
-            case 3:
-                nwDataType1 = loadNetworkingSettings.getInt("OSC_DataType1");
-                nwDataType2 = loadNetworkingSettings.getInt("OSC_DataType2");
-                nwDataType3 = loadNetworkingSettings.getInt("OSC_DataType3");
-                nwDataType4 = loadNetworkingSettings.getInt("OSC_DataType4");
-                nwOscIp1Load = loadNetworkingSettings.getString("OSC_ip1");
-                nwOscIp2Load = loadNetworkingSettings.getString("OSC_ip2");
-                nwOscIp3Load = loadNetworkingSettings.getString("OSC_ip3");
-                nwOscIp4Load = loadNetworkingSettings.getString("OSC_ip4");
-                nwOscPort1Load = loadNetworkingSettings.getString("OSC_port1");
-                nwOscPort2Load = loadNetworkingSettings.getString("OSC_port2");
-                nwOscPort3Load = loadNetworkingSettings.getString("OSC_port3");
-                nwOscPort4Load = loadNetworkingSettings.getString("OSC_port4");
-                nwOscAddress1Load = loadNetworkingSettings.getString("OSC_address1");
-                nwOscAddress2Load = loadNetworkingSettings.getString("OSC_address2");
-                nwOscAddress3Load = loadNetworkingSettings.getString("OSC_address3");
-                nwOscAddress4Load = loadNetworkingSettings.getString("OSC_address4");
-                nwOscFilter1Load = loadNetworkingSettings.getInt("OSC_filter1");
-                nwOscFilter2Load = loadNetworkingSettings.getInt("OSC_filter2");
-                nwOscFilter3Load = loadNetworkingSettings.getInt("OSC_filter3");
-                nwOscFilter4Load = loadNetworkingSettings.getInt("OSC_filter4");
-                break;
-            case 2:
-                nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
-                nwDataType2 = loadNetworkingSettings.getInt("UDP_DataType2");
-                nwDataType3 = loadNetworkingSettings.getInt("UDP_DataType3");
-                nwUdpIp1Load = loadNetworkingSettings.getString("UDP_ip1");
-                nwUdpIp2Load = loadNetworkingSettings.getString("UDP_ip2");
-                nwUdpIp3Load = loadNetworkingSettings.getString("UDP_ip3");
-                nwUdpPort1Load = loadNetworkingSettings.getString("UDP_port1");
-                nwUdpPort2Load = loadNetworkingSettings.getString("UDP_port2");
-                nwUdpPort3Load = loadNetworkingSettings.getString("UDP_port3");
-                nwUdpFilter1Load = loadNetworkingSettings.getInt("UDP_filter1");
-                nwUdpFilter2Load = loadNetworkingSettings.getInt("UDP_filter2");
-                nwUdpFilter3Load = loadNetworkingSettings.getInt("UDP_filter3");
-                break;
-            case 1:
-                nwDataType1 = loadNetworkingSettings.getInt("LSL_DataType1");
-                nwDataType2 = loadNetworkingSettings.getInt("LSL_DataType2");
-                nwDataType3 = loadNetworkingSettings.getInt("LSL_DataType3");
-                nwLSLName1Load = loadNetworkingSettings.getString("LSL_name1");
-                nwLSLName2Load = loadNetworkingSettings.getString("LSL_name2");
-                nwLSLName3Load = loadNetworkingSettings.getString("LSL_name3");
-                nwLSLType1Load = loadNetworkingSettings.getString("LSL_type1");
-                nwLSLType2Load = loadNetworkingSettings.getString("LSL_type2");
-                nwLSLType3Load = loadNetworkingSettings.getString("LSL_type3");
-                nwLSLNumChan1Load = loadNetworkingSettings.getString("LSL_numchan1");
-                nwLSLNumChan2Load = loadNetworkingSettings.getString("LSL_numchan2");
-                nwLSLNumChan3Load = loadNetworkingSettings.getString("LSL_numchan3");
-                nwLSLFilter1Load = loadNetworkingSettings.getInt("LSL_filter1");
-                nwLSLFilter2Load = loadNetworkingSettings.getInt("LSL_filter2");
-                nwLSLFilter3Load = loadNetworkingSettings.getInt("LSL_filter3");
-                break;
-            case 0:
-                nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
-                nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
-                nwSerialFilter1Load = loadNetworkingSettings.getInt("Serial_filter1");
-                nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
-                break;
-        } //end switch case for all networking types
+        // //get the Accelerometer settings
+        // JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
+        // loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
+        // loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
+        // String[] loadedAccSettings = {
+        //     "Accelerometer Vert Scale: " + loadAccelVertScale,
+        //     "Accelerometer Horiz Scale: " + loadAccelHorizScale
+        // };
 
-        //get the  Headplot settings
-        JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
-        hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
-        hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
-        hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
-        hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
+        // //get the Networking Settings
+        // JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
+        // nwProtocolLoad = loadNetworkingSettings.getInt("Protocol");
+        // switch (nwProtocolLoad)  {
+        //     case 3:
+        //         nwDataType1 = loadNetworkingSettings.getInt("OSC_DataType1");
+        //         nwDataType2 = loadNetworkingSettings.getInt("OSC_DataType2");
+        //         nwDataType3 = loadNetworkingSettings.getInt("OSC_DataType3");
+        //         nwDataType4 = loadNetworkingSettings.getInt("OSC_DataType4");
+        //         nwOscIp1Load = loadNetworkingSettings.getString("OSC_ip1");
+        //         nwOscIp2Load = loadNetworkingSettings.getString("OSC_ip2");
+        //         nwOscIp3Load = loadNetworkingSettings.getString("OSC_ip3");
+        //         nwOscIp4Load = loadNetworkingSettings.getString("OSC_ip4");
+        //         nwOscPort1Load = loadNetworkingSettings.getString("OSC_port1");
+        //         nwOscPort2Load = loadNetworkingSettings.getString("OSC_port2");
+        //         nwOscPort3Load = loadNetworkingSettings.getString("OSC_port3");
+        //         nwOscPort4Load = loadNetworkingSettings.getString("OSC_port4");
+        //         nwOscAddress1Load = loadNetworkingSettings.getString("OSC_address1");
+        //         nwOscAddress2Load = loadNetworkingSettings.getString("OSC_address2");
+        //         nwOscAddress3Load = loadNetworkingSettings.getString("OSC_address3");
+        //         nwOscAddress4Load = loadNetworkingSettings.getString("OSC_address4");
+        //         nwOscFilter1Load = loadNetworkingSettings.getInt("OSC_filter1");
+        //         nwOscFilter2Load = loadNetworkingSettings.getInt("OSC_filter2");
+        //         nwOscFilter3Load = loadNetworkingSettings.getInt("OSC_filter3");
+        //         nwOscFilter4Load = loadNetworkingSettings.getInt("OSC_filter4");
+        //         break;
+        //     case 2:
+        //         nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
+        //         nwDataType2 = loadNetworkingSettings.getInt("UDP_DataType2");
+        //         nwDataType3 = loadNetworkingSettings.getInt("UDP_DataType3");
+        //         nwUdpIp1Load = loadNetworkingSettings.getString("UDP_ip1");
+        //         nwUdpIp2Load = loadNetworkingSettings.getString("UDP_ip2");
+        //         nwUdpIp3Load = loadNetworkingSettings.getString("UDP_ip3");
+        //         nwUdpPort1Load = loadNetworkingSettings.getString("UDP_port1");
+        //         nwUdpPort2Load = loadNetworkingSettings.getString("UDP_port2");
+        //         nwUdpPort3Load = loadNetworkingSettings.getString("UDP_port3");
+        //         nwUdpFilter1Load = loadNetworkingSettings.getInt("UDP_filter1");
+        //         nwUdpFilter2Load = loadNetworkingSettings.getInt("UDP_filter2");
+        //         nwUdpFilter3Load = loadNetworkingSettings.getInt("UDP_filter3");
+        //         break;
+        //     case 1:
+        //         nwDataType1 = loadNetworkingSettings.getInt("LSL_DataType1");
+        //         nwDataType2 = loadNetworkingSettings.getInt("LSL_DataType2");
+        //         nwDataType3 = loadNetworkingSettings.getInt("LSL_DataType3");
+        //         nwLSLName1Load = loadNetworkingSettings.getString("LSL_name1");
+        //         nwLSLName2Load = loadNetworkingSettings.getString("LSL_name2");
+        //         nwLSLName3Load = loadNetworkingSettings.getString("LSL_name3");
+        //         nwLSLType1Load = loadNetworkingSettings.getString("LSL_type1");
+        //         nwLSLType2Load = loadNetworkingSettings.getString("LSL_type2");
+        //         nwLSLType3Load = loadNetworkingSettings.getString("LSL_type3");
+        //         nwLSLNumChan1Load = loadNetworkingSettings.getString("LSL_numchan1");
+        //         nwLSLNumChan2Load = loadNetworkingSettings.getString("LSL_numchan2");
+        //         nwLSLNumChan3Load = loadNetworkingSettings.getString("LSL_numchan3");
+        //         nwLSLFilter1Load = loadNetworkingSettings.getInt("LSL_filter1");
+        //         nwLSLFilter2Load = loadNetworkingSettings.getInt("LSL_filter2");
+        //         nwLSLFilter3Load = loadNetworkingSettings.getInt("LSL_filter3");
+        //         break;
+        //     case 0:
+        //         nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
+        //         nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
+        //         nwSerialFilter1Load = loadNetworkingSettings.getInt("Serial_filter1");
+        //         nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
+        //         break;
+        // } //end switch case for all networking types
 
-        //Create a string array to print to console
-        String[] loadedHPSettings = {
-            "HP_intensity: " + hpIntensityLoad,
-            "HP_polarity: " + hpPolarityLoad,
-            "HP_contours: " + hpContoursLoad,
-            "HP_smoothing: " + hpSmoothingLoad
-            };
-        //Print the Headplot settings
-        //printArray(loadedHPSettings);
+        // //get the  Headplot settings
+        // JSONObject loadHeadplotSettings = loadSettingsJSONData.getJSONObject(kJSONKeyHeadplot);
+        // hpIntensityLoad = loadHeadplotSettings.getInt("HP_intensity");
+        // hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
+        // hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
+        // hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
 
-        //get the EMG settings
-        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
-        emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
-        emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
-        emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
-        emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
+        // //Create a string array to print to console
+        // String[] loadedHPSettings = {
+        //     "HP_intensity: " + hpIntensityLoad,
+        //     "HP_polarity: " + hpPolarityLoad,
+        //     "HP_contours: " + hpContoursLoad,
+        //     "HP_smoothing: " + hpSmoothingLoad
+        //     };
+        // //Print the Headplot settings
+        // //printArray(loadedHPSettings);
 
-        //Create a string array to print to console
-        String[] loadedEMGSettings = {
-            "EMG_smoothing: " + emgSmoothingLoad,
-            "EMG_uVlimit: " + emguVLimLoad,
-            "EMG_creepspeed: " + emgCreepLoad,
-            "EMG_minuV: " + emgMinDeltauVLoad
-            };
-        //Print the EMG settings
-        //printArray(loadedEMGSettings);
+        // //get the EMG settings
+        // JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
+        // emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
+        // emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
+        // emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
+        // emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
-        //get the  Focus settings
-        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
-        focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
-        focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
+        // //Create a string array to print to console
+        // String[] loadedEMGSettings = {
+        //     "EMG_smoothing: " + emgSmoothingLoad,
+        //     "EMG_uVlimit: " + emguVLimLoad,
+        //     "EMG_creepspeed: " + emgCreepLoad,
+        //     "EMG_minuV: " + emgMinDeltauVLoad
+        //     };
+        // //Print the EMG settings
+        // //printArray(loadedEMGSettings);
 
-        //Create a string array to print to console
-        String[] loadedFocusSettings = {
-            "Focus_theme: " + focusThemeLoad,
-            "Focus_keypress: " + focusKeyLoad
-            };
-        //Print the EMG settings
-        //printArray(loadedFocusSettings);
+        // //get the  Focus settings
+        // JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
+        // focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
+        // focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
 
-        //Clear the list and array for holding SSVEP settings
-        loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
-        ssvepFreqsLoad = new int[4]; //clear the dropdown settings array
-        //get the ssvep settings
-        JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject(kJSONKeySSVEP);
-        numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
-        JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
-        for (int i = 0; i < numSSVEPsLoad; i++) {
-            int f = loadSSVEPFreqs.getInt("SSVEP_" + i);
-            ssvepFreqsLoad[i] = f;
-        }
-        JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");
-        for (int i = 0; i < loadSSVEPChan.size(); i++) {
-            loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
-        }
-        //println("Settings: ssvep active chans loaded = " + loadSSVEPActiveChans);
+        // //Create a string array to print to console
+        // String[] loadedFocusSettings = {
+        //     "Focus_theme: " + focusThemeLoad,
+        //     "Focus_keypress: " + focusKeyLoad
+        //     };
+        // //Print the EMG settings
+        // //printArray(loadedFocusSettings);
 
-        //get band power settings
-        loadBPActiveChans.clear();
-        JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
-        JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
-        for (int i = 0; i < loadBPChan.size(); i++) {
-            loadBPActiveChans.add(loadBPChan.getInt(i));
-        }
-        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
+        // //Clear the list and array for holding SSVEP settings
+        // loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
+        // ssvepFreqsLoad = new int[4]; //clear the dropdown settings array
+        // //get the ssvep settings
+        // JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject(kJSONKeySSVEP);
+        // numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
+        // JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
+        // for (int i = 0; i < numSSVEPsLoad; i++) {
+        //     int f = loadSSVEPFreqs.getInt("SSVEP_" + i);
+        //     ssvepFreqsLoad[i] = f;
+        // }
+        // JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");
+        // for (int i = 0; i < loadSSVEPChan.size(); i++) {
+        //     loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
+        // }
+        // //println("Settings: ssvep active chans loaded = " + loadSSVEPActiveChans);
 
-        //get the  Widget/Container settings
-        JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
-        //Apply Layout directly before loading and applying widgets to containers
-        wm.setNewContainerLayout(loadLayoutSetting);
-        verbosePrint("LoadGUISettings: Layout " + loadLayoutSetting + " Loaded!");
-        numLoadedWidgets = loadWidgetSettings.size();
+        // //get band power settings
+        // loadBPActiveChans.clear();
+        // JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
+        // JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
+        // for (int i = 0; i < loadBPChan.size(); i++) {
+        //     loadBPActiveChans.add(loadBPChan.getInt(i));
+        // }
+        // //println("Settings: band power active chans loaded = " + loadBPActiveChans );
+
+        // //get the  Widget/Container settings
+        // JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
+        // //Apply Layout directly before loading and applying widgets to containers
+        // wm.setNewContainerLayout(loadLayoutSetting);
+        // verbosePrint("LoadGUISettings: Layout " + loadLayoutSetting + " Loaded!");
+        // numLoadedWidgets = loadWidgetSettings.size();
 
 
-        //int numActiveWidgets = 0; //reset the counter
-        for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
-            if (wm.widgets.get(w).isActive) { //If a widget is active...
-                verbosePrint("Deactivating widget [" + w + "]");
-                wm.widgets.get(w).isActive = false;
-                //numActiveWidgets++; //counter the number of de-activated widgets
-            }
-        }
+        // //int numActiveWidgets = 0; //reset the counter
+        // for (int w = 0; w < wm.widgets.size(); w++) { //increment through all widgets
+        //     if (wm.widgets.get(w).isActive) { //If a widget is active...
+        //         verbosePrint("Deactivating widget [" + w + "]");
+        //         wm.widgets.get(w).isActive = false;
+        //         //numActiveWidgets++; //counter the number of de-activated widgets
+        //     }
+        // }
 
-        //Store the Widget number keys from JSON to a string array
-        loadedWidgetsArray = (String[]) loadWidgetSettings.keys().toArray(new String[loadWidgetSettings.size()]);
-        //printArray(loadedWidgetsArray);
-        int widgetToActivate = 0;
-        for (int w = 0; w < numLoadedWidgets; w++) {
-                String [] loadWidgetNameNumber = split(loadedWidgetsArray[w], '_');
-                //Store the value of the widget to be activated
-                widgetToActivate = Integer.valueOf(loadWidgetNameNumber[1]);
-                //Load the container for the current widget[w]
-                int containerToApply = loadWidgetSettings.getInt(loadedWidgetsArray[w]);
+        // //Store the Widget number keys from JSON to a string array
+        // loadedWidgetsArray = (String[]) loadWidgetSettings.keys().toArray(new String[loadWidgetSettings.size()]);
+        // //printArray(loadedWidgetsArray);
+        // int widgetToActivate = 0;
+        // for (int w = 0; w < numLoadedWidgets; w++) {
+        //         String [] loadWidgetNameNumber = split(loadedWidgetsArray[w], '_');
+        //         //Store the value of the widget to be activated
+        //         widgetToActivate = Integer.valueOf(loadWidgetNameNumber[1]);
+        //         //Load the container for the current widget[w]
+        //         int containerToApply = loadWidgetSettings.getInt(loadedWidgetsArray[w]);
 
-                wm.widgets.get(widgetToActivate).isActive = true;//activate the new widget
-                wm.widgets.get(widgetToActivate).setContainer(containerToApply);//map it to the container that was loaded!
-                println("LoadGUISettings: Applied Widget " + widgetToActivate + " to Container " + containerToApply);
-        }//end case for all widget/container settings
+        //         wm.widgets.get(widgetToActivate).isActive = true;//activate the new widget
+        //         wm.widgets.get(widgetToActivate).setContainer(containerToApply);//map it to the container that was loaded!
+        //         println("LoadGUISettings: Applied Widget " + widgetToActivate + " to Container " + containerToApply);
+        // }//end case for all widget/container settings
 
-        /////////////////////////////////////////////////////////////
-        //    Load more widget settings above this line as above   //
+        // /////////////////////////////////////////////////////////////
+        // //    Load more widget settings above this line as above   //
 
-        //}//end case for all objects in JSON
+        // //}//end case for all objects in JSON
 
-        //Apply notch
-        dataProcessing.currentNotch_ind = loadNotchSetting;
-        topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessingNotchArray[loadNotchSetting];
-        //Apply Bandpass filter
-        dataProcessing.currentFilt_ind = loadBandpassSetting;
-        topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
+        // //Apply notch
+        // dataProcessing.currentNotch_ind = loadNotchSetting;
+        // topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessingNotchArray[loadNotchSetting];
+        // //Apply Bandpass filter
+        // dataProcessing.currentFilt_ind = loadBandpassSetting;
+        // topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
 
-        //Apply Board Mode to Cyton Only
-        if (eegDataSource == DATASOURCE_CYTON) {
-            applyBoardMode();
-        }
+        // //Apply Board Mode to Cyton Only
+        // if (eegDataSource == DATASOURCE_CYTON) {
+        //     applyBoardMode();
+        // }
 
-        //Apply Expert Mode toggle
-        if (loadExpertModeToggle) {
-            topNav.configSelector.configOptions.get(0).setString("Expert Mode On");
-            topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.expertPurple);
-            println("LoadGUISettings: Expert Mode On");
-            expertModeToggle = true;
-        } else {
-            topNav.configSelector.configOptions.get(0).setString("Expert Mode Off");
-            topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
-            println("LoadGUISettings: Expert Mode Off");
-            expertModeToggle = false;
-        }
+        // //Apply Expert Mode toggle
+        // if (loadExpertModeToggle) {
+        //     topNav.configSelector.configOptions.get(0).setString("Expert Mode On");
+        //     topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.expertPurple);
+        //     println("LoadGUISettings: Expert Mode On");
+        //     expertModeToggle = true;
+        // } else {
+        //     topNav.configSelector.configOptions.get(0).setString("Expert Mode Off");
+        //     topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
+        //     println("LoadGUISettings: Expert Mode Off");
+        //     expertModeToggle = false;
+        // }
 
-        //Apply Framerate
-        frameRateCounter = loadFramerate;
-        switch (frameRateCounter) {
-            case 0:
-                topNav.fpsButton.setString("24 fps");
-                frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-                break;
-            case 1:
-                topNav.fpsButton.setString("30 fps");
-                frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-                break;
-            case 2:
-                topNav.fpsButton.setString("45 fps");
-                frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-                break;
-            case 3:
-                topNav.fpsButton.setString("60 fps");
-                frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-                break;
-        }
+        // //Apply Framerate
+        // frameRateCounter = loadFramerate;
+        // switch (frameRateCounter) {
+        //     case 0:
+        //         topNav.fpsButton.setString("24 fps");
+        //         frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+        //         break;
+        //     case 1:
+        //         topNav.fpsButton.setString("30 fps");
+        //         frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+        //         break;
+        //     case 2:
+        //         topNav.fpsButton.setString("45 fps");
+        //         frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+        //         break;
+        //     case 3:
+        //         topNav.fpsButton.setString("60 fps");
+        //         frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+        //         break;
+        // }
 
-        //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.
-        loadApplyWidgetDropdownText();
+        // //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.
+        // loadApplyWidgetDropdownText();
 
-        //Apply Time Series Settings Last!!!
-        loadApplyTimeSeriesSettings();
+        // //Apply Time Series Settings Last!!!
+        // loadApplyTimeSeriesSettings();
 
-        //Force headplot to redraw if it is active
-        int hpWidgetNumber;
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            hpWidgetNumber = 6;
-        } else {
-            hpWidgetNumber = 5;
-        }
-        if (wm.widgets.get(hpWidgetNumber).isActive) {
-            w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-            println("Headplot is active: Redrawing");
-        }
+        // //Force headplot to redraw if it is active
+        // int hpWidgetNumber;
+        // if (eegDataSource == DATASOURCE_GANGLION) {
+        //     hpWidgetNumber = 6;
+        // } else {
+        //     hpWidgetNumber = 5;
+        // }
+        // if (wm.widgets.get(hpWidgetNumber).isActive) {
+        //     w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
+        //     println("Headplot is active: Redrawing");
+        // }
 
-        //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
-                // daniellasry: it seems the ganglion board does not like turning on the accelerometer
-                // immediately after activating channels. From what I can tell, the issue is in the
-                // firmware. This delay is a workaround for the issue.
-                // retiutut: Containing this fix to BLED112 only!
-                if (ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-                    delay(1000);
-                }
-                ganglion.accelStart(); //send message to hub
-            } else {
-                ganglion.accelStop(); //send message to hub
-            }
-        }
+        // //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
+        // if (eegDataSource == DATASOURCE_GANGLION) {
+        //     if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
+        //         // daniellasry: it seems the ganglion board does not like turning on the accelerometer
+        //         // immediately after activating channels. From what I can tell, the issue is in the
+        //         // firmware. This delay is a workaround for the issue.
+        //         // retiutut: Containing this fix to BLED112 only!
+        //         if (ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+        //             delay(1000);
+        //         }
+        //         ganglion.accelStart(); //send message to hub
+        //     } else {
+        //         ganglion.accelStop(); //send message to hub
+        //     }
+        // }
 
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1486,15 +1489,17 @@ class SoftwareSettings {
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
-            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+            } else if (dataSource ==  DATASOURCE_NOVAXR) {
                 filePath += fileNames[3];
+            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+                filePath += fileNames[4];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
                 if (_nchan == NCHAN_GANGLION) {
-                    filePath += fileNames[4];
-                } else if (_nchan == NCHAN_CYTON) {
                     filePath += fileNames[5];
-                } else {
+                } else if (_nchan == NCHAN_CYTON) {
                     filePath += fileNames[6];
+                } else {
+                    filePath += fileNames[7];
                 }
             }
         }
