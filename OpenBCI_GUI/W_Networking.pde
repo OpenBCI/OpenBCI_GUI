@@ -728,6 +728,10 @@ class W_Networking extends Widget {
                     networkActive = false;
                     return;
                 }
+            } else {
+	                turnOffButton();        // Change apppearance of button
+	                stopNetwork();          // Stop streams
+	                output("Network Stream Stopped");
             }
         // or if the networking guide button was pressed...
         } else if (guideButton.isActive && guideButton.isMouseHere()) {

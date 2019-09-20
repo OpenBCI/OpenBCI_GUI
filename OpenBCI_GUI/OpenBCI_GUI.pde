@@ -56,7 +56,7 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.5";
+String localGUIVersionString = "v4.1.6-beta.0";
 String localGUIVersionDate = "September 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -821,9 +821,9 @@ void initSystem() throws Exception {
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
     
     if (eegDataSource == DATASOURCE_CYTON) {
-        if (hub.getFirmwareVersion() == null && hub.getProtocol() == PROTOCOL_WIFI) {
+        if (hub.getFirmwareVersion() == null && hub.getProtocol().equals(PROTOCOL_WIFI)) {
             println("Cyton+WiFi: Unable to find board firmware version");
-        } else if (hub.getFirmwareVersion() == "v1.0.0") {
+        } else if (hub.getFirmwareVersion().equals("v1.0.0")) {
             abandonInit = true;
         } else {
             //println("FOUND FIRMWARE FROM HUB == " + hub.getFirmwareVersion());
