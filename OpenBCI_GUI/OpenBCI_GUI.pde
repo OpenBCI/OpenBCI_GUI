@@ -824,6 +824,7 @@ void initSystem() throws Exception {
         if (hub.getFirmwareVersion() == null && hub.getProtocol().equals(PROTOCOL_WIFI)) {
             println("Cyton+WiFi: Unable to find board firmware version");
         } else if (hub.getFirmwareVersion().equals("v1.0.0")) {
+            //this means the firmware is very out of date, and commands may not work, so abandon init
             abandonInit = true;
         } else {
             //println("FOUND FIRMWARE FROM HUB == " + hub.getFirmwareVersion());
@@ -838,13 +839,13 @@ void initSystem() throws Exception {
         haltSystem();
         if (eegDataSource == DATASOURCE_CYTON) {
             //Normally, this message appears if you have a dongle plugged in, and the Cyton is not On, or on the wrong channel.
-            if (!cyton.daisyNotAttached) {
-                outputError("Failed to connect to data source. Check that the device is powered on and in range. Also, try pressing AUTOSCAN.");
-            } else {
+            if (cyton.daisyNotAttached) {
                 outputError("Daisy is not attached to the Cyton board. Check connection or select 8 Channels.");
+            } else {
+                outputError("Check that the device is powered on and in range. Also, try AUTOSCAN. Otherwise, Cyton firmware is out of date.");
             }
         } else {
-            outputError("Failed to connect to data source. Check that the device is powered on and in range.");
+            outputError("Failed to connect. Check that the device is powered on and in range.");
         }
         controlPanel.open();
     }
@@ -1321,7 +1322,7 @@ void systemDraw() { //for drawing to the screen
         if (millis() - timeOfInit > settings.initTimeoutThreshold) {
             haltSystem();
             initSystemButton.but_txt = "START SESSION";
-            output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI & USB Dongle. Then retry Initialization.");
+            output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
             controlPanel.open();
             attemptingToConnect = false;
         }
