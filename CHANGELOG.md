@@ -1,5 +1,5 @@
 # v4.1.6
-Use OpenBCIHub v2.0.9 please.
+Use OpenBCIHub v2.1.0 please.
 
 ## Beta 0
 
