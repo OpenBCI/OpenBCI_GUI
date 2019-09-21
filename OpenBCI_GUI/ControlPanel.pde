@@ -223,20 +223,6 @@ public void controlEvent(ControlEvent theEvent) {
         output("Wifi Device Name = " + wifi_portName);
     }
 
-    /*
-    if (theEvent.isFrom("sdTimes")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        sdSettingString = (String)bob.get("headline");
-        sdSetting = int(theEvent.getValue());
-        if (sdSetting != 0) {
-            output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
-        } else {
-            output("OpenBCI microSD Setting = " + sdSettingString);
-        }
-        verbosePrint("SD setting = " + sdSetting);
-    }
-    */
-
     if (theEvent.isFrom("sdTimes")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         sdSettingString = (String)bob.get("headline");
