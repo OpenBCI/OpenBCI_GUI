@@ -121,6 +121,9 @@ static class ConsoleWindow extends PApplet {
             this.heightOfLastScreen = height;
         }
         if (this.screenHasBeenResized) {
+            //setGraphics() is very important, it lets the cp5 elements know where the origin is.
+            //Without this, cp5 elements won't work after screen is resized.
+            //This also happens in most widgets when the main GUI window is resized.
             logApplet = this;
             cp5.setGraphics(logApplet, 0, 0);
 
