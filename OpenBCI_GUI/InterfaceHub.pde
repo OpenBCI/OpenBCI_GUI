@@ -505,17 +505,19 @@ class Hub {
         String settingsString = "Settings Loaded! ";
         if (eegDataSource == DATASOURCE_CYTON) {
             firmwareString += firmwareVersion;
+            if (settings.loadErrorCytonEvent == true) {
+                outputError("Connection Error: Failed to apply channel settings to Cyton.");
+            } else {
+                outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
+            }
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             firmwareString = ganglion_portName;
+            outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
         } else {
             firmwareString = "";
         }
-        //This success message appears in Ganglion mode
-        if (settings.loadErrorCytonEvent == true) {
-            outputError("Connection Error: Failed to apply channel settings to Cyton.");
-        } else {
-            outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
-        }
+        
+        
         portIsOpen = true;
         controlPanel.hideAllBoxes();
     }

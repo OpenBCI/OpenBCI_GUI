@@ -3,6 +3,9 @@ Use OpenBCIHub v2.0.9 please.
 
 ## Beta 0
 
+### Improvements
+* GUI error message when using old Cyton firmware #597
+
 ### Bug Fixes
 * Cyton+WiFi unable to start session #555 #590
 * Networking start/stop stream #593
