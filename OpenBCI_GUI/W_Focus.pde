@@ -56,6 +56,8 @@ class W_Focus extends Widget {
     // two sliders for alpha and one slider for beta
     FocusSlider sliderAlphaMid, sliderBetaMid;
     FocusSlider_Static sliderAlphaTop;
+    Button infoButton;
+    int infoButtonSize = 18;
 
     W_Focus(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -76,6 +78,15 @@ class W_Focus extends Widget {
         //Dropdowns.
         addDropdown("ChooseFocusColor", "Theme", Arrays.asList("Green", "Orange", "Cyan"), settings.focusThemeSave);
         addDropdown("StrokeKeyWhenFocused", "KeyPress", Arrays.asList("OFF", "UP", "SPACE"), settings.focusKeySave);
+
+        //More info button
+        infoButton = new Button(x + w - dropdownWidth * 2 - infoButtonSize - 10, y - navH + 2, infoButtonSize, infoButtonSize, "?", 14);
+        infoButton.setCornerRoundess((int)(navHeight-6));
+        infoButton.setFont(p5,12);
+        infoButton.setColorNotPressed(color(57,128,204));
+        infoButton.setFontColorNotActive(color(255));
+        infoButton.setHelpText("Click this button to view details on the Focus Widget.");
+        infoButton.hasStroke(false);
 
         // prepare simulate keystroking
         try {
@@ -326,7 +337,8 @@ class W_Focus extends Widget {
             fill(cDark);
             text("This widget recognizes a focused mental state by looking at alpha and beta wave levels on channel 1 & 2. For better result, try setting the smooth at 0.98 in FFT plot.\n\nThe algorithm thinks you are focused when the alpha level is between 0.7~2uV and the beta level is between 0~0.7 uV, otherwise it thinks you are not focused. It is designed based on Jordan Frand’s brainwave and tested on other subjects, and you can playback Jordan's file in W_Focus folder.\n\nYou can turn on KeyPress and use your focus play a game, so whenever you are focused, the specified UP arrow or SPACE key will be pressed down, otherwise it will be released. You can also try out the Arduino output feature, example and instructions are included in W_Focus folder. For more information, contact wangshu.sun@hotmail.com.", rp*1.5, rp*1.5, w-rp*3, h-rp*3);
         }
-        // draw the button that toggles information
+        
+        /*
         noStroke();
         fill(cDark);
         ellipse(xb, yb, rb, rb);
@@ -337,17 +349,20 @@ class W_Focus extends Widget {
         } else {
             text("?", xb, yb);
         }
+        */
 
         //----------------- revert origin point of draw to default -----------------
         translate(-x, -y);
         textAlign(LEFT, BASELINE);
-
+        // draw the button that toggles information
+        infoButton.draw();
         popStyle();
-
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+        infoButton.setPos(x + w - dropdownWidth * 2 - infoButtonSize - 10, y - navH + 2);
 
         update_graphic_parameters();
 
@@ -385,6 +400,10 @@ class W_Focus extends Widget {
             }
         }
 
+        if (infoButton.isMouseHere()) {
+            infoButton.setIsActive(true);
+        }
+
         // sliders
         sliderAlphaMid.mousePressed();
         sliderAlphaTop.mousePressed();
@@ -393,6 +412,11 @@ class W_Focus extends Widget {
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+
+        if (infoButton.isActive && infoButton.isMouseHere()) {
+            showAbout = !showAbout;
+        }
+        infoButton.setIsActive(false);
 
         // sliders
         sliderAlphaMid.mouseReleased();

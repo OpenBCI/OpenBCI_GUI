@@ -5,6 +5,7 @@ Use OpenBCIHub v2.0.9 please.
 
 ### Improvements
 * GUI error message when using old Cyton firmware #597
+* Update Focus widget help button
 
 ### Bug Fixes
 * Cyton+WiFi unable to start session #555 #590
