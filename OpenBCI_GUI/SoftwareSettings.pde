@@ -43,6 +43,13 @@ class SoftwareSettings {
     //impose minimum gui width and height in openBCI_GUI.pde
     int minGUIWidth = 705;
     int minGUIHeight = 400;
+    //for screen resizing
+    boolean screenHasBeenResized = false;
+    float timeOfLastScreenResize = 0;
+    float timeOfGUIreinitialize = 0;
+    int reinitializeGUIdelay = 125;
+    int widthOfLastScreen = 0;
+    int heightOfLastScreen = 0;
     //default layout variables
     int currentLayout;
     //Used to time the GUI intro animation

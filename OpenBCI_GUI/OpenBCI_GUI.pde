@@ -198,14 +198,7 @@ boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
 StringBuilder board_message;
 
-//for screen resizing
-boolean screenHasBeenResized = false;
-float timeOfLastScreenResize = 0;
-float timeOfGUIreinitialize = 0;
-int reinitializeGUIdelay = 125;
-//Tao's variables
-int widthOfLastScreen = 0;
-int heightOfLastScreen = 0;
+
 
 //set window size
 int win_x = 1024;  //window width
@@ -376,8 +369,8 @@ void delayedSetup() {
     smooth(); //turn this off if it's too slow
 
     surface.setResizable(true);  //updated from frame.setResizable in Processing 2
-    widthOfLastScreen = width; //for screen resizing (Thank's Tao)
-    heightOfLastScreen = height;
+    settings.widthOfLastScreen = width; //for screen resizing (Thank's Tao)
+    settings.heightOfLastScreen = height;
 
     setupContainers();
 
@@ -386,8 +379,8 @@ void delayedSetup() {
         public void componentResized(ComponentEvent e) {
             if (e.getSource()==frame) {
                 println("OpenBCI_GUI: setup: RESIZED");
-                screenHasBeenResized = true;
-                timeOfLastScreenResize = millis();
+                settings.screenHasBeenResized = true;
+                settings.timeOfLastScreenResize = millis();
                 // initializeGUI();
             }
         }
@@ -1149,11 +1142,11 @@ void systemUpdate() { // for updating data values and variables
         //updates while in system control panel before START SYSTEM
         controlPanel.update();
 
-        if (widthOfLastScreen != width || heightOfLastScreen != height) {
+        if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
             imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
-            widthOfLastScreen = width;
-            heightOfLastScreen = height;
+            settings.widthOfLastScreen = width;
+            settings.heightOfLastScreen = height;
             //println("W = " + width + " || H = " + height);
         }
     }
@@ -1200,25 +1193,25 @@ void systemUpdate() { // for updating data values and variables
         // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
 
         //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
-        if (widthOfLastScreen != width || heightOfLastScreen != height) {
+        if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
             println("OpenBCI_GUI: setup: RESIZED");
-            screenHasBeenResized = true;
-            timeOfLastScreenResize = millis();
-            widthOfLastScreen = width;
-            heightOfLastScreen = height;
+            settings.screenHasBeenResized = true;
+            settings.timeOfLastScreenResize = millis();
+            settings.widthOfLastScreen = width;
+            settings.heightOfLastScreen = height;
         }
 
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
-        if (screenHasBeenResized) {
+        if (settings.screenHasBeenResized) {
             ourApplet = this; //reset PApplet...
             imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
         }
-        if (screenHasBeenResized == true && (millis() - timeOfLastScreenResize) > reinitializeGUIdelay) {
-            screenHasBeenResized = false;
+        if (settings.screenHasBeenResized == true && (millis() - settings.timeOfLastScreenResize) > settings.reinitializeGUIdelay) {
+            settings.screenHasBeenResized = false;
             println("systemUpdate: reinitializing GUI");
-            timeOfGUIreinitialize = millis();
+            settings.timeOfGUIreinitialize = millis();
         }
 
         if (wm.isWMInitialized) {
@@ -1273,7 +1266,7 @@ void systemDraw() { //for drawing to the screen
         }
 
         //wait 1 second for GUI to reinitialize
-        if ((millis() - timeOfGUIreinitialize) > reinitializeGUIdelay) {
+        if ((millis() - settings.timeOfGUIreinitialize) > settings.reinitializeGUIdelay) {
             // println("attempting to draw GUI...");
             try {
                 // println("GUI DRAW!!! " + millis());
@@ -1281,8 +1274,8 @@ void systemDraw() { //for drawing to the screen
                 wm.draw();
             } catch (Exception e) {
                 println(e.getMessage());
-                reinitializeGUIdelay = reinitializeGUIdelay * 2;
-                println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + reinitializeGUIdelay);
+                settings.reinitializeGUIdelay = settings.reinitializeGUIdelay * 2;
+                println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + settings.reinitializeGUIdelay);
             }
         } else {
             //reinitializing GUI after resize
