@@ -272,6 +272,10 @@ char[][] impedanceCheckValues = new char [nchan][2];
 
 SoftwareSettings settings = new SoftwareSettings();
 
+
+//Spectrogram vars
+Minim minim;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -358,6 +362,8 @@ void setup() {
     // moving the setup to a separate thread solves this. We just have to make sure not to
     // start drawing until delayed setup is done.
     thread("delayedSetup");
+
+    minim = new Minim(this);
 }
 
 void delayedSetup() {

@@ -29,6 +29,7 @@ W_DigitalRead w_digitalRead;
 W_MarkerMode w_markermode;
 W_playback w_playback;
 W_SSVEP w_ssvep;
+W_Spectrogram w_spectrogram;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -98,6 +99,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_ssvep = new W_SSVEP(_this);
     w_ssvep.setTitle("SSVEP_beta");
     addWidget(w_ssvep, w);
+
+    w_spectrogram = new W_Spectrogram(_this);
+    w_spectrogram.setTitle("Spectrogram");
+    addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
     if(eegDataSource == DATASOURCE_CYTON){
