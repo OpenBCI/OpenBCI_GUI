@@ -32,7 +32,6 @@ static class ConsoleWindow extends PApplet {
     //for screen resizing
     private boolean screenHasBeenResized = false;
     private float timeOfLastScreenResize = 0;
-    private float timeOfLogReinitialize = 0;
     private int widthOfLastScreen = defaultWidth;
     private int heightOfLastScreen = defaultHeight;
 
@@ -136,7 +135,6 @@ static class ConsoleWindow extends PApplet {
         //re-initialize console log if screen has been resized and it's been more than 1 seccond (to prevent reinitialization happening too often)
         if (this.screenHasBeenResized == true && (millis() - this.timeOfLastScreenResize) > 1000) {
             this.screenHasBeenResized = false;
-            this.timeOfLogReinitialize = millis();
         }
     }
 
