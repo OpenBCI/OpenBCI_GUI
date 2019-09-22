@@ -8,9 +8,6 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-import ddf.minim.analysis.*;
-import ddf.minim.*;
-
 class W_Spectrogram extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
