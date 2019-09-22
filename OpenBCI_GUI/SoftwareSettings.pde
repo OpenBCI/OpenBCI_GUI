@@ -111,6 +111,8 @@ class SoftwareSettings {
     int[] freqsSave;
     boolean[] channelActivitySave;
     int numSSVEPs;
+    //Used to check if a playback file has data
+    int minNumRowsPlaybackFile = int(getSampleRateSafe());
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;

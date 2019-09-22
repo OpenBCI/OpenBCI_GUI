@@ -198,8 +198,6 @@ boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
 StringBuilder board_message;
 
-
-
 //set window size
 int win_x = 1024;  //window width
 int win_y = 768; //window height
@@ -232,9 +230,10 @@ PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
 
+//Used for playback file
 boolean has_processed = false;
 boolean isOldData = false;
-//Used for playback file
+boolean playbackFileIsEmpty = false;
 int indices = 0;
 //# columns used by a playback file determines number of channels
 final int totalColumns4ChanThresh = 10;
@@ -257,7 +256,6 @@ boolean hubTimerHasStarted = false;
 int hubTimerCounter; //Count how many times GUI tries to connect to Hub
 int hubTimerLimit = 8; //Allow up to 8 tries for GUI to connect to Hub
 int hubTimerInterval = 2500; //try every 2.5 seconds, 8*2.5=20seconds
-
 
 PApplet ourApplet;
 
@@ -289,7 +287,7 @@ void settings() {
         size(976, 742, P2D);
     } else {
         //default 1024x768 resolution with 2D graphics
-        size(1024, 768, P2D);
+        size(win_x, win_y, P2D);
     }
 }
 

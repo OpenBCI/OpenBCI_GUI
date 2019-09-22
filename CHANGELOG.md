@@ -12,6 +12,7 @@ Use OpenBCIHub v2.1.0 please.
 * Cyton+WiFi unable to start session #555 #590
 * Networking: Start/Stop stream button behavior #593
 * Networking: Only show Pulse datatype for Cyton(Live)
+* Show error when loading empty playback file and delete file from history
 
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.

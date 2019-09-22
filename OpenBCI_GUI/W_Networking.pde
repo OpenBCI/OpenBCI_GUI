@@ -130,7 +130,6 @@ class W_Networking extends Widget {
         //Only show pulse data type when using Cyton in Live
         if (eegDataSource != DATASOURCE_CYTON) {
             dataTypes.remove("Pulse");
-            println(dataTypes);
         }
         defaultBaud = "115200";
         baudRates = Arrays.asList(settings.nwBaudRatesArray);

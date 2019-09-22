@@ -199,15 +199,23 @@ void playbackSelectedWidgetButton(File selection) {
     } else {
         println("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
         playbackFileSelected(selection.getAbsolutePath(), selection.getName());
-        reInitAfterPlaybackSelected();
+        if (playbackFileIsEmpty) {
+            haltLoadingFile(selection.getAbsolutePath());
+        } else {
+            reInitAfterPlaybackSelected();
+        }
     }
 }
 
 //Activated when user selects a file using the recent file MenuList
-void userSelectedPlaybackMenuList (String fullPath, int listItem) {
-    if (new File(fullPath).isFile()) {
-        playbackFileSelected (fullPath, listItem);
-        reInitAfterPlaybackSelected();
+void userSelectedPlaybackMenuList (String filePath, int listItem) {
+    if (new File(filePath).isFile()) {
+        playbackFileSelected(filePath, listItem);
+        if (playbackFileIsEmpty) {
+            haltLoadingFile(filePath);
+        } else {
+            reInitAfterPlaybackSelected();
+        }
     } else {
         outputError("W_Playback: Selected file does not exist. Try another file or clear settings to remove this entry.");
     }
@@ -241,6 +249,10 @@ void playbackFileSelected(File selection) {
         println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
         //Set the name of the file
         playbackFileSelected(selection.getAbsolutePath(), selection.getName());
+        if (playbackFileIsEmpty) {
+            haltLoadingFile(selection.getAbsolutePath());
+            return;
+        }
     }
 }
 
@@ -259,6 +271,10 @@ void playbackFileSelected (String longName, int listItem) {
         playbackHistoryFileExists = false;
     }
     playbackFileSelected(longName, shortName);
+    if (playbackFileIsEmpty) {
+        haltLoadingFile(longName);
+        return;
+    }
 }
 
 //Handles the work for the above two cases
@@ -267,6 +283,7 @@ void playbackFileSelected (String longName, String shortName) {
     playbackData_ShortName = shortName;
     //Process the playback file
     processNewPlaybackFile();
+    if (playbackFileIsEmpty) return;
     //Determine the number of channels
     determineNumChanFromFile(playbackData_table);
     //Output new playback settings to GUI as success
@@ -282,7 +299,7 @@ void playbackFileSelected (String longName, String shortName) {
         playbackHistoryFileExists = false;
     }
     //add playback file that was processed to the JSON history
-    savePlaybackFileToHistory(playbackData_ShortName);
+    savePlaybackFileToHistory(longName);
 }
 
 void processNewPlaybackFile() { //Also used in DataLogging.pde
@@ -317,19 +334,36 @@ void determineNumChanFromFile(Table datatable) {
 void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
     //open and load the data file
     println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
+    playbackFileIsEmpty = false; //reset this flag each time playback data is loaded
     try {
         playbackData_table = new Table_CSV(playbackData_fname);
         //removing first column of data from data file...the first column is a time index and not eeg data
         playbackData_table.removeColumn(0);
     } catch (Exception e) {
-        println("OpenBCI_GUI: initSystem: could not open file for playback: " + playbackData_fname);
-        println("   : quitting...");
-        hub.killAndShowMsg("Could not open file for playback: " + playbackData_fname);
+        println("initPlaybackFileToTable: Encountered an error while loading " + playbackData_fname);
     }
 
     println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
+    
+    //If a playback file has less than one second of data, throw an error using a flag
+    if (playbackData_table.getRowCount() <= settings.minNumRowsPlaybackFile) {
+        playbackFileIsEmpty = true;
+    }
 }
 
+void haltLoadingFile(String _filePath) {
+    if (systemMode == SYSTEMMODE_POSTINIT) {
+        abandonInit = true;
+        initSystemButton.setString("START SESSION");
+        controlPanel.open();
+        haltSystem();
+    }
+    //Go ahead and remove this file from the Playback History
+    JSONObject playbackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
+    JSONArray recentFilesArray = playbackHistoryJSON.getJSONArray("playbackFileHistory");
+    removePlaybackFileFromHistory(recentFilesArray, _filePath);
+    outputError("Playback file appears empty. Try loading a different file.");
+}
 
 void reinitializeCoreDataAndFFTBuffer() {
     //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
@@ -366,7 +400,7 @@ void reinitializeCoreDataAndFFTBuffer() {
 
 }
 
-void savePlaybackFileToHistory(String fileNameToAdd) {
+void savePlaybackFileToHistory(String fileName) {
     int maxNumHistoryFiles = 36;
     if (playbackHistoryFileExists) {
         println("Found user playback history file!");
@@ -375,14 +409,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         //println("ARRAYSIZE-Check1: " + int(recentFilesArray.size()));
         //Recent file has recentFileNumber=0, and appears at the end of the JSON array
         //check if already in the list, if so, remove from the list
-        for (int i = 0; i < recentFilesArray.size(); i++) {
-            JSONObject playbackFile = recentFilesArray.getJSONObject(i);
-            //println("CHECKING " + i + " : " + playbackFile.getString("id") + " == " + fileNameToAdd + " ?");
-            if (playbackFile.getString("id").equals(fileNameToAdd)) {
-                recentFilesArray.remove(i);
-                //println("REMOVED: " + fileNameToAdd);
-            }
-        }
+        removePlaybackFileFromHistory(recentFilesArray, playbackData_fname);
         //next, increment fileNumber of all current entries +1
         for (int i = 0; i < recentFilesArray.size(); i++) {
             JSONObject playbackFile = recentFilesArray.getJSONObject(i);
@@ -422,7 +449,7 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         //save selected playback file to position 1 in recent file history
         JSONObject mostRecentFile = new JSONObject();
         mostRecentFile.setInt("recentFileNumber", 0);
-        mostRecentFile.setString("id", fileNameToAdd);
+        mostRecentFile.setString("id", playbackData_ShortName);
         mostRecentFile.setString("filePath", playbackData_fname);
         newHistoryFileArray.setJSONObject(0, mostRecentFile);
         //newHistoryFile.setJSONArray("")
@@ -434,5 +461,17 @@ void savePlaybackFileToHistory(String fileNameToAdd) {
         //now the file exists!
         println("Playback history JSON has been made!");
         playbackHistoryFileExists = true;
+    }
+}
+
+void removePlaybackFileFromHistory(JSONArray array, String _filePath) {
+    //check if already in the list, if so, remove from the list
+    for (int i = 0; i < array.size(); i++) {
+        JSONObject playbackFile = array.getJSONObject(i);
+        //println("CHECKING " + i + " : " + playbackFile.getString("id") + " == " + fileName + " ?");
+        if (playbackFile.getString("filePath").equals(_filePath)) {
+            array.remove(i);
+            //println("REMOVED: " + fileName);
+        }
     }
 }
