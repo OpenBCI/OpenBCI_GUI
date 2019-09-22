@@ -1,12 +1,12 @@
 
-////////////////////////////////////////////////////
-//
-//    W_Spectrogram.pde
-//
-//
-//    Created by: Richard Waltman, September 2019
-//
-///////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+//                                                  //
+//                  W_Spectrogram.pde               //
+//                                                  //
+//                                                  //
+//    Created by: Richard Waltman, September 2019   //
+//                                                  //
+//////////////////////////////////////////////////////
 
 import ddf.minim.analysis.*;
 import ddf.minim.*;
@@ -35,11 +35,6 @@ class W_Spectrogram extends Widget {
         xPos = x;
         prevW = w;
         prevH = h;
-
-        // create a file object (can be a MP3 file or a WAV file)
-        //jingle = minim.loadFile("jingle.mp3", 512);
-        //jingle = minim.loadFile(dataPath("K's Choice - Not An Addict.mp3"), 512);
-        //jingle.loop();
 
         img = createImage(w, h, RGB);
 
@@ -166,16 +161,6 @@ class W_Spectrogram extends Widget {
         //put your code here...
         if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
             selectInput("Select a sound file for playback:", "loadSoundFromFile");
-            /*
-            if (!this.isActive) {
-                //jingle = minim.loadFile("K's Choice - Not An Addict.mp3", 512);
-                jingle = minim.loadFile("Jimmy eat world - Sweetness.mp3", 512);
-                jingle.loop();
-                start();
-            } else {
-                stop();
-            }
-            */
         }
 
         widgetTemplateButton.setIsActive(false);
@@ -188,7 +173,6 @@ class W_Spectrogram extends Widget {
 
         // loop the file
         jingle.loop();
-        
         
         // create an FFT object that has a time-domain buffer the same size as jingle's sample buffer
         // note that this needs to be a power of two 
@@ -212,37 +196,7 @@ class W_Spectrogram extends Widget {
         //super.stop();
     }
 
-    /*
-    void loadSoundFromFile() {
-        //w_spectrogram.jingle = w_spectrogram.minim.loadFile(selection.getAbsolutePath(), 512);
-        jingle = minim.loadFile("/Music/Katie's Music/K's Choice - Not An Addict.mp3", 512);
-        w_spectrogram.start();
-    }
-    */
 };
-/*
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void Dropdown1(int n){
-    println("Item " + (n+1) + " selected from Dropdown 1");
-    if(n==0){
-        //do this
-    } else if(n==1){
-        //do this instead
-    }
-
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-}
-
-void Dropdown2(int n){
-    println("Item " + (n+1) + " selected from Dropdown 2");
-    closeAllDropdowns();
-}
-
-void Dropdown3(int n){
-    println("Item " + (n+1) + " selected from Dropdown 3");
-    closeAllDropdowns();
-}
-*/
 
 void loadSoundFromFile(File selection) {
     if (w_spectrogram.isActive) w_spectrogram.stop();
