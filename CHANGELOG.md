@@ -4,6 +4,7 @@ Use OpenBCIHub v2.1.0 please.
 ## Beta 0
 
 ### Improvements
+* Cyton+Dongle AutoConnect Button!
 * GUI error message when using old Cyton firmware #597
 * Update Focus widget help button
 * Console Log window UI/UX update
