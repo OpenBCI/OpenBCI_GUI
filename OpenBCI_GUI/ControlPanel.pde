@@ -1790,7 +1790,6 @@ class SerialBox {
         padding = _padding;
 
         autoConnect = new Button(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO", fontInfo.buttonLabel_size);
-        //refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         popOutRadioConfigButton = new Button(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
         popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
 
@@ -1826,26 +1825,21 @@ class SerialBox {
     }
 
     public void attemptAutoConnectCyton() {
-
+        //Fetch the number of com ports...
         int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
-        println("COM PORT LIST SIZE = " + numComPorts);
-        
+        //Then look for matching cyton dongle
         for (int i = 0; i < numComPorts; i++) {
             String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
             String[] foundCytonPort = match(comPort, "^/dev/tty.usbserial-DM.*$");
             if (foundCytonPort != null) {  // If not null, then a match was found
-                // This will print to the console, since a match was found.
-                //println("Found a match " + foundCytonPort[0]);
                 openBCI_portName = foundCytonPort[0];
-                output("AutoConnect: OpenBCI Port Name = " + openBCI_portName);
+                //Perform the same action as when a session is started using the button
                 initButtonPressed();
                 return;
             } else {
                 outputError("AutoConnect: No match found...");
             }
         }
-        //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        //openBCI_portName = (String)bob.get("headline");
     }
 };
 
@@ -1861,11 +1855,7 @@ class ComPortBox {
         padding = _padding;
         isShowing = false;
 
-        // autoconnect = new Button(x + padding, y + padding*3 + 4, w - padding*2, 24, "AUTOCONNECT AND START SYSTEM", fontInfo.buttonLabel_size);
         refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-        //popOutRadioConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,"Manual >",fontInfo.buttonLabel_size);
-        //popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
-
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
         // println(w-padding*2);
         serialList.setPosition(x + padding, y + padding*3 + 8);
@@ -1891,9 +1881,6 @@ class ComPortBox {
         text("SERIAL/COM PORT", x + padding, y + padding);
         refreshPort.draw();
         popStyle();
-    }
-
-    public void refreshSerialList() {
     }
 };
 
