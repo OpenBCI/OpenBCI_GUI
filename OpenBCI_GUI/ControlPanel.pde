@@ -783,6 +783,10 @@ class ControlPanel {
                             refreshPort.setIsActive(true);
                             refreshPort.wasPressed = true;
                         }
+                        if (serialBox.autoConnect.isMouseHere()) {
+                            serialBox.autoConnect.setIsActive(true);
+                            serialBox.autoConnect.wasPressed = true;
+                        }
                     }
 
                     if (cyton.isWifi()) {
@@ -1115,19 +1119,24 @@ class ControlPanel {
     //mouse released in control panel
     public void CPmouseReleased() {
         //verbosePrint("CPMouseReleased: CPmouseReleased start...");
-        if(popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed){
+        if (popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed) {
             popOutRadioConfigButton.wasPressed = false;
             popOutRadioConfigButton.setIsActive(false);
             if (cyton.isSerial()) {
-                if(rcBox.isShowing){
+                if (rcBox.isShowing) {
                     hideRadioPopoutBox();
-                }
-                else{
+                } else {
                     rcBox.isShowing = true;
                     rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("Manual <");
                 }
             }
+        }
+
+        if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
+            serialBox.autoConnect.wasPressed = false;
+            serialBox.autoConnect.setIsActive(false);
+            serialBox.attemptAutoConnectCyton();
         }
 
         if (rcBox.isShowing) {
@@ -1655,7 +1664,7 @@ public void initButtonPressed(){
                 println("Static IP address of " + wifi_ipAddress);
             }
             midInit = true;
-            println("Calling initSystem()");
+            println("initButtonPressed: Calling initSystem()");
             try {
                 initSystem(); //found in OpenBCI_GUI.pde
             } catch (Exception e) {
@@ -1816,7 +1825,27 @@ class SerialBox {
         }
     }
 
-    public void refreshSerialList() {
+    public void attemptAutoConnectCyton() {
+
+        int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
+        println("COM PORT LIST SIZE = " + numComPorts);
+        
+        for (int i = 0; i < numComPorts; i++) {
+            String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
+            String[] foundCytonPort = match(comPort, "^/dev/tty.usbserial-DM.*$");
+            if (foundCytonPort != null) {  // If not null, then a match was found
+                // This will print to the console, since a match was found.
+                //println("Found a match " + foundCytonPort[0]);
+                openBCI_portName = foundCytonPort[0];
+                output("AutoConnect: OpenBCI Port Name = " + openBCI_portName);
+                initButtonPressed();
+                return;
+            } else {
+                outputError("AutoConnect: No match found...");
+            }
+        }
+        //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+        //openBCI_portName = (String)bob.get("headline");
     }
 };
 
@@ -1862,11 +1891,6 @@ class ComPortBox {
         text("SERIAL/COM PORT", x + padding, y + padding);
         refreshPort.draw();
         popStyle();
-
-        
-        if (cyton.isSerial()) {
-            //popOutRadioConfigButton.draw();
-        }
     }
 
     public void refreshSerialList() {
@@ -3058,7 +3082,7 @@ class RadioConfigBox {
     int x, y, w, h, padding; //size and position
     String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
     String last_message = initial_message;
-    boolean isShowing;
+    public boolean isShowing;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -3537,5 +3561,9 @@ public class MenuList extends controlP5.Controller {
             //println("Item " + theIndex + " does not exist.");
         }
         return m;
+    }
+
+    int getListSize() {
+       return items.size(); 
     }
 };
