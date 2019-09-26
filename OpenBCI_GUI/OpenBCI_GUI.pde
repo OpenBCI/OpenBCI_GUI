@@ -87,8 +87,9 @@ UDP udpRX;
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
-final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
-final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
+final int DATASOURCE_NOVAXR = 2;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
+final int DATASOURCE_PLAYBACKFILE = 3;  //playback from a pre-recorded text file
+final int DATASOURCE_SYNTHETIC = 4;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
 final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interface
@@ -109,6 +110,8 @@ int nextPlayback_millis = -100; //any negative number
 // Initialize boards for constants
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
+NovaXR novaXR = new NovaXR(); //dummy creation to get access to constants, create real one later
+
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
 Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
@@ -120,6 +123,8 @@ String ganglion_portName = "N/A";
 
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
+
+String novaXR_ipAddress = "192.168.1.171";
 
 final static String PROTOCOL_BLE = "ble";
 final static String PROTOCOL_BLED112 = "bled112";
@@ -772,6 +777,8 @@ void initSystem() throws Exception {
                 }
             }
             break;
+        case DATASOURCE_NOVAXR:
+            novaXR = new NovaXR(this, novaXR_ipAddress);
         default:
             break;
         }
@@ -943,6 +950,10 @@ void startRunning() {
         if (cyton != null) {
             cyton.startDataTransfer();
         }
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
+        if (novaXR != null) {
+            novaXR.startDataTransfer();
+        }
     }
     isRunning = true;
 }
@@ -957,9 +968,13 @@ void stopRunning() {
         if (ganglion != null) {
             ganglion.stopDataTransfer();
         }
-    } else {
+    } else if (eegDataSource == DATASOURCE_CYTON) {
         if (cyton != null) {
             cyton.stopDataTransfer();
+        }
+    }else if (eegDataSource == DATASOURCE_NOVAXR) {
+        if (novaXR != null) {
+            novaXR.stopDataTransfer();
         }
     }
 
@@ -1152,7 +1167,6 @@ void systemUpdate() { // for updating data values and variables
         if (isRunning) {
             //get the data, if it is available
             pointCounter = getDataIfAvailable(pointCounter);
-
             //has enough data arrived to process it and update the GUI?
             if (pointCounter >= nPointsPerUpdate) {
                  //reset for next time
@@ -1168,11 +1182,11 @@ void systemUpdate() { // for updating data values and variables
             //New feature to address #461, defined in DataLogging.pde
             //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
             //Don't check duration if user has selected "No Limit"
-            if (outputDataSource == OUTPUT_SOURCE_ODF
-                && eegDataSource < DATASOURCE_PLAYBACKFILE
-                && settings.limitOBCILogFileDuration()) {
-                    fileoutput_odf.limitRecordingFileDuration();
-            }
+            // if (outputDataSource == OUTPUT_SOURCE_ODF
+            //     && eegDataSource < DATASOURCE_PLAYBACKFILE
+            //     && settings.limitOBCILogFileDuration()) {
+            //         fileoutput_odf.limitRecordingFileDuration();
+            // }
 
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
@@ -1216,6 +1230,8 @@ void systemUpdate() { // for updating data values and variables
             wm.update();
         }
     }
+
+    novaXR.update();
 }
 
 void systemDraw() { //for drawing to the screen

@@ -307,6 +307,7 @@ class ControlPanel {
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
+    NovaXRBox novaXRBox;
     SDConverterBox sdConverterBox;
     NoHubBox noHubBox;
     BLEBox bleBox;
@@ -367,8 +368,9 @@ class ControlPanel {
         sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
         recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
 
-        comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
-        rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
+        novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
+
+        rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
         channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
         pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
@@ -433,6 +435,8 @@ class ControlPanel {
         recentPlaybackBox.update();
         playbackFileBox.update();
         sdConverterBox.update();
+
+        novaXRBox.update();
 
         sdBox.update();
         rcBox.update();
@@ -555,6 +559,9 @@ class ControlPanel {
                 //cp5.get(MenuList.class, "sdTimes").setVisible(false);
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
+
+            } else if (eegDataSource == DATASOURCE_NOVAXR) {
+                novaXRBox.draw();
 
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 //set other CP5 controllers invisible
@@ -1663,6 +1670,9 @@ public void initButtonPressed(){
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
+
+            novaXR_ipAddress = cp5.get(Textfield.class, "novaXR_IP").getText();
+
             midInit = true;
             println("initButtonPressed: Calling initSystem()");
             try {
@@ -1751,6 +1761,7 @@ class DataSourceBox {
         sourceList.setPosition(x + padding, y + padding*2 + 13);
         sourceList.addItem(makeItem("LIVE (from Cyton)"));
         sourceList.addItem(makeItem("LIVE (from Ganglion)"));
+        sourceList.addItem(makeItem("LIVE (from NovaXR)"));
         sourceList.addItem(makeItem("PLAYBACK (from file)"));
         sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));
 
@@ -2856,6 +2867,53 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+    }
+};
+
+class NovaXRBox {
+    int x, y, w, h, padding; //size and position
+
+    NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = 67;
+        padding = _padding;
+
+        cp5.addTextfield("novaXR_IP")
+            .setPosition(x + 60, y + 32)
+            .setCaptionLabel("")
+            .setSize(187, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText("192.168.1.171")
+            .align(5, 10, 20, 40)
+            .onDoublePress(cb)
+            .setAutoClear(true);
+
+    }
+
+    public void update() {
+    }
+
+    public void draw() {
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        fill(bgColor);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("IP", x + padding, y + padding);
+        popStyle();
+        cp5.get(Textfield.class, "novaXR_IP").setPosition(x + 60, y + 32);
     }
 };
 

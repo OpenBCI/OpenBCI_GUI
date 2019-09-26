@@ -124,6 +124,7 @@ class SoftwareSettings {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
         "GanglionUserSettings.json",
+        "NovaXRUserSettings.json",
         "PlaybackUserSettings.json",
         "SynthFourUserSettings.json",
         "SynthEightUserSettings.json",
@@ -133,6 +134,7 @@ class SoftwareSettings {
         "CytonDefaultSettings.json",
         "DaisyDefaultSettings.json",
         "GanglionDefaultSettings.json",
+        "NovaXRDefaultSettings.json",
         "PlaybackDefaultSettings.json",
         "SynthFourDefaultSettings.json",
         "SynthEightDefaultSettings.json",
@@ -1506,15 +1508,17 @@ class SoftwareSettings {
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
-            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+            } else if (dataSource ==  DATASOURCE_NOVAXR) {
                 filePath += fileNames[3];
+            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+                filePath += fileNames[4];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
                 if (_nchan == NCHAN_GANGLION) {
-                    filePath += fileNames[4];
-                } else if (_nchan == NCHAN_CYTON) {
                     filePath += fileNames[5];
-                } else {
+                } else if (_nchan == NCHAN_CYTON) {
                     filePath += fileNames[6];
+                } else {
+                    filePath += fileNames[7];
                 }
             }
         }
