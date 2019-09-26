@@ -111,6 +111,8 @@ OpenGL acceleration is required.
 
 
 ## Troubleshooting
+- When making an issue here on GitHub, please use an Issue Template. Otherwise, the issue will be closed and you will be asked to make a new issue using a template. This maintains a standard of communication and helps resolve issues in a timely manner.
+
 - The OpenBCI Hub comes installed in recent versions of the GUI. When running the GUI from Processing code, [please follow these instructions](https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#install-openbci-hub-on-mac-linux-windows) for getting the **critical** piece of software called the OpenBCI HUB for Mac/Linux/Windows. Thanks and happy hacking!
 
 - If you are on a Mac and you seem to get a "spinning wheel of death" when trying to open a dialog box to view files (example "SELECT PLAYBACK FILE" button), [please update your Java Runtime Environment](https://www.java.com/en/download/).
