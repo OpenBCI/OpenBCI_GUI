@@ -369,7 +369,8 @@ class ControlPanel {
         recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
 
         novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
-
+        
+        comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
         rcBox = new RadioConfigBox(x+w, y, w, h, globalPadding);
         channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
         pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
