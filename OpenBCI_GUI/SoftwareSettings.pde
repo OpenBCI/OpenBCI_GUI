@@ -1039,7 +1039,7 @@ class SoftwareSettings {
                 ganglion.accelStop(); //send message to hub
             }
         }
-    
+
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1561,6 +1561,11 @@ class SoftwareSettings {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
             outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
         }
+
+        if (eegDataSource == DATASOURCE_NOVAXR) {
+            outputSuccess("Settings Loaded! NovaXR Firmware == " + "WIP");
+        }
+
         //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
         settingsLoaded = true;
     }
