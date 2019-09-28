@@ -1849,6 +1849,14 @@ class SerialBox {
                 } else {
                     return;
                 }
+            } else if (isLinux()) {
+                if (systemMode < SYSTEMMODE_POSTINIT) {
+                    String[] foundCytonPort = match(comPort, "COM.*$");
+                    openBCI_portName = foundCytonPort[0];
+                    initButtonPressed();
+                } else {
+                    return;
+                }
             }
            
         }
