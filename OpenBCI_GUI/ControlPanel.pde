@@ -1242,7 +1242,7 @@ class ControlPanel {
             }
         }
 
-        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed && eegDataSource == DATASOURCE_CYTON) {
+        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
             if (rcBox.isShowing) {
                 hideRadioPopoutBox();
             }
