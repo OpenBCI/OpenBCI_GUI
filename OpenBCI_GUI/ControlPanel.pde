@@ -1794,6 +1794,7 @@ class SerialBox {
         padding = _padding;
 
         autoConnect = new Button(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO", fontInfo.buttonLabel_size);
+        autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
         popOutRadioConfigButton = new Button(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
         popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
 
