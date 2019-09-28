@@ -1837,30 +1837,41 @@ class SerialBox {
                     openBCI_portName = foundCytonPort[0];
                     //Perform the same action as when a session is started using the button
                     initButtonPressed();
-                    return;
-                } else {
-                    outputError("AutoConnect: No match found...");
-                }
+                    if (systemMode == SYSTEMMODE_POSTINIT) return;
+                } //otherwise do nothing 
             } else if (isWindows()) {
                 if (systemMode < SYSTEMMODE_POSTINIT) {
+                    //Since the serial port list order is reversed, tries last entry first (ex. COM4 before COM1)
                     String[] foundCytonPort = match(comPort, "COM.*$");
-                    openBCI_portName = foundCytonPort[0];
-                    initButtonPressed();
+                    if (foundCytonPort != null) {  // If not null, then a match was found
+                        openBCI_portName = foundCytonPort[0];
+                        initButtonPressed();
+                        if (systemMode == SYSTEMMODE_POSTINIT) return;
+                    } 
                 } else {
                     return;
                 }
             } else if (isLinux()) {
                 if (systemMode < SYSTEMMODE_POSTINIT) {
-                    String[] foundCytonPort = match(comPort, "COM.*$");
-                    openBCI_portName = foundCytonPort[0];
-                    initButtonPressed();
+                    //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
+                    String[] foundCytonPort = match(comPort, "^/dev/ttyUSB.*$");
+                    if (foundCytonPort != null) {  // If not null, then a match was found
+                        openBCI_portName = foundCytonPort[0];
+                        initButtonPressed();
+                        if (systemMode == SYSTEMMODE_POSTINIT) return;
+                    }
                 } else {
                     return;
                 }
             }
            
+        } //end for loop for all com ports
+        //openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
+        //ganglion_portName = "N/A";
+        if (!openBCI_portName.equals("N/A")) {
+            outputError("Unable to auto-connect...");
         }
-    }
+    } //end attempAutoConnectCyton 
 };
 
 class ComPortBox {
