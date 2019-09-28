@@ -1830,15 +1830,27 @@ class SerialBox {
         //Then look for matching cyton dongle
         for (int i = 0; i < numComPorts; i++) {
             String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
-            String[] foundCytonPort = match(comPort, "^/dev/tty.usbserial-DM.*$");
-            if (foundCytonPort != null) {  // If not null, then a match was found
-                openBCI_portName = foundCytonPort[0];
-                //Perform the same action as when a session is started using the button
-                initButtonPressed();
-                return;
-            } else {
-                outputError("AutoConnect: No match found...");
+            
+            if (isMac()) {
+                String[] foundCytonPort = match(comPort, "^/dev/tty.usbserial-DM.*$");
+                if (foundCytonPort != null) {  // If not null, then a match was found
+                    openBCI_portName = foundCytonPort[0];
+                    //Perform the same action as when a session is started using the button
+                    initButtonPressed();
+                    return;
+                } else {
+                    outputError("AutoConnect: No match found...");
+                }
+            } else if (isWindows()) {
+                if (systemMode < SYSTEMMODE_POSTINIT) {
+                    String[] foundCytonPort = match(comPort, "COM.*$");
+                    openBCI_portName = foundCytonPort[0];
+                    initButtonPressed();
+                } else {
+                    return;
+                }
             }
+           
         }
     }
 };
