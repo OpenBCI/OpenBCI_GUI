@@ -838,7 +838,6 @@ void initSystem() throws Exception {
         } else {
             outputError("Failed to connect. Check that the device is powered on and in range.");
         }
-        systemMode = SYSTEMMODE_PREINIT;
         controlPanel.open();
     }
 
