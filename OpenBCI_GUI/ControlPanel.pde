@@ -659,7 +659,7 @@ class ControlPanel {
 
     public void hideWifiPopoutBox() {
         wcBox.isShowing = false;
-        popOutWifiConfigButton.setString("Manual >");
+        popOutWifiConfigButton.setString(">");
         wcBox.updateMessage("");
         if (hub.isPortOpen()) hub.closePort();
     }
@@ -1125,10 +1125,14 @@ class ControlPanel {
             if (cyton.isSerial()) {
                 if (rcBox.isShowing) {
                     hideRadioPopoutBox();
+                    serialBox.autoConnect.setIgnoreHover(false);
+                    serialBox.autoConnect.setColorNotPressed(255);
                 } else {
                     rcBox.isShowing = true;
                     rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("Manual <");
+                    serialBox.autoConnect.setIgnoreHover(true);
+                    serialBox.autoConnect.setColorNotPressed(140);
                 }
             }
         }
@@ -1190,7 +1194,7 @@ class ControlPanel {
                         output("Static IP address of " + wifi_ipAddress);
                         hub.examineWifi(wifi_ipAddress);
                         wcBox.isShowing = true;
-                        popOutWifiConfigButton.setString("Manual <");
+                        popOutWifiConfigButton.setString("<");
                     } else {
                         if (wifi_portName == "N/A") {
                             output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at openbci.github.io/Documentation/");
@@ -1198,7 +1202,7 @@ class ControlPanel {
                             output("Attempting to connect to WiFi Shield named " + wifi_portName);
                             hub.examineWifi(wifi_portName);
                             wcBox.isShowing = true;
-                            popOutWifiConfigButton.setString("Manual <");
+                            popOutWifiConfigButton.setString("<");
                         }
                     }
                 }
@@ -1238,7 +1242,7 @@ class ControlPanel {
             }
         }
 
-        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
+        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed && eegDataSource == DATASOURCE_CYTON) {
             if (rcBox.isShowing) {
                 hideRadioPopoutBox();
             }
@@ -1827,51 +1831,40 @@ class SerialBox {
     public void attemptAutoConnectCyton() {
         //Fetch the number of com ports...
         int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
+        String _regex = "";
         //Then look for matching cyton dongle
         for (int i = 0; i < numComPorts; i++) {
             String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
-            
             if (isMac()) {
-                String[] foundCytonPort = match(comPort, "^/dev/tty.usbserial-DM.*$");
-                if (foundCytonPort != null) {  // If not null, then a match was found
-                    openBCI_portName = foundCytonPort[0];
-                    //Perform the same action as when a session is started using the button
-                    initButtonPressed();
-                    if (systemMode == SYSTEMMODE_POSTINIT) return;
-                } //otherwise do nothing 
+                _regex = "^/dev/tty.usbserial-DM.*$";
             } else if (isWindows()) {
-                if (systemMode < SYSTEMMODE_POSTINIT) {
-                    //Since the serial port list order is reversed, tries last entry first (ex. COM4 before COM1)
-                    String[] foundCytonPort = match(comPort, "COM.*$");
-                    if (foundCytonPort != null) {  // If not null, then a match was found
-                        openBCI_portName = foundCytonPort[0];
-                        initButtonPressed();
-                        if (systemMode == SYSTEMMODE_POSTINIT) return;
-                    } 
-                } else {
-                    return;
-                }
+                _regex = "COM.*$";
             } else if (isLinux()) {
-                if (systemMode < SYSTEMMODE_POSTINIT) {
-                    //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
-                    String[] foundCytonPort = match(comPort, "^/dev/ttyUSB.*$");
-                    if (foundCytonPort != null) {  // If not null, then a match was found
-                        openBCI_portName = foundCytonPort[0];
-                        initButtonPressed();
-                        if (systemMode == SYSTEMMODE_POSTINIT) return;
-                    }
-                } else {
-                    return;
-                }
+                _regex = "^/dev/ttyUSB.*$";
             }
-           
+            if (ableToConnect(comPort, _regex)) return;
         } //end for loop for all com ports
-        //openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-        //ganglion_portName = "N/A";
+        
         if (!openBCI_portName.equals("N/A")) {
             outputError("Unable to auto-connect...");
         }
     } //end attempAutoConnectCyton 
+
+    private boolean ableToConnect(String _comPort, String _regex) {
+        if (systemMode < SYSTEMMODE_POSTINIT) {
+            //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
+            String[] foundCytonPort = match(_comPort, _regex);
+            if (foundCytonPort != null) {  // If not null, then a match was found
+                println("ControlPanel: Attempting to connect to " + _comPort);
+                openBCI_portName = foundCytonPort[0];
+                initButtonPressed();
+                if (systemMode == SYSTEMMODE_POSTINIT) return true;
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
 };
 
 class ComPortBox {
@@ -1982,7 +1975,7 @@ class WifiBox {
 
         refreshWifi = new Button (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
-        popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,"Manual >",fontInfo.buttonLabel_size);
+        popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
         // Call to update the list
