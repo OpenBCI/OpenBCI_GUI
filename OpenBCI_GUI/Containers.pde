@@ -81,8 +81,8 @@ void drawContainers() {
         println("OpenBCI_GUI: setup: RESIZED");
         setupContainers();
         //setupVizs(); //container extension example (more below)
-        widthOfLastScreen = width;
-        heightOfLastScreen = height;
+        settings.widthOfLastScreen = width;
+        settings.heightOfLastScreen = height;
     }
 }
 

@@ -1,14 +1,20 @@
 # v4.1.6
-Use OpenBCIHub v2.0.9 please.
+Use OpenBCIHub v2.1.0 please.
 
 ## Beta 0
 
 ### Improvements
+* Cyton+Dongle AutoConnect Button!
 * GUI error message when using old Cyton firmware #597
+* Update Focus widget help button
+* Console Log window UI/UX update
+* Add GUI Troublshooting Guide button to "Help" dropdown in TopNav.pde
 
 ### Bug Fixes
 * Cyton+WiFi unable to start session #555 #590
-* Networking start/stop stream #593
+* Networking: Start/Stop stream button behavior #593
+* Networking: Only show Pulse datatype for Cyton(Live)
+* Show error when loading empty playback file and delete file from history
 
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.

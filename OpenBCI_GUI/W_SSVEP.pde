@@ -56,6 +56,7 @@ class W_SSVEP extends Widget {
                             + "This widget is currently in beta mode and requires more input and testing from the OpenBCI Community.";
     int ssvepHelpTextFontSize = 16;
     Button infoButton;
+    int infoButtonSize = 18;
 
     W_SSVEP(PApplet _parent) {
 
@@ -102,7 +103,7 @@ class W_SSVEP extends Widget {
         cp5_ssvep.setAutoDraw(false);
         showAbout = false;        //set Default start value for showing about section as fault
 
-        infoButton = new Button(x + w - 80, y - navH + 2, 18, 18, "?", 14);
+        infoButton = new Button(x + w - dropdownWidth - infoButtonSize - 10, y - navH + 2, infoButtonSize, infoButtonSize, "?", 14);
         infoButton.setCornerRoundess((int)(navHeight-6));
         infoButton.setFont(p5,12);
         infoButton.setColorNotPressed(color(57,128,204));
@@ -245,7 +246,7 @@ class W_SSVEP extends Widget {
             s = h;
         }
 
-        infoButton.setPos(x + w - 100, y - navH + 2);
+        infoButton.setPos(x + w - dropdownWidth - infoButtonSize - 10, y - navH + 2);
         
         setFreqDropdownSizes();
 

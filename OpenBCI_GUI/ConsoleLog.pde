@@ -17,6 +17,8 @@ import java.awt.Desktop;
 static class ConsoleWindow extends PApplet {
     private static ConsoleWindow instance = null;
 
+    PApplet logApplet;
+
     private ControlP5 cp5;
     private Textarea consoleTextArea;
     private ClipHelper clipboardCopy;
@@ -24,9 +26,14 @@ static class ConsoleWindow extends PApplet {
     private final int headerHeight = 42;
     private final int defaultWidth = 620;
     private final int defaultHeight = 500;
-    private final int buttonWidth = 170;
+    private final int buttonWidth = 142;
     private final int buttonHeight = 34;
-    private int previousWidth = defaultWidth;
+
+    //for screen resizing
+    private boolean screenHasBeenResized = false;
+    private float timeOfLastScreenResize = 0;
+    private int widthOfLastScreen = defaultWidth;
+    private int heightOfLastScreen = defaultHeight;
 
     public static void display() {
         // enforce only one Console Window
@@ -45,6 +52,9 @@ static class ConsoleWindow extends PApplet {
     }
 
     void setup() {
+
+        logApplet = this;
+
         surface.setAlwaysOnTop(true);
         surface.setResizable(true);
 
@@ -53,6 +63,7 @@ static class ConsoleWindow extends PApplet {
 
         consoleTextArea = cp5.addTextarea("ConsoleWindow")
             .setPosition(0, headerHeight)
+            .setSize(width, height - headerHeight)
             .setFont(createFont("arial", 14))
             .setLineHeight(18)
             .setColor(color(242))
@@ -65,13 +76,15 @@ static class ConsoleWindow extends PApplet {
         // register this console's Textarea with the output stream object
         outputStream.registerTextArea(consoleTextArea);
 
-        int cW = int(width/3);
+        int cW = int(width/4);
         int bX = int((cW - buttonWidth) / 2);
         createConsoleLogButton("openLogFileAsText", "Open Log as Text (F)", bX);
         bX += cW;
-        createConsoleLogButton("copyFullTextToClipboard", "Copy Full Log Text (C)", bX);
+        createConsoleLogButton("copyFullTextToClipboard", "Copy Full Text (C)", bX);
         bX += cW;
         createConsoleLogButton("copyLastLineToClipboard", "Copy Last Line (L)", bX);
+        bX += cW;
+        createConsoleLogButton("jumpToLastLine", "Jump to Last Line (J)", bX);
     }
 
     void createConsoleLogButton (String bName, String bText, int x) {
@@ -84,21 +97,45 @@ static class ConsoleWindow extends PApplet {
                 .setColorBackground(color(144, 100));
         cp5.getController(bName)
                 .getCaptionLabel()
-                .setFont(createFont("Arial",16,true))
+                .setFont(createFont("Arial",14,true))
                 .toUpperCase(false)
-                .setSize(16)
+                .setSize(14)
                 .setText(bText);
     }
 
     void draw() {
-        // dynamically resize text area to fit widget
-        consoleTextArea.setSize(width, height - headerHeight);
-        // update button positions when screen width changes
-        updateButtonPositions();
-
         clear();
         scene();
         cp5.draw();
+        //checks if the screen is resized, similar to main GUI window
+        screenResized();
+    }
+
+    void screenResized() {
+        if (this.widthOfLastScreen != width || this.heightOfLastScreen != height) {
+            //println("ConsoleLog: RESIZED");
+            this.screenHasBeenResized = true;
+            this.timeOfLastScreenResize = millis();
+            this.widthOfLastScreen = width;
+            this.heightOfLastScreen = height;
+        }
+        if (this.screenHasBeenResized) {
+            //setGraphics() is very important, it lets the cp5 elements know where the origin is.
+            //Without this, cp5 elements won't work after screen is resized.
+            //This also happens in most widgets when the main GUI window is resized.
+            logApplet = this;
+            cp5.setGraphics(logApplet, 0, 0);
+
+            imposeMinConsoleLogDimensions();
+            // dynamically resize text area to fit widget
+            consoleTextArea.setSize(width, height - headerHeight);
+            // update button positions when screen width changes
+            updateButtonPositions();
+        }
+        //re-initialize console log if screen has been resized and it's been more than 1 seccond (to prevent reinitialization happening too often)
+        if (this.screenHasBeenResized == true && (millis() - this.timeOfLastScreenResize) > 1000) {
+            this.screenHasBeenResized = false;
+        }
     }
 
     void scene() {
@@ -110,14 +147,23 @@ static class ConsoleWindow extends PApplet {
     void keyReleased() {
         if (key == 'c') {
             copyFullTextToClipboard();
-        }
-
-        if (key == 'f') {
+        } else if (key == 'f') {
             openLogFileAsText();
-        }
-
-        if (key == 'l') {
+        } else if (key == 'l') {
             copyLastLineToClipboard();
+        } else if (key == 'j' ) {
+            jumpToLastLine();
+        }
+        
+    }
+
+    void keyPressed() {
+        if (key == CODED) {
+            if (keyCode == UP) {
+                consoleTextArea.scrolled(-5);
+            } else if (keyCode == DOWN) {
+                consoleTextArea.scrolled(5);
+            }
         }
     }
 
@@ -154,17 +200,30 @@ static class ConsoleWindow extends PApplet {
         println("ConsoleLog: Previous line copied to clipboard.");
     }
 
+    void jumpToLastLine() {
+        consoleTextArea.scroll(1.0);
+    }
+
     void updateButtonPositions() {
-        if (width != previousWidth) {
-            int cW = width / 3;
-            int bX = (cW - 170) / 2;
-            int bY = 4;
-            cp5.getController("openLogFileAsText").setPosition(bX, bY);
-            bX += cW;
-            cp5.getController("copyFullTextToClipboard").setPosition(bX, bY);
-            bX += cW;
-            cp5.getController("copyLastLineToClipboard").setPosition(bX, bY);
-            previousWidth = width;
+        int cW = width / 4;
+        int bX = (cW - buttonWidth) / 2;
+        int bY = 4;
+        cp5.getController("openLogFileAsText").setPosition(bX, bY);
+        bX += cW;
+        cp5.getController("copyFullTextToClipboard").setPosition(bX, bY);
+        bX += cW;
+        cp5.getController("copyLastLineToClipboard").setPosition(bX, bY);
+        bX += cW;
+        cp5.getController("jumpToLastLine").setPosition(bX, bY);
+    }
+
+    void imposeMinConsoleLogDimensions() {
+        //impose minimum gui dimensions
+        int minHeight = int(defaultHeight/2);
+        if (width < defaultWidth || height < minHeight) {
+            int _w = (width < defaultWidth) ? defaultWidth : width;
+            int _h = (height < minHeight) ? minHeight : height;
+            surface.setSize(_w, _h);
         }
     }
 
