@@ -107,7 +107,7 @@ float calcDotProduct(float[] data1, float[] data2) {
 }
 
 
-float log10(float val) {
+static float log10(float val) {
     return (float)Math.log10(val);
 }
 

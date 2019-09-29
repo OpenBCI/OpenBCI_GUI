@@ -1,5 +1,5 @@
 
-int navHeight = 22;
+static int navHeight = 22;
 
 //========================================================================================
 //=================              ADD NEW WIDGETS HERE            =========================
@@ -18,7 +18,7 @@ W_Networking w_networking;
 W_BandPower w_bandPower;
 W_Accelerometer w_accelerometer;
 W_GanglionImpedance w_ganglionImpedance;
-W_HeadPlot w_headPlot;
+static W_HeadPlot w_headPlot;
 W_template w_template1;
 W_emg w_emg;
 W_openBionics w_openbionics;

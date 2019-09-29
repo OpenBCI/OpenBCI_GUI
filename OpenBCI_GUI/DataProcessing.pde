@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------
 import ddf.minim.analysis.*; //for FFT
 
-DataProcessing dataProcessing;
+static DataProcessing dataProcessing;
 String curTimestamp;
 boolean hasRepeated = false;
 HashMap<Integer,String> index_of_times;

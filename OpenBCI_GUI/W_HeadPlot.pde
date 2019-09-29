@@ -12,15 +12,17 @@
 ///////////////////////////////////////////////////,
 
 
-float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
-int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
+static float[] smoothFac = new float[]{0.0, 0.5, 0.75, 0.9, 0.95, 0.98}; //used by FFT & Headplot
+static int smoothFac_ind = 3;    //initial index into the smoothFac array = 0.75 to start .. used by FFT & Head Plots
 
 class W_HeadPlot extends Widget {
     HeadPlot headPlot;
+    Button newWindowButton;
+    boolean externalHPOpen = false;
 
     W_HeadPlot(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
+        
         //Headplot settings
         settings.hpIntensitySave = 2;
         settings.hpPolaritySave = 0;
@@ -37,6 +39,14 @@ class W_HeadPlot extends Widget {
         addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
         //Initialize the headplot
         updateHeadPlot(nchan);
+        // Networking Data Type Guide button
+        newWindowButton = new Button(x0 + 2, y0 + navH + 2, 150, navH - 6,"New Window",14);
+        newWindowButton.setCornerRoundess((int)(navHeight-6));
+        newWindowButton.setFont(p5,12);
+        newWindowButton.setColorNotPressed(color(57,128,204));
+        newWindowButton.setFontColorNotActive(color(255));
+        newWindowButton.setHelpText("Click this button to open the Headplot widget in a separate window.");
+        newWindowButton.hasStroke(false);
     }
 
     void updateHeadPlot(int _nchan) {
@@ -49,16 +59,25 @@ class W_HeadPlot extends Widget {
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        headPlot.update();
+        if (!externalHPOpen) {
+            headPlot.update();
+        }
+        ignoreButtonCheck(newWindowButton);
     }
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-        headPlot.draw(); //draw the actual headplot
+        if (!externalHPOpen) {
+            headPlot.draw(); //draw the actual headplot
+        }
+        newWindowButton.draw();
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+        newWindowButton.setPos(x0 + 2, y0 + navH + 2);
+
         headPlot.hp_x = x;
         headPlot.hp_y = y;
         headPlot.hp_w = w;
@@ -72,16 +91,26 @@ class W_HeadPlot extends Widget {
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         headPlot.mousePressed();
+        if (newWindowButton.isMouseHere()) {
+            newWindowButton.setIsActive(true);
+        }
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
         headPlot.mouseReleased();
+        if (newWindowButton.isActive && newWindowButton.isMouseHere()) {
+            thread("openHeadplot");
+            externalHPOpen = true;
+        }
+        newWindowButton.setIsActive(false);
     }
 
     void mouseDragged(){
         super.mouseDragged(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        headPlot.mouseDragged();
+        if (!externalHPOpen) {
+            headPlot.mouseDragged();
+        }
     }
 
     //add custom class functions here
@@ -160,6 +189,8 @@ void doHardCalcs() {
     }
 }
 
+
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 //////////////////////////////////////////////////////////////
@@ -230,7 +261,13 @@ class HeadPlot {
         hp_h = _h;
         hp_win_x = _win_x;
         hp_win_y = _win_y;
-        thread("doHardCalcs");
+        
+        //thread("doHardCalcs");
+        threadLock = true;
+        setPositionSize(hp_x, hp_y, hp_w, hp_h, hp_win_x, hp_win_y);
+        hardCalcsDone = true;
+        threadLock = false;
+
         setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
     }
 
@@ -1105,7 +1142,7 @@ class HeadPlot {
 
         //quantize the color to make contour-style plot?
         if (true) quantizeColor(new_rgb);
-
+        
         return color(int(new_rgb[0]), int(new_rgb[1]), int(new_rgb[2]), 255);
     }
 
@@ -1296,4 +1333,4 @@ class HeadPlot {
 
         popStyle();
     } //end of draw method
-};
+}; //End of Headplot Class

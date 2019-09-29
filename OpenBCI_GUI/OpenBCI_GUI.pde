@@ -73,9 +73,9 @@ boolean midInit = false;
 boolean abandonInit = false;
 boolean systemHasHalted = false;
 
-final int NCHAN_CYTON = 8;
-final int NCHAN_CYTON_DAISY = 16;
-final int NCHAN_GANGLION = 4;
+static final int NCHAN_CYTON = 8;
+static final int NCHAN_CYTON_DAISY = 16;
+static final int NCHAN_GANGLION = 4;
 
 PImage cog;
 Gif loadingGIF;
@@ -128,10 +128,10 @@ final static String PROTOCOL_WIFI = "wifi";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
-int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
+static int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
 int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
-DataStatus is_railed[];
+static DataStatus is_railed[];
 final int threshold_railed = int(pow(2, 23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
 final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller value as the warning threshold
 //OpenBCI SD Card setting (if eegDataSource == 0)
@@ -225,7 +225,7 @@ PFont p3; //medium Open Sans
 PFont p15;
 PFont p4; //medium/small Open Sans
 PFont p13;
-PFont p5; //small Open Sans
+static PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
