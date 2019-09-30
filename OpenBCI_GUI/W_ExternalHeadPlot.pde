@@ -37,27 +37,22 @@ static class ExternalHP extends PApplet {
         hpApplet = this;
         surface.setAlwaysOnTop(true);
         surface.setResizable(false);
-
-        //clipboardCopy = new ClipHelper();
-        //cp5 = new ControlP5(this);
-
         x = 0;
         y = 0;
         w = defaultWidth;
         h = defaultHeight;
-
-        int _nchan = nchan;
-        updateHeadPlot(_nchan);
+        updateHeadPlot(nchan);
     }
 
     void draw() {
         clear();
-        scene();
         //cp5.draw();
         //checks if the screen is resized, similar to main GUI window
         screenResized();
+        scene();
         headPlot.update();
         headPlot.draw();
+        surface.setTitle(int(frameRate) + " fps");
     }
 
     void screenResized() {
@@ -85,12 +80,8 @@ static class ExternalHP extends PApplet {
             headPlot.hp_win_x = x;
             headPlot.hp_win_y = y;
             
-
-            //thread("doHardCalcsExternal");
-            headPlot.threadLock = true;
             headPlot.setPositionSize(headPlot.hp_x, headPlot.hp_y, headPlot.hp_w, headPlot.hp_h, headPlot.hp_win_x, headPlot.hp_win_y);
             headPlot.hardCalcsDone = true;
-            headPlot.threadLock = false;
         }
         //re-initialize console log if screen has been resized and it's been more than 1 seccond (to prevent reinitialization happening too often)
         if (this.screenHasBeenResized == true && (millis() - this.timeOfLastScreenResize) > 1000) {
