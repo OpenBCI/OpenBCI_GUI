@@ -839,7 +839,7 @@ void initSystem() throws Exception {
             outputError("Failed to connect. Check that the device is powered on and in range.");
         }
         controlPanel.open();
-        systemMode = SYSTEMMODE_PREINIT;
+        systemMode = SYSTEMMODE_PREINIT; // leave this here
     }
 
     //reset init variables
