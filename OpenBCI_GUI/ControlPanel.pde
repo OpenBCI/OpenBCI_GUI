@@ -1797,15 +1797,6 @@ class SerialBox {
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
         popOutRadioConfigButton = new Button(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
         popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
-
-        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
-        // println(w-padding*2);
-        serialList.setPosition(x + padding, y + padding*3 + 8);
-        serialPorts = Serial.list();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
-        }
     }
 
     public void update() {
