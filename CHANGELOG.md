@@ -1,6 +1,9 @@
 # v4.1.6
 Use OpenBCIHub v2.1.0 please.
 
+### Improvements
+* Fix LSL streaming more than one data type #592
+
 ## Beta 0
 
 ### Improvements
