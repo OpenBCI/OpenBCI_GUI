@@ -10,7 +10,7 @@ The following is a small set of guidelines for how to contribute to the project
 
 ### Code of Conduct
 This project adheres to the Contributor Covenant [Code of Conduct](CODE_OF_CONDUCT.md).
-By participating you are expected to adhere to these expectations. Please report unacceptable behaviour to [info@pushtheworld.us](mailto:info@pushtheworld.us)
+By participating you are expected to adhere to these expectations. Please report unacceptable behaviour to [support@openbci.com](mailto:support@openbci.com).
 
 ### Contributing on Github
 
