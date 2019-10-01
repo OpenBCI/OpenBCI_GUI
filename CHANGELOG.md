@@ -8,7 +8,7 @@ Use OpenBCIHub v2.1.0 please.
 * GUI error message when using old Cyton firmware #597
 * Update Focus widget help button
 * Console Log window UI/UX update
-* Add GUI Troublshooting Guide button to "Help" dropdown in TopNav.pde
+* Add GUI Troubleshooting Guide button to "Help" dropdown in TopNav.pde
 
 ### Bug Fixes
 * Cyton+WiFi unable to start session #555 #590
