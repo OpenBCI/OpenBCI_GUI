@@ -486,9 +486,9 @@ synchronized void mouseReleased() {
         redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
     }
 
-    if (screenHasBeenResized) {
+    if (settings.screenHasBeenResized) {
         println("OpenBCI_GUI: mouseReleased: screen has been resized...");
-        screenHasBeenResized = false;
+        settings.screenHasBeenResized = false;
     }
 }
 

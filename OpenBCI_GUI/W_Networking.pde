@@ -125,10 +125,13 @@ class W_Networking extends Widget {
         settings.nwDataType4 = 0;
         settings.nwSerialPort = "None";
         settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
-
-        dataTypes = Arrays.asList(settings.nwDataTypesArray); //Add any new widgets capable of streaming here
+        
+        dataTypes = new LinkedList<String>(Arrays.asList(settings.nwDataTypesArray)); //Add any new widgets capable of streaming here
+        //Only show pulse data type when using Cyton in Live
+        if (eegDataSource != DATASOURCE_CYTON) {
+            dataTypes.remove("Pulse");
+        }
         defaultBaud = "115200";
-        // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
         protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
@@ -728,6 +731,10 @@ class W_Networking extends Widget {
                     networkActive = false;
                     return;
                 }
+            } else {
+	                turnOffButton();        // Change apppearance of button
+	                stopNetwork();          // Stop streams
+	                output("Network Stream Stopped");
             }
         // or if the networking guide button was pressed...
         } else if (guideButton.isActive && guideButton.isMouseHere()) {

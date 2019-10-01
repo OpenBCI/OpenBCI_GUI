@@ -420,7 +420,7 @@ class ChannelBar{
             impButton_diameter = 22;
             impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
             impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelNumber + ".");
-            impCheckButton.setFont(h2, 16);
+            impCheckButton.setFont(h3, 16); //override the default font and fontsize
             impCheckButton.setCircleButton(true);
             impCheckButton.setColorNotPressed(color(255)); //White background
             impCheckButton.textColorNotActive = color(0); //Black text

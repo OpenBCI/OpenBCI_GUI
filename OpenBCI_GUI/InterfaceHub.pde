@@ -21,6 +21,7 @@ final static String TCP_JSON_KEY_ACTION = "action";
 final static String TCP_JSON_KEY_ACCEL_DATA_COUNTS = "accelDataCounts";
 final static String TCP_JSON_KEY_AUX_DATA = "auxData";
 final static String TCP_JSON_KEY_BOARD_TYPE = "boardType";
+final static String TCP_JSON_KEY_BURST_MODE = "burst";
 final static String TCP_JSON_KEY_CHANNEL_DATA_COUNTS = "channelDataCounts";
 final static String TCP_JSON_KEY_CHANNEL_NUMBER = "channelNumber";
 final static String TCP_JSON_KEY_CHANNEL_SET_CHANNEL_NUMBER = "channelNumber";
@@ -504,17 +505,19 @@ class Hub {
         String settingsString = "Settings Loaded! ";
         if (eegDataSource == DATASOURCE_CYTON) {
             firmwareString += firmwareVersion;
+            if (settings.loadErrorCytonEvent == true) {
+                outputError("Connection Error: Failed to apply channel settings to Cyton.");
+            } else {
+                outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
+            }
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             firmwareString = ganglion_portName;
+            outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
         } else {
             firmwareString = "";
         }
-        //This success message appears in Ganglion mode
-        if (settings.loadErrorCytonEvent == true) {
-            outputError("Connection Error: Failed to apply channel settings to Cyton.");
-        } else {
-            outputSuccess("The GUI is done initializing. " + settingsString + "Press \"Start Data Stream\" to start streaming! -- " + firmwareString);
-        }
+        
+        
         portIsOpen = true;
         controlPanel.hideAllBoxes();
     }
@@ -1074,7 +1077,13 @@ class Hub {
     public void connectWifi(String id) {
         JSONObject json = new JSONObject();
         json.setInt(TCP_JSON_KEY_LATENCY, curLatency);
-        json.setString(TCP_JSON_KEY_PROTOCOL, curInternetProtocol);
+        if (curInternetProtocol == UDP_BURST) {
+            json.setString(TCP_JSON_KEY_PROTOCOL, UDP);
+            json.setBoolean(TCP_JSON_KEY_BURST_MODE, true);
+        } else {
+            json.setString(TCP_JSON_KEY_PROTOCOL, curInternetProtocol);
+            json.setBoolean(TCP_JSON_KEY_BURST_MODE, false);
+        }
         json.setInt(TCP_JSON_KEY_SAMPLE_RATE, requestedSampleRate);
         json.setString(TCP_JSON_KEY_NAME, id);
         json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CONNECT);
@@ -1126,6 +1135,10 @@ class Hub {
         json.setString(TCP_JSON_KEY_PROTOCOL, curProtocol);
         json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_PROTOCOL);
         writeJSON(json);
+    }
+
+    public String getProtocol() {
+        return curProtocol;
     }
 
     public int getSampleRate() {
@@ -1304,7 +1317,7 @@ class CheckHubInit extends TimerTask {
         } catch (IOException e) {
             outputWarn("Unable to establish link with the OpenBCI Hub, trying again...");
         }
-        
+
         hubTimerCounter++;
     }
 }
