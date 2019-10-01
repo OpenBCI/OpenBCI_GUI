@@ -192,9 +192,11 @@ class W_Networking extends Widget {
             if (stream2!=null) {
                 stream2.run();
             }
-            if (stream2!=null) {
-                stream2.run();
+            if (stream3!=null) {
+                stream3.run();
             }
+            //Setting this var here fixes #592 to allow multiple LSL streams
+            dataProcessing.newDataToSend = false;
         }
 
         checkTopNovEvents();
@@ -1297,8 +1299,7 @@ class Stream extends Thread {
                     } else if (this.dataType.equals("SSVEP")) {
                         sendSSVEPData();
                     }
-                    setDataFalse();
-                    // newData = false;
+                    //setDataFalse(); //Wait until all streams are done, Fixes 592
                 }
             }
         }
@@ -1344,6 +1345,7 @@ class Stream extends Thread {
             dataProcessing.newDataToSend = false;
         }
     }
+
     /* This method contains all of the policies for sending data types */
     void sendTimeSeriesData() {
 
