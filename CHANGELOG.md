@@ -1,6 +1,9 @@
 # v4.1.6
 Use OpenBCIHub v2.1.0 please.
 
+### Improvements
+* Fix LSL streaming more than one data type #592
+
 ## Beta 0
 
 ### Improvements
@@ -8,6 +11,7 @@ Use OpenBCIHub v2.1.0 please.
 * GUI error message when using old Cyton firmware #597
 * Update Focus widget help button
 * Console Log window UI/UX update
+* Add GUI Troubleshooting Guide button to "Help" dropdown in TopNav.pde
 
 ### Bug Fixes
 * Cyton+WiFi unable to start session #555 #590

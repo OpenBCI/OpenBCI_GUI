@@ -1109,7 +1109,7 @@ class TutorialSelector {
                     tutorialOptions.get(i).setIsActive(false);
                     tutorialOptions.get(i).goToURL();
                     println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
-                    output("Layout [" + tutorialSelected + "] selected.");
+                    //output("Help button [" + tutorialSelected + "] selected.");
                     toggleVisibility(); //shut layoutSelector if something is selected
                     //open corresponding link
                 }
@@ -1168,9 +1168,9 @@ class TutorialSelector {
 
         buttonNumber = 2;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
+        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Troubleshooting Guide");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.com/forum/");
+        tempTutorialButton.setURL("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 3;
@@ -1178,6 +1178,13 @@ class TutorialSelector {
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+        tutorialOptions.add(tempTutorialButton);
+
+        buttonNumber = 4;
+        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
+        tempTutorialButton.setFont(p5, 12);
+        tempTutorialButton.setURL("https://openbci.com/forum/");
         tutorialOptions.add(tempTutorialButton);
     }
 }

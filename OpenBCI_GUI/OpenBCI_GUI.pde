@@ -56,7 +56,7 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.6-beta.0";
+String localGUIVersionString = "v4.1.6";
 String localGUIVersionDate = "September 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -846,6 +846,7 @@ void initSystem() throws Exception {
             outputError("Failed to connect. Check that the device is powered on and in range.");
         }
         controlPanel.open();
+        systemMode = SYSTEMMODE_PREINIT; // leave this here
     }
 
     //reset init variables
