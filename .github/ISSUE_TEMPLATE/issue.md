@@ -1,3 +1,12 @@
+---
+name: Issue
+about: Create a report to help us improve
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 ## Problem
 
 Explain the problem
@@ -16,7 +25,7 @@ The version is displayed on startup.
 
 ## Running standalone app
 
-Are you running the downloaded app or are you running from Processing?
+Are you running the downloaded app or are you running from Processing or Visual Studio Code?
 
 ## Type of OpenBCI Board
 

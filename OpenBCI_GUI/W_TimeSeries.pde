@@ -103,7 +103,7 @@ class W_timeSeries extends Widget {
         if(eegDataSource == DATASOURCE_CYTON) {
             hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
-            hardwareSettingsButton.setFont(p6,10);
+            hardwareSettingsButton.setFont(p5,12);
             // hardwareSettingsButton.setStrokeColor((int)(color(150)));
             // hardwareSettingsButton.setColorNotPressed(openbciBlue);
             hardwareSettingsButton.setColorNotPressed(color(57,128,204));
@@ -153,6 +153,11 @@ class W_timeSeries extends Widget {
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < numChannelBars; i++) {
                 channelBars[i].update();
+            }
+
+            if (eegDataSource == DATASOURCE_CYTON) {
+                //ignore top left button interaction when widgetSelector dropdown is active
+                ignoreButtonCheck(hardwareSettingsButton);
             }
         }
     }
@@ -415,7 +420,7 @@ class ChannelBar{
             impButton_diameter = 22;
             impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
             impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelNumber + ".");
-            impCheckButton.setFont(h2, 16);
+            impCheckButton.setFont(h3, 16); //override the default font and fontsize
             impCheckButton.setCircleButton(true);
             impCheckButton.setColorNotPressed(color(255)); //White background
             impCheckButton.textColorNotActive = color(0); //Black text
@@ -822,10 +827,15 @@ class PlaybackScrollbar {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
-        if (!getCurrentTimeStamp().equals("TimeNotFound")) {
-            long t = new Long(getCurrentTimeStamp());
-            Date d =  new Date(t);
-            currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+        //Catch error when trying to fetch current timestamp
+        try {
+            if (!getCurrentTimeStamp().equals("TimeNotFound")) {
+                long t = new Long(getCurrentTimeStamp());
+                Date d =  new Date(t);
+                currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+            }
+        } catch (NullPointerException e) {
+            println("TimeSeries: Timestamp error...");
         }
 
         //update elapsed time to display

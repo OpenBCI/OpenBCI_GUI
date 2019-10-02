@@ -90,13 +90,13 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Analog Read On", 12);
+        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
-        analogModeButton.setFont(p6,10);
+        analogModeButton.setFont(p5,12);
         analogModeButton.setColorNotPressed(color(57,128,204));
         analogModeButton.textColorNotActive = color(255);
         analogModeButton.hasStroke(false);
-        analogModeButton.setHelpText("Click this button to activate analog reading on the Cyton");
+        analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton.");
 
     }
 
@@ -212,7 +212,7 @@ class W_PulseSensor extends Widget {
             if(cyton.isPortOpen()) {
                 if (cyton.getBoardMode() != BoardMode.ANALOG) {
                     cyton.setBoardMode(BoardMode.ANALOG);
-                    output("Starting to read analog inputs on pin marked D11");
+                    output("Starting to read analog inputs on pin marked D11.");
                     analogModeButton.setString("Turn Analog Read Off");
                     w_analogRead.analogReadOn = true; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be activated also, this variable documents the change
                     w_digitalRead.digitalReadOn = false;

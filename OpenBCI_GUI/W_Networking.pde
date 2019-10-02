@@ -59,6 +59,7 @@ class W_Networking extends Widget {
     Button startButton;
     Boolean cp5ElementsAreActive = false;
     Boolean previousCP5State = false;
+    Button guideButton;
 
     /* Networking */
     Boolean networkActive;
@@ -101,7 +102,7 @@ class W_Networking extends Widget {
         "obci_eeg1","EEG",Integer.toString(nchan),
         "obci_eeg2","EEG",Integer.toString(nchan),
         "obci_eeg3","EEG",Integer.toString(nchan)};
-
+    String networkingGuideURL = "https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#networking";
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
@@ -124,10 +125,13 @@ class W_Networking extends Widget {
         settings.nwDataType4 = 0;
         settings.nwSerialPort = "None";
         settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
-
-        dataTypes = Arrays.asList(settings.nwDataTypesArray); //Add any new widgets capable of streaming here
+        
+        dataTypes = new LinkedList<String>(Arrays.asList(settings.nwDataTypesArray)); //Add any new widgets capable of streaming here
+        //Only show pulse data type when using Cyton in Live
+        if (eegDataSource != DATASOURCE_CYTON) {
+            dataTypes.remove("Pulse");
+        }
         defaultBaud = "115200";
-        // baudRates = Arrays.asList("1200", "9600", "57600", "115200");
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
         protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
@@ -188,12 +192,17 @@ class W_Networking extends Widget {
             if (stream2!=null) {
                 stream2.run();
             }
-            if (stream2!=null) {
-                stream2.run();
+            if (stream3!=null) {
+                stream3.run();
             }
+            //Setting this var here fixes #592 to allow multiple LSL streams
+            dataProcessing.newDataToSend = false;
         }
 
         checkTopNovEvents();
+
+        //ignore top left button interaction when widgetSelector dropdown is active
+        ignoreButtonCheck(guideButton);
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -207,6 +216,9 @@ class W_Networking extends Widget {
             cp5ElementsAreActive = textfieldsAreActive(udpTextFieldNames);
         } else if (protocolMode.equals("LSL")) {
             cp5ElementsAreActive = textfieldsAreActive(lslTextFieldNames);
+        } else {
+            //For serial mode, disable fft output by switching to bandpower instead
+            this.disableCertainOutputs((int)getCP5Map().get(datatypeNames[0]));
         }
 
         if (cp5ElementsAreActive != previousCP5State) {
@@ -271,6 +283,7 @@ class W_Networking extends Widget {
         text("Data Type",column0,row1);
 
         startButton.draw();
+        guideButton.draw();
 
         if (protocolMode.equals("OSC")) {
             textFont(f4,40);
@@ -339,6 +352,17 @@ class W_Networking extends Widget {
         startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
         startButton.setFont(p4,14);
         startButton.setColorNotPressed(color(184,220,105));
+        startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
+
+        // Networking Data Type Guide button
+        guideButton = new Button(x0 + 2, y0 + navH + 2, 150, navH - 6,"Open Networking Guide",14);
+        guideButton.setCornerRoundess((int)(navHeight-6));
+        guideButton.setFont(p5,12);
+        guideButton.setColorNotPressed(color(57,128,204));
+        guideButton.setFontColorNotActive(color(255));
+        guideButton.setHelpText("Click this button to open the Networking Widget Guide in your default browser.");
+        guideButton.setURL(networkingGuideURL);
+        guideButton.hasStroke(false);
     }
 
     /* Shows and Hides appropriate CP5 elements within widget */
@@ -596,7 +620,9 @@ class W_Networking extends Widget {
         row5 = y+8*h/10;
         int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
 
+        //reset the button positions using new x and y
         startButton.setPos(x + w/2 - 70, y + h - 40 );
+        guideButton.setPos(x0 + 2, y0 + navH + 2);
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
@@ -682,13 +708,15 @@ class W_Networking extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         if (startButton.isMouseHere()) {
             startButton.setIsActive(true);
+        } else if (guideButton.isMouseHere()) {
+            guideButton.setIsActive(true);
         }
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        /* If start button was pressed */
+        // If start button was pressed...
         if (startButton.isActive && startButton.isMouseHere()) {
             if (!networkActive) {
                 try {
@@ -706,12 +734,17 @@ class W_Networking extends Widget {
                     return;
                 }
             } else {
-                turnOffButton();        // Change apppearance of button
-                stopNetwork();          // Stop streams
-                output("Network Stream Stopped");
+	                turnOffButton();        // Change apppearance of button
+	                stopNetwork();          // Stop streams
+	                output("Network Stream Stopped");
             }
+        // or if the networking guide button was pressed...
+        } else if (guideButton.isActive && guideButton.isMouseHere()) {
+            guideButton.goToURL();
+            output("Opening Networking Output Guide using default browser.");
         }
         startButton.setIsActive(false);
+        guideButton.setIsActive(false);
     }
 
     void hideAllTextFields(String[] textFieldNames) {
@@ -1031,6 +1064,19 @@ class W_Networking extends Widget {
     public void setComPortToSave(int n) {
         comPortToSave = n;
     }
+
+    public void disableCertainOutputs(int n) {
+        //Disable serial fft ouput and display message, it's too much data for serial coms
+        if (w_networking.protocolMode.equals("Serial")) {
+            if (n == Arrays.asList(settings.nwDataTypesArray).indexOf("FFT")) {
+                output("Please use Band Power instead of FFT for Serial Output. Changing data type...");
+                println("Networking: Changing data type from FFT to BandPower. FFT data is too large to send over Serial coms.");
+                cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText("BandPower");
+                cp5_networking_dropdowns.get(ScrollableList.class, "dataType1")
+                            .setValue(Arrays.asList(settings.nwDataTypesArray).indexOf("BandPower"));
+            };
+        }
+    }
 }; //End of w_networking class
 
 ////////////////////////////////////////////////////////////////
@@ -1253,8 +1299,7 @@ class Stream extends Thread {
                     } else if (this.dataType.equals("SSVEP")) {
                         sendSSVEPData();
                     }
-                    setDataFalse();
-                    // newData = false;
+                    //setDataFalse(); //Wait until all streams are done, Fixes 592
                 }
             }
         }
@@ -1300,6 +1345,7 @@ class Stream extends Thread {
             dataProcessing.newDataToSend = false;
         }
     }
+
     /* This method contains all of the policies for sending data types */
     void sendTimeSeriesData() {
 
@@ -1471,10 +1517,19 @@ class Stream extends Thread {
                 }
                 // LSL
             } else if (this.protocol.equals("LSL")) {
-              /* */
+                float[] _dataToSend = new float[numChan * 125];
+                for (int i = 0; i < numChan; i++) {
+                    for (int j = 0; j < 125; j++) {
+                        _dataToSend[j+125*i] = fftBuff[i].getBand(j);
+                    }
+                }
+                // Add timestamp to LSL Stream
+                // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
+                outlet_data.push_chunk(_dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")) {
-                // Send FFT Data over Serial ... %%%%%
-                // println("Sending FFT data over Serial...");
+                /////////////////////////////////THIS OUTPUT IS DISABLED
+                // Send FFT Data over Serial ... 
+                /*
                 for (int i=0;i<numChan;i++) {
                     serialMessage = "[" + (i+1) + ","; //clear message
                     for (int j=0;j<125;j++) {
@@ -1493,6 +1548,7 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 }
+                */
             }
         }
     }
@@ -1996,7 +2052,7 @@ class Stream extends Thread {
                     serialMessage += Signal + ",";
                     serialMessage += IBI;
                     try {
-                        //println(serialMessage);
+                        println(serialMessage);
                         this.serial_networking.write(serialMessage);
                     } catch (Exception e) {
                         println(e.getMessage());
@@ -2120,6 +2176,7 @@ void Protocol(int protocolIndex) {
         w_networking.protocolMode = "LSL";
     } else if (protocolIndex==0) {
         w_networking.protocolMode = "Serial";
+        w_networking.disableCertainOutputs((int)w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
     }
     println("Networking: Protocol mode set to " + w_networking.protocolMode);
     w_networking.screenResized();

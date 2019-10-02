@@ -1,5 +1,58 @@
+# v4.1.6
+Use OpenBCIHub v2.1.0 please.
+
+### Improvements
+* Fix LSL streaming more than one data type #592
+
+## Beta 0
+
+### Improvements
+* Cyton+Dongle AutoConnect Button!
+* GUI error message when using old Cyton firmware #597
+* Update Focus widget help button
+* Console Log window UI/UX update
+* Add GUI Troubleshooting Guide button to "Help" dropdown in TopNav.pde
+
+### Bug Fixes
+* Cyton+WiFi unable to start session #555 #590
+* Networking: Start/Stop stream button behavior #593
+* Networking: Only show Pulse datatype for Cyton(Live)
+* Show error when loading empty playback file and delete file from history
+
 # v4.1.5
 Use OpenBCIHub v2.0.9 please.
+
+## Beta 4
+### Improvements
+* Minor UI/UX edits for style and clarity
+* Update Cyton SD card duration select from MenuList to ScrollableList
+* Update UI/UX in SSVEP widget
+
+## Beta 3
+
+### Bug fixes
+* Update links to OpenBCI Forum and new Docs at GitHub Pages
+
+## Beta 2
+
+### Bug fixes
+* Only delete settings files if they are old/broken
+
+## Beta 1
+
+### Bug fixes
+* Fix 'Open Log as Text' feature in ConsoleLog
+* Delete old/broken user and default settings when attempting to load
+
+### Improvements
+
+#### SSVEP
+* Place this widget in BETA mode w/ description in widget help text
+
+#### Networking Widget
+* Implement FFT over LSL
+* Auto-switch to Band Power instead of FFT for Serial output
+* Add link to networking output guide for all data types
 
 ## Beta 0
 
