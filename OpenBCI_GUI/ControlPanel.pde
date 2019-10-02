@@ -153,6 +153,8 @@ public void controlEvent(ControlEvent theEvent) {
             return;
         }
 
+        
+
         // this button only used on mac
         if(isMac()) {
             protocolBLEGanglion.setColorNotPressed(colorNotPressed);
@@ -164,6 +166,7 @@ public void controlEvent(ControlEvent theEvent) {
 
         ganglion.setInterface(INTERFACE_NONE);
         cyton.setInterface(INTERFACE_NONE);
+        controlPanel.novaXRBox.isShowing = false;
 
         if(newDataSource == DATASOURCE_CYTON){
             updateToNChan(8);
@@ -200,6 +203,8 @@ public void controlEvent(ControlEvent theEvent) {
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
+        } else if (newDataSource == DATASOURCE_NOVAXR) {
+            controlPanel.novaXRBox.isShowing = true;
         }
 
         //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
@@ -1746,10 +1751,9 @@ class NoHubBox {
 
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
-    int numItems = 4;
+    int numItems = 5;
     int boxHeight = 24;
     int spacing = 43;
-
 
     CheckBox sourceCheckBox;
 
@@ -2889,6 +2893,8 @@ class RecentPlaybackBox {
 
 class NovaXRBox {
     int x, y, w, h, padding; //size and position
+    boolean isShowing;
+    private boolean previousIsShowing;
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2896,6 +2902,8 @@ class NovaXRBox {
         w = _w;
         h = 67;
         padding = _padding;
+        isShowing = false;
+        previousIsShowing = false;
 
         cp5.addTextfield("novaXR_IP")
             .setPosition(x + 60, y + 32)
@@ -2912,11 +2920,17 @@ class NovaXRBox {
             .setText("192.168.1.171")
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
+            .setVisible(false)
             .setAutoClear(true);
 
     }
 
     public void update() {
+        //Check for state change so we don't call setVisible() every update
+        if (isShowing != previousIsShowing) {
+            cp5.get(Textfield.class, "novaXR_IP").setVisible(isShowing);
+            previousIsShowing = isShowing;
+        }
     }
 
     public void draw() {
