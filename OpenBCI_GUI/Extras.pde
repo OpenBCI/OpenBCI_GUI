@@ -202,6 +202,37 @@ String shortenString(String str, float maxWidth, PFont font) {
     return s1 + "..." + s2;
 }
 
+int lerpInt(int first, int second, float bias)
+{
+    return round(lerp(first, second, bias));    
+}
+
+// creates an DataPacket_ADS1299 with interpolated values.
+// the bias is a float between 0 and 1. It's the weight between the two packets.
+// a bias of 0 will return packet "first"
+// a bias of 1 will return packet "second"
+// a bias of 0.5 will return the average of the two.
+// This is exactly the behavior of a lerp() function
+DataPacket_ADS1299 CreateInterpolatedPacket(DataPacket_ADS1299 first, DataPacket_ADS1299 second, float bias) {
+    int nValues = first.values.length;
+    int nAuxValues = first.auxValues.length;
+
+    DataPacket_ADS1299 interpolated = new DataPacket_ADS1299(nValues, nAuxValues);
+    first.copyTo(interpolated);
+    
+    interpolated.interpolated = true;
+
+    for (int i=0; i < nValues; i++) {
+        interpolated.values[i] = lerpInt(first.values[i], second.values[i], bias);
+    }
+
+    for (int i=0; i < nAuxValues; i++) {
+        interpolated.auxValues[i] = lerpInt(first.auxValues[i], second.auxValues[i], bias);
+    }
+
+    return interpolated;
+}
+
 //------------------------------------------------------------------------
 //                            Classes
 //------------------------------------------------------------------------
@@ -231,6 +262,7 @@ class DataPacket_ADS1299 {
     int[] auxValues;
     byte[][] rawValues;
     byte[][] rawAuxValues;
+    boolean interpolated;
 
     //constructor, give it "nValues", which should match the number of values in the
     //data payload in each data packet from the Arduino.  This is likely to be at least
@@ -241,6 +273,7 @@ class DataPacket_ADS1299 {
         auxValues = new int[nAuxValues];
         rawValues = new byte[nValues][rawAdsSize];
         rawAuxValues = new byte[nAuxValues][rawAdsSize];
+        interpolated = false; // default
     }
 
     int copyTo(DataPacket_ADS1299 target) { return copyTo(target, 0, 0); }
