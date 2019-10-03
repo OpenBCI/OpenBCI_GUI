@@ -213,6 +213,13 @@ class TopNav {
     }
 
     void update() {
+        //ignore settings button when help dropdown is open
+        if (tutorialSelector.isVisible) {
+            configButton.setIgnoreHover(true);
+        } else {
+            configButton.setIgnoreHover(false);
+        }
+
         if (previousSystemMode != systemMode) {
             if (systemMode >= SYSTEMMODE_POSTINIT) {
                 layoutSelector.update();
@@ -242,8 +249,11 @@ class TopNav {
             stroke(bgColor);
             fill(255);
             rect(-1, 0, width+2, navBarHeight);
-            //this is the center logo
-            image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+            //hide the center logo if buttons would overlap it
+            if (width > 860) {
+                //this is the center logo
+                image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
+            }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             noStroke();
             fill(100);
@@ -252,7 +262,11 @@ class TopNav {
             stroke(bgColor);
             fill(31, 69, 110);
             rect(-1, 0, width+2, navBarHeight);
-            image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
+            //hide the center logo if buttons would overlap it
+            if (width > 860) {
+                //this is the center logo
+                image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
+            }
         }
 
         popStyle();
@@ -388,7 +402,6 @@ class TopNav {
         if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
             tutorialSelector.toggleVisibility();
             tutorialsButton.setIsActive(true);
-            configButton.setIgnoreHover(true);
         }
 
         if (issuesButton.isMouseHere() && issuesButton.isActive()) {
@@ -749,8 +762,9 @@ class ConfigSelector {
     int buttonSpacer = 0;
 
     ConfigSelector() {
-        w = 120;
-        x = width - 70*2 + 20;
+        int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
+        w = 140;
+        x = width - w - _padding;
         y = (navBarHeight * 2) - 3;
         margin = 6;
         b_w = w - margin*2;
@@ -764,6 +778,8 @@ class ConfigSelector {
 
         configOptions = new ArrayList<Button>();
         addConfigButtons();
+
+        buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
     }
 
     void update() {
@@ -771,7 +787,7 @@ class ConfigSelector {
     }
 
     void draw() {
-        if (isVisible == true) { //only draw if visible
+        if (isVisible) { //only draw if visible
             pushStyle();
 
             stroke(bgColor);
@@ -796,6 +812,7 @@ class ConfigSelector {
 
             fill(57, 128, 204);
             noStroke();
+            //This makes the dropdown box look like it's apart of the button by drawing over the bottom edge of the button
             rect(x+w-(topNav.configButton.but_dx-1), y, (topNav.configButton.but_dx-1), 1);
 
             popStyle();
@@ -852,15 +869,17 @@ class ConfigSelector {
                     int configSelected = i;
                     configOptions.get(i).setIsActive(false);
                     if (configSelected == 0) { //If expert mode toggle button is pressed...
-                        if (configOptions.get(0).getButtonText().equals("Expert Mode Off")) {
-                            configOptions.get(0).setString("Expert Mode On");
+                        if (configOptions.get(0).getButtonText().equals("Turn Expert Mode On")) {
+                            configOptions.get(0).setString("Turn Expert Mode Off");
                             configOptions.get(0).setColorNotPressed(expertPurple);
                             println("TopNav: Expert Mode On");
+                            output("Expert Mode ON: All keyboard shortcuts and features are enabled!");
                             settings.expertModeToggle = true;
                         } else {
-                            configOptions.get(0).setString("Expert Mode Off");
+                            configOptions.get(0).setString("Turn Expert Mode On");
                             configOptions.get(0).setColorNotPressed(newGreen);
                             println("TopNav: Expert Mode Off");
+                            output("Expert Mode OFF: Use spacebar to start/stop the data stream.");
                             settings.expertModeToggle = false;
                         }
                     } else if (configSelected == 1) { ////Save Button
@@ -928,7 +947,7 @@ class ConfigSelector {
         //Customize initial button appearance here
         //setup button 0 -- Expert Mode Toggle Button
         int buttonNumber = 0;
-        Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Expert Mode Off");
+        Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Turn Expert Mode On");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(newGreen);
         tempConfigButton.setFontColorNotActive(color(255));
@@ -938,7 +957,7 @@ class ConfigSelector {
         //setup button 1 -- Save Custom Settings
         buttonNumber++;
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
-        tempConfigButton.setFont(p5, 12);
+        tempConfigButton.setFont(p5, 12); 
         configOptions.add(tempConfigButton);
 
         //setup button 2 -- Load Custom Settings
@@ -954,7 +973,7 @@ class ConfigSelector {
         configOptions.add(tempConfigButton);
 
         //setup button 4 -- Clear All Settings
-        buttonNumber = 1;
+        buttonNumber = 0;
         //Update the height of the Settings dropdown
         h = margin*(buttonNumber+1) + b_h*(buttonNumber+1);
         tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
@@ -985,7 +1004,7 @@ class ConfigSelector {
         int oldX = x;
         int multiplier = (systemMode == SYSTEMMODE_POSTINIT) ? 3 : 2;
         int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
-        x = width - 70*multiplier - _padding + 20;
+        x = width - 70*multiplier - _padding;
         int dx = oldX - x;
         buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
         if (systemMode == SYSTEMMODE_POSTINIT) {
@@ -1090,7 +1109,7 @@ class TutorialSelector {
                     tutorialOptions.get(i).setIsActive(false);
                     tutorialOptions.get(i).goToURL();
                     println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
-                    output("Layout [" + tutorialSelected + "] selected.");
+                    //output("Help button [" + tutorialSelected + "] selected.");
                     toggleVisibility(); //shut layoutSelector if something is selected
                     //open corresponding link
                 }
@@ -1137,28 +1156,35 @@ class TutorialSelector {
         int buttonNumber = 0;
         Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide");
+        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 1;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/01-Cyton_Getting%20Started_Guide#cyton-getting-started-guide-v-connect-yourself-to-openbci-4-launch-the-gui-and-adjust-your-channel-settings");
+        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 2;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
+        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Troubleshooting Guide");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.com/index.php/forum/");
+        tempTutorialButton.setURL("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 3;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
         tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
         tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/Tutorials/16-Custom_Widgets");
+        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+        tutorialOptions.add(tempTutorialButton);
+
+        buttonNumber = 4;
+        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
+        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
+        tempTutorialButton.setFont(p5, 12);
+        tempTutorialButton.setURL("https://openbci.com/forum/");
         tutorialOptions.add(tempTutorialButton);
     }
 }

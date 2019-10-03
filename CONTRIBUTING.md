@@ -18,13 +18,13 @@ If you're new to Git and want to learn how to fork this repo, make your own addi
 
 ### Community
 
-This project is maintained by the [OpenBCI](www.openbci.com) community. Join the [OpenBCI Forum](http://openbci.com/index.php/forum/), where discussions about OpenBCI takes place.
+This project is maintained by the [OpenBCI](https://openbci.com) community. Join the [OpenBCI Forum](https://openbci.com/forum/), where discussions about OpenBCI takes place.
 
 ## How can I contribute?
 
-This is currently a small, humble project so our contribution process is rather casual. If there's a feature you'd be interested in building, go ahead! Let us know on the [OpenBCI Forum](http://openbci.com/index.php/forum/) or [open an issue](../../issues) so others can follow along and we'll support you as much as we can. When you're finished submit a pull request to the master branch referencing the specific issue you addressed.
+This is currently a small, humble project so our contribution process is rather casual. If there's a feature you'd be interested in building, go ahead! Let us know on the [OpenBCI Forum](https://openbci.com/forum/) or [open an issue](../../issues) so others can follow along and we'll support you as much as we can. When you're finished submit a pull request to the master branch referencing the specific issue you addressed.
 
-If you find a bug, or have a suggestion on how to improve the project, just fill out a [Github issue](../../issues)
+If you find a bug, or have a suggestion on how to improve the project, please fill out a [Github issue](../../issues).
 
 ### Steps to Contribute
 

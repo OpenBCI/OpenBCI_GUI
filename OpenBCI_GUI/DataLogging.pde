@@ -1395,8 +1395,7 @@ class Table_CSV extends Table {
                     }
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error reading table on line " + row, e);
         }
         // shorten or lengthen based on what's left
@@ -1487,7 +1486,7 @@ void convert16channelLine() {
             }
         }
         dataWriter.println();
-        println(consoleMsg);
+        println("convert16channelLine: " + consoleMsg);
         return;
     }
     for (int i=0; i<hexNums.length; i++) {

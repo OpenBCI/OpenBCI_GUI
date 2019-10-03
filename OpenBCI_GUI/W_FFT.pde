@@ -72,7 +72,8 @@ class W_fft extends Widget {
 
     void initializeFFTPlot(PApplet _parent) {
         //setup GPlot for FFT
-        fft_plot =  new GPlot(_parent, x, y-navHeight, w, h+navHeight); //based on container dimensions
+        fft_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight); //based on container dimensions
+        fft_plot.setAllFontProperties("Arial", 0, 14);
         fft_plot.getXAxis().setAxisLabelText("Frequency (Hz)");
         fft_plot.getYAxis().setAxisLabelText("Amplitude (uV)");
         fft_plot.setMar(60, 70, 40, 30); //{ bot=60, left=70, top=40, right=30 } by default

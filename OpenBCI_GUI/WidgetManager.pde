@@ -28,7 +28,7 @@ W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
 W_MarkerMode w_markermode;
 W_playback w_playback;
-
+W_SSVEP w_ssvep;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -95,6 +95,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_focus, w);
     // println("  setupWidgets focus widget -- " + millis());
 
+    w_ssvep = new W_SSVEP(_this);
+    w_ssvep.setTitle("SSVEP_beta");
+    addWidget(w_ssvep, w);
+
     //only instantiate these widgets if you are using a Cyton board for live streaming
     if(eegDataSource == DATASOURCE_CYTON){
         //Cyton Widget_8
@@ -119,7 +123,9 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_markermode, w);
     }
 
+    
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
+    //DEVELOPERS: Here is an example widget with the essentials/structure in place
     w_template1 = new W_template(_this);
     w_template1.setTitle("Widget Template 1");
     addWidget(w_template1, w);
@@ -325,7 +331,7 @@ class WidgetManager{
                 layoutString += layouts.get(i).myContainers[j].w + ", ";
                 layoutString += layouts.get(i).myContainers[j].h;
             }
-            println(layoutString);
+            println("WM:printLayouts: " + layoutString);
         }
     }
 

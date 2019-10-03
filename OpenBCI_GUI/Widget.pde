@@ -13,7 +13,7 @@ class Widget{
     PApplet pApplet;
 
     int x0, y0, w0, h0; //true x,y,w,h of container
-    int x, y, w, h; //adjusted x,y,w,h of white space (blank rectangle) under the nav...
+    int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
     int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
@@ -25,14 +25,13 @@ class Widget{
     ArrayList<NavBarDropdown> dropdowns;
     ControlP5 cp5_widget;
     String widgetTitle = "No Title Set";
-    Button widgetSelector;
+    //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
+    private final float widgetDropdownScaling = .35;
 
     //some variables for the dropdowns
     int navH = 22;
     int widgetSelectorWidth = 160;
     int dropdownWidth = 64;
-
-    CColor dropdownColors = new CColor(); //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
 
     Widget(PApplet _parent){
         pApplet = _parent;
@@ -93,20 +92,14 @@ class Widget{
         //      SETUP the widgetSelector dropdown
         //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-        dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
-        dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
-        dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
-        // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
-        dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
-
-        cp5_widget.setColor(dropdownColors);
+        cp5_widget.setColor(settings.dropdownColors);
         cp5_widget.addScrollableList("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
-            .setColor(dropdownColors)
-            .setSize(widgetSelectorWidth, (_widgetOptions.size()+1)*(navH-4) )// + maxFreqList.size())
+            .setColor(settings.dropdownColors)
+            .setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
+            //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
             .setBarHeight(navH-4) //height of top/primary bar
             .setItemHeight(navH-4) //height of all item/dropdown bars
@@ -141,6 +134,7 @@ class Widget{
         //      SETUP all NavBarDropdowns
         //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /*
         dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
         dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
         // dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
@@ -148,8 +142,9 @@ class Widget{
         dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
         // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
         dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
+        */
 
-        cp5_widget.setColor(dropdownColors);
+        cp5_widget.setColor(settings.dropdownColors);
         // println("Setting up dropdowns...");
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
@@ -158,7 +153,7 @@ class Widget{
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
-                .setColor(dropdownColors)
+                .setColor(settings.dropdownColors)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
                 .setItemHeight(navH-4)
@@ -303,12 +298,24 @@ class Widget{
         w = w0;
         h = h0 - navH*2;
 
+        //This line resets the origin for all cp5 elements under "cp5_widget" when the screen is resized, otherwise there will be drawing errors
         cp5_widget.setGraphics(pApplet, 0, 0);
 
-        // println("testing... 1. 2. 3....");
+        int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
+        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
+        int dropdownHeight = (dropdownsItemsToShow + 1) * (navH - 4);
+        if (wm != null) {
+            int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
+            if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
+        }
+
+
         try {
             cp5_widget.getController("WidgetSelector")
                 .setPosition(x0+2, y0+2) //upper left corner
+                ;
+            cp5_widget.getController("WidgetSelector")
+                .setSize(widgetSelectorWidth, dropdownHeight);
                 ;
         }
         catch (Exception e) {
@@ -336,6 +343,17 @@ class Widget{
             }
         } else {
             return false;
+        }
+    }
+
+    void ignoreButtonCheck(Button b) {
+        //ignore top left button interaction when widgetSelector dropdown is active
+        if (dropdownIsActive) {
+            b.setIgnoreHover(true);
+        } else {
+            if (b.getIgnoreHover()) {
+                b.setIgnoreHover(false);
+            }
         }
     }
 };
@@ -422,3 +440,141 @@ void WidgetSelector(int n){
 
     closeAllDropdowns();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//    ChannelSelect is currently used by BandPower and SSVEP Widgets         //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+class ChannelSelect {
+
+    //----------CHANNEL SELECT INFRASTRUCTURE
+    private int x, y, w, navH;
+    private float tri_xpos = 0;
+    private float chanSelectXPos = 0;
+    public ControlP5 cp5_channelCheckboxes;   //ControlP5 to contain our checkboxes
+    public CheckBox checkList;
+    private int offset;  //offset on nav bar of checkboxes
+    private boolean channelSelectHover;
+    private boolean channelSelectPressed;
+    public List<Integer> activeChan;
+    public String chanDropdownName;
+
+    ChannelSelect(PApplet _parent, int _x, int _y, int _w, int _navH, String checkBoxName) {
+        x = _x;
+        y = _y;
+        w = _w;
+        navH = _navH;
+        activeChan = new ArrayList<Integer>();
+        chanDropdownName = checkBoxName;
+
+        //setup for checkboxes
+        cp5_channelCheckboxes = new ControlP5(_parent);
+
+        int checkSize = _navH - 4;
+        offset = (_navH - checkSize)/2;
+
+        channelSelectHover = false;
+        channelSelectPressed = false;
+
+        //Go ahead and just name the checkbox the same as the text display on screen
+        checkList = cp5_channelCheckboxes.addCheckBox(chanDropdownName)
+                        .setPosition(x + 5, y + offset)
+                        .setSize(checkSize, checkSize)
+                        .setItemsPerRow(nchan)
+                        .setSpacingColumn(13)
+                        .setSpacingRow(2)
+                        .setColorLabel(color(0)) //Set the color of the text label
+                        .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
+                        .setColorBackground(color(150)) //checkbox background color
+                        .setColorActive(color(57, 128, 204)) //checkbox color when active
+                        ;
+        //nchan is a global variable, so we can use it here with no problems
+        for (int i = 0; i < nchan; i++) {
+            int chNum = i+1;
+            cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName)
+                            .addItem(String.valueOf(chNum), chNum)
+                            ;
+            //start all items as invisible until user clicks dropdown to show checkboxes
+            checkList.getItem(i).setVisible(false);
+        }
+
+        cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
+        //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void update(int _x, int _y, int _w) {
+        //update the x,y,w for this class using the parent class
+        x = _x;
+        y = _y;
+        w = _w;
+        //Toggle open/closed the channel menu
+        if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+            channelSelectHover = true;
+        } else {
+            channelSelectHover = false;
+        }
+        //Update the active channels to include in data processing
+        activeChan.clear();
+        for (int i = 0; i < nchan; i++) {
+            if(checkList.getState(i)){
+                activeChan.add(i);
+            }
+        }
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void draw() {
+
+        //change "Channels" text color and triangle color on hover
+        if (channelSelectHover) {
+            fill(openbciBlue);
+        } else {
+            fill(0);
+        }
+        textFont(p5, 12);
+        chanSelectXPos = x + 2;
+        text("Channels", chanSelectXPos, y - 6);
+        tri_xpos = x + textWidth("Channels") + 7;
+
+        //draw triangle as pointing up or down, depending on if channel Select is active or closed
+        if (!channelSelectPressed) {
+            triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
+        } else {
+            triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
+            //if active, draw a grey background for the channel select checkboxes
+            fill(180);
+            rect(x,y,w,navH);
+        }
+
+        cp5_channelCheckboxes.draw();
+    }
+
+    void screenResized(PApplet _parent) {
+        cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void mousePressed(boolean dropdownIsActive) {
+        if (!dropdownIsActive) {
+            if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
+                channelSelectPressed = !channelSelectPressed;
+                if (channelSelectPressed) {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
+            }
+        }
+    }
+
+    boolean isVisible() {
+        return channelSelectPressed;
+    }
+} //end of ChannelSelect class
