@@ -230,6 +230,8 @@ DataPacket_ADS1299 CreateInterpolatedPacket(DataPacket_ADS1299 first, DataPacket
         interpolated.auxValues[i] = lerpInt(first.auxValues[i], second.auxValues[i], bias);
     }
 
+    interpolated.sampleIndex = lerpInt(first.sampleIndex, second.sampleIndex, bias);
+
     return interpolated;
 }
 

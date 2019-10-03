@@ -667,14 +667,21 @@ class Hub {
                     // KILL SPIKES!!!
                     if(numPacketsDroppedHub > 0) {
                         println("Interpolating dropped packets...");
+
+                        // the number of separations between the last received packet and the current packet.
+                        // for example if we dropped 3 packets, we will have 4 divisions (marked with ---):
+                        // 162, 163, 164 --- X --- X --- X --- 168, 169, 170...
                         int numSections = numPacketsDroppedHub + 1;
 
                         DataPacket_ADS1299 current = dataPacket;                        
                         DataPacket_ADS1299 previous = dataPacketBuff[curDataPacketInd];
 
                         for (int i = 1; i <= numPacketsDroppedHub; i++){
+                            // increment current packet index
                             curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length;
 
+                            // this bias allows us to handle multiple dropped packets in a row
+                            // by adjusting the lerp coefficient depending on which packet we are filling in
                             float bias = (float)i / (float)numSections;
                             DataPacket_ADS1299 interpolated = CreateInterpolatedPacket(previous, current, bias);
                             interpolated.copyTo(dataPacketBuff[curDataPacketInd]);
