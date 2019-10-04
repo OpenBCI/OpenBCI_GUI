@@ -589,14 +589,21 @@ class Hub {
         }
     }
 
+    public int getMaxSampleIndex() {
+        if(curProtocol == PROTOCOL_BLE) {
+            return 200;
+        }
+
+        return 255;
+    }
+
     public void processData(JSONObject json) {
         try {
             int code = json.getInt(TCP_JSON_KEY_CODE);
             int stopByte = 0xC0;
             numPacketsDroppedHub = 0;
-            if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
+            if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) {
                 if (code == RESP_SUCCESS_DATA_SAMPLE) {
-
                     // set debugRandomlyDropPackets to true to simulate packet drops
                     if(debugRandomlyDropPackets && random(0, 1000) < 1) {
                         println("WARNING: Randomly dropping packet for debugging purposes");
@@ -604,21 +611,21 @@ class Hub {
                     }
                     // Sample number stuff
                     dataPacket.sampleIndex = json.getInt(TCP_JSON_KEY_SAMPLE_NUMBER);
+                    boolean didWeRollOver = dataPacket.sampleIndex == 0 && prevSampleIndex == getMaxSampleIndex();
 
-                    if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-                        if(dataPacket.sampleIndex != 0 || prevSampleIndex != PROTOCOL_BLE ? 200 : 255){  // if we rolled over, don't count as error
-                            bleErrorCounter++;
+                    // if we rolled over, don't count as error
+                    if (!didWeRollOver && (dataPacket.sampleIndex - prevSampleIndex) > 1) {
+                        bleErrorCounter++;
 
-                            if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-                                numPacketsDroppedHub = (dataPacket.sampleIndex+(curProtocol == PROTOCOL_BLE ? 200 : 255)) - prevSampleIndex - 1; //calculate how many times the last received packet should be duplicated...
-                            } else {
-                                //calculate how many times the last received packet should be duplicated...
-                                //Subtract 1 so this value is accurate (example 50->52, 52-50 = 2-1 = 1)
-                                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex - 1;
-                            }
-                            println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-                            println("numPacketsDropped = " + numPacketsDroppedHub);
+                        if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
+                            numPacketsDroppedHub = (dataPacket.sampleIndex + getMaxSampleIndex()) - prevSampleIndex - 1; //calculate how many times the last received packet should be duplicated...
+                        } else {
+                            //calculate how many times the last received packet should be duplicated...
+                            //Subtract 1 so this value is accurate (example 50->52, 52-50 = 2-1 = 1)
+                            numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex - 1;
                         }
+                        println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+                        println("numPacketsDropped = " + numPacketsDroppedHub);
                     }
                     prevSampleIndex = dataPacket.sampleIndex;
 
