@@ -1183,6 +1183,7 @@ void systemUpdate() { // for updating data values and variables
             //New feature to address #461, defined in DataLogging.pde
             //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
             //Don't check duration if user has selected "No Limit"
+            //TODO[brainflow] commented this out to get brainflow working. Undo comment and fix.
             // if (outputDataSource == OUTPUT_SOURCE_ODF
             //     && eegDataSource < DATASOURCE_PLAYBACKFILE
             //     && settings.limitOBCILogFileDuration()) {
