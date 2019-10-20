@@ -1,7 +1,7 @@
 import brainflow.*;
 import org.apache.commons.lang3.SystemUtils;
 
-class NovaXR {
+class BoardBrainflow {
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
     private DataPacket_ADS1299 rawReceivedDataPacket;
@@ -12,8 +12,8 @@ class NovaXR {
     private String ipAddress = "";
 
     //constructors
-    NovaXR() {};  //only use this if you simply want access to some of the constants
-    NovaXR(PApplet applet, String ip_addr) {
+    BoardBrainflow() {};  //only use this if you simply want access to some of the constants
+    BoardBrainflow(PApplet applet, String ip_addr) {
 
         initDataPackets(nEEGValuesPerPacket, nAuxValuesPerPacket);
         ipAddress = ip_addr;
@@ -71,7 +71,7 @@ class NovaXR {
     }
 
     public void startDataTransfer() {
-        println("start NOVAXR");
+        println("start BoardBrainflow");
         try {
             int boardType = 3; // nova XR
             if(ipAddress.isEmpty()) {
@@ -88,7 +88,7 @@ class NovaXR {
     }
 
     public void stopDataTransfer() {
-        println("stop NOVAXR");
+        println("stop BoardBrainflow");
         try {
             board_shim.stop_stream ();
             board_shim.release_session ();
