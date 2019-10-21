@@ -110,7 +110,7 @@ int nextPlayback_millis = -100; //any negative number
 // Initialize boards for constants
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
-BoardBrainFlow novaXR = new BoardBrainFlow(); //dummy creation to get access to constants, create real one later
+BoardBrainFlow brainFlowBoard = new BoardNull();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
@@ -762,7 +762,8 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_SYNTHETIC:
-            //do nothing
+            brainFlowBoard = new BoardSynthetic();
+            brainFlowBoard.init();
             break;
         case DATASOURCE_PLAYBACKFILE:
             break;
@@ -778,7 +779,9 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_NOVAXR:
-            novaXR = new BoardBrainFlow(this, novaXR_ipAddress);
+            brainFlowBoard = new BoardNovaXR(novaXR_ipAddress);
+            brainFlowBoard.init();
+            break;
         default:
             break;
         }
@@ -951,10 +954,8 @@ void startRunning() {
         if (cyton != null) {
             cyton.startDataTransfer();
         }
-    } else if (eegDataSource == DATASOURCE_NOVAXR) {
-        if (novaXR != null) {
-            novaXR.startDataTransfer();
-        }
+    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+        brainFlowBoard.startStreaming();
     }
     isRunning = true;
 }
@@ -973,10 +974,8 @@ void stopRunning() {
         if (cyton != null) {
             cyton.stopDataTransfer();
         }
-    }else if (eegDataSource == DATASOURCE_NOVAXR) {
-        if (novaXR != null) {
-            novaXR.stopDataTransfer();
-        }
+    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+        brainFlowBoard.stopStreaming();
     }
 
     isRunning = false;
@@ -1233,7 +1232,7 @@ void systemUpdate() { // for updating data values and variables
         }
     }
 
-    novaXR.update();
+    brainFlowBoard.update();
 }
 
 void systemDraw() { //for drawing to the screen

@@ -147,14 +147,6 @@ public void controlEvent(ControlEvent theEvent) {
 
         eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
-        if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
-            outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
-            println("ControlEvent: Hub error");
-            return;
-        }
-
-        
-
         // this button only used on mac
         if(isMac()) {
             protocolBLEGanglion.setColorNotPressed(colorNotPressed);
@@ -1454,15 +1446,18 @@ class ControlPanel {
         }
 
         if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
-            updateToNChan(4);
+            //TODO[brainflow]
+            //updateToNChan(4);
         }
 
         if (synthChanButton8.isMouseHere() && synthChanButton8.wasPressed) {
-            updateToNChan(8);
+            //TODO[brainflow]
+            //updateToNChan(8);
         }
 
         if (synthChanButton16.isMouseHere() && synthChanButton16.wasPressed) {
-            updateToNChan(16);
+            //TODO[brainflow]
+            //updateToNChan(16);
         }
 
         if (latencyCyton5ms.isMouseHere() && latencyCyton5ms.wasPressed) {
@@ -1706,7 +1701,7 @@ public void initButtonPressed(){
 void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    //fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("channel count set to " + str(nchan));
     hub.initDataPackets(_nchan, 3);
@@ -2921,8 +2916,7 @@ class NovaXRBox {
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
             .setVisible(false)
-            .setAutoClear(true);
-
+            .setAutoClear(true); 
     }
 
     public void update() {
