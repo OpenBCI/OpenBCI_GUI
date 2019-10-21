@@ -1,15 +1,13 @@
 import brainflow.*;
 
-private static BrainFlowInputParams makeParamsBoardSynthetic() {
-    return new BrainFlowInputParams();
-}
-
 class BoardSynthetic extends BoardBrainFlow {
 
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {
-        return new BrainFlowInputParams();
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.other_info = str(random(43345));
+        return params;
     }
 
     @Override
