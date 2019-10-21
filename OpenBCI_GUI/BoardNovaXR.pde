@@ -1,12 +1,5 @@
 import brainflow.*;
 
-private static BrainFlowInputParams makeParamsNovaXR(String ipAddress) {
-    BrainFlowInputParams params = new BrainFlowInputParams();
-    params.ip_address = ipAddress;
-    params.ip_protocol = IpProtocolType.TCP.get_code();
-    return params;
-}
-
 class BoardNovaXR extends BoardBrainFlow {
 
     private String ipAddress = "";
