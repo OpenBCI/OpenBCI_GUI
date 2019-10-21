@@ -1,9 +1,7 @@
 import brainflow.*;
 import org.apache.commons.lang3.SystemUtils;
 
-class BoardBrainflow {
-    private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
-    private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
+class BoardBrainFlow {
     private DataPacket_ADS1299 rawReceivedDataPacket;
     private DataPacket_ADS1299 missedDataPacket;
     private DataPacket_ADS1299 dataPacket;
@@ -11,90 +9,116 @@ class BoardBrainflow {
     private BoardShim board_shim = null;
     private String ipAddress = "";
 
-    //constructors
-    BoardBrainflow() {};  //only use this if you simply want access to some of the constants
-    BoardBrainflow(PApplet applet, String ip_addr) {
+    private int packetNumberChannel = 0;
+    private int[] eegChannels = {};
+    private int[] auxChannels = {};
 
-        initDataPackets(nEEGValuesPerPacket, nAuxValuesPerPacket);
+    private boolean streaming = false;
+
+    //constructors
+    BoardBrainFlow() {}
+
+    BoardBrainFlow(PApplet applet, String ip_addr) {
+        int boardType = BoardIds.SYNTHETIC_BOARD.get_code(); // nova XR
+
+        try {
+            packetNumberChannel = BoardShim.get_package_num_channel(boardType);
+            eegChannels = BoardShim.get_eeg_channels(boardType);
+            auxChannels = BoardShim.get_other_channels(boardType);
+
+            println(auxChannels);
+
+            BrainFlowInputParams  params = new BrainFlowInputParams ();
+            params.ip_address = ipAddress;
+            params.ip_protocol = IpProtocolType.TCP.get_code();
+            board_shim = new BoardShim (boardType, params);
+            board_shim.prepare_session();            
+        } catch (BrainFlowError e) {
+            println (e);
+        } catch (IOException e) {
+            println (e);
+        } catch (ReflectiveOperationException e) {
+            println (e);
+        }
+        initDataPackets(eegChannels.length, auxChannels.length);
         ipAddress = ip_addr;
     }
 
-    public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
+    // ~BoardBrainFlow()
+    // {
+    //     board_shim.release_session ();
+    // }
+
+    public void initDataPackets(int eegChannelCount, int auxChannelCount) {
+        println("Initializing data packets with " + eegChannelCount + " eeg channels and " + auxChannelCount + " aux.");
+
         //allocate space for data packet
-        rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
+        rawReceivedDataPacket = new DataPacket_ADS1299(eegChannelCount, auxChannelCount);
+        missedDataPacket = new DataPacket_ADS1299(eegChannelCount, auxChannelCount);
+        dataPacket = new DataPacket_ADS1299(eegChannelCount, auxChannelCount);
         //set all values to 0 so not null
 
-        for (int i = 0; i < nEEGValuesPerPacket; i++) {
+        for (int i=0; i < eegChannelCount; i++) {
             rawReceivedDataPacket.values[i] = 0;
-            //prevDataPacket.values[i] = 0;
-        }
-
-        for (int i=0; i < nEEGValuesPerPacket; i++) {
             dataPacket.values[i] = 0;
             missedDataPacket.values[i] = 0;
         }
-        for (int i = 0; i < nAuxValuesPerPacket; i++) {
+        for (int i = 0; i < auxChannelCount; i++) {
             rawReceivedDataPacket.auxValues[i] = 0;
             dataPacket.auxValues[i] = 0;
             missedDataPacket.auxValues[i] = 0;
-            //prevDataPacket.auxValues[i] = 0;
         }
     }
  
     public void update() {
-        if (board_shim != null) {
+        if (streaming) {
             try {
-                BoardData boardData = board_shim.get_board_data ();
-                List<ArrayList<Double>> data = boardData.get_board_data();
-                for (ArrayList<Double> packet : data)
+                int data_count = board_shim.get_board_data_count();
+                double[][] data = board_shim.get_board_data();
+                for (int count = 0; count < data_count; count++)
                 {
-                    dataPacket.sampleIndex = (int)Math.round(packet.get(0));
-                    for (int i=0; i < 8; i++)
+                    dataPacket.sampleIndex = (int)Math.round(data[packetNumberChannel][count]);
+
+                    for (int i=0; i < eegChannels.length; i++)
                     {
-                        dataPacket.values[i] = (int)Math.round(packet.get(i+1));
+                        dataPacket.values[i] = (int)Math.round(data[eegChannels[i]][count]);
                     }
-                    for (int i=8; i<11; i++)
+
+                    for (int i=0; i<auxChannels.length; i++)
                     {
-                        dataPacket.auxValues[i-8] = (int)Math.round(packet.get(i+1));
+                        dataPacket.auxValues[i] = (int)Math.round(data[auxChannels[i]][count]);
                     }
+                    
                     curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
                     
                     copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
                 }
             }
-            catch (Exception e) {
+            catch (BrainFlowError e) {
                 println (e);
             }
         }
     }
 
     public void startDataTransfer() {
-        println("start BoardBrainflow");
+        println("start BoardBrainFlow");
         try {
-            int boardType = 3; // nova XR
-            if(ipAddress.isEmpty()) {
-                boardType = -1; // synthetic
-            }
-
-            board_shim = new BoardShim (boardType, ipAddress, true);
-            board_shim.prepare_session();
             board_shim.start_stream (3600);
+            streaming = true;
         }
-        catch (Exception e) {
-                println (e);
+        catch (BrainFlowError e) {
+            println (e);
+            streaming = false;
         }
     }
 
     public void stopDataTransfer() {
-        println("stop BoardBrainflow");
+        println("stop BoardBrainFlow");
+        streaming = false;
         try {
             board_shim.stop_stream ();
-            board_shim.release_session ();
-            board_shim = null;
         }
-        catch (Exception e) {
+        catch (BrainFlowError e) {
             println (e);
         }
     }

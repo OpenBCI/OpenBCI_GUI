@@ -110,7 +110,7 @@ int nextPlayback_millis = -100; //any negative number
 // Initialize boards for constants
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
-BoardBrainflow novaXR = new BoardBrainflow(); //dummy creation to get access to constants, create real one later
+BoardBrainFlow novaXR = new BoardBrainFlow(); //dummy creation to get access to constants, create real one later
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
@@ -778,7 +778,7 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_NOVAXR:
-            novaXR = new BoardBrainflow(this, novaXR_ipAddress);
+            novaXR = new BoardBrainFlow(this, novaXR_ipAddress);
         default:
             break;
         }
