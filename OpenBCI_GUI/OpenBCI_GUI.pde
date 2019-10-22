@@ -722,6 +722,49 @@ void initSystem() throws Exception {
         }
     }
     */
+
+
+    //prepare the source of the input data
+    switch (eegDataSource) {
+        case DATASOURCE_CYTON:
+            int nEEDataValuesPerPacket = nchan;
+            boolean useAux = true;
+            if (cyton.getInterface() == INTERFACE_SERIAL) {
+                cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+            } else {
+                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
+                    cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+                } else {
+                    cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+                }
+            }
+            break;
+        case DATASOURCE_SYNTHETIC:
+            //do nothing
+            break;
+        case DATASOURCE_PLAYBACKFILE:
+            break;
+        case DATASOURCE_GANGLION:
+            if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+                hub.connectBLE(ganglion_portName);
+            } else {
+                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
+                    hub.connectWifi(wifi_portName);
+                } else {
+                    hub.connectWifi(wifi_ipAddress);
+                }
+            }
+            break;
+        case DATASOURCE_NOVAXR:
+            currentBoard = new BoardNovaXR(novaXR_ipAddress);
+            //TODO[brainflow]
+            //currentBoard = new BoardBrainFlowSynthetic();
+            currentBoard.initialize();
+            break;
+        default:
+            break;
+    }
+
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
     //initialize playback file if necessary
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
@@ -745,46 +788,6 @@ void initSystem() throws Exception {
     verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
     hub.changeState(HubState.COMINIT);
     // hub.searchDeviceStop();
-
-    //prepare the source of the input data
-    switch (eegDataSource) {
-        case DATASOURCE_CYTON:
-            int nEEDataValuesPerPacket = nchan;
-            boolean useAux = true;
-            if (cyton.getInterface() == INTERFACE_SERIAL) {
-                cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-            } else {
-                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-                } else {
-                    cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-                }
-            }
-            break;
-        case DATASOURCE_SYNTHETIC:
-            currentBoard = new BoardSynthetic(); 
-            currentBoard.initialize();
-            break;
-        case DATASOURCE_PLAYBACKFILE:
-            break;
-        case DATASOURCE_GANGLION:
-            if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-                hub.connectBLE(ganglion_portName);
-            } else {
-                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    hub.connectWifi(wifi_portName);
-                } else {
-                    hub.connectWifi(wifi_ipAddress);
-                }
-            }
-            break;
-        case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_ipAddress);
-            currentBoard.initialize();
-            break;
-        default:
-            break;
-        }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -954,7 +957,7 @@ void startRunning() {
         if (cyton != null) {
             cyton.startDataTransfer();
         }
-    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
         currentBoard.startStreaming();
     }
     isRunning = true;
@@ -974,7 +977,7 @@ void stopRunning() {
         if (cyton != null) {
             cyton.stopDataTransfer();
         }
-    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
         currentBoard.stopStreaming();
     }
 
@@ -1120,6 +1123,7 @@ void haltSystem() {
         // }
 
         currentBoard.uninitialize();
+        currentBoard = new BoardNull(); // back to null
 
         systemHasHalted = true;
     }

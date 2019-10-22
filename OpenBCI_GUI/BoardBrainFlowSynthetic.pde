@@ -1,12 +1,12 @@
 import brainflow.*;
+import org.apache.commons.lang3.ArrayUtils;
 
-class BoardSynthetic extends BoardBrainFlow {
+class BoardBrainFlowSynthetic extends BoardBrainFlow {
 
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.other_info = str(random(43345));
         return params;
     }
 

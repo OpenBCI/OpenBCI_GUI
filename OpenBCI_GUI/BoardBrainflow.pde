@@ -36,7 +36,7 @@ abstract class BoardBrainFlow implements Board {
 
             board_shim = new BoardShim (getBoardTypeInt(), params);
             board_shim.prepare_session();
-            
+
         } catch (Exception e) {
             board_shim = null;
             outputError("ERROR: " + e + " when initializing Brainflow board. Data will not stream.");
@@ -48,7 +48,14 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public void uninitialize() {
-        // empty for now
+        if(board_shim != null) {
+            try {
+                board_shim.release_session();
+            } catch (BrainFlowError e) {
+                println("WARNING: could not release brainflow board.");
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

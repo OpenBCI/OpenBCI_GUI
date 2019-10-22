@@ -70,7 +70,7 @@ int getDataIfAvailable(int pointCounter) {
             pointCounter++; //increment counter for "little buffer"
         }
 
-    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
         while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             

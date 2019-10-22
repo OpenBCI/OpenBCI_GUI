@@ -150,8 +150,7 @@ class W_Accelerometer extends Widget {
     void updateAccelPoints() {
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
             if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                //TODO[brainflow}]
-                //synthesizeAccelData();
+                synthesizeAccelData();
             } else if (eegDataSource == DATASOURCE_CYTON) {
                 currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
