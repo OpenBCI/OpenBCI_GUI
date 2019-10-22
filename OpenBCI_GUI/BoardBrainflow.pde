@@ -7,9 +7,13 @@ abstract class BoardBrainFlow implements Board {
 
     private int packetNumberChannel = 0;
     private int[] eegChannels = {};
-    private int[] auxChannels = {};
+    private int[] accelChannels = {};
 
     private boolean streaming = false;
+    private BrainFlowInputParams params;
+    private int samplingRate = 0;
+
+    private int[] lastAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -21,18 +25,25 @@ abstract class BoardBrainFlow implements Board {
         return getBoardType().get_code();
     } 
 
-    protected BoardBrainFlow() {} // empty
+    protected BoardBrainFlow() {
+        params = getParams();
+
+        try {
+            packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
+            eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
+            accelChannels = BoardShim.get_accel_channels(getBoardTypeInt());
+            samplingRate = BoardShim.get_sampling_rate(getBoardTypeInt());
+            lastAccelValues = new int[accelChannels.length];
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get board info from BoardShim");
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void initialize() {
         try {
-            BrainFlowInputParams params = getParams();
-
-            packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
-            eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
-            auxChannels = BoardShim.get_other_channels(getBoardTypeInt());
-
-            updateToNChan(eegChannels.length);
+            updateToNChan(getNumChannels());
 
             board_shim = new BoardShim (getBoardTypeInt(), params);
             board_shim.prepare_session();
@@ -43,7 +54,7 @@ abstract class BoardBrainFlow implements Board {
             e.printStackTrace();
         }
 
-        dataPacket = new DataPacket_ADS1299(eegChannels.length, auxChannels.length);
+        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
     }
 
     @Override
@@ -85,9 +96,10 @@ abstract class BoardBrainFlow implements Board {
                 dataPacket.values[i] = (int)Math.round(data[eegChannels[i]][count]);
             }
 
-            for (int i=0; i<auxChannels.length; i++)
+            for (int i=0; i<accelChannels.length; i++)
             {
-                dataPacket.auxValues[i] = (int)Math.round(data[auxChannels[i]][count]);
+                dataPacket.auxValues[i] = (int)Math.round(data[accelChannels[i]][count]);
+                lastAccelValues[i] = (int)Math.round(data[accelChannels[i]][count]);
             }
             
             // This is also used to let the rest of the code that it may be time to do something
@@ -129,5 +141,20 @@ abstract class BoardBrainFlow implements Board {
             println("ERROR: Exception when stoppping stream");
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int getSampleRate() {
+        return samplingRate;
+    }
+
+    @Override
+    public int getNumChannels() {
+        return eegChannels.length;
+    }
+
+    @Override
+    public int[] getLastAccelValues() {
+        return lastAccelValues;
     }
 };

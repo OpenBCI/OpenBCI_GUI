@@ -148,6 +148,8 @@ class W_Accelerometer extends Widget {
     }
 
     void updateAccelPoints() {
+        //TODO[brainflow]
+        // NUM_ACCEL_DIMS will go away, will need to get from board
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
             if (eegDataSource == DATASOURCE_SYNTHETIC) {
                 synthesizeAccelData();
@@ -155,6 +157,8 @@ class W_Accelerometer extends Widget {
                 currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
+            } else if (eegDataSource == DATASOURCE_NOVAXR) {
+                currentAccelVals[i] = currentBoard.getLastAccelValues()[i];
             } else {  //playback data
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
             }
@@ -167,6 +171,7 @@ class W_Accelerometer extends Widget {
 
     // check the approrpiate board to see if accel mode is on
     boolean isAccelModeActive() {
+        //TODO[brainflow] add something here for brainflow boards
         if (eegDataSource == DATASOURCE_CYTON) {
             return (cyton.getBoardMode() == BoardMode.DEFAULT) && accelerometerModeOn;
         }

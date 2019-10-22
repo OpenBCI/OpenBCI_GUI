@@ -28,4 +28,19 @@ class BoardNull implements Board {
     public void stopStreaming() {
         println("WARNING: calling 'stopStreaming' on a NULL board!");
     }
+
+    @Override
+    public int getSampleRate() {
+        return 0;
+    }
+    
+    @Override
+    public int getNumChannels() {
+        return 0;
+    }
+
+    @Override
+    public int[] getLastAccelValues() {
+        return null;
+    }
 };
