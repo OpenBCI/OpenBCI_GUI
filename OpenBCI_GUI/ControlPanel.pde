@@ -1446,18 +1446,15 @@ class ControlPanel {
         }
 
         if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
-            //TODO[brainflow]
-            //updateToNChan(4);
+            updateToNChan(4);
         }
 
         if (synthChanButton8.isMouseHere() && synthChanButton8.wasPressed) {
-            //TODO[brainflow]
-            //updateToNChan(8);
+            updateToNChan(8);
         }
 
         if (synthChanButton16.isMouseHere() && synthChanButton16.wasPressed) {
-            //TODO[brainflow]
-            //updateToNChan(16);
+            updateToNChan(16);
         }
 
         if (latencyCyton5ms.isMouseHere() && latencyCyton5ms.wasPressed) {
@@ -1683,7 +1680,7 @@ public void initButtonPressed(){
             try {
                 initSystem(); //found in OpenBCI_GUI.pde
             } catch (Exception e) {
-                println(e.getMessage());
+                e.printStackTrace();
                 haltSystem();
             }
         }
@@ -1701,7 +1698,7 @@ public void initButtonPressed(){
 void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    //fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("channel count set to " + str(nchan));
     hub.initDataPackets(_nchan, 3);
