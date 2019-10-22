@@ -1,7 +1,7 @@
 import brainflow.*;
 import org.apache.commons.lang3.SystemUtils;
 
-abstract class BoardBrainFlow {
+abstract class BoardBrainFlow implements Board {
     private DataPacket_ADS1299 dataPacket;
     private BoardShim board_shim = null;
 
@@ -23,21 +23,35 @@ abstract class BoardBrainFlow {
 
     protected BoardBrainFlow() {} // empty
 
-    public void init() throws BrainFlowError, IOException, ReflectiveOperationException {
-        BrainFlowInputParams params = getParams();
+    @Override
+    public void initialize() {
+        try {
+            BrainFlowInputParams params = getParams();
 
-        packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
-        eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
-        auxChannels = BoardShim.get_other_channels(getBoardTypeInt());
+            packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
+            eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
+            auxChannels = BoardShim.get_other_channels(getBoardTypeInt());
 
-        updateToNChan(eegChannels.length);
+            updateToNChan(eegChannels.length);
 
-        board_shim = new BoardShim (getBoardTypeInt(), params);
-        board_shim.prepare_session();
+            board_shim = new BoardShim (getBoardTypeInt(), params);
+            board_shim.prepare_session();
+            
+        } catch (Exception e) {
+            board_shim = null;
+            outputError("ERROR: " + e + " when initializing Brainflow board. Data will not stream.");
+            e.printStackTrace();
+        }
 
         dataPacket = new DataPacket_ADS1299(eegChannels.length, auxChannels.length);
     }
 
+    @Override
+    public void uninitialize() {
+        // empty for now
+    }
+
+    @Override
     public void update() {
         if (!streaming || board_shim == null) {
             return; // early out
@@ -75,6 +89,7 @@ abstract class BoardBrainFlow {
         }
     }
 
+    @Override
     public void startStreaming() {
         println("Brainflow start streaming");
         if(streaming) {
@@ -92,6 +107,7 @@ abstract class BoardBrainFlow {
         }
     }
 
+    @Override
     public void stopStreaming() {
         println("Brainflow stop streaming");
         if(!streaming) {

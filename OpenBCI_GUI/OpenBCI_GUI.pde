@@ -110,7 +110,7 @@ int nextPlayback_millis = -100; //any negative number
 // Initialize boards for constants
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
-BoardBrainFlow brainFlowBoard = new BoardNull();
+Board currentBoard = new BoardNull();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
@@ -762,8 +762,8 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_SYNTHETIC:
-            brainFlowBoard = new BoardSynthetic();
-            brainFlowBoard.init();
+            currentBoard = new BoardSynthetic(); 
+            currentBoard.initialize();
             break;
         case DATASOURCE_PLAYBACKFILE:
             break;
@@ -779,8 +779,8 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_NOVAXR:
-            brainFlowBoard = new BoardNovaXR(novaXR_ipAddress);
-            brainFlowBoard.init();
+            currentBoard = new BoardNovaXR(novaXR_ipAddress);
+            currentBoard.initialize();
             break;
         default:
             break;
@@ -955,7 +955,7 @@ void startRunning() {
             cyton.startDataTransfer();
         }
     } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
-        brainFlowBoard.startStreaming();
+        currentBoard.startStreaming();
     }
     isRunning = true;
 }
@@ -975,7 +975,7 @@ void stopRunning() {
             cyton.stopDataTransfer();
         }
     } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
-        brainFlowBoard.stopStreaming();
+        currentBoard.stopStreaming();
     }
 
     isRunning = false;
@@ -1119,6 +1119,8 @@ void haltSystem() {
         //   hub.searchDeviceStart();
         // }
 
+        currentBoard.uninitialize();
+
         systemHasHalted = true;
     }
 } //end of halt system
@@ -1232,7 +1234,7 @@ void systemUpdate() { // for updating data values and variables
         }
     }
 
-    brainFlowBoard.update();
+    currentBoard.update();
 }
 
 void systemDraw() { //for drawing to the screen
