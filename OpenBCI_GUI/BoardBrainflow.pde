@@ -3,14 +3,14 @@ import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow implements Board {
     private DataPacket_ADS1299 dataPacket;
-    private BoardShim board_shim = null;
+    private BoardIds boardType = BoardIds.SYNTHETIC_BOARD;
+    private BoardShim boardShim = null;
 
     private int packetNumberChannel = 0;
     private int[] eegChannels = {};
     private int[] accelChannels = {};
 
     private boolean streaming = false;
-    private BrainFlowInputParams params;
     private int samplingRate = 0;
 
     private int[] lastAccelValues = {};
@@ -18,16 +18,10 @@ abstract class BoardBrainFlow implements Board {
     /* Abstract Functions.
      * Implement these in your board.
      */
-    abstract public BoardIds getBoardType();
     abstract protected BrainFlowInputParams getParams();
 
-    public int getBoardTypeInt() {
-        return getBoardType().get_code();
-    } 
-
-    protected BoardBrainFlow() {
-        params = getParams();
-
+    protected BoardBrainFlow(BoardIds boardId) {
+        boardType = boardId;
         try {
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
             eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
@@ -38,6 +32,8 @@ abstract class BoardBrainFlow implements Board {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
         }
+
+        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
     }
 
     @Override
@@ -45,23 +41,21 @@ abstract class BoardBrainFlow implements Board {
         try {
             updateToNChan(getNumChannels());
 
-            board_shim = new BoardShim (getBoardTypeInt(), params);
-            board_shim.prepare_session();
+            boardShim = new BoardShim (getBoardTypeInt(), getParams());
+            boardShim.prepare_session();
 
         } catch (Exception e) {
-            board_shim = null;
+            boardShim = null;
             outputError("ERROR: " + e + " when initializing Brainflow board. Data will not stream.");
             e.printStackTrace();
         }
-
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
     }
 
     @Override
     public void uninitialize() {
-        if(board_shim != null) {
+        if(boardShim != null) {
             try {
-                board_shim.release_session();
+                boardShim.release_session();
             } catch (BrainFlowError e) {
                 println("WARNING: could not release brainflow board.");
                 e.printStackTrace();
@@ -71,15 +65,15 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public void update() {
-        if (!streaming || board_shim == null) {
+        if (!streaming || boardShim == null) {
             return; // early out
         }
 
         int data_count = 0;
         double[][] data;
         try {
-            data_count = board_shim.get_board_data_count();
-            data = board_shim.get_board_data();
+            data_count = boardShim.get_board_data_count();
+            data = boardShim.get_board_data();
         }
         catch (BrainFlowError e) {
             println ("ERROR: Exception trying to get board data");
@@ -116,7 +110,7 @@ abstract class BoardBrainFlow implements Board {
             return;
         }
         try {
-            board_shim.start_stream (3600);
+            boardShim.start_stream (3600);
             streaming = true;
         }
         catch (BrainFlowError e) {
@@ -135,7 +129,7 @@ abstract class BoardBrainFlow implements Board {
         }
         streaming = false;
         try {
-            board_shim.stop_stream ();
+            boardShim.stop_stream ();
         }
         catch (BrainFlowError e) {
             println("ERROR: Exception when stoppping stream");
@@ -156,5 +150,13 @@ abstract class BoardBrainFlow implements Board {
     @Override
     public int[] getLastAccelValues() {
         return lastAccelValues;
+    }
+    
+    public BoardIds getBoardType() {
+        return boardType;
+    }
+
+    public int getBoardTypeInt() {
+        return getBoardType().get_code();
     }
 };

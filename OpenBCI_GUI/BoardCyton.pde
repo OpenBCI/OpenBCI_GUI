@@ -1,3 +1,23 @@
+
+import brainflow.*;
+
+class BoardCyton extends BoardBrainFlow {
+    private String port = "";
+
+    public BoardCyton(String serialPort) {
+        super(BoardIds.CYTON_BOARD);
+        port = serialPort;
+    }
+
+    // implement mandatory abstract functions
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_port = port;
+        return params;
+    }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // This class configures and manages the connection to the OpenBCI shield for
@@ -126,17 +146,18 @@ class Cyton {
     }
 
     public boolean setInterface(int _interface) {
-        curInterface = _interface;
-        // println("current interface: " + curInterface);
-        println("setInterface: curInterface: " + getInterface());
-        if (isWifi()) {
-            setSampleRate((int)fsHzWifi);
-            hub.setProtocol(PROTOCOL_WIFI);
-        } else if (isSerial()) {
-            setSampleRate((int)fsHzSerialCyton);
-            hub.setProtocol(PROTOCOL_SERIAL);
-        }
         return true;
+        // curInterface = _interface;
+        // // println("current interface: " + curInterface);
+        // println("setInterface: curInterface: " + getInterface());
+        // if (isWifi()) {
+        //     setSampleRate((int)fsHzWifi);
+        //     hub.setProtocol(PROTOCOL_WIFI);
+        // } else if (isSerial()) {
+        //     setSampleRate((int)fsHzSerialCyton);
+        //     hub.setProtocol(PROTOCOL_SERIAL);
+        // }
+        // return true;
     }
 
     //constructors

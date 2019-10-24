@@ -5,6 +5,7 @@ class BoardNovaXR extends BoardBrainFlow {
     private String ipAddress = "";
 
     public BoardNovaXR(String ip) {
+        super(BoardIds.NOVAXR_BOARD);
         ipAddress = ip;
     }
 
@@ -15,10 +16,5 @@ class BoardNovaXR extends BoardBrainFlow {
         params.ip_address = ipAddress;
         params.ip_protocol = IpProtocolType.TCP.get_code();
         return params;
-    }
-    
-    @Override
-    public BoardIds getBoardType() {
-        return BoardIds.NOVAXR_BOARD;
     }
 };

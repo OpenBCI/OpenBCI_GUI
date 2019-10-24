@@ -730,7 +730,7 @@ void initSystem() throws Exception {
             int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
             if (cyton.getInterface() == INTERFACE_SERIAL) {
-                cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+                currentBoard = new BoardCyton(openBCI_portName);
             } else {
                 if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
                     cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
@@ -758,12 +758,14 @@ void initSystem() throws Exception {
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_ipAddress);
             //TODO[brainflow]
-            //currentBoard = new BoardBrainFlowSynthetic();
-            currentBoard.initialize();
+            currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;
     }
+
+    // initialize the chosen board
+    currentBoard.initialize();
 
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
     //initialize playback file if necessary
@@ -953,13 +955,10 @@ void startRunning() {
         if (ganglion != null) {
             ganglion.startDataTransfer();
         }
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton != null) {
-            cyton.startDataTransfer();
-        }
-    } else if (eegDataSource == DATASOURCE_NOVAXR) {
-        currentBoard.startStreaming();
     }
+    
+    // start streaming on the chosen board
+    currentBoard.startStreaming();
     isRunning = true;
 }
 
@@ -973,14 +972,10 @@ void stopRunning() {
         if (ganglion != null) {
             ganglion.stopDataTransfer();
         }
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton != null) {
-            cyton.stopDataTransfer();
-        }
-    } else if (eegDataSource == DATASOURCE_NOVAXR) {
-        currentBoard.stopStreaming();
     }
 
+    // stop streaming on chosen board
+    currentBoard.stopStreaming();
     isRunning = false;
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     // systemMode = 0;
