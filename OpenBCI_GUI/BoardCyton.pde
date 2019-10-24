@@ -146,18 +146,17 @@ class Cyton {
     }
 
     public boolean setInterface(int _interface) {
+        curInterface = _interface;
+        // println("current interface: " + curInterface);
+        println("setInterface: curInterface: " + getInterface());
+        if (isWifi()) {
+            setSampleRate((int)fsHzWifi);
+            hub.setProtocol(PROTOCOL_WIFI);
+        } else if (isSerial()) {
+            setSampleRate((int)fsHzSerialCyton);
+            hub.setProtocol(PROTOCOL_SERIAL);
+        }
         return true;
-        // curInterface = _interface;
-        // // println("current interface: " + curInterface);
-        // println("setInterface: curInterface: " + getInterface());
-        // if (isWifi()) {
-        //     setSampleRate((int)fsHzWifi);
-        //     hub.setProtocol(PROTOCOL_WIFI);
-        // } else if (isSerial()) {
-        //     setSampleRate((int)fsHzSerialCyton);
-        //     hub.setProtocol(PROTOCOL_SERIAL);
-        // }
-        // return true;
     }
 
     //constructors
