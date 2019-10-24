@@ -1,3 +1,23 @@
+
+import brainflow.*;
+
+class BoardCyton extends BoardBrainFlow {
+    private String port = "";
+
+    public BoardCyton(String serialPort) {
+        super(BoardIds.CYTON_BOARD);
+        port = serialPort;
+    }
+
+    // implement mandatory abstract functions
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_port = port;
+        return params;
+    }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // This class configures and manages the connection to the OpenBCI shield for
