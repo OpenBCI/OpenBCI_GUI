@@ -279,7 +279,15 @@ void parseKey(char val) {
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             break;
-
+        /*
+        //Used for testing marker mode
+        case 'M':
+            if (eegDataSource == DATASOURCE_CYTON) {
+                hub.sendCommand("`9");
+                println("Cyton: Setting a Marker +++++");
+            }
+            break;
+        */
         default:
             if (eegDataSource == DATASOURCE_CYTON) {
                 println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
