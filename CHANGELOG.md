@@ -1,3 +1,11 @@
+# v4.1.7
+Use OpenBCIHub v2.1.0 please.
+
+## Beta 0
+
+### Improvements
+* Make UDPx3 default Transfer protocol Cyton+Wifi
+
 # v4.1.6
 Use OpenBCIHub v2.1.0 please.
 

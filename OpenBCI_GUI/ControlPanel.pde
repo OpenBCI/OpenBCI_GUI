@@ -173,10 +173,10 @@ public void controlEvent(ControlEvent theEvent) {
             latencyCyton10ms.setColorNotPressed(isSelected_color);
             latencyCyton20ms.setColorNotPressed(colorNotPressed);
             hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color);
+            wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed);
             wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed);
-            hub.setWifiInternetProtocol(TCP);
+            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
+            hub.setWifiInternetProtocol(UDP_BURST);
             hub.setWiFiStyle(WIFI_DYNAMIC);
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
