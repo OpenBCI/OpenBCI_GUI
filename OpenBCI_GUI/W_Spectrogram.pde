@@ -16,8 +16,8 @@ class W_Spectrogram extends Widget {
 
     //Minim minim;
     AudioPlayer jingle;
-    FFT fftLin_L;
-    FFT fftLin_R;
+    //FFT fftLin_L;
+    //FFT fftLin_R;
     int xPos = 0;
     int hueLimit = 160;
     boolean isActive = false;
@@ -29,7 +29,7 @@ class W_Spectrogram extends Widget {
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        xPos = x;
+        xPos = w - 1; //draw on the right, and shift pixels to the left
         prevW = w;
         prevH = h;
 
@@ -59,6 +59,7 @@ class W_Spectrogram extends Widget {
             widgetTemplateButton.setIgnoreHover(false);
         }
 
+        /*
         if (this.isActive) {
             // perform a forward FFT on the samples in jingle's mix buffer
             // note that if jingle were a MONO file, this would be the same as using jingle.left or jingle.right
@@ -70,6 +71,41 @@ class W_Spectrogram extends Widget {
             if (xPos >= w) {
                 xPos = 0;
             }
+        }
+
+        final int INTERVAL = 10;
+        
+        void setup()
+        {
+        size(400, 400);
+        smooth();
+        background(255);
+        }
+        
+        void draw()
+        {
+        // Scroll one column of pixels per frame
+        loadPixels();
+        for (int r = 0; r < height; r++)
+        {
+            arrayCopy(pixels, width * r, pixels, width * r + 1, width - 1);
+        }
+        updatePixels();
+        // Add a line from time to time
+        if (frameCount % INTERVAL == 0)
+        {
+            stroke(color(random(0, 50), random(50, 200), random(100, 255)));
+            strokeWeight(random(2, 10));
+            line(random(INTERVAL, width), 0, random(INTERVAL, width), height);
+        }
+        }
+
+
+
+        */
+        if (isRunning) {
+            //Make sure we are always draw new pixels on the right
+            xPos = w - 1;
         }
 
         if (prevW != w || prevH != h) {
@@ -89,12 +125,22 @@ class W_Spectrogram extends Widget {
         pushStyle();
         widgetTemplateButton.draw();
 
-        if (this.isActive) {
+        if (isRunning) {
             img.loadPixels();
+            //Shift all pixels to the left!
+            
+            for (int r = 0; r < h; r++) {
+                if (r != 0) {
+                    arrayCopy(img.pixels, w * r, img.pixels, w * r - 1, w);
+                } else {
+                    //When there would be an ArrayOutOfBoundsException, account for it!
+                    arrayCopy(img.pixels, w * r + 1, img.pixels, r * w, w);
+                }
+            }
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
             for (int i = 0; i < h/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
-                float hueValue = hueLimit - map((fftLin_L.getBand(i)*32), 0, 256, 0, hueLimit);
+                float hueValue = hueLimit - map((fftBuff[0].getBand(i)*32), 0, 256, 0, hueLimit);
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
@@ -110,7 +156,7 @@ class W_Spectrogram extends Widget {
                 }
 
                 //RIGHT SPECTROGRAM ON BOTTOM
-                hueValue = hueLimit - map((fftLin_R.getBand(i)*32), 0, 256, 0, hueLimit);
+                hueValue = hueLimit - map((fftBuff[1].getBand(i)*32), 0, 256, 0, hueLimit);
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
@@ -164,6 +210,7 @@ class W_Spectrogram extends Widget {
 
     }
 
+    /*
     void start() {
 
         this.isActive = true;
@@ -192,13 +239,15 @@ class W_Spectrogram extends Widget {
         minim.stop();
         //super.stop();
     }
-
+    */
 };
 
+/*
 void loadSoundFromFile(File selection) {
     if (w_spectrogram.isActive) w_spectrogram.stop();
     w_spectrogram.jingle = minim.loadFile(selection.getAbsolutePath(), 512);
     w_spectrogram.start();
 }
+*/
 
 
