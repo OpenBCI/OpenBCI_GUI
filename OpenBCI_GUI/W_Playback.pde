@@ -285,7 +285,12 @@ void playbackFileSelected (String longName, String shortName) {
     processNewPlaybackFile();
     if (playbackFileIsEmpty) return;
     //Determine the number of channels
-    determineNumChanFromFile(playbackData_table);
+    if (playbackData_table != null) {
+        determineNumChanFromFile(playbackData_table);
+    } else {
+        outputError("playbackFileSelected: Data table appears to be null! Please submit an issue on GitHub!");
+        return;
+    }
     //Output new playback settings to GUI as success
     outputSuccess("You have selected \""
     + shortName + "\" for playback. "
@@ -335,19 +340,66 @@ void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
     //open and load the data file
     println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
     playbackFileIsEmpty = false; //reset this flag each time playback data is loaded
+    boolean errorLoadingTable = false;
+
+    errorLoadingTable = loadTableFromCSV();
+
+    //Sometimes the SD card converted files have blank space at the end, remove it and try to connect again
+    if (errorLoadingTable) {
+        println("initPlaybackFileToTable: Deleting last line of file and trying again...");
+        try {
+            RandomAccessFile f = new RandomAccessFile(playbackData_fname, "rw");
+            long length = f.length() - 1;
+            byte b; 
+            do {                     
+                length -= 1;
+                f.seek(length);
+                b = f.readByte();
+            } while (b != 10 && length > 0);
+            f.setLength(length+1);
+            f.close();
+            errorLoadingTable = loadTableFromCSV();
+        } catch (FileNotFoundException e) {
+            println("initPlaybackFileToTable: Unable to locate file : " + playbackData_fname);
+        } catch (IOException e) {
+            println("initPlaybackFileToTable: Unable to locate file : " + playbackData_fname);
+        }
+    }
+
+    //If we are still unable to load data into a table from file, exit method
+    if (errorLoadingTable) {
+        return;
+    }
+
     try {
+        int rowCount = playbackData_table.getRowCount();
+        int fileDurationInSeconds = round(float(playbackData_table.getRowCount())/getSampleRateSafe());
+        println("OpenBCI_GUI: initSystem: loading complete.  " 
+                + rowCount 
+                + " rows of data, which is " 
+                +  fileDurationInSeconds
+                + " seconds of EEG data");
+        
+        //If a playback file has less than one second of data, throw an error using a flag
+        if (playbackData_table.getRowCount() <= settings.minNumRowsPlaybackFile) {
+            playbackFileIsEmpty = true;
+        }
+    } catch (NullPointerException e) {
+        println("initPlaybackFileToTable: Encountered an error - " + e);
+        e.printStackTrace();
+    }
+}
+
+boolean loadTableFromCSV () {
+    try {
+        playbackData_table = null;
         playbackData_table = new Table_CSV(playbackData_fname);
         //removing first column of data from data file...the first column is a time index and not eeg data
         playbackData_table.removeColumn(0);
+        return false;
     } catch (Exception e) {
         println("initPlaybackFileToTable: Encountered an error while loading " + playbackData_fname);
-    }
-
-    println("OpenBCI_GUI: initSystem: loading complete.  " + playbackData_table.getRowCount() + " rows of data, which is " + round(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " seconds of EEG data");
-    
-    //If a playback file has less than one second of data, throw an error using a flag
-    if (playbackData_table.getRowCount() <= settings.minNumRowsPlaybackFile) {
-        playbackFileIsEmpty = true;
+        return true;
     }
 }
 

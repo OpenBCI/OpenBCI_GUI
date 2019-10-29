@@ -33,6 +33,8 @@ import gifAnimation.*;  //for animated gifs
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.io.FileNotFoundException;
 import java.awt.MouseInfo;
 import java.lang.Process;
 import java.text.DateFormat; //Used in DataLogging.pde

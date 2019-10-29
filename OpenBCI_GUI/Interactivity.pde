@@ -876,7 +876,7 @@ void openURLInBrowser(String _url){
         output("Attempting to use your default browser to launch: " + _url);
     }
     catch (java.io.IOException e) {
-            println(e.getMessage());
+            //println(e.getMessage());
             println("Error launching url in browser: " + _url);
     }
 }

@@ -828,14 +828,21 @@ class PlaybackScrollbar {
         }
 
         //Catch error when trying to fetch current timestamp
-        try {
-            if (!getCurrentTimeStamp().equals("TimeNotFound")) {
-                long t = new Long(getCurrentTimeStamp());
-                Date d =  new Date(t);
-                currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+        if (!isOldData) {
+            try {
+                if (curTimestamp.equals("-1") || (getCurrentTimeStamp() == null && getCurrentTimeStamp().isEmpty())) {
+                    currentAbsoluteTimeToDisplay = "";
+                } else {
+                    if (!getCurrentTimeStamp().equals("notFound")) {
+                        long t = new Long(getCurrentTimeStamp());
+                        Date d =  new Date(t);
+                        currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
+                    }
+                }
+            } catch (NullPointerException e) {
+                println("TimeSeries: Timestamp error...");
+                e.printStackTrace();
             }
-        } catch (NullPointerException e) {
-            println("TimeSeries: Timestamp error...");
         }
 
         //update elapsed time to display
@@ -1000,13 +1007,19 @@ class PlaybackScrollbar {
         //update the value for the number of indices
         num_indices = indices;
         //return current playback time
-        if (index_of_times.get(0) != null) {
-            if (currentTableRowIndex > playbackData_table.getRowCount()) {
-                return index_of_times.get(playbackData_table.getRowCount());
+        if (index_of_times != null) { //Check if the hashmap is null to prevent exception
+            if (index_of_times.get(0) != null) {
+                if (currentTableRowIndex > playbackData_table.getRowCount()) {
+                    return index_of_times.get(playbackData_table.getRowCount());
+                } else {
+                    return index_of_times.get(currentTableRowIndex);
+                }
             } else {
-                return index_of_times.get(currentTableRowIndex);
+                //This is a sanity check for null exception, and this would print on screen
+                return "TimeNotFound";
             }
         } else {
+            //Same here
             return "TimeNotFound";
         }
     }
