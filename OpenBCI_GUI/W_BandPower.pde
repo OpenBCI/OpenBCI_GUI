@@ -60,7 +60,8 @@ class W_BandPower extends Widget {
             }
         );
 
-        
+        //activate all channels in channelSelect by default
+        activateAllChannels();
     } //end of constructor
 
     void update() {

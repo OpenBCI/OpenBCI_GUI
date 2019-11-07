@@ -1,6 +1,12 @@
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
 
+
+## Beta 1
+
+### Bug Fixes
+* BandPower: Activate all channels by default #634
+
 ## Beta 0
 
 ### Improvements
