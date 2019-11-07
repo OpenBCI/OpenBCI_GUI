@@ -417,6 +417,7 @@ void haltLoadingFile(String _filePath) {
     outputError("Playback file appears empty. Try loading a different file.");
 }
 
+//This gets called when a playback file is selected from the Playback History Widget
 void reinitializeCoreDataAndFFTBuffer() {
     //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
     dataProcessing.nchan = nchan;
@@ -449,7 +450,12 @@ void reinitializeCoreDataAndFFTBuffer() {
     //Update the number of channels for HeadPlot
     w_headPlot.headPlot = null;
     w_headPlot.updateHeadPlot(nchan);
-
+    
+    //Update channelSelect in bandPower and SSVEP widgets
+    w_bandPower.bpChanSelect.createCheckList(nchan);
+    w_bandPower.activateAllChannels();
+    w_ssvep.ssvepChanSelect.createCheckList(nchan);
+    w_ssvep.activateDefaultChannels();
 }
 
 void savePlaybackFileToHistory(String fileName) {

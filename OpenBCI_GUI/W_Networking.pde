@@ -1519,6 +1519,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 float[] _dataToSend = new float[numChan * 125];
                 for (int i = 0; i < numChan; i++) {
+                    //EEG/FFT readings above 125Hz don't typically travel through the skull
                     for (int j = 0; j < 125; j++) {
                         _dataToSend[j+125*i] = fftBuff[i].getBand(j);
                     }

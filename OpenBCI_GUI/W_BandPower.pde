@@ -60,11 +60,7 @@ class W_BandPower extends Widget {
             }
         );
 
-        //Activate all channel checkboxes by default for this widget
-        for (int i = 0; i < nchan; i++) {
-            bpChanSelect.checkList.activate(i);
-            bpChanSelect.activeChan.add(i);
-        }
+        
     } //end of constructor
 
     void update() {
@@ -147,6 +143,15 @@ class W_BandPower extends Widget {
         } else {
             bp_plot.setPos(x, y - navHeight);
             bp_plot.setOuterDim(w, h + navHeight);
+        }
+    }
+
+    void activateAllChannels() {
+        bpChanSelect.activeChan.clear();
+        //Activate all channel checkboxes by default for this widget
+        for (int i = 0; i < nchan; i++) {
+            bpChanSelect.checkList.activate(i);
+            bpChanSelect.activeChan.add(i);
         }
     }
 };
