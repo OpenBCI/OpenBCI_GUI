@@ -1,3 +1,16 @@
+# v4.1.7
+Use OpenBCIHub v2.1.0 please.
+
+## Beta 0
+
+### Improvements
+* Dropped Packet Interpolation!
+* Make UDPx3 default Transfer protocol Cyton+Wifi
+
+### Bug Fixes
+* Playback mode update and bug fixes #633
+* Update channelSelect in BandPower and SSVEP widgets when new playback file is loaded
+
 # v4.1.6
 Use OpenBCIHub v2.1.0 please.
 

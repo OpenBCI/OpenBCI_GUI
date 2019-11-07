@@ -84,21 +84,7 @@ class W_SSVEP extends Widget {
             s = w;
         }
 
-        //Activate default channels
-        numActiveChannels = 2;
-        int firstChan;
-        int secondChan;
-        if (nchan == 4) {
-            firstChan = 2;
-            secondChan = 3;
-        } else {
-            firstChan = 6;
-            secondChan = 7;
-        }
-        ssvepChanSelect.checkList.activate(firstChan);
-        ssvepChanSelect.checkList.activate(secondChan);
-        ssvepChanSelect.activeChan.add(firstChan);
-        ssvepChanSelect.activeChan.add(secondChan);
+        activateDefaultChannels();
 
         cp5_ssvep.setAutoDraw(false);
         showAbout = false;        //set Default start value for showing about section as fault
@@ -322,6 +308,24 @@ class W_SSVEP extends Widget {
         } else {
             d = h/6;
         }
+    }
+
+    void activateDefaultChannels() {
+        //Activate default channels
+        numActiveChannels = 2;
+        int firstChan;
+        int secondChan;
+        if (nchan == 4) {
+            firstChan = 2;
+            secondChan = 3;
+        } else {
+            firstChan = 6;
+            secondChan = 7;
+        }
+        ssvepChanSelect.checkList.activate(firstChan);
+        ssvepChanSelect.checkList.activate(secondChan);
+        ssvepChanSelect.activeChan.add(firstChan);
+        ssvepChanSelect.activeChan.add(secondChan);
     }
 
     void setFreqDropdownSizes() {

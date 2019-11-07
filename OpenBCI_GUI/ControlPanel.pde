@@ -173,10 +173,10 @@ public void controlEvent(ControlEvent theEvent) {
             latencyCyton10ms.setColorNotPressed(isSelected_color);
             latencyCyton20ms.setColorNotPressed(colorNotPressed);
             hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color);
+            wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed);
             wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed);
-            hub.setWifiInternetProtocol(TCP);
+            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
+            hub.setWifiInternetProtocol(UDP_BURST);
             hub.setWiFiStyle(WIFI_DYNAMIC);
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
@@ -249,32 +249,32 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    //Check for event in PlaybackHistory Widget MenuList
-    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        if(theEvent.isFrom("playbackMenuList")) {
-            //Check to make sure value of clicked item is in valid range. Fixes #480
-            float valueOfItem = theEvent.getValue();
-            if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
-                //println("CP: No such item " + value + " found in list.");
-            } else {
-                Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
-                //println("got a menu event from item " + value + " : " + m);
-                userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
-            }
+    //Check for event in PlaybackHistory Dropdown List in Control Panel
+    if (theEvent.isFrom("recentFiles")) {
+        int s = (int)(theEvent.getController()).getValue();
+        //println("got a menu event from item " + s);
+        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
+        if (new File(filePath).isFile()) {
+            playbackFileSelected(filePath, s);
+        } else {
+            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
     }
 
     //Check control events from widgets
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        //Check for event in PlaybackHistory Dropdown List in Control Panel
-        if (theEvent.isFrom("recentFiles")) {
-            int s = (int)(theEvent.getController()).getValue();
-            //println("got a menu event from item " + s);
-            String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-            if (new File(filePath).isFile()) {
-                playbackFileSelected(filePath, s);
-            } else {
-                outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+        //Check for event in PlaybackHistory Widget MenuList
+        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            if(theEvent.isFrom("playbackMenuList")) {
+                //Check to make sure value of clicked item is in valid range. Fixes #480
+                float valueOfItem = theEvent.getValue();
+                if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
+                    //println("CP: No such item " + value + " found in list.");
+                } else {
+                    Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
+                    //println("got a menu event from item " + value + " : " + m);
+                    userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
+                }
             }
         }
         //Check for event in band power channel select checkBoxes, if needed

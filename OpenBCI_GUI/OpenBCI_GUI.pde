@@ -33,6 +33,8 @@ import gifAnimation.*;  //for animated gifs
 import java.lang.reflect.*; // For callbacks
 import java.io.InputStreamReader; // For input
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.io.FileNotFoundException;
 import java.awt.MouseInfo;
 import java.lang.Process;
 import java.text.DateFormat; //Used in DataLogging.pde
@@ -56,8 +58,8 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.6";
-String localGUIVersionDate = "September 2019";
+String localGUIVersionString = "v4.1.7-beta.0";
+String localGUIVersionDate = "November 2019";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
