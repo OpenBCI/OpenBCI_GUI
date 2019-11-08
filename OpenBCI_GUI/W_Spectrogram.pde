@@ -37,6 +37,7 @@ class W_Spectrogram extends Widget {
         prevH = h;
 
         img = createImage(w, h, RGB);
+        lastShift = millis();
 
 
         //This is the protocol for setting up dropdowns.
@@ -131,9 +132,8 @@ class W_Spectrogram extends Widget {
 
         if (isRunning) {
             img.loadPixels();
-            //Shift all pixels to the left!
-            
 
+            //Shift all pixels to the left! (every scrollspeed ms)
             if(millis() - lastShift > scrollSpeed) {
                 for (int r = 0; r < h; r++) {
                     if (r != 0) {
