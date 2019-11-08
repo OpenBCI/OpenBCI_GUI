@@ -26,6 +26,8 @@ class W_Spectrogram extends Widget {
     int prevW = 0;
     int prevH = 0;
 
+    int lastShift = 0;
+
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -34,6 +36,7 @@ class W_Spectrogram extends Widget {
         prevH = h;
 
         img = createImage(w, h, RGB);
+
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -129,13 +132,18 @@ class W_Spectrogram extends Widget {
             img.loadPixels();
             //Shift all pixels to the left!
             
-            for (int r = 0; r < h; r++) {
-                if (r != 0) {
-                    arrayCopy(img.pixels, w * r, img.pixels, w * r - 1, w);
-                } else {
-                    //When there would be an ArrayOutOfBoundsException, account for it!
-                    arrayCopy(img.pixels, w * r + 1, img.pixels, r * w, w);
+
+            if(millis() - lastShift > 10) {
+                for (int r = 0; r < h; r++) {
+                    if (r != 0) {
+                        arrayCopy(img.pixels, w * r, img.pixels, w * r - 1, w);
+                    } else {
+                        //When there would be an ArrayOutOfBoundsException, account for it!
+                        arrayCopy(img.pixels, w * r + 1, img.pixels, r * w, w);
+                    }
                 }
+
+                lastShift = millis();
             }
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
             for (int i = 0; i < h/2; i++) {
