@@ -17,7 +17,6 @@ class Widget{
 
     int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
-    boolean isActive = false;
     boolean dropdownsShouldBeClosed = false;
     boolean dropdownIsActive = false;
     boolean widgetSelectorIsActive = false;
@@ -27,6 +26,7 @@ class Widget{
     String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
     private final float widgetDropdownScaling = .35;
+    private boolean isWidgetActive = false;
 
     //some variables for the dropdowns
     int navH = 22;
@@ -42,6 +42,14 @@ class Widget{
         currentContainer = 5; //central container by default
         mapToCurrentContainer();
 
+    }
+
+    boolean getIsActive() {
+        return isWidgetActive;
+    }
+
+    void setIsActive(boolean isActive) {
+        isWidgetActive = isActive;
     }
 
     void update(){
@@ -334,7 +342,7 @@ class Widget{
     }
 
     boolean isMouseHere(){
-        if(isActive){
+        if(getIsActive()){
             if(mouseX >= x0 && mouseX <= x0 + w0 && mouseY >= y0 && mouseY <= y0 + h0){
                 println("Your cursor is in " + widgetTitle);
                 return true;
@@ -419,7 +427,7 @@ void closeAllDropdowns(){
 void WidgetSelector(int n){
     println("New widget [" + n + "] selected for container...");
     //find out if the widget you selected is already active
-    boolean isSelectedWidgetActive = wm.widgets.get(n).isActive;
+    boolean isSelectedWidgetActive = wm.widgets.get(n).getIsActive();
 
     //find out which widget & container you are currently in...
     int theContainer = -1;
@@ -429,12 +437,12 @@ void WidgetSelector(int n){
             if(isSelectedWidgetActive){ //if the selected widget was already active
                 wm.widgets.get(i).setContainer(wm.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
             } else{
-                wm.widgets.get(i).isActive = false;   //deactivate the current widget (if it is different than the one selected)
+                wm.widgets.get(i).setIsActive(false);   //deactivate the current widget (if it is different than the one selected)
             }
         }
     }
 
-    wm.widgets.get(n).isActive = true;//activate the new widget
+    wm.widgets.get(n).setIsActive(true);//activate the new widget
     wm.widgets.get(n).setContainer(theContainer);//map it to the current container
     //set the text of the widgetSelector to the newly selected widget
 

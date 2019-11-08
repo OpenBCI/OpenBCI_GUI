@@ -20,11 +20,14 @@ class W_Spectrogram extends Widget {
     //FFT fftLin_R;
     int xPos = 0;
     int hueLimit = 160;
-    boolean isActive = false;
 
     PImage img;
     int prevW = 0;
     int prevH = 0;
+
+    int lastShift = 0;
+    final int scrollSpeed = 100;
+    boolean wasRunning = false;
 
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -116,6 +119,23 @@ class W_Spectrogram extends Widget {
         }
         
         //println("+++++++XPOS  == " + xPos + " || RightEdge == " + (w));
+
+        if(isRunning && !wasRunning) {
+            onStartRunning();
+        }
+
+        if(!isRunning && wasRunning) {
+            onStopRunning();
+        }
+    }
+
+    void onStartRunning() {
+        wasRunning = true;
+        lastShift = millis();
+    }
+
+    void onStopRunning() {
+        wasRunning = false;
     }
 
     void draw(){
@@ -127,15 +147,19 @@ class W_Spectrogram extends Widget {
 
         if (isRunning) {
             img.loadPixels();
-            //Shift all pixels to the left!
-            
-            for (int r = 0; r < h; r++) {
-                if (r != 0) {
-                    arrayCopy(img.pixels, w * r, img.pixels, w * r - 1, w);
-                } else {
-                    //When there would be an ArrayOutOfBoundsException, account for it!
-                    arrayCopy(img.pixels, w * r + 1, img.pixels, r * w, w);
+
+            //Shift all pixels to the left! (every scrollspeed ms)
+            if(millis() - lastShift > scrollSpeed) {
+                for (int r = 0; r < h; r++) {
+                    if (r != 0) {
+                        arrayCopy(img.pixels, w * r, img.pixels, w * r - 1, w);
+                    } else {
+                        //When there would be an ArrayOutOfBoundsException, account for it!
+                        arrayCopy(img.pixels, w * r + 1, img.pixels, r * w, w);
+                    }
                 }
+
+                lastShift += scrollSpeed;
             }
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
             for (int i = 0; i < h/2; i++) {
