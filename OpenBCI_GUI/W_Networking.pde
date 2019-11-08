@@ -1096,11 +1096,9 @@ class Stream extends Thread {
 
     Boolean isStreaming;
     Boolean newData = false;
-    // Data buffers
-    int start = dataBuffY_filtY_uV[0].length-11;
-    int end = dataBuffY_filtY_uV[0].length-1;
-    int bufferLen = end-start;
-    float[] dataToSend = new float[numChan*bufferLen];
+    // Data buffers set dynamically in updateNumChan()
+    int start;
+    float[] dataToSend;
 
     //OSC Objects
     OscP5 osc;
@@ -1129,6 +1127,11 @@ class Stream extends Thread {
         dataToSend = new float[numChan * nPointsPerUpdate];
         println("nPointsPerUpdate " + nPointsPerUpdate);
         println("dataToSend len: " + numChan * nPointsPerUpdate);
+	
+	  // Bug #638: ArrayOutOfBoundsException was thrown if 
+	  // nPointsPerUpdate was larger than 10, as start was
+	  // set to dataBuffY_filtY_uV[0].length - 10.
+        start = dataBuffY_filtY_uV[0].length - nPointsPerUpdate;
     }
 
     /* OSC Stream */
@@ -1519,7 +1522,6 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 float[] _dataToSend = new float[numChan * 125];
                 for (int i = 0; i < numChan; i++) {
-                    //EEG/FFT readings above 125Hz don't typically travel through the skull
                     for (int j = 0; j < 125; j++) {
                         _dataToSend[j+125*i] = fftBuff[i].getBand(j);
                     }
