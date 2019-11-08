@@ -67,7 +67,7 @@ enum BoardMode {
 //                       Classes
 //------------------------------------------------------------------------
 
-class Cyton {
+class CytonLegacy {
 
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
@@ -160,8 +160,8 @@ class Cyton {
     }
 
     //constructors
-    Cyton() {};  //only use this if you simply want access to some of the constants
-    Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, int _interface) {
+    CytonLegacy() {};  //only use this if you simply want access to some of the constants
+    CytonLegacy(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, int _interface) {
         curInterface = _interface;
 
         initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);

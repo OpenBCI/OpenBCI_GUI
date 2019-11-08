@@ -108,7 +108,7 @@ Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize boards for constants
-Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
+CytonLegacy cyton = new CytonLegacy(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
 Board currentBoard = new BoardNull();
 
@@ -733,9 +733,9 @@ void initSystem() throws Exception {
                 currentBoard = new BoardCyton(openBCI_portName);
             } else {
                 if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+                    //cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
                 } else {
-                    cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
+                    //cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
                 }
             }
             break;
