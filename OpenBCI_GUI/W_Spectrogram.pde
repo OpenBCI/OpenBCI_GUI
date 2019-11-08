@@ -20,7 +20,6 @@ class W_Spectrogram extends Widget {
     //FFT fftLin_R;
     int xPos = 0;
     int hueLimit = 160;
-    boolean isActive = false;
 
     PImage img;
     int prevW = 0;
@@ -37,8 +36,6 @@ class W_Spectrogram extends Widget {
         prevH = h;
 
         img = createImage(w, h, RGB);
-        lastShift = millis();
-
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -50,6 +47,14 @@ class W_Spectrogram extends Widget {
         widgetTemplateButton = new Button (x + w/2, y + navHeight, 200, navHeight, "SelectSoundFile", 12);
         widgetTemplateButton.setFont(p4, 14);
         widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+    }
+
+    @Override
+    void setIsActive(boolean isActive) {
+        super.setIsActive(isActive);
+
+        // on activate, reset the lastShift
+        lastShift = millis();
     }
 
     void update(){
