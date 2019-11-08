@@ -27,6 +27,7 @@ class W_Spectrogram extends Widget {
 
     int lastShift = 0;
     final int scrollSpeed = 100;
+    boolean wasRunning = false;
 
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -47,14 +48,6 @@ class W_Spectrogram extends Widget {
         widgetTemplateButton = new Button (x + w/2, y + navHeight, 200, navHeight, "SelectSoundFile", 12);
         widgetTemplateButton.setFont(p4, 14);
         widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
-    }
-
-    @Override
-    void setIsActive(boolean isActive) {
-        super.setIsActive(isActive);
-
-        // on activate, reset the lastShift
-        lastShift = millis();
     }
 
     void update(){
@@ -126,6 +119,23 @@ class W_Spectrogram extends Widget {
         }
         
         //println("+++++++XPOS  == " + xPos + " || RightEdge == " + (w));
+
+        if(isRunning && !wasRunning) {
+            onStartRunning();
+        }
+
+        if(!isRunning && wasRunning) {
+            onStopRunning();
+        }
+    }
+
+    void onStartRunning() {
+        wasRunning = true;
+        lastShift = millis();
+    }
+
+    void onStopRunning() {
+        wasRunning = false;
     }
 
     void draw(){
