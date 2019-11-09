@@ -1481,7 +1481,10 @@ class Stream extends Thread {
     }
 
     void sendFFTData() {
-        // UNFILTERED
+        // UNFILTERED, for now, maybe this should be changed -RW
+        //EEG/FFT readings above 125Hz don't typically travel through the skull
+        //So for now, only send out 0-125Hz with 1 bin per Hz
+        //Bin 10 == 10Hz frequency range
         if (this.filter==0 || this.filter==1) {
             // OSC
             if (this.protocol.equals("OSC")) {
