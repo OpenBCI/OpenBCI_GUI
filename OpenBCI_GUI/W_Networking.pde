@@ -335,7 +335,8 @@ class W_Networking extends Widget {
 
         // Serial
         //grab list of existing serial port options and store into Arrays.list...
-        createPortDropdown("port_name", comPorts);
+        boolean noComPortsFound = comPorts.size() == 0 ? true : false;
+        createPortDropdown("port_name", comPorts, noComPortsFound);
         createBaudDropdown("baud_rate", baudRates);
         /* General Elements */
 
@@ -561,7 +562,8 @@ class W_Networking extends Widget {
             ;
     }
 
-    void createPortDropdown(String name, List<String> _items) {
+    void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
+        if (isEmpty) _items.add("None"); // Fix #642 and #637
         cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
