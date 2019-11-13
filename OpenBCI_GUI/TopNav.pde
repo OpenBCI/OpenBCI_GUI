@@ -441,7 +441,7 @@ class TopNav {
     //Load data from the latest release page from Github and the info.plist file
     void loadGUIVersionData() {
         try {
-            Process process = java.lang.Runtime.getRuntime().exec("ping www.github.com"); 
+            Process process = java.lang.Runtime.getRuntime().exec("ping -c 1 www.github.com"); 
             internetIsConnected = (process.waitFor() == 0) ? true : false;
         } catch (Exception e) {
             println("TopNav::loadGUIVersionData: Exception " + e.getMessage());
