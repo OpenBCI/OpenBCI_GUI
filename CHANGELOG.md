@@ -1,7 +1,7 @@
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
 
-## Beta 1
+## Beta 2
 
 ### Improvements
 * Add prominent time display for all data modes #635
