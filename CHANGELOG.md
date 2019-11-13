@@ -12,7 +12,7 @@ Use OpenBCIHub v2.1.0 please.
 * BandPower: Activate all channels by default #634
 * Fix streaming 16ch Filtered TimeSeries w/ high sample rate #638 Ty @Joe-Westra
 * Cp5 error in networking stops session init #642 #637 #622
-* Check internet connection on app start to avoid GUI crashing 
+* Check internet connection on app start to avoid GUI crashing #555
 
 ## Beta 0
 
