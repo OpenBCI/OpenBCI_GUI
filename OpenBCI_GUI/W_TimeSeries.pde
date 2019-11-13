@@ -29,6 +29,7 @@ class W_timeSeries extends Widget {
 
     ChannelBar[] channelBars;
     PlaybackScrollbar scrollbar;
+    TimeDisplay timeDisplay;
 
     int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
     int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
@@ -85,7 +86,9 @@ class W_timeSeries extends Widget {
             pb_h = playbackWidgetHeight/2;
             //Make a new scrollbar
             scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
-        } else{
+        } else {
+            int td_h = 18;
+            timeDisplay = new TimeDisplay(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
             playbackWidgetHeight = 0.0;
         }
 
@@ -144,6 +147,13 @@ class W_timeSeries extends Widget {
             if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
                 //scrub playback file
                 scrollbar.update();
+            } else {
+                timeDisplay.update();
+            }
+            
+            if (eegDataSource == DATASOURCE_CYTON) {
+                //ignore top left button interaction when widgetSelector dropdown is active
+                ignoreButtonCheck(hardwareSettingsButton);
             }
 
             //update the number of channel bars if user has selected a new file using playback widget
@@ -153,11 +163,6 @@ class W_timeSeries extends Widget {
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < numChannelBars; i++) {
                 channelBars[i].update();
-            }
-
-            if (eegDataSource == DATASOURCE_CYTON) {
-                //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hardwareSettingsButton);
             }
         }
     }
@@ -177,14 +182,14 @@ class W_timeSeries extends Widget {
                 hardwareSettingsButton.draw();
             }
 
-            //temporary placeholder for playback controller widget
-            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+            //Display playback scrollbar or timeDisplay, depending on data source
+            if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
                 stroke(31,69,110);
                 rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
                 scrollbar.draw();
-            } else{
-                //dont draw anything at the bottom
+            } else {
+                timeDisplay.draw();
             }
 
             //draw channel controller
@@ -215,17 +220,20 @@ class W_timeSeries extends Widget {
 
         hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        if (eegDataSource == DATASOURCE_CYTON) {
             hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
-            ///////////////////////////////////////////////////
-            ///////////////////////////////////////////////////
-            //Resize the playback slider if using playback mode
+        }
+        
+        ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
+        if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
             pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
+        } else {
+            int td_h = 18;
+            timeDisplay.screenResized(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
         }
     }
 
@@ -719,7 +727,7 @@ class ChannelBar{
 
 
 
-//============= PLAYBACKSLIDER =============
+//========================== PLAYBACKSLIDER ==========================
 class PlaybackScrollbar {
     int swidth, sheight;    // width and height of bar
     float xpos, ypos;       // x and y position of bar
@@ -1047,6 +1055,76 @@ class PlaybackScrollbar {
         }
     }// end skipToStartButtonAction
 };//end PlaybackScrollbar class
+
+//========================== TimeDisplay ==========================
+class TimeDisplay {
+    int swidth, sheight;    // width and height of bar
+    float xpos, ypos;       // x and y position of bar
+    String currentAbsoluteTimeToDisplay = "";
+    String currentTimeInSecondsToDisplay = "";
+    Boolean updatePosition = false;
+    LocalTime time;
+    long startTime;
+    boolean prevIsRunning = false;
+
+    TimeDisplay (float xp, float yp, int sw, int sh) {
+        swidth = sw;
+        sheight = sh;
+        xpos = xp; //lots of padding to make room for button
+        ypos = yp;
+        currentAbsoluteTimeToDisplay = fetchCurrentTimeString();
+    }
+
+    /////////////// Update loop for TimeDisplay when data stream is running
+    void update() {
+        if (isRunning) {
+            //Fetch Local time
+            try {
+                currentAbsoluteTimeToDisplay = fetchCurrentTimeString();
+            } catch (NullPointerException e) {
+                println("TimeDisplay: Timestamp error...");
+                e.printStackTrace();
+            }
+            //Reset second counter when data stream starts and stops
+            if (prevIsRunning == false) {
+                startTime = System.currentTimeMillis();
+                prevIsRunning = true;
+            }
+            //Calculate elapsed time using current millis
+            int secondsElapsed = int((System.currentTimeMillis() - startTime) / 1000F);
+            currentTimeInSecondsToDisplay = secondsElapsed + " s";
+        } else {
+            prevIsRunning = false;
+        }
+    } //end update loop for TimeDisplay
+
+    void draw() {
+        pushStyle();
+        //draw current timestamp at the bottom of the Widget container
+        if (!currentAbsoluteTimeToDisplay.equals(null)) {
+            int fontSize = 17;
+            textFont(p2, fontSize);
+            fill(0);
+            float tw = textWidth(currentAbsoluteTimeToDisplay);
+            text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
+            text(currentTimeInSecondsToDisplay, xpos + 10, ypos);
+        }
+        popStyle();
+    }
+
+    void screenResized(float _x, float _y, float _w, float _h) {
+        swidth = int(_w);
+        sheight = int(_h);
+        xpos = _x;
+        ypos = _y;
+    }
+
+    String fetchCurrentTimeString() {
+        time = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return time.format(formatter);
+    }
+};//end TimeDisplay class
 
 //Used in the above PlaybackScrollbar class
 //Also used in OpenBCI_GUI in the app's title bar

@@ -1,6 +1,19 @@
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
 
+## Beta 1
+
+### Improvements
+* Add prominent time display for all data modes #635
+* Add button for Networking Data Ouputs Guide #643
+* Add button to open Sample Data file directory #645
+
+### Bug Fixes
+* BandPower: Activate all channels by default #634
+* Fix streaming 16ch Filtered TimeSeries w/ high sample rate #638 Ty @Joe-Westra
+* Cp5 error in networking stops session init #642 #637 #622
+* Check internet connection on app start to avoid GUI crashing #555
+
 ## Beta 0
 
 ### Improvements

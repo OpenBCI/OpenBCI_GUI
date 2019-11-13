@@ -79,6 +79,8 @@ Button autoSessionName; // Reuse these buttons for Cyton and Ganglion
 Button outputBDF;
 Button outputODF;
 
+Button sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
+
 Button chanButton8;
 Button chanButton16;
 Button selectPlaybackFile;
@@ -1083,6 +1085,10 @@ class ControlPanel {
                     selectSDFile.setIsActive(true);
                     selectSDFile.wasPressed = true;
                 }
+                if (sampleDataButton.isMouseHere()) {
+                    sampleDataButton.setIsActive(true);
+                    sampleDataButton.wasPressed = true;
+                }
             }
 
             //active buttons during DATASOURCE_SYNTHETIC
@@ -1502,13 +1508,24 @@ class ControlPanel {
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", "playbackFileSelected");
+            selectInput("Select a pre-recorded file for playback:", 
+                        "playbackFileSelected",
+                        new File(settings.guiDataPath + "Recordings"));
         }
 
         if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
             output("Select an SD file to convert to a playback file");
             createPlaybackFileFromSD();
             selectInput("Select an SD file to convert for playback:", "sdFileSelected");
+        }
+
+        if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
+            output("Select a file for playback");
+            selectInput("Select a pre-recorded file for playback:", 
+                        "playbackFileSelected", 
+                        new File(settings.guiDataPath + 
+                                "Sample_Data" + System.getProperty("file.separator") + 
+                                "OpenBCI-sampleData-2-meditation.txt"));
         }
 
         //reset all buttons to false
@@ -1595,6 +1612,8 @@ class ControlPanel {
         selectPlaybackFile.wasPressed = false;
         selectSDFile.setIsActive(false);
         selectSDFile.wasPressed = false;
+        sampleDataButton.setIsActive(false);
+        sampleDataButton.wasPressed = false;
     }
 };
 
@@ -2743,7 +2762,6 @@ class RecentPlaybackBox {
     StringList shortFileNames = new StringList();
     StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
-
     ControlP5 cp5_recentPlayback_dropdown;
 
     RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2795,11 +2813,8 @@ class RecentPlaybackBox {
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
-
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
-        pushStyle();
         cp5_recentPlayback_dropdown.draw();
-        pushStyle();
     }
 
     private void getRecentPlaybackFiles() {
@@ -2877,6 +2892,8 @@ class RecentPlaybackBox {
 
 class PlaybackFileBox {
     int x, y, w, h, padding; //size and position
+    int sampleDataButton_w = 100;
+    int sampleDataButton_h = 20;
 
     PlaybackFileBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2887,6 +2904,15 @@ class PlaybackFileBox {
 
         selectPlaybackFile = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
         selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+    
+        // Sample data button
+        sampleDataButton = new Button(x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, "Sample Data", 14);
+        sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
+        sampleDataButton.setFont(p4, 14);
+        sampleDataButton.setColorNotPressed(color(57,128,204));
+        sampleDataButton.setFontColorNotActive(color(255));
+        sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
+        sampleDataButton.hasStroke(false);
     }
 
     public void update() {
@@ -2905,6 +2931,7 @@ class PlaybackFileBox {
         popStyle();
 
         selectPlaybackFile.draw();
+        sampleDataButton.draw();
     }
 };
 

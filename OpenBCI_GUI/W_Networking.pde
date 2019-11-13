@@ -60,6 +60,7 @@ class W_Networking extends Widget {
     Boolean cp5ElementsAreActive = false;
     Boolean previousCP5State = false;
     Button guideButton;
+    Button dataOutputsButton;
 
     /* Networking */
     Boolean networkActive;
@@ -103,6 +104,7 @@ class W_Networking extends Widget {
         "obci_eeg2","EEG",Integer.toString(nchan),
         "obci_eeg3","EEG",Integer.toString(nchan)};
     String networkingGuideURL = "https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#networking";
+    String dataOutputsURL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
@@ -203,6 +205,7 @@ class W_Networking extends Widget {
 
         //ignore top left button interaction when widgetSelector dropdown is active
         ignoreButtonCheck(guideButton);
+        ignoreButtonCheck(dataOutputsButton);
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -284,6 +287,7 @@ class W_Networking extends Widget {
 
         startButton.draw();
         guideButton.draw();
+        dataOutputsButton.draw();
 
         if (protocolMode.equals("OSC")) {
             textFont(f4,40);
@@ -335,7 +339,8 @@ class W_Networking extends Widget {
 
         // Serial
         //grab list of existing serial port options and store into Arrays.list...
-        createPortDropdown("port_name", comPorts);
+        boolean noComPortsFound = comPorts.size() == 0 ? true : false;
+        createPortDropdown("port_name", comPorts, noComPortsFound);
         createBaudDropdown("baud_rate", baudRates);
         /* General Elements */
 
@@ -354,15 +359,26 @@ class W_Networking extends Widget {
         startButton.setColorNotPressed(color(184,220,105));
         startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
 
-        // Networking Data Type Guide button
-        guideButton = new Button(x0 + 2, y0 + navH + 2, 150, navH - 6,"Open Networking Guide",14);
+        // Networking Guide button
+        guideButton = new Button(x0 + 2, y0 + navH + 2, 125, navH - 6,"Networking Guide", 14);
         guideButton.setCornerRoundess((int)(navHeight-6));
         guideButton.setFont(p5,12);
         guideButton.setColorNotPressed(color(57,128,204));
         guideButton.setFontColorNotActive(color(255));
-        guideButton.setHelpText("Click this button to open the Networking Widget Guide in your default browser.");
+        guideButton.setHelpText("Click to open the Networking Widget Guide in your default browser.");
         guideButton.setURL(networkingGuideURL);
         guideButton.hasStroke(false);
+
+        //Data outputs spreadsheet button
+        // Networking Data Type Guide button
+        dataOutputsButton = new Button(x0 + 2*2 + guideButton.but_dx, y0 + navH + 2, 100, navH - 6,"Data Outputs", 14);
+        dataOutputsButton.setCornerRoundess((int)(navHeight-6));
+        dataOutputsButton.setFont(p5,12);
+        dataOutputsButton.setColorNotPressed(color(57,128,204));
+        dataOutputsButton.setFontColorNotActive(color(255));
+        dataOutputsButton.setHelpText("Click to open the Networking Data Outputs Guide in your default browser.");
+        dataOutputsButton.setURL(dataOutputsURL);
+        dataOutputsButton.hasStroke(false);
     }
 
     /* Shows and Hides appropriate CP5 elements within widget */
@@ -561,7 +577,8 @@ class W_Networking extends Widget {
             ;
     }
 
-    void createPortDropdown(String name, List<String> _items) {
+    void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
+        if (isEmpty) _items.add("None"); // Fix #642 and #637
         cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
@@ -623,6 +640,7 @@ class W_Networking extends Widget {
         //reset the button positions using new x and y
         startButton.setPos(x + w/2 - 70, y + h - 40 );
         guideButton.setPos(x0 + 2, y0 + navH + 2);
+        dataOutputsButton.setPos(x0 + 2*2 + guideButton.but_dx , y0 + navH + 2);
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
@@ -710,6 +728,8 @@ class W_Networking extends Widget {
             startButton.setIsActive(true);
         } else if (guideButton.isMouseHere()) {
             guideButton.setIsActive(true);
+        } else if (dataOutputsButton.isMouseHere()) {
+            dataOutputsButton.setIsActive(true);
         }
     }
 
@@ -741,10 +761,14 @@ class W_Networking extends Widget {
         // or if the networking guide button was pressed...
         } else if (guideButton.isActive && guideButton.isMouseHere()) {
             guideButton.goToURL();
-            output("Opening Networking Output Guide using default browser.");
+            output("Opening Networking Widget Guide using default browser.");
+        } else if (dataOutputsButton.isActive && dataOutputsButton.isMouseHere()) {
+            dataOutputsButton.goToURL();
+            output("Opening Networking Data Outputs Guide using default browser.");
         }
         startButton.setIsActive(false);
         guideButton.setIsActive(false);
+        dataOutputsButton.setIsActive(false);
     }
 
     void hideAllTextFields(String[] textFieldNames) {
@@ -1481,7 +1505,10 @@ class Stream extends Thread {
     }
 
     void sendFFTData() {
-        // UNFILTERED
+        // UNFILTERED, for now, maybe this should be changed -RW
+        //EEG/FFT readings above 125Hz don't typically travel through the skull
+        //So for now, only send out 0-125Hz with 1 bin per Hz
+        //Bin 10 == 10Hz frequency range
         if (this.filter==0 || this.filter==1) {
             // OSC
             if (this.protocol.equals("OSC")) {

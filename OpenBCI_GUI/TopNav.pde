@@ -41,6 +41,7 @@ class TopNav {
     int webGUIVersionInt;
     int localGUIVersionInt;
     Boolean guiVersionIsUpToDate;
+    Boolean internetIsConnected;
 
     //constructor
     TopNav() {
@@ -93,27 +94,9 @@ class TopNav {
 
         //Lookup and check the local GUI version against the latest Github release
         updateGuiVersionButton = new Button(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
-        try {
-            loadGUIVersionData();
-            //Print the message to the button help text that appears when mouse hovers over button
-            if (!guiVersionCheckHasOccured) {
-                if (guiVersionIsUpToDate) {
-                    updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-                } else {
-                    updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-                }
-                guiVersionCheckHasOccured = true;
-            }
-        } catch (NullPointerException e)  {
-            //e.printStackTrace();
-            //If github is unreachable, catch the error update button help text
-            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
-        }
-        //Pressing the button opens web browser to Github latest release page
-        updateGuiVersionButton.setURL(guiLatestReleaseLocation);
         updateGuiVersionButton.setFont(h3, 16);
-
-
+        
+        checkInternetFetchGithubData();
 
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
@@ -375,7 +358,7 @@ class TopNav {
             shopButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
-        if (updateGuiVersionButton.isMouseHere() && !guiVersionIsUpToDate) {
+        if (updateGuiVersionButton.isMouseHere() && !guiVersionIsUpToDate && internetIsConnected) {
             updateGuiVersionButton.setIsActive(true);
             //toggle help/tutorial dropdown menu
         }
@@ -457,38 +440,49 @@ class TopNav {
 
     //Load data from the latest release page from Github and the info.plist file
     void loadGUIVersionData() {
+        try {
+            Process process = java.lang.Runtime.getRuntime().exec("ping www.github.com"); 
+            internetIsConnected = (process.waitFor() == 0) ? true : false;
+        } catch (Exception e) {
+            println("TopNav::loadGUIVersionData: Exception " + e.getMessage());
+        }
 
-        //Get the latest release version from Github
-        String webTitle;
-        String[] version;
-        String[] lines = loadStrings(guiLatestReleaseLocation);
-        String html = join(lines, "");
-        String start = "<title>";
-        String end = "</title>";
-        webTitle = giveMeTextBetween(html, start, end);
-        version = split(webTitle, '·'); //split the string in the html title
-        String[] webVersionNumberArray = split(version[0], ' ');
+        if (internetIsConnected) {
+            println("TopNav: Internet Connection Successful");
+            //Get the latest release version from Github
+            String webTitle;
+            String[] version;
+            String[] lines = loadStrings(guiLatestReleaseLocation);
+            String html = join(lines, "");
+            String start = "<title>";
+            String end = "</title>";
+            webTitle = giveMeTextBetween(html, start, end);
+            version = split(webTitle, '·'); //split the string in the html title
+            String[] webVersionNumberArray = split(version[0], ' ');
 
-        webGUIVersionString = removeV(webVersionNumberArray[1]);
-        webGUIVersionString = removeAlphaBeta(webGUIVersionString);
+            webGUIVersionString = removeV(webVersionNumberArray[1]);
+            webGUIVersionString = removeAlphaBeta(webGUIVersionString);
 
-        //Copy the local GUI version from OpenBCI_GUI.pde
-        String localVersionString = localGUIVersionString;
-        localVersionString = removeV(localVersionString);
-        localVersionString = removeAlphaBeta(localVersionString);
+            //Copy the local GUI version from OpenBCI_GUI.pde
+            String localVersionString = localGUIVersionString;
+            localVersionString = removeV(localVersionString);
+            localVersionString = removeAlphaBeta(localVersionString);
 
-        ///////Perform Comparison (000-1000 format)
-        int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
-        int[] localVersionCompareArray = int(split(localVersionString, '.'));
-        webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
-        localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-        println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
-        if (localGUIVersionInt < webGUIVersionInt) {
-            guiVersionIsUpToDate = false;
-            println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
-        } else if (localGUIVersionInt >= webGUIVersionInt) {
-            guiVersionIsUpToDate = true;
-            println("GUI is up to date!");
+            ///////Perform Comparison (000-1000 format)
+            int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
+            int[] localVersionCompareArray = int(split(localVersionString, '.'));
+            webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
+            localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
+            println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
+            if (localGUIVersionInt < webGUIVersionInt) {
+                guiVersionIsUpToDate = false;
+                println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
+            } else if (localGUIVersionInt >= webGUIVersionInt) {
+                guiVersionIsUpToDate = true;
+                println("GUI is up to date!");
+            }
+        } else {
+            println("TopNav: Internet Connection Not Available");
         }
     }
 
@@ -526,6 +520,31 @@ class TopNav {
             s = tempArr[0];
         }
         return s;
+    }
+
+    void checkInternetFetchGithubData() {
+        try {
+            loadGUIVersionData();
+            //Print the message to the button help text that appears when mouse hovers over button
+            if (!guiVersionCheckHasOccured && internetIsConnected) {
+                if (guiVersionIsUpToDate) {
+                    updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
+                } else {
+                    updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
+                }
+                //Pressing the button opens web browser to Github latest release page
+                updateGuiVersionButton.setURL(guiLatestReleaseLocation);
+                guiVersionCheckHasOccured = true;
+            } else {
+                guiVersionIsUpToDate = true;
+                updateGuiVersionButton.setHelpText("Connect to internet to check GUI version.-- Local: " + localGUIVersionString);
+            }
+            
+        } catch (NullPointerException e)  {
+            //e.printStackTrace();
+            //If github is unreachable, catch the error update button help text
+            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
+        }
     }
 }
 
