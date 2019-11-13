@@ -39,6 +39,8 @@ import java.awt.MouseInfo;
 import java.lang.Process;
 import java.text.DateFormat; //Used in DataLogging.pde
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 // import java.net.InetAddress; // Used for ping, however not working right now.
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks

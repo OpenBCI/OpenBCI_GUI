@@ -3,6 +3,9 @@ Use OpenBCIHub v2.1.0 please.
 
 ## Beta 1
 
+### Improvements
+* Add prominent time display for all data modes #635
+
 ### Bug Fixes
 * BandPower: Activate all channels by default #634
 * Fix streaming 16ch Filtered TimeSeries w/ high sample rate #638 Ty @Joe-Westra
