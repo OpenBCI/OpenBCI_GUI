@@ -1508,7 +1508,9 @@ class ControlPanel {
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", "playbackFileSelected");
+            selectInput("Select a pre-recorded file for playback:", 
+                        "playbackFileSelected",
+                        new File(settings.guiDataPath + "Recordings"));
         }
 
         if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
@@ -1519,7 +1521,11 @@ class ControlPanel {
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", "playbackFileSelected", new File("/Users/Richard/Documents/OpenBCI_GUI/Sample_Data/OpenBCI-sampleData-2-meditation.txt"));
+            selectInput("Select a pre-recorded file for playback:", 
+                        "playbackFileSelected", 
+                        new File(settings.guiDataPath + 
+                                "Sample_Data" + System.getProperty("file.separator") + 
+                                "OpenBCI-sampleData-2-meditation.txt"));
         }
 
         //reset all buttons to false

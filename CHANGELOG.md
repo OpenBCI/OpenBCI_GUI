@@ -6,6 +6,7 @@ Use OpenBCIHub v2.1.0 please.
 ### Improvements
 * Add prominent time display for all data modes #635
 * Add button for Networking Data Ouputs Guide #643
+* Add button to open Sample Data file directory #645
 
 ### Bug Fixes
 * BandPower: Activate all channels by default #634
