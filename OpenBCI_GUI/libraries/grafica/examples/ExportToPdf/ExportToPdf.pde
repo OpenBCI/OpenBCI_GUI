@@ -1,10 +1,13 @@
 
+import processing.pdf.*;
 import grafica.*;
 
-void setup() {
-  size(500, 350);
-  background(150);
+GPlot plot;
 
+void setup() {
+  size(500, 350, PDF, "graficaPlot.pdf");
+  textMode(SHAPE);
+  
   // Prepare the points for the plot
   int nPoints = 100;
   GPointsArray points = new GPointsArray(nPoints);
@@ -14,10 +17,10 @@ void setup() {
   }
 
   // Create a new plot and set its position on the screen
-  GPlot plot = new GPlot(this);
+  plot = new GPlot(this);
   plot.setPos(25, 25);
   // or all in one go
-  // GPlot plot = new GPlot(this, 25, 25);
+  // plot = new GPlot(this, 25, 25);
 
   // Set the plot title and the axis labels
   plot.setTitleText("A very simple example");
@@ -26,7 +29,12 @@ void setup() {
 
   // Add the points
   plot.setPoints(points);
+}
+
+void draw(){
+  background(150);
 
   // Draw it!
   plot.defaultDraw();
+  exit();
 }
