@@ -7,6 +7,9 @@ Use OpenBCIHub v2.1.0 please.
 * Update graphica library so GUI sessions load faster on Mac #630
 * Catch Invalid Playback File Exception #649
 
+### Improvements
+* Add LSL FFT example Python sketch
+
 ## Beta 2
 
 ### Improvements
