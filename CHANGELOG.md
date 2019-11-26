@@ -8,7 +8,7 @@ Use OpenBCIHub v2.1.0 please.
 * Catch Invalid Playback File Exception #649
 
 ### Improvements
-* Add LSL FFT example Python sketch
+* Add LSL FFT example Python script
 
 ## Beta 2
 
