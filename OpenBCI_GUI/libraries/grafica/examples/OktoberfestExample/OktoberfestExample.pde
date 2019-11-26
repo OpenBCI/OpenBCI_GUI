@@ -9,7 +9,7 @@ int[] daysPerMonthLeapYear = new int[] {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 
 GPlot plot;
 
 void setup() {
-  size(800, 400);
+  size(800, 410);
 
   // Load the Oktoberfest vs. Bundestagswahl (German elections day) Google 
   // search history file (obtained from the Google trends page). 

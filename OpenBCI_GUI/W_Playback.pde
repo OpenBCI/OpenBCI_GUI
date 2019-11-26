@@ -302,6 +302,12 @@ void playbackFileSelected (String longName, String shortName) {
     } catch (NullPointerException e) {
         //println("Playback history JSON file does not exist. Load first file to make it.");
         playbackHistoryFileExists = false;
+    } catch (RuntimeException e) {
+        outputError("Found an error in UserPlaybackHistory.json. Deleting this file. Please, Restart the GUI.");
+        File file = new File(userPlaybackHistoryFile);
+        if (!file.isDirectory()) {
+            file.delete();
+        }
     }
     //add playback file that was processed to the JSON history
     savePlaybackFileToHistory(longName);

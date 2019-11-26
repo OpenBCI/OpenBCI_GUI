@@ -13,7 +13,7 @@ public PShape star;
 public Random r;
 
 public void setup() {
-  size(850, 650);
+  size(850, 660);
 
   // Prepare the points for the first plot  
   GPointsArray points1a = new GPointsArray(500);
@@ -79,7 +79,7 @@ public void setup() {
   GPointsArray points3 = new GPointsArray(gaussianStack.length);
 
   for (int i = 0; i < gaussianStack.length; i++) {
-    points3.add(i + 1 - gaussianStack.length/2.0, gaussianStack[i]/gaussianCounter, "H" + i);
+    points3.add(i + 0.5 - gaussianStack.length/2.0, gaussianStack[i]/gaussianCounter, "H" + i);
   }
 
   // Setup for the third plot 
@@ -87,7 +87,7 @@ public void setup() {
   plot3.setPos(0, 300);
   plot3.setDim(250, 250);
   plot3.setYLim(-0.02, 0.45);
-  plot3.setXLim(5, -5);
+  plot3.setXLim(-5, 5);
   plot3.getTitle().setText("Gaussian distribution (" + str(gaussianCounter) + " points)");
   plot3.getTitle().setTextAlignment(LEFT);
   plot3.getTitle().setRelativePos(0);
@@ -109,7 +109,7 @@ public void setup() {
   uniformCounter = 0;
 
   for (int i = 0; i < 20; i++) {
-    int index = int(uniformStack.length/2 + random(uniformStack.length));
+    int index = int(random(uniformStack.length));
 
     if (index >= 0 && index < uniformStack.length) {
       uniformStack[index]++;
@@ -120,7 +120,7 @@ public void setup() {
   GPointsArray points4 = new GPointsArray(uniformStack.length);
 
   for (int i = 0; i < uniformStack.length; i++) {
-    points4.add(i + 1 - uniformStack.length/2.0, uniformStack[i]/uniformCounter, "point " + i);
+    points4.add(i + 0.5 - uniformStack.length/2.0, uniformStack[i]/uniformCounter, "point " + i);
   }
 
   // Setup for the fourth plot 
