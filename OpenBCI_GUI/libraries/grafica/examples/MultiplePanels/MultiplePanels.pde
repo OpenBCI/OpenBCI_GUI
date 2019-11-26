@@ -2,7 +2,7 @@
 import grafica.*;
 
 void setup() {
-  size(500, 500);
+  size(500, 510);
   background(255);
 
   float[] firstPlotPos = new float[] {0, 0};
