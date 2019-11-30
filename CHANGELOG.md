@@ -1,12 +1,52 @@
-# v4.1.6
+# v4.1.7
 Use OpenBCIHub v2.1.0 please.
+
+## Beta 3
+
+### Bug Fixes
+* Update graphica library so GUI sessions load faster on Mac #630
+* Catch Invalid Playback File Exception #649
+
+### Improvements
+* Add LSL FFT example Python script
+
+## Beta 2
+
+### Improvements
+* Add prominent time display for all data modes #635
+* Add button for Networking Data Ouputs Guide #643
+* Add button to open Sample Data file directory #645
+
+### Bug Fixes
+* BandPower: Activate all channels by default #634
+* Fix streaming 16ch Filtered TimeSeries w/ high sample rate #638 Ty @Joe-Westra
+* Cp5 error in networking stops session init #642 #637 #622
+* Check internet connection on app start to avoid GUI crashing #555
 
 ## Beta 0
 
 ### Improvements
+* Dropped Packet Interpolation!
+* Make UDPx3 default Transfer protocol Cyton+Wifi
+
+### Bug Fixes
+* Playback mode update and bug fixes #633
+* Update channelSelect in BandPower and SSVEP widgets when new playback file is loaded
+
+# v4.1.6
+Use OpenBCIHub v2.1.0 please.
+
+### Improvements
+* Fix LSL streaming more than one data type #592
+
+## Beta 0
+
+### Improvements
+* Cyton+Dongle AutoConnect Button!
 * GUI error message when using old Cyton firmware #597
 * Update Focus widget help button
 * Console Log window UI/UX update
+* Add GUI Troubleshooting Guide button to "Help" dropdown in TopNav.pde
 
 ### Bug Fixes
 * Cyton+WiFi unable to start session #555 #590

@@ -480,37 +480,7 @@ class ChannelSelect {
         //setup for checkboxes
         cp5_channelCheckboxes = new ControlP5(_parent);
 
-        int checkSize = _navH - 4;
-        offset = (_navH - checkSize)/2;
-
-        channelSelectHover = false;
-        channelSelectPressed = false;
-
-        //Go ahead and just name the checkbox the same as the text display on screen
-        checkList = cp5_channelCheckboxes.addCheckBox(chanDropdownName)
-                        .setPosition(x + 5, y + offset)
-                        .setSize(checkSize, checkSize)
-                        .setItemsPerRow(nchan)
-                        .setSpacingColumn(13)
-                        .setSpacingRow(2)
-                        .setColorLabel(color(0)) //Set the color of the text label
-                        .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
-                        .setColorBackground(color(150)) //checkbox background color
-                        .setColorActive(color(57, 128, 204)) //checkbox color when active
-                        ;
-        //nchan is a global variable, so we can use it here with no problems
-        for (int i = 0; i < nchan; i++) {
-            int chNum = i+1;
-            cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName)
-                            .addItem(String.valueOf(chNum), chNum)
-                            ;
-            //start all items as invisible until user clicks dropdown to show checkboxes
-            checkList.getItem(i).setVisible(false);
-        }
-
-        cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
-        //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
-        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+        createCheckList(nchan);
     }
 
     void update(int _x, int _y, int _w) {
@@ -584,5 +554,40 @@ class ChannelSelect {
 
     boolean isVisible() {
         return channelSelectPressed;
+    }
+
+    void createCheckList(int _nchan) {
+        int checkSize = navH - 4;
+        offset = (navH - checkSize)/2;
+
+        channelSelectHover = false;
+        channelSelectPressed = false;
+
+        //Name the checkbox the same as the text display on screen
+        checkList = cp5_channelCheckboxes.addCheckBox(chanDropdownName)
+                        .setPosition(x + 5, y + offset)
+                        .setSize(checkSize, checkSize)
+                        .setItemsPerRow(nchan)
+                        .setSpacingColumn(13)
+                        .setSpacingRow(2)
+                        .setColorLabel(color(0)) //Set the color of the text label
+                        .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
+                        .setColorBackground(color(150)) //checkbox background color
+                        .setColorActive(color(57, 128, 204)) //checkbox color when active
+                        ;
+
+        //nchan is a global variable, so we can use it here with no problems
+        for (int i = 0; i < _nchan; i++) {
+            int chNum = i+1;
+            cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName)
+                            .addItem(String.valueOf(chNum), chNum)
+                            ;
+            //start all items as invisible until user clicks dropdown to show checkboxes
+            checkList.getItem(i).setVisible(false);
+        }
+
+        cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
+        //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
     }
 } //end of ChannelSelect class

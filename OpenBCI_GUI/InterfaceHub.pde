@@ -14,8 +14,8 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
-boolean werePacketsDroppedHub = false;
 int numPacketsDroppedHub = 0;
+final boolean debugRandomlyDropPackets = false; // SET THIS TO FALSE BEFORE SHIPPING
 
 final static String TCP_JSON_KEY_ACTION = "action";
 final static String TCP_JSON_KEY_ACCEL_DATA_COUNTS = "accelDataCounts";
@@ -589,30 +589,43 @@ class Hub {
         }
     }
 
+    public int getMaxSampleIndex() {
+        if(curProtocol == PROTOCOL_BLE) {
+            return 200;
+        }
+
+        return 255;
+    }
+
     public void processData(JSONObject json) {
         try {
             int code = json.getInt(TCP_JSON_KEY_CODE);
             int stopByte = 0xC0;
-            if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) { //<>//
+            numPacketsDroppedHub = 0;
+            if ((eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_CYTON) && systemMode == 10 && isRunning) {
                 if (code == RESP_SUCCESS_DATA_SAMPLE) {
+                    // set debugRandomlyDropPackets to true to simulate packet drops
+                    if(debugRandomlyDropPackets && random(0, 1000) < 1) {
+                        println("WARNING: Randomly dropping packet for debugging purposes");
+                        return;
+                    }
                     // Sample number stuff
                     dataPacket.sampleIndex = json.getInt(TCP_JSON_KEY_SAMPLE_NUMBER);
+                    boolean didWeRollOver = dataPacket.sampleIndex == 0 && prevSampleIndex == getMaxSampleIndex();
 
-                    if ((dataPacket.sampleIndex - prevSampleIndex) != 1) {
-                        if(dataPacket.sampleIndex != 0){  // if we rolled over, don't count as error
-                            bleErrorCounter++;
+                    // if we rolled over, don't count as error
+                    if (!didWeRollOver && (dataPacket.sampleIndex - prevSampleIndex) > 1) {
+                        bleErrorCounter++;
 
-                            werePacketsDroppedHub = true; //set this true to activate packet duplication in serialEvent
-                            if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-                                numPacketsDroppedHub = (dataPacket.sampleIndex+(curProtocol == PROTOCOL_BLE ? 200 : 255)) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
-                            } else {
-                                //calculate how many times the last received packet should be duplicated...
-                                //Subtract 1 so this value is accurate (example 50->52, 52-50 = 2-1 = 1)
-                                numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex - 1;
-                            }
-                            println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
-                            println("numPacketsDropped = " + numPacketsDroppedHub);
+                        if(dataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
+                            numPacketsDroppedHub = (dataPacket.sampleIndex + getMaxSampleIndex()) - prevSampleIndex - 1; //calculate how many times the last received packet should be duplicated...
+                        } else {
+                            //calculate how many times the last received packet should be duplicated...
+                            //Subtract 1 so this value is accurate (example 50->52, 52-50 = 2-1 = 1)
+                            numPacketsDroppedHub = dataPacket.sampleIndex - prevSampleIndex - 1;
                         }
+                        println("Hub: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + dataPacket.sampleIndex + ".  Keeping packet. (" + bleErrorCounter + ")");
+                        println("numPacketsDropped = " + numPacketsDroppedHub);
                     }
                     prevSampleIndex = dataPacket.sampleIndex;
 
@@ -667,34 +680,33 @@ class Hub {
                         }
                     }
                     getRawValues(dataPacket);
-                    // println(binary(dataPacket.values[0], 24) + '\n' + binary(dataPacket.rawValues[0][0], 8) + binary(dataPacket.rawValues[0][1], 8) + binary(dataPacket.rawValues[0][2], 8) + '\n'); //<>//
-                    // println(dataPacket.values[7]);
-                    curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-                    copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
                     // KILL SPIKES!!!
-                    /*
-                    if(werePacketsDroppedHub){
-                        println("Packets Dropped ... doing some stuff...");
-                        for (int i = numPacketsDroppedHub; i > 0; i--){
-                            int tempDataPacketInd = curDataPacketInd - i; //
-                            if (tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length) {
-                                  // println("i = " + i);
-                                   copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                            } else {
-                               if (eegDataSource == DATASOURCE_GANGLION) {
-                                 copyDataPacketTo(dataPacketBuff[tempDataPacketInd+200]);
-                               } else {
-                                 copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
-                               }
-                            }
-                            //put the last stored packet in # of packets dropped after that packet
-                       }
-                       //reset werePacketsDropped & numPacketsDropped
-                       werePacketsDroppedHub = false;
-                       numPacketsDroppedHub = 0;
-                     }
-                     */
+                    if(numPacketsDroppedHub > 0) {
+                        println("Interpolating dropped packets...");
+
+                        // the number of separations between the last received packet and the current packet.
+                        // for example if we dropped 3 packets, we will have 4 divisions (marked with ---):
+                        // 162, 163, 164 --- X --- X --- X --- 168, 169, 170...
+                        int numSections = numPacketsDroppedHub + 1;
+
+                        DataPacket_ADS1299 current = dataPacket;                        
+                        DataPacket_ADS1299 previous = dataPacketBuff[curDataPacketInd];
+
+                        for (int i = 1; i <= numPacketsDroppedHub; i++){
+                            // increment current packet index
+                            curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length;
+
+                            // this bias allows us to handle multiple dropped packets in a row
+                            // by adjusting the lerp coefficient depending on which packet we are filling in
+                            float bias = (float)i / (float)numSections;
+                            DataPacket_ADS1299 interpolated = CreateInterpolatedPacket(previous, current, bias);
+                            interpolated.copyTo(dataPacketBuff[curDataPacketInd]);
+                        }
+                    }
+
+                    curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+                    copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:

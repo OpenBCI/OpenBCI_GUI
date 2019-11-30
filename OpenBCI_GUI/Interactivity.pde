@@ -276,10 +276,18 @@ void parseKey(char val) {
         case 'm':
             String picfname = "OpenBCI-" + getDateString() + ".jpg";
             //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
+            output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
-
+        /*
+        //Used for testing marker mode
+        case 'M':
+            if (eegDataSource == DATASOURCE_CYTON) {
+                hub.sendCommand("`9");
+                println("Cyton: Setting a Marker +++++");
+            }
+            break;
+        */
         default:
             if (eegDataSource == DATASOURCE_CYTON) {
                 println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
@@ -868,7 +876,7 @@ void openURLInBrowser(String _url){
         output("Attempting to use your default browser to launch: " + _url);
     }
     catch (java.io.IOException e) {
-            println(e.getMessage());
+            //println(e.getMessage());
             println("Error launching url in browser: " + _url);
     }
 }
