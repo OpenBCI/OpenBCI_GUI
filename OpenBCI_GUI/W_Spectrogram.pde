@@ -12,7 +12,7 @@ class W_Spectrogram extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-    Button widgetTemplateButton;
+    //Button widgetTemplateButton;
 
     //Minim minim;
     AudioPlayer jingle;
@@ -21,9 +21,20 @@ class W_Spectrogram extends Widget {
     int xPos = 0;
     int hueLimit = 160;
 
-    PImage img;
+    PImage dataImg;
+    PImage displayImg;
     int prevW = 0;
     int prevH = 0;
+
+    int dataImageW = 1800;
+    int dataImageH = 250;
+    int imgX = 0;
+    int imgY = 0;
+    int panFromX = 0;
+    int panFromY = 0;
+    int panToX = 0;
+    int panToY = 0;
+    float scaler = 1;
 
     int lastShift = 0;
     final int scrollSpeed = 100;
@@ -36,18 +47,19 @@ class W_Spectrogram extends Widget {
         prevW = w;
         prevH = h;
 
-        img = createImage(w, h, RGB);
+        dataImg = createImage(dataImageW, dataImageH, RGB);
+        displayImg = createImage(w, h, RGB);
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        //addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
+        addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.fftMaxFrqArray), settings.fftMaxFrqSave);
         //addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         //addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-        widgetTemplateButton = new Button (x + w/2, y + navHeight, 200, navHeight, "SelectSoundFile", 12);
-        widgetTemplateButton.setFont(p4, 14);
-        widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+        //widgetTemplateButton = new Button (x + w/2, y + navHeight, 200, navHeight, "SelectSoundFile", 12);
+        //widgetTemplateButton.setFont(p4, 14);
+        //widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
     }
 
     void update(){
@@ -56,10 +68,12 @@ class W_Spectrogram extends Widget {
         //put your code here...
         //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
         if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
+            /*
             widgetTemplateButton.setIsActive(false);
             widgetTemplateButton.setIgnoreHover(true);
+            */
         } else {
-            widgetTemplateButton.setIgnoreHover(false);
+            //widgetTemplateButton.setIgnoreHover(false);
         }
 
         /*
@@ -108,23 +122,21 @@ class W_Spectrogram extends Widget {
         */
         if (isRunning) {
             //Make sure we are always draw new pixels on the right
-            xPos = w - 1;
+            xPos = dataImg.width - 1;
         }
 
         if (prevW != w || prevH != h) {
-            img.resize(w, h);
+            //displayImg.resize(w, h);
             prevW = w;
             prevH = h;
-            println("+++++ IMG W == " + img.width + " || IMG H == " + img.height);
+            println("+++++ WIDGET W == " + w + " || WIDGET H == " + h);
         }
         
         //println("+++++++XPOS  == " + xPos + " || RightEdge == " + (w));
 
-        if(isRunning && !wasRunning) {
+        if (isRunning && !wasRunning) {
             onStartRunning();
-        }
-
-        if(!isRunning && wasRunning) {
+        } else if (!isRunning && wasRunning) {
             onStopRunning();
         }
     }
@@ -143,26 +155,26 @@ class W_Spectrogram extends Widget {
 
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
-        widgetTemplateButton.draw();
+        //widgetTemplateButton.draw();
 
         if (isRunning) {
-            img.loadPixels();
+            dataImg.loadPixels();
 
             //Shift all pixels to the left! (every scrollspeed ms)
             if(millis() - lastShift > scrollSpeed) {
-                for (int r = 0; r < h; r++) {
+                for (int r = 0; r < dataImg.height; r++) {
                     if (r != 0) {
-                        arrayCopy(img.pixels, w * r, img.pixels, w * r - 1, w);
+                        arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
                     } else {
                         //When there would be an ArrayOutOfBoundsException, account for it!
-                        arrayCopy(img.pixels, w * r + 1, img.pixels, r * w, w);
+                        arrayCopy(dataImg.pixels, dataImg.width * r + 1, dataImg.pixels, r * dataImg.width, dataImg.width);
                     }
                 }
 
                 lastShift += scrollSpeed;
             }
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
-            for (int i = 0; i < h/2; i++) {
+            for (int i = 0; i < dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
                 float hueValue = hueLimit - map((fftBuff[0].getBand(i)*32), 0, 256, 0, hueLimit);
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
@@ -171,10 +183,10 @@ class W_Spectrogram extends Widget {
                 stroke(int(hueValue), 100, 80);
                 // plot a point using the specified stroke
                 //point(xPos, i);
-                int loc = xPos + (h/2 - i) * (img.width);
-                if (loc >= img.width * img.height) loc = img.width * img.height - 1;
+                int loc = xPos + (dataImg.height/2 - i) * (dataImg.width);
+                if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
                 try {
-                    img.pixels[loc] = color(int(hueValue), 100, 80);
+                    dataImg.pixels[loc] = color(int(hueValue), 100, 80);
                 } catch (Exception e) {
                     println("Major drawing error Spectrogram Left image!");
                 }
@@ -186,18 +198,44 @@ class W_Spectrogram extends Widget {
                 // color for stroke is specified as hue, saturation, brightness.
                 stroke(int(hueValue), 100, 80);
                 // Pixel = X + ((Y + Height/2) * Width)
-                loc = xPos + ((i + img.height/2) * img.width);
-                if (loc >= img.width * img.height) loc = img.width * img.height - 1;
+                loc = xPos + ((i + dataImg.height/2) * dataImg.width);
+                if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
                 try {
-                    img.pixels[loc] = color(int(hueValue), 100, 80);
+                    dataImg.pixels[loc] = color(int(hueValue), 100, 80);
                 } catch (Exception e) {
                     println("Major drawing error Spectrogram Right image!");
                 }
             }
-            img.updatePixels();
-            image(img, x, y);
+            dataImg.updatePixels();
+            /*
+            displayImg.loadPixels();
+            displayImg.resize(dataImageW, dataImageH);
+            displayImg = dataImg;
+            displayImg.resize(w, h);
+            displayImg.updatePixels();
+            */
         }
+        //println("Pre-transalte:", x);
         popStyle();
+        //draw the spectrogram if the widget is open, and update pixels if isRunning
+        float scaleW = float(w) / dataImageW;
+        float scaleH = float(h) / dataImageH;
+        //println("SCALE H == " + scaleH);
+        //println("SCALE OFFSET == ", -scaleH * h);
+        
+        pushMatrix();
+        //Trying to account for scale X and Y
+        //translate(w * (1f - scaleW), -scaleH * dataImageH * scaleW * (1f - scaleW));
+        translate(w * (1f - scaleW), 0);
+        scale(scaleW, scaleH);
+        //translate(imgX, imgY);
+        /*
+        float offset = (w - dataImageW);
+        if (offset > 0) offset = 0;
+        translate(offset, 0);
+        */
+        image(dataImg, x, y);
+        popMatrix();
     }
 
     void screenResized(){
@@ -205,32 +243,52 @@ class W_Spectrogram extends Widget {
         
         cp5.setGraphics(pApplet, 0, 0);
         //put your code here...
-        widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
+        //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
 
 
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
         //put your code here...
         //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
         if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
+            /*
             if(widgetTemplateButton.isMouseHere()){
                 widgetTemplateButton.setIsActive(true);
             }
+            */
+            panFromX = mouseX;
+            panFromY = mouseY;
         }
+    }
+ 
+    void mouseDragged() {
+        super.mouseDragged(); //calls the parent mouseDragged() method of Widget (DON'T REMOVE)
+        panToX = mouseX;
+        panToY = mouseY;
+        int xShift = panToX - panFromX;
+        int yShift = panToY - panFromY;
+        imgX = imgX + xShift;
+        imgY = imgY + yShift;
+        panFromX = panToX;
+        panFromY = panToY;
+        
+        imgX = int(constrain(imgX, scaler * (width - dataImageW), 0));
+        imgY = int(constrain(imgY, scaler * (height - dataImageH), 0));
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
+        /*
         //put your code here...
         if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
             selectInput("Select a sound file for playback:", "loadSoundFromFile");
         }
 
         widgetTemplateButton.setIsActive(false);
+        */
 
     }
 
@@ -274,4 +332,13 @@ void loadSoundFromFile(File selection) {
 }
 */
 
+
+//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+//triggered when there is an event in the Spectrogram Widget MaxFreq. Dropdown
+void SpectrogramMaxFreq(int n) {
+    /* request the selected item based on index n */
+    MaxFreq(n);
+    w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
+    closeAllDropdowns();
+}
 
