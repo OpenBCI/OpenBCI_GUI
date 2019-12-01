@@ -31,7 +31,7 @@ class W_Spectrogram extends Widget {
     int graphH = 0;
 
     int lastShift = 0;
-    final int scrollSpeed = 100;
+    private int scrollSpeed = 100; // == 10Hz
     boolean wasRunning = false;
 
     int paddingLeft = 60;
@@ -49,6 +49,12 @@ class W_Spectrogram extends Widget {
         {250, 188, 125, 63, 0, 63, 125, 188, 250}
     };
     int[] vertAxisLabel;
+    int[][] horizAxisLabels = {
+        {30, 25, 20, 15, 10, 5, 0},
+        {6, 5, 4, 3, 2, 1, 0},
+        {3, 2, 1, 0}
+    };
+    int[] horizAxisLabel;
 
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -72,6 +78,7 @@ class W_Spectrogram extends Widget {
         settings.spectMaxFrqSave = 1;
         settings.spectSampleRateSave = 2;
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
+        horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -312,7 +319,7 @@ class W_Spectrogram extends Widget {
             rect(x, y, w, h); //draw a black background for the widget
             fill(255);
             textSize(14);
-            text("Time (minutes)", x + w/2, y + h - paddingBottom/4);
+            text("Time (minutes)", x + w/2 - textWidth("Time (minutes)")/3, y + h - 9);
             noFill();
             stroke(255);
             strokeWeight(2);
@@ -326,16 +333,17 @@ class W_Spectrogram extends Widget {
             float horizAxisY = graphY + scaledH * dataImageH;
             stroke(255);
             strokeWeight(2);
-            for (float i = 0; i <= numHorizAxisDivs; i++) {
-                float offset = scaledW * dataImageW * (i / numHorizAxisDivs);
+            for (int i = 0; i <= numHorizAxisDivs; i++) {
+                float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
                 line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
+                text(horizAxisLabel[i], horizAxisX + offset - (textWidth(Integer.toString(vertAxisLabel[i])) / 3), horizAxisY + 30);
             }
         popStyle();
         
         pushStyle();
             pushMatrix();
                 rotate(radians(-90));
-                translate(-h/2 - textWidth("Frequency (Hz)")/2 + paddingBottom, 20);
+                translate(-h/2 - textWidth("Frequency (Hz)")/3 + 10, 20);
                 fill(255);
                 textSize(14);
                 text("Frequency (Hz)", -y, x);
@@ -388,6 +396,10 @@ class W_Spectrogram extends Widget {
             graphY -= navH * 2;
             graphH += navH * 2;
         }
+    }
+
+    void setScrollSpeed(int i) {
+        scrollSpeed = i;
     }
 
     /*
@@ -443,12 +455,18 @@ void SpectrogramMaxFreq(int n) {
 
 void SpectrogramSampleRate(int n) {
     /* request the selected item based on index n */
+    //overwrite the existing image because the sample rate is about to change
+    w_spectrogram.dataImg = createImage(w_spectrogram.dataImageW, w_spectrogram.dataImageH, RGB);
+    w_spectrogram.horizAxisLabel = w_spectrogram.horizAxisLabels[n];
     if (n == 0) {
-        w_spectrogram.numHorizAxisDivs = 5;
+        w_spectrogram.numHorizAxisDivs = 6;
+        w_spectrogram.setScrollSpeed(1000);
     } else if (n == 1){
         w_spectrogram.numHorizAxisDivs = 6;
+        w_spectrogram.setScrollSpeed(200);
     } else if (n == 2){
         w_spectrogram.numHorizAxisDivs = 3;
+        w_spectrogram.setScrollSpeed(100);
     }
     closeAllDropdowns();
 }

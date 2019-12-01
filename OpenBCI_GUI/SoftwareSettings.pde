@@ -691,7 +691,7 @@ class SoftwareSettings {
         saveSpectrogramSettings.setInt("Spectrogram_Max Freq", spectMaxFrqSave);
         //Save FFT_Max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
         saveSpectrogramSettings.setInt("Spectrogram_Sample Rate", spectSampleRateSave);
-        saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSpectrogramSettings);
+        saveSettingsJSONData.setJSONObject(kJSONKeySpectrogram, saveSpectrogramSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
@@ -958,21 +958,25 @@ class SoftwareSettings {
         }
         //println("Settings: band power active chans loaded = " + loadBPActiveChans );
 
-        //Get Spectrogram widget settings
-        loadSpectActiveChanTop.clear();
-        loadSpectActiveChanBot.clear();
-        JSONObject loadSpectSettings = loadSettingsJSONData.getJSONObject(kJSONKeySpectrogram);
-        JSONArray loadSpectChanTop = loadSpectSettings.getJSONArray("activeChannelsTop");
-        for (int i = 0; i < loadSpectChanTop.size(); i++) {
-            loadSpectActiveChanTop.add(loadSpectChanTop.getInt(i));
+        try {
+            //Get Spectrogram widget settings
+            loadSpectActiveChanTop.clear();
+            loadSpectActiveChanBot.clear();
+            JSONObject loadSpectSettings = loadSettingsJSONData.getJSONObject(kJSONKeySpectrogram);
+            JSONArray loadSpectChanTop = loadSpectSettings.getJSONArray("activeChannelsTop");
+            for (int i = 0; i < loadSpectChanTop.size(); i++) {
+                loadSpectActiveChanTop.add(loadSpectChanTop.getInt(i));
+            }
+            JSONArray loadSpectChanBot = loadSpectSettings.getJSONArray("activeChannelsBot");
+            for (int i = 0; i < loadSpectChanTop.size(); i++) {
+                loadSpectActiveChanBot.add(loadSpectChanBot.getInt(i));
+            }
+            spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
+            spectSampleRateLoad = loadSpectSettings.getInt("Spectrogram_Sample Rate");
+            //println(loadSpectActiveChanTop, loadSpectActiveChanBot);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        JSONArray loadSpectChanBot = loadSpectSettings.getJSONArray("activeChannelsBot");
-        for (int i = 0; i < loadSpectChanTop.size(); i++) {
-            loadSpectActiveChanBot.add(loadSpectChanBot.getInt(i));
-        }
-        spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
-        spectSampleRateLoad = loadSpectSettings.getInt("Spectrogram_Sample Rate");
-        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
@@ -1664,6 +1668,7 @@ class SoftwareSettings {
             errorUserSettingsNotFound = false;
         } catch (Exception e) {
             //println(e.getMessage());
+            e.printStackTrace();
             println(settingsFileToLoad + " not found or other error. Save settings with keyboard 'n' or using dropdown menu.");
             errorUserSettingsNotFound = true;
         }
