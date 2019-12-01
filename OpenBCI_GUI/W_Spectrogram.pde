@@ -40,6 +40,15 @@ class W_Spectrogram extends Widget {
     int paddingBottom = 50;
     int numHorizAxisDivs = 3;
     int numVertAxisDivs = 8;
+    int[][] vertAxisLabels = {
+        {20, 15, 10, 5, 0, 5, 10, 15, 20},
+        {40, 30, 20, 10, 0, 10, 20, 30, 40},
+        {60, 45, 30, 15, 0, 15, 30, 45, 60},
+        {100, 75, 50, 25, 0, 25,  50, 75, 100},
+        {120, 90, 60, 30, 0, 30, 60, 90, 120},
+        {250, 188, 125, 63, 0, 63, 125, 188, 250}
+    };
+    int[] vertAxisLabel;
 
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -62,6 +71,7 @@ class W_Spectrogram extends Widget {
 
         settings.spectMaxFrqSave = 1;
         settings.spectSampleRateSave = 2;
+        vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -338,9 +348,11 @@ class W_Spectrogram extends Widget {
             float vertAxisY = graphY;
             stroke(255);
             strokeWeight(2);
-            for (float i = 0; i <= numVertAxisDivs; i++) {
-                float offset = scaledH * dataImageH * (i / numVertAxisDivs);
+            for (int i = 0; i <= numVertAxisDivs; i++) {
+                float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs);
                 line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
+                offset += paddingTop - 2;
+                text(vertAxisLabel[i], vertAxisX - tickMarkSize*2 - textWidth(Integer.toString(vertAxisLabel[i])), vertAxisY + offset);
             }
         popStyle();
 
@@ -425,6 +437,7 @@ void SpectrogramMaxFreq(int n) {
     /* request the selected item based on index n */
     MaxFreq(n);
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
+    w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
     closeAllDropdowns();
 }
 
@@ -432,7 +445,9 @@ void SpectrogramSampleRate(int n) {
     /* request the selected item based on index n */
     if (n == 0) {
         w_spectrogram.numHorizAxisDivs = 5;
-    } else {
+    } else if (n == 1){
+        w_spectrogram.numHorizAxisDivs = 6;
+    } else if (n == 2){
         w_spectrogram.numHorizAxisDivs = 3;
     }
     closeAllDropdowns();
