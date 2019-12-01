@@ -13,6 +13,7 @@ class W_Spectrogram extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     public ChannelSelect spectChanSelectTop;
     public ChannelSelect spectChanSelectBot;
+    private boolean chanSelectWasOpen = false;
 
     int xPos = 0;
     int hueLimit = 160;
@@ -24,6 +25,10 @@ class W_Spectrogram extends Widget {
     int prevH = 0;
     float scaledWidth;
     float scaledHeight;
+    int graphX = 0;
+    int graphY = 0;
+    int graphW = 0;
+    int graphH = 0;
 
     int lastShift = 0;
     final int scrollSpeed = 100;
@@ -43,10 +48,15 @@ class W_Spectrogram extends Widget {
         spectChanSelectTop = new ChannelSelect(pApplet, x, y, w, navH, "Spectrogram_Channels_Top");
         spectChanSelectBot = new ChannelSelect(pApplet, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
         activateDefaultChannels();
+        spectChanSelectBot.hideChannelText();
 
         xPos = w - 1; //draw on the right, and shift pixels to the left
         prevW = w;
         prevH = h;
+        graphX = x + paddingLeft;
+        graphY = y + paddingTop;
+        graphW = w - paddingRight - paddingLeft;
+        graphH = h - paddingBottom - paddingTop;
 
         dataImg = createImage(dataImageW, dataImageH, RGB);
 
@@ -57,7 +67,7 @@ class W_Spectrogram extends Widget {
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
         addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
-        addDropdown("SpectrogramSampleRate", "Sample Rate", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
+        addDropdown("SpectrogramSampleRate", "Samples", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
         //addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         //addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
@@ -83,7 +93,12 @@ class W_Spectrogram extends Widget {
         //Update channel checkboxes and active channels
         spectChanSelectTop.update(x, y, w);
         spectChanSelectBot.update(x, y + navH, w);
-        
+        //Let the top channel select open the bottom one also so we can open both with 1 button
+        if (chanSelectWasOpen != spectChanSelectTop.isVisible()) {
+            spectChanSelectBot.setIsVisible(spectChanSelectTop.isVisible());
+            chanSelectWasOpen = spectChanSelectTop.isVisible();
+            flexSpectrogramSizeAndPosition();
+        }
         /*
         //Flex the Gplot graph when channel select dropdown is open/closed
         if (bpChanSelect.isVisible() != prevChanSelectIsVisible) {
@@ -165,8 +180,8 @@ class W_Spectrogram extends Widget {
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         
         //Scale the dataImage to fit in inside the widget
-        float scaleW = float(w - paddingRight - paddingLeft) / dataImageW;
-        float scaleH = float(h - paddingBottom - paddingTop) / dataImageH;
+        float scaleW = float(graphW) / dataImageW;
+        float scaleH = float(graphH) / dataImageH;
 
         //widgetTemplateButton.draw();
         drawAxes(scaleW, scaleH);
@@ -227,13 +242,14 @@ class W_Spectrogram extends Widget {
         }
         
         pushMatrix();
-        translate(x + paddingLeft, y + paddingTop);
+        translate(graphX, graphY);
         scale(scaleW, scaleH);
         image(dataImg, 0, 0);
         popMatrix();
 
         spectChanSelectTop.draw();
         spectChanSelectBot.draw();
+        //if (spectChanSelectTop.isVisible()) spectChanSelectBot.forceDrawChecklist(dropdownIsActive);
     }
 
     void screenResized(){
@@ -244,6 +260,10 @@ class W_Spectrogram extends Widget {
         //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
         spectChanSelectTop.screenResized(pApplet);
         spectChanSelectBot.screenResized(pApplet);  
+        graphX = x + paddingLeft;
+        graphY = y + paddingTop;
+        graphW = w - paddingRight - paddingLeft;
+        graphH = h - paddingBottom - paddingTop;
     }
 
     void mousePressed(){
@@ -286,14 +306,14 @@ class W_Spectrogram extends Widget {
             noFill();
             stroke(255);
             strokeWeight(2);
-            rect(x + paddingLeft, y + paddingTop, scaledW * dataImageW, scaledH * dataImageH);
+            rect(graphX, graphY, scaledW * dataImageW, scaledH * dataImageH);
         popStyle();
 
         pushStyle();
             //draw horizontal axis ticks from left to right
             int tickMarkSize = 7; //in pixels
-            float horizAxisX = x + paddingLeft;
-            float horizAxisY = y + paddingTop + scaledH * dataImageH;
+            float horizAxisX = graphX;
+            float horizAxisY = graphY + scaledH * dataImageH;
             stroke(255);
             strokeWeight(2);
             for (float i = 0; i <= numHorizAxisDivs; i++) {
@@ -314,8 +334,8 @@ class W_Spectrogram extends Widget {
 
         pushStyle();
             //draw vertical axis ticks from top to bottom
-            float vertAxisX = x + paddingLeft;
-            float vertAxisY = y + paddingTop;
+            float vertAxisX = graphX;
+            float vertAxisY = graphY;
             stroke(255);
             strokeWeight(2);
             for (float i = 0; i <= numVertAxisDivs; i++) {
@@ -345,6 +365,16 @@ class W_Spectrogram extends Widget {
             spectChanSelectTop.activeChan.add(topChansToActivate[i]);
             spectChanSelectBot.checkList.activate(botChansToActivate[i]);
             spectChanSelectBot.activeChan.add(botChansToActivate[i]);
+        }
+    }
+
+    void flexSpectrogramSizeAndPosition() {
+        if (spectChanSelectTop.isVisible()) {
+            graphY += navH * 2;
+            graphH -= navH * 2;
+        } else {
+            graphY -= navH * 2;
+            graphH += navH * 2;
         }
     }
 
