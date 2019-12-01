@@ -113,6 +113,9 @@ class SoftwareSettings {
     int numSSVEPs;
     //Used to check if a playback file has data
     int minNumRowsPlaybackFile = int(getSampleRateSafe());
+    //Spectrogram Widget settings
+    int spectMaxFrqSave;
+    int spectSampleRateSave;
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
@@ -191,6 +194,10 @@ class SoftwareSettings {
     String[] focusThemeArray = {"Green", "Orange", "Cyan"};
     String[] focusKeyArray = {"OFF", "UP", "SPACE"};
 
+    //Used to set text in dropdown menus when loading Spectrogram Setings
+    String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
+    String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz"};
+
     //Save Time Series settings variables
     int tsActiveSetting = 1;
     int tsGainSetting;
@@ -249,6 +256,12 @@ class SoftwareSettings {
     //smoothing and filter dropdowns are linked to FFT, so no need to save again
     List<Integer> loadBPActiveChans = new ArrayList<Integer>();
 
+    //Spectrogram widget settings
+    List<Integer> loadSpectActiveChanTop = new ArrayList<Integer>();
+    List<Integer> loadSpectActiveChanBot = new ArrayList<Integer>();
+    int spectMaxFrqLoad;
+    int spectSampleRateLoad;
+
     //Networking Settings save/load variables
     int nwProtocolLoad;
     //OSC load variables
@@ -268,7 +281,7 @@ class SoftwareSettings {
     //Serial load variables
     int nwSerialBaudRateLoad;
     int nwSerialFilter1Load;
-
+    //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
     private JSONObject loadSettingsJSONData;
 
@@ -285,6 +298,7 @@ class SoftwareSettings {
     private final String kJSONKeySSVEP = "ssvep";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
+    private final String kJSONKeySpectrogram = "spectrogram";
 
     //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
@@ -597,7 +611,7 @@ class SoftwareSettings {
         //Set the Headplot JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
 
-        ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
+        ///////////////////////////////////////////////Setup new JSON object to save EMG settings
         JSONObject saveEMGSettings = new JSONObject();
 
         //Save EMG Smoothing
@@ -611,7 +625,7 @@ class SoftwareSettings {
         //Set the EMG JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyEMG, saveEMGSettings);
 
-        ///////////////////////////////////////////////Setup new JSON object to save Headplot settings
+        ///////////////////////////////////////////////Setup new JSON object to save Focus settings
         JSONObject saveFocusSettings = new JSONObject();
 
         //Save Focus theme
@@ -654,6 +668,30 @@ class SoftwareSettings {
         }
         saveBPSettings.setJSONArray("activeChannels", saveActiveChanBP);
         saveSettingsJSONData.setJSONObject(kJSONKeyBandPower, saveBPSettings);
+
+        ///////////////////////////////////////////////Setup new JSON object to save Spectrogram settings
+        JSONObject saveSpectrogramSettings = new JSONObject();
+        //Save data from the Active channel checkBoxes - Top
+        JSONArray saveActiveChanSpectTop = new JSONArray();
+        int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.activeChan.size();
+        for (int i = 0; i < numActiveSpectChanTop; i++) {
+            int activeChan = w_spectrogram.spectChanSelectTop.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChanSpectTop.setInt(i, activeChan);
+        }
+        saveSpectrogramSettings.setJSONArray("activeChannelsTop", saveActiveChanSpectTop);
+        //Save data from the Active channel checkBoxes - Bottom
+        JSONArray saveActiveChanSpectBot = new JSONArray();
+        int numActiveSpectChanBot = w_spectrogram.spectChanSelectBot.activeChan.size();
+        for (int i = 0; i < numActiveSpectChanBot; i++) {
+            int activeChan = w_spectrogram.spectChanSelectBot.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            saveActiveChanSpectBot.setInt(i, activeChan);
+        }
+        saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
+        //Save FFT_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
+        saveSpectrogramSettings.setInt("Spectrogram_Max Freq", spectMaxFrqSave);
+        //Save FFT_Max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
+        saveSpectrogramSettings.setInt("Spectrogram_Sample Rate", spectSampleRateSave);
+        saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSpectrogramSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
@@ -911,13 +949,29 @@ class SoftwareSettings {
         }
         //println("Settings: ssvep active chans loaded = " + loadSSVEPActiveChans);
 
-        //get band power settings
+        //Get Band Power widget settings
         loadBPActiveChans.clear();
         JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
         JSONArray loadBPChan = loadBPSettings.getJSONArray("activeChannels");
         for (int i = 0; i < loadBPChan.size(); i++) {
             loadBPActiveChans.add(loadBPChan.getInt(i));
         }
+        //println("Settings: band power active chans loaded = " + loadBPActiveChans );
+
+        //Get Spectrogram widget settings
+        loadSpectActiveChanTop.clear();
+        loadSpectActiveChanBot.clear();
+        JSONObject loadSpectSettings = loadSettingsJSONData.getJSONObject(kJSONKeySpectrogram);
+        JSONArray loadSpectChanTop = loadSpectSettings.getJSONArray("activeChannelsTop");
+        for (int i = 0; i < loadSpectChanTop.size(); i++) {
+            loadSpectActiveChanTop.add(loadSpectChanTop.getInt(i));
+        }
+        JSONArray loadSpectChanBot = loadSpectSettings.getJSONArray("activeChannelsBot");
+        for (int i = 0; i < loadSpectChanTop.size(); i++) {
+            loadSpectActiveChanBot.add(loadSpectChanBot.getInt(i));
+        }
+        spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
+        spectSampleRateLoad = loadSpectSettings.getInt("Spectrogram_Sample Rate");
         //println("Settings: band power active chans loaded = " + loadBPActiveChans );
 
         //get the  Widget/Container settings
@@ -1243,6 +1297,47 @@ class SoftwareSettings {
         }
         verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
 
+        ////////////////////////////Apply Spectrogram settings
+        //Apply Max Freq dropdown
+        SpectrogramMaxFreq(spectMaxFrqLoad);
+            w_spectrogram.cp5_widget.getController("SpectrogramMaxFreq").getCaptionLabel().setText(spectMaxFrqArray[spectMaxFrqLoad]);
+        SpectrogramSampleRate(spectSampleRateLoad);
+            w_spectrogram.cp5_widget.getController("SpectrogramSampleRate").getCaptionLabel().setText(spectSampleRateArray[spectSampleRateLoad]);
+        
+        //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
+        try {
+            //deactivate all channels and then activate the active channels
+            w_spectrogram.spectChanSelectTop.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Top").deactivateAll();
+            if (loadSpectActiveChanTop.size() > 0) {
+                int activeChanCounter = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounter  < loadSpectActiveChanTop.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadSpectActiveChanTop.get(activeChanCounter) - 1)) {
+                            w_spectrogram.spectChanSelectTop.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Top").activate(i);
+                            activeChanCounter++;
+                        }
+                    }
+                }
+            }
+            //deactivate all channels and then activate the active channels
+            w_spectrogram.spectChanSelectBot.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Bot").deactivateAll();
+            if (loadSpectActiveChanBot.size() > 0) {
+                int activeChanCounter = 0;
+                for (int i = 0; i < nchan; i++) {
+                    if (activeChanCounter  < loadSpectActiveChanBot.size()) {
+                        //subtract 1 because cp5 starts count from 0
+                        if (i == (loadSpectActiveChanBot.get(activeChanCounter) - 1)) {
+                            w_spectrogram.spectChanSelectBot.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Bot").activate(i);
+                            activeChanCounter++;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying ssvep settings" + e);
+        }
+        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
         ///////////Apply Networking Settings
         //Update protocol with loaded value
         Protocol(nwProtocolLoad);

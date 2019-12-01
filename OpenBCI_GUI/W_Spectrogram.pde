@@ -11,49 +11,53 @@
 class W_Spectrogram extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
-    //Button widgetTemplateButton;
+    public ChannelSelect spectChanSelectTop;
+    public ChannelSelect spectChanSelectBot;
 
-    //Minim minim;
-    AudioPlayer jingle;
-    //FFT fftLin_L;
-    //FFT fftLin_R;
     int xPos = 0;
     int hueLimit = 160;
 
     PImage dataImg;
-    PImage displayImg;
-    int prevW = 0;
-    int prevH = 0;
-
     int dataImageW = 1800;
     int dataImageH = 250;
-    int imgX = 0;
-    int imgY = 0;
-    int panFromX = 0;
-    int panFromY = 0;
-    int panToX = 0;
-    int panToY = 0;
-    float scaler = 1;
+    int prevW = 0;
+    int prevH = 0;
+    float scaledWidth;
+    float scaledHeight;
 
     int lastShift = 0;
     final int scrollSpeed = 100;
     boolean wasRunning = false;
 
+    int paddingLeft = 60;
+    int paddingRight = 8;   
+    int paddingTop = 8;
+    int paddingBottom = 50;
+    int numHorizAxisDivs = 3;
+    int numVertAxisDivs = 8;
+
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        //Add channel select dropdown to this widget
+        spectChanSelectTop = new ChannelSelect(pApplet, x, y, w, navH, "Spectrogram_Channels_Top");
+        spectChanSelectBot = new ChannelSelect(pApplet, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
+        activateDefaultChannels();
 
         xPos = w - 1; //draw on the right, and shift pixels to the left
         prevW = w;
         prevH = h;
 
         dataImg = createImage(dataImageW, dataImageH, RGB);
-        displayImg = createImage(w, h, RGB);
+
+        settings.spectMaxFrqSave = 1;
+        settings.spectSampleRateSave = 2;
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.fftMaxFrqArray), settings.fftMaxFrqSave);
+        addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
+        addDropdown("SpectrogramSampleRate", "Sample Rate", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
         //addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         //addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
@@ -75,6 +79,18 @@ class W_Spectrogram extends Widget {
         } else {
             //widgetTemplateButton.setIgnoreHover(false);
         }
+
+        //Update channel checkboxes and active channels
+        spectChanSelectTop.update(x, y, w);
+        spectChanSelectBot.update(x, y + navH, w);
+        
+        /*
+        //Flex the Gplot graph when channel select dropdown is open/closed
+        if (bpChanSelect.isVisible() != prevChanSelectIsVisible) {
+            flexGPlotSizeAndPosition();
+            prevChanSelectIsVisible = bpChanSelect.isVisible();
+        }
+        */
 
         /*
         if (this.isActive) {
@@ -124,13 +140,6 @@ class W_Spectrogram extends Widget {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
         }
-
-        if (prevW != w || prevH != h) {
-            //displayImg.resize(w, h);
-            prevW = w;
-            prevH = h;
-            println("+++++ WIDGET W == " + w + " || WIDGET H == " + h);
-        }
         
         //println("+++++++XPOS  == " + xPos + " || RightEdge == " + (w));
 
@@ -154,10 +163,17 @@ class W_Spectrogram extends Widget {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-        pushStyle();
-        //widgetTemplateButton.draw();
+        
+        //Scale the dataImage to fit in inside the widget
+        float scaleW = float(w - paddingRight - paddingLeft) / dataImageW;
+        float scaleH = float(h - paddingBottom - paddingTop) / dataImageH;
 
+        //widgetTemplateButton.draw();
+        drawAxes(scaleW, scaleH);
+
+        //draw the spectrogram if the widget is open, and update pixels if isRunning
         if (isRunning) {
+            pushStyle();
             dataImg.loadPixels();
 
             //Shift all pixels to the left! (every scrollspeed ms)
@@ -207,45 +223,27 @@ class W_Spectrogram extends Widget {
                 }
             }
             dataImg.updatePixels();
-            /*
-            displayImg.loadPixels();
-            displayImg.resize(dataImageW, dataImageH);
-            displayImg = dataImg;
-            displayImg.resize(w, h);
-            displayImg.updatePixels();
-            */
+            popStyle();
         }
-        //println("Pre-transalte:", x);
-        popStyle();
-        //draw the spectrogram if the widget is open, and update pixels if isRunning
-        float scaleW = float(w) / dataImageW;
-        float scaleH = float(h) / dataImageH;
-        //println("SCALE H == " + scaleH);
-        //println("SCALE OFFSET == ", -scaleH * h);
         
         pushMatrix();
-        //Trying to account for scale X and Y
-        //translate(w * (1f - scaleW), -scaleH * dataImageH * scaleW * (1f - scaleW));
-        translate(w * (1f - scaleW), 0);
+        translate(x + paddingLeft, y + paddingTop);
         scale(scaleW, scaleH);
-        //translate(imgX, imgY);
-        /*
-        float offset = (w - dataImageW);
-        if (offset > 0) offset = 0;
-        translate(offset, 0);
-        */
-        image(dataImg, x, y);
+        image(dataImg, 0, 0);
         popMatrix();
+
+        spectChanSelectTop.draw();
+        spectChanSelectBot.draw();
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
         
-        cp5.setGraphics(pApplet, 0, 0);
+        //cp5.setGraphics(pApplet, 0, 0);
         //put your code here...
         //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
-
-
+        spectChanSelectTop.screenResized(pApplet);
+        spectChanSelectBot.screenResized(pApplet);  
     }
 
     void mousePressed(){
@@ -258,24 +256,9 @@ class W_Spectrogram extends Widget {
                 widgetTemplateButton.setIsActive(true);
             }
             */
-            panFromX = mouseX;
-            panFromY = mouseY;
         }
-    }
- 
-    void mouseDragged() {
-        super.mouseDragged(); //calls the parent mouseDragged() method of Widget (DON'T REMOVE)
-        panToX = mouseX;
-        panToY = mouseY;
-        int xShift = panToX - panFromX;
-        int yShift = panToY - panFromY;
-        imgX = imgX + xShift;
-        imgY = imgY + yShift;
-        panFromX = panToX;
-        panFromY = panToY;
-        
-        imgX = int(constrain(imgX, scaler * (width - dataImageW), 0));
-        imgY = int(constrain(imgY, scaler * (height - dataImageH), 0));
+        spectChanSelectTop.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
+        spectChanSelectBot.mousePressed(this.dropdownIsActive);
     }
 
     void mouseReleased(){
@@ -290,6 +273,79 @@ class W_Spectrogram extends Widget {
         widgetTemplateButton.setIsActive(false);
         */
 
+    }
+
+    void drawAxes(float scaledW, float scaledH) {
+        
+        pushStyle();
+            fill(0);
+            rect(x, y, w, h); //draw a black background for the widget
+            fill(255);
+            textSize(14);
+            text("Time (minutes)", x + w/2, y + h - paddingBottom/4);
+            noFill();
+            stroke(255);
+            strokeWeight(2);
+            rect(x + paddingLeft, y + paddingTop, scaledW * dataImageW, scaledH * dataImageH);
+        popStyle();
+
+        pushStyle();
+            //draw horizontal axis ticks from left to right
+            int tickMarkSize = 7; //in pixels
+            float horizAxisX = x + paddingLeft;
+            float horizAxisY = y + paddingTop + scaledH * dataImageH;
+            stroke(255);
+            strokeWeight(2);
+            for (float i = 0; i <= numHorizAxisDivs; i++) {
+                float offset = scaledW * dataImageW * (i / numHorizAxisDivs);
+                line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
+            }
+        popStyle();
+        
+        pushStyle();
+            pushMatrix();
+                rotate(radians(-90));
+                translate(-h/2 - textWidth("Frequency (Hz)")/2 + paddingBottom, 20);
+                fill(255);
+                textSize(14);
+                text("Frequency (Hz)", -y, x);
+            popMatrix();
+        popStyle();
+
+        pushStyle();
+            //draw vertical axis ticks from top to bottom
+            float vertAxisX = x + paddingLeft;
+            float vertAxisY = y + paddingTop;
+            stroke(255);
+            strokeWeight(2);
+            for (float i = 0; i <= numVertAxisDivs; i++) {
+                float offset = scaledH * dataImageH * (i / numVertAxisDivs);
+                line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
+            }
+        popStyle();
+
+    }
+
+    void activateDefaultChannels() {
+        int[] topChansToActivate;
+        int[] botChansToActivate; 
+        if (nchan == 4) {
+            topChansToActivate = new int[]{0, 2};
+            botChansToActivate = new int[]{1, 3};
+        } else if (nchan == 8) {
+            topChansToActivate = new int[]{0, 2, 4, 6};
+            botChansToActivate = new int[]{1, 3, 5, 7};
+        } else {
+            topChansToActivate = new int[]{0, 2, 4, 6, 8 ,10, 12, 14};
+            botChansToActivate = new int[]{1, 3, 5, 7, 9, 11, 13, 15};
+        }
+
+        for (int i = 0; i < topChansToActivate.length; i++) {
+            spectChanSelectTop.checkList.activate(topChansToActivate[i]);
+            spectChanSelectTop.activeChan.add(topChansToActivate[i]);
+            spectChanSelectBot.checkList.activate(botChansToActivate[i]);
+            spectChanSelectBot.activeChan.add(botChansToActivate[i]);
+        }
     }
 
     /*
@@ -342,3 +398,12 @@ void SpectrogramMaxFreq(int n) {
     closeAllDropdowns();
 }
 
+void SpectrogramSampleRate(int n) {
+    /* request the selected item based on index n */
+    if (n == 0) {
+        w_spectrogram.numHorizAxisDivs = 5;
+    } else {
+        w_spectrogram.numHorizAxisDivs = 3;
+    }
+    closeAllDropdowns();
+}
