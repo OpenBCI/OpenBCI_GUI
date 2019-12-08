@@ -1548,7 +1548,7 @@ void convert8channelLine() {
             }
         }
         dataWriter.println();
-        println(consoleMsg);
+        println("convert8channelLine: " + consoleMsg);
         return;
     }
     for (int i=0; i<hexNums.length; i++) {
