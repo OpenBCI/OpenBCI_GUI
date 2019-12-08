@@ -29,18 +29,21 @@ void process_input_file() throws Exception {
     try {
         while (!hasRepeated) {
             currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-            if (!curTimestamp.equals("null")) {
+            if (curTimestamp != null) {
                 index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
+            } else {
+                index_of_times.put(indices, "notFound");
             }
             indices++;
         }
+        println("number of indexes "+indices);
+        println("Finished filling hashmap");
+        has_processed = true;
     }
     catch (Exception e) {
+        e.printStackTrace();
         throw new Exception();
     }
-    println("number of indexes "+indices);
-    println("Finished filling hashmap");
-    has_processed = true;
 }
 
 /*************************/
@@ -320,14 +323,14 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
             }
         }
         // if available, get time stamp for use in playback
-        if (row.getColumnCount() == nchan + NUM_ACCEL_DIMS + 2) {
+        if (row.getColumnCount() >= nchan + NUM_ACCEL_DIMS + 2) {
             try{
                 if (!isOldData) curTimestamp = row.getString(row.getColumnCount() - 1);
             } catch (ArrayIndexOutOfBoundsException e) {
                 println("Data does not exist... possibly an old file.");
             }
         } else {
-            curTimestamp = "null";
+            curTimestamp = "-1";
         }
     } //end else
     return currentTableRowIndex;
