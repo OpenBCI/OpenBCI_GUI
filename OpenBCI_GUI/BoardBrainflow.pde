@@ -159,4 +159,15 @@ abstract class BoardBrainFlow implements Board {
     public int getBoardTypeInt() {
         return getBoardType().get_code();
     }
+
+    protected void configBoard(String configStr) {
+        try {
+            println("Sending config string to board: " + configStr);
+            boardShim.config_board(configStr);
+        }
+        catch (BrainFlowError e) {
+            println("ERROR: Exception sending config string to board: " + configStr);
+            e.printStackTrace();
+        }
+    }
 };

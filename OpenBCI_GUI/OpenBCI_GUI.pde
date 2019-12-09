@@ -1151,7 +1151,7 @@ void systemUpdate() { // for updating data values and variables
         } else {
             if (hubTimerCounter == hubTimerLimit) {
                 hubTimer.cancel();
-                outputError("Unable to find or connect to Hub. LIVE functionality will be disabled.");
+                //outputError("Unable to find or connect to Hub. LIVE functionality will be disabled.");
                 hubTimerCounter = 0;
             }
         }
@@ -1307,6 +1307,7 @@ void systemDraw() { //for drawing to the screen
         } else {
             //reinitializing GUI after resize
             println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
+            println("TIME OF REINITIALIZE: " + settings.timeOfGUIreinitialize + " MILLIS: " + millis() + " DELAY: " + settings.reinitializeGUIdelay);
         }
 
         //dataProcessing_user.draw();

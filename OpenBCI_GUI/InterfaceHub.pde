@@ -524,11 +524,12 @@ class Hub {
 
     private void killAndShowMsg(String msg) {
         println("Hub: killAndShowMsg: " + msg);
-        abandonInit = true;
-        initSystemButton.setString("START SESSION");
-        controlPanel.open();
-        portIsOpen = false;
-        haltSystem();
+        // TODO[brainflow]
+        // abandonInit = true;
+        // initSystemButton.setString("START SESSION");
+        // controlPanel.open();
+        // portIsOpen = false;
+        // haltSystem();
     }
 
     /**

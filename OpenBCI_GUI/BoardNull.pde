@@ -43,4 +43,9 @@ class BoardNull implements Board {
     public int[] getLastAccelValues() {
         return null;
     }
+
+    @Override
+    public void setChannelActive(int channelIndex, boolean active) {
+        // empty
+    }
 };

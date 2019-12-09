@@ -16,4 +16,6 @@ interface Board {
     public int getNumChannels();
 
     public int[] getLastAccelValues();
+
+    public void setChannelActive(int channelIndex, boolean active);
 };

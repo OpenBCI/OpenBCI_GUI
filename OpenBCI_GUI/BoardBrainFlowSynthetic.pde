@@ -12,4 +12,10 @@ class BoardBrainFlowSynthetic extends BoardBrainFlow {
         BrainFlowInputParams params = new BrainFlowInputParams();
         return params;
     }
+
+    @Override
+    public void setChannelActive(int channelIndex, boolean active) {
+        // Dummy string
+        configBoard("SYNTHETIC PLACEHOLDER");
+    }
 };
