@@ -6,10 +6,10 @@ abstract class BoardBrainFlow implements Board {
     private BoardIds boardType = BoardIds.SYNTHETIC_BOARD;
     private BoardShim boardShim = null;
 
-    private int samplingRate = 0;
-    private int packetNumberChannel = 0;
-    private int[] dataChannels = {};
-    private int[] accelChannels = {};
+    protected int samplingRate = 0;
+    protected int packetNumberChannel = 0;
+    protected int[] dataChannels = {};
+    protected int[] accelChannels = {};
 
     private boolean streaming = false;
     private int[] lastAccelValues = {};

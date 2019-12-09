@@ -1,5 +1,7 @@
 import brainflow.*;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 class BoardNovaXR extends BoardBrainFlow {
 
     private final char[] activateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
@@ -13,10 +15,12 @@ class BoardNovaXR extends BoardBrainFlow {
         ipAddress = ip;
 
         try {
+            int[] eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
+            int[] emgChannels = BoardShim.get_emg_channels(getBoardTypeInt());
+
             // datachannels is set to eeg in the base class. we're re-setting it here because we want to
             // display emg data in the time series for NovaXR
-            dataChannels = BoardShim.get_eeg_channels(getBoardTypeInt())
-                            + BoardShim.get_emg_channels(getBoardTypeInt());
+            dataChannels = ArrayUtils.addAll(eegChannels, emgChannels);
         } catch (BrainFlowError e) {
             println("WARNING: failed to get data channels from BoardShim");
             e.printStackTrace();
