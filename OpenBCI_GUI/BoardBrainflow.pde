@@ -18,7 +18,6 @@ abstract class BoardBrainFlow implements Board {
      * Implement these in your board.
      */
     abstract protected BrainFlowInputParams getParams();
-    abstract protected int[] getDataChannels();
 
     protected BoardBrainFlow(BoardIds boardId) {
         boardType = boardId;
