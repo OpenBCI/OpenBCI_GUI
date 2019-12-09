@@ -1,7 +1,7 @@
 
 interface Board {
 
-    public void initialize();
+    public boolean initialize();
 
     public void uninitialize();
 

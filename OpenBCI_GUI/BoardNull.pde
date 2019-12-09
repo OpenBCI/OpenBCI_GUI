@@ -5,8 +5,8 @@
 class BoardNull implements Board {
 
     @Override
-    public void initialize() {
-        // empty
+    public boolean initialize() {
+        return true;
     }
 
     @Override

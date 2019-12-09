@@ -776,7 +776,8 @@ void initSystem() throws Exception {
     }
 
     // initialize the chosen board
-    currentBoard.initialize();
+    boolean success = currentBoard.initialize();
+    abandonInit = !success; // abandon if init fails
 
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
     //initialize playback file if necessary

@@ -36,17 +36,19 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public void initialize() {
+    public boolean initialize() {
         try {
             updateToNChan(getNumChannels());
 
             boardShim = new BoardShim (getBoardTypeInt(), getParams());
             boardShim.prepare_session();
+            return true; 
 
         } catch (Exception e) {
             boardShim = null;
             outputError("ERROR: " + e + " when initializing Brainflow board. Data will not stream.");
             e.printStackTrace();
+            return false;
         }
     }
 
