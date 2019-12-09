@@ -6,27 +6,27 @@ abstract class BoardBrainFlow implements Board {
     private BoardIds boardType = BoardIds.SYNTHETIC_BOARD;
     private BoardShim boardShim = null;
 
+    private int samplingRate = 0;
     private int packetNumberChannel = 0;
-    private int[] eegChannels = {};
+    private int[] dataChannels = {};
     private int[] accelChannels = {};
 
     private boolean streaming = false;
-    private int samplingRate = 0;
-
     private int[] lastAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
      */
     abstract protected BrainFlowInputParams getParams();
+    abstract protected int[] getDataChannels();
 
     protected BoardBrainFlow(BoardIds boardId) {
         boardType = boardId;
         try {
-            packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
-            eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
-            accelChannels = BoardShim.get_accel_channels(getBoardTypeInt());
             samplingRate = BoardShim.get_sampling_rate(getBoardTypeInt());
+            packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
+            dataChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
+            accelChannels = BoardShim.get_accel_channels(getBoardTypeInt());
             lastAccelValues = new int[accelChannels.length];
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
@@ -85,9 +85,9 @@ abstract class BoardBrainFlow implements Board {
         {
             dataPacket.sampleIndex = (int)Math.round(data[packetNumberChannel][count]);
 
-            for (int i=0; i < eegChannels.length; i++)
+            for (int i=0; i < dataChannels.length; i++)
             {
-                dataPacket.values[i] = (int)Math.round(data[eegChannels[i]][count]);
+                dataPacket.values[i] = (int)Math.round(data[dataChannels[i]][count]);
             }
 
             for (int i=0; i<accelChannels.length; i++)
@@ -144,7 +144,7 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public int getNumChannels() {
-        return eegChannels.length;
+        return dataChannels.length;
     }
 
     @Override

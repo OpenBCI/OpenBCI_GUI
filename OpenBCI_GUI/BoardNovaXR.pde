@@ -11,6 +11,16 @@ class BoardNovaXR extends BoardBrainFlow {
     public BoardNovaXR(String ip) {
         super(BoardIds.NOVAXR_BOARD);
         ipAddress = ip;
+
+        try {
+            // datachannels is set to eeg in the base class. we're re-setting it here because we want to
+            // display emg data in the time series for NovaXR
+            dataChannels = BoardShim.get_eeg_channels(getBoardTypeInt())
+                            + BoardShim.get_emg_channels(getBoardTypeInt());
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get data channels from BoardShim");
+            e.printStackTrace();
+        }
     }
 
     // implement mandatory abstract functions
@@ -18,7 +28,7 @@ class BoardNovaXR extends BoardBrainFlow {
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
         params.ip_address = ipAddress;
-        params.ip_protocol = IpProtocolType.TCP.get_code();
+        params.ip_protocol = IpProtocolType.UDP.get_code();
         return params;
     }
 

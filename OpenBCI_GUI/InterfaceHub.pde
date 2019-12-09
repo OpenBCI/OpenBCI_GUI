@@ -1234,6 +1234,8 @@ class Hub {
       * @returns {boolean} - True if able to write, false otherwise.
       */
     public boolean write(String out) {
+        // TODO[brainflow]
+        new Exception().printStackTrace();
         try {
             // println("out " + out);
             tcpClient.write(out);
@@ -1305,32 +1307,3 @@ class Hub {
     }
 
 };
-
-class CheckHubInit extends TimerTask {
-    public void run() {
-        //Every hubTimerInterval seconds until hubTimerLimit is reached
-        //try to open a new socket. If successful, close the socket and try to startTCPClient.
-        try {
-            Socket socket = new Socket(hub.getHubIP(), hub.getHubPort());
-            if (socket != null) {
-                socket.close();
-                socket = null;
-                if (hub.startTCPClient()) {
-                    if (hubTimerCounter > 0) {
-                        outputSuccess("The GUI is connected to the Hub!");
-                    } else {
-                        println("Hub: CheckHubInit: The GUI is connected to the Hub!");
-                    }
-                    hub.setHubIsRunning(true);
-                    this.cancel();
-                } else {
-                    outputError("Hub: CheckHubInit: Unable to startTCPClient even though a socket was opened...");
-                }
-            }
-        } catch (IOException e) {
-            outputWarn("Unable to establish link with the OpenBCI Hub, trying again...");
-        }
-
-        hubTimerCounter++;
-    }
-}

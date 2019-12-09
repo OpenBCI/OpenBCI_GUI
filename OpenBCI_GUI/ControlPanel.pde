@@ -2852,7 +2852,7 @@ class NovaXRBox {
             .setColorForeground(isSelected_color)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText("192.168.1.171")
+            .setText(novaXR_ipAddress)
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
             .setVisible(false)

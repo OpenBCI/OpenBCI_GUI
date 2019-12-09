@@ -128,7 +128,7 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
 
-String novaXR_ipAddress = "192.168.1.171";
+String novaXR_ipAddress = "192.168.4.1";
 
 final static String PROTOCOL_BLE = "ble";
 final static String PROTOCOL_BLED112 = "bled112";
@@ -250,7 +250,7 @@ final int totalColumns16ChanThresh = 16;
 
 boolean setupComplete = false;
 boolean isHubInitialized = false;
-boolean isHubObjectInitialized = false;
+boolean isHubObjectInitialized = true;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
@@ -818,7 +818,7 @@ void initSystem() throws Exception {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
 
-            if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
+            if (eegDataSource != DATASOURCE_GANGLION) {
                 systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
             }
             if (!abandonInit) {
@@ -1136,27 +1136,6 @@ void haltSystem() {
 } //end of halt system
 
 void systemUpdate() { // for updating data values and variables
-
-    //Instantiate Hub Object, wait until next step to try to startTCPClient
-    if (isHubInitialized && isHubObjectInitialized == false) {
-        hub = new Hub(this);
-        println("Instantiating hub object...");
-        isHubObjectInitialized = true;
-    }
-    //Then, immediately start trying to connect to Hub for X seconds
-    if (!hub.isHubRunning()) {
-        if (!hubTimerHasStarted) {
-            hubTimer.schedule(new CheckHubInit(), 0, hubTimerInterval);
-            hubTimerHasStarted = true;
-        } else {
-            if (hubTimerCounter == hubTimerLimit) {
-                hubTimer.cancel();
-                //outputError("Unable to find or connect to Hub. LIVE functionality will be disabled.");
-                hubTimerCounter = 0;
-            }
-        }
-    }
-
     //prepare for updating the GUI
     win_x = width;
     win_y = height;
@@ -1328,26 +1307,27 @@ void systemDraw() { //for drawing to the screen
         helpWidget.draw();
     }
 
-    if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
-        if (!attemptingToConnect) {
-            output("Attempting to establish a connection with your OpenBCI Board...");
-            attemptingToConnect = true;
-        } else {
-            //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
-            pushStyle();
-            imageMode(CENTER);
-            image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
-            popStyle();
-        }
+    // TODO[brainflow]
+    // if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+    //     if (!attemptingToConnect) {
+    //         output("Attempting to establish a connection with your OpenBCI Board...");
+    //         attemptingToConnect = true;
+    //     } else {
+    //         //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
+    //         pushStyle();
+    //         imageMode(CENTER);
+    //         image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
+    //         popStyle();
+    //     }
 
-        if (millis() - timeOfInit > settings.initTimeoutThreshold) {
-            haltSystem();
-            initSystemButton.but_txt = "START SESSION";
-            output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
-            controlPanel.open();
-            attemptingToConnect = false;
-        }
-    }
+    //     if (millis() - timeOfInit > settings.initTimeoutThreshold) {
+    //         haltSystem();
+    //         initSystemButton.but_txt = "START SESSION";
+    //         output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
+    //         controlPanel.open();
+    //         attemptingToConnect = false;
+    //     }
+    // }
 
     //draw presentation last, bc it is intended to be rendered on top of the GUI ...
     if (drawPresentation) {
