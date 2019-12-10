@@ -73,7 +73,7 @@ int getDataIfAvailable(int pointCounter) {
             pointCounter++; //increment counter for "little buffer"
         }
 
-    } else if (eegDataSource == DATASOURCE_NOVAXR) {
+    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
         while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             
@@ -101,9 +101,6 @@ int getDataIfAvailable(int pointCounter) {
             for (int i = 0; i < nPointsPerUpdate; i++) {
                 dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
                 switch (eegDataSource) {
-                case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-                    synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-                    break;
                 case DATASOURCE_PLAYBACKFILE:
                     currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
                     break;
@@ -195,39 +192,6 @@ void appendAndShift(float[] data, float newData) {
         data[i]=data[i+nshift];  //shift data points down by 1
     }
     data[end] = newData;  //append new data
-}
-
-final float sine_freq_Hz = 10.0f;
-float[] sine_phase_rad = new float[nchan];
-
-void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV;
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-        if (isChannelActive(Ichan)) {
-            val_uV = randomGaussian()*sqrt(fs_Hz/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-            if (Ichan==0) val_uV*= 10f;  //scale one channel higher
-
-            if (Ichan==1) {
-                //add sine wave at 10 Hz at 10 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * sine_freq_Hz / fs_Hz;
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);
-            } else if (Ichan==2) {
-                //50 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //60 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //20 uVrms
-            } else if (Ichan==3) {
-                //60 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //50 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
-            }
-        } else {
-            val_uV = 0.0f;
-        }
-        curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-    }
 }
 
 //some data initialization routines

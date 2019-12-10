@@ -751,7 +751,7 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_SYNTHETIC:
-            //do nothing
+            currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
             break;
@@ -880,6 +880,7 @@ void initSystem() throws Exception {
   * @description Useful function to get the correct sample rate based on data source
   * @returns `float` - The frequency / sample rate of the data source
   */
+// TODO[brainflow] investigate this function and probably remove it
 float getSampleRateSafe() {
     if (eegDataSource == DATASOURCE_GANGLION) {
         return ganglion.getSampleRate();
@@ -1239,7 +1240,6 @@ void systemDraw() { //for drawing to the screen
             //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
             drawLoop_counter=0; //reset for next time
             redrawScreenNow = false;  //reset for next time
-
             //update the title of the figure;
             switch (eegDataSource) {
             case DATASOURCE_CYTON:
@@ -1268,6 +1268,9 @@ void systemDraw() { //for drawing to the screen
                 break;
             case DATASOURCE_GANGLION:
                 surface.setTitle(int(frameRate) + " fps, Ganglion!");
+                break;
+            default:
+                surface.setTitle(int(frameRate) + " fps");
                 break;
             }
         }

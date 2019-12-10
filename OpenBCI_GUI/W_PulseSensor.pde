@@ -105,17 +105,6 @@ class W_PulseSensor extends Widget {
 
         if (curDataPacketInd < 0) return;
 
-        if (eegDataSource == DATASOURCE_CYTON) {  // LIVE FROM CYTON
-
-        } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
-
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-
-        }
-        else {  // PLAYBACK
-
-        }
-
         int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
         if (numSamplesToProcess < 0) {
             numSamplesToProcess += dataPacketBuff.length; //<>// //<>//

@@ -12,7 +12,7 @@ abstract class BoardBrainFlow implements Board {
     protected int[] accelChannels = {};
 
     private boolean streaming = false;
-    private int[] lastAccelValues = {};
+    private float[] lastAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -26,7 +26,7 @@ abstract class BoardBrainFlow implements Board {
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
             dataChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
             accelChannels = BoardShim.get_accel_channels(getBoardTypeInt());
-            lastAccelValues = new int[accelChannels.length];
+            lastAccelValues = new float[accelChannels.length];
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
@@ -93,8 +93,7 @@ abstract class BoardBrainFlow implements Board {
 
             for (int i=0; i<accelChannels.length; i++)
             {
-                dataPacket.auxValues[i] = (int)Math.round(data[accelChannels[i]][count]);
-                lastAccelValues[i] = (int)Math.round(data[accelChannels[i]][count]);
+                lastAccelValues[i] = (float)data[accelChannels[i]][count];
             }
             
             // This is also used to let the rest of the code that it may be time to do something
@@ -149,7 +148,7 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public int[] getLastAccelValues() {
+    public float[] getLastAccelValues() {
         return lastAccelValues;
     }
     

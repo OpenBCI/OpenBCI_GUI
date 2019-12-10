@@ -191,7 +191,6 @@ public void controlEvent(ControlEvent theEvent) {
         } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
             //GUI auto detects number of channels for playback when file is selected
         } else if(newDataSource == DATASOURCE_SYNTHETIC){
-            updateToNChan(8);
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
@@ -555,10 +554,7 @@ class ControlPanel {
 
             } else if (eegDataSource == DATASOURCE_NOVAXR) {
                 novaXRBox.draw();
-
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
-                //set other CP5 controllers invisible
-                // hideAllBoxes();
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 if (ganglion.getInterface() == INTERFACE_NONE) {

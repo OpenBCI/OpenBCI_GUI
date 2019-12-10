@@ -40,7 +40,7 @@ class BoardNull implements Board {
     }
 
     @Override
-    public int[] getLastAccelValues() {
+    public float[] getLastAccelValues() {
         return null;
     }
 
