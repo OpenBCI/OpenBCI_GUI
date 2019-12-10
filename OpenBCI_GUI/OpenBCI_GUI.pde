@@ -96,11 +96,13 @@ final int DATASOURCE_PLAYBACKFILE = 3;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 4;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
-final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interface
-final int INTERFACE_SERIAL = 0; // Used only by cyton
-final int INTERFACE_HUB_BLE = 1; // used only by ganglion
-final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
-final int INTERFACE_HUB_BLED112 = 3; // used only by ganglion with bled dongle
+enum BoardProtocol {
+    NONE,  
+    SERIAL,
+    BLE,
+    WIFI,
+    BLED112
+}
 
 boolean showStartupError = false;
 String startupErrorMessage = "";
@@ -740,7 +742,7 @@ void initSystem() throws Exception {
         case DATASOURCE_CYTON:
             int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
-            if (cyton.getInterface() == INTERFACE_SERIAL) {
+            if (cyton.getInterface() == BoardProtocol.SERIAL) {
                 currentBoard = new BoardCyton(openBCI_portName);
             } else {
                 if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
@@ -756,7 +758,7 @@ void initSystem() throws Exception {
         case DATASOURCE_PLAYBACKFILE:
             break;
         case DATASOURCE_GANGLION:
-            if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+            if (ganglion.getInterface() == BoardProtocol.BLE || ganglion.getInterface() == BoardProtocol.BLED112) {
                 hub.connectBLE(ganglion_portName);
             } else {
                 if (hub.getWiFiStyle() == WIFI_DYNAMIC) {

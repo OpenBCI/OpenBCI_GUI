@@ -1031,7 +1031,7 @@ class SoftwareSettings {
                 // immediately after activating channels. From what I can tell, the issue is in the
                 // firmware. This delay is a workaround for the issue.
                 // retiutut: Containing this fix to BLED112 only!
-                if (ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+                if (ganglion.getInterface() == BoardProtocol.BLED112) {
                     delay(1000);
                 }
                 ganglion.accelStart(); //send message to hub

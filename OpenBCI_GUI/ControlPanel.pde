@@ -156,8 +156,8 @@ public void controlEvent(ControlEvent theEvent) {
         protocolWifiCyton.setColorNotPressed(colorNotPressed);
         protocolSerialCyton.setColorNotPressed(colorNotPressed);
 
-        ganglion.setInterface(INTERFACE_NONE);
-        cyton.setInterface(INTERFACE_NONE);
+        ganglion.setInterface(BoardProtocol.NONE);
+        cyton.setInterface(BoardProtocol.NONE);
         controlPanel.novaXRBox.isShowing = false;
 
         if(newDataSource == DATASOURCE_CYTON){
@@ -478,11 +478,11 @@ class ControlPanel {
             cp5Popup.setVisible(true);
 
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
-                if (cyton.getInterface() == INTERFACE_NONE) {
+                if (cyton.getInterface() == BoardProtocol.NONE) {
                     interfaceBoxCyton.draw();
                 } else {
                     interfaceBoxCyton.draw();
-                    if (cyton.getInterface() == INTERFACE_SERIAL) {
+                    if (cyton.getInterface() == BoardProtocol.SERIAL) {
                         serialBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
                         serialBox.draw();
                         dataLogBoxCyton.y = serialBox.y + serialBox.h; 
@@ -507,7 +507,7 @@ class ControlPanel {
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
-                    } else if (cyton.getInterface() == INTERFACE_HUB_WIFI) {
+                    } else if (cyton.getInterface() == BoardProtocol.WIFI) {
                         wifiBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
 
                         wifiBox.draw();
@@ -557,17 +557,17 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
-                if (ganglion.getInterface() == INTERFACE_NONE) {
+                if (ganglion.getInterface() == BoardProtocol.NONE) {
                     interfaceBoxGanglion.draw();
                 } else {
                     interfaceBoxGanglion.draw();
-                    if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
+                    if (ganglion.getInterface() == BoardProtocol.BLE || ganglion.getInterface() == BoardProtocol.BLED112) {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
                         cp5.get(MenuList.class, "bleList").setVisible(true);
                         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
-                    } else if (ganglion.getInterface() == INTERFACE_HUB_WIFI) {
+                    } else if (ganglion.getInterface() == BoardProtocol.WIFI) {
                         wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
                         wifiBox.draw();
@@ -624,9 +624,9 @@ class ControlPanel {
 
         //Drawing here allows max file size dropdown to be drawn on top of all other cp5 elements
         if (systemMode != 10 && outputDataSource == OUTPUT_SOURCE_ODF) {
-            if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() != INTERFACE_NONE) {
+            if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() != BoardProtocol.NONE) {
                 dataLogBoxCyton.cp5_dataLog_dropdown.draw();
-            } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() != INTERFACE_NONE) {
+            } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() != BoardProtocol.NONE) {
                 dataLogBoxGanglion.cp5_dataLog_dropdown.draw();
             }
         }
@@ -1280,7 +1280,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 outputSuccess("Using built in BLE for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
-                ganglion.setInterface(INTERFACE_HUB_BLE);
+                ganglion.setInterface(BoardProtocol.BLE);
                 // hub.searchDeviceStart();
             } else {
                 outputWarn("Please wait till hub is fully initalized");
@@ -1295,7 +1295,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol BLED112 Selected for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
-                ganglion.setInterface(INTERFACE_HUB_BLED112);
+                ganglion.setInterface(BoardProtocol.BLED112);
                 // hub.searchDeviceStart();
             } else {
                 outputWarn("Please wait till hub is fully initalized");
@@ -1311,7 +1311,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
-                ganglion.setInterface(INTERFACE_HUB_WIFI);
+                ganglion.setInterface(BoardProtocol.WIFI);
                 hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
@@ -1325,7 +1325,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol Serial Selected for Cyton");
                 if (hub.isPortOpen()) hub.closePort();
-                cyton.setInterface(INTERFACE_SERIAL);
+                cyton.setInterface(BoardProtocol.SERIAL);
             } else {
                 output("Please wait till hub is fully initalized");
             }
@@ -1338,7 +1338,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Cyton");
                 if (hub.isPortOpen()) hub.closePort();
-                cyton.setInterface(INTERFACE_HUB_WIFI);
+                cyton.setInterface(BoardProtocol.WIFI);
                 hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
@@ -1577,17 +1577,17 @@ class ControlPanel {
 
 public void initButtonPressed(){
     if (initSystemButton.but_txt == "START SESSION") {
-        if ((eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_NONE) || (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_NONE)) {
+        if ((eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == BoardProtocol.NONE)) {
             output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+        } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
             output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+        } else if (eegDataSource == DATASOURCE_CYTON && cyton.getInterface() == BoardProtocol.WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
             output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
@@ -1597,12 +1597,12 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_GANGLION && (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) && ganglion_portName == "N/A") {
+        } else if (eegDataSource == DATASOURCE_GANGLION && (ganglion.getInterface() == BoardProtocol.BLE || ganglion.getInterface() == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
             output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == INTERFACE_HUB_WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+        } else if (eegDataSource == DATASOURCE_GANGLION && ganglion.getInterface() == BoardProtocol.WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
             output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);

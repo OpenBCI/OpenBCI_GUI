@@ -193,7 +193,7 @@ class CytonLegacy {
 
     private BoardMode curBoardMode = BoardMode.DEFAULT;
 
-    private int curInterface = INTERFACE_SERIAL;
+    private BoardProtocol curInterface = BoardProtocol.SERIAL;
     private int sampleRate = fsHzWifi;
 
     // needed by interfaceserial
@@ -222,10 +222,10 @@ class CytonLegacy {
     //     return curBoardMode;
     // }
     
-    public int getInterface() {
+    public BoardProtocol getInterface() {
         return curInterface;
     }
-    
+
     public float get_series_resistor() {
         return openBCI_series_resistor_ohms;
     }
@@ -252,7 +252,7 @@ class CytonLegacy {
         hub.setSampleRate(sampleRate);
     }
 
-    public boolean setInterface(int _interface) {
+    public boolean setInterface(BoardProtocol _interface) {
         curInterface = _interface;
         // println("current interface: " + curInterface);
         println("setInterface: curInterface: " + getInterface());
@@ -268,7 +268,7 @@ class CytonLegacy {
 
     //constructors
     CytonLegacy() {};  //only use this if you simply want access to some of the constants
-    CytonLegacy(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, int _interface) {
+    CytonLegacy(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, BoardProtocol _interface) {
         curInterface = _interface;
 
         initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
@@ -413,11 +413,11 @@ class CytonLegacy {
 
     private boolean isSerial () {
         // println("My interface is " + curInterface);
-        return curInterface == INTERFACE_SERIAL;
+        return curInterface == BoardProtocol.SERIAL;
     }
 
     private boolean isWifi () {
-        return curInterface == INTERFACE_HUB_WIFI;
+        return curInterface == BoardProtocol.WIFI;
     }
 
     public void startDataTransfer() {

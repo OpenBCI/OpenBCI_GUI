@@ -32,7 +32,7 @@ class Ganglion {
     private float scale_fac_accel_G_per_count_ble = 0.016;
     private float scale_fac_accel_G_per_count_wifi = 0.001;
 
-    private int curInterface = INTERFACE_NONE;
+    private BoardProtocol curInterface = BoardProtocol.NONE;
 
     private DataPacket_ADS1299 dataPacket;
 
@@ -68,15 +68,15 @@ class Ganglion {
         return isWifi() ? true : accelModeActive; //Accel is always on for Ganglion+Wifi
     }
     public void overrideCheckingImpedance(boolean val) { checkingImpedance = val; }
-    public int getInterface() {
+    public BoardProtocol getInterface() {
         return curInterface;
     }
     public boolean isBLE () {
-        return curInterface == INTERFACE_HUB_BLE || curInterface == INTERFACE_HUB_BLED112;
+        return curInterface == BoardProtocol.BLE || curInterface == BoardProtocol.BLED112;
     }
 
     public boolean isWifi () {
-        return curInterface == INTERFACE_HUB_WIFI;
+        return curInterface == BoardProtocol.WIFI;
     }
 
     public boolean isPortOpen() {
@@ -123,11 +123,11 @@ class Ganglion {
         println("Setting sample rate for Ganglion to " + sampleRate + "Hz");
     }
 
-    public void setInterface(int _interface) {
+    public void setInterface(BoardProtocol _interface) {
         curInterface = _interface;
         if (isBLE()) {
             setSampleRate((int)fsHzBLE);
-            if (_interface == INTERFACE_HUB_BLE) {
+            if (_interface == BoardProtocol.BLE) {
                 hub.setProtocol(PROTOCOL_BLE);
             } else {
                 hub.setProtocol(PROTOCOL_BLED112);
