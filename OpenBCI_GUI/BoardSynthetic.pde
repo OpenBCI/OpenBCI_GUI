@@ -1,7 +1,7 @@
 
 /* Generates synthetic data
  */
-class BoardSynthetic implements Board {
+class BoardSynthetic extends Board {
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
     private final float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
@@ -44,6 +44,8 @@ class BoardSynthetic implements Board {
         {
             synthesizeData();
             synthesizeAccelData();
+
+            // TODO[brainflow] this is common to all boards. refactor it?
             // This is also used to let the rest of the code that it may be time to do something
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
             dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
@@ -85,6 +87,16 @@ class BoardSynthetic implements Board {
     @Override
     public float[] getLastAccelValues() {
         return lastAccelValues;
+    }
+
+    @Override
+    public boolean isAccelerometerActive() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccelerometerAvailable() {
+        return true;
     }
 
     @Override

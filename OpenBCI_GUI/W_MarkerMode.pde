@@ -80,7 +80,7 @@ class W_MarkerMode extends Widget {
             localValidLastMarker = synthesizeMarkerData();
         }
         if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {
-            if (isRunning && cyton.getBoardMode() == BoardMode.MARKER) {
+            if (isRunning && currentBoard.isMarkerActive()) {
                 if (localValidLastMarker > 0){
                     lastMarker = localValidLastMarker;  // this holds the last marker for the display
                 }
@@ -125,7 +125,7 @@ class W_MarkerMode extends Widget {
             fill(50);
             textFont(p3, 16);
 
-            if (eegDataSource == DATASOURCE_CYTON && cyton.getBoardMode() != BoardMode.MARKER) {
+            if (eegDataSource == DATASOURCE_CYTON && !currentBoard.isMarkerActive()) {
                 markerModeButton.setString("Turn Marker On");
                 markerModeButton.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
@@ -188,7 +188,7 @@ class W_MarkerMode extends Widget {
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
             if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
-                if (cyton.getBoardMode() != BoardMode.MARKER) {
+                if (!currentBoard.isMarkerActive()) {
                     cyton.setBoardMode(BoardMode.MARKER);
                     output("Starting to read markers");
                     markerModeButton.setString("Turn Marker Off");

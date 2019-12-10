@@ -56,7 +56,6 @@ class W_Accelerometer extends Widget {
     private boolean updating = true;
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
-    private boolean accelerometerModeOn = true;
 
     W_Accelerometer(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -114,7 +113,7 @@ class W_Accelerometer extends Widget {
     }
 
     int nPointsBasedOnDataSource() {
-        return accelHorizLimit * (int)getSampleRateSafe();
+        return accelHorizLimit * getSampleRateSafe();
     }
 
     public boolean isVisible() {
@@ -134,7 +133,7 @@ class W_Accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && isAccelModeActive()) {
+        if (isRunning && currentBoard.isAccelerometerActive()) {
             //update the current Accelerometer values
             updateAccelPoints();
             //update the line graph and corresponding gplot points
@@ -162,22 +161,8 @@ class W_Accelerometer extends Widget {
         return currentAccelVals[val];
     }
 
-    // check the approrpiate board to see if accel mode is on
-    boolean isAccelModeActive() {
-        //TODO[brainflow] add something here for brainflow boards
-        if (eegDataSource == DATASOURCE_CYTON) {
-            return (cyton.getBoardMode() == BoardMode.DEFAULT) && accelerometerModeOn;
-        }
-        else if (eegDataSource == DATASOURCE_GANGLION) {
-            return ganglion.isAccelModeActive();
-        }
-        else {
-            return true;
-        }
-    }
-
     String getButtonString() {
-        if (isAccelModeActive()) {
+        if (currentBoard.isAccelerometerActive()) {
             return "Turn Accel. Off";
         }
         else {
@@ -215,7 +200,7 @@ class W_Accelerometer extends Widget {
             accelModeButton.draw();
         }
 
-        if (isAccelModeActive()) {
+        if (currentBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
@@ -270,7 +255,7 @@ class W_Accelerometer extends Widget {
 
         if (eegDataSource == DATASOURCE_GANGLION) {
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (isAccelModeActive()) {
+                if (currentBoard.isAccelerometerActive()) {
                     ganglion.accelStop();
                 } else{
                     ganglion.accelStart();
@@ -278,17 +263,17 @@ class W_Accelerometer extends Widget {
             }
             accelModeButton.setIsActive(false);
         } else if (eegDataSource == DATASOURCE_CYTON) {
+            //TODO[brainflow]
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (!accelerometerModeOn) {
+                if (currentBoard.isAccelerometerActive()) {
                     cyton.setBoardMode(BoardMode.DEFAULT);
                     output("Starting to read accelerometer");
-                    accelerometerModeOn = true;
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    accelerometerModeOn = false;
+                    //accelerometerModeOn = false;
                 }
             }
             accelModeButton.setIsActive(false);
@@ -469,7 +454,7 @@ class AccelerometerBar {
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * (int)getSampleRateSafe();
+        return numSeconds * getSampleRateSafe();
     }
 
     void adjustTimeAxis(int _newTimeSize) {

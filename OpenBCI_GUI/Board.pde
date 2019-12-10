@@ -1,21 +1,38 @@
 
-interface Board {
+abstract class Board {
 
-    public boolean initialize();
+    public abstract boolean initialize();
 
-    public void uninitialize();
+    public abstract void uninitialize();
 
-    public void update();
+    public abstract void update();
 
-    public void startStreaming();
+    public abstract void startStreaming();
 
-    public void stopStreaming();
+    public abstract void stopStreaming();
 
-    public int getSampleRate();
+    public abstract int getSampleRate();
     
-    public int getNumChannels();
+    public abstract int getNumChannels();
 
-    public float[] getLastAccelValues();
+    // TODO[brainflow] do we need this? Or could this be set in the datapacket class?
+    public abstract float[] getLastAccelValues();
 
-    public void setChannelActive(int channelIndex, boolean active);
+    public boolean isAccelerometerActive() { return false; }
+
+    public boolean isAccelerometerAvailable() { return false; }
+
+    public boolean isAnalogActive() { return false; }
+
+    public boolean isAnalogAvailable() { return false; }
+
+    public boolean isDigitalActive() { return false; }
+
+    public boolean isDigitalAvailable() { return false; }
+
+    public boolean isMarkerActive() { return false; }
+
+    public boolean isMarkerAvailable() { return false; }
+
+    public abstract void setChannelActive(int channelIndex, boolean active);
 };

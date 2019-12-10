@@ -254,9 +254,11 @@ public class OutputFile_rawtxt {
     }
 
     private void writeAuxValues(DataPacket_ADS1299 data) {
+        // TODO[brainflow] does aux values work?
         if (eegDataSource == DATASOURCE_CYTON) {
+            BoardCyton cytonBoard = (BoardCyton)currentBoard;
             // println("board mode: " + cyton.getBoardMode());
-            if (cyton.getBoardMode() == BoardMode.DIGITAL) {
+            if (cytonBoard.getBoardMode() == CytonBoardMode.DIGITAL) {
                 if (cyton.isWifi()) {
                     output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
                     output.print(", " + (data.auxValues[0] & 0xFF));
@@ -268,7 +270,7 @@ public class OutputFile_rawtxt {
                     output.print(", " + (data.auxValues[1] & 0xFF));
                     output.print(", " + data.auxValues[2]);
                 }
-            } else if (cyton.getBoardMode() == BoardMode.ANALOG) {
+            } else if (cytonBoard.getBoardMode() == CytonBoardMode.ANALOG) {
                 if (cyton.isWifi()) {
                     output.print(", " + data.auxValues[0]);
                     output.print(", " + data.auxValues[1]);
@@ -277,7 +279,7 @@ public class OutputFile_rawtxt {
                     output.print(", " + data.auxValues[1]);
                     output.print(", " + data.auxValues[2]);
                 }
-            } else if (cyton.getBoardMode() == BoardMode.MARKER) {
+            } else if (cytonBoard.getBoardMode() == CytonBoardMode.MARKER) {
                 output.print(", " + data.auxValues[0]);
                 if ( data.auxValues[0] > 0) {
                     hub.validLastMarker = data.auxValues[0];

@@ -881,15 +881,11 @@ void initSystem() throws Exception {
   * @returns `float` - The frequency / sample rate of the data source
   */
 // TODO[brainflow] investigate this function and probably remove it
-float getSampleRateSafe() {
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        return ganglion.getSampleRate();
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-        return cyton.getSampleRate();
-    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+int getSampleRateSafe() {
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         return playbackData_table.getSampleRate();
     } else {
-        return 250;
+        return currentBoard.getSampleRate();
     }
 }
 
@@ -898,7 +894,7 @@ float getSampleRateSafe() {
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
 int getNfftSafe() {
-    int sampleRate = (int)getSampleRateSafe();
+    int sampleRate = getSampleRateSafe();
     switch (sampleRate) {
         case 1000:
             return 1024;
@@ -914,7 +910,7 @@ int getNfftSafe() {
 
 void initCoreDataObjects() {
     // Nfft = getNfftSafe();
-    nDataBackBuff = 3*(int)getSampleRateSafe();
+    nDataBackBuff = 3*getSampleRateSafe();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
     dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
@@ -1290,7 +1286,6 @@ void systemDraw() { //for drawing to the screen
         } else {
             //reinitializing GUI after resize
             println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
-            println("TIME OF REINITIALIZE: " + settings.timeOfGUIreinitialize + " MILLIS: " + millis() + " DELAY: " + settings.reinitializeGUIdelay);
         }
 
         //dataProcessing_user.draw();

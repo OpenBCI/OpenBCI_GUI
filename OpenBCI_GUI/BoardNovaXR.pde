@@ -46,6 +46,16 @@ class BoardNovaXR extends BoardBrainFlow {
         configBoard(str(charsToUse[channelIndex]));
     }
 
+    @Override
+    public boolean isAccelerometerActive() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccelerometerAvailable() {
+        return true;
+    }
+
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
         char p = '0';
         char n = '0';

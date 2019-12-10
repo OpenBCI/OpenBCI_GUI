@@ -1,7 +1,7 @@
 import brainflow.*;
 import org.apache.commons.lang3.SystemUtils;
 
-abstract class BoardBrainFlow implements Board {
+abstract class BoardBrainFlow extends Board {
     private DataPacket_ADS1299 dataPacket;
     private BoardIds boardType = BoardIds.SYNTHETIC_BOARD;
     private BoardShim boardShim = null;

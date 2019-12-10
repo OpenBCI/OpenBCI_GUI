@@ -18,4 +18,14 @@ class BoardBrainFlowSynthetic extends BoardBrainFlow {
         // Dummy string
         configBoard("SYNTHETIC PLACEHOLDER");
     }
+
+    @Override
+    public boolean isAccelerometerActive() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccelerometerAvailable() {
+        return true;
+    }
 };

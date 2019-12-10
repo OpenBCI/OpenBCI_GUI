@@ -502,7 +502,7 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
-        saveGlobalSettings.setBoolean("Accelerometer Mode", w_accelerometer.isAccelModeActive());
+        saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
         if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
             saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
             saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);

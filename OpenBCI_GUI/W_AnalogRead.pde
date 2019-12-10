@@ -136,7 +136,7 @@ class W_AnalogRead extends Widget {
             pushStyle();
             //draw channel bars
             analogModeButton.draw();
-            if (cyton.getBoardMode() != BoardMode.ANALOG) {
+            if (!currentBoard.isAnalogActive()) {
                 analogModeButton.setString("Turn Analog Read On");
             } else {
                 analogModeButton.setString("Turn Analog Read Off");
@@ -183,23 +183,21 @@ class W_AnalogRead extends Widget {
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
             // println("analogModeButton...");
-            if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BoardMode.ANALOG) {
-                    cyton.setBoardMode(BoardMode.ANALOG);
-                    if (cyton.isWifi()) {
-                        output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
-                    } else {
-                        output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
-                    }
-                    w_digitalRead.digitalReadOn = false;
-                    w_markermode.markerModeOn = false;
-                    w_pulsesensor.analogReadOn = true;
+            if (!currentBoard.isAnalogActive()) {
+                cyton.setBoardMode(BoardMode.ANALOG);
+                if (cyton.isWifi()) {
+                    output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
-                    output("Starting to read accelerometer");
+                    output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
                 }
-                analogReadOn = !analogReadOn;
+                w_digitalRead.digitalReadOn = false;
+                w_markermode.markerModeOn = false;
+                w_pulsesensor.analogReadOn = true;
+            } else {
+                cyton.setBoardMode(BoardMode.DEFAULT);
+                output("Starting to read accelerometer");
             }
+            analogReadOn = !analogReadOn;
         }
         analogModeButton.setIsActive(false);
     }
@@ -455,7 +453,7 @@ class AnalogReadBar{
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * (int)getSampleRateSafe();
+        return numSeconds * getSampleRateSafe();
     }
 
     void adjustTimeAxis(int _newTimeSize) {

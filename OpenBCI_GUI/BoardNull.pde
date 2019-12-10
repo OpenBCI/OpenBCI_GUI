@@ -2,7 +2,7 @@
 /* This class does nothing, it serves as a signal that the board we are using
  * is null, but does not crash if we use it.
  */
-class BoardNull implements Board {
+class BoardNull extends Board {
 
     @Override
     public boolean initialize() {

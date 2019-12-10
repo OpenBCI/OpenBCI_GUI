@@ -1263,9 +1263,9 @@ class Stream extends Thread {
                                 sendPowerBandData();
                             } else if (this.dataType.equals("Accel/Aux")) {
                                 if (eegDataSource == DATASOURCE_CYTON) {
-                                    if (cyton.getBoardMode() == BoardMode.ANALOG) {
+                                    if (currentBoard.isAnalogActive()) {
                                         sendAnalogReadData();
-                                    } else if (cyton.getBoardMode() == BoardMode.DIGITAL) {
+                                    } else if (currentBoard.isDigitalActive()) {
                                         sendDigitalReadData();
                                     } else {
                                         sendAccelerometerData();
@@ -1309,9 +1309,9 @@ class Stream extends Thread {
                         sendPowerBandData();
                     } else if (this.dataType.equals("Accel/Aux")) {
                         if (eegDataSource == DATASOURCE_CYTON) {
-                            if (cyton.getBoardMode() == BoardMode.ANALOG) {
+                            if (currentBoard.isAnalogActive()) {
                                 sendAnalogReadData();
-                            } else if (cyton.getBoardMode() == BoardMode.DIGITAL) {
+                            } else if (currentBoard.isDigitalActive()) {
                                 sendDigitalReadData();
                             } else {
                                 sendAccelerometerData();

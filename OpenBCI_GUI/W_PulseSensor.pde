@@ -165,7 +165,7 @@ class W_PulseSensor extends Widget {
         text("BPM "+BPM, BPMposX, BPMposY);
         text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-        if (cyton.getBoardMode() != BoardMode.ANALOG) {
+        if (!currentBoard.isAnalogActive()) {
             analogModeButton.setString("Turn Analog Read On");
         } else {
             analogModeButton.setString("Turn Analog Read Off");
@@ -199,7 +199,7 @@ class W_PulseSensor extends Widget {
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
             if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BoardMode.ANALOG) {
+                if (!currentBoard.isAnalogActive()) {
                     cyton.setBoardMode(BoardMode.ANALOG);
                     output("Starting to read analog inputs on pin marked D11.");
                     analogModeButton.setString("Turn Analog Read Off");

@@ -1,6 +1,20 @@
 
 import brainflow.*;
 
+enum CytonBoardMode {
+    DEFAULT(0),
+    DEBUG(1),
+    ANALOG(2),
+    DIGITAL(3),
+    MARKER(4);
+
+    private final int value;
+    CytonBoardMode(final int newValue) {
+        value = newValue;
+    }
+    public int getValue() { return value; }
+}
+
 class BoardCyton extends BoardBrainFlow {
 
     private final char[] activateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
@@ -8,6 +22,7 @@ class BoardCyton extends BoardBrainFlow {
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private String port = "";
+    private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
 
     public BoardCyton(String serialPort) {
         super(BoardIds.CYTON_BOARD);
@@ -30,6 +45,46 @@ class BoardCyton extends BoardBrainFlow {
 
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
         configBoard(str(charsToUse[channelIndex]));
+    }
+
+    @Override
+    public boolean isAccelerometerActive() {
+        return getBoardMode() == CytonBoardMode.DEFAULT;
+    }
+
+    @Override
+    public boolean isAccelerometerAvailable() {
+        return true;
+    }
+
+    @Override
+    public boolean isAnalogActive() {
+        return getBoardMode() == CytonBoardMode.ANALOG;
+    }
+
+    @Override
+    public boolean isAnalogAvailable() {
+        return true;
+    }
+
+    @Override
+    public boolean isDigitalActive() {
+        return getBoardMode() == CytonBoardMode.DIGITAL;
+    }
+
+    @Override
+    public boolean isDigitalAvailable() {
+        return true;
+    }
+
+    @Override
+    public boolean isMarkerActive() {
+        return getBoardMode() == CytonBoardMode.MARKER;
+    }
+
+    @Override
+    public boolean isMarkerAvailable() {
+        return true;
     }
 
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
@@ -61,6 +116,10 @@ class BoardCyton extends BoardBrainFlow {
         String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
                                         powerDown, gain, inputType, bias, srb2, srb1);
         configBoard(command);
+    }
+
+    public CytonBoardMode getBoardMode() {
+        return currentBoardMode;
     }
 };
 
@@ -146,25 +205,27 @@ class CytonLegacy {
     // used to detect and flag error during initialization
     public boolean daisyNotAttached = false;
 
-    //some get methods
-    public float getSampleRate() {
-        if (isSerial()) {
-            if (nchan == NCHAN_CYTON_DAISY) {
-                return fsHzSerialCytonDaisy;
-            } else {
-                return fsHzSerialCyton;
-            }
-        } else {
-            return hub.getSampleRate();
-        }
-    }
+    // //some get methods
+    // public float getSampleRate() {
+    //     if (isSerial()) {
+    //         if (nchan == NCHAN_CYTON_DAISY) {
+    //             return fsHzSerialCytonDaisy;
+    //         } else {
+    //             return fsHzSerialCyton;
+    //         }
+    //     } else {
+    //         return hub.getSampleRate();
+    //     }
+    // }
 
-    public BoardMode getBoardMode() {
-        return curBoardMode;
-    }
+    // public BoardMode getBoardMode() {
+    //     return curBoardMode;
+    // }
+    
     public int getInterface() {
         return curInterface;
     }
+    
     public float get_series_resistor() {
         return openBCI_series_resistor_ohms;
     }
@@ -192,19 +253,17 @@ class CytonLegacy {
     }
 
     public boolean setInterface(int _interface) {
+        curInterface = _interface;
+        // println("current interface: " + curInterface);
+        println("setInterface: curInterface: " + getInterface());
+        if (isWifi()) {
+            setSampleRate((int)fsHzWifi);
+            hub.setProtocol(PROTOCOL_WIFI);
+        } else if (isSerial()) {
+            setSampleRate((int)fsHzSerialCyton);
+            hub.setProtocol(PROTOCOL_SERIAL);
+        }
         return true;
-        // TODO[brainflow]
-        // curInterface = _interface;
-        // // println("current interface: " + curInterface);
-        // println("setInterface: curInterface: " + getInterface());
-        // if (isWifi()) {
-        //     setSampleRate((int)fsHzWifi);
-        //     hub.setProtocol(PROTOCOL_WIFI);
-        // } else if (isSerial()) {
-        //     setSampleRate((int)fsHzSerialCyton);
-        //     hub.setProtocol(PROTOCOL_SERIAL);
-        // }
-        // return true;
     }
 
     //constructors

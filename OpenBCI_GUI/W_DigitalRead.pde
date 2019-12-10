@@ -131,7 +131,7 @@ class W_DigitalRead extends Widget {
             pushStyle();
             //draw channel bars
             digitalModeButton.draw();
-            if (cyton.getBoardMode() != BoardMode.DIGITAL) {
+            if (!currentBoard.isDigitalActive()) {
                 digitalModeButton.setString("Turn Digital Read On");
             } else {
                 digitalModeButton.setString("Turn Digital Read Off");
@@ -186,23 +186,21 @@ class W_DigitalRead extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
-            if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BoardMode.DIGITAL) {
-                    cyton.setBoardMode(BoardMode.DIGITAL);
-                    if (cyton.isWifi()) {
-                        output("Starting to read digital inputs on pin marked D11, D12 and D17");
-                    } else {
-                        output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
-                    }
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_markermode.markerModeOn = false;
+            if (!currentBoard.isDigitalActive()) {
+                cyton.setBoardMode(BoardMode.DIGITAL);
+                if (cyton.isWifi()) {
+                    output("Starting to read digital inputs on pin marked D11, D12 and D17");
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
-                    output("Starting to read accelerometer");
+                    output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                 }
-                digitalReadOn = !digitalReadOn;
+                w_analogRead.analogReadOn = false;
+                w_pulsesensor.analogReadOn = false;
+                w_markermode.markerModeOn = false;
+            } else {
+                cyton.setBoardMode(BoardMode.DEFAULT);
+                output("Starting to read accelerometer");
             }
+            digitalReadOn = !digitalReadOn;
         }
         digitalModeButton.setIsActive(false);
     }
