@@ -722,8 +722,8 @@ class Hub {
                             } else {
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
-                                    cyton.get_scale_fac_uVolts_per_count(),
-                                    cyton.get_scale_fac_accel_G_per_count(),
+                                    BoardCytonConstants.scale_fac_uVolts_per_count,
+                                    BoardCytonConstants.scale_fac_uVolts_per_count,
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
                                 );

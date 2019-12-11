@@ -15,8 +15,15 @@ enum CytonBoardMode {
     public int getValue() { return value; }
 }
 
-class BoardCyton extends BoardBrainFlow {
+static class BoardCytonConstants {
+    static final float series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
+    static final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
+    static final float ADS1299_gain = 24.f;  //assumed gain setting for ADS1299.  set by its Arduino code
+    static final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
+    static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
+}
 
+class BoardCyton extends BoardBrainFlow {
     private final char[] activateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] deactivateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -25,6 +32,7 @@ class BoardCyton extends BoardBrainFlow {
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
 
     public BoardCyton(String serialPort) {
+        // TODO[brainflow] : WIFI MODE
         super(BoardIds.CYTON_BOARD);
         port = serialPort;
     }
@@ -222,22 +230,22 @@ class CytonLegacy {
     //     return curBoardMode;
     // }
     
-    public BoardProtocol getInterface() {
-        return curInterface;
-    }
+    // public BoardProtocol getInterface() {
+    //     return curInterface;
+    // }
 
-    public float get_series_resistor() {
-        return openBCI_series_resistor_ohms;
-    }
-    public float get_scale_fac_uVolts_per_count() {
-        return scale_fac_uVolts_per_count;
-    }
-    public float get_scale_fac_accel_G_per_count() {
-        return scale_fac_accel_G_per_count;
-    }
-    public float get_leadOffDrive_amps() {
-        return leadOffDrive_amps;
-    }
+    // public float get_series_resistor() {
+    //     return openBCI_series_resistor_ohms;
+    // }
+    // public float get_scale_fac_uVolts_per_count() {
+    //     return scale_fac_uVolts_per_count;
+    // }
+    // public float get_scale_fac_accel_G_per_count() {
+    //     return scale_fac_accel_G_per_count;
+    // }
+    // public float get_leadOffDrive_amps() {
+    //     return leadOffDrive_amps;
+    // }
 
     public void setBoardMode(BoardMode boardMode) {
         hub.sendCommand("/" + boardMode.getValue());
@@ -255,7 +263,7 @@ class CytonLegacy {
     public boolean setInterface(BoardProtocol _interface) {
         curInterface = _interface;
         // println("current interface: " + curInterface);
-        println("setInterface: curInterface: " + getInterface());
+        println("setInterface: curInterface: " + selectedProtocol);
         if (isWifi()) {
             setSampleRate((int)fsHzWifi);
             hub.setProtocol(PROTOCOL_WIFI);

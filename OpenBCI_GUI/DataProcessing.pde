@@ -28,7 +28,7 @@ void process_input_file() throws Exception {
     indices = 0;
     try {
         while (!hasRepeated) {
-            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, BoardCytonConstants.scale_fac_uVolts_per_count, BoardCytonConstants.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
             if (curTimestamp != null) {
                 index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
             } else {
@@ -56,7 +56,7 @@ int getDataIfAvailable(int pointCounter) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * cyton.get_scale_fac_uVolts_per_count();
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * BoardCytonConstants.scale_fac_uVolts_per_count;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
             pointCounter++; //increment counter for "little buffer"
@@ -102,7 +102,7 @@ int getDataIfAvailable(int pointCounter) {
                 dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
                 switch (eegDataSource) {
                 case DATASOURCE_PLAYBACKFILE:
-                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, BoardCytonConstants.scale_fac_uVolts_per_count, BoardCytonConstants.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
                     break;
                 default:
                     //no action
@@ -110,7 +110,7 @@ int getDataIfAvailable(int pointCounter) {
                 //gather the data into the "little buffer"
                 for (int Ichan=0; Ichan < nchan; Ichan++) {
                     //scale the data into engineering units..."microvolts"
-                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* cyton.get_scale_fac_uVolts_per_count();
+                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* BoardCytonConstants.scale_fac_uVolts_per_count;
                 }
 
                 pointCounter++;
@@ -159,9 +159,9 @@ void processNewData() {
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // Calculate the impedance
-        float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / cyton.get_leadOffDrive_amps();
+        float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / BoardCytonConstants.leadOffDrive_amps;
         // Subtract the 2.2kOhm resistor
-        impedance -= cyton.get_series_resistor();
+        impedance -= BoardCytonConstants.series_resistor_ohms;
         // Verify the impedance is not less than 0
         if (impedance < 0) {
             // Incase impedance some how dipped below 2.2kOhm

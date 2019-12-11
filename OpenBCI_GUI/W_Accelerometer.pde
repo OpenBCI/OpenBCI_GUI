@@ -146,7 +146,7 @@ class W_Accelerometer extends Widget {
         // NUM_ACCEL_DIMS will go away, will need to get from board
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
             if (eegDataSource == DATASOURCE_CYTON) {
-                currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
+                currentAccelVals[i] = hub.validAccelValues[i] * BoardCytonConstants.scale_fac_uVolts_per_count;
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
             } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {

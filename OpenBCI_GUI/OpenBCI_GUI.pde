@@ -103,6 +103,7 @@ enum BoardProtocol {
     WIFI,
     BLED112
 }
+public BoardProtocol selectedProtocol = BoardProtocol.NONE;
 
 boolean showStartupError = false;
 String startupErrorMessage = "";
@@ -740,17 +741,10 @@ void initSystem() throws Exception {
     //prepare the source of the input data
     switch (eegDataSource) {
         case DATASOURCE_CYTON:
+            // TODO[brainflow] : do we need these two lines?
             int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
-            if (cyton.getInterface() == BoardProtocol.SERIAL) {
-                currentBoard = new BoardCyton(openBCI_portName);
-            } else {
-                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    //cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-                } else {
-                    //cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-                }
-            }
+            currentBoard = new BoardCyton(openBCI_portName);
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardSynthetic();
@@ -758,7 +752,7 @@ void initSystem() throws Exception {
         case DATASOURCE_PLAYBACKFILE:
             break;
         case DATASOURCE_GANGLION:
-            if (ganglion.getInterface() == BoardProtocol.BLE || ganglion.getInterface() == BoardProtocol.BLED112) {
+            if (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) {
                 hub.connectBLE(ganglion_portName);
             } else {
                 if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
