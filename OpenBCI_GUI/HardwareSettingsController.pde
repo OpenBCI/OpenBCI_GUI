@@ -17,34 +17,15 @@ public void updateChannelArrays(int _nchan) {
 void activateChannel(int Ichan) {
     println("OpenBCI_GUI: activating channel " + (Ichan+1));
 
-    // TODO[brainflow] : remove this if/else
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton.isPortOpen()) {
-            cyton.changeChannelState(Ichan, true); //activate
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        // println("activating channel on ganglion");
-        ganglion.changeChannelState(Ichan, true);
-    }
-
     currentBoard.setChannelActive(Ichan, true);
     if (Ichan < nchan) {
         channelSettingValues[Ichan][0] = '0';
         // gui.cc.update();
     }
 }
+
 void deactivateChannel(int Ichan) {
     println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-
-    // TODO[brainflow] : remove this if/else
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton.isPortOpen()) {
-            verbosePrint("**");
-            cyton.changeChannelState(Ichan, false); //de-activate
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        ganglion.changeChannelState(Ichan, false);
-    }
     
     currentBoard.setChannelActive(Ichan, false);
     if (Ichan < nchan) {
@@ -194,17 +175,7 @@ class HardwareSettingsController{
     void activateChannel(int Ichan) {
         println("OpenBCI_GUI: activating channel " + (Ichan+1));
 
-        // TODO [bnainflow] duplicate code from above! WTF!
-        // TODO[brainflow] : remove this if/else
-        if (eegDataSource == DATASOURCE_CYTON) {
-            if (cyton.isPortOpen()) {
-                verbosePrint("**");
-                cyton.changeChannelState(Ichan, true); //activate
-            }
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            ganglion.changeChannelState(Ichan, true);
-        }
-
+        // TODO[brainflow] duplicate code from above! WTF!
         currentBoard.setChannelActive(Ichan, true);
         if (Ichan < nchan) {
             channelSettingValues[Ichan][0] = '0';
@@ -215,18 +186,7 @@ class HardwareSettingsController{
     void deactivateChannel(int Ichan) {
         println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
 
-        // TODO [bnainflow] duplicate code from above! WTF!
-        // TODO[brainflow] : remove this if/else
-        if (eegDataSource == DATASOURCE_CYTON) {
-            if (cyton.isPortOpen()) {
-                verbosePrint("**");
-                cyton.changeChannelState(Ichan, false); //de-activate
-            }
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            // println("deactivating channel on ganglion");
-            ganglion.changeChannelState(Ichan, false);
-        }
-        
+        // TODO[brainflow] duplicate code from above! WTF!
         currentBoard.setChannelActive(Ichan, false);
         if (Ichan < nchan) {
             channelSettingValues[Ichan][0] = '1';
@@ -236,8 +196,7 @@ class HardwareSettingsController{
 
     //Ichan is zero referenced (not one referenced)
     boolean isChannelActive(int Ichan) {
-
-        // TODO [brainflow] Same code as above! wtf!
+        // TODO[brainflow] Same code as above! wtf!
         // TODO[brainflow] move this functionality to the board itself.
         boolean return_val = false;
         if (channelSettingValues[Ichan][0] == '1') {
@@ -259,8 +218,6 @@ class HardwareSettingsController{
 
         channelSettingValues[_numChannel][0] = '1'; //update powerUp/powerDown value of 2D array
         verbosePrint("Command: " + command_deactivate_channel[_numChannel]);
-        cyton.deactivateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels
-
         currentBoard.setChannelActive(_numChannel, false);
     }
 
@@ -272,8 +229,6 @@ class HardwareSettingsController{
 
         channelSettingValues[_numChannel][0] = '0'; //update powerUp/powerDown value of 2D array
         verbosePrint("Command: " + command_activate_channel[_numChannel]);
-        cyton.activateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels//assumes numChannel counts from zero (not one)...handles regular and daisy channels
-
         currentBoard.setChannelActive(_numChannel, true);
     }
 
@@ -287,7 +242,6 @@ class HardwareSettingsController{
         if (pORn == 'n') {
             impedanceCheckValues[_numChannel-1][1] = onORoff;
         }
-        cyton.writeImpedanceSettings(_numChannel, impedanceCheckValues);
 
         if (currentBoard instanceof BoardCyton) {
             ((BoardCyton)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
@@ -348,8 +302,6 @@ class HardwareSettingsController{
                         } else {
                             channelSettingValues[i][j] = '0';
                         }
-                        cyton.writeChannelSettings(i, channelSettingValues);
-
                         // TODO[brainflow] some cleanup here
                         if (currentBoard instanceof BoardCyton) {
                             ((BoardCyton)currentBoard).setChannelSettings(i, channelSettingValues[i]);

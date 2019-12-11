@@ -372,7 +372,7 @@ class Hub {
             } else if (type.equals(TCP_TYPE_LOG)) {
                 String logMessage = json.getString(TCP_JSON_KEY_MESSAGE);
                 println("Hub: Log: " + logMessage);
-                if (logMessage.startsWith("no daisy to attach")) cyton.daisyNotAttached = true;
+                //if (logMessage.startsWith("no daisy to attach")) cyton.daisyNotAttached = true;
             } else if (type.equals(TCP_TYPE_PROTOCOL)) {
                 processProtocol(json);
             } else if (type.equals(TCP_TYPE_SCAN)) {
@@ -683,6 +683,7 @@ class Hub {
                     getRawValues(dataPacket);
 
                     // KILL SPIKES!!!
+                    // TODO[brainflow] this needs to be moved
                     if(numPacketsDroppedHub > 0) {
                         println("Interpolating dropped packets...");
 
@@ -877,9 +878,9 @@ class Hub {
                 channelSettingValues[channelNumber][0] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN) ? '1' : '0';
                 // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
                 //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
-                channelSettingValues[channelNumber][1] = cyton.getCommandForGain(json.getInt(TCP_JSON_KEY_CHANNEL_SET_GAIN));
+                //channelSettingValues[channelNumber][1] = cyton.getCommandForGain(json.getInt(TCP_JSON_KEY_CHANNEL_SET_GAIN));
                 // input type comes in as a string version and must get converted to char
-                channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(json.getString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE));
+                //channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(json.getString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE));
                 // bias is like power down
                 channelSettingValues[channelNumber][3] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS) ? '1' : '0';
                 // srb2 is like power down
@@ -964,7 +965,7 @@ class Hub {
     }
 
     public void sdCardStart(int sdSetting) {
-        String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
+        String sdSettingStr = "";//cyton.getSDSettingForSetting(sdSetting);
         println("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
         JSONObject json = new JSONObject();
         json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);

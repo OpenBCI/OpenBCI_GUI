@@ -265,8 +265,8 @@ class W_Accelerometer extends Widget {
         } else if (eegDataSource == DATASOURCE_CYTON) {
             //TODO[brainflow]
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (currentBoard.isAccelerometerActive()) {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                if (!currentBoard.isAccelerometerActive()) {
+                    currentBoard.setAccelerometerActive(true);
                     output("Starting to read accelerometer");
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;

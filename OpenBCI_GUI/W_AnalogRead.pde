@@ -52,7 +52,7 @@ class W_AnalogRead extends Widget {
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //set number of analog reads
-        if (cyton.isWifi()) {
+        if (selectedProtocol == BoardProtocol.WIFI) {
             numAnalogReadBars = 2;
         } else {
             numAnalogReadBars = 3;
@@ -89,7 +89,7 @@ class W_AnalogRead extends Widget {
         analogModeButton.setColorNotPressed(color(57,128,204));
         analogModeButton.textColorNotActive = color(255);
         analogModeButton.hasStroke(false);
-        if (cyton.isWifi()) {
+        if (selectedProtocol == BoardProtocol.WIFI) {
             analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12).");
         } else {
             analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).");
@@ -184,8 +184,8 @@ class W_AnalogRead extends Widget {
         if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
             // println("analogModeButton...");
             if (!currentBoard.isAnalogActive()) {
-                cyton.setBoardMode(BoardMode.ANALOG);
-                if (cyton.isWifi()) {
+                currentBoard.setAnalogActive(true);
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                 } else {
                     output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
@@ -194,7 +194,7 @@ class W_AnalogRead extends Widget {
                 w_markermode.markerModeOn = false;
                 w_pulsesensor.analogReadOn = true;
             } else {
-                cyton.setBoardMode(BoardMode.DEFAULT);
+                currentBoard.setAnalogActive(false);
                 output("Starting to read accelerometer");
             }
             analogReadOn = !analogReadOn;
@@ -298,7 +298,7 @@ class AnalogReadBar{
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
-        if (cyton.isWifi()) {
+        if (selectedProtocol == BoardProtocol.WIFI) {
             if(auxValuesPosition == 1) {
                 plot.getXAxis().setAxisLabelText("Time (s)");
             }
@@ -428,7 +428,7 @@ class AnalogReadBar{
         plot.drawBox(); // we won't draw this eventually ...
         plot.drawGridLines(0);
         plot.drawLines();
-        if (cyton.isWifi()) {
+        if (selectedProtocol == BoardProtocol.WIFI) {
             if(auxValuesPosition == 1) { //only draw the x axis label on the bottom channel bar
                 plot.drawXAxis();
                 plot.getXAxis().draw();

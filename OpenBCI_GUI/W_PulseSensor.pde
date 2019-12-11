@@ -198,16 +198,16 @@ class W_PulseSensor extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-            if(cyton.isPortOpen()) {
+            if(currentBoard.isConnected()) {
                 if (!currentBoard.isAnalogActive()) {
-                    cyton.setBoardMode(BoardMode.ANALOG);
+                    currentBoard.setAnalogActive(true);
                     output("Starting to read analog inputs on pin marked D11.");
                     analogModeButton.setString("Turn Analog Read Off");
                     w_analogRead.analogReadOn = true; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be activated also, this variable documents the change
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    currentBoard.setAnalogActive(false);
                     output("Starting to read accelerometer");
                     analogModeButton.setString("Turn Analog Read On");
                     w_analogRead.analogReadOn = false; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be de-activated also, this variable documents the change

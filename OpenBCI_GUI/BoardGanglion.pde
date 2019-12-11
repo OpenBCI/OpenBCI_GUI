@@ -15,6 +15,13 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
+
+final char command_stop = 's';
+final char command_startBinary = 'b';
+final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+
+
 class Ganglion {
     final static char GANGLION_BOOTLOADER_MODE = '>';
 

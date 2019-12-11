@@ -114,8 +114,7 @@ int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
-// Initialize boards for constants
-CytonLegacy cyton = new CytonLegacy(); //dummy creation to get access to constants, create real one later
+// Initialize board
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
 Board currentBoard = new BoardNull();
 
@@ -851,22 +850,12 @@ void initSystem() throws Exception {
         settings.initCheckPointFive();
     } else {
         haltSystem();
-        if (eegDataSource == DATASOURCE_CYTON) {
-            //Normally, this message appears if you have a dongle plugged in, and the Cyton is not On, or on the wrong channel.
-            if (cyton.daisyNotAttached) {
-                outputError("Daisy is not attached to the Cyton board. Check connection or select 8 Channels.");
-            } else {
-                outputError("Check that the device is powered on and in range. Also, try AUTOSCAN. Otherwise, Cyton firmware is out of date.");
-            }
-        } else {
-            outputError("Failed to connect. Check that the device is powered on and in range.");
-        }
+        outputError("Failed to connect. Check that the device is powered on and in range.");
         controlPanel.open();
         systemMode = SYSTEMMODE_PREINIT; // leave this here
     }
 
     //reset init variables
-    cyton.daisyNotAttached = false;
     midInit = false;
     abandonInit = false;
     systemHasHalted = false;
@@ -1050,25 +1039,19 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-        if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
-            if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
-                w_pulsesensor.analogReadOn = false;
-                w_analogRead.analogModeButton.setString("Turn Analog Read On");
-                w_analogRead.analogReadOn = false;
-            } else if (w_digitalRead.digitalReadOn) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
-                w_digitalRead.digitalReadOn = false;
-            } else if (w_markermode.markerModeOn) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_markermode.markerModeButton.setString("Turn Marker On");
-                w_markermode.markerModeOn = false;
-            }
+        // TODO[brainflow] : this really shouldn't be here
+        if(currentBoard.isConnected()) {
+            w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
+            w_pulsesensor.analogReadOn = false;
+
+            w_analogRead.analogModeButton.setString("Turn Analog Read On");
+            w_analogRead.analogReadOn = false;
+
+            w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
+            w_digitalRead.digitalReadOn = false;
+
+            w_markermode.markerModeButton.setString("Turn Marker On");
+            w_markermode.markerModeOn = false;
         }
 
         //reset variables for data processing
@@ -1098,7 +1081,6 @@ void haltSystem() {
 
         if (eegDataSource == DATASOURCE_CYTON) {
             closeLogFile();  //close log file
-            cyton.closeSDandPort();
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             if(ganglion.isCheckingImpedance()) {
                 ganglion.impedanceStop();
@@ -1118,7 +1100,7 @@ void haltSystem() {
         // bleList.items.clear();
         // wifiList.items.clear();
 
-        // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
+        // if (ganglion.isBLE() || selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) {
         //   hub.searchDeviceStart();
         // }
 

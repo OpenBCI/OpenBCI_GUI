@@ -54,7 +54,7 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void uninitialize() {
-        if(boardShim != null) {
+        if(isConnected()) {
             try {
                 boardShim.release_session();
             } catch (BrainFlowError e) {
@@ -138,6 +138,11 @@ abstract class BoardBrainFlow extends Board {
     }
 
     @Override
+    public boolean isConnected() {
+        return boardShim != null;
+    }
+
+    @Override
     public int getSampleRate() {
         return samplingRate;
     }
@@ -160,7 +165,16 @@ abstract class BoardBrainFlow extends Board {
         return getBoardType().get_code();
     }
 
+    @Override
+    public void sendCommand(String command) {
+        configBoard(command);
+    }
+
     protected void configBoard(String configStr) {
+        if(!isConnected()) {
+            outputError("Cannot send " + configStr + " to board. The board is not connected");
+            return;
+        }
         try {
             println("Sending config string to board: " + configStr);
             boardShim.config_board(configStr);

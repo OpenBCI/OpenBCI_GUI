@@ -263,14 +263,18 @@ void parseKey(char val) {
             break;
 
         case '?':
-            cyton.printRegisters();
+            if(currentBoard instanceof BoardCyton) {
+                ((BoardCyton)currentBoard).printRegisters();
+            }
             break;
 
         case 'd':
             verbosePrint("Updating GUI's channel settings to default...");
             w_timeSeries.hsc.loadDefaultChannelSettings();
-            //cyton.serial_openBCI.write('d');
-            cyton.configureAllChannelsToDefault();
+            
+            if(currentBoard instanceof BoardCyton) {
+                ((BoardCyton)currentBoard).configureAllChannelsToDefault();
+            }
             break;
 
         case 'm':
@@ -279,23 +283,10 @@ void parseKey(char val) {
             saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
-        /*
-        //Used for testing marker mode
-        case 'M':
-            if (eegDataSource == DATASOURCE_CYTON) {
-                hub.sendCommand("`9");
-                println("Cyton: Setting a Marker +++++");
-            }
-            break;
-        */
+            
         default:
-            if (eegDataSource == DATASOURCE_CYTON) {
-                println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-                cyton.write(key);
-            } else if (eegDataSource == DATASOURCE_GANGLION) {
-                println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
-                hub.sendCommand(key);
-            }
+            println("Interactivity: '" + key + "' Pressed...sending to Board...");
+            currentBoard.sendCommand(str(key));
             break;
     }
 }

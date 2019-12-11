@@ -156,8 +156,7 @@ public void controlEvent(ControlEvent theEvent) {
         protocolWifiCyton.setColorNotPressed(colorNotPressed);
         protocolSerialCyton.setColorNotPressed(colorNotPressed);
 
-        ganglion.setInterface(BoardProtocol.NONE);
-        cyton.setInterface(BoardProtocol.NONE);
+        selectedProtocol = BoardProtocol.NONE;
         controlPanel.novaXRBox.isShowing = false;
 
         if(newDataSource == DATASOURCE_CYTON){
@@ -704,7 +703,7 @@ class ControlPanel {
         //only able to click buttons of control panel when system is not running
         if (systemMode != 10) {
 
-            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && (cyton.isWifi() || ganglion.isWifi())) {
+            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
                 if(getIpAddress.isMouseHere()) {
                     getIpAddress.setIsActive(true);
                     getIpAddress.wasPressed = true;
@@ -753,7 +752,7 @@ class ControlPanel {
             //active buttons during DATASOURCE_CYTON
             else if (eegDataSource == DATASOURCE_CYTON) {
                 
-                if (cyton.isSerial()) {
+                if (selectedProtocol == BoardProtocol.SERIAL) {
                     if (popOutRadioConfigButton.isMouseHere()){
                         popOutRadioConfigButton.setIsActive(true);
                         popOutRadioConfigButton.wasPressed = true;
@@ -768,7 +767,7 @@ class ControlPanel {
                     }
                 }
 
-                if (cyton.isWifi()) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     if (refreshWifi.isMouseHere()) {
                         refreshWifi.setIsActive(true);
                         refreshWifi.wasPressed = true;
@@ -939,7 +938,7 @@ class ControlPanel {
                     outputBDF.wasPressed = true;
                 }
 
-                if (ganglion.isWifi()) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     if (refreshWifi.isMouseHere()) {
                         refreshWifi.setIsActive(true);
                         refreshWifi.wasPressed = true;
@@ -1096,7 +1095,7 @@ class ControlPanel {
         if (popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed) {
             popOutRadioConfigButton.wasPressed = false;
             popOutRadioConfigButton.setIsActive(false);
-            if (cyton.isSerial()) {
+            if (selectedProtocol == BoardProtocol.SERIAL) {
                 if (rcBox.isShowing) {
                     hideRadioPopoutBox();
                     serialBox.autoConnect.setIgnoreHover(false);
@@ -1158,7 +1157,7 @@ class ControlPanel {
         if(popOutWifiConfigButton.isMouseHere() && popOutWifiConfigButton.wasPressed){
             popOutWifiConfigButton.wasPressed = false;
             popOutWifiConfigButton.setIsActive(false);
-            if (cyton.isWifi() || ganglion.isWifi()) {
+            if (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) {
                 if(wcBox.isShowing){
                     hideWifiPopoutBox();
                 } else {
@@ -1325,7 +1324,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol Serial Selected for Cyton");
                 if (hub.isPortOpen()) hub.closePort();
-                cyton.setInterface(BoardProtocol.SERIAL);
+                selectedProtocol = BoardProtocol.SERIAL; 
             } else {
                 output("Please wait till hub is fully initalized");
             }
@@ -1338,14 +1337,12 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Cyton");
                 if (hub.isPortOpen()) hub.closePort();
-                cyton.setInterface(BoardProtocol.WIFI);
+                selectedProtocol = BoardProtocol.WIFI;
                 hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
             }
         }
-
-
 
         if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
             String _board = (eegDataSource == DATASOURCE_CYTON) ? "Cyton" : "Ganglion";
@@ -1387,23 +1384,23 @@ class ControlPanel {
         }
 
         if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
-            ganglion.setSampleRate(200);
+            currentBoard.setSampleRate(200);
         }
 
         if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
-            ganglion.setSampleRate(1600);
+            currentBoard.setSampleRate(1600);
         }
 
         if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
-            cyton.setSampleRate(250);
+            currentBoard.setSampleRate(250);
         }
 
         if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
-            cyton.setSampleRate(500);
+            currentBoard.setSampleRate(500);
         }
 
         if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
-            cyton.setSampleRate(1000);
+            currentBoard.setSampleRate(1000);
         }
 
         if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
@@ -1623,10 +1620,6 @@ public void initButtonPressed(){
             // Global steps to START SESSION
             // Prepare the serial port
             if (eegDataSource == DATASOURCE_CYTON) {
-                verbosePrint("ControlPanel — port is open: " + cyton.isPortOpen());
-                if (cyton.isPortOpen() == true) {
-                    cyton.closePort();
-                }
                 sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             } else if(eegDataSource == DATASOURCE_GANGLION){
                 verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
@@ -1640,7 +1633,7 @@ public void initButtonPressed(){
                 settings.setLogFileMaxDuration();
             }
 
-            if (hub.getWiFiStyle() == WIFI_STATIC && (cyton.isWifi() || ganglion.isWifi())) {
+            if (hub.getWiFiStyle() == WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
@@ -1675,7 +1668,6 @@ void updateToNChan(int _nchan) {
     println("channel count set to " + str(nchan));
     hub.initDataPackets(_nchan, 3);
     ganglion.initDataPackets(_nchan, 3);
-    cyton.initDataPackets(_nchan, 3);
     updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
@@ -1765,7 +1757,7 @@ class SerialBox {
         text("SERIAL CONNECT", x + padding, y + padding);
         popStyle();
 
-        if (cyton.isSerial()) {
+        if (selectedProtocol == BoardProtocol.SERIAL) {
             popOutRadioConfigButton.draw();
             autoConnect.draw();
         }
@@ -1977,7 +1969,7 @@ class WifiBox {
 
             refreshWifi.draw();
             refreshWifi.but_y = y + h - padding - 24;
-            if(isHubInitialized && isHubObjectInitialized && (ganglion.isWifi() || cyton.isWifi()) && hub.isSearching()){
+            if(isHubInitialized && isHubObjectInitialized && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
                 refreshWifi.setString("SEARCHING...");
             } else {

@@ -29,6 +29,10 @@ class BoardNull extends Board {
         println("WARNING: calling 'stopStreaming' on a NULL board!");
     }
 
+    public boolean isConnected() {
+        return false;
+    }
+
     @Override
     public int getSampleRate() {
         return 0;

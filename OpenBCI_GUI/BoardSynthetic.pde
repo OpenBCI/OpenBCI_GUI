@@ -9,6 +9,7 @@ class BoardSynthetic extends Board {
 
     private DataPacket_ADS1299 dataPacket;
     private boolean streaming = false;
+    private boolean isInitialized = false;
     private float[] sine_phase_rad;
     private int lastSynthTime;
     private float[] lastAccelValues;
@@ -24,12 +25,13 @@ class BoardSynthetic extends Board {
 
     @Override
     public boolean initialize() {
+        isInitialized = true;
         return true;
     }
 
     @Override
     public void uninitialize() {
-        // empty
+        isInitialized = false;
     }
 
     @Override
@@ -72,6 +74,10 @@ class BoardSynthetic extends Board {
             return;
         }
         streaming = false;
+    }
+
+    public boolean isConnected() {
+        return isInitialized;
     }
 
     @Override

@@ -187,16 +187,16 @@ class W_MarkerMode extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-            if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
+            if(currentBoard.isConnected()) {
                 if (!currentBoard.isMarkerActive()) {
-                    cyton.setBoardMode(BoardMode.MARKER);
+                    currentBoard.setMarkerActive(true);
                     output("Starting to read markers");
                     markerModeButton.setString("Turn Marker Off");
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    currentBoard.setMarkerActive(false);
                     output("Starting to read accelerometer");
                     markerModeButton.setString("Turn Marker On");
                     w_analogRead.analogReadOn = false;

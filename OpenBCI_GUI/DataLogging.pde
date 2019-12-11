@@ -259,7 +259,7 @@ public class OutputFile_rawtxt {
             BoardCyton cytonBoard = (BoardCyton)currentBoard;
             // println("board mode: " + cyton.getBoardMode());
             if (cytonBoard.getBoardMode() == CytonBoardMode.DIGITAL) {
-                if (cyton.isWifi()) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
                     output.print(", " + (data.auxValues[0] & 0xFF));
                     output.print(", " + data.auxValues[1]);
@@ -271,7 +271,7 @@ public class OutputFile_rawtxt {
                     output.print(", " + data.auxValues[2]);
                 }
             } else if (cytonBoard.getBoardMode() == CytonBoardMode.ANALOG) {
-                if (cyton.isWifi()) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     output.print(", " + data.auxValues[0]);
                     output.print(", " + data.auxValues[1]);
                 } else {
