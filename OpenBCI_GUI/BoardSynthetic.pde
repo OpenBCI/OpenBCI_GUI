@@ -91,7 +91,7 @@ class BoardSynthetic extends Board {
     }
 
     @Override
-    public float[] getLastAccelValues() {
+    public float[] getLastValidAccelValues() {
         return lastAccelValues;
     }
 

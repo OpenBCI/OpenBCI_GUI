@@ -44,7 +44,7 @@ class BoardNull extends Board {
     }
 
     @Override
-    public float[] getLastAccelValues() {
+    public float[] getLastValidAccelValues() {
         return null;
     }
 

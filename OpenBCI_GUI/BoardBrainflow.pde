@@ -13,6 +13,7 @@ abstract class BoardBrainFlow extends Board {
 
     private boolean streaming = false;
     private float[] lastAccelValues = {};
+    private float[] lastValidAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -27,6 +28,7 @@ abstract class BoardBrainFlow extends Board {
             dataChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
             accelChannels = BoardShim.get_accel_channels(getBoardTypeInt());
             lastAccelValues = new float[accelChannels.length];
+            lastValidAccelValues = new float[accelChannels.length];
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
@@ -91,11 +93,18 @@ abstract class BoardBrainFlow extends Board {
                 dataPacket.values[i] = (int)Math.round(data[dataChannels[i]][count]);
             }
 
+            boolean accelValid = false;
             for (int i=0; i<accelChannels.length; i++)
             {
                 lastAccelValues[i] = (float)data[accelChannels[i]][count];
+                if (lastAccelValues[i] != 0.f) {
+                    accelValid = true;
+                }
             }
             
+            if(accelValid) {
+                lastValidAccelValues = lastAccelValues.clone();
+            }
             // This is also used to let the rest of the code that it may be time to do something
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
             dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
@@ -153,8 +162,8 @@ abstract class BoardBrainFlow extends Board {
     }
 
     @Override
-    public float[] getLastAccelValues() {
-        return lastAccelValues;
+    public float[] getLastValidAccelValues() {
+        return lastValidAccelValues;
     }
     
     public BoardIds getBoardType() {
