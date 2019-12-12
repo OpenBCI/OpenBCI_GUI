@@ -3,7 +3,7 @@ import brainflow.*;
 class BoardBrainFlowSynthetic extends BoardBrainFlow {
 
     public BoardBrainFlowSynthetic() {
-        super(BoardIds.SYNTHETIC_BOARD);
+        super();
     }
 
     // implement mandatory abstract functions
@@ -11,6 +11,11 @@ class BoardBrainFlowSynthetic extends BoardBrainFlow {
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
         return params;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.SYNTHETIC_BOARD;
     }
 
     @Override

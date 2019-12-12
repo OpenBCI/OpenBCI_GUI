@@ -1640,7 +1640,6 @@ public void initButtonPressed(){
 
             novaXR_ipAddress = cp5.get(Textfield.class, "novaXR_IP").getText();
 
-            midInit = true;
             println("initButtonPressed: Calling initSystem()");
             try {
                 initSystem(); //found in OpenBCI_GUI.pde

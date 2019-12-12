@@ -411,7 +411,8 @@ boolean loadTableFromCSV () {
 
 void haltLoadingFile(String _filePath) {
     if (systemMode == SYSTEMMODE_POSTINIT) {
-        abandonInit = true;
+        // TODO[brainflow] abandon init if we can't load file
+        //abandonInit = true;
         initSystemButton.setString("START SESSION");
         controlPanel.open();
         haltSystem();

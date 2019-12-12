@@ -69,12 +69,9 @@ DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
-final int SYSTEMMODE_MIDINIT = 5;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
-boolean midInit = false;
-boolean abandonInit = false;
 boolean systemHasHalted = false;
 
 final int NCHAN_CYTON = 8;
@@ -725,17 +722,10 @@ void initSystem() throws Exception {
 
     timeOfInit = millis(); //store this for timeout in case init takes too long
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
-    //Checking status here causes "error: resource busy" during init
-    /*
-    if (eegDataSource == DATASOURCE_CYTON) {
-        verbosePrint("OpenBCI_GUI: initSystem: Checking Cyton Connection...");
-        system_status(rcBox);
-        if (rcStringReceived.startsWith("Cyton dongle could not connect") || rcStringReceived.startsWith("Failure")) {
-            throw new Exception("OpenBCI_GUI: initSystem: Dongle failed to connect to Cyton...");
-        }
-    }
-    */
 
+    //reset init variables
+    systemHasHalted = false;
+    boolean abandonInit = false;
 
     //prepare the source of the input data
     switch (eegDataSource) {
@@ -743,7 +733,7 @@ void initSystem() throws Exception {
             // TODO[brainflow] : do we need these two lines?
             int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
-            currentBoard = new BoardCyton(openBCI_portName);
+            currentBoard = new BoardCyton(openBCI_portName, nchan == 16);
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardSynthetic();
@@ -854,11 +844,6 @@ void initSystem() throws Exception {
         controlPanel.open();
         systemMode = SYSTEMMODE_PREINIT; // leave this here
     }
-
-    //reset init variables
-    midInit = false;
-    abandonInit = false;
-    systemHasHalted = false;
 } //end initSystem
 
 /**
@@ -1103,7 +1088,6 @@ void haltSystem() {
         // if (ganglion.isBLE() || selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) {
         //   hub.searchDeviceStart();
         // }
-
         currentBoard.uninitialize();
         currentBoard = new BoardNull(); // back to null
 

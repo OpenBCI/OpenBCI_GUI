@@ -3,7 +3,6 @@ import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow extends Board {
     private DataPacket_ADS1299 dataPacket;
-    private BoardIds boardType = BoardIds.SYNTHETIC_BOARD;
     private BoardShim boardShim = null;
 
     protected int samplingRate = 0;
@@ -19,30 +18,32 @@ abstract class BoardBrainFlow extends Board {
      * Implement these in your board.
      */
     abstract protected BrainFlowInputParams getParams();
+    abstract public BoardIds getBoardId();
 
-    protected BoardBrainFlow(BoardIds boardId) {
-        boardType = boardId;
-        try {
-            samplingRate = BoardShim.get_sampling_rate(getBoardTypeInt());
-            packetNumberChannel = BoardShim.get_package_num_channel(getBoardTypeInt());
-            dataChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
-            accelChannels = BoardShim.get_accel_channels(getBoardTypeInt());
-            lastAccelValues = new float[accelChannels.length];
-            lastValidAccelValues = new float[accelChannels.length];
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get board info from BoardShim");
-            e.printStackTrace();
-        }
-
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
+    protected BoardBrainFlow() {
+        // nothing
     }
 
     @Override
     public boolean initialize() {
         try {
+            samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
+            packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
+            dataChannels = BoardShim.get_eeg_channels(getBoardIdInt());
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get board info from BoardShim");
+            e.printStackTrace();
+        }
+
+        lastAccelValues = new float[accelChannels.length];
+        lastValidAccelValues = new float[accelChannels.length];
+        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
+
+        try {
             updateToNChan(getNumChannels());
 
-            boardShim = new BoardShim (getBoardTypeInt(), getParams());
+            boardShim = new BoardShim (getBoardIdInt(), getParams());
             boardShim.prepare_session();
             return true; 
 
@@ -99,7 +100,7 @@ abstract class BoardBrainFlow extends Board {
         }
     }
 
-    public void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
+    protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
 
         dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
 
@@ -176,13 +177,9 @@ abstract class BoardBrainFlow extends Board {
     public float[] getLastValidAccelValues() {
         return lastValidAccelValues;
     }
-    
-    public BoardIds getBoardType() {
-        return boardType;
-    }
 
-    public int getBoardTypeInt() {
-        return getBoardType().get_code();
+    public int getBoardIdInt() {
+        return getBoardId().get_code();
     }
 
     @Override

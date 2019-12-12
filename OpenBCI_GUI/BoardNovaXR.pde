@@ -11,20 +11,8 @@ class BoardNovaXR extends BoardBrainFlow {
     private String ipAddress = "";
 
     public BoardNovaXR(String ip) {
-        super(BoardIds.NOVAXR_BOARD);
+        super();
         ipAddress = ip;
-
-        try {
-            int[] eegChannels = BoardShim.get_eeg_channels(getBoardTypeInt());
-            int[] emgChannels = BoardShim.get_emg_channels(getBoardTypeInt());
-
-            // datachannels is set to eeg in the base class. we're re-setting it here because we want to
-            // display emg data in the time series for NovaXR
-            dataChannels = ArrayUtils.addAll(eegChannels, emgChannels);
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get data channels from BoardShim");
-            e.printStackTrace();
-        }
     }
 
     // implement mandatory abstract functions
@@ -34,6 +22,33 @@ class BoardNovaXR extends BoardBrainFlow {
         params.ip_address = ipAddress;
         params.ip_protocol = IpProtocolType.UDP.get_code();
         return params;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.NOVAXR_BOARD;
+    }
+
+    
+
+    @Override
+    public boolean initialize() {
+        boolean success = super.initialize();
+
+        try {
+            int[] eegChannels = BoardShim.get_eeg_channels(getBoardIdInt());
+            int[] emgChannels = BoardShim.get_emg_channels(getBoardIdInt());
+
+            // datachannels is set to eeg in the base class. we're overriding it here because we want to
+            // display emg data in the time series for NovaXR
+            dataChannels = ArrayUtils.addAll(eegChannels, emgChannels);
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get data channels from BoardShim");
+            e.printStackTrace();
+            return false;
+        }
+
+        return success;
     }
 
     @Override

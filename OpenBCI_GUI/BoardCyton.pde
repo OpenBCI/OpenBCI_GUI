@@ -29,11 +29,18 @@ class BoardCyton extends BoardBrainFlow {
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
     private String port = "";
+    private BoardIds boardId = BoardIds.CYTON_BOARD;
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
 
-    public BoardCyton(String serialPort) {
+    public BoardCyton(String serialPort, boolean daisy) {
+        super();
+
         // TODO[brainflow] : WIFI MODE
-        super(BoardIds.CYTON_BOARD);
+        if (daisy) { // 16 channels selected
+            boardId = BoardIds.CYTON_DAISY_BOARD;
+        } else {
+            boardId = BoardIds.CYTON_BOARD;
+        }
         port = serialPort;
     }
 
@@ -46,9 +53,14 @@ class BoardCyton extends BoardBrainFlow {
     }
 
     @Override
+    public BoardIds getBoardId() {
+        return boardId;
+    }
+
+    @Override
     public void uninitialize() {
-        super.uninitialize();
         closeSDFile();
+        super.uninitialize();
     }
 
     @Override
