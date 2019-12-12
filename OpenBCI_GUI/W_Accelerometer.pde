@@ -279,8 +279,8 @@ class W_Accelerometer extends Widget {
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
-                } else {
-                    //accelerometerModeOn = false;
+                } else {                    
+                    currentBoard.setAccelerometerActive(false);
                 }
             }
             accelModeButton.setIsActive(false);

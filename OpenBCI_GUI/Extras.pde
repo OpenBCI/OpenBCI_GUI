@@ -279,7 +279,7 @@ class DataPacket_ADS1299 {
     }
 
     int copyTo(DataPacket_ADS1299 target) { return copyTo(target, 0, 0); }
-    int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
+    private int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
         target.sampleIndex = sampleIndex;
         return copyValuesAndAuxTo(target, target_startInd_values, target_startInd_aux);
     }

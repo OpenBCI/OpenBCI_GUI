@@ -86,28 +86,39 @@ abstract class BoardBrainFlow extends Board {
 
         for (int count = 0; count < data_count; count++)
         {
-            dataPacket.sampleIndex = (int)Math.round(data[packetNumberChannel][count]);
-
-            for (int i=0; i < dataChannels.length; i++)
-            {
-                dataPacket.values[i] = (int)Math.round(data[dataChannels[i]][count]);
+            double[] values = new double[data.length];
+            for (int i=0; i < data.length; i++) {
+                values[i] = data[i][count];
             }
 
-            boolean accelValid = false;
-            for (int i=0; i<accelChannels.length; i++)
-            {
-                lastAccelValues[i] = (float)data[accelChannels[i]][count];
-                if (lastAccelValues[i] != 0.f) {
-                    accelValid = true;
-                }
-            }
-            
-            if(accelValid) {
-                lastValidAccelValues = lastAccelValues.clone();
-            }
+            fillDataPacketWithValues(dataPacket, values);
+
             // This is also used to let the rest of the code that it may be time to do something
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
             dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
+        }
+    }
+
+    public void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
+
+        dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
+
+        for (int i=0; i < dataChannels.length; i++)
+        {
+            dataPacket.values[i] = (int)Math.round(values[dataChannels[i]]);
+        }
+
+        boolean accelValid = false;
+        for (int i=0; i<accelChannels.length; i++)
+        {
+            lastAccelValues[i] = (float)values[accelChannels[i]];
+            if (lastAccelValues[i] != 0.f) {
+                accelValid = true;
+            }
+        }
+        
+        if(accelValid) {
+            lastValidAccelValues = lastAccelValues.clone();
         }
     }
 
