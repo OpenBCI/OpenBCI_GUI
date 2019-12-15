@@ -22,8 +22,6 @@
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
-//TODO[brainflow] : get rid of this file
-
 int _myCounter;
 int newPacketCounter = 0;
 boolean no_start_connection = false;
@@ -38,6 +36,9 @@ long timeSinceStopRunning = 1000;
 //these variables are used for "Kill Spikes" ... duplicating the last received data packet if packets were droppeds
 boolean werePacketsDroppedSerial = false;
 int numPacketsDroppedSerial = 0;
+
+
+CytonLegacy cytonLegacy = new CytonLegacy();
 
 
 //everything below is now deprecated...
@@ -58,113 +59,113 @@ int numPacketsDroppedSerial = 0;
 //                       Global Functions
 //------------------------------------------------------------------------
 
-// void serialEvent(Serial port){
-//     //check to see which serial port it is
-//     if (iSerial.isOpenBCISerial(port)) {
+void serialEvent(Serial port){
+    //check to see which serial port it is
+    if (iSerial.isOpenBCISerial(port)) {
 
-//         // boolean echoBytes = !cyton.isStateNormal();
-//         boolean echoBytes;
+        // boolean echoBytes = !cytonLegacy.isStateNormal();
+        boolean echoBytes;
 
-//         if (iSerial.isStateNormal() != true) {  // || printingRegisters == true){
-//             echoBytes = true;
-//         } else {
-//             echoBytes = false;
-//         }
-//         iSerial.read(echoBytes);
-//         openBCI_byteCount++;
-//         if (iSerial.get_isNewDataPacketAvailable()) {
-//             println("woo got a new packet");
-//             //copy packet into buffer of data packets
-//             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
+        if (iSerial.isStateNormal() != true) {  // || printingRegisters == true){
+            echoBytes = true;
+        } else {
+            echoBytes = false;
+        }
+        iSerial.read(echoBytes);
+        openBCI_byteCount++;
+        if (iSerial.get_isNewDataPacketAvailable()) {
+            println("woo got a new packet");
+            //copy packet into buffer of data packets
+            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
 
-//             //dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
-//             iSerial.set_isNewDataPacketAvailable(false); //resets isNewDataPacketAvailable to false
+            cytonLegacy.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
+            iSerial.set_isNewDataPacketAvailable(false); //resets isNewDataPacketAvailable to false
 
-//             // KILL SPIKES!!!
-//             if(werePacketsDroppedSerial){
-//                 for(int i = numPacketsDroppedSerial; i > 0; i--){
-//                     int tempDataPacketInd = curDataPacketInd - i; //
-//                     if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-//                         cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-//                     } else {
-//                         cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
-//                     }
-//                     //put the last stored packet in # of packets dropped after that packet
-//                 }
+            // KILL SPIKES!!!
+            if(werePacketsDroppedSerial){
+                for(int i = numPacketsDroppedSerial; i > 0; i--){
+                    int tempDataPacketInd = curDataPacketInd - i; //
+                    if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
+                        cytonLegacy.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+                    } else {
+                        cytonLegacy.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
+                    }
+                    //put the last stored packet in # of packets dropped after that packet
+                }
 
-//                 //reset werePacketsDroppedSerial & numPacketsDroppedSerial
-//                 werePacketsDroppedSerial = false;
-//                 numPacketsDroppedSerial = 0;
-//             }
+                //reset werePacketsDroppedSerial & numPacketsDroppedSerial
+                werePacketsDroppedSerial = false;
+                numPacketsDroppedSerial = 0;
+            }
 
-//             switch (outputDataSource) {
-//             case OUTPUT_SOURCE_ODF:
-//                 fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], BoardCytonConstants.scale_fac_uVolts_per_count, BoardCytonConstants.scale_fac_uVolts_per_count, byte(0xC0), (new Date()).getTime());
-//                 break;
-//             case OUTPUT_SOURCE_BDF:
-//                 curBDFDataPacketInd = curDataPacketInd;
-//                 thread("writeRawData_dataPacket_bdf");
-//                 // fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-//                 break;
-//             case OUTPUT_SOURCE_NONE:
-//             default:
-//                 // Do nothing...
-//                 break;
-//             }
+            switch (outputDataSource) {
+            case OUTPUT_SOURCE_ODF:
+                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cytonLegacy.get_scale_fac_uVolts_per_count(), cytonLegacy.get_scale_fac_accel_G_per_count(), byte(0xC0), (new Date()).getTime());
+                break;
+            case OUTPUT_SOURCE_BDF:
+                curBDFDataPacketInd = curDataPacketInd;
+                thread("writeRawData_dataPacket_bdf");
+                // fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+                break;
+            case OUTPUT_SOURCE_NONE:
+            default:
+                // Do nothing...
+                break;
+            }
 
-//             newPacketCounter++;
-//         }
-//     } else {
+            newPacketCounter++;
+        }
+    } else {
 
-//         //Used for serial communications, primarily everything in no_start_connection
-//         if (no_start_connection) {
+        //Used for serial communications, primarily everything in no_start_connection
+        if (no_start_connection) {
 
 
-//             if (board_message == null || _myCounter>2) {
-//                 board_message = new StringBuilder();
-//                 _myCounter = 0;
-//             }
+            if (board_message == null || _myCounter>2) {
+                board_message = new StringBuilder();
+                _myCounter = 0;
+            }
 
-//             inByte = byte(port.read());
-//             print(inByte);
-//             if (char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
+            inByte = byte(port.read());
+            print(inByte);
+            if (char(inByte) == 'S' || char(inByte) == 'F') isOpenBCI = true;
 
-//             // print(char(inByte));
-//             if (inByte != -1) {
-//                 if (isGettingPoll) {
-//                     if (inByte != '$') {
-//                         if (!spaceFound) board_message.append(char(inByte));
-//                         else hexToInt = Integer.parseInt(String.format("%02X", inByte), 16);
+            // print(char(inByte));
+            if (inByte != -1) {
+                if (isGettingPoll) {
+                    if (inByte != '$') {
+                        if (!spaceFound) board_message.append(char(inByte));
+                        else hexToInt = Integer.parseInt(String.format("%02X", inByte), 16);
 
-//                         if (char(inByte) == ' ') spaceFound = true;
-//                     } else _myCounter++;
-//                 } else {
-//                     if (inByte != '$') board_message.append(char(inByte));
-//                     else _myCounter++;
-//                 }
-//             }
-//         } else {
-//             //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
-//             inByte = byte(port.read());
-//             if (isOpenBCI) {
+                        if (char(inByte) == ' ') spaceFound = true;
+                    } else _myCounter++;
+                } else {
+                    if (inByte != '$') board_message.append(char(inByte));
+                    else _myCounter++;
+                }
+            }
+        } else {
+            //println("Recieved serial data not from OpenBCI"); //this is a bit of a lie
+            inByte = byte(port.read());
+            if (isOpenBCI) {
 
-//                 if (board_message == null || _myCounter >2) {
-//                     board_message = new StringBuilder();
-//                     _myCounter=0;
-//                 }
-//                 if(inByte != '$'){
-//                     board_message.append(char(inByte));
-//                 } else { _myCounter++; }
-//             } else if(char(inByte) == 'S' || char(inByte) == 'F'){
-//                 isOpenBCI = true;
-//                 if(board_message == null){
-//                     board_message = new StringBuilder();
-//                     board_message.append(char(inByte));
-//                 }
-//             }
-//         }
-//     }
-// }
+                if (board_message == null || _myCounter >2) {
+                    board_message = new StringBuilder();
+                    _myCounter=0;
+                }
+                if(inByte != '$'){
+                    board_message.append(char(inByte));
+                } else { _myCounter++; }
+            } else if(char(inByte) == 'S' || char(inByte) == 'F'){
+                isOpenBCI = true;
+                if(board_message == null){
+                    board_message = new StringBuilder();
+                    board_message.append(char(inByte));
+                }
+            }
+        }
+    }
+}
 
 //------------------------------------------------------------------------
 //                       Classes
@@ -337,6 +338,19 @@ class InterfaceSerial {
         return 0;
     }
 
+    public int closeSDandSerialPort() {
+        int returnVal=0;
+
+        cytonLegacy.closeSDFile();
+
+        readyToSend = false;
+        returnVal = closeSerialPort();
+        prevState_millis = 0;  //reset Serial state clock to use as a conditional for timing at the beginnign of systemUpdate()
+        cytonLegacy.hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
+
+        return returnVal;
+    }
+
     public int closeSerialPort() {
         portIsOpen = false;
         if (serial_openBCI != null) {
@@ -346,6 +360,32 @@ class InterfaceSerial {
         state = STATE_NOCOM;
         println("InterfaceSerial: closeSerialPort: closed");
         return 0;
+    }
+
+    public void updateSyncState(int sdSetting) {
+        //Has it been 3000 milliseconds since we initiated the serial port?
+        //We want to make sure we wait for the OpenBCI board to finish its setup()
+
+        if ( (millis() - prevState_millis > COM_INIT_MSEC) && (prevState_millis != 0) && (state == STATE_COMINIT) ) {
+            state = STATE_SYNCWITHHARDWARE;
+            timeOfLastCommand = millis();
+            serial_openBCI.clear();
+            cytonLegacy.potentialFailureMessage = "";
+            cytonLegacy.defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
+            cytonLegacy.daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
+            println("InterfaceSerial: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
+            serial_openBCI.write('v');
+        }
+
+        //if we are in SYNC WITH HARDWARE state ... trigger a command
+        if ( (state == STATE_SYNCWITHHARDWARE) && (currentlySyncing == false) ) {
+            if (millis() - timeOfLastCommand > 200 && readyToSend == true) {
+                println("sdSetting: " + sdSetting);
+                timeOfLastCommand = millis();
+                cytonLegacy.hardwareSyncStep++;
+                cytonLegacy.syncWithHardware(sdSetting);
+            }
+        }
     }
 
     public void sendChar(char val) {
@@ -385,106 +425,106 @@ class InterfaceSerial {
         }
     }
 
-    // //read from the serial port
-    // public int read() {
-    //     return read(false);
-    // }
-    // public int read(boolean echoChar) {
-    //     //println("InterfaceSerial: read(): State: " + state);
-    //     //get the byte
-    //     byte inByte;
-    //     if (isSerialPortOpen()) {
-    //         inByte = byte(serial_openBCI.read());
-    //     } else {
-    //         println("InterfaceSerial port not open aborting.");
-    //         return 0;
-    //     }
-    //     print(inByte);
-    //     //write the most recent char to the console
-    //     // If the GUI is in streaming mode then echoChar will be false
-    //     if (echoChar) {  //if not in interpret binary (NORMAL) mode
-    //         // print("hardwareSyncStep: "); println(hardwareSyncStep);
-    //         // print(".");
-    //         char inASCII = char(inByte);
-    //         if (isRunning == false && (millis() - timeSinceStopRunning) > 500) {
-    //             print(char(inByte));
-    //         }
+    //read from the serial port
+    public int read() {
+        return read(false);
+    }
+    public int read(boolean echoChar) {
+        //println("InterfaceSerial: read(): State: " + state);
+        //get the byte
+        byte inByte;
+        if (isSerialPortOpen()) {
+            inByte = byte(serial_openBCI.read());
+        } else {
+            println("InterfaceSerial port not open aborting.");
+            return 0;
+        }
+        print(inByte);
+        //write the most recent char to the console
+        // If the GUI is in streaming mode then echoChar will be false
+        if (echoChar) {  //if not in interpret binary (NORMAL) mode
+            // print("hardwareSyncStep: "); println(hardwareSyncStep);
+            // print(".");
+            char inASCII = char(inByte);
+            if (isRunning == false && (millis() - timeSinceStopRunning) > 500) {
+                print(char(inByte));
+            }
 
-    //         //keep track of previous three chars coming from OpenBCI
-    //         prev3chars[0] = prev3chars[1];
-    //         prev3chars[1] = prev3chars[2];
-    //         prev3chars[2] = inASCII;
+            //keep track of previous three chars coming from OpenBCI
+            prev3chars[0] = prev3chars[1];
+            prev3chars[1] = prev3chars[2];
+            prev3chars[2] = inASCII;
 
-    //         // if (cyton.hardwareSyncStep == 0 && inASCII != '$') {
-    //         //     cyton.potentialFailureMessage+=inASCII;
-    //         // }
+            if (cytonLegacy.hardwareSyncStep == 0 && inASCII != '$') {
+                cytonLegacy.potentialFailureMessage+=inASCII;
+            }
 
-    //         // if (cyton.hardwareSyncStep == 1 && inASCII != '$') {
-    //         //     cyton.daisyOrNot+=inASCII;
-    //         //     //if hardware returns 8 because daisy is not attached, switch the GUI mode back to 8 channels
-    //         //     // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
-    //         //     if (nchan == 16 && cyton.daisyOrNot.charAt(cyton.daisyOrNot.length() - 1) == '8') {
-    //         //         // verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
-    //         //         verbosePrint(" received from OpenBCI... Abandoning hardware initiation.");
-    //         //         abandonInit = true;
-    //         //         // haltSystem();
+            if (cytonLegacy.hardwareSyncStep == 1 && inASCII != '$') {
+                cytonLegacy.daisyOrNot+=inASCII;
+                //if hardware returns 8 because daisy is not attached, switch the GUI mode back to 8 channels
+                // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
+                if (nchan == 16 && cytonLegacy.daisyOrNot.charAt(cytonLegacy.daisyOrNot.length() - 1) == '8') {
+                    // verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
+                    verbosePrint(" received from OpenBCI... Abandoning hardware initiation.");
+                    //abandonInit = true;
+                    // haltSystem();
 
-    //         //         // updateToNChan(8);
-    //         //         //
-    //         //         // //initialize the FFT objects
-    //         //         // for (int Ichan=0; Ichan < nchan; Ichan++) {
-    //         //         //   verbosePrint("Init FFT Buff – "+Ichan);
-    //         //         //   fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
-    //         //         // }  //make the FFT objects
-    //         //         //
-    //         //         // initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
-    //         //         // setupWidgetManager();
-    //         //     }
-    //         // }
+                    // updateToNChan(8);
+                    //
+                    // //initialize the FFT objects
+                    // for (int Ichan=0; Ichan < nchan; Ichan++) {
+                    //   verbosePrint("Init FFT Buff – "+Ichan);
+                    //   fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
+                    // }  //make the FFT objects
+                    //
+                    // initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
+                    // setupWidgetManager();
+                }
+            }
 
-    //         // if (cyton.hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
-    //         //     cyton.defaultChannelSettings+=inASCII;
-    //         // }
+            if (cytonLegacy.hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
+                cytonLegacy.defaultChannelSettings+=inASCII;
+            }
 
-    //         //if the last three chars are $$$, it means we are moving on to the next stage of initialization
-    //         if (prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]) {
-    //             verbosePrint(" > EOT detected...");
-    //             // Added for V2 system down rejection line
-    //             // if (cyton.hardwareSyncStep == 0) {
-    //             //     // Failure: Communications timeout - Device failed to poll Host$$$
-    //             //     if (cyton.potentialFailureMessage.equals(failureMessage)) {
-    //             //         closeLogFile();
-    //             //         return 0;
-    //             //     }
-    //             // }
-    //             // hardwareSyncStep++;
-    //             // prev3chars[2] = '#';
-    //             // if (cyton.hardwareSyncStep == 3) {
-    //             //     println("InterfaceSerial: read(): x");
-    //             //     println("InterfaceSerial: defaultChanSettings: " + cyton.defaultChannelSettings);
-    //             //     println("InterfaceSerial: read(): y");
-    //             //     w_timeSeries.hsc.loadDefaultChannelSettings();
-    //             //     println("InterfaceSerial: read(): z");
-    //             // }
-    //             // readyToSend = true;
-    //             // println(hardwareSyncStep);
-    //         }
-    //     }
+            //if the last three chars are $$$, it means we are moving on to the next stage of initialization
+            if (prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]) {
+                verbosePrint(" > EOT detected...");
+                // Added for V2 system down rejection line
+                if (cytonLegacy.hardwareSyncStep == 0) {
+                    // Failure: Communications timeout - Device failed to poll Host$$$
+                    if (cytonLegacy.potentialFailureMessage.equals(failureMessage)) {
+                        closeLogFile();
+                        return 0;
+                    }
+                }
+                // hardwareSyncStep++;
+                prev3chars[2] = '#';
+                if (cytonLegacy.hardwareSyncStep == 3) {
+                    println("InterfaceSerial: read(): x");
+                    println("InterfaceSerial: defaultChanSettings: " + cytonLegacy.defaultChannelSettings);
+                    println("InterfaceSerial: read(): y");
+                    w_timeSeries.hsc.loadDefaultChannelSettings();
+                    println("InterfaceSerial: read(): z");
+                }
+                readyToSend = true;
+                // println(hardwareSyncStep);
+            }
+        }
 
-    //     //write raw unprocessed bytes to a binary data dump file
-    //     if (output != null) {
-    //         try {
-    //             output.write(inByte);   //for debugging  WEA 2014-01-26
-    //         }
-    //         catch (IOException e) {
-    //             println("InterfaceSerial: read(): Caught IOException: " + e.getMessage());
-    //             //do nothing
-    //         }
-    //     }
+        //write raw unprocessed bytes to a binary data dump file
+        if (output != null) {
+            try {
+                output.write(inByte);   //for debugging  WEA 2014-01-26
+            }
+            catch (IOException e) {
+                println("InterfaceSerial: read(): Caught IOException: " + e.getMessage());
+                //do nothing
+            }
+        }
 
-    //     interpretBinaryStream(inByte);  //new 2014-02-02 WEA
-    //     return int(inByte);
-    // }
+        interpretBinaryStream(inByte);  //new 2014-02-02 WEA
+        return int(inByte);
+    }
 
     /* **** Borrowed from Chris Viegl from his OpenBCI parser for BrainBay
     Modified by Joel Murphy and Conor Russomanno to read OpenBCI data
