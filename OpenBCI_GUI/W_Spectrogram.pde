@@ -20,7 +20,7 @@ class W_Spectrogram extends Widget {
 
     PImage dataImg;
     int dataImageW = 1800;
-    int dataImageH = 250;
+    int dataImageH = 200;
     int prevW = 0;
     int prevH = 0;
     float scaledWidth;
@@ -56,6 +56,9 @@ class W_Spectrogram extends Widget {
         {3, 2, 1, 0}
     };
     int[] horizAxisLabel;
+
+    float[] topFFTAvg;
+    float[] botFFTAvg;
 
     W_Spectrogram(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -202,7 +205,10 @@ class W_Spectrogram extends Widget {
         float scaleH = float(graphH) / dataImageH;
 
         //widgetTemplateButton.draw();
-        drawAxes(scaleW, scaleH);
+        pushStyle();
+        fill(0);
+        rect(x, y, w, h); //draw a black background for the widget
+        popStyle();
 
         //draw the spectrogram if the widget is open, and update pixels if isRunning
         if (isRunning) {
@@ -216,7 +222,8 @@ class W_Spectrogram extends Widget {
                         arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
                     } else {
                         //When there would be an ArrayOutOfBoundsException, account for it!
-                        arrayCopy(dataImg.pixels, dataImg.width * r + 1, dataImg.pixels, r * dataImg.width, dataImg.width);
+                        //******** I think there is a problem here because there is some extra space at the top of the image
+                        //arrayCopy(dataImg.pixels, dataImg.width * r + 1, dataImg.pixels, r * dataImg.width, dataImg.width);
                     }
                 }
 
@@ -225,7 +232,7 @@ class W_Spectrogram extends Widget {
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
             for (int i = 0; i < dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
-                float hueValue = hueLimit - map((fftBuff[0].getBand(i)*32), 0, 256, 0, hueLimit);
+                float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.activeChan, i)*32), 0, 256, 0, hueLimit);
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
@@ -241,7 +248,7 @@ class W_Spectrogram extends Widget {
                 }
 
                 //RIGHT SPECTROGRAM ON BOTTOM
-                hueValue = hueLimit - map((fftBuff[1].getBand(i)*32), 0, 256, 0, hueLimit);
+                hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.activeChan, i)*32), 0, 256, 0, hueLimit);
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
@@ -262,13 +269,13 @@ class W_Spectrogram extends Widget {
         pushMatrix();
         translate(graphX, graphY);
         scale(scaleW, scaleH);
-        image(dataImg, 0, 0);
+        image(dataImg, 0, -1);
         popMatrix();
 
         spectChanSelectTop.draw();
         spectChanSelectBot.draw();
         //if (spectChanSelectTop.isVisible()) spectChanSelectBot.forceDrawChecklist(dropdownIsActive);
-
+        drawAxes(scaleW, scaleH);
         drawCenterLine();
     }
 
@@ -318,8 +325,6 @@ class W_Spectrogram extends Widget {
     void drawAxes(float scaledW, float scaledH) {
         
         pushStyle();
-            fill(0);
-            rect(x, y, w, h); //draw a black background for the widget
             fill(255);
             textSize(14);
             text("Time (minutes)", x + w/2 - textWidth("Time (minutes)")/3, y + h - 9);
@@ -335,6 +340,7 @@ class W_Spectrogram extends Widget {
             float horizAxisX = graphX;
             float horizAxisY = graphY + scaledH * dataImageH;
             stroke(255);
+            fill(255);
             strokeWeight(2);
             for (int i = 0; i <= numHorizAxisDivs; i++) {
                 float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
@@ -358,9 +364,11 @@ class W_Spectrogram extends Widget {
             float vertAxisX = graphX;
             float vertAxisY = graphY;
             stroke(255);
+            fill(255);
             strokeWeight(2);
             for (int i = 0; i <= numVertAxisDivs; i++) {
-                float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs);
+                float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs) + 1;
+                if (i <= numVertAxisDivs/2) offset -= 1;
                 line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
                 if (vertAxisLabel[i] == 0) midLineY = int(vertAxisY + offset);
                 offset += paddingTop - 2;
@@ -415,6 +423,14 @@ class W_Spectrogram extends Widget {
         scrollSpeed = i;
     }
 
+    float fftAvgs(List<Integer> _activeChan, int freqBand) {
+        float sum = 0f;
+        for (int i = 0; i < _activeChan.size(); i++) {
+            sum += fftBuff[_activeChan.get(i)].getBand(freqBand);
+        }
+        return sum / _activeChan.size();
+    }
+
     /*
     void start() {
 
@@ -464,6 +480,9 @@ void SpectrogramMaxFreq(int n) {
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
     w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
     closeAllDropdowns();
+    w_spectrogram.dataImageH = w_spectrogram.vertAxisLabel[0] * 2;
+    //overwrite the existing image because the sample rate is about to change
+    w_spectrogram.dataImg = createImage(w_spectrogram.dataImageW, w_spectrogram.dataImageH, RGB);
 }
 
 void SpectrogramSampleRate(int n) {
