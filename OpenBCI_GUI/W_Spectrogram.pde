@@ -29,6 +29,7 @@ class W_Spectrogram extends Widget {
     int graphY = 0;
     int graphW = 0;
     int graphH = 0;
+    int midLineY = 0;
 
     int lastShift = 0;
     private int scrollSpeed = 100; // == 10Hz
@@ -267,6 +268,8 @@ class W_Spectrogram extends Widget {
         spectChanSelectTop.draw();
         spectChanSelectBot.draw();
         //if (spectChanSelectTop.isVisible()) spectChanSelectBot.forceDrawChecklist(dropdownIsActive);
+
+        drawCenterLine();
     }
 
     void screenResized(){
@@ -359,11 +362,21 @@ class W_Spectrogram extends Widget {
             for (int i = 0; i <= numVertAxisDivs; i++) {
                 float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs);
                 line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
+                if (vertAxisLabel[i] == 0) midLineY = int(vertAxisY + offset);
                 offset += paddingTop - 2;
                 text(vertAxisLabel[i], vertAxisX - tickMarkSize*2 - textWidth(Integer.toString(vertAxisLabel[i])), vertAxisY + offset);
             }
         popStyle();
 
+    }
+
+    void drawCenterLine() {
+        //draw a thick line down the middle to separate the two plots
+        pushStyle();
+        stroke(255);
+        strokeWeight(3);
+        line(graphX, midLineY, graphX + graphW, midLineY);
+        popStyle();
     }
 
     void activateDefaultChannels() {
