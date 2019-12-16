@@ -97,9 +97,9 @@ Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_
 
 ### System Requirements
 #### Hardware
-1.6 GHz or faster processor
-2 GB of RAM
-400 MB of hard drive space (minimum)
+- 1.6 GHz or faster processor
+- 2 GB of RAM
+- 400 MB of hard drive space (minimum)
 
 #### Platforms
 OpenBCI GUI has been tested on the following platforms:
