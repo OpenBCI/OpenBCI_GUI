@@ -22,10 +22,12 @@ abstract class Board {
 
     public abstract void setChannelActive(int channelIndex, boolean active);
 
+    // override this if needed
     public void sendCommand(String command) {
         outputWarn("Sending commands is not implemented for this board. Command: " + command);
     }
 
+    // override this if needed
     public void setSampleRate(int sampleRate) {
         outputWarn("Changing the sampling rate is not implemented. Sampling rate will stay at " + getSampleRate());
     }
