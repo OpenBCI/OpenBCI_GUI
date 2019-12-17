@@ -754,7 +754,7 @@ void initSystem() throws Exception {
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_ipAddress);
             //TODO[brainflow]
-            currentBoard = new BoardBrainFlowSynthetic();
+            //currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;

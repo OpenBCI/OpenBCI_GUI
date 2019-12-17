@@ -24,12 +24,16 @@ abstract class BoardBrainFlow extends Board {
         // nothing
     }
 
+    protected int[] getDataChannels() throws BrainFlowError{
+        return BoardShim.get_eeg_channels(getBoardIdInt());
+    }
+
     @Override
     public boolean initialize() {
         try {
             samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
-            dataChannels = BoardShim.get_eeg_channels(getBoardIdInt());
+            dataChannels = getDataChannels();
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");

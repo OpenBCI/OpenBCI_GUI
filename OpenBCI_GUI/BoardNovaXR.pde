@@ -29,26 +29,14 @@ class BoardNovaXR extends BoardBrainFlow {
         return BoardIds.NOVAXR_BOARD;
     }
 
-    
-
     @Override
-    public boolean initialize() {
-        boolean success = super.initialize();
+    protected int[] getDataChannels() throws BrainFlowError{
+        int[] eegChannels = BoardShim.get_eeg_channels(getBoardIdInt());
+        int[] emgChannels = BoardShim.get_emg_channels(getBoardIdInt());
 
-        try {
-            int[] eegChannels = BoardShim.get_eeg_channels(getBoardIdInt());
-            int[] emgChannels = BoardShim.get_emg_channels(getBoardIdInt());
-
-            // datachannels is set to eeg in the base class. we're overriding it here because we want to
-            // display emg data in the time series for NovaXR
-            dataChannels = ArrayUtils.addAll(eegChannels, emgChannels);
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get data channels from BoardShim");
-            e.printStackTrace();
-            return false;
-        }
-
-        return success;
+        // datachannels is set to eeg in the base class. we're overriding it here because we want to
+        // display emg data in the time series for NovaXR
+        return ArrayUtils.addAll(eegChannels, emgChannels);
     }
 
     @Override
