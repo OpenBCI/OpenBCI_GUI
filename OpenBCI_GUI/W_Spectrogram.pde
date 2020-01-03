@@ -50,12 +50,13 @@ class W_Spectrogram extends Widget {
         {250, 188, 125, 63, 0, 63, 125, 188, 250}
     };
     int[] vertAxisLabel;
-    int[][] horizAxisLabels = {
+    float[][] horizAxisLabels = {
         {30, 25, 20, 15, 10, 5, 0},
         {6, 5, 4, 3, 2, 1, 0},
-        {3, 2, 1, 0}
+        {3, 2, 1, 0},
+        {1.5, 1, .5, 0}
     };
-    int[] horizAxisLabel;
+    float[] horizAxisLabel;
 
     float[] topFFTAvg;
     float[] botFFTAvg;
@@ -269,7 +270,7 @@ class W_Spectrogram extends Widget {
         pushMatrix();
         translate(graphX, graphY);
         scale(scaleW, scaleH);
-        image(dataImg, 0, -1);
+        image(dataImg, 0, 0);
         popMatrix();
 
         spectChanSelectTop.draw();
@@ -368,7 +369,7 @@ class W_Spectrogram extends Widget {
             strokeWeight(2);
             for (int i = 0; i <= numVertAxisDivs; i++) {
                 float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs) + 1;
-                if (i <= numVertAxisDivs/2) offset -= 1;
+                if (i <= numVertAxisDivs/2) offset -= 2;
                 line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
                 if (vertAxisLabel[i] == 0) midLineY = int(vertAxisY + offset);
                 offset += paddingTop - 2;
@@ -493,12 +494,15 @@ void SpectrogramSampleRate(int n) {
     if (n == 0) {
         w_spectrogram.numHorizAxisDivs = 6;
         w_spectrogram.setScrollSpeed(1000);
-    } else if (n == 1){
+    } else if (n == 1) {
         w_spectrogram.numHorizAxisDivs = 6;
         w_spectrogram.setScrollSpeed(200);
-    } else if (n == 2){
+    } else if (n == 2) {
         w_spectrogram.numHorizAxisDivs = 3;
         w_spectrogram.setScrollSpeed(100);
+    } else if (n == 3) {
+        w_spectrogram.numHorizAxisDivs = 3;
+        w_spectrogram.setScrollSpeed(50);
     }
     closeAllDropdowns();
 }
