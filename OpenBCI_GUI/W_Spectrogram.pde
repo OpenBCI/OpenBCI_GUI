@@ -240,7 +240,7 @@ class W_Spectrogram extends Widget {
                 stroke(int(hueValue), 100, 80);
                 // plot a point using the specified stroke
                 //point(xPos, i);
-                int loc = xPos + (dataImg.height/2 - i) * (dataImg.width);
+                int loc = xPos + ((dataImg.height/2 - i) * dataImg.width);
                 if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
                 try {
                     dataImg.pixels[loc] = color(int(hueValue), 100, 80);
@@ -254,8 +254,9 @@ class W_Spectrogram extends Widget {
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
                 stroke(int(hueValue), 100, 80);
+                int y_offset = 1;
                 // Pixel = X + ((Y + Height/2) * Width)
-                loc = xPos + ((i + dataImg.height/2) * dataImg.width);
+                loc = xPos + ((i + dataImg.height/2 + y_offset) * dataImg.width);
                 if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
                 try {
                     dataImg.pixels[loc] = color(int(hueValue), 100, 80);
@@ -270,7 +271,7 @@ class W_Spectrogram extends Widget {
         pushMatrix();
         translate(graphX, graphY);
         scale(scaleW, scaleH);
-        image(dataImg, 0, 0);
+        image(dataImg, 0, -1);
         popMatrix();
 
         spectChanSelectTop.draw();
