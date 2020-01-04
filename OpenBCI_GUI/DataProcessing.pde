@@ -201,20 +201,30 @@ void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, Da
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
                 val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);
             } else if (Ichan==2) {
-                //50 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //50 Hz
+                //15 Hz interference at 20 uVrms
+                sine_phase_rad[Ichan] += 2.0f*PI * 15.0f / fs_Hz;  //15 Hz
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //50 uVrms
+                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //20 uVrms
             } else if (Ichan==3) {
-                //60 Hz interference at 50 uVrms
+                //20 Hz interference at 30 uVrms
+                sine_phase_rad[Ichan] += 2.0f*PI * 20.0f / fs_Hz;  //20 Hz
+                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
+                val_uV += 30.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //30 uVrms
+            } else if (Ichan==4) {
+                //25 Hz interference at 40 uVrms
+                sine_phase_rad[Ichan] += 2.0f*PI * 25.0f / fs_Hz;  //25 Hz
+                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
+                val_uV += 40.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //40 uVrms
+            } else if (Ichan==5) {
+                //30 Hz interference at 50 uVrms
+                sine_phase_rad[Ichan] += 2.0f*PI * 30.0f / fs_Hz;  //30 Hz
+                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
+                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
+            } else if (Ichan==6) {
+                //60 Hz interference at 20 uVrms
                 sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //60 Hz
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
-            } else if (Ichan==4) {
-                //25 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 25.0f / fs_Hz;  //20 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
+                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
             }
         } else {
             val_uV = 0.0f;
