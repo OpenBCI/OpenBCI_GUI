@@ -369,8 +369,8 @@ class W_Spectrogram extends Widget {
             fill(255);
             strokeWeight(2);
             for (int i = 0; i <= numVertAxisDivs; i++) {
-                float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs) + 1;
-                if (i <= numVertAxisDivs/2) offset -= 2;
+                float offset = scaledH * dataImageH * (float(i) / numVertAxisDivs);
+                //if (i <= numVertAxisDivs/2) offset -= 2;
                 line(vertAxisX, vertAxisY + offset, vertAxisX - tickMarkSize, vertAxisY + offset);
                 if (vertAxisLabel[i] == 0) midLineY = int(vertAxisY + offset);
                 offset += paddingTop - 2;
@@ -503,7 +503,7 @@ void SpectrogramSampleRate(int n) {
         w_spectrogram.setScrollSpeed(100);
     } else if (n == 3) {
         w_spectrogram.numHorizAxisDivs = 3;
-        w_spectrogram.setScrollSpeed(50);
+        w_spectrogram.setScrollSpeed(5);
     }
     closeAllDropdowns();
 }
