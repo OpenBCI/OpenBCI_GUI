@@ -18,6 +18,7 @@ class W_Spectrogram extends Widget {
     int xPos = 0;
     int hueLimit = 160;
 
+    Button widgetTemplateButton;
     PImage dataImg;
     int dataImageW = 1800;
     int dataImageH = 200;
@@ -93,8 +94,8 @@ class W_Spectrogram extends Widget {
         //addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         //addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-        //widgetTemplateButton = new Button (x + w/2, y + navHeight, 200, navHeight, "SelectSoundFile", 12);
-        //widgetTemplateButton.setFont(p4, 14);
+        widgetTemplateButton = new Button (x + w/2, y + navHeight, 142, navHeight, "Save Spectrogram", 12);
+        widgetTemplateButton.setFont(p4, 14);
         //widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
     }
 
@@ -104,12 +105,10 @@ class W_Spectrogram extends Widget {
         //put your code here...
         //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
         if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
-            /*
             widgetTemplateButton.setIsActive(false);
             widgetTemplateButton.setIgnoreHover(true);
-            */
         } else {
-            //widgetTemplateButton.setIgnoreHover(false);
+            widgetTemplateButton.setIgnoreHover(false);
         }
 
         //Update channel checkboxes and active channels
@@ -205,7 +204,7 @@ class W_Spectrogram extends Widget {
         float scaleW = float(graphW) / dataImageW;
         float scaleH = float(graphH) / dataImageH;
 
-        //widgetTemplateButton.draw();
+        widgetTemplateButton.draw();
         pushStyle();
         fill(0);
         rect(x, y, w, h); //draw a black background for the widget
@@ -271,7 +270,7 @@ class W_Spectrogram extends Widget {
         pushMatrix();
         translate(graphX, graphY);
         scale(scaleW, scaleH);
-        image(dataImg, 0, -1);
+        image(dataImg, 0, 0);
         popMatrix();
 
         spectChanSelectTop.draw();
@@ -286,7 +285,7 @@ class W_Spectrogram extends Widget {
         
         //cp5.setGraphics(pApplet, 0, 0);
         //put your code here...
-        //widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
+        widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
         spectChanSelectTop.screenResized(pApplet);
         spectChanSelectBot.screenResized(pApplet);  
         graphX = x + paddingLeft;
@@ -300,11 +299,9 @@ class W_Spectrogram extends Widget {
         //put your code here...
         //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
         if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
-            /*
             if(widgetTemplateButton.isMouseHere()){
                 widgetTemplateButton.setIsActive(true);
             }
-            */
         }
         spectChanSelectTop.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
         spectChanSelectBot.mousePressed(this.dropdownIsActive);
@@ -312,15 +309,16 @@ class W_Spectrogram extends Widget {
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        /*
+        
         //put your code here...
         if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
-            selectInput("Select a sound file for playback:", "loadSoundFromFile");
+            //selectInput("Select a sound file for playback:", "loadSoundFromFile");
+            String s = settings.guiDataPath + System.currentTimeMillis() + ".jpg";
+            dataImg.save(s);
+            outputSuccess("Spectrogram Image saved to: " + s);
         }
 
         widgetTemplateButton.setIsActive(false);
-        */
 
     }
 
