@@ -223,14 +223,14 @@ class W_Spectrogram extends Widget {
                     } else {
                         //When there would be an ArrayOutOfBoundsException, account for it!
                         //******** I think there is a problem here because there is some extra space at the top of the image
-                        //arrayCopy(dataImg.pixels, dataImg.width * r + 1, dataImg.pixels, r * dataImg.width, dataImg.width);
+                        arrayCopy(dataImg.pixels, dataImg.width * (r + 1), dataImg.pixels, r * dataImg.width, dataImg.width);
                     }
                 }
 
                 lastShift += scrollSpeed;
             }
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
-            for (int i = 0; i < dataImg.height/2; i++) {
+            for (int i = 0; i <= dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
                 float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.activeChan, i)*32), 0, 256, 0, hueLimit);
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
@@ -253,7 +253,7 @@ class W_Spectrogram extends Widget {
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
                 stroke(int(hueValue), 100, 80);
-                int y_offset = 1;
+                int y_offset = -1;
                 // Pixel = X + ((Y + Height/2) * Width)
                 loc = xPos + ((i + dataImg.height/2 + y_offset) * dataImg.width);
                 if (loc >= dataImg.width * dataImg.height) loc = dataImg.width * dataImg.height - 1;
