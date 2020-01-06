@@ -197,7 +197,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
-    String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz", "20 Hz"};
+    String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz", "20 Hz", "40 Hz"};
 
     //Save Time Series settings variables
     int tsActiveSetting = 1;

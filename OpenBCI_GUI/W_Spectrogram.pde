@@ -55,7 +55,8 @@ class W_Spectrogram extends Widget {
         {30, 25, 20, 15, 10, 5, 0},
         {6, 5, 4, 3, 2, 1, 0},
         {3, 2, 1, 0},
-        {1.5, 1, .5, 0}
+        {1.5, 1, .5, 0},
+        {1, .5, 0}
     };
     float[] horizAxisLabel;
     StringList horizAxisLabelStrings;
@@ -451,7 +452,7 @@ class W_Spectrogram extends Widget {
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
-            LocalTime t = time.minus(l, ChronoUnit.SECONDS);
+            LocalTime t = time.plus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
         }
     }
@@ -510,7 +511,10 @@ void SpectrogramSampleRate(int n) {
         w_spectrogram.setScrollSpeed(100);
     } else if (n == 3) {
         w_spectrogram.numHorizAxisDivs = 3;
-        w_spectrogram.setScrollSpeed(5);
+        w_spectrogram.setScrollSpeed(50);
+    } else if (n == 4) {
+        w_spectrogram.numHorizAxisDivs = 2;
+        w_spectrogram.setScrollSpeed(25);
     }
     w_spectrogram.horizAxisLabelStrings.clear();
     w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
