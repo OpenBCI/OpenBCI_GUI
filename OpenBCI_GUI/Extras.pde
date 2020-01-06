@@ -111,6 +111,10 @@ float log10(float val) {
     return (float)Math.log10(val);
 }
 
+float log10(int val) {
+    return (float)Math.log10(val);
+}
+
 float filterWEA_1stOrderIIR(float[] filty, float learn_fac, float filt_state) {
     float prev = filt_state;
     for (int i=0; i < filty.length; i++) {

@@ -1,3 +1,10 @@
+# v5.0.0
+
+# Alpha
+
+# Improvements
+* Add functional spectrogram widget #416
+
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
 
@@ -8,7 +15,7 @@ Use OpenBCIHub v2.1.0 please.
 * Catch Invalid Playback File Exception #649
 
 ### Improvements
-* Add LSL FFT example Python sketch
+* Add LSL FFT example Python script
 
 ## Beta 2
 

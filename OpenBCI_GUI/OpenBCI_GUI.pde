@@ -41,6 +41,7 @@ import java.text.DateFormat; //Used in DataLogging.pde
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 // import java.net.InetAddress; // Used for ping, however not working right now.
 import java.util.Random;
 import java.awt.Robot; //used for simulating mouse clicks
@@ -60,8 +61,8 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.1.7";
-String localGUIVersionDate = "November 2019";
+String localGUIVersionString = "v5.0.0-alpha";
+String localGUIVersionDate = "January 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
