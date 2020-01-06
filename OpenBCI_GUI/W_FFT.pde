@@ -214,6 +214,7 @@ void Smoothing(int n) {
 
 //triggered when there is an event in the UnfiltFilt Dropdown
 void UnfiltFilt(int n) {
+    settings.fftFilterSave = n;
     if (n==0) {
         //have FFT use filtered data -- default
         isFFTFiltered = true;

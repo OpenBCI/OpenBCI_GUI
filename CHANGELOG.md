@@ -1,3 +1,10 @@
+# v5.0.0
+
+# Alpha
+
+# Improvements
+* Add functional spectrogram widget #416
+
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
 

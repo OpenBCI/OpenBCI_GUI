@@ -29,6 +29,7 @@ W_DigitalRead w_digitalRead;
 W_MarkerMode w_markermode;
 W_playback w_playback;
 W_SSVEP w_ssvep;
+W_Spectrogram w_spectrogram;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -98,6 +99,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_ssvep = new W_SSVEP(_this);
     w_ssvep.setTitle("SSVEP_beta");
     addWidget(w_ssvep, w);
+
+    w_spectrogram = new W_Spectrogram(_this);
+    w_spectrogram.setTitle("Spectrogram");
+    addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
     if(eegDataSource == DATASOURCE_CYTON){
@@ -238,7 +243,7 @@ class WidgetManager{
         // if(visible && updating){
         if(visible){
             for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).isActive){
+                if(widgets.get(i).getIsActive()){
                     widgets.get(i).update();
                     //if the widgets are not mapped to containers correctly, remap them..
                     // if(widgets.get(i).x != container[widgets.get(i).currentContainer].x || widgets.get(i).y != container[widgets.get(i).currentContainer].y || widgets.get(i).w != container[widgets.get(i).currentContainer].w || widgets.get(i).h != container[widgets.get(i).currentContainer].h){
@@ -254,7 +259,7 @@ class WidgetManager{
     void draw(){
         if(visible){
             for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).isActive){
+                if(widgets.get(i).getIsActive()){
                     pushStyle();
                     widgets.get(i).draw();
                     widgets.get(i).drawDropdowns();
@@ -280,7 +285,7 @@ class WidgetManager{
 
     void mousePressed(){
         for(int i = 0; i < widgets.size(); i++){
-            if(widgets.get(i).isActive){
+            if(widgets.get(i).getIsActive()){
                 widgets.get(i).mousePressed();
             }
 
@@ -289,7 +294,7 @@ class WidgetManager{
 
     void mouseReleased(){
         for(int i = 0; i < widgets.size(); i++){
-            if(widgets.get(i).isActive){
+            if(widgets.get(i).getIsActive()){
                 widgets.get(i).mouseReleased();
             }
         }
@@ -297,7 +302,7 @@ class WidgetManager{
 
     void mouseDragged(){
         for(int i = 0; i < widgets.size(); i++){
-            if(widgets.get(i).isActive){
+            if(widgets.get(i).getIsActive()){
                 widgets.get(i).mouseDragged();
             }
         }
@@ -343,7 +348,7 @@ class WidgetManager{
         int numActiveWidgets = 0;
         // ArrayList<int> activeWidgets = new ArrayList<int>();
         for(int i = 0; i < widgets.size(); i++){
-            if(widgets.get(i).isActive){
+            if(widgets.get(i).getIsActive()){
                 numActiveWidgets++; //increment numActiveWidgets
                 // activeWidgets.add(i); //keep track of the active widget
             }
@@ -355,9 +360,9 @@ class WidgetManager{
             int counter = 0;
             println("WM: Powering " + numToShutDown + " widgets down, and remapping.");
             for(int i = widgets.size()-1; i >= 0; i--){
-                if(widgets.get(i).isActive && counter < numToShutDown){
+                if(widgets.get(i).getIsActive() && counter < numToShutDown){
                     verbosePrint("WM: Deactivating widget [" + i + "]");
-                    widgets.get(i).isActive = false;
+                    widgets.get(i).setIsActive(false);
                     counter++;
                 }
             }
@@ -365,7 +370,7 @@ class WidgetManager{
             //and map active widgets
             counter = 0;
             for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).isActive){
+                if(widgets.get(i).getIsActive()){
                     widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
                     counter++;
                 }
@@ -377,9 +382,9 @@ class WidgetManager{
             int counter = 0;
             verbosePrint("WM: Powering " + numToPowerUp + " widgets up, and remapping.");
             for(int i = 0; i < widgets.size(); i++){
-                if(!widgets.get(i).isActive && counter < numToPowerUp){
+                if(!widgets.get(i).getIsActive() && counter < numToPowerUp){
                     verbosePrint("WM: Activating widget [" + i + "]");
-                    widgets.get(i).isActive = true;
+                    widgets.get(i).setIsActive(true);
                     counter++;
                 }
             }
@@ -387,7 +392,7 @@ class WidgetManager{
             //and map active widgets
             counter = 0;
             for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).isActive){
+                if(widgets.get(i).getIsActive()){
                     widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
                     // widgets.get(i).screenResized(); // do this to make sure the container is updated
                     counter++;
@@ -399,7 +404,7 @@ class WidgetManager{
             verbosePrint("WM: Remapping widgets.");
             int counter = 0;
             for(int i = 0; i < widgets.size(); i++){
-                if(widgets.get(i).isActive){
+                if(widgets.get(i).getIsActive()){
                     widgets.get(i).setContainer(layouts.get(_newLayout).containerInts[counter]);
                     counter++;
                 }
