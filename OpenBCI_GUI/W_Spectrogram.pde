@@ -95,12 +95,9 @@ class W_Spectrogram extends Widget {
         addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
         addDropdown("SpectrogramSampleRate", "Samples", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
         addDropdown("SpectrogramLogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.spectLogLinSave);
-        //addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-        //addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
         widgetTemplateButton = new Button (x + int(spectChanSelectBot.tri_xpos) + 10, y + navHeight + 2, 142, navHeight - 4, "Save Spectrogram", 10);
         widgetTemplateButton.setFont(p4, 14);
-        //widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
     }
 
     void update(){
@@ -135,11 +132,11 @@ class W_Spectrogram extends Widget {
             fetchTimeStrings(numHorizAxisDivs);
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             xPos = dataImg.width - 1;
+            //Fetch playback data timestamp even when system is not running
             fetchTimeStrings(numHorizAxisDivs);
         }
         
-        //println("+++++++XPOS  == " + xPos + " || RightEdge == " + (w));
-
+        //State change check
         if (isRunning && !wasRunning) {
             onStartRunning();
         } else if (!isRunning && wasRunning) {
@@ -194,7 +191,7 @@ class W_Spectrogram extends Widget {
                 //LEFT SPECTROGRAM ON TOP
                 float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.activeChan, i)*32), 0, 256, 0, hueLimit);
                 if (settings.spectLogLinSave == 0) {
-                    hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
+                    hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
                 }
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
@@ -213,7 +210,7 @@ class W_Spectrogram extends Widget {
                 //RIGHT SPECTROGRAM ON BOTTOM
                 hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.activeChan, i)*32), 0, 256, 0, hueLimit);
                 if (settings.spectLogLinSave == 0) {
-                    hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
+                    hueValue = map(log10(hueValue), 0, 2, 0, hueLimit);
                 }
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
@@ -434,9 +431,19 @@ class W_Spectrogram extends Widget {
         if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
             time = LocalTime.now();
         } else {
-            if (!w_timeSeries.scrollbar.currentAbsoluteTimeToDisplay.equals("")) {
-                time = LocalTime.parse(w_timeSeries.scrollbar.currentAbsoluteTimeToDisplay);
-            } else {
+            try {
+                String timeFromPlayback;
+                if (!getCurrentTimeStamp().equals("notFound")) {
+                    long t = new Long(getCurrentTimeStamp());
+                    Date d =  new Date(t);
+                    timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
+                    time = LocalTime.parse(timeFromPlayback);
+                } else {
+                    time = LocalTime.now();
+                }
+            } catch (NullPointerException e) {
+                println("Spectrogram: Timestamp error...");
+                e.printStackTrace();
                 time = LocalTime.now();
             }
         }
@@ -446,6 +453,27 @@ class W_Spectrogram extends Widget {
             long l = (long)(horizAxisLabel[i] * 60f);
             LocalTime t = time.minus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
+        }
+    }
+
+    //Identical to the method in TimeSeries, but allows spectrogram to get the data directly from the playback data in the background
+    //Find times to display for playback position
+    String getCurrentTimeStamp() {
+        //return current playback time
+        if (index_of_times != null) { //Check if the hashmap is null to prevent exception
+            if (index_of_times.get(0) != null) {
+                if (currentTableRowIndex > playbackData_table.getRowCount()) {
+                    return index_of_times.get(playbackData_table.getRowCount());
+                } else {
+                    return index_of_times.get(currentTableRowIndex);
+                }
+            } else {
+                //This is a sanity check for null exception, and this would print on screen
+                return "TimeNotFound";
+            }
+        } else {
+            //Same here
+            return "TimeNotFound";
         }
     }
 };
