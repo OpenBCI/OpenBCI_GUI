@@ -459,7 +459,7 @@ class ChannelSelect {
 
     //----------CHANNEL SELECT INFRASTRUCTURE
     private int x, y, w, navH;
-    private float tri_xpos = 0;
+    public float tri_xpos = 0;
     private float chanSelectXPos = 0;
     public ControlP5 cp5_channelCheckboxes;   //ControlP5 to contain our checkboxes
     public CheckBox checkList;

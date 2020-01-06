@@ -36,8 +36,8 @@ class W_Spectrogram extends Widget {
     private int scrollSpeed = 100; // == 10Hz
     boolean wasRunning = false;
 
-    int paddingLeft = 60;
-    int paddingRight = 8;   
+    int paddingLeft = 54;
+    int paddingRight = 26;   
     int paddingTop = 8;
     int paddingBottom = 50;
     int numHorizAxisDivs = 3;
@@ -58,6 +58,7 @@ class W_Spectrogram extends Widget {
         {1.5, 1, .5, 0}
     };
     float[] horizAxisLabel;
+    StringList horizAxisLabelStrings;
 
     float[] topFFTAvg;
     float[] botFFTAvg;
@@ -83,18 +84,21 @@ class W_Spectrogram extends Widget {
 
         settings.spectMaxFrqSave = 1;
         settings.spectSampleRateSave = 2;
+        settings.spectLogLinSave = 0;
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
+        horizAxisLabelStrings = new StringList();
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
         addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
         addDropdown("SpectrogramSampleRate", "Samples", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
+        addDropdown("SpectrogramLogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.spectLogLinSave);
         //addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         //addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-        widgetTemplateButton = new Button (x + w/2, y + navHeight, 142, navHeight, "Save Spectrogram", 12);
+        widgetTemplateButton = new Button (x + int(spectChanSelectBot.tri_xpos) + 10, y + navHeight + 2, 142, navHeight - 4, "Save Spectrogram", 10);
         widgetTemplateButton.setFont(p4, 14);
         //widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
     }
@@ -118,63 +122,20 @@ class W_Spectrogram extends Widget {
         if (chanSelectWasOpen != spectChanSelectTop.isVisible()) {
             spectChanSelectBot.setIsVisible(spectChanSelectTop.isVisible());
             chanSelectWasOpen = spectChanSelectTop.isVisible();
+            //Allow spectrogram to flex size and position depending on if the channel select is open
             flexSpectrogramSizeAndPosition();
         }
-        /*
-        //Flex the Gplot graph when channel select dropdown is open/closed
-        if (bpChanSelect.isVisible() != prevChanSelectIsVisible) {
-            flexGPlotSizeAndPosition();
-            prevChanSelectIsVisible = bpChanSelect.isVisible();
-        }
-        */
-
-        /*
-        if (this.isActive) {
-            // perform a forward FFT on the samples in jingle's mix buffer
-            // note that if jingle were a MONO file, this would be the same as using jingle.left or jingle.right
-            fftLin_L.forward(jingle.left);
-            fftLin_R.forward(jingle.right);
-            // increment the x position
-            xPos = xPos + 1;
-            // wrap around at the screen width
-            if (xPos >= w) {
-                xPos = 0;
-            }
-        }
-
-        final int INTERVAL = 10;
         
-        void setup()
-        {
-        size(400, 400);
-        smooth();
-        background(255);
-        }
         
-        void draw()
-        {
-        // Scroll one column of pixels per frame
-        loadPixels();
-        for (int r = 0; r < height; r++)
-        {
-            arrayCopy(pixels, width * r, pixels, width * r + 1, width - 1);
-        }
-        updatePixels();
-        // Add a line from time to time
-        if (frameCount % INTERVAL == 0)
-        {
-            stroke(color(random(0, 50), random(50, 200), random(100, 255)));
-            strokeWeight(random(2, 10));
-            line(random(INTERVAL, width), 0, random(INTERVAL, width), height);
-        }
-        }
-
-
-
-        */
-        if (isRunning) {
+        
+        if (isRunning && eegDataSource != DATASOURCE_PLAYBACKFILE) {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
+            //Fetch/calculate the time strings for the horizontal axis ticks
+            fetchTimeStrings(numHorizAxisDivs);
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            xPos = dataImg.width - 1;
+            fetchTimeStrings(numHorizAxisDivs);
         }
         
         //println("+++++++XPOS  == " + xPos + " || RightEdge == " + (w));
@@ -222,7 +183,6 @@ class W_Spectrogram extends Widget {
                         arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
                     } else {
                         //When there would be an ArrayOutOfBoundsException, account for it!
-                        //******** I think there is a problem here because there is some extra space at the top of the image
                         arrayCopy(dataImg.pixels, dataImg.width * (r + 1), dataImg.pixels, r * dataImg.width, dataImg.width);
                     }
                 }
@@ -233,6 +193,9 @@ class W_Spectrogram extends Widget {
             for (int i = 0; i <= dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
                 float hueValue = hueLimit - map((fftAvgs(spectChanSelectTop.activeChan, i)*32), 0, 256, 0, hueLimit);
+                if (settings.spectLogLinSave == 0) {
+                    hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
+                }
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
@@ -249,6 +212,9 @@ class W_Spectrogram extends Widget {
 
                 //RIGHT SPECTROGRAM ON BOTTOM
                 hueValue = hueLimit - map((fftAvgs(spectChanSelectBot.activeChan, i)*32), 0, 256, 0, hueLimit);
+                if (settings.spectLogLinSave == 0) {
+                    hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
+                }
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
@@ -285,13 +251,18 @@ class W_Spectrogram extends Widget {
         
         //cp5.setGraphics(pApplet, 0, 0);
         //put your code here...
-        widgetTemplateButton.setPos(x + w/2 - widgetTemplateButton.but_dx/2, y - navHeight);
+        widgetTemplateButton.setPos(x + int(textWidth("Channels")) + 7 + 5, y - navHeight + 2);
         spectChanSelectTop.screenResized(pApplet);
         spectChanSelectBot.screenResized(pApplet);  
         graphX = x + paddingLeft;
         graphY = y + paddingTop;
         graphW = w - paddingRight - paddingLeft;
         graphH = h - paddingBottom - paddingTop;
+        //Allow spectrogram to flex size and position depending on if the channel select is open
+        if (spectChanSelectTop.isVisible()) {
+            graphY += navH * 2;
+            graphH -= navH * 2;
+        }
     }
 
     void mousePressed(){
@@ -327,10 +298,12 @@ class W_Spectrogram extends Widget {
         pushStyle();
             fill(255);
             textSize(14);
-            text("Time (minutes)", x + w/2 - textWidth("Time (minutes)")/3, y + h - 9);
+            //draw horizontal axis label
+            text("Time", x + w/2 - textWidth("Time")/3, y + h - 9);
             noFill();
             stroke(255);
             strokeWeight(2);
+            //draw rectangle around the spectrogram
             rect(graphX, graphY, scaledW * dataImageW, scaledH * dataImageH);
         popStyle();
 
@@ -342,19 +315,21 @@ class W_Spectrogram extends Widget {
             stroke(255);
             fill(255);
             strokeWeight(2);
+            textSize(10);
             for (int i = 0; i <= numHorizAxisDivs; i++) {
                 float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
                 line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
-                text(horizAxisLabel[i], horizAxisX + offset - (textWidth(Integer.toString(vertAxisLabel[i])) / 3), horizAxisY + 30);
+                text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
             }
         popStyle();
         
         pushStyle();
             pushMatrix();
                 rotate(radians(-90));
-                translate(-h/2 - textWidth("Frequency (Hz)")/3 + 10, 20);
+                translate(-h/2 - textWidth("Frequency (Hz)")/3, 20);
                 fill(255);
                 textSize(14);
+                //draw y axis label
                 text("Frequency (Hz)", -y, x);
             popMatrix();
         popStyle();
@@ -376,6 +351,7 @@ class W_Spectrogram extends Widget {
             }
         popStyle();
 
+        drawColorScaleReference();
     }
 
     void drawCenterLine() {
@@ -384,6 +360,26 @@ class W_Spectrogram extends Widget {
         stroke(255);
         strokeWeight(3);
         line(graphX, midLineY, graphX + graphW, midLineY);
+        popStyle();
+    }
+
+    void drawColorScaleReference() {
+        int colorScaleHeight = 128;
+        pushStyle();
+            //draw color scale reference to the right of the spectrogram
+            for (int i = 0; i < colorScaleHeight; i++) {
+                float hueValue = hueLimit - map(i * 2, 0, 256, 0, hueLimit);
+                if (settings.spectLogLinSave == 0) {
+                    hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
+                }
+                //println(hueValue);
+                // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
+                colorMode(HSB, 256, 100, 100);
+                // color for stroke is specified as hue, saturation, brightness.
+                stroke(int(hueValue), 100, 80);
+                strokeWeight(10);
+                point(x + w - paddingRight/2 + 1, y + paddingTop + midLineY - colorScaleHeight/3 - 14 - i);
+            }
         popStyle();
     }
 
@@ -431,62 +427,47 @@ class W_Spectrogram extends Widget {
         return sum / _activeChan.size();
     }
 
-    /*
-    void start() {
-
-        this.isActive = true;
-
-        // loop the file
-        jingle.loop();
+    void fetchTimeStrings(int numAxisTicks) {
+        horizAxisLabelStrings.clear();
+        LocalTime time;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
+            time = LocalTime.now();
+        } else {
+            if (!w_timeSeries.scrollbar.currentAbsoluteTimeToDisplay.equals("")) {
+                time = LocalTime.parse(w_timeSeries.scrollbar.currentAbsoluteTimeToDisplay);
+            } else {
+                time = LocalTime.now();
+            }
+        }
         
-        // create an FFT object that has a time-domain buffer the same size as jingle's sample buffer
-        // note that this needs to be a power of two 
-        // and that it means the size of the spectrum will be 1024. 
-        // see the online tutorial for more info.
-        fftLin_L = new FFT(jingle.bufferSize(), jingle.sampleRate());
-        fftLin_R = fftLin_L;
-        // calculate the averages by grouping frequency bands linearly. use 30 averages.
-        fftLin_L.linAverages(30);
-        fftLin_R.linAverages(30);
-
-        img.resize(w, h);
+        
+        for (int i = 0; i <= numAxisTicks; i++) {
+            long l = (long)(horizAxisLabel[i] * 60f);
+            LocalTime t = time.minus(l, ChronoUnit.SECONDS);
+            horizAxisLabelStrings.append(t.format(formatter));
+        }
     }
-
-    void stop() {
-        this.isActive = false;
-        // always close Minim audio classes when you are done with them
-        jingle.close();
-        // always stop Minim before exiting
-        minim.stop();
-        //super.stop();
-    }
-    */
 };
-
-/*
-void loadSoundFromFile(File selection) {
-    if (w_spectrogram.isActive) w_spectrogram.stop();
-    w_spectrogram.jingle = minim.loadFile(selection.getAbsolutePath(), 512);
-    w_spectrogram.start();
-}
-*/
-
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 //triggered when there is an event in the Spectrogram Widget MaxFreq. Dropdown
 void SpectrogramMaxFreq(int n) {
-    /* request the selected item based on index n */
+    settings.spectMaxFrqSave = n;
+    //Link the choices made in the FFT widget and the Spectrogram Widget for this parameter
     MaxFreq(n);
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
-    w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
     closeAllDropdowns();
+    //reset the vertical axis labelss
+    w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
+    //Resize the height of the data image
     w_spectrogram.dataImageH = w_spectrogram.vertAxisLabel[0] * 2;
     //overwrite the existing image because the sample rate is about to change
     w_spectrogram.dataImg = createImage(w_spectrogram.dataImageW, w_spectrogram.dataImageH, RGB);
 }
 
 void SpectrogramSampleRate(int n) {
-    /* request the selected item based on index n */
+    settings.spectSampleRateSave = n;
     //overwrite the existing image because the sample rate is about to change
     w_spectrogram.dataImg = createImage(w_spectrogram.dataImageW, w_spectrogram.dataImageH, RGB);
     w_spectrogram.horizAxisLabel = w_spectrogram.horizAxisLabels[n];
@@ -503,5 +484,12 @@ void SpectrogramSampleRate(int n) {
         w_spectrogram.numHorizAxisDivs = 3;
         w_spectrogram.setScrollSpeed(5);
     }
+    w_spectrogram.horizAxisLabelStrings.clear();
+    w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
+    closeAllDropdowns();
+}
+
+void SpectrogramLogLin(int n) {
+    settings.spectLogLinSave = n;
     closeAllDropdowns();
 }

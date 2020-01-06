@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, Band Power, and SSVEP
+//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, Band Power, SSVEP, and Spectrogram
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
@@ -116,6 +116,7 @@ class SoftwareSettings {
     //Spectrogram Widget settings
     int spectMaxFrqSave;
     int spectSampleRateSave;
+    int spectLogLinSave;
 
     //default configuration settings file location and file name variables
     public final String guiDataPath = System.getProperty("user.home")+File.separator+"Documents"+File.separator+"OpenBCI_GUI"+File.separator;
@@ -161,7 +162,7 @@ class SoftwareSettings {
     //Used to set text in dropdown menus when loading FFT settings
     String[] fftMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
     String[] fftVertScaleArray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
-    String[] fftLogLinArray = {"Log", "Linear"};
+    String[] fftLogLinArray = {"Log", "Linear"}; //share this with spectrogram also
     String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
     String[] fftFilterArray = {"Filtered", "Unfilt."};
 
@@ -261,6 +262,7 @@ class SoftwareSettings {
     List<Integer> loadSpectActiveChanBot = new ArrayList<Integer>();
     int spectMaxFrqLoad;
     int spectSampleRateLoad;
+    int spectLogLinLoad;
 
     //Networking Settings save/load variables
     int nwProtocolLoad;
@@ -687,10 +689,10 @@ class SoftwareSettings {
             saveActiveChanSpectBot.setInt(i, activeChan);
         }
         saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
-        //Save FFT_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the FFT widget
+        //Save Spectrogram_Max Freq Setting. The max frq variable is updated every time the user selects a dropdown in the spectrogram widget
         saveSpectrogramSettings.setInt("Spectrogram_Max Freq", spectMaxFrqSave);
-        //Save FFT_Max uV Setting. The max uV variable is updated also when user selects dropdown in the FFT widget
         saveSpectrogramSettings.setInt("Spectrogram_Sample Rate", spectSampleRateSave);
+        saveSpectrogramSettings.setInt("Spectrogram_LogLin", spectLogLinSave);
         saveSettingsJSONData.setJSONObject(kJSONKeySpectrogram, saveSpectrogramSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
@@ -973,6 +975,7 @@ class SoftwareSettings {
             }
             spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
             spectSampleRateLoad = loadSpectSettings.getInt("Spectrogram_Sample Rate");
+            spectLogLinLoad = loadSpectSettings.getInt("Spectrogram_LogLin");
             //println(loadSpectActiveChanTop, loadSpectActiveChanBot);
         } catch (Exception e) {
             e.printStackTrace();
@@ -1307,6 +1310,9 @@ class SoftwareSettings {
             w_spectrogram.cp5_widget.getController("SpectrogramMaxFreq").getCaptionLabel().setText(spectMaxFrqArray[spectMaxFrqLoad]);
         SpectrogramSampleRate(spectSampleRateLoad);
             w_spectrogram.cp5_widget.getController("SpectrogramSampleRate").getCaptionLabel().setText(spectSampleRateArray[spectSampleRateLoad]);
+        SpectrogramLogLin(spectLogLinLoad);
+            w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
+
         
         //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
         try {
