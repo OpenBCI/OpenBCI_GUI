@@ -206,7 +206,6 @@ void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
     }
 }
 
-
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
 
     float[] fooData;
