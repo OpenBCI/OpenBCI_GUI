@@ -1812,7 +1812,7 @@ class SerialBox {
         h = 70;
         padding = _padding;
 
-        autoConnect = new Button(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO", fontInfo.buttonLabel_size);
+        autoConnect = new Button(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
         popOutRadioConfigButton = new Button(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
         popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
@@ -3121,13 +3121,15 @@ class RadioConfigBox {
         h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
-        
-        getChannel = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-        setChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        ovrChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+
         //typical button height + 20 for larger autoscan button
-        autoscan = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
+        autoscan = new Button(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
+        //smaller buttons below autoscan
+        getChannel = new Button(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        systemStatus = new Button(x + padding, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        setChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+        ovrChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        
 
         //Set help text
         getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
