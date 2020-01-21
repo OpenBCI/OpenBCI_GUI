@@ -75,6 +75,7 @@ final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
 boolean midInit = false;
+boolean midInitCheck2 = false;
 boolean abandonInit = false;
 boolean systemHasHalted = false;
 
@@ -515,6 +516,20 @@ synchronized void draw() {
         drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
+        if (midInit) {
+            if (midInitCheck2) {
+                println("OpenBCI_GUI: Start session. Calling initSystem().");
+                try {
+                    initSystem(); //found in OpenBCI_GUI.pde
+                } catch (Exception e) {
+                    println(e.getMessage());
+                    haltSystem();
+                }
+                midInitCheck2 = false;
+            } else {
+                midInitCheck2 = true;
+            }
+        }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
             settings.introAnimationInit = millis();
@@ -1315,12 +1330,6 @@ void systemDraw() { //for drawing to the screen
         if (!attemptingToConnect) {
             output("Attempting to establish a connection with your OpenBCI Board...");
             attemptingToConnect = true;
-        } else {
-            //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
-            pushStyle();
-            imageMode(CENTER);
-            image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
-            popStyle();
         }
 
         if (millis() - timeOfInit > settings.initTimeoutThreshold) {
@@ -1345,6 +1354,25 @@ void systemDraw() { //for drawing to the screen
 
     buttonHelpText.draw();
     mouseOutOfBounds(); // to fix
+
+    if (midInit) {
+        println("PAINTING LOADING IMAGE TO SCREEN");
+        //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
+        pushStyle();
+        //imageMode(CENTER);
+        fill(124, 100);
+        rect(0, 0, width, height);
+        
+        //image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
+        popStyle();
+
+        pushStyle();
+        textFont(p0, 24);
+        fill(242, 255);
+        String s = "Attempting to connect...";
+        text(s, width/2 - textWidth(s)/2, height/2);
+        popStyle();
+    }
 }
 
 void introAnimation() {

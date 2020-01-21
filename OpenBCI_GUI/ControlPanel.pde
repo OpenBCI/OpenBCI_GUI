@@ -1687,13 +1687,7 @@ public void initButtonPressed(){
                 println("Static IP address of " + wifi_ipAddress);
             }
             midInit = true;
-            println("initButtonPressed: Calling initSystem()");
-            try {
-                initSystem(); //found in OpenBCI_GUI.pde
-            } catch (Exception e) {
-                println(e.getMessage());
-                haltSystem();
-            }
+            println("initButtonPressed: Calling initSystem() after next draw()");
         }
     } else {
         //if system is already active ... stop session and flip button state back
