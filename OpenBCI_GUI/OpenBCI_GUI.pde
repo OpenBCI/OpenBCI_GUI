@@ -1360,7 +1360,7 @@ void systemDraw() { //for drawing to the screen
         pushStyle();
         textFont(p0, 24);
         fill(242, 255);
-        String s = "Attempting to connect...";
+        String s = "Starting Session...";
         text(s, width/2 - textWidth(s)/2, height/2);
         popStyle();
     }
