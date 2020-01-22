@@ -61,7 +61,7 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha";
+String localGUIVersionString = "v5.0.0-alpha.2";
 String localGUIVersionDate = "January 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -86,9 +86,6 @@ final int NCHAN_GANGLION = 4;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
-
-// ---- Define variables related to OpenBCI_GUI UDPMarker functionality
-UDP udpRX;
 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -410,20 +407,6 @@ void delayedSetup() {
 
     myPresentation = new Presentation();
 
-    // UDPMarker functionality
-    // Setup the UDP receiver // This needs to be done only when marker mode is enabled
-    int portRX = 51000;  // this is the UDP port the application will be listening on
-    String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
-
-    // Create new object for receiving
-    udpRX=new UDP(this,portRX,ip);
-    udpRX.setReceiveHandler("udpReceiveHandler");
-    udpRX.log(true);
-    udpRX.listen(true);
-    // Print some useful diagnostics
-    println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
-    println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
-
     // Create GUI data folder and copy sample data if meditation file doesn't exist
     copyGUISampleData();
 
@@ -477,35 +460,6 @@ public void copyGUISampleData(){
 }
 
 //====================== END-OF-SETUP ==========================//
-
-//====================UDP Packet Handler==========================//
-// This function handles the received UDP packet
-// See the documentation for the Java UDP class here:
-// https://ubaa.net/shared/processing/udp/udp_class_udp.htm
-
-String udpReceiveString = null;
-
-void udpReceiveHandler(byte[] data, String ip, int portRX) {
-
-    String udpString = new String(data);
-    println(udpString+" from: "+ip+" and port: "+portRX);
-    if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
-
-        int intValue = Integer.parseInt(udpString.substring(4));
-
-        if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
-            String sendString = "`"+char(intValue+31);
-            println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
-            hub.sendCommand(sendString);
-
-        } else {
-            println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
-        }
-    } else {
-            println("udpReceiveHandler::Warning:invalid UDP marker packet: "+udpString);
-
-    }
-}
 
 //======================== DRAW LOOP =============================//
 
@@ -1347,14 +1301,11 @@ void systemDraw() { //for drawing to the screen
     mouseOutOfBounds(); // to fix
 
     if (midInit) {
-        println("PAINTING LOADING IMAGE TO SCREEN");
-        //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
+        //Draw a gray overlay when the Start Session button is pressed
         pushStyle();
         //imageMode(CENTER);
         fill(124, 100);
         rect(0, 0, width, height);
-        
-        //image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
         popStyle();
 
         pushStyle();

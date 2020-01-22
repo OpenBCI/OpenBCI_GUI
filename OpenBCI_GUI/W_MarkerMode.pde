@@ -9,6 +9,9 @@
 ///////////////////////////////////////////////////,
 
 class W_MarkerMode extends Widget {
+
+    UDP udpRX;
+
     // color boxBG;
     color graphStroke = #d2d2d2;
     color graphBG = #f5f5f5;
@@ -195,6 +198,7 @@ class W_MarkerMode extends Widget {
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
+                    setupUDPMarkerListener();
                 } else {
                     cyton.setBoardMode(BoardMode.DEFAULT);
                     output("Starting to read accelerometer");
@@ -202,6 +206,7 @@ class W_MarkerMode extends Widget {
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
+                    killUDPMarkerListener();
                 }
                 markerModeOn = !markerModeOn;
             } 
@@ -270,4 +275,61 @@ class W_MarkerMode extends Widget {
         // this returns log value between 0 and yMaxMin for a value between 0. and 255.
         return int(log(int(value)+1.0)*yMaxMin/log(yMaxMin+1));
     }
+
+    void setupUDPMarkerListener() {
+        // UDPMarker functionality
+        // Setup the UDP receiver // This needs to be done only when marker mode is enabled
+        int portRX = 51000;  // this is the UDP port the application will be listening on
+        String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
+
+        // Create new object for receiving
+        udpRX=new UDP(this,portRX,ip);
+        udpRX.setReceiveHandler("udpReceiveHandler");
+        udpRX.log(true);
+        udpRX.listen(true);
+        // Print some useful diagnostics
+        println("MarkerMode: Is RX mulitcast: "+udpRX.isMulticast());
+        println("MarkerMode: Has RX joined multicast: "+udpRX.isJoined());
+    }
+
+    void killUDPMarkerListener() {
+        int portRX = 51000;  // this is the UDP port the application will be listening on
+        String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
+
+        // Create new object for receiving
+        udpRX=new UDP(this,portRX,ip);
+        udpRX.log(false);
+        udpRX.listen(false);
+        println("MarkerMode: UDP listener is off.");
+    }
 };
+
+
+//====================UDP Packet Handler==========================//
+// This function handles the received UDP packet
+// See the documentation for the Java UDP class here:
+// https://ubaa.net/shared/processing/udp/udp_class_udp.htm
+
+String udpReceiveString = null;
+
+void udpReceiveHandler(byte[] data, String ip, int portRX) {
+
+    String udpString = new String(data);
+    println(udpString+" from: "+ip+" and port: "+portRX);
+    if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
+
+        int intValue = Integer.parseInt(udpString.substring(4));
+
+        if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
+            String sendString = "`"+char(intValue+31);
+            println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
+            hub.sendCommand(sendString);
+
+        } else {
+            println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
+        }
+    } else {
+            println("udpReceiveHandler::Warning:invalid UDP marker packet: "+udpString);
+
+    }
+}

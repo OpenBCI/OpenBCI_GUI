@@ -4,6 +4,7 @@
 
 # Improvements
 * Add functional spectrogram widget #416
+* Clean up Marker Mode UDP listener #305
 
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
