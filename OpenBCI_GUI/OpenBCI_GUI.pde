@@ -517,18 +517,9 @@ synchronized void draw() {
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
         if (midInit) {
-            if (midInitCheck2) {
-                println("OpenBCI_GUI: Start session. Calling initSystem().");
-                try {
-                    initSystem(); //found in OpenBCI_GUI.pde
-                } catch (Exception e) {
-                    println(e.getMessage());
-                    haltSystem();
-                }
-                midInitCheck2 = false;
-            } else {
-                midInitCheck2 = true;
-            }
+            //If Start Session was clicked, wait 2 draw cycles to show overlay, then init session.
+            //When Init session is started, the screen will seem to hang.
+            systemInitSession();
         }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
@@ -1372,6 +1363,22 @@ void systemDraw() { //for drawing to the screen
         String s = "Attempting to connect...";
         text(s, width/2 - textWidth(s)/2, height/2);
         popStyle();
+    }
+}
+
+//Always Called after systemDraw()
+void systemInitSession() {
+    if (midInitCheck2) {
+        println("OpenBCI_GUI: Start session. Calling initSystem().");
+        try {
+            initSystem(); //found in OpenBCI_GUI.pde
+        } catch (Exception e) {
+            println(e.getMessage());
+            haltSystem();
+        }
+        midInitCheck2 = false;
+    } else {
+        midInitCheck2 = true;
     }
 }
 
