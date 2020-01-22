@@ -76,6 +76,11 @@ class W_MarkerMode extends Widget {
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        //Activate UDP marker listener is the widget is active
+        if (getIsActive() && udpRX == null) {
+            setupUDPMarkerListener();
+        }
+
         localValidLastMarker =  hub.validLastMarker;  // make a local copy so it can be manipulated in SYNTHETIC mode
         hub.validLastMarker = 0;
 
@@ -282,24 +287,20 @@ class W_MarkerMode extends Widget {
         int portRX = 51000;  // this is the UDP port the application will be listening on
         String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
 
-        // Create new object for receiving
-        udpRX=new UDP(this,portRX,ip);
-        udpRX.setReceiveHandler("udpReceiveHandler");
-        udpRX.log(true);
-        udpRX.listen(true);
-        // Print some useful diagnostics
-        println("MarkerMode: Is RX mulitcast: "+udpRX.isMulticast());
-        println("MarkerMode: Has RX joined multicast: "+udpRX.isJoined());
+        if (udpRX == null) {
+            // Create new object for receiving
+            udpRX=new UDP(this,portRX,ip);
+            udpRX.setReceiveHandler("udpReceiveHandler");
+            udpRX.log(true);
+            udpRX.listen(true);
+            // Print some useful diagnostics
+            println("MarkerMode: Is RX mulitcast: "+udpRX.isMulticast());
+            println("MarkerMode: Has RX joined multicast: "+udpRX.isJoined());
+        }
     }
 
     void killUDPMarkerListener() {
-        int portRX = 51000;  // this is the UDP port the application will be listening on
-        String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
-
-        // Create new object for receiving
-        udpRX=new UDP(this,portRX,ip);
-        udpRX.log(false);
-        udpRX.listen(false);
+        udpRX.close();
         println("MarkerMode: UDP listener is off.");
     }
 };
