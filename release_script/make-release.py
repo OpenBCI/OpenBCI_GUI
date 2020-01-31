@@ -294,9 +294,9 @@ flavor = flavors[LOCAL_OS]
 package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
 
 # on window, also build the 32-bit version
-if(LOCAL_OS == WINDOWS):
-    flavor = flavors[WINDOWS32]
+#if(LOCAL_OS == WINDOWS):
+    #flavor = flavors[WINDOWS32]
     # run the 32-bit build (processing-java32)
-    build_app(sketch_dir, True)
+    #build_app(sketch_dir, True)
     #package it up
-    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
+    #package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
