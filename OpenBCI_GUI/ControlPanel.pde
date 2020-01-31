@@ -1689,6 +1689,7 @@ public void initButtonPressed(){
                 println("Static IP address of " + wifi_ipAddress);
             }
             midInit = true;
+            output("Attempting to Start Session...");
             println("initButtonPressed: Calling initSystem() after next draw()");
         }
     } else {
@@ -1852,9 +1853,6 @@ class SerialBox {
             if (ableToConnect(comPort, _regex)) return;
         } //end for loop for all com ports
         
-        //if (!openBCI_portName.equals("N/A")) {
-            output("Attempting to auto-connect...");
-        //}
     } //end attempAutoConnectCyton 
 
     private boolean ableToConnect(String _comPort, String _regex) {
