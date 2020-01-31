@@ -61,7 +61,7 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha";
+String localGUIVersionString = "v4.2.0";
 String localGUIVersionDate = "January 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -75,6 +75,7 @@ final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
 boolean midInit = false;
+boolean midInitCheck2 = false;
 boolean abandonInit = false;
 boolean systemHasHalted = false;
 
@@ -85,9 +86,6 @@ final int NCHAN_GANGLION = 4;
 PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
-
-// ---- Define variables related to OpenBCI_GUI UDPMarker functionality
-UDP udpRX;
 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -409,20 +407,6 @@ void delayedSetup() {
 
     myPresentation = new Presentation();
 
-    // UDPMarker functionality
-    // Setup the UDP receiver // This needs to be done only when marker mode is enabled
-    int portRX = 51000;  // this is the UDP port the application will be listening on
-    String ip = "127.0.0.1";  // Currently only localhost is supported as UDP Marker source
-
-    // Create new object for receiving
-    udpRX=new UDP(this,portRX,ip);
-    udpRX.setReceiveHandler("udpReceiveHandler");
-    udpRX.log(true);
-    udpRX.listen(true);
-    // Print some useful diagnostics
-    println("OpenBCI_GUI::Setup: Is RX mulitcast: "+udpRX.isMulticast());
-    println("OpenBCI_GUI::Setup: Has RX joined multicast: "+udpRX.isJoined());
-
     // Create GUI data folder and copy sample data if meditation file doesn't exist
     copyGUISampleData();
 
@@ -477,35 +461,6 @@ public void copyGUISampleData(){
 
 //====================== END-OF-SETUP ==========================//
 
-//====================UDP Packet Handler==========================//
-// This function handles the received UDP packet
-// See the documentation for the Java UDP class here:
-// https://ubaa.net/shared/processing/udp/udp_class_udp.htm
-
-String udpReceiveString = null;
-
-void udpReceiveHandler(byte[] data, String ip, int portRX) {
-
-    String udpString = new String(data);
-    println(udpString+" from: "+ip+" and port: "+portRX);
-    if (udpString.length() >=5  && udpString.indexOf("MARK") >= 0) {
-
-        int intValue = Integer.parseInt(udpString.substring(4));
-
-        if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
-            String sendString = "`"+char(intValue+31);
-            println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
-            hub.sendCommand(sendString);
-
-        } else {
-            println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
-        }
-    } else {
-            println("udpReceiveHandler::Warning:invalid UDP marker packet: "+udpString);
-
-    }
-}
-
 //======================== DRAW LOOP =============================//
 
 synchronized void draw() {
@@ -515,6 +470,11 @@ synchronized void draw() {
         drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
+        if (midInit) {
+            //If Start Session was clicked, wait 2 draw cycles to show overlay, then init session.
+            //When Init session is started, the screen will seem to hang.
+            systemInitSession();
+        }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
             settings.introAnimationInit = millis();
@@ -1315,12 +1275,6 @@ void systemDraw() { //for drawing to the screen
         if (!attemptingToConnect) {
             output("Attempting to establish a connection with your OpenBCI Board...");
             attemptingToConnect = true;
-        } else {
-            //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
-            pushStyle();
-            imageMode(CENTER);
-            image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
-            popStyle();
         }
 
         if (millis() - timeOfInit > settings.initTimeoutThreshold) {
@@ -1345,6 +1299,26 @@ void systemDraw() { //for drawing to the screen
 
     buttonHelpText.draw();
     mouseOutOfBounds(); // to fix
+
+    if (midInit) {
+        drawOverlay();
+    }
+}
+
+//Always Called after systemDraw()
+void systemInitSession() {
+    if (midInitCheck2) {
+        println("OpenBCI_GUI: Start session. Calling initSystem().");
+        try {
+            initSystem(); //found in OpenBCI_GUI.pde
+        } catch (Exception e) {
+            println(e.getMessage());
+            haltSystem();
+        }
+        midInitCheck2 = false;
+    } else {
+        midInitCheck2 = true;
+    }
 }
 
 void introAnimation() {
@@ -1406,6 +1380,25 @@ void drawStartupError() {
 void openConsole()
 {
     ConsoleWindow.display();
+}
+
+void drawOverlay() {
+    //Draw a gray overlay when the Start Session button is pressed
+    pushStyle();
+    //imageMode(CENTER);
+    fill(124, 142);
+    rect(0, 0, width, height);
+    popStyle();
+
+    pushStyle();
+    textFont(p0, 24);
+    fill(boxColor, 255);
+    stroke(bgColor, 200);
+    rect(width/2 - 240/2, height/2 - 80/2, 240, 80);
+    fill(bgColor, 255);
+    String s = "Starting Session...";
+    text(s, width/2 - textWidth(s)/2, height/2 + 8);
+    popStyle();
 }
 
 //CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
