@@ -1670,6 +1670,8 @@ public void initButtonPressed(){
                     cyton.closePort();
                 }
                 sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
+                controlPanel.serialBox.autoConnect.setIgnoreHover(false); //reset the auto-connect button
+                controlPanel.serialBox.autoConnect.setColorNotPressed(255);
             } else if(eegDataSource == DATASOURCE_GANGLION){
                 verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
                 if (ganglion.isPortOpen()) {
@@ -1850,9 +1852,9 @@ class SerialBox {
             if (ableToConnect(comPort, _regex)) return;
         } //end for loop for all com ports
         
-        if (!openBCI_portName.equals("N/A")) {
-            outputError("Unable to auto-connect...");
-        }
+        //if (!openBCI_portName.equals("N/A")) {
+            output("Attempting to auto-connect...");
+        //}
     } //end attempAutoConnectCyton 
 
     private boolean ableToConnect(String _comPort, String _regex) {

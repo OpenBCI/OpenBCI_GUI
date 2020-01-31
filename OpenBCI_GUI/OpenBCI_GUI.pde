@@ -61,7 +61,7 @@ import com.sun.jna.Pointer;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha.2";
+String localGUIVersionString = "v4.2.0";
 String localGUIVersionDate = "January 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -1301,19 +1301,7 @@ void systemDraw() { //for drawing to the screen
     mouseOutOfBounds(); // to fix
 
     if (midInit) {
-        //Draw a gray overlay when the Start Session button is pressed
-        pushStyle();
-        //imageMode(CENTER);
-        fill(124, 100);
-        rect(0, 0, width, height);
-        popStyle();
-
-        pushStyle();
-        textFont(p0, 24);
-        fill(242, 255);
-        String s = "Starting Session...";
-        text(s, width/2 - textWidth(s)/2, height/2);
-        popStyle();
+        drawOverlay();
     }
 }
 
@@ -1392,6 +1380,25 @@ void drawStartupError() {
 void openConsole()
 {
     ConsoleWindow.display();
+}
+
+void drawOverlay() {
+    //Draw a gray overlay when the Start Session button is pressed
+    pushStyle();
+    //imageMode(CENTER);
+    fill(124, 142);
+    rect(0, 0, width, height);
+    popStyle();
+
+    pushStyle();
+    textFont(p0, 24);
+    fill(boxColor, 255);
+    stroke(bgColor, 200);
+    rect(width/2 - 240/2, height/2 - 80/2, 240, 80);
+    fill(bgColor, 255);
+    String s = "Starting Session...";
+    text(s, width/2 - textWidth(s)/2, height/2 + 8);
+    popStyle();
 }
 
 //CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
