@@ -1,4 +1,5 @@
 # v4.2.0
+Please use OpenBCIHub v2.1.0 and Processing 4.
 
 # Improvements
 * Update to Processing 4 and Java 11! #671
