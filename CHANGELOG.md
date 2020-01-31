@@ -1,11 +1,9 @@
-# v5.0.0
-
-# Alpha
+# v4.2.0
 
 # Improvements
 * Add functional spectrogram widget #416
 * Clean up Marker Mode UDP listener #305
-* Display "Starting Session" overlay after button is clicked #628
+* Display "Starting Session" overlay when Start Session button is clicked #628
 
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.
