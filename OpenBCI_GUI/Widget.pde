@@ -17,7 +17,6 @@ class Widget{
 
     int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
-    boolean isActive = false;
     boolean dropdownsShouldBeClosed = false;
     boolean dropdownIsActive = false;
     boolean widgetSelectorIsActive = false;
@@ -27,6 +26,7 @@ class Widget{
     String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
     private final float widgetDropdownScaling = .35;
+    private boolean isWidgetActive = false;
 
     //some variables for the dropdowns
     int navH = 22;
@@ -42,6 +42,14 @@ class Widget{
         currentContainer = 5; //central container by default
         mapToCurrentContainer();
 
+    }
+
+    boolean getIsActive() {
+        return isWidgetActive;
+    }
+
+    void setIsActive(boolean isActive) {
+        isWidgetActive = isActive;
     }
 
     void update(){
@@ -334,7 +342,7 @@ class Widget{
     }
 
     boolean isMouseHere(){
-        if(isActive){
+        if(getIsActive()){
             if(mouseX >= x0 && mouseX <= x0 + w0 && mouseY >= y0 && mouseY <= y0 + h0){
                 println("Your cursor is in " + widgetTitle);
                 return true;
@@ -419,7 +427,7 @@ void closeAllDropdowns(){
 void WidgetSelector(int n){
     println("New widget [" + n + "] selected for container...");
     //find out if the widget you selected is already active
-    boolean isSelectedWidgetActive = wm.widgets.get(n).isActive;
+    boolean isSelectedWidgetActive = wm.widgets.get(n).getIsActive();
 
     //find out which widget & container you are currently in...
     int theContainer = -1;
@@ -429,12 +437,12 @@ void WidgetSelector(int n){
             if(isSelectedWidgetActive){ //if the selected widget was already active
                 wm.widgets.get(i).setContainer(wm.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
             } else{
-                wm.widgets.get(i).isActive = false;   //deactivate the current widget (if it is different than the one selected)
+                wm.widgets.get(i).setIsActive(false);   //deactivate the current widget (if it is different than the one selected)
             }
         }
     }
 
-    wm.widgets.get(n).isActive = true;//activate the new widget
+    wm.widgets.get(n).setIsActive(true);//activate the new widget
     wm.widgets.get(n).setContainer(theContainer);//map it to the current container
     //set the text of the widgetSelector to the newly selected widget
 
@@ -451,7 +459,7 @@ class ChannelSelect {
 
     //----------CHANNEL SELECT INFRASTRUCTURE
     private int x, y, w, navH;
-    private float tri_xpos = 0;
+    public float tri_xpos = 0;
     private float chanSelectXPos = 0;
     public ControlP5 cp5_channelCheckboxes;   //ControlP5 to contain our checkboxes
     public CheckBox checkList;
@@ -460,6 +468,8 @@ class ChannelSelect {
     private boolean channelSelectPressed;
     public List<Integer> activeChan;
     public String chanDropdownName;
+    private boolean showChannelText = true;
+    private boolean wasOpen = false;
 
     ChannelSelect(PApplet _parent, int _x, int _y, int _w, int _navH, String checkBoxName) {
         x = _x;
@@ -498,25 +508,46 @@ class ChannelSelect {
 
     void draw() {
 
-        //change "Channels" text color and triangle color on hover
-        if (channelSelectHover) {
-            fill(openbciBlue);
-        } else {
-            fill(0);
-        }
-        textFont(p5, 12);
-        chanSelectXPos = x + 2;
-        text("Channels", chanSelectXPos, y - 6);
-        tri_xpos = x + textWidth("Channels") + 7;
+        if (showChannelText) {
+            //change "Channels" text color and triangle color on hover
+            if (channelSelectHover) {
+                fill(openbciBlue);
+            } else {
+                fill(0);
+            }
+            textFont(p5, 12);
+            chanSelectXPos = x + 2;
+            text("Channels", chanSelectXPos, y - 6);
+            tri_xpos = x + textWidth("Channels") + 7;
 
-        //draw triangle as pointing up or down, depending on if channel Select is active or closed
-        if (!channelSelectPressed) {
-            triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
-        } else {
-            triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
-            //if active, draw a grey background for the channel select checkboxes
-            fill(180);
-            rect(x,y,w,navH);
+            //draw triangle as pointing up or down, depending on if channel Select is active or closed
+            if (!channelSelectPressed) {
+                triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
+            } else {
+                triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
+                //if active, draw a grey background for the channel select checkboxes
+                fill(180);
+                rect(x,y,w,navH);
+            }
+        } else { //This is the case in Spectrogram where we need a second channel selector
+            //check for state change
+            if (channelSelectPressed != wasOpen) {
+                wasOpen = channelSelectPressed;
+                if (channelSelectPressed) {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
+            }
+            //this draws extra grey space behind the checklist buttons
+            if (channelSelectPressed) {
+                fill(180);
+                rect(x,y,w,navH);
+            }
         }
 
         cp5_channelCheckboxes.draw();
@@ -528,7 +559,7 @@ class ChannelSelect {
     }
 
     void mousePressed(boolean dropdownIsActive) {
-        if (!dropdownIsActive) {
+        if (!dropdownIsActive && showChannelText) {
             if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
                 channelSelectPressed = !channelSelectPressed;
                 if (channelSelectPressed) {
@@ -581,5 +612,17 @@ class ChannelSelect {
         cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
         //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
         cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+    }
+
+    void showChannelText() {
+        showChannelText = true;
+    }
+
+    void hideChannelText() {
+        showChannelText = false;
+    }
+
+    void setIsVisible(boolean b) {
+        channelSelectPressed = b;
     }
 } //end of ChannelSelect class
