@@ -221,7 +221,12 @@ void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, Da
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
                 val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
             } else if (Ichan==6) {
-                //60 Hz interference at 20 uVrms
+                //50 Hz interference at 80 uVrms
+                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //50 Hz
+                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
+                val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //80 uVrms
+            } else if (Ichan==7) {
+                //60 Hz interference at 100 uVrms
                 sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //60 Hz
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
                 val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
