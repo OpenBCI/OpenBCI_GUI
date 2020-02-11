@@ -1,9 +1,11 @@
-# v5.0.0
-
-# Alpha
+# v4.2.0
+Please use OpenBCIHub v2.1.0 and Processing 4.
 
 # Improvements
-* Add functional spectrogram widget #416
+* Update to Processing 4 and Java 11! #671
+* Add functional Spectrogram Widget! #416
+* Clean up Marker Mode UDP listener #305
+* Display "Starting Session" overlay when Start Session button is clicked #628
 
 # v4.1.7
 Use OpenBCIHub v2.1.0 please.

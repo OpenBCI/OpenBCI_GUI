@@ -440,6 +440,13 @@ class TopNav {
 
     //Load data from the latest release page from Github and the info.plist file
     void loadGUIVersionData() {
+        //Copy the local GUI version from OpenBCI_GUI.pde
+        String localVersionString = localGUIVersionString;
+        localVersionString = removeV(localVersionString);
+        localVersionString = removeAlphaBeta(localVersionString);
+        int[] localVersionCompareArray = int(split(localVersionString, '.'));
+        localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
+        
         try {
             Process process = java.lang.Runtime.getRuntime().exec("ping -c 1 www.github.com"); 
             internetIsConnected = (process.waitFor() == 0) ? true : false;
@@ -459,20 +466,14 @@ class TopNav {
             webTitle = giveMeTextBetween(html, start, end);
             version = split(webTitle, '·'); //split the string in the html title
             String[] webVersionNumberArray = split(version[0], ' ');
-
+            
             webGUIVersionString = removeV(webVersionNumberArray[1]);
             webGUIVersionString = removeAlphaBeta(webGUIVersionString);
 
-            //Copy the local GUI version from OpenBCI_GUI.pde
-            String localVersionString = localGUIVersionString;
-            localVersionString = removeV(localVersionString);
-            localVersionString = removeAlphaBeta(localVersionString);
-
             ///////Perform Comparison (000-1000 format)
             int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
-            int[] localVersionCompareArray = int(split(localVersionString, '.'));
             webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
-            localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
+            
             println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
             if (localGUIVersionInt < webGUIVersionInt) {
                 guiVersionIsUpToDate = false;
@@ -483,6 +484,7 @@ class TopNav {
             }
         } else {
             println("TopNav: Internet Connection Not Available");
+            println("Local GUI Version: " + localGUIVersionInt);
         }
     }
 
