@@ -109,6 +109,10 @@ boolean print_bytes(RadioConfigBox rc){
         rcStringReceived = board_message.toString();
         if(rcStringReceived.equals("Failure: System is Down")) {
             rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN.";
+        } else if (rcStringReceived.equals("Success: System is Up")) {
+            rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
+        } else if (rcStringReceived.startsWith("Success: Host override")) {
+            rcStringReceived = "Please press AUTOSCAN one more time.";
         }
         rc.print_onscreen(rcStringReceived);
         return true;
@@ -188,6 +192,7 @@ void system_status(RadioConfigBox rcConfig){
         } else {
             String[] s = split(rcStringReceived, ':');
             if (s[0].equals("Success")) {
+                print_bytes(rcConfig);
                 outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
             } else {
                 outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
