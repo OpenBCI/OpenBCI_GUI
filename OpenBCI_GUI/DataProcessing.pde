@@ -73,13 +73,26 @@ int getDataIfAvailable(int pointCounter) {
             pointCounter++; //increment counter for "little buffer"
         }
 
-    } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
         while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan];
+            }
+            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+            pointCounter++; //increment counter for "little buffer"
+        }
+
+    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+
+        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+            
+            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+                //scale the data into engineering units ("microvolts") and save to the "little buffer"
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * BoardCytonConstants.scale_fac_uVolts_per_count;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
             pointCounter++; //increment counter for "little buffer"

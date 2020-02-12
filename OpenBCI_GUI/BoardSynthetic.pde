@@ -110,14 +110,15 @@ class BoardSynthetic extends Board {
         // empty
     }
 
+    //Synthesize Time Series Data to Test GUI Functionality
     void synthesizeData() {
         float val_uV;
         for (int Ichan=0; Ichan < nchan; Ichan++) {
             if (isChannelActive(Ichan)) {
                 val_uV = randomGaussian()*sqrt(getSampleRate()/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-                if (Ichan==0) val_uV*= 10f;  //scale one channel higher
-
-                if (Ichan==1) {
+                if (Ichan==0) {
+                    val_uV*= 10f;  //scale one channel higher
+                } else if (Ichan==1) {
                     //add sine wave at 10 Hz at 10 uVrms
                     sine_phase_rad[Ichan] += 2.0f*PI * sine_freq_Hz / getSampleRate();
                     if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
@@ -143,10 +144,15 @@ class BoardSynthetic extends Board {
                     if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
                     val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
                 } else if (Ichan==6) {
-                    //60 Hz interference at 20 uVrms
+                    //50 Hz interference at 60 uVrms
+                    sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / getSampleRate();  //50 Hz
+                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
+                    val_uV += 60.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //60 uVrms
+                } else if (Ichan==7) {
+                    //60 Hz interference at 120 uVrms
                     sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / getSampleRate();  //60 Hz
                     if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
+                    val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //120 uVrms
                 }
             } else {
                 val_uV = 0.0f;

@@ -433,16 +433,15 @@ class W_Spectrogram extends Widget {
             time = LocalTime.now();
         } else {
             try {
-                String timeFromPlayback;
-                if (!getCurrentTimeStamp().equals("notFound")) {
+                if (getCurrentTimeStamp().equals("TimeNotFound")) {
+                    time = LocalTime.now();
+                } else {
                     long t = new Long(getCurrentTimeStamp());
                     Date d =  new Date(t);
-                    timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
+                    String timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
                     time = LocalTime.parse(timeFromPlayback);
-                } else {
-                    time = LocalTime.now();
                 }
-            } catch (NullPointerException e) {
+            } catch (NullPointerException | NumberFormatException e) {
                 println("Spectrogram: Timestamp error...");
                 e.printStackTrace();
                 time = LocalTime.now();
