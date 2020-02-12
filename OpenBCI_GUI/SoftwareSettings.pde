@@ -403,6 +403,7 @@ class SoftwareSettings {
             this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
         } catch (Exception e) {
             println("InitSettings: Error trying to save settings");
+            //e.printStackTrace();
         }
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
@@ -517,16 +518,22 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
-        saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
-        saveGlobalSettings.setBoolean("Analog Mode", currentBoard.isAnalogActive());
-        saveGlobalSettings.setBoolean("Digital Mode", currentBoard.isDigitalActive());
-        saveGlobalSettings.setBoolean("Marker Mode", currentBoard.isMarkerActive());
-        saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
-        saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
-        saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
-        saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
-        saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
-        saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
+        if (eegDataSource == DATASOURCE_CYTON) {
+            saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
+            saveGlobalSettings.setBoolean("Analog Mode", currentBoard.isAnalogActive());
+            saveGlobalSettings.setBoolean("Digital Mode", currentBoard.isDigitalActive());
+            saveGlobalSettings.setBoolean("Marker Mode", currentBoard.isMarkerActive());
+            saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
+            saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
+            saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
+            saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
+            saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
+            saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
+        } else {
+            saveGlobalSettings.setBoolean("Accelerometer Mode", true);
+        }
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
 
         /////Setup JSON Object for gui version and settings Version
@@ -767,12 +774,18 @@ class SoftwareSettings {
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
         loadFramerate = loadGlobalSettings.getInt("Framerate");
         Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
+        //Always load the accelerometer boolean, it's set to True for playback and synthetic mode, for now...
         Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
-        Boolean loadAnalog = loadGlobalSettings.getBoolean("Analog Mode");
-        Boolean loadDigital = loadGlobalSettings.getBoolean("Digital Mode");
-        Boolean loadMarker = loadGlobalSettings.getBoolean("Marker Mode");
-        loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
-        loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
+        Boolean loadAnalog = false;
+        Boolean loadDigital = false; 
+        Boolean loadMarker = false;
+        if (eegDataSource == DATASOURCE_CYTON) {
+            loadAnalog = loadGlobalSettings.getBoolean("Analog Mode");
+            loadDigital = loadGlobalSettings.getBoolean("Digital Mode");
+            loadMarker = loadGlobalSettings.getBoolean("Marker Mode");
+            loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
+            loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
+        }
         //Store loaded layout to current layout variable
         currentLayout = loadLayoutSetting;
         //Load more global settings after this line, if needed
@@ -1081,33 +1094,38 @@ class SoftwareSettings {
             println("Headplot is active: Redrawing");
         }
 
-        currentBoard.setAccelerometerActive(loadAccelerometer);
-        currentBoard.setAnalogActive(loadAnalog);
-        currentBoard.setDigitalActive(loadDigital);
-        currentBoard.setMarkerActive(loadMarker);
-
-        // TODO[brainflow] : this stuff should really be refactored. It's duplicated
-        w_analogRead.analogReadOn = loadAnalog;
-        w_pulsesensor.analogReadOn = loadAnalog;
-        w_digitalRead.digitalReadOn = loadDigital;
-        w_markermode.markerModeOn = loadMarker;
-
-        if(loadAccelerometer) {
-            output("Starting to read accelerometer");
-        } else if (loadAnalog) {
-            if (selectedProtocol == BoardProtocol.WIFI) {
-                output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
-            } else {
-                output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+        ///////TODO: CLEANUP THIS SECTION, IF POSSIBLE
+        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
+            currentBoard.setAccelerometerActive(loadAccelerometer);
+            if(loadAccelerometer) {
+                output("Starting to read accelerometer");
             }
-        } else if (loadDigital) {
-            if (selectedProtocol == BoardProtocol.WIFI) {
-                output("Starting to read digital inputs on pin marked D11, D12 and D17");
-            } else {
-                output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
+        } else if (eegDataSource == DATASOURCE_CYTON) {
+            currentBoard.setAnalogActive(loadAnalog);
+            currentBoard.setDigitalActive(loadDigital);
+            currentBoard.setMarkerActive(loadMarker);
+
+            // TODO[brainflow] : this stuff should really be refactored. It's duplicated
+            w_analogRead.analogReadOn = loadAnalog;
+            w_pulsesensor.analogReadOn = loadAnalog;
+            w_digitalRead.digitalReadOn = loadDigital;
+            w_markermode.markerModeOn = loadMarker;
+
+            if (loadAnalog) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
+                    output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
+                } else {
+                    output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+                }
+            } else if (loadDigital) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
+                    output("Starting to read digital inputs on pin marked D11, D12 and D17");
+                } else {
+                    output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
+                }
+            } else if (loadMarker) {
+                output("Starting to read markers");
             }
-        } else if (loadMarker) {
-            output("Starting to read markers");
         }
 
     } //end of loadGUISettings

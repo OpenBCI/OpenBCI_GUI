@@ -807,6 +807,8 @@ void initSystem() throws Exception {
         controlPanel.open();
         systemMode = SYSTEMMODE_PREINIT; // leave this here
     }
+
+    midInit = false;
 } //end initSystem
 
 /**
@@ -987,19 +989,22 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-        // TODO[brainflow] : this really shouldn't be here
-        if(currentBoard.isConnected()) {
-            w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
-            w_pulsesensor.analogReadOn = false;
 
-            w_analogRead.analogModeButton.setString("Turn Analog Read On");
-            w_analogRead.analogReadOn = false;
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_CYTON) {
+            // TODO[brainflow] : this really shouldn't be here
+            if(currentBoard.isConnected()) {
+                w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
+                w_pulsesensor.analogReadOn = false;
 
-            w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
-            w_digitalRead.digitalReadOn = false;
+                w_analogRead.analogModeButton.setString("Turn Analog Read On");
+                w_analogRead.analogReadOn = false;
 
-            w_markermode.markerModeButton.setString("Turn Marker On");
-            w_markermode.markerModeOn = false;
+                w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
+                w_digitalRead.digitalReadOn = false;
+
+                w_markermode.markerModeButton.setString("Turn Marker On");
+                w_markermode.markerModeOn = false;
+            }
         }
 
         //reset variables for data processing
@@ -1283,6 +1288,7 @@ void systemInitSession() {
             haltSystem();
         }
         midInitCheck2 = false;
+        midInit = false;
     } else {
         midInitCheck2 = true;
     }
