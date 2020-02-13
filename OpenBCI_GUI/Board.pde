@@ -36,23 +36,31 @@ abstract class Board {
 
     public boolean isAccelerometerAvailable() { return false; }
 
-    public void setAccelerometerActive(boolean active) { }
+    public void setAccelerometerActive(boolean active) {
+        outputWarn("setAccelerometerActive is not implemented for this board.");
+    }
 
     public boolean isAnalogActive() { return false; }
 
     public boolean isAnalogAvailable() { return false; }
 
-    public void setAnalogActive(boolean active) { }
+    public void setAnalogActive(boolean active) {
+        outputWarn("setAnalogActive is not implemented for this board.");
+    }
 
     public boolean isDigitalActive() { return false; }
 
     public boolean isDigitalAvailable() { return false; }
 
-    public void setDigitalActive(boolean active) { }
+    public void setDigitalActive(boolean active) {
+        outputWarn("setDigitalActive is not implemented for this board.");
+    }
 
     public boolean isMarkerActive() { return false; }
 
     public boolean isMarkerAvailable() { return false; }
 
-    public void setMarkerActive(boolean active) { }
+    public void setMarkerActive(boolean active) {
+        outputWarn("setMarkerActive is not implemented for this board.");
+    }
 };

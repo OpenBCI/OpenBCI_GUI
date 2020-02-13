@@ -8,35 +8,20 @@ class BoardNovaXR extends BoardBrainFlow {
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-    private String ipAddress = "";
-
-    public BoardNovaXR(String ip) {
+    public BoardNovaXR() {
         super();
-        ipAddress = ip;
     }
 
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.ip_address = ipAddress;
-        params.ip_protocol = IpProtocolType.UDP.get_code();
         return params;
     }
 
     @Override
     public BoardIds getBoardId() {
         return BoardIds.NOVAXR_BOARD;
-    }
-
-    @Override
-    protected int[] getDataChannels() throws BrainFlowError{
-        int[] eegChannels = BoardShim.get_eeg_channels(getBoardIdInt());
-        int[] emgChannels = BoardShim.get_emg_channels(getBoardIdInt());
-
-        // datachannels is set to eeg in the base class. we're overriding it here because we want to
-        // display emg data in the time series for NovaXR
-        return ArrayUtils.addAll(eegChannels, emgChannels);
     }
 
     @Override
@@ -51,12 +36,12 @@ class BoardNovaXR extends BoardBrainFlow {
 
     @Override
     public boolean isAccelerometerActive() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean isAccelerometerAvailable() {
-        return true;
+        return false;
     }
 
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
