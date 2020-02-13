@@ -26,9 +26,13 @@ float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster p
 void process_input_file() throws Exception {
     index_of_times = new HashMap<Integer, String>();
     indices = 0;
+    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    if (currentBoard instanceof BoardBrainFlow) {
+        scaler = 1;
+    }
     try {
         while (!hasRepeated) {
-            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, BoardCytonConstants.scale_fac_uVolts_per_count, BoardCytonConstants.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
+            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
             if (curTimestamp != null) {
                 index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
             } else {
@@ -48,6 +52,10 @@ void process_input_file() throws Exception {
 
 /*************************/
 int getDataIfAvailable(int pointCounter) {
+    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    if (currentBoard instanceof BoardBrainFlow) {
+        scaler = 1;
+    }
 
     if (eegDataSource == DATASOURCE_CYTON) {
         //get data from serial port as it streams in
@@ -56,7 +64,7 @@ int getDataIfAvailable(int pointCounter) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * BoardCytonConstants.scale_fac_uVolts_per_count;
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
             pointCounter++; //increment counter for "little buffer"
@@ -92,7 +100,7 @@ int getDataIfAvailable(int pointCounter) {
             
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * BoardCytonConstants.scale_fac_uVolts_per_count;
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
             pointCounter++; //increment counter for "little buffer"
@@ -115,7 +123,7 @@ int getDataIfAvailable(int pointCounter) {
                 dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
                 switch (eegDataSource) {
                 case DATASOURCE_PLAYBACKFILE:
-                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, BoardCytonConstants.scale_fac_uVolts_per_count, BoardCytonConstants.scale_fac_uVolts_per_count, dataPacketBuff[lastReadDataPacketInd]);
+                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
                     break;
                 default:
                     //no action
@@ -123,7 +131,7 @@ int getDataIfAvailable(int pointCounter) {
                 //gather the data into the "little buffer"
                 for (int Ichan=0; Ichan < nchan; Ichan++) {
                     //scale the data into engineering units..."microvolts"
-                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* BoardCytonConstants.scale_fac_uVolts_per_count;
+                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* scaler;
                 }
 
                 pointCounter++;
@@ -136,7 +144,6 @@ int getDataIfAvailable(int pointCounter) {
 RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
 void processNewData() {
-
     //compute instantaneous byte rate
     float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
 

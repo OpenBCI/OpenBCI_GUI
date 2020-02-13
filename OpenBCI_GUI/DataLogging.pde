@@ -1487,6 +1487,14 @@ void convert16channelLine() {
         println("convert16channelLine: " + consoleMsg);
         return;
     }
+
+    // for brainflow we dont need to apply gain but for non-brainflow boards we need and it can not be 
+    // patched gracefully without major changes, sorry for this code
+    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    if (currentBoard instanceof BoardBrainFlow) {
+        scaler = 1;
+    }
+
     for (int i=0; i<hexNums.length; i++) {
         h = hexNums[i];
         if (i > 0) {
@@ -1511,9 +1519,9 @@ void convert16channelLine() {
         }
 
         if (i>=1 && i<=16) {
-            floatData[i] *= BoardCytonConstants.scale_fac_uVolts_per_count;
+            floatData[i] *= scaler;
         }else if(i != 0){
-            floatData[i] *= BoardCytonConstants.scale_fac_uVolts_per_count;
+            floatData[i] *= scaler;
         }
 
         if(i == 0){
