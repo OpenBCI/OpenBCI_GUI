@@ -441,7 +441,11 @@ class W_Spectrogram extends Widget {
                     String timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
                     time = LocalTime.parse(timeFromPlayback);
                 }
-            } catch (NullPointerException | NumberFormatException e) {
+            } catch (NullPointerException e) {
+                println("Spectrogram: Timestamp error...");
+                e.printStackTrace();
+                time = LocalTime.now();
+            } catch (NumberFormatException e) {
                 println("Spectrogram: Timestamp error...");
                 e.printStackTrace();
                 time = LocalTime.now();

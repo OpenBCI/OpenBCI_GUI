@@ -128,6 +128,8 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
 
+// TODO remove, unused (I dont know how box should look like cause we have no inputs for it, so keep for now for ui only)
+// and I dont brave enough to touch code in ControlPanel.pde
 String novaXR_ipAddress = "192.168.4.1";
 
 final static String PROTOCOL_BLE = "ble";
@@ -715,7 +717,7 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_ipAddress);
+            currentBoard = new BoardNovaXR();
             //TODO[brainflow]
             //currentBoard = new BoardBrainFlowSynthetic();
             break;

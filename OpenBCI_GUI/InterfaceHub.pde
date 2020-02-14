@@ -710,12 +710,16 @@ class Hub {
                     curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
                     copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
+                    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+                    if (currentBoard instanceof BoardBrainFlow) {
+                        scaler = 1;
+                    }
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
                             if (eegDataSource == DATASOURCE_GANGLION) {
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
-                                    ganglion.get_scale_fac_uVolts_per_count(),
+                                    scaler,
                                     ganglion.get_scale_fac_accel_G_per_count(),
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
@@ -723,8 +727,8 @@ class Hub {
                             } else {
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
-                                    BoardCytonConstants.scale_fac_uVolts_per_count,
-                                    BoardCytonConstants.scale_fac_uVolts_per_count,
+                                    scaler,
+                                    scaler,
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
                                 );

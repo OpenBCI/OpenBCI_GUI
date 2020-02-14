@@ -1,4 +1,5 @@
 import brainflow.*;
+import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow extends Board {
@@ -21,11 +22,53 @@ abstract class BoardBrainFlow extends Board {
     abstract public BoardIds getBoardId();
 
     protected BoardBrainFlow() {
-        // nothing
     }
 
-    protected int[] getDataChannels() throws BrainFlowError{
-        return BoardShim.get_eeg_channels(getBoardIdInt());
+    protected int[] getEXGChannels() throws BrainFlowError{
+        int[] channels;
+        // for some boards there can be duplicates
+        SortedSet<Integer> set = new TreeSet<Integer>();
+        // maybe it will be nice to add method like get_exg_channels to brainflow to avoid this ugly code?
+        // but I doubt that smth else will need it and in python I know how to implement it better using existing API
+        try {
+            channels = BoardShim.get_eeg_channels(getBoardIdInt());
+            for(int i = 0; i < channels.length; i++) {
+                set.add(channels[i]);
+            }
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get eeg channels from BoardShim");
+        }
+        try {
+            channels = BoardShim.get_emg_channels(getBoardIdInt());
+            for(int i = 0; i < channels.length; i++) {
+                set.add(channels[i]);
+            }
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get emg channels from BoardShim");
+        }
+        try {
+            channels = BoardShim.get_ecg_channels(getBoardIdInt());
+            for(int i = 0; i < channels.length; i++) {
+                set.add(channels[i]);
+            }
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get ecg channels from BoardShim");
+        }
+        try {
+            channels = BoardShim.get_eog_channels(getBoardIdInt());
+            for(int i = 0; i < channels.length; i++) {
+                set.add(channels[i]);
+            }
+        } catch (BrainFlowError e) {
+            println("WARNING: failed to get eog channels from BoardShim");
+        }
+        Integer[] toArray = set.toArray(new Integer[set.size()]);
+        int[] primitives = new int[toArray.length];
+        for (int i = 0; i < toArray.length; i++) {
+            primitives[i] = toArray[i].intValue();
+        }
+
+        return primitives;
     }
 
     @Override
@@ -33,7 +76,7 @@ abstract class BoardBrainFlow extends Board {
         try {
             samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
-            dataChannels = getDataChannels();
+            dataChannels = getEXGChannels();
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
@@ -48,6 +91,14 @@ abstract class BoardBrainFlow extends Board {
             updateToNChan(getNumChannels());
 
             boardShim = new BoardShim (getBoardIdInt(), getParams());
+            // for some reason logger configuration doesnt work in contructor or static initializer block
+            // and it looks like smth processing specific
+            try {
+                BoardShim.enable_dev_board_logger();
+                BoardShim.set_log_file("brainflow_log.txt");
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
             boardShim.prepare_session();
             return true; 
 
@@ -164,7 +215,15 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public boolean isConnected() {
-        return boardShim != null;
+        boolean res = false;
+        if (boardShim != null) {
+            try {
+                res = boardShim.is_prepared();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return res;
     }
 
     @Override
