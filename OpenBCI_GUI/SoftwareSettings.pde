@@ -744,7 +744,7 @@ class SoftwareSettings {
         //Load all saved User Settings from a JSON file if it exists
         loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
-        if (isVerbose) println(loadSettingsJSONData.toString());
+        verbosePrint(loadSettingsJSONData.toString());
 
         //Check the number of channels saved to json first!
         JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
