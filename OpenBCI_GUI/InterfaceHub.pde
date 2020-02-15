@@ -717,6 +717,8 @@ class Hub {
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
                             if (eegDataSource == DATASOURCE_GANGLION) {
+                                //DEPRECATED
+                                /*
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
                                     scaler,
@@ -724,7 +726,9 @@ class Hub {
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
                                 );
+                                */
                             } else {
+                                /*
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
                                     scaler,
@@ -732,6 +736,7 @@ class Hub {
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
                                 );
+                                */
                             }
                             break;
                         case OUTPUT_SOURCE_BDF:
