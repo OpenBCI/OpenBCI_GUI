@@ -744,6 +744,8 @@ class SoftwareSettings {
         //Load all saved User Settings from a JSON file if it exists
         loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
+        if (isVerbose) println(loadSettingsJSONData.toString());
+
         //Check the number of channels saved to json first!
         JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
         numChanloaded = loadDataSettings.getInt("Channels");
@@ -790,26 +792,6 @@ class SoftwareSettings {
         currentLayout = loadLayoutSetting;
         //Load more global settings after this line, if needed
 
-        //Create a string array to print global settings to console
-        String[] loadedGlobalSettings = {
-            "Using Layout Number: " + loadLayoutSetting,
-            "Default Notch: " + loadNotchSetting, //default notch
-            "Default BP: " + loadBandpassSetting, //default bp
-            "Default Framerate: " + loadFramerate, //default framerate
-            "Expert Mode: " + loadExpertModeToggle,
-            "TS Vert Scale: " + loadTimeSeriesVertScale,
-            "TS Horiz Scale: " + loadTimeSeriesHorizScale,
-            "Analog Vert Scale: " + loadAnalogReadVertScale,
-            "Analog Horiz Scale: " + loadAnalogReadHorizScale,
-            "Accelerometer: " + loadAccelerometer,
-            "Analog: " + loadAnalog,
-            "Digital: " + loadDigital,
-            "Marker: " + loadMarker,
-            //Add new global settings above this line to print to console
-            };
-        //Print the global settings that have been loaded to the console
-        //printArray(loadedGlobalSettings);
-
         //get the FFT settings
         JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
         fftMaxFrqLoad = loadFFTSettings.getInt("FFT_Max Freq");
@@ -818,25 +800,10 @@ class SoftwareSettings {
         fftSmoothingLoad = loadFFTSettings.getInt("FFT_Smoothing");
         fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
 
-        //Create a string array to print to console
-        String[] loadedFFTSettings = {
-            "FFT_Max Frequency: " + fftMaxFrqLoad,
-            "FFT_Max uV: " + fftMaxuVLoad,
-            "FFT_Log/Lin: " + fftLogLinLoad,
-            "FFT_Smoothing: " + fftSmoothingLoad,
-            "FFT_Filter: " + fftFilterLoad
-            };
-        //Print the FFT settings that have been loaded to the console
-        //printArray(loadedFFTSettings);
-
         //get the Accelerometer settings
         JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
         loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
         loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
-        String[] loadedAccSettings = {
-            "Accelerometer Vert Scale: " + loadAccelVertScale,
-            "Accelerometer Horiz Scale: " + loadAccelHorizScale
-        };
 
         //get the Networking Settings
         JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
@@ -910,16 +877,6 @@ class SoftwareSettings {
         hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
         hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
 
-        //Create a string array to print to console
-        String[] loadedHPSettings = {
-            "HP_intensity: " + hpIntensityLoad,
-            "HP_polarity: " + hpPolarityLoad,
-            "HP_contours: " + hpContoursLoad,
-            "HP_smoothing: " + hpSmoothingLoad
-            };
-        //Print the Headplot settings
-        //printArray(loadedHPSettings);
-
         //get the EMG settings
         JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
         emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
@@ -927,28 +884,10 @@ class SoftwareSettings {
         emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
         emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
-        //Create a string array to print to console
-        String[] loadedEMGSettings = {
-            "EMG_smoothing: " + emgSmoothingLoad,
-            "EMG_uVlimit: " + emguVLimLoad,
-            "EMG_creepspeed: " + emgCreepLoad,
-            "EMG_minuV: " + emgMinDeltauVLoad
-            };
-        //Print the EMG settings
-        //printArray(loadedEMGSettings);
-
         //get the  Focus settings
         JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
         focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
         focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
-
-        //Create a string array to print to console
-        String[] loadedFocusSettings = {
-            "Focus_theme: " + focusThemeLoad,
-            "Focus_keypress: " + focusKeyLoad
-            };
-        //Print the EMG settings
-        //printArray(loadedFocusSettings);
 
         //Clear the list and array for holding SSVEP settings
         loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
