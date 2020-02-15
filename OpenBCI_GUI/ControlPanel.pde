@@ -1762,21 +1762,21 @@ class SerialBox {
     }
 
     public void attemptAutoConnectCyton() {
+        println("ControlPanel: Attempting to Auto-Connect to Cyton");
         //Fetch the number of com ports...
         int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
         String _regex = "";
         //Then look for matching cyton dongle
-        for (int i = 0; i < numComPorts; i++) {
-            String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
-            if (isMac()) {
-                _regex = "^/dev/tty.usbserial-DM.*$";
-            } else if (isWindows()) {
-                _regex = "COM.*$";
-            } else if (isLinux()) {
-                _regex = "^/dev/ttyUSB.*$";
-            }
-            if (ableToConnect(comPort, _regex)) return;
-        } //end for loop for all com ports
+        //Try the last matching comPort. They are already reverse sorted, so get item 0.
+        String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(0).get("headline");
+        if (isMac()) {
+            _regex = "^/dev/tty.usbserial-DM.*$";
+        } else if (isWindows()) {
+            _regex = "COM.*$";
+        } else if (isLinux()) {
+            _regex = "^/dev/ttyUSB.*$";
+        }
+        if (ableToConnect(comPort, _regex)) return;
         
     } //end attempAutoConnectCyton 
 
@@ -1785,10 +1785,10 @@ class SerialBox {
             //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
             String[] foundCytonPort = match(_comPort, _regex);
             if (foundCytonPort != null) {  // If not null, then a match was found
-                println("ControlPanel: Attempting to connect to " + _comPort);
+                println("ControlPanel: Connect using comPort: " + _comPort);
                 openBCI_portName = foundCytonPort[0];
                 initButtonPressed();
-                if (systemMode == SYSTEMMODE_POSTINIT) return true;
+                return true;
             }
             return false;
         } else {
