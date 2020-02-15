@@ -67,6 +67,7 @@ int getDataIfAvailable(int pointCounter) {
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+            saveDataToFile(scaler, lastReadDataPacketInd, new Date().getTime(),  currentBoard.getLastValidAccelValues());
             pointCounter++; //increment counter for "little buffer"
         }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -139,6 +140,42 @@ int getDataIfAvailable(int pointCounter) {
         } // close "has enough time passed"
     }
     return pointCounter;
+}
+
+void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] _auxBuff) {
+    //If data is available, save to playback file...
+    float auxScaler = scaler;
+    int stopByte = 0xC0;
+    switch (outputDataSource) {
+        case OUTPUT_SOURCE_ODF:
+            if (eegDataSource == DATASOURCE_GANGLION) {
+                auxScaler = ganglion.get_scale_fac_accel_G_per_count();
+            } else {
+                if (eegDataSource == DATASOURCE_CYTON) {
+                    if (currentBoard.isDigitalActive() || currentBoard.isAnalogActive()) {
+                        stopByte = 0xC1;
+                    }
+                }
+            }
+            fileoutput_odf.writeRawData_dataPacket(
+                            dataPacketBuff[curDataPacketInd],
+                            scaler,
+                            _auxBuff,
+                            auxScaler,
+                            stopByte,
+                            timestamp
+                        );
+            break;
+        case OUTPUT_SOURCE_BDF:
+            // curBDFDataPacketInd = curDataPacketInd;
+            // thread("writeRawData_dataPacket_bdf");
+            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+            break;
+        case OUTPUT_SOURCE_NONE:
+        default:
+            // Do nothing...
+            break;
+    }
 }
 
 RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
