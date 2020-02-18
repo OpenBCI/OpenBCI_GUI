@@ -180,6 +180,7 @@ float yLittleBuff_uV[][]; //small buffer used to send data to the filters
 float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
+double timestamps[];
 
 float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
