@@ -128,11 +128,11 @@ abstract class BoardBrainFlow extends Board {
             return; // early out
         }
 
-        int data_count = 0;
         double[][] data;
+        int timestamp_channel = 0;
         try {
-            data_count = boardShim.get_board_data_count();
             data = boardShim.get_board_data();
+            timestamp_channel = BoardShim.get_timestamp_channel (getBoardIdInt());
         }
         catch (BrainFlowError e) {
             println ("ERROR: Exception trying to get board data");
@@ -140,7 +140,7 @@ abstract class BoardBrainFlow extends Board {
             return; // early out
         }
 
-        for (int count = 0; count < data_count; count++)
+        for (int count = 0; count < data[0].length; count++)
         {
             double[] values = new double[data.length];
             for (int i=0; i < data.length; i++) {
@@ -153,6 +153,7 @@ abstract class BoardBrainFlow extends Board {
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
             dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
         }
+        timestamps = Arrays.copyOfRange (data[timestamp_channel], 0, data[timestamp_channel].length);
     }
 
     protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
