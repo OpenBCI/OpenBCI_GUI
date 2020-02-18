@@ -1770,7 +1770,7 @@ class SerialBox {
         //Try the last matching comPort. They are already reverse sorted, so get item 0.
         String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(0).get("headline");
         if (isMac()) {
-            _regex = "^/dev/tty.usbserial-DM.*$";
+            _regex = "^/dev/cu.usbserial-DM.*$";
         } else if (isWindows()) {
             _regex = "COM.*$";
         } else if (isLinux()) {
