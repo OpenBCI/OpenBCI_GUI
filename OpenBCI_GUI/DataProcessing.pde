@@ -67,7 +67,7 @@ int getDataIfAvailable(int pointCounter) {
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            saveDataToFile(scaler, lastReadDataPacketInd, new Date().getTime(),  currentBoard.getLastValidAccelValues());
+            saveDataToFile(scaler, lastReadDataPacketInd, (long)timestamps[lastReadDataPacketInd % dataPacketBuff.length] * 1000,  currentBoard.getLastValidAccelValues());
             pointCounter++; //increment counter for "little buffer"
         }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
