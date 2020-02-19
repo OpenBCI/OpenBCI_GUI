@@ -60,15 +60,21 @@ int getDataIfAvailable(int pointCounter) {
     if (eegDataSource == DATASOURCE_CYTON) {
         //get data from serial port as it streams in
         //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+        try {
+            while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+                lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+                for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+                    //scale the data into engineering units ("microvolts") and save to the "little buffer"
+                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+                }
+                for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+                long timestamp = (long) timestamps[lastReadDataPacketInd % timestamps.length] * 1000;
+                //println(timestamp + " | " + lastReadDataPacketInd % timestamps.length + " of " + timestamps.length);
+                saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
+                pointCounter++; //increment counter for "little buffer"
             }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            saveDataToFile(scaler, lastReadDataPacketInd, (long)timestamps[lastReadDataPacketInd % dataPacketBuff.length] * 1000,  currentBoard.getLastValidAccelValues());
-            pointCounter++; //increment counter for "little buffer"
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
         //get data from ble as it streams in
