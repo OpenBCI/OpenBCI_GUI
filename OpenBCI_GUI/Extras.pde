@@ -315,10 +315,15 @@ class DataStatus {
         threshold_railed_warn = thresh_railed_warn;
     }
     public void update(int data_value) {
+        // here we scale threshold which is originally is not converted to uVolts
+        float reversed_scaler = 1;
+        if (currentBoard instanceof BoardBrainFlow) {
+            reversed_scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+        }
         is_railed = false;
-        if (abs(data_value) >= threshold_railed) is_railed = true;
+        if (abs(data_value) >= threshold_railed * reversed_scaler) is_railed = true;
         is_railed_warn = false;
-        if (abs(data_value) >= threshold_railed_warn) is_railed_warn = true;
+        if (abs(data_value) >= threshold_railed_warn * reversed_scaler) is_railed_warn = true;
     }
 };
 
