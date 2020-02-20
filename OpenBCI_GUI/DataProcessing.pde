@@ -68,7 +68,7 @@ int getDataIfAvailable(int pointCounter) {
                     yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
                 }
                 for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-                long timestamp = (long) timestamps[lastReadDataPacketInd % timestamps.length] * 1000;
+                long timestamp = (long) (timestamps[pointCounter % timestamps.length] * 1000);
                 //println(timestamp + " | " + lastReadDataPacketInd % timestamps.length + " of " + timestamps.length);
                 saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
                 pointCounter++; //increment counter for "little buffer"

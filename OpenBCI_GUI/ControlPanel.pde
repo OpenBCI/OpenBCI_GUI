@@ -1766,9 +1766,6 @@ class SerialBox {
         //Fetch the number of com ports...
         int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
         String _regex = "";
-        //Then look for matching cyton dongle
-        //Try the last matching comPort. They are already reverse sorted, so get item 0.
-        
         if (isMac()) {
             _regex = "^/dev/cu.usbserial-DM.*$";
         } else if (isWindows()) {
@@ -1776,6 +1773,7 @@ class SerialBox {
         } else if (isLinux()) {
             _regex = "^/dev/ttyUSB.*$";
         }
+        //Then look for matching cyton dongle
         for (int i = 0; i < numComPorts; i++) {
             String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
             if (ableToConnect(comPort, _regex)) return;
