@@ -27,13 +27,11 @@ class W_GanglionImpedance extends Widget {
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
-        // todo[brainflow] do smth with it
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
+        //draw start/stop impedance button
         startStopCheck.draw();
-        
         
         fill(bgColor);
         textFont(p4, 14);
