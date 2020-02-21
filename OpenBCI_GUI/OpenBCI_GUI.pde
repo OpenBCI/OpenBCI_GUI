@@ -707,7 +707,7 @@ void initSystem() throws Exception {
             break;
         case DATASOURCE_GANGLION:
             // todo[brainflow] temp hardcode
-            currentBoard = new BoardGanglion("COM4", "");
+            currentBoard = new BoardGanglion("COM3", "");
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR();
@@ -761,10 +761,9 @@ void initSystem() throws Exception {
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
-
-            if (eegDataSource != DATASOURCE_GANGLION) {
-                systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-            }
+            
+            systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+            
             if (!abandonInit) {
                 controlPanel.close();
             } else {
