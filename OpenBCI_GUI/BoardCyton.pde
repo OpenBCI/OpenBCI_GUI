@@ -259,6 +259,11 @@ class BoardCyton extends BoardBrainFlow {
 
 class CytonLegacy {
 
+    private final char command_startBinary = 'b';
+    private final char command_stop = 's';
+    private final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+    private final char[] command_activate_channel =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
     private DataPacket_ADS1299 rawReceivedDataPacket;

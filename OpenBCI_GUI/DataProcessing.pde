@@ -57,6 +57,7 @@ int getDataIfAvailable(int pointCounter) {
         scaler = 1;
     }
 
+    // todo[brainflow] - this code here is just a copypaste get rid of it
     if (eegDataSource == DATASOURCE_CYTON) {
         //get data from serial port as it streams in
         //next, gather any new data into the "little buffer"
@@ -76,7 +77,7 @@ int getDataIfAvailable(int pointCounter) {
             lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * ganglion.get_scale_fac_uVolts_per_count();
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             pointCounter++; //increment counter for "little buffer"
         }

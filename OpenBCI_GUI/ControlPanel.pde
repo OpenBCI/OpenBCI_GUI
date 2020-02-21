@@ -16,6 +16,8 @@
 
 import controlP5.*;
 
+import openbci_gui_helpers.*;
+
 //------------------------------------------------------------------------
 //                       Global Variables  & Instances
 //------------------------------------------------------------------------
@@ -1234,12 +1236,22 @@ class ControlPanel {
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            if (isHubObjectInitialized) {
+            try {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
-                hub.searchDeviceStart();
-            } else {
-                output("Please wait till BLE is fully initalized");
+                // todo[brainflow] get serial port
+                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
+                for (Map.Entry<String, String> entry : map.entrySet ())
+                {
+                    // todo[brainflow] provide mac address to the board class
+                    bleList.addItem(makeItem(entry.getKey()));
+                    bleList.updateMenu();
+                }
+            }
+            catch (GanglionError e)
+            {
+                println("Exception in ganglion scanning.");
+                e.printStackTrace ();
             }
         }
 
@@ -1279,7 +1291,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 outputSuccess("Using built in BLE for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
-                ganglion.setInterface(BoardProtocol.BLE);
+                // ganglion.setInterface(BoardProtocol.BLE);
                 // hub.searchDeviceStart();
             } else {
                 outputWarn("Please wait till hub is fully initalized");
@@ -1291,13 +1303,22 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
-            if (isHubObjectInitialized) {
-                output("Protocol BLED112 Selected for Ganglion");
-                if (hub.isPortOpen()) hub.closePort();
-                ganglion.setInterface(BoardProtocol.BLED112);
-                // hub.searchDeviceStart();
-            } else {
-                outputWarn("Please wait till hub is fully initalized");
+            try {
+                output("BLE Devices Refreshing");
+                bleList.items.clear();
+                // todo[brainflow] get serial port
+                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
+                for (Map.Entry<String, String> entry : map.entrySet ())
+                {
+                    // todo[brainflow] provide mac address to the board class
+                    bleList.addItem(makeItem(entry.getKey()));
+                    bleList.updateMenu();
+                }
+            }
+            catch (GanglionError e)
+            {
+                println("Exception in ganglion scanning.");
+                e.printStackTrace ();
             }
         }
 
@@ -1310,7 +1331,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Ganglion");
                 if (hub.isPortOpen()) hub.closePort();
-                ganglion.setInterface(BoardProtocol.WIFI);
+                // ganglion.setInterface(BoardProtocol.WIFI);
                 hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
@@ -1624,10 +1645,10 @@ public void initButtonPressed(){
                 controlPanel.serialBox.autoConnect.setIgnoreHover(false); //reset the auto-connect button
                 controlPanel.serialBox.autoConnect.setColorNotPressed(255);
             } else if(eegDataSource == DATASOURCE_GANGLION){
-                verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
-                if (ganglion.isPortOpen()) {
-                    ganglion.closePort();
-                }
+                // verbosePrint("ControlPanel — port is open: " + ganglion.isPortOpen());
+                // if (ganglion.isPortOpen()) {
+                //     ganglion.closePort();
+                // }
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             }
 
@@ -1665,7 +1686,7 @@ void updateToNChan(int _nchan) {
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("channel count set to " + str(nchan));
     hub.initDataPackets(_nchan, 3);
-    ganglion.initDataPackets(_nchan, 3);
+    // ganglion.initDataPackets(_nchan, 3);
     updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
@@ -1870,21 +1891,12 @@ class BLEBox {
 
         refreshBLE.draw();
 
-        if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE() && hub.isSearching()){
+        /*if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE() && hub.isSearching()){
             image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
             refreshBLE.setString("SEARCHING...");
         } else {
             refreshBLE.setString("START SEARCH");
-        }
-    }
-
-    public void refreshBLEList() {
-        bleList.items.clear();
-        for (int i = 0; i < hub.deviceList.length; i++) {
-            String tempPort = hub.deviceList[i];
-            bleList.addItem(makeItem(tempPort));
-        }
-        bleList.updateMenu();
+        }*/
     }
 };
 
@@ -2379,7 +2391,7 @@ class SampleRateGanglionBox {
         fill(bgColor); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("  " + str((int)ganglion.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
+        // text("  " + str((int)ganglion.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
         sampleRate200.draw();

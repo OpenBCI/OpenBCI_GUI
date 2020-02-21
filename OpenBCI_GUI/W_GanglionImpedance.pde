@@ -28,6 +28,8 @@ class W_GanglionImpedance extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
+        // todo[brainflow] do smth with it
+        /*
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
@@ -74,6 +76,7 @@ class W_GanglionImpedance extends Widget {
         }
 
         popStyle();
+        */
     }
 
     void screenResized(){
@@ -91,6 +94,8 @@ class W_GanglionImpedance extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
+        // todo[brianflow] do smth with it
+        /*
         if(startStopCheck.isActive && startStopCheck.isMouseHere()){
             if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
                 if(ganglion.isCheckingImpedance()){
@@ -110,6 +115,7 @@ class W_GanglionImpedance extends Widget {
             }
         }
         startStopCheck.setIsActive(false);
+        */
     }
 };
 

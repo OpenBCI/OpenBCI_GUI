@@ -113,7 +113,6 @@ Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
-Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
 Board currentBoard = new BoardNull();
 
 // Intialize interface protocols
@@ -707,15 +706,8 @@ void initSystem() throws Exception {
         case DATASOURCE_PLAYBACKFILE:
             break;
         case DATASOURCE_GANGLION:
-            if (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) {
-                hub.connectBLE(ganglion_portName);
-            } else {
-                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    hub.connectWifi(wifi_portName);
-                } else {
-                    hub.connectWifi(wifi_ipAddress);
-                }
-            }
+            // todo[brainflow] temp hardcode
+            currentBoard = new BoardGanglion("COM4", "");
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR();
@@ -898,11 +890,6 @@ void initFFTObjectsAndBuffer() {
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion != null) {
-            ganglion.startDataTransfer();
-        }
-    }
     
     // start streaming on the chosen board
     currentBoard.startStreaming();
@@ -914,11 +901,6 @@ void stopRunning() {
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
     if (isRunning) {
         output("Data stream stopped.");
-    }
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion != null) {
-            ganglion.stopDataTransfer();
-        }
     }
 
     // stop streaming on chosen board
@@ -938,9 +920,6 @@ void stopButtonWasPressed() {
         stopRunning();
         topNav.stopButton.setString(stopButton_pressToStart_txt);
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-        if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
-            ganglion.impedanceStop();
-        }
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
         //BDF+ allows for breaks in the file, so leave the temp file open!
@@ -956,9 +935,6 @@ void stopButtonWasPressed() {
         topNav.stopButton.setString(stopButton_pressToStop_txt);
         topNav.stopButton.setColorNotPressed(color(224, 56, 45));
         nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-        if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
-            ganglion.impedanceStop();
-        }
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
@@ -1030,21 +1006,13 @@ void haltSystem() {
 
         //reset connect loadStrings
         openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-        ganglion_portName = "N/A";
-        wifi_portName = "N/A";
+        ganglion_portName = "";
+        wifi_portName = "";
 
         controlPanel.resetListItems();
 
-        if (eegDataSource == DATASOURCE_CYTON) {
+        if ((eegDataSource == DATASOURCE_CYTON) || (eegDataSource == DATASOURCE_GANGLION)){
             closeLogFile();  //close log file
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            if(ganglion.isCheckingImpedance()) {
-                ganglion.impedanceStop();
-                w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
-            }
-            closeLogFile();  //close log file
-            ganglion.impedanceArray = new int[NCHAN_GANGLION + 1];
-            ganglion.closePort();
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
         }
@@ -1053,12 +1021,6 @@ void haltSystem() {
 
         recentPlaybackFilesHaveUpdated = false;
 
-        // bleList.items.clear();
-        // wifiList.items.clear();
-
-        // if (ganglion.isBLE() || selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) {
-        //   hub.searchDeviceStart();
-        // }
         currentBoard.uninitialize();
         currentBoard = new BoardNull(); // back to null
 
