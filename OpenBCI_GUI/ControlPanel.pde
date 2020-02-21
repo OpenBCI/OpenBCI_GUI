@@ -1306,6 +1306,7 @@ class ControlPanel {
             try {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
+                selectedProtocol = BoardProtocol.BLED112; 
                 // todo[brainflow] get serial port
                 Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
                 for (Map.Entry<String, String> entry : map.entrySet ())
