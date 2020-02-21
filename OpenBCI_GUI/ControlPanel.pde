@@ -562,7 +562,7 @@ class ControlPanel {
                     interfaceBoxGanglion.draw();
                 } else {
                     interfaceBoxGanglion.draw();
-                    if (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) {
+                    if (selectedProtocol == BoardProtocol.BLED112) {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
@@ -1240,7 +1240,7 @@ class ControlPanel {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
+                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM3", 3);
                 for (Map.Entry<String, String> entry : map.entrySet ())
                 {
                     // todo[brainflow] provide mac address to the board class
@@ -1303,12 +1303,12 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
+            selectedProtocol = BoardProtocol.BLED112;
             try {
                 output("BLE Devices Refreshing");
-                bleList.items.clear();
-                selectedProtocol = BoardProtocol.BLED112; 
+                bleList.items.clear();   
                 // todo[brainflow] get serial port
-                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
+                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM3", 3);
                 for (Map.Entry<String, String> entry : map.entrySet ())
                 {
                     // todo[brainflow] provide mac address to the board class
@@ -1328,6 +1328,7 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
+            /*
             println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Ganglion");
@@ -1337,6 +1338,8 @@ class ControlPanel {
             } else {
                 output("Please wait till hub is fully initalized");
             }
+            */
+            selectedProtocol = BoardProtocol.WIFI;
         }
 
         if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
@@ -1977,7 +1980,7 @@ class WifiBox {
 
             refreshWifi.draw();
             refreshWifi.but_y = y + h - padding - 24;
-            if(isHubInitialized && isHubObjectInitialized && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
+            if((selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
                 refreshWifi.setString("SEARCHING...");
             } else {
