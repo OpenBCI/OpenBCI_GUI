@@ -56,13 +56,13 @@ class BoardGanglion extends BoardBrainFlow {
     }
 
     public void setImpedanceSettings(boolean active) {
-        String s = active ? "Z" : "z";
+        String s = active ? "z" : "Z";
         configBoard(s);
         isCheckingImpedance = active;
     }
 
     public void setAccelSettings(boolean active) {
-        configBoard(active ? "N" : "n");
+        configBoard(active ? "n" : "N");
     }
 
     public boolean isCheckingImpedance() {
