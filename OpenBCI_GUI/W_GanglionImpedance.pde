@@ -27,56 +27,55 @@ class W_GanglionImpedance extends Widget {
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
-        // todo[brainflow] do smth with it
-        /*
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
+        //draw start/stop impedance button
         startStopCheck.draw();
+        
+        if(((BoardGanglion)currentBoard).isCheckingImpedance()){
+            fill(bgColor);
+            textFont(p4, 14);
+            // todo[brainflow] fetch impedance data from buffer and display here
+            // may or may not need to be "adjusted" now
+            // current code doesn't crash, but also isn't right
+            for(int i = 0; i < data_elec_imp_ohm.length; i++){
+                String toPrint;
+                //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
+                //float adjustedImpedance = data_elec_imp_ohm[i]/2.0;
+                float adjustedImpedance = data_elec_imp_ohm[i];
+                if(i == 0){
+                    toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
+                } else {
+                    toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
+                }
+                text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
 
-        //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
-        fill(bgColor);
-        textFont(p4, 14);
-        for(int i = 0; i < ganglion.impedanceArray.length; i++){
-            String toPrint;
-            float adjustedImpedance = ganglion.impedanceArray[i]/2.0;
-            if(i == 0){
-                toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
-            } else {
-                toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
+                pushStyle();
+                stroke(bgColor);
+                //change the fill color based on the signal quality...
+                if(adjustedImpedance <= 0){ //no data yet...
+                    fill(255);
+                } else if(adjustedImpedance > 0 && adjustedImpedance <= 10){ //very good signal quality
+                    fill(49, 113, 89); //dark green
+                } else if(adjustedImpedance > 10 && adjustedImpedance <= 50){ //good signal quality
+                    fill(184, 220, 105); //yellow green
+                } else if(adjustedImpedance > 50 && adjustedImpedance <= 100){ //acceptable signal quality
+                    fill(221, 178, 13); //yellow
+                } else if(adjustedImpedance > 100 && adjustedImpedance <= 150){ //questionable signal quality
+                    fill(253, 94, 52); //orange
+                } else if(adjustedImpedance > 150){ //bad signal quality
+                    fill(224, 56, 45); //red
+                }
+
+                ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
+                popStyle();
             }
-            text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
-
-            pushStyle();
-            stroke(bgColor);
-            //change the fill color based on the signal quality...
-            if(adjustedImpedance <= 0){ //no data yet...
-                fill(255);
-            } else if(adjustedImpedance > 0 && adjustedImpedance <= 10){ //very good signal quality
-                fill(49, 113, 89); //dark green
-            } else if(adjustedImpedance > 10 && adjustedImpedance <= 50){ //good signal quality
-                fill(184, 220, 105); //yellow green
-            } else if(adjustedImpedance > 50 && adjustedImpedance <= 100){ //acceptable signal quality
-                fill(221, 178, 13); //yellow
-            } else if(adjustedImpedance > 100 && adjustedImpedance <= 150){ //questionable signal quality
-                fill(253, 94, 52); //orange
-            } else if(adjustedImpedance > 150){ //bad signal quality
-                fill(224, 56, 45); //red
-            }
-
-            ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
-            popStyle();
-        }
-
-        if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
-            if(ganglion.isCheckingImpedance()){
-                image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
-            }
+            // Display a spinning gif if impedance check is on
+            image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
         }
 
         popStyle();
-        */
     }
 
     void screenResized(){
@@ -94,28 +93,29 @@ class W_GanglionImpedance extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        // todo[brianflow] do smth with it
-        /*
-        if(startStopCheck.isActive && startStopCheck.isMouseHere()){
-            if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
-                if(ganglion.isCheckingImpedance()){
-                    //Stop impedance check
-                    ganglion.impedanceStop();
-                    startStopCheck.but_txt = "Start Impedance Check";
-                } else {
+        // todo[brainflow] needs just a little more work to reach feature parity, see comment below
+        if (startStopCheck.isActive && startStopCheck.isMouseHere()) {
+            if (currentBoard instanceof BoardGanglion) {
+                if (!((BoardGanglion)currentBoard).isCheckingImpedance()) {
                     // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
-                    stopRunning();
+                    //stopRunning();
+                    // We need to either stop the time series data, or allow it to scroll, like currently. 
+                    // the values in time series are not meaningful when Impedance check is active
                     topNav.stopButton.setString(stopButton_pressToStart_txt);
                     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-                    println("Starting Ganlgion impedance check...");
+                    println("Starting Ganglion impedance check...");
                     //Start impedance check
-                    ganglion.impedanceStart();
+                    ((BoardGanglion)currentBoard).setImpedanceSettings(true);
                     startStopCheck.but_txt = "Stop Impedance Check";
+                } else {
+                    //Stop impedance check
+                    ((BoardGanglion)currentBoard).setImpedanceSettings(false);
+                    //ganglion.impedanceStop();
+                    startStopCheck.but_txt = "Start Impedance Check";
                 }
             }
         }
         startStopCheck.setIsActive(false);
-        */
     }
 };
 

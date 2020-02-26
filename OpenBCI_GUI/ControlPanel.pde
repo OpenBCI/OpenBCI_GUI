@@ -72,7 +72,6 @@ Button protocolSerialCyton;
 Button protocolWifiCyton;
 Button protocolWifiGanglion;
 Button protocolBLED112Ganglion;
-Button protocolBLEGanglion;
 
 Button initSystemButton;
 Button autoSessionName; // Reuse these buttons for Cyton and Ganglion
@@ -149,10 +148,6 @@ public void controlEvent(ControlEvent theEvent) {
 
         eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
-        // this button only used on mac
-        if(isMac()) {
-            protocolBLEGanglion.setColorNotPressed(colorNotPressed);
-        }
         protocolWifiGanglion.setColorNotPressed(colorNotPressed);
         protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
         protocolWifiCyton.setColorNotPressed(colorNotPressed);
@@ -562,7 +557,7 @@ class ControlPanel {
                     interfaceBoxGanglion.draw();
                 } else {
                     interfaceBoxGanglion.draw();
-                    if (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) {
+                    if (selectedProtocol == BoardProtocol.BLED112) {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
@@ -952,31 +947,16 @@ class ControlPanel {
                     }
                 }
 
-                // this button only used on mac
-                if (isMac() && protocolBLEGanglion.isMouseHere()) {
-                    protocolBLEGanglion.setIsActive(true);
-                    protocolBLEGanglion.wasPressed = true;
-                    protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
-                    protocolBLEGanglion.setColorNotPressed(isSelected_color);
-                    protocolWifiGanglion.setColorNotPressed(colorNotPressed);
-                }
-
                 if (protocolWifiGanglion.isMouseHere()) {
                     protocolWifiGanglion.setIsActive(true);
                     protocolWifiGanglion.wasPressed = true;
                     protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
                     protocolWifiGanglion.setColorNotPressed(isSelected_color);
-                    if(isMac()) {
-                        protocolBLEGanglion.setColorNotPressed(colorNotPressed);
-                    }
                 }
 
                 if (protocolBLED112Ganglion.isMouseHere()) {
                     protocolBLED112Ganglion.setIsActive(true);
                     protocolBLED112Ganglion.wasPressed = true;
-                    if(isMac()) {
-                        protocolBLEGanglion.setColorNotPressed(colorNotPressed);
-                    }
                     protocolBLED112Ganglion.setColorNotPressed(isSelected_color);
                     protocolWifiGanglion.setColorNotPressed(colorNotPressed);
                 }
@@ -1240,7 +1220,7 @@ class ControlPanel {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
+                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM3", 3);
                 for (Map.Entry<String, String> entry : map.entrySet ())
                 {
                     // todo[brainflow] provide mac address to the board class
@@ -1281,33 +1261,17 @@ class ControlPanel {
             println("CP: WiFi IP: " + output);
         }
 
-        // this button only used on mac
-        if (isMac() && protocolBLEGanglion.isMouseHere() && protocolBLEGanglion.wasPressed) {
-            println("protocolBLEGanglion");
-
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            if (isHubObjectInitialized) {
-                outputSuccess("Using built in BLE for Ganglion");
-                if (hub.isPortOpen()) hub.closePort();
-                // ganglion.setInterface(BoardProtocol.BLE);
-                // hub.searchDeviceStart();
-            } else {
-                outputWarn("Please wait till hub is fully initalized");
-            }
-        }
-
         if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
 
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
+            selectedProtocol = BoardProtocol.BLED112;
             try {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM4", 3);
+                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM3", 3);
                 for (Map.Entry<String, String> entry : map.entrySet ())
                 {
                     // todo[brainflow] provide mac address to the board class
@@ -1327,6 +1291,7 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
+            /*
             println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Ganglion");
@@ -1336,6 +1301,8 @@ class ControlPanel {
             } else {
                 output("Please wait till hub is fully initalized");
             }
+            */
+            selectedProtocol = BoardProtocol.WIFI;
         }
 
         if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
@@ -1513,13 +1480,6 @@ class ControlPanel {
         refreshBLE.wasPressed = false;
         refreshWifi.setIsActive(false);
         refreshWifi.wasPressed = false;
-
-        // this button used on mac only
-        if (isMac()) {
-            protocolBLEGanglion.setIsActive(false);
-            protocolBLEGanglion.wasPressed = false;
-        }
-
         protocolBLED112Ganglion.setIsActive(false);
         protocolBLED112Ganglion.wasPressed = false;
         protocolWifiGanglion.setIsActive(false);
@@ -1976,7 +1936,7 @@ class WifiBox {
 
             refreshWifi.draw();
             refreshWifi.but_y = y + h - padding - 24;
-            if(isHubInitialized && isHubObjectInitialized && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
+            if((selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
                 refreshWifi.setString("SEARCHING...");
             } else {
@@ -2049,13 +2009,6 @@ class InterfaceBoxGanglion {
         int buttonHeight = 24;
 
         int paddingCount = 1;
-        if (isMac()) {
-            protocolBLEGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight, w - padding * 2, 24, "Bluetooth (Built In)", fontInfo.buttonLabel_size);
-            paddingCount ++;
-            // Fix height for extra button
-            h += padding + buttonHeight;
-        }
-
         protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
         paddingCount ++;
         protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
@@ -2075,10 +2028,7 @@ class InterfaceBoxGanglion {
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
         popStyle();
-
-        if (isMac()) {
-            protocolBLEGanglion.draw();
-        }
+        
         protocolWifiGanglion.draw();
         protocolBLED112Ganglion.draw();
     }

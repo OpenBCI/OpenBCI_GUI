@@ -23,6 +23,7 @@ class BoardGanglion extends BoardBrainFlow {
     
     private String serialPort = "";
     private String macAddress = "";
+    private boolean isCheckingImpedance = false;
 
     public BoardGanglion(String serialPort, String macAddress) {
         super();
@@ -52,5 +53,18 @@ class BoardGanglion extends BoardBrainFlow {
 
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
         configBoard(str(charsToUse[channelIndex]));
+    }
+
+    public void setImpedanceSettings(boolean active) {
+        configBoard(active ? "z" : "Z");
+        isCheckingImpedance = active;
+    }
+
+    public void setAccelSettings(boolean active) {
+        configBoard(active ? "n" : "N");
+    }
+
+    public boolean isCheckingImpedance() {
+        return isCheckingImpedance;
     }
 };
