@@ -55,15 +55,15 @@ class BoardGanglion extends BoardBrainFlow {
         configBoard(str(charsToUse[channelIndex]));
     }
 
-    public void setImpedanceSettings(boolean active) {
-        configBoard(active ? "z" : "Z");
-        isCheckingImpedance = active;
-    }
-
     public void setAccelSettings(boolean active) {
         configBoard(active ? "n" : "N");
     }
 
+    public void setCheckingImpedance(boolean checkImpedance) {
+        configBoard(checkImpedance ? "z" : "Z");
+        isCheckingImpedance = checkImpedance;
+    }
+    
     public boolean isCheckingImpedance() {
         return isCheckingImpedance;
     }

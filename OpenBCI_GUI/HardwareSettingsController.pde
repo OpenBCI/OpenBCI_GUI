@@ -241,11 +241,8 @@ class HardwareSettingsController{
             impedanceCheckValues[_numChannel-1][1] = onORoff;
         }
 
-        if (currentBoard instanceof BoardCyton) {
-            ((BoardCyton)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
-        }
-        else if (currentBoard instanceof BoardNovaXR) {
-            ((BoardNovaXR)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
+        if (currentBoard instanceof ImpedanceSettingsBoard) {
+            ((ImpedanceSettingsBoard)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
         }
         else {
             outputError("Impedance settings not implemented for this board");
