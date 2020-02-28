@@ -96,7 +96,10 @@ class W_GanglionImpedance extends Widget {
         // todo[brainflow] needs just a little more work to reach feature parity, see comment below
         if (startStopCheck.isActive && startStopCheck.isMouseHere()) {
             if (currentBoard instanceof BoardGanglion) {
-                if (!((BoardGanglion)currentBoard).isCheckingImpedance()) {
+                // ganglion is the only board which can check impedance, so we don't have an interface for it.
+                // if that changes in the future, consider making an interface.
+                BoardGanglion ganglionBoard = (BoardGanglion)currentBoard;
+                if (!ganglionBoard.isCheckingImpedance()) {
                     // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
                     //stopRunning();
                     // We need to either stop the time series data, or allow it to scroll, like currently. 
@@ -105,11 +108,11 @@ class W_GanglionImpedance extends Widget {
                     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
                     println("Starting Ganglion impedance check...");
                     //Start impedance check
-                    ((BoardGanglion)currentBoard).setImpedanceSettings(true);
+                    ganglionBoard.setCheckingImpedance(true);
                     startStopCheck.but_txt = "Stop Impedance Check";
                 } else {
                     //Stop impedance check
-                    ((BoardGanglion)currentBoard).setImpedanceSettings(false);
+                    ganglionBoard.setCheckingImpedance(false);
                     //ganglion.impedanceStop();
                     startStopCheck.but_txt = "Start Impedance Check";
                 }
