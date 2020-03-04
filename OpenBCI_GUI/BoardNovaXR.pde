@@ -2,7 +2,7 @@ import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-class BoardNovaXR extends BoardBrainFlow {
+class BoardNovaXR extends BoardBrainFlow implements ImpedanceSettingsBoard {
 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -44,6 +44,7 @@ class BoardNovaXR extends BoardBrainFlow {
         return false;
     }
 
+    @Override
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
         char p = '0';
         char n = '0';
