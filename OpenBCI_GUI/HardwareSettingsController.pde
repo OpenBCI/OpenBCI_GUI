@@ -217,7 +217,6 @@ class HardwareSettingsController{
         channelSettingValues[_numChannel][4] = '0'; //make sure to disconnect from SRB2
 
         channelSettingValues[_numChannel][0] = '1'; //update powerUp/powerDown value of 2D array
-        verbosePrint("Command: " + command_deactivate_channel[_numChannel]);
         currentBoard.setChannelActive(_numChannel, false);
     }
 
@@ -228,7 +227,6 @@ class HardwareSettingsController{
         channelSettingValues[_numChannel][4] = previousSRB2[_numChannel];
 
         channelSettingValues[_numChannel][0] = '0'; //update powerUp/powerDown value of 2D array
-        verbosePrint("Command: " + command_activate_channel[_numChannel]);
         currentBoard.setChannelActive(_numChannel, true);
     }
 
@@ -243,11 +241,8 @@ class HardwareSettingsController{
             impedanceCheckValues[_numChannel-1][1] = onORoff;
         }
 
-        if (currentBoard instanceof BoardCyton) {
-            ((BoardCyton)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
-        }
-        else if (currentBoard instanceof BoardNovaXR) {
-            ((BoardNovaXR)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
+        if (currentBoard instanceof ImpedanceSettingsBoard) {
+            ((ImpedanceSettingsBoard)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
         }
         else {
             outputError("Impedance settings not implemented for this board");
