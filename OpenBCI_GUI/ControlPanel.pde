@@ -1830,7 +1830,7 @@ class BLEBox {
         w = _w;
         h = 140 + _padding;
         padding = _padding;
-
+        println(Serial.list());
         refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
         bleList.setPosition(x + padding, y + padding*3 + 8);

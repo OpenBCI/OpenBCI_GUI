@@ -1,21 +1,3 @@
-///////////////////////////////////////////////////////////////////////////////
-//
-// This class configures and manages the connection to the OpenBCI Ganglion.
-// The connection is implemented via a TCP connection to a TCP port.
-// The Gagnlion is configured using single letter text commands sent from the
-// PC to the TCP server.  The EEG data streams back from the Ganglion, to the
-// TCP server and back to the PC continuously (once started).
-//
-// Created: AJ Keller, August 2016
-//
-/////////////////////////////////////////////////////////////////////////////
-
-
-//------------------------------------------------------------------------
-//                       Global Functions
-//------------------------------------------------------------------------
-
-
 class BoardGanglion extends BoardBrainFlow {
 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};

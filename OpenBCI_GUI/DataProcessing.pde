@@ -157,7 +157,8 @@ void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] 
     switch (outputDataSource) {
         case OUTPUT_SOURCE_ODF:
             if (eegDataSource == DATASOURCE_GANGLION) {
-                auxScaler = ganglion.get_scale_fac_accel_G_per_count();
+                //auxScaler = ganglion.get_scale_fac_accel_G_per_count();
+                auxScaler = 1;
             } else {
                 if (eegDataSource == DATASOURCE_CYTON) {
                     if (currentBoard.isDigitalActive() || currentBoard.isAnalogActive()) {
