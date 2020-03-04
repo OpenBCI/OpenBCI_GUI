@@ -707,7 +707,10 @@ void initSystem() throws Exception {
             break;
         case DATASOURCE_GANGLION:
             // todo[brainflow] temp hardcode
-            currentBoard = new BoardGanglion("COM3", "");
+            String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
+            String ganglionMac = BLEMACAddrMap.get(ganglionName);
+            println("MAC address for Ganglion is " + ganglionMac);
+            currentBoard = new BoardGanglion("COM4", ganglionMac);
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR();

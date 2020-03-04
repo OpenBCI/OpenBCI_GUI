@@ -131,6 +131,8 @@ RadioConfigBox rcBox;
 
 WifiConfigBox wcBox;
 
+Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -1220,8 +1222,8 @@ class ControlPanel {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM3", 3);
-                for (Map.Entry<String, String> entry : map.entrySet ())
+                BLEMACAddrMap = GUIHelper.scan_for_ganglions ("COM4", 3);
+                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
                 {
                     // todo[brainflow] provide mac address to the board class
                     bleList.addItem(makeItem(entry.getKey()));
@@ -1271,8 +1273,8 @@ class ControlPanel {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                Map<String, String> map = GUIHelper.scan_for_ganglions ("COM3", 3);
-                for (Map.Entry<String, String> entry : map.entrySet ())
+                BLEMACAddrMap = GUIHelper.scan_for_ganglions ("COM4", 3);
+                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
                 {
                     // todo[brainflow] provide mac address to the board class
                     bleList.addItem(makeItem(entry.getKey()));
