@@ -1361,7 +1361,7 @@ class SoftwareSettings {
         JSONArray loadTimeSeriesJSONArray = loadTimeSeriesSettings.getJSONArray("channelSettings");
 
         //Case for loading time series settings in Live Data mode
-        if (eegDataSource == DATASOURCE_CYTON)  {
+        if (currentBoard instanceof BoardBrainFlow) {
             //get the channel settings first for only the number of channels being used
             for (int i = 0; i < numChanloaded; i++) {
                 JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
@@ -1383,15 +1383,9 @@ class SoftwareSettings {
                 //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
                 channelSettingValues[i][0] = (char)(active + '0');
                 if (active == 0) {
-                    if (eegDataSource == DATASOURCE_GANGLION) {
-                        activateChannel(channel);// power down == false, set color to vibrant
-                    }
                     w_timeSeries.channelBars[i].isOn = true;
                     w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
                 } else {
-                    if (eegDataSource == DATASOURCE_GANGLION) {
-                        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
-                    }
                     w_timeSeries.channelBars[i].isOn = false; // deactivate it
                     w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
                 }
@@ -1438,36 +1432,24 @@ class SoftwareSettings {
             loadErrorCytonEvent = false;
         } //end Cyton case
 
-        //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
-        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
-            //get the channel settings first for only the number of channels being used
-            if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
+        //////////Case for loading Time Series settings when in Synthetic, or Playback data mode
+        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
             for (int i = 0; i < numChanloaded; i++) {
                 JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
                 //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
                 int active = loadTSChannelSettings.getInt("Active");
                 //println("Ch " + channel + ", " + channelsActiveArray[active]);
                 if (active == 1) {
-                    if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-                        println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
-                        hub.sendCommand(command_activate_channel[i]);
-                        w_timeSeries.hsc.powerUpChannel(i);
-                    }
                     w_timeSeries.channelBars[i].isOn = true;
                     channelSettingValues[i][0] = '0';
                     w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
                 } else {
-                    if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-                        println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
-                        hub.sendCommand(command_deactivate_channel[i]);
-                        w_timeSeries.hsc.powerDownChannel(i);
-                    }
                     w_timeSeries.channelBars[i].isOn = false; // deactivate it
                     channelSettingValues[i][0] = '1';
                     w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
                 }
             }
-        } //end of Ganglion/Playback/Synthetic case
+        } //end Playback/Synthetic case
     } //end loadApplyTimeSeriesSettings
 
     /**

@@ -176,7 +176,7 @@ void clientEvent(Client someClient) {
                 // Send the new string message to be processed
 
                 if (eegDataSource == DATASOURCE_GANGLION) {
-                    hub.parseMessage(msg);
+                    /*hub.parseMessage(msg);
                     // Check to see if the ganglion ble list needs to be updated
                     if (hub.deviceListUpdated) {
                         hub.deviceListUpdated = false;
@@ -185,7 +185,7 @@ void clientEvent(Client someClient) {
                         } else {
                             controlPanel.wifiBox.refreshWifiList();
                         }
-                    }
+                    }*/
                 } else if (eegDataSource == DATASOURCE_CYTON) {
                     // Do stuff for cyton
                     hub.parseMessage(msg);
@@ -784,17 +784,17 @@ class Hub {
         String message = "";
         int code = json.getInt(TCP_JSON_KEY_CODE);
         switch (code) {
-            case RESP_ERROR_IMPEDANCE_COULD_NOT_START:
-                ganglion.overrideCheckingImpedance(false);
+            // case RESP_ERROR_IMPEDANCE_COULD_NOT_START:
+            //     ganglion.overrideCheckingImpedance(false);
             case RESP_ERROR_IMPEDANCE_COULD_NOT_STOP:
             case RESP_ERROR_IMPEDANCE_FAILED_TO_SET_IMPEDANCE:
             case RESP_ERROR_IMPEDANCE_FAILED_TO_PARSE:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);
                 handleError(code, message);
                 break;
-            case RESP_SUCCESS_DATA_IMPEDANCE:
-                ganglion.processImpedance(json);
-                break;
+            // case RESP_SUCCESS_DATA_IMPEDANCE:
+            //     ganglion.processImpedance(json);
+            //     break;
             case RESP_SUCCESS:
                 action = json.getString(TCP_JSON_KEY_ACTION);
                 output("Success: Impedance " + action + ".");
@@ -819,10 +819,6 @@ class Hub {
             case RESP_SUCCESS:
                 protocol = json.getString(TCP_JSON_KEY_PROTOCOL);
                 output("Transfer Protocol set to " + protocol);
-                if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
-                    // hub.searchDeviceStart();
-                    outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
-                }
                 break;
             case RESP_ERROR_PROTOCOL_BLE_START:
                 outputError("Failed to start Ganglion BLE Driver, please see https://openbci.github.io/Documentation/docs/01GettingStarted/01-Boards/GanglionGS");
