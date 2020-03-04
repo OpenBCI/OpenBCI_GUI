@@ -23,7 +23,7 @@ static class BoardCytonConstants {
     static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 }
 
-class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
+class BoardCyton extends BoardBrainFlow {
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -148,7 +148,6 @@ class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
         }
     }
 
-    @Override
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
         char p = '0';
         char n = '0';
@@ -259,11 +258,6 @@ class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
 //------------------------------------------------------------------------
 
 class CytonLegacy {
-
-    private final char command_startBinary = 'b';
-    private final char command_stop = 's';
-    private final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
-    private final char[] command_activate_channel =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards

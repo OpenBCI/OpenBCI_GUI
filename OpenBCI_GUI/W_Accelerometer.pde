@@ -202,7 +202,8 @@ class W_Accelerometer extends Widget {
         textFont(p3, 16);
         accelModeButton.setString(getButtonString());
 
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+        if (eegDataSource == DATASOURCE_CYTON
+        || (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE())) {
             accelModeButton.draw();
         }
 
@@ -242,7 +243,14 @@ class W_Accelerometer extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+
+        if (eegDataSource == DATASOURCE_GANGLION) {
+            if (ganglion.isBLE()) {
+                if (accelModeButton.isMouseHere()) {
+                    accelModeButton.setIsActive(true);
+                }
+            }
+        } else if (eegDataSource == DATASOURCE_CYTON) {
             if (accelModeButton.isMouseHere()) {
                 accelModeButton.setIsActive(true);
             }
@@ -252,7 +260,16 @@ class W_Accelerometer extends Widget {
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+        if (eegDataSource == DATASOURCE_GANGLION) {
+            if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
+                if (currentBoard.isAccelerometerActive()) {
+                    ganglion.accelStop();
+                } else{
+                    ganglion.accelStart();
+                }
+            }
+            accelModeButton.setIsActive(false);
+        } else if (eegDataSource == DATASOURCE_CYTON) {
             //TODO[brainflow]
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
                 if (!currentBoard.isAccelerometerActive()) {
@@ -272,9 +289,18 @@ class W_Accelerometer extends Widget {
 
     //Draw the current accelerometer values as text
     void drawAccValues() {
-        float displayX = currentAccelVals[0];
-        float displayY = currentAccelVals[1];
-        float displayZ = currentAccelVals[2];
+        float displayX = 0;
+        float displayY = 0;
+        float displayZ = 0;
+        if (eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
+            displayX = currentAccelVals[1]; //Swap X and Y
+            displayY = currentAccelVals[0];
+            displayZ = -currentAccelVals[2]; //Invert Z
+        } else {
+            displayX = currentAccelVals[0];
+            displayY = currentAccelVals[1];
+            displayZ = currentAccelVals[2];
+        }
         textAlign(LEFT,CENTER);
         textFont(h1,20);
         fill(ACCEL_X_COLOR);
