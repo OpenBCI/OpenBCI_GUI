@@ -857,7 +857,6 @@ class Hub {
                 if (action.equals(TCP_ACTION_START)) {
                     println("Query registers for cyton channel settings");
                 } else if (action.equals(TCP_ACTION_SET)) {
-                    settings.checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
                     println("Success writing channel " + json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER));
 
                 }
