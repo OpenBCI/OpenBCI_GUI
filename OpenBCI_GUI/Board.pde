@@ -26,14 +26,6 @@ abstract class Board {
 
     public abstract void setSampleRate(int sampleRate);
 
-    public boolean isAccelerometerActive() { return false; }
-
-    public boolean isAccelerometerAvailable() { return false; }
-
-    public void setAccelerometerActive(boolean active) {
-        outputWarn("setAccelerometerActive is not implemented for this board.");
-    }
-
     public boolean isAnalogActive() { return false; }
 
     public boolean isAnalogAvailable() { return false; }

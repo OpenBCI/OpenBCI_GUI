@@ -518,22 +518,24 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
+
+        if (currentBoard instanceof AccelerometerCapableBoard) {
+            AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard)currentBoard;
+            saveGlobalSettings.setBoolean("Accelerometer Mode", accelBoard.isAccelerometerActive());
+        }
+        else {
+            saveGlobalSettings.setBoolean("Accelerometer Mode", false);
+        }
+
         if (eegDataSource == DATASOURCE_CYTON) {
-            saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
             saveGlobalSettings.setBoolean("Analog Mode", currentBoard.isAnalogActive());
             saveGlobalSettings.setBoolean("Digital Mode", currentBoard.isDigitalActive());
             saveGlobalSettings.setBoolean("Marker Mode", currentBoard.isMarkerActive());
             saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
             saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
             saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
-            saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
-            saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
-            saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
-        } else {
-            saveGlobalSettings.setBoolean("Accelerometer Mode", true);
-        }
+        } 
+
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
 
         /////Setup JSON Object for gui version and settings Version

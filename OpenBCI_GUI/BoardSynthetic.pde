@@ -1,7 +1,7 @@
 
 /* Generates synthetic data
  */
-class BoardSynthetic extends Board {
+class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
     private final float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
@@ -101,8 +101,8 @@ class BoardSynthetic extends Board {
     }
 
     @Override
-    public boolean isAccelerometerAvailable() {
-        return true;
+    public void setAccelerometerActive(boolean active) {
+        outputWarn("Can't turn off accelerometer in synthetic board.");
     }
 
     @Override
