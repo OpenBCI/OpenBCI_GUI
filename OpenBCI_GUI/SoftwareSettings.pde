@@ -18,7 +18,7 @@
 //        - in Interactivty.pde with the rest of the keyboard shortcuts
 //        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
 //    -- This allows User to store snapshots of most GUI settings in Users/.../Documents/OpenBCI_GUI/Settings/
-//    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
+//    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port
 //
 //      Tips on adding a new setting:
 //      -- figure out if the setting is Global, in an existing widget, or in a new class or widget
@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.5";
+    String settingsVersion = "2.0.0";
     //impose minimum gui width and height in openBCI_GUI.pde
     int minGUIWidth = 705;
     int minGUIHeight = 400;
@@ -74,7 +74,6 @@ class SoftwareSettings {
     //Time Series settings
     int tsVertScaleSave;
     int tsHorizScaleSave;
-    int checkForSuccessTS = 0;
     //Accelerometer settings
     int accVertScaleSave;
     int accHorizScaleSave;
@@ -200,14 +199,6 @@ class SoftwareSettings {
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
     String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz", "20 Hz", "40 Hz"};
-
-    //Save Time Series settings variables
-    int tsActiveSetting = 1;
-    int tsGainSetting;
-    int tsInputTypeSetting;
-    int tsBiasSetting;
-    int tsSrb2Setting;
-    int tsSrb1Setting;
 
     //Load global settings variables
     int loadLayoutSetting;
@@ -446,71 +437,8 @@ class SoftwareSettings {
         JSONObject saveTSSettings = new JSONObject();
         saveTSSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
         saveTSSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-        ////////////////////////////////////////////////////////////////////////////////////
-        //                 Case for saving TS settings in Cyton Data Modes                //
-        if (eegDataSource == DATASOURCE_CYTON)  {
-            //Set up an array to store channel settings
-            JSONArray saveTSSettingsJSONArray = new JSONArray();
-            //Save all of the channel settings for number of Time Series channels being used
-            for (int i = 0; i < slnchan; i++) {
-                //Make a JSON Object for each of the Time Series Channels
-                JSONObject saveChannelSettings = new JSONObject();
-                //Copy channel settings from channelSettingValues
-                for (int j = 0; j < numSettingsPerChannel; j++) {
-                    switch(j) {  //what setting are we looking at
-                        case 0: //on/off
-                            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for active channel (0 or 1) from char array channelSettingValues
-                            break;
-                        case 1: //GAIN
-                            tsGainSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for gain
-                            break;
-                        case 2: //input type
-                            tsInputTypeSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for input type
-                            break;
-                        case 3: //BIAS
-                            tsBiasSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for bias
-                            break;
-                        case 4: // SRB2
-                            tsSrb2Setting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for srb2
-                            break;
-                        case 5: // SRB1
-                            tsSrb1Setting = Character.getNumericValue(channelSettingValues[i][j]); //Store integer value for srb1
-                            break;
-                        }
-                    //Store all channel settings in Time Series JSON object, one channel at a time
-                    saveChannelSettings.setInt("Channel_Number", (i+1));
-                    saveChannelSettings.setInt("Active", tsActiveSetting);
-                    saveChannelSettings.setInt("PGA Gain", int(tsGainSetting));
-                    saveChannelSettings.setInt("Input Type", tsInputTypeSetting);
-                    saveChannelSettings.setInt("Bias", tsBiasSetting);
-                    saveChannelSettings.setInt("SRB2", tsSrb2Setting);
-                    saveChannelSettings.setInt("SRB1", tsSrb1Setting);
-                    saveTSSettingsJSONArray.setJSONObject(i, saveChannelSettings);
-                } //end channel settings for loop
-            } //end all channels for loop
-            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
-        }
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_GANGLION) {
-            //Set up an array to store channel settings
-            JSONArray saveTSSettingsJSONArray = new JSONArray();
-            for (int i = 0; i < slnchan; i++) { //For all channels...
-                //Make a JSON Object for each of the Time Series Channels
-                JSONObject saveTimeSeriesSettings = new JSONObject();
-                //Get integer value from char array channelSettingValues
-                tsActiveSetting = Character.getNumericValue(channelSettingValues[i][0]);
-                //Catch case where channel settings is not 0 or 1, due to unkown error
-                tsActiveSetting = (tsActiveSetting == 0 ||  tsActiveSetting == 1) ?
-                    tsActiveSetting ^= 1 :
-                    1; //save channel setting as active if there is an error
-                saveTimeSeriesSettings.setInt("Channel_Number", (i+1));
-                saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
-                saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
-            } //end loop for all channels
-            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
-        }
         saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
+
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
@@ -518,22 +446,8 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
-        if (eegDataSource == DATASOURCE_CYTON) {
-            saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
-            saveGlobalSettings.setBoolean("Analog Mode", currentBoard.isAnalogActive());
-            saveGlobalSettings.setBoolean("Digital Mode", currentBoard.isDigitalActive());
-            saveGlobalSettings.setBoolean("Marker Mode", currentBoard.isMarkerActive());
-            saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
-            saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
-            saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
-            saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
-            saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
-            saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            saveGlobalSettings.setBoolean("Accelerometer Mode", currentBoard.isAccelerometerActive());
-        } else {
-            saveGlobalSettings.setBoolean("Accelerometer Mode", true);
-        }
+        saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
+        saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
 
         /////Setup JSON Object for gui version and settings Version
@@ -774,18 +688,8 @@ class SoftwareSettings {
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
         loadFramerate = loadGlobalSettings.getInt("Framerate");
         Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
-        //Always load the accelerometer boolean, it's set to True for playback and synthetic mode, for now...
-        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
-        Boolean loadAnalog = false;
-        Boolean loadDigital = false; 
-        Boolean loadMarker = false;
-        if (eegDataSource == DATASOURCE_CYTON) {
-            loadAnalog = loadGlobalSettings.getBoolean("Analog Mode");
-            loadDigital = loadGlobalSettings.getBoolean("Digital Mode");
-            loadMarker = loadGlobalSettings.getBoolean("Marker Mode");
-            loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
-            loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
-        }
+        loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
+        loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
         //Store loaded layout to current layout variable
         currentLayout = loadLayoutSetting;
         //Load more global settings after this line, if needed
@@ -801,10 +705,6 @@ class SoftwareSettings {
             "TS Horiz Scale: " + loadTimeSeriesHorizScale,
             "Analog Vert Scale: " + loadAnalogReadVertScale,
             "Analog Horiz Scale: " + loadAnalogReadHorizScale,
-            "Accelerometer: " + loadAccelerometer,
-            "Analog: " + loadAnalog,
-            "Digital: " + loadDigital,
-            "Marker: " + loadMarker,
             //Add new global settings above this line to print to console
             };
         //Print the global settings that have been loaded to the console
@@ -1059,20 +959,16 @@ class SoftwareSettings {
         frameRateCounter = loadFramerate;
         switch (frameRateCounter) {
             case 0:
-                topNav.fpsButton.setString("24 fps");
-                frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(24);
                 break;
             case 1:
-                topNav.fpsButton.setString("30 fps");
-                frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(30);
                 break;
             case 2:
-                topNav.fpsButton.setString("45 fps");
-                frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(45);
                 break;
             case 3:
-                topNav.fpsButton.setString("60 fps");
-                frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(60);
                 break;
         }
 
@@ -1093,41 +989,6 @@ class SoftwareSettings {
             w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
             println("Headplot is active: Redrawing");
         }
-
-        ///////TODO: CLEANUP THIS SECTION, IF POSSIBLE
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
-            currentBoard.setAccelerometerActive(loadAccelerometer);
-            if(loadAccelerometer) {
-                output("Starting to read accelerometer");
-            }
-        } else if (eegDataSource == DATASOURCE_CYTON) {
-            currentBoard.setAnalogActive(loadAnalog);
-            currentBoard.setDigitalActive(loadDigital);
-            currentBoard.setMarkerActive(loadMarker);
-
-            // TODO[brainflow] : this stuff should really be refactored. It's duplicated
-            w_analogRead.analogReadOn = loadAnalog;
-            w_pulsesensor.analogReadOn = loadAnalog;
-            w_digitalRead.digitalReadOn = loadDigital;
-            w_markermode.markerModeOn = loadMarker;
-
-            if (loadAnalog) {
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
-                } else {
-                    output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
-                }
-            } else if (loadDigital) {
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    output("Starting to read digital inputs on pin marked D11, D12 and D17");
-                } else {
-                    output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
-                }
-            } else if (loadMarker) {
-                output("Starting to read markers");
-            }
-        }
-
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1417,100 +1278,7 @@ class SoftwareSettings {
             w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
         Duration(loadTimeSeriesHorizScale);
             w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
-
-        //Make a JSON object to load channel setting array
-        JSONArray loadTimeSeriesJSONArray = loadTimeSeriesSettings.getJSONArray("channelSettings");
-
-        //Case for loading time series settings in Live Data mode
-        if (currentBoard instanceof BoardBrainFlow) {
-            //get the channel settings first for only the number of channels being used
-            for (int i = 0; i < numChanloaded; i++) {
-                JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-                int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-                int active = loadTSChannelSettings.getInt("Active");
-                int gainSetting = loadTSChannelSettings.getInt("PGA Gain");
-                int inputType = loadTSChannelSettings.getInt("Input Type");
-                int biasSetting = loadTSChannelSettings.getInt("Bias");
-                int srb2Setting = loadTSChannelSettings.getInt("SRB2");
-                int srb1Setting = loadTSChannelSettings.getInt("SRB1");
-                println("Ch " + channel + ", " +
-                    channelsActiveArray[active] + ", " +
-                    gainSettingsArray[gainSetting] + ", " +
-                    inputTypeArray[inputType] + ", " +
-                    biasIncludeArray[biasSetting] + ", " +
-                    srb2SettingArray[srb2Setting] + ", " +
-                    srb1SettingArray[srb1Setting]);
-
-                //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
-                channelSettingValues[i][0] = (char)(active + '0');
-                if (active == 0) {
-                    w_timeSeries.channelBars[i].isOn = true;
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
-                } else {
-                    w_timeSeries.channelBars[i].isOn = false; // deactivate it
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-                }
-                //Set gain
-                channelSettingValues[i][1] = (char)(gainSetting + '0');  //Convert int to char by adding the gainSetting to ASCII char '0'
-                //Set inputType
-                channelSettingValues[i][2] = (char)(inputType + '0');
-                //Set Bias
-                channelSettingValues[i][3] = (char)(biasSetting + '0');
-                //Set SRB2
-                channelSettingValues[i][4] = (char)(srb2Setting + '0');
-                //Set SRB1
-                channelSettingValues[i][5] = (char)(srb1Setting + '0');
-            } //end case for all channels
-
-            loadErrorTimerStart = millis();
-            for (int i = 0; i < slnchan; i++) { //For all time series channels...
-                try {
-                    ((BoardCyton)currentBoard).setChannelSettings(i, channelSettingValues[i]); //Write the channel settings to the board!
-                } catch (RuntimeException e) {
-                    verbosePrint("Runtime Error when trying to write channel settings to cyton...");
-                }
-                if (checkForSuccessTS > 0) { // If we receive a return code...
-                    println("Return code: " + checkForSuccessTS);
-                    //when successful, iterate to next channel(i++) and set Check to null
-                    if (checkForSuccessTS == RESP_SUCCESS) {
-                        // i++;
-                        checkForSuccessTS = 0;
-                    }
-
-                    //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
-                    int timeElapsed = millis() - loadErrorTimerStart;
-                    if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
-                        println("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
-                        loadErrorCytonEvent = true; //Set true because an error has occured
-                        haltSystem(); //Halt the system to stop the initialization process
-                        return;
-                    }
-                }
-                //delay(10);// Works on 8 chan sometimes
-                delay(250); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
-                //Tested by setting gain 1x and loading 24x.
-            }
-            loadErrorCytonEvent = false;
-        } //end Cyton case
-
-        //////////Case for loading Time Series settings when in Synthetic, or Playback data mode
-        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            for (int i = 0; i < numChanloaded; i++) {
-                JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-                //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-                int active = loadTSChannelSettings.getInt("Active");
-                //println("Ch " + channel + ", " + channelsActiveArray[active]);
-                if (active == 1) {
-                    w_timeSeries.channelBars[i].isOn = true;
-                    channelSettingValues[i][0] = '0';
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
-                } else {
-                    w_timeSeries.channelBars[i].isOn = false; // deactivate it
-                    channelSettingValues[i][0] = '1';
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-                }
-            }
-        } //end Playback/Synthetic case
+            
     } //end loadApplyTimeSeriesSettings
 
     /**
