@@ -671,7 +671,9 @@ class ControlPanel {
         SerialPort[] comPorts = SerialPort.getCommPorts();
         for (int i = 0; i < comPorts.length; i++) {
             if (comPorts[i].toString().equals(name)) {
-                String found = "/dev/" + comPorts[i].getSystemPortName().toString();
+                String found = "";
+                if (isMac()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
                 println(found);
                 return found;
             }
