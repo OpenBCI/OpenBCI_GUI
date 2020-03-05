@@ -1,25 +1,25 @@
 
-abstract class Board {
+interface Board {
 
-    public abstract boolean initialize();
+    public boolean initialize();
 
-    public abstract void uninitialize();
+    public void uninitialize();
 
-    public abstract void update();
+    public void update();
 
-    public abstract void startStreaming();
+    public void startStreaming();
 
-    public abstract void stopStreaming();
+    public void stopStreaming();
 
-    public abstract boolean isConnected();
+    public boolean isConnected();
 
-    public abstract int getSampleRate();
+    public int getSampleRate();
     
-    public abstract int getNumChannels();
+    public int getNumChannels();
 
-    public abstract void setChannelActive(int channelIndex, boolean active);
+    public void setChannelActive(int channelIndex, boolean active);
 
-    public abstract void sendCommand(String command);
+    public void sendCommand(String command);
 
-    public abstract void setSampleRate(int sampleRate);
+    public void setSampleRate(int sampleRate);
 };

@@ -1,7 +1,7 @@
 
 /* Generates synthetic data
  */
-class BoardSynthetic extends Board implements AccelerometerCapableBoard {
+class BoardSynthetic implements Board, AccelerometerCapableBoard {
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
     private final float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment

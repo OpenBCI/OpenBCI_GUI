@@ -2,7 +2,7 @@ import brainflow.*;
 import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
-abstract class BoardBrainFlow extends Board {
+abstract class BoardBrainFlow implements Board {
     private DataPacket_ADS1299 dataPacket;
     private BoardShim boardShim = null;
 
