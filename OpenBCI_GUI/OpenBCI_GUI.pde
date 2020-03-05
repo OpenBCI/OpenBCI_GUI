@@ -419,11 +419,6 @@ void delayedSetup() {
     // Create GUI data folder and copy sample data if meditation file doesn't exist
     copyGUISampleData();
 
-    println("GETTING A LIST OF SERIAL PORTS: ");
-    println(SerialPort.getCommPorts());
-    println(SerialPort.getCommPort("USB UART Low Energy Dongle"));
-    println("\n\n");
-
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call

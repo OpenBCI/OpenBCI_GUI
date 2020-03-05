@@ -413,7 +413,7 @@ class ControlPanel {
         //auto-update serial list
         if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
             println("Refreshing port list...");
-            refreshPortList();
+            refreshPortListCyton();
         }
 
         //update all boxes if they need to be
@@ -655,7 +655,7 @@ class ControlPanel {
         if (hub.isPortOpen()) hub.closePort();
     }
 
-    public void refreshPortList(){
+    private void refreshPortListCyton(){
         serialPorts = new String[Serial.list().length];
         serialPorts = Serial.list();
         serialList.items.clear();
@@ -664,6 +664,19 @@ class ControlPanel {
             serialList.addItem(makeItem(tempPort));
         }
         serialList.updateMenu();
+    }
+
+    private String getBLED112Port() {
+        String name = "Low Energy Dongle";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "/dev/" + comPorts[i].getSystemPortName().toString();
+                println(found);
+                return found;
+            }
+        }
+        return null;
     }
 
     public void hideAllBoxes() {
@@ -1214,27 +1227,34 @@ class ControlPanel {
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
             output("Serial/COM List Refreshed");
-            refreshPortList();
+            refreshPortListCyton();
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
+            /*
             try {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions ("COM4", 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
+                String comPort = getBLED112Port();
+                if (comPort != null) {
+                    BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                    for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                    {
+                        // todo[brainflow] provide mac address to the board class
+                        bleList.addItem(makeItem(entry.getKey()));
+                        bleList.updateMenu();
+                    }
+                } else {
+                    outputError("No BLED112 Dongle Found");
                 }
             }
             catch (GanglionError e)
-            {
+            {   
                 println("Exception in ganglion scanning.");
                 e.printStackTrace ();
             }
+            */
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1273,12 +1293,18 @@ class ControlPanel {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
                 // todo[brainflow] get serial port
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions ("COM4", 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
+                String comPort = getBLED112Port();
+                if (comPort != null) {
+                    println("STARTING GUI HELPER+++++");
+                    BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                    for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                    {
+                        // todo[brainflow] provide mac address to the board class
+                        bleList.addItem(makeItem(entry.getKey()));
+                        bleList.updateMenu();
+                    }
+                } else {
+                    outputError("No BLED112 Dongle Found");
                 }
             }
             catch (GanglionError e)
@@ -1830,7 +1856,6 @@ class BLEBox {
         w = _w;
         h = 140 + _padding;
         padding = _padding;
-        println(Serial.list());
         refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
         bleList.setPosition(x + padding, y + padding*3 + 8);
