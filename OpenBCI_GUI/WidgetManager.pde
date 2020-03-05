@@ -47,13 +47,15 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_fft, w);
     // println("  setupWidgets fft -- " + millis());
 
-    //Widget_2
-    w_accelerometer = new W_Accelerometer(_this);
-    w_accelerometer.setTitle("Accelerometer");
-    addWidget(w_accelerometer, w);
+    if (currentBoard instanceof AccelerometerCapableBoard) {
+        //Widget_2
+        w_accelerometer = new W_Accelerometer(_this);
+        w_accelerometer.setTitle("Accelerometer");
+        addWidget(w_accelerometer, w);
+    }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
-    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    if(nchan == 4 && currentBoard instanceof BoardGanglion){
         //If using Ganglion, this is Widget_3
         w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
@@ -105,7 +107,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
-    if(eegDataSource == DATASOURCE_CYTON){
+    if(currentBoard instanceof BoardCyton){
         //Cyton Widget_8
         w_pulsesensor = new W_PulseSensor(_this);
         w_pulsesensor.setTitle("Pulse Sensor");

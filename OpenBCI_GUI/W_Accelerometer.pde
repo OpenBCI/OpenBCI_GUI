@@ -57,6 +57,8 @@ class W_Accelerometer extends Widget {
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
 
+    AccelerometerCapableBoard accelBoard;
+
     W_Accelerometer(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -88,6 +90,9 @@ class W_Accelerometer extends Widget {
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
+
+        // This widget is only instantiated when the board is accel capable, so we don't need to check
+        accelBoard = (AccelerometerCapableBoard)currentBoard;
     }
 
     void initAccelData() {
@@ -133,7 +138,7 @@ class W_Accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && currentBoard.isAccelerometerActive()) {
+        if (isRunning && accelBoard.isAccelerometerActive()) {
             //update the current Accelerometer values
             updateAccelPoints();
             //update the line graph and corresponding gplot points
@@ -148,7 +153,7 @@ class W_Accelerometer extends Widget {
             if(eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
             } else {
-                currentAccelVals[i] = currentBoard.getLastValidAccelValues()[i];
+                currentAccelVals[i] = accelBoard.getLastValidAccelValues()[i];
             }
 
             // TODO[brainflow] : delete this after accel scaling is confirmed to be OK
@@ -169,7 +174,7 @@ class W_Accelerometer extends Widget {
     }
 
     String getButtonString() {
-        if (currentBoard.isAccelerometerActive()) {
+        if (accelBoard.isAccelerometerActive()) {
             return "Turn Accel. Off";
         }
         else {
@@ -206,7 +211,7 @@ class W_Accelerometer extends Widget {
             accelModeButton.draw();
         }
 
-        if (currentBoard.isAccelerometerActive()) {
+        if (accelBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
@@ -255,15 +260,15 @@ class W_Accelerometer extends Widget {
         if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
             //TODO[brainflow]
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (!currentBoard.isAccelerometerActive()) {
-                    currentBoard.setAccelerometerActive(true);
+                if (!accelBoard.isAccelerometerActive()) {
+                    accelBoard.setAccelerometerActive(true);
                     output("Starting to read accelerometer");
                     w_analogRead.analogReadOn = false;
                     w_pulsesensor.analogReadOn = false;
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {                    
-                    currentBoard.setAccelerometerActive(false);
+                    accelBoard.setAccelerometerActive(false);
                 }
             }
             accelModeButton.setIsActive(false);

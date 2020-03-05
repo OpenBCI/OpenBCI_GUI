@@ -44,11 +44,6 @@ class BoardNull extends Board {
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return null;
-    }
-
-    @Override
     public void setChannelActive(int channelIndex, boolean active) {
         // empty
     }

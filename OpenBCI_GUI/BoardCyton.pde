@@ -88,6 +88,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard {
     }
 
     @Override
+    public float[] getLastValidAccelValues() {
+        return lastValidAccelValues;
+    }
+
+    @Override
     public boolean isAnalogActive() {
         return getBoardMode() == CytonBoardMode.ANALOG;
     }

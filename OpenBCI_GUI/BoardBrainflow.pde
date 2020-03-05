@@ -11,9 +11,9 @@ abstract class BoardBrainFlow extends Board {
     protected int[] dataChannels = {};
     protected int[] accelChannels = {};
 
-    private boolean streaming = false;
-    private float[] lastAccelValues = {};
-    private float[] lastValidAccelValues = {};
+    protected boolean streaming = false;
+    protected float[] lastAccelValues = {};
+    protected float[] lastValidAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -235,11 +235,6 @@ abstract class BoardBrainFlow extends Board {
     @Override
     public int getNumChannels() {
         return dataChannels.length;
-    }
-
-    @Override
-    public float[] getLastValidAccelValues() {
-        return lastValidAccelValues;
     }
 
     public int getBoardIdInt() {

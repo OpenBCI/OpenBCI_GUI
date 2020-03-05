@@ -17,9 +17,6 @@ abstract class Board {
     
     public abstract int getNumChannels();
 
-    // TODO[brainflow] do we need this? Or could this be set in the datapacket class?
-    public abstract float[] getLastValidAccelValues();
-
     public abstract void setChannelActive(int channelIndex, boolean active);
 
     public abstract void sendCommand(String command);
