@@ -674,7 +674,7 @@ class ControlPanel {
                 String found = "";
                 if (isMac()) found += "/dev/";
                 found += comPorts[i].getSystemPortName().toString();
-                println(found);
+                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
                 return found;
             }
         }
@@ -1233,7 +1233,6 @@ class ControlPanel {
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            /*
             try {
                 output("BLE Devices Refreshing");
                 bleList.items.clear();
@@ -1256,7 +1255,6 @@ class ControlPanel {
                 println("Exception in ganglion scanning.");
                 e.printStackTrace ();
             }
-            */
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1297,7 +1295,6 @@ class ControlPanel {
                 // todo[brainflow] get serial port
                 String comPort = getBLED112Port();
                 if (comPort != null) {
-                    println("STARTING GUI HELPER+++++");
                     BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
                     for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
                     {
