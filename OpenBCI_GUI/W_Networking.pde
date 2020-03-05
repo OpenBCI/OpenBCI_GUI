@@ -1262,16 +1262,23 @@ class Stream extends Thread {
                             } else if (this.dataType.equals("BandPower")) {
                                 sendPowerBandData();
                             } else if (this.dataType.equals("Accel/Aux")) {
-                                if (eegDataSource == DATASOURCE_CYTON) {
-                                    if (currentBoard.isAnalogActive()) {
-                                        sendAnalogReadData();
-                                    } else if (currentBoard.isDigitalActive()) {
-                                        sendDigitalReadData();
-                                    } else {
+                                if(currentBoard instanceof AccelerometerCapableBoard) {
+                                    AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard)currentBoard;
+                                    if (accelBoard.isAccelerometerActive()) {
                                         sendAccelerometerData();
                                     }
-                                } else {
-                                    sendAccelerometerData();
+                                }
+                                if(currentBoard instanceof AnalogCapableBoard) {
+                                    AnalogCapableBoard analogBoard = (AnalogCapableBoard)currentBoard;
+                                    if (analogBoard.isAnalogActive()) {
+                                        sendAnalogReadData();
+                                    }
+                                }
+
+                                if (eegDataSource == DATASOURCE_CYTON) {
+                                    if (currentBoard.isDigitalActive()) {
+                                        sendDigitalReadData();
+                                    }
                                 }
                             } else if (this.dataType.equals("Focus")) {
                                 sendFocusData();
@@ -1308,16 +1315,23 @@ class Stream extends Thread {
                     } else if (this.dataType.equals("BandPower")) {
                         sendPowerBandData();
                     } else if (this.dataType.equals("Accel/Aux")) {
-                        if (eegDataSource == DATASOURCE_CYTON) {
-                            if (currentBoard.isAnalogActive()) {
-                                sendAnalogReadData();
-                            } else if (currentBoard.isDigitalActive()) {
-                                sendDigitalReadData();
-                            } else {
+                        if(currentBoard instanceof AccelerometerCapableBoard) {
+                            AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard)currentBoard;
+                            if (accelBoard.isAccelerometerActive()) {
                                 sendAccelerometerData();
                             }
-                        } else {
-                            sendAccelerometerData();
+                        }
+                        if(currentBoard instanceof AnalogCapableBoard) {
+                            AnalogCapableBoard analogBoard = (AnalogCapableBoard)currentBoard;
+                            if (analogBoard.isAnalogActive()) {
+                                sendAnalogReadData();
+                            }
+                        }
+
+                        if (eegDataSource == DATASOURCE_CYTON) {
+                            if (currentBoard.isDigitalActive()) {
+                                sendDigitalReadData();
+                            }
                         }
                     } else if (this.dataType.equals("Focus")) {
                         sendFocusData();

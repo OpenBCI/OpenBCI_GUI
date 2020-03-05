@@ -23,14 +23,6 @@ abstract class Board {
 
     public abstract void setSampleRate(int sampleRate);
 
-    public boolean isAnalogActive() { return false; }
-
-    public boolean isAnalogAvailable() { return false; }
-
-    public void setAnalogActive(boolean active) {
-        outputWarn("setAnalogActive is not implemented for this board.");
-    }
-
     public boolean isDigitalActive() { return false; }
 
     public boolean isDigitalAvailable() { return false; }

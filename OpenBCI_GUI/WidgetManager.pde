@@ -114,11 +114,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_pulsesensor, w);
         // println("  setupWidgets pulse sensor -- " + millis());
 
-        //Cyton Widget_9
-        w_digitalRead = new W_DigitalRead(_this);
-        w_digitalRead.setTitle("Digital Read");
-        addWidget(w_digitalRead, w);
-
         //Cyton Widget_10
         w_analogRead = new W_AnalogRead(_this);
         w_analogRead.setTitle("Analog Read");
@@ -130,6 +125,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_markermode, w);
     }
 
+    if(currentBoard instanceof AnalogCapableBoard) {
+        //Cyton Widget_9
+        w_digitalRead = new W_DigitalRead(_this);
+        w_digitalRead.setTitle("Digital Read");
+        addWidget(w_digitalRead, w);
+    }
     
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
     //DEVELOPERS: Here is an example widget with the essentials/structure in place
