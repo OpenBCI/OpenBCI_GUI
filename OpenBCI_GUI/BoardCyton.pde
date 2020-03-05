@@ -24,7 +24,7 @@ static class BoardCytonConstants {
 }
 
 class BoardCyton extends BoardBrainFlow
-implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard {
+implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard {
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -109,11 +109,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     @Override
     public boolean isDigitalActive() {
         return getBoardMode() == CytonBoardMode.DIGITAL;
-    }
-
-    @Override
-    public boolean isDigitalAvailable() {
-        return true;
     }
 
     @Override

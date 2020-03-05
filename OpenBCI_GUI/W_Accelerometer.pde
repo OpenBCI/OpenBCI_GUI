@@ -57,7 +57,7 @@ class W_Accelerometer extends Widget {
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
 
-    AccelerometerCapableBoard accelBoard;
+    private AccelerometerCapableBoard accelBoard;
 
     W_Accelerometer(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)

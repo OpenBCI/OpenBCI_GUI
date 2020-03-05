@@ -1274,9 +1274,9 @@ class Stream extends Thread {
                                         sendAnalogReadData();
                                     }
                                 }
-
-                                if (eegDataSource == DATASOURCE_CYTON) {
-                                    if (currentBoard.isDigitalActive()) {
+                                if(currentBoard instanceof DigitalCapableBoard) {
+                                    DigitalCapableBoard digitalBoard = (DigitalCapableBoard)currentBoard;
+                                    if (digitalBoard.isDigitalActive()) {
                                         sendDigitalReadData();
                                     }
                                 }
@@ -1327,9 +1327,9 @@ class Stream extends Thread {
                                 sendAnalogReadData();
                             }
                         }
-
-                        if (eegDataSource == DATASOURCE_CYTON) {
-                            if (currentBoard.isDigitalActive()) {
+                        if(currentBoard instanceof DigitalCapableBoard) {
+                            DigitalCapableBoard digitalBoard = (DigitalCapableBoard)currentBoard;
+                            if (digitalBoard.isDigitalActive()) {
                                 sendDigitalReadData();
                             }
                         }

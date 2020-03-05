@@ -23,14 +23,6 @@ abstract class Board {
 
     public abstract void setSampleRate(int sampleRate);
 
-    public boolean isDigitalActive() { return false; }
-
-    public boolean isDigitalAvailable() { return false; }
-
-    public void setDigitalActive(boolean active) {
-        outputWarn("setDigitalActive is not implemented for this board.");
-    }
-
     public boolean isMarkerActive() { return false; }
 
     public boolean isMarkerAvailable() { return false; }

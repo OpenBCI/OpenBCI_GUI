@@ -37,7 +37,7 @@ class W_AnalogRead extends Widget {
 
     Button analogModeButton;
 
-    AnalogCapableBoard analogBoard;
+    private AnalogCapableBoard analogBoard;
 
     W_AnalogRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)

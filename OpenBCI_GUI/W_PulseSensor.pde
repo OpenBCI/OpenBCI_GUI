@@ -70,7 +70,7 @@ class W_PulseSensor extends Widget {
     boolean analogReadOn = false;
     Button analogModeButton;
 
-    AnalogCapableBoard analogBoard;
+    private AnalogCapableBoard analogBoard;
 
     W_PulseSensor(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
