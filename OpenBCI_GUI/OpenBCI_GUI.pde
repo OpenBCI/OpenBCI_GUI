@@ -56,6 +56,7 @@ import edu.ucsd.sccn.LSL; //for LSL
 //import com.sun.jna.Native;
 //import com.sun.jna.Platform;
 //import com.sun.jna.Pointer;
+import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -417,6 +418,11 @@ void delayedSetup() {
 
     // Create GUI data folder and copy sample data if meditation file doesn't exist
     copyGUISampleData();
+
+    println("GETTING A LIST OF SERIAL PORTS: ");
+    println(SerialPort.getCommPorts());
+    println(SerialPort.getCommPort("USB UART Low Energy Dongle"));
+    println("\n\n");
 
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
