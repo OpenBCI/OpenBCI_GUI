@@ -113,23 +113,27 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_pulsesensor.setTitle("Pulse Sensor");
         addWidget(w_pulsesensor, w);
         // println("  setupWidgets pulse sensor -- " + millis());
-
-        //Cyton Widget_10
-        w_analogRead = new W_AnalogRead(_this);
-        w_analogRead.setTitle("Analog Read");
-        addWidget(w_analogRead, w);
-
-        //Cyton Widget_11
-        w_markermode = new W_MarkerMode(_this);
-        w_markermode.setTitle("Marker Mode");
-        addWidget(w_markermode, w);
     }
 
-    if(currentBoard instanceof AnalogCapableBoard) {
+    if(currentBoard instanceof DigitalCapableBoard) {
         //Cyton Widget_9
         w_digitalRead = new W_DigitalRead(_this);
         w_digitalRead.setTitle("Digital Read");
         addWidget(w_digitalRead, w);
+    }
+    
+    if(currentBoard instanceof AnalogCapableBoard) {
+        //Cyton Widget_10
+        w_analogRead = new W_AnalogRead(_this);
+        w_analogRead.setTitle("Analog Read");
+        addWidget(w_analogRead, w);
+    }
+    
+    if(currentBoard instanceof MarkerCapableBoard) {
+        //Cyton Widget_11
+        w_markermode = new W_MarkerMode(_this);
+        w_markermode.setTitle("Marker Mode");
+        addWidget(w_markermode, w);
     }
     
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9

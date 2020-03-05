@@ -43,6 +43,8 @@ class W_MarkerMode extends Widget {
     boolean markerModeOn = false;
     Button markerModeButton;
 
+    private MarkerCapableBoard markerBoard;
+
     W_MarkerMode(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -71,6 +73,8 @@ class W_MarkerMode extends Widget {
         markerModeButton.textColorNotActive = color(255);
         markerModeButton.hasStroke(false);
         markerModeButton.setHelpText("Click this button to activate/deactivate the MarkerMode of your Cyton board!");
+
+        markerBoard = (MarkerCapableBoard)currentBoard;
     }
 
     void update(){
@@ -88,7 +92,7 @@ class W_MarkerMode extends Widget {
             localValidLastMarker = synthesizeMarkerData();
         }
         if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {
-            if (isRunning && currentBoard.isMarkerActive()) {
+            if (isRunning && markerBoard.isMarkerActive()) {
                 if (localValidLastMarker > 0){
                     lastMarker = localValidLastMarker;  // this holds the last marker for the display
                 }
@@ -133,7 +137,7 @@ class W_MarkerMode extends Widget {
             fill(50);
             textFont(p3, 16);
 
-            if (eegDataSource == DATASOURCE_CYTON && !currentBoard.isMarkerActive()) {
+            if (eegDataSource == DATASOURCE_CYTON && !markerBoard.isMarkerActive()) {
                 markerModeButton.setString("Turn Marker On");
                 markerModeButton.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
@@ -196,8 +200,8 @@ class W_MarkerMode extends Widget {
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
             if(currentBoard.isConnected()) {
-                if (!currentBoard.isMarkerActive()) {
-                    currentBoard.setMarkerActive(true);
+                if (!markerBoard.isMarkerActive()) {
+                    markerBoard.setMarkerActive(true);
                     output("Starting to read markers");
                     markerModeButton.setString("Turn Marker Off");
                     w_analogRead.analogReadOn = false;
@@ -205,7 +209,7 @@ class W_MarkerMode extends Widget {
                     w_digitalRead.digitalReadOn = false;
                     setupUDPMarkerListener();
                 } else {
-                    currentBoard.setMarkerActive(false);
+                    markerBoard.setMarkerActive(false);
                     output("Starting to read accelerometer");
                     markerModeButton.setString("Turn Marker On");
                     w_analogRead.analogReadOn = false;

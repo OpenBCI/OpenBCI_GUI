@@ -22,12 +22,4 @@ abstract class Board {
     public abstract void sendCommand(String command);
 
     public abstract void setSampleRate(int sampleRate);
-
-    public boolean isMarkerActive() { return false; }
-
-    public boolean isMarkerAvailable() { return false; }
-
-    public void setMarkerActive(boolean active) {
-        outputWarn("setMarkerActive is not implemented for this board.");
-    }
 };
