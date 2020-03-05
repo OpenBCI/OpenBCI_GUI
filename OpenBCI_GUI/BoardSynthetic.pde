@@ -110,6 +110,16 @@ class BoardSynthetic extends Board {
         // empty
     }
 
+    @Override
+    public void sendCommand(String command) {
+        outputWarn("Sending commands is not implemented for Sythetic board. Command: " + command);
+    }
+    
+    @Override
+    public void setSampleRate(int sampleRate) {
+        outputWarn("Changing the sampling rate is not implemented for Sythetic board. Sampling rate will stay at " + getSampleRate());
+    }
+
     //Synthesize Time Series Data to Test GUI Functionality
     void synthesizeData() {
         float val_uV;

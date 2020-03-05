@@ -251,6 +251,11 @@ abstract class BoardBrainFlow extends Board {
         configBoard(command);
     }
 
+    @Override
+    public void setSampleRate(int sampleRate) {
+        outputWarn("Changing the sampling rate is not possible on brainflow boards. Sampling rate will stay at " + getSampleRate());
+    }
+
     protected void configBoard(String configStr) {
         if(!isConnected()) {
             outputError("Cannot send " + configStr + " to board. The board is not connected");

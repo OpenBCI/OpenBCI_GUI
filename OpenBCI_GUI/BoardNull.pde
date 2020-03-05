@@ -52,4 +52,14 @@ class BoardNull extends Board {
     public void setChannelActive(int channelIndex, boolean active) {
         // empty
     }
+
+    @Override
+    public void sendCommand(String command) {
+        // empty
+    }
+
+    @Override
+    public void setSampleRate(int sampleRate) {
+        // empty
+    }
 };
