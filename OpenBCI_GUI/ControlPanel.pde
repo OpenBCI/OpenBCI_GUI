@@ -666,13 +666,38 @@ class ControlPanel {
         serialList.updateMenu();
     }
 
+    private void refreshPortListGanglion() {
+        try {
+            output("BLE Devices Refreshing");
+            bleList.items.clear();
+            // todo[brainflow] get serial port
+            String comPort = getBLED112Port();
+            if (comPort != null) {
+                BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                {
+                    // todo[brainflow] provide mac address to the board class
+                    bleList.addItem(makeItem(entry.getKey()));
+                    bleList.updateMenu();
+                }
+            } else {
+                outputError("No BLED112 Dongle Found");
+            }
+        }
+        catch (GanglionError e)
+        {
+            println("Exception in ganglion scanning.");
+            e.printStackTrace ();
+        }
+    }
+
     private String getBLED112Port() {
         String name = "Low Energy Dongle";
         SerialPort[] comPorts = SerialPort.getCommPorts();
         for (int i = 0; i < comPorts.length; i++) {
             if (comPorts[i].toString().equals(name)) {
                 String found = "";
-                if (isMac()) found += "/dev/";
+                if (isMac() || isLinux()) found += "/dev/";
                 found += comPorts[i].getSystemPortName().toString();
                 println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
                 return found;
@@ -1233,28 +1258,7 @@ class ControlPanel {
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            try {
-                output("BLE Devices Refreshing");
-                bleList.items.clear();
-                // todo[brainflow] get serial port
-                String comPort = getBLED112Port();
-                if (comPort != null) {
-                    BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                    for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                    {
-                        // todo[brainflow] provide mac address to the board class
-                        bleList.addItem(makeItem(entry.getKey()));
-                        bleList.updateMenu();
-                    }
-                } else {
-                    outputError("No BLED112 Dongle Found");
-                }
-            }
-            catch (GanglionError e)
-            {   
-                println("Exception in ganglion scanning.");
-                e.printStackTrace ();
-            }
+            refreshPortListGanglion();
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1284,33 +1288,11 @@ class ControlPanel {
         }
 
         if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
-            try {
-                output("BLE Devices Refreshing");
-                bleList.items.clear();
-                // todo[brainflow] get serial port
-                String comPort = getBLED112Port();
-                if (comPort != null) {
-                    BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                    for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                    {
-                        // todo[brainflow] provide mac address to the board class
-                        bleList.addItem(makeItem(entry.getKey()));
-                        bleList.updateMenu();
-                    }
-                } else {
-                    outputError("No BLED112 Dongle Found");
-                }
-            }
-            catch (GanglionError e)
-            {
-                println("Exception in ganglion scanning.");
-                e.printStackTrace ();
-            }
+            refreshPortListGanglion();
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
