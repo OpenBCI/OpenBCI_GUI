@@ -25,6 +25,8 @@ class W_DigitalRead extends Widget {
 
     Button digitalModeButton;
 
+    private DigitalCapableBoard digitalBoard;
+
     W_DigitalRead(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -89,6 +91,8 @@ class W_DigitalRead extends Widget {
         } else {
             digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18.");
         }
+
+        digitalBoard = (DigitalCapableBoard)currentBoard;
     }
 
     public int getNumDigitalReads() {
@@ -131,7 +135,7 @@ class W_DigitalRead extends Widget {
             pushStyle();
             //draw channel bars
             digitalModeButton.draw();
-            if (!currentBoard.isDigitalActive()) {
+            if (!digitalBoard.isDigitalActive()) {
                 digitalModeButton.setString("Turn Digital Read On");
             } else {
                 digitalModeButton.setString("Turn Digital Read Off");
@@ -186,8 +190,8 @@ class W_DigitalRead extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
-            if (!currentBoard.isDigitalActive()) {
-                currentBoard.setDigitalActive(true);
+            if (!digitalBoard.isDigitalActive()) {
+                digitalBoard.setDigitalActive(true);
                 if (selectedProtocol == BoardProtocol.WIFI) {
                     output("Starting to read digital inputs on pin marked D11, D12 and D17");
                 } else {
@@ -197,7 +201,7 @@ class W_DigitalRead extends Widget {
                 w_pulsesensor.analogReadOn = false;
                 w_markermode.markerModeOn = false;
             } else {
-                currentBoard.setDigitalActive(false);
+                digitalBoard.setDigitalActive(false);
                 output("Starting to read accelerometer");
             }
             digitalReadOn = !digitalReadOn;

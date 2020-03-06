@@ -347,7 +347,7 @@ void Duration(int n) {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
     }
-    if (currentBoard.isAnalogActive()) {
+    if (currentBoard instanceof AnalogCapableBoard) {
         if (settings.arHorizScaleSave == 0) {
             //set analog read x axis to the duration selected from dropdown
             for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {

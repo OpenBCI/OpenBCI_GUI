@@ -1,6 +1,6 @@
 import brainflow.*;
 
-class BoardBrainFlowSynthetic extends BoardBrainFlow {
+class BoardBrainFlowSynthetic extends BoardBrainFlow implements AccelerometerCapableBoard{
 
     public BoardBrainFlowSynthetic() {
         super();
@@ -30,7 +30,12 @@ class BoardBrainFlowSynthetic extends BoardBrainFlow {
     }
 
     @Override
-    public boolean isAccelerometerAvailable() {
-        return true;
+    public void setAccelerometerActive(boolean active) {
+        outputWarn("Accelerometer is always active for BrainflowSyntheticBoard");
+    }
+
+    @Override
+    public float[] getLastValidAccelValues() {
+        return lastValidAccelValues;
     }
 };
