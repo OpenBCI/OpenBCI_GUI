@@ -72,7 +72,10 @@ int getDataIfAvailable(int pointCounter) {
                 //println(timestamps.length);
                 long timestamp = (long) (timestamps[(pointCounter) % (timestamps.length+1)] * 1000);
                 //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
-                saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
+                ///////////////////////////////////////
+                //WORKING HERE TO RESTORE DATALOGGING//
+                ///////////////////////////////////////
+                //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
                 pointCounter++; //increment counter for "little buffer"
             }
         } catch (Exception e) {
@@ -161,9 +164,11 @@ void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] 
                 auxScaler = 1;
             } else {
                 if (eegDataSource == DATASOURCE_CYTON) {
+                    /*
                     if (currentBoard.isDigitalActive() || currentBoard.isAnalogActive()) {
                         stopByte = 0xC1;
                     }
+                    */
                 }
             }
             fileoutput_odf.writeRawData_dataPacket(
