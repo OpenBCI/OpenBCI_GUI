@@ -47,13 +47,15 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_fft, w);
     // println("  setupWidgets fft -- " + millis());
 
-    //Widget_2
-    w_accelerometer = new W_Accelerometer(_this);
-    w_accelerometer.setTitle("Accelerometer");
-    addWidget(w_accelerometer, w);
+    if (currentBoard instanceof AccelerometerCapableBoard) {
+        //Widget_2
+        w_accelerometer = new W_Accelerometer(_this);
+        w_accelerometer.setTitle("Accelerometer");
+        addWidget(w_accelerometer, w);
+    }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
-    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    if(nchan == 4 && currentBoard instanceof BoardGanglion){
         //If using Ganglion, this is Widget_3
         w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
@@ -105,29 +107,34 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
-    if(eegDataSource == DATASOURCE_CYTON){
+    if(currentBoard instanceof BoardCyton){
         //Cyton Widget_8
         w_pulsesensor = new W_PulseSensor(_this);
         w_pulsesensor.setTitle("Pulse Sensor");
         addWidget(w_pulsesensor, w);
         // println("  setupWidgets pulse sensor -- " + millis());
+    }
 
+    if(currentBoard instanceof DigitalCapableBoard) {
         //Cyton Widget_9
         w_digitalRead = new W_DigitalRead(_this);
         w_digitalRead.setTitle("Digital Read");
         addWidget(w_digitalRead, w);
-
+    }
+    
+    if(currentBoard instanceof AnalogCapableBoard) {
         //Cyton Widget_10
         w_analogRead = new W_AnalogRead(_this);
         w_analogRead.setTitle("Analog Read");
         addWidget(w_analogRead, w);
-
+    }
+    
+    if(currentBoard instanceof MarkerCapableBoard) {
         //Cyton Widget_11
         w_markermode = new W_MarkerMode(_this);
         w_markermode.setTitle("Marker Mode");
         addWidget(w_markermode, w);
     }
-
     
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
     //DEVELOPERS: Here is an example widget with the essentials/structure in place

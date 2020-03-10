@@ -2,7 +2,7 @@ import brainflow.*;
 import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
-abstract class BoardBrainFlow extends Board {
+abstract class BoardBrainFlow implements Board {
     private DataPacket_ADS1299 dataPacket;
     private BoardShim boardShim = null;
 
@@ -11,9 +11,9 @@ abstract class BoardBrainFlow extends Board {
     protected int[] dataChannels = {};
     protected int[] accelChannels = {};
 
-    private boolean streaming = false;
-    private float[] lastAccelValues = {};
-    private float[] lastValidAccelValues = {};
+    protected boolean streaming = false;
+    protected float[] lastAccelValues = {};
+    protected float[] lastValidAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -237,11 +237,6 @@ abstract class BoardBrainFlow extends Board {
         return dataChannels.length;
     }
 
-    @Override
-    public float[] getLastValidAccelValues() {
-        return lastValidAccelValues;
-    }
-
     public int getBoardIdInt() {
         return getBoardId().get_code();
     }
@@ -249,6 +244,11 @@ abstract class BoardBrainFlow extends Board {
     @Override
     public void sendCommand(String command) {
         configBoard(command);
+    }
+
+    @Override
+    public void setSampleRate(int sampleRate) {
+        outputWarn("Changing the sampling rate is not possible on brainflow boards. Sampling rate will stay at " + getSampleRate());
     }
 
     protected void configBoard(String configStr) {

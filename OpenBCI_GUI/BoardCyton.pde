@@ -23,7 +23,8 @@ static class BoardCytonConstants {
     static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 }
 
-class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
+class BoardCyton extends BoardBrainFlow
+implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, MarkerCapableBoard {
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -79,26 +80,21 @@ class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
     }
 
     @Override
-    public boolean isAccelerometerAvailable() {
-        return true;
-    }
-
-    @Override
     public void setAccelerometerActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.DEFAULT);
         }
-        // no way of turning off accel
+        // no way of turning off accel.
+    }
+
+    @Override
+    public float[] getLastValidAccelValues() {
+        return lastValidAccelValues;
     }
 
     @Override
     public boolean isAnalogActive() {
         return getBoardMode() == CytonBoardMode.ANALOG;
-    }
-
-    @Override
-    public boolean isAnalogAvailable() {
-        return true;
     }
 
     @Override
@@ -116,11 +112,6 @@ class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
     }
 
     @Override
-    public boolean isDigitalAvailable() {
-        return true;
-    }
-
-    @Override
     public void setDigitalActive(boolean active) { 
         if(active) {
             setBoardMode(CytonBoardMode.DIGITAL);
@@ -132,11 +123,6 @@ class BoardCyton extends BoardBrainFlow implements ImpedanceSettingsBoard {
     @Override
     public boolean isMarkerActive() {
         return getBoardMode() == CytonBoardMode.MARKER;
-    }
-
-    @Override
-    public boolean isMarkerAvailable() {
-        return true;
     }
 
     @Override

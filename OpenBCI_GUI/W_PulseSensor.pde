@@ -68,17 +68,12 @@ class W_PulseSensor extends Widget {
     boolean QS = false;        // becomes true when Arduoino finds a beat.
     int lastProcessedDataPacketInd = 0;
     boolean analogReadOn = false;
-
-    // testing stuff
-
     Button analogModeButton;
 
-
+    private AnalogCapableBoard analogBoard;
 
     W_PulseSensor(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-
 
         // Pulse Sensor Stuff
         eggshell = color(255, 253, 248);
@@ -98,6 +93,7 @@ class W_PulseSensor extends Widget {
         analogModeButton.hasStroke(false);
         analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton.");
 
+        analogBoard = (AnalogCapableBoard)currentBoard;
     }
 
     void update(){
@@ -165,7 +161,7 @@ class W_PulseSensor extends Widget {
         text("BPM "+BPM, BPMposX, BPMposY);
         text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-        if (!currentBoard.isAnalogActive()) {
+        if (!analogBoard.isAnalogActive()) {
             analogModeButton.setString("Turn Analog Read On");
         } else {
             analogModeButton.setString("Turn Analog Read Off");
@@ -199,15 +195,15 @@ class W_PulseSensor extends Widget {
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
             if(currentBoard.isConnected()) {
-                if (!currentBoard.isAnalogActive()) {
-                    currentBoard.setAnalogActive(true);
+                if (!analogBoard.isAnalogActive()) {
+                    analogBoard.setAnalogActive(true);
                     output("Starting to read analog inputs on pin marked D11.");
                     analogModeButton.setString("Turn Analog Read Off");
                     w_analogRead.analogReadOn = true; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be activated also, this variable documents the change
                     w_digitalRead.digitalReadOn = false;
                     w_markermode.markerModeOn = false;
                 } else {
-                    currentBoard.setAnalogActive(false);
+                    analogBoard.setAnalogActive(false);
                     output("Starting to read accelerometer");
                     analogModeButton.setString("Turn Analog Read On");
                     w_analogRead.analogReadOn = false; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be de-activated also, this variable documents the change

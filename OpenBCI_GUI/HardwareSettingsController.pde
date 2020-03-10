@@ -171,42 +171,6 @@ class HardwareSettingsController{
         update(); //update 1 time to refresh button values based on new loaded settings
     }
 
-    //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
-    void activateChannel(int Ichan) {
-        println("OpenBCI_GUI: activating channel " + (Ichan+1));
-
-        // TODO[brainflow] duplicate code from above! WTF!
-        currentBoard.setChannelActive(Ichan, true);
-        if (Ichan < nchan) {
-            channelSettingValues[Ichan][0] = '0';
-            w_timeSeries.hsc.update(); //previously gui.cc.update();
-        }
-    }
-
-    void deactivateChannel(int Ichan) {
-        println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-
-        // TODO[brainflow] duplicate code from above! WTF!
-        currentBoard.setChannelActive(Ichan, false);
-        if (Ichan < nchan) {
-            channelSettingValues[Ichan][0] = '1';
-            w_timeSeries.hsc.update();
-        }
-    }
-
-    //Ichan is zero referenced (not one referenced)
-    boolean isChannelActive(int Ichan) {
-        // TODO[brainflow] Same code as above! wtf!
-        // TODO[brainflow] move this functionality to the board itself.
-        boolean return_val = false;
-        if (channelSettingValues[Ichan][0] == '1') {
-            return_val = false;
-        } else {
-            return_val = true;
-        }
-        return return_val;
-    }
-
     public void powerDownChannel(int _numChannel) {
         // TODO[brainflow] How is this different from deactivateChannel?
         verbosePrint("Powering down channel " + str(int(_numChannel) + int(1)));

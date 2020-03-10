@@ -2,7 +2,7 @@
 /* This class does nothing, it serves as a signal that the board we are using
  * is null, but does not crash if we use it.
  */
-class BoardNull extends Board {
+class BoardNull implements Board {
 
     @Override
     public boolean initialize() {
@@ -44,12 +44,17 @@ class BoardNull extends Board {
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return null;
+    public void setChannelActive(int channelIndex, boolean active) {
+        // empty
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
+    public void sendCommand(String command) {
+        // empty
+    }
+
+    @Override
+    public void setSampleRate(int sampleRate) {
         // empty
     }
 };

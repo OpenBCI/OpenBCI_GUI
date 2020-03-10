@@ -35,16 +35,6 @@ class BoardNovaXR extends BoardBrainFlow implements ImpedanceSettingsBoard {
     }
 
     @Override
-    public boolean isAccelerometerActive() {
-        return false;
-    }
-
-    @Override
-    public boolean isAccelerometerAvailable() {
-        return false;
-    }
-
-    @Override
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
         char p = '0';
         char n = '0';

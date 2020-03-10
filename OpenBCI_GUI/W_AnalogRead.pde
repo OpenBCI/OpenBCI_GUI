@@ -37,6 +37,8 @@ class W_AnalogRead extends Widget {
 
     Button analogModeButton;
 
+    private AnalogCapableBoard analogBoard;
+
     W_AnalogRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -94,6 +96,8 @@ class W_AnalogRead extends Widget {
         } else {
             analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).");
         }
+
+        analogBoard = (AnalogCapableBoard)currentBoard;
     }
 
     public boolean isVisible() {
@@ -136,7 +140,7 @@ class W_AnalogRead extends Widget {
             pushStyle();
             //draw channel bars
             analogModeButton.draw();
-            if (!currentBoard.isAnalogActive()) {
+            if (!analogBoard.isAnalogActive()) {
                 analogModeButton.setString("Turn Analog Read On");
             } else {
                 analogModeButton.setString("Turn Analog Read Off");
@@ -183,8 +187,8 @@ class W_AnalogRead extends Widget {
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
             // println("analogModeButton...");
-            if (!currentBoard.isAnalogActive()) {
-                currentBoard.setAnalogActive(true);
+            if (!analogBoard.isAnalogActive()) {
+                analogBoard.setAnalogActive(true);
                 if (selectedProtocol == BoardProtocol.WIFI) {
                     output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                 } else {
@@ -194,7 +198,7 @@ class W_AnalogRead extends Widget {
                 w_markermode.markerModeOn = false;
                 w_pulsesensor.analogReadOn = true;
             } else {
-                currentBoard.setAnalogActive(false);
+                analogBoard.setAnalogActive(false);
                 output("Starting to read accelerometer");
             }
             analogReadOn = !analogReadOn;
