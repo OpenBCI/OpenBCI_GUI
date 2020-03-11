@@ -970,24 +970,6 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_CYTON) {
-            // TODO[brainflow] : this really shouldn't be here
-            if(currentBoard.isConnected()) {
-                w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
-                w_pulsesensor.analogReadOn = false;
-
-                w_analogRead.analogModeButton.setString("Turn Analog Read On");
-                w_analogRead.analogReadOn = false;
-
-                w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
-                w_digitalRead.digitalReadOn = false;
-
-                w_markermode.markerModeButton.setString("Turn Marker On");
-                w_markermode.markerModeOn = false;
-            }
-        }
-
         //reset variables for data processing
         curDataPacketInd = -1;
         lastReadDataPacketInd = -1;
