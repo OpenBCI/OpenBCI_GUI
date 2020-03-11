@@ -61,14 +61,23 @@ int getDataIfAvailable(int pointCounter) {
     if (eegDataSource == DATASOURCE_CYTON) {
         //get data from serial port as it streams in
         //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+        try {
+            while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate) && (timestamps.length != 0)) {
+                lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+                for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+                    //scale the data into engineering units ("microvolts") and save to the "little buffer"
+                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+                }
+                for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+                //println(timestamps.length);
+                long timestamp = (long) (timestamps[(pointCounter) % (timestamps.length+1)] * 1000);
+                // todo[brainflow] This method will be used to save data to ODF or BDF playback file
+                //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
+                //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
+                pointCounter++; //increment counter for "little buffer"
             }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            pointCounter++; //increment counter for "little buffer"
+        } catch (Exception e) {
+            //e.printStackTrace();
         }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
         //get data from ble as it streams in
@@ -140,6 +149,45 @@ int getDataIfAvailable(int pointCounter) {
         } // close "has enough time passed"
     }
     return pointCounter;
+}
+
+void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] _auxBuff) {
+    //If data is available, save to playback file...
+    float auxScaler = scaler;
+    int stopByte = 0xC0;
+    switch (outputDataSource) {
+        case OUTPUT_SOURCE_ODF:
+            if (eegDataSource == DATASOURCE_GANGLION) {
+                //auxScaler = ganglion.get_scale_fac_accel_G_per_count();
+                auxScaler = 1;
+            } else {
+                if (eegDataSource == DATASOURCE_CYTON) {
+                    /*
+                    if (currentBoard.isDigitalActive() || currentBoard.isAnalogActive()) {
+                        stopByte = 0xC1;
+                    }
+                    */
+                }
+            }
+            fileoutput_odf.writeRawData_dataPacket(
+                            dataPacketBuff[curDataPacketInd],
+                            scaler,
+                            _auxBuff,
+                            auxScaler,
+                            stopByte,
+                            timestamp
+                        );
+            break;
+        case OUTPUT_SOURCE_BDF:
+            // curBDFDataPacketInd = curDataPacketInd;
+            // thread("writeRawData_dataPacket_bdf");
+            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+            break;
+        case OUTPUT_SOURCE_NONE:
+        default:
+            // Do nothing...
+            break;
+    }
 }
 
 RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average

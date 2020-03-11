@@ -716,13 +716,28 @@ class Hub {
                     }
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
-                            fileoutput_odf.writeRawData_dataPacket(
-                                dataPacketBuff[curDataPacketInd],
-                                scaler,
-                                scaler,
-                                stopByte,
-                                json.getLong(TCP_JSON_KEY_TIMESTAMP)
-                            );
+                            if (eegDataSource == DATASOURCE_GANGLION) {
+                                //DEPRECATED
+                                /*
+                                fileoutput_odf.writeRawData_dataPacket(
+                                    dataPacketBuff[curDataPacketInd],
+                                    scaler,
+                                    ganglion.get_scale_fac_accel_G_per_count(),
+                                    stopByte,
+                                    json.getLong(TCP_JSON_KEY_TIMESTAMP)
+                                );
+                                */
+                            } else {
+                                /*
+                                fileoutput_odf.writeRawData_dataPacket(
+                                    dataPacketBuff[curDataPacketInd],
+                                    scaler,
+                                    scaler,
+                                    stopByte,
+                                    json.getLong(TCP_JSON_KEY_TIMESTAMP)
+                                );
+                                */
+                            }
                             break;
                         case OUTPUT_SOURCE_BDF:
                             // curBDFDataPacketInd = curDataPacketInd;

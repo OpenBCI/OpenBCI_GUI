@@ -216,18 +216,19 @@ public class OutputFile_rawtxt {
         output.flush();
     }
 
-    public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte, long timestamp) {
+    //This has been updated to temporarily work with Brainflow
+    public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float[] auxData, float scale_for_aux, int stopByte, long timestamp) {
         //get current date time with Date()
         if (output != null) {
             output.print(Integer.toString(data.sampleIndex));
             writeValues(data.values,scale_to_uV);
             if (eegDataSource == DATASOURCE_GANGLION) {
-                writeAccValues(data.auxValues, scale_for_aux);
+                writeAccValues(auxData);
             } else {
                 if (stopByte == 0xC1) {
                     writeAuxValues(data);
                 } else {
-                    writeAccValues(data.auxValues, scale_for_aux);
+                    writeAccValues(auxData);
                 }
             }
             output.print( ", " + dateFormat.format(new Date(timestamp)));
@@ -245,11 +246,21 @@ public class OutputFile_rawtxt {
         }
     }
 
+    //This is deprecated, and can be removed after brainflow is integrated
     private void writeAccValues(int[] values, float scale_fac) {
         int nVal = values.length;
         for (int Ival = 0; Ival < nVal; Ival++) {
             output.print(", ");
             output.print(String.format(Locale.US, "%.3f", scale_fac * float(values[Ival])));
+        }
+    }
+    
+    //This is the current method used to accept data from Brainflow as floats
+    private void writeAccValues(float[] values) {
+        int nVal = values.length;
+        for (int i = 0; i < nVal; i++) {
+            output.print(", ");
+            output.print(String.format(Locale.US, "%.3f", values[i]));
         }
     }
 

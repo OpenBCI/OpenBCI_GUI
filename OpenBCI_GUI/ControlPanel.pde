@@ -413,7 +413,7 @@ class ControlPanel {
         //auto-update serial list
         if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
             println("Refreshing port list...");
-            refreshPortList();
+            refreshPortListCyton();
         }
 
         //update all boxes if they need to be
@@ -655,7 +655,7 @@ class ControlPanel {
         if (hub.isPortOpen()) hub.closePort();
     }
 
-    public void refreshPortList(){
+    private void refreshPortListCyton(){
         serialPorts = new String[Serial.list().length];
         serialPorts = Serial.list();
         serialList.items.clear();
@@ -664,6 +664,46 @@ class ControlPanel {
             serialList.addItem(makeItem(tempPort));
         }
         serialList.updateMenu();
+    }
+
+    private void refreshPortListGanglion() {
+        try {
+            output("BLE Devices Refreshing");
+            bleList.items.clear();
+            // todo[brainflow] get serial port
+            String comPort = getBLED112Port();
+            if (comPort != null) {
+                BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                {
+                    // todo[brainflow] provide mac address to the board class
+                    bleList.addItem(makeItem(entry.getKey()));
+                    bleList.updateMenu();
+                }
+            } else {
+                outputError("No BLED112 Dongle Found");
+            }
+        }
+        catch (GanglionError e)
+        {
+            println("Exception in ganglion scanning.");
+            e.printStackTrace ();
+        }
+    }
+
+    private String getBLED112Port() {
+        String name = "Low Energy Dongle";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
+                return found;
+            }
+        }
+        return null;
     }
 
     public void hideAllBoxes() {
@@ -1214,27 +1254,11 @@ class ControlPanel {
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
             output("Serial/COM List Refreshed");
-            refreshPortList();
+            refreshPortListCyton();
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            try {
-                output("BLE Devices Refreshing");
-                bleList.items.clear();
-                // todo[brainflow] get serial port
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions ("COM4", 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
-                }
-            }
-            catch (GanglionError e)
-            {
-                println("Exception in ganglion scanning.");
-                e.printStackTrace ();
-            }
+            refreshPortListGanglion();
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1264,28 +1288,11 @@ class ControlPanel {
         }
 
         if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
-            try {
-                output("BLE Devices Refreshing");
-                bleList.items.clear();
-                // todo[brainflow] get serial port
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions ("COM4", 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
-                }
-            }
-            catch (GanglionError e)
-            {
-                println("Exception in ganglion scanning.");
-                e.printStackTrace ();
-            }
+            refreshPortListGanglion();
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
@@ -1745,22 +1752,22 @@ class SerialBox {
     }
 
     public void attemptAutoConnectCyton() {
+        println("ControlPanel: Attempting to Auto-Connect to Cyton");
         //Fetch the number of com ports...
         int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
         String _regex = "";
+        if (isMac()) {
+            _regex = "^/dev/cu.usbserial-DM.*$";
+        } else if (isWindows()) {
+            _regex = "COM.*$";
+        } else if (isLinux()) {
+            _regex = "^/dev/ttyUSB.*$";
+        }
         //Then look for matching cyton dongle
         for (int i = 0; i < numComPorts; i++) {
             String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
-            if (isMac()) {
-                _regex = "^/dev/tty.usbserial-DM.*$";
-            } else if (isWindows()) {
-                _regex = "COM.*$";
-            } else if (isLinux()) {
-                _regex = "^/dev/ttyUSB.*$";
-            }
             if (ableToConnect(comPort, _regex)) return;
-        } //end for loop for all com ports
-        
+        }
     } //end attempAutoConnectCyton 
 
     private boolean ableToConnect(String _comPort, String _regex) {
@@ -1768,10 +1775,10 @@ class SerialBox {
             //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
             String[] foundCytonPort = match(_comPort, _regex);
             if (foundCytonPort != null) {  // If not null, then a match was found
-                println("ControlPanel: Attempting to connect to " + _comPort);
+                println("ControlPanel: Connect using comPort: " + _comPort);
                 openBCI_portName = foundCytonPort[0];
                 initButtonPressed();
-                if (systemMode == SYSTEMMODE_POSTINIT) return true;
+                return true;
             }
             return false;
         } else {
@@ -1830,7 +1837,6 @@ class BLEBox {
         w = _w;
         h = 140 + _padding;
         padding = _padding;
-
         refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
         bleList.setPosition(x + padding, y + padding*3 + 8);

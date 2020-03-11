@@ -52,10 +52,11 @@ import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
 import edu.ucsd.sccn.LSL; //for LSL
 //These are used by LSL
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
-import com.sun.jna.Pointer;
+//import com.sun.jna.Library;
+//import com.sun.jna.Native;
+//import com.sun.jna.Platform;
+//import com.sun.jna.Pointer;
+import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -710,7 +711,7 @@ void initSystem() throws Exception {
             String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
             String ganglionMac = BLEMACAddrMap.get(ganglionName);
             println("MAC address for Ganglion is " + ganglionMac);
-            currentBoard = new BoardGanglion("COM4", ganglionMac);
+            currentBoard = new BoardGanglion(controlPanel.getBLED112Port(), ganglionMac);
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR();
