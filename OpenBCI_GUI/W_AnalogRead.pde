@@ -29,7 +29,6 @@ class W_AnalogRead extends Widget {
     private boolean allowSpillover = false;
     private boolean visible = true;
     private boolean updating = true;
-    private boolean analogReadOn = false;
 
     //Initial dropdown settings
     private int arInitialVertScaleIndex = 5;
@@ -85,7 +84,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         }
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
+        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p5,12);
         analogModeButton.setColorNotPressed(color(57,128,204));
@@ -194,14 +193,10 @@ class W_AnalogRead extends Widget {
                 } else {
                     output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
                 }
-                w_digitalRead.digitalReadOn = false;
-                w_markermode.markerModeOn = false;
-                w_pulsesensor.analogReadOn = true;
             } else {
                 analogBoard.setAnalogActive(false);
                 output("Starting to read accelerometer");
             }
-            analogReadOn = !analogReadOn;
         }
         analogModeButton.setIsActive(false);
     }

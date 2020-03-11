@@ -21,7 +21,6 @@ class W_DigitalRead extends Widget {
 
     private boolean visible = true;
     private boolean updating = true;
-    boolean digitalReadOn = false;
 
     Button digitalModeButton;
 
@@ -79,7 +78,7 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
+        digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "DIGITAL TOGGLE", 12);
         digitalModeButton.setCornerRoundess((int)(navHeight-6));
         digitalModeButton.setFont(p5,12);
         digitalModeButton.setColorNotPressed(color(57,128,204));
@@ -197,14 +196,10 @@ class W_DigitalRead extends Widget {
                 } else {
                     output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                 }
-                w_analogRead.analogReadOn = false;
-                w_pulsesensor.analogReadOn = false;
-                w_markermode.markerModeOn = false;
             } else {
                 digitalBoard.setDigitalActive(false);
                 output("Starting to read accelerometer");
             }
-            digitalReadOn = !digitalReadOn;
         }
         digitalModeButton.setIsActive(false);
     }

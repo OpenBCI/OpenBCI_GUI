@@ -40,7 +40,6 @@ class W_MarkerMode extends Widget {
     float synthTime;
     int synthCount;
 
-    boolean markerModeOn = false;
     Button markerModeButton;
 
     private MarkerCapableBoard markerBoard;
@@ -137,22 +136,20 @@ class W_MarkerMode extends Widget {
             fill(50);
             textFont(p3, 16);
 
-            if (eegDataSource == DATASOURCE_CYTON && !markerBoard.isMarkerActive()) {
-                markerModeButton.setString("Turn Marker On");
-                markerModeButton.draw();
-            } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                markerModeButton.draw();
-                drawMarkerValues();
-                drawMarkerWave();
-            } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {  // PLAYBACK
-                drawMarkerValues();
-                drawMarkerWave2();
-            } else {
+            if (markerBoard.isMarkerActive()) {
                 markerModeButton.setString("Turn Marker Off");
-                markerModeButton.draw();
                 drawMarkerValues();
-                drawMarkerWave();
+                if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+                    drawMarkerWave2();
+                } else {
+                    drawMarkerWave();
+                }
             }
+            else {
+                markerModeButton.setString("Turn Marker On");
+            }
+
+            markerModeButton.draw();
         }
         popStyle();
     }
@@ -203,21 +200,12 @@ class W_MarkerMode extends Widget {
                 if (!markerBoard.isMarkerActive()) {
                     markerBoard.setMarkerActive(true);
                     output("Starting to read markers");
-                    markerModeButton.setString("Turn Marker Off");
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_digitalRead.digitalReadOn = false;
                     setupUDPMarkerListener();
                 } else {
                     markerBoard.setMarkerActive(false);
                     output("Starting to read accelerometer");
-                    markerModeButton.setString("Turn Marker On");
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_digitalRead.digitalReadOn = false;
                     killUDPMarkerListener();
                 }
-                markerModeOn = !markerModeOn;
             } 
         }
         markerModeButton.setIsActive(false);
