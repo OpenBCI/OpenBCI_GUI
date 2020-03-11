@@ -95,7 +95,6 @@ abstract class BoardBrainFlow implements Board {
             // and it looks like smth processing specific
             try {
                 BoardShim.enable_dev_board_logger();
-                BoardShim.set_log_file("brainflow_log.txt");
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
