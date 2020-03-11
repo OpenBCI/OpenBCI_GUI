@@ -8,6 +8,7 @@ abstract class BoardBrainFlow implements Board {
 
     protected int samplingRate = 0;
     protected int packetNumberChannel = 0;
+    protected int timeStampChannel = 0;
     protected int[] dataChannels = {};
     protected int[] accelChannels = {};
 
@@ -76,6 +77,7 @@ abstract class BoardBrainFlow implements Board {
         try {
             samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
+            timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
             dataChannels = getEXGChannels();
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
         } catch (BrainFlowError e) {
@@ -128,10 +130,8 @@ abstract class BoardBrainFlow implements Board {
         }
 
         double[][] data;
-        int timestamp_channel = 0;
         try {
             data = boardShim.get_board_data();
-            timestamp_channel = BoardShim.get_timestamp_channel (getBoardIdInt());
         }
         catch (BrainFlowError e) {
             println ("ERROR: Exception trying to get board data");
@@ -152,12 +152,12 @@ abstract class BoardBrainFlow implements Board {
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
             dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
         }
-        timestamps = Arrays.copyOfRange (data[timestamp_channel], 0, data[timestamp_channel].length);
     }
 
     protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
 
         dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
+        dataPacket.timeStamp = (long)values[timeStampChannel]*1000;
 
         for (int i=0; i < dataChannels.length; i++)
         {
