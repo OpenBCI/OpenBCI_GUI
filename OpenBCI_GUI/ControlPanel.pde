@@ -1753,38 +1753,29 @@ class SerialBox {
 
     public void attemptAutoConnectCyton() {
         println("ControlPanel: Attempting to Auto-Connect to Cyton");
-        //Fetch the number of com ports...
-        int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
-        String _regex = "";
-        if (isMac()) {
-            _regex = "^/dev/cu.usbserial-DM.*$";
-        } else if (isWindows()) {
-            _regex = "COM.*$";
-        } else if (isLinux()) {
-            _regex = "^/dev/ttyUSB.*$";
-        }
-        //Then look for matching cyton dongle
-        for (int i = 0; i < numComPorts; i++) {
-            String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
-            if (ableToConnect(comPort, _regex)) return;
-        }
-    } //end attempAutoConnectCyton 
-
-    private boolean ableToConnect(String _comPort, String _regex) {
-        if (systemMode < SYSTEMMODE_POSTINIT) {
-            //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
-            String[] foundCytonPort = match(_comPort, _regex);
-            if (foundCytonPort != null) {  // If not null, then a match was found
-                println("ControlPanel: Connect using comPort: " + _comPort);
-                openBCI_portName = foundCytonPort[0];
-                initButtonPressed();
-                return true;
-            }
-            return false;
-        } else {
-            return true;
+        String comPort = getCytonComPort();
+        if (comPort != null) {
+            println("ControlPanel: Connect using comPort: " + comPort);
+            openBCI_portName = comPort;
+            initButtonPressed();
+            buttonHelpText.setVisible(false);
         }
     }
+
+    private String getCytonComPort() {
+        String name = "FT231X USB UART";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                return found;
+            }
+        }
+        return null;
+    }    
 };
 
 class ComPortBox {
