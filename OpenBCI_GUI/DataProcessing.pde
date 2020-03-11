@@ -71,10 +71,8 @@ int getDataIfAvailable(int pointCounter) {
                 for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
                 //println(timestamps.length);
                 long timestamp = (long) (timestamps[(pointCounter) % (timestamps.length+1)] * 1000);
+                // todo[brainflow] This method will be used to save data to ODF or BDF playback file
                 //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
-                ///////////////////////////////////////
-                //WORKING HERE TO RESTORE DATALOGGING//
-                ///////////////////////////////////////
                 //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
                 pointCounter++; //increment counter for "little buffer"
             }
