@@ -206,7 +206,7 @@ String shortenString(String str, float maxWidth, PFont font) {
     return s1 + "..." + s2;
 }
 
-int lerpInt(int first, int second, float bias)
+int lerpInt(long first, long second, float bias)
 {
     return round(lerp(first, second, bias));    
 }
@@ -235,6 +235,7 @@ DataPacket_ADS1299 CreateInterpolatedPacket(DataPacket_ADS1299 first, DataPacket
     }
 
     interpolated.sampleIndex = lerpInt(first.sampleIndex, second.sampleIndex, bias);
+    interpolated.timeStamp = lerpInt(first.timeStamp, second.timeStamp, bias);
 
     return interpolated;
 }
@@ -264,6 +265,7 @@ class DataPacket_ADS1299 {
     private final int rawAuxSize = 2;
 
     int sampleIndex;
+    long timeStamp;
     int[] values;
     int[] auxValues;
     byte[][] rawValues;
@@ -285,6 +287,7 @@ class DataPacket_ADS1299 {
     int copyTo(DataPacket_ADS1299 target) { return copyTo(target, 0, 0); }
     private int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
         target.sampleIndex = sampleIndex;
+        target.timeStamp = timeStamp;
         return copyValuesAndAuxTo(target, target_startInd_values, target_startInd_aux);
     }
     int copyValuesAndAuxTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
