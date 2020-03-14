@@ -311,6 +311,7 @@ class W_Networking extends Widget {
             text("Name", column0,row2);
             text("Type", column0,row3);
             text("# Chan", column0, row4);
+            text("Filters",column0,row5);
         } else if (protocolMode.equals("Serial")) {
             textFont(f4,40);
             text("Serial", x+20,y+h/8+15);
