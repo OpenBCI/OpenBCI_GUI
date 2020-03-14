@@ -1265,7 +1265,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Wifi Devices Refreshing");
                 wifiList.items.clear();
-                hub.searchDeviceStart();
+                //hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
             }
@@ -1335,7 +1335,7 @@ class ControlPanel {
                 output("Protocol Wifi Selected for Cyton");
                 if (hub.isPortOpen()) hub.closePort();
                 selectedProtocol = BoardProtocol.WIFI;
-                hub.searchDeviceStart();
+                //hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
             }

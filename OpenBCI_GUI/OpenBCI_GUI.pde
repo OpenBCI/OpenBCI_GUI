@@ -132,11 +132,6 @@ String wifi_ipAddress = "192.168.4.1";
 // and I dont brave enough to touch code in ControlPanel.pde
 String novaXR_ipAddress = "192.168.4.1";
 
-final static String PROTOCOL_BLE = "ble";
-final static String PROTOCOL_BLED112 = "bled112";
-final static String PROTOCOL_SERIAL = "serial";
-final static String PROTOCOL_WIFI = "wifi";
-
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
@@ -698,7 +693,7 @@ void initSystem() throws Exception {
             // TODO[brainflow] : do we need these two lines?
             int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
-            currentBoard = new BoardCyton(openBCI_portName, nchan == 16);
+            currentBoard = new BoardCyton(openBCI_portName, wifi_ipAddress, nchan == 16, selectedProtocol == BoardProtocol.WIFI);
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardSynthetic();
@@ -706,11 +701,16 @@ void initSystem() throws Exception {
         case DATASOURCE_PLAYBACKFILE:
             break;
         case DATASOURCE_GANGLION:
-            // todo[brainflow] temp hardcode
-            String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
-            String ganglionMac = BLEMACAddrMap.get(ganglionName);
-            println("MAC address for Ganglion is " + ganglionMac);
-            currentBoard = new BoardGanglion(controlPanel.getBLED112Port(), ganglionMac);
+            if (selectedProtocol == BoardProtocol.WIFI) {
+                currentBoard = new BoardGanglion(wifi_ipAddress);
+            }
+            else {
+                // todo[brainflow] temp hardcode
+                String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
+                String ganglionMac = BLEMACAddrMap.get(ganglionName);
+                println("MAC address for Ganglion is " + ganglionMac);
+                currentBoard = new BoardGanglion(controlPanel.getBLED112Port(), ganglionMac);
+            }
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR();
