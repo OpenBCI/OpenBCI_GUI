@@ -177,7 +177,8 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
 
 void system_status(RadioConfigBox rcConfig){
     println("Radios_Config: system_status");
-
+    rcStringReceived = "";
+    board = null;
     if(board == null){
         if(!connect_to_portName(rcConfig)){
             return;
