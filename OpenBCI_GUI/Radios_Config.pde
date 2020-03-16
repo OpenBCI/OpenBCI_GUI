@@ -143,7 +143,6 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
             return true;
         }
         catch (RuntimeException e){
-            e.printStackTrace();
             if (e.getMessage().contains("Port busy")) {
                 serial_output = null;
                 rcConfig.print_onscreen("Port Busy.\n\nTry a different port?");
