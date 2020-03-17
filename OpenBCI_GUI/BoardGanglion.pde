@@ -1,4 +1,4 @@
-class BoardGanglion extends BoardBrainFlow {
+class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard {
 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -8,6 +8,7 @@ class BoardGanglion extends BoardBrainFlow {
     private String ipAddress = "";
     private BoardIds boardId = BoardIds.GANGLION_BOARD;
     private boolean isCheckingImpedance = false;
+    private boolean isGettingAccel = false;
 
     public BoardGanglion(String serialPort, String macAddress) {
         super();
@@ -50,8 +51,31 @@ class BoardGanglion extends BoardBrainFlow {
         configBoard(str(charsToUse[channelIndex]));
     }
 
-    public void setAccelSettings(boolean active) {
+    @Override
+    public boolean initialize()
+    {
+        // turn on accel by default, or is it handled somewhere else?
+        boolean res = super.initialize();
+        if (res)
+            setAccelerometerActive(true);
+        return res;
+    }
+
+    @Override
+    public boolean isAccelerometerActive()
+    {
+        return isGettingAccel;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
         configBoard(active ? "n" : "N");
+        isGettingAccel = active;
+    }
+
+    @Override
+    public float[] getLastValidAccelValues() {
+        return lastValidAccelValues;
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
