@@ -34,6 +34,7 @@ class BoardNovaXR extends BoardBrainFlow implements ImpedanceSettingsBoard {
         configBoard(str(charsToUse[channelIndex]));
     }
 
+    @Override
     public void setImpedanceSettings(int channel, char pORn, boolean active) {
         char p = '0';
         char n = '0';

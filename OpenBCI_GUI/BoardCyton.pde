@@ -74,10 +74,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         configBoard(str(charsToUse[channelIndex]));
     }
 
+    @Override
     public boolean isAccelerometerActive() {
         return getBoardMode() == CytonBoardMode.DEFAULT;
     }
 
+    @Override
     public void setAccelerometerActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.DEFAULT);
@@ -85,6 +87,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         // no way of turning off accel.
     }
 
+    @Override
     public float[] getLastValidAccelValues() {
         return lastValidAccelValues;
     }

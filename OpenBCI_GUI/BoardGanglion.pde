@@ -48,16 +48,19 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
         return res;
     }
 
+    @Override
     public boolean isAccelerometerActive()
     {
         return isGettingAccel;
     }
 
+    @Override
     public void setAccelerometerActive(boolean active) {
         configBoard(active ? "n" : "N");
         isGettingAccel = active;
     }
 
+    @Override
     public float[] getLastValidAccelValues() {
         return lastValidAccelValues;
     }
