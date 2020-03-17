@@ -5,12 +5,23 @@ class BoardGanglion extends BoardBrainFlow {
     
     private String serialPort = "";
     private String macAddress = "";
+    private String ipAddress = "";
+    private BoardIds boardId = BoardIds.GANGLION_BOARD;
     private boolean isCheckingImpedance = false;
 
     public BoardGanglion(String serialPort, String macAddress) {
         super();
         this.serialPort = serialPort;
         this.macAddress = macAddress;
+
+        boardId = BoardIds.GANGLION_BOARD;
+    }
+
+    public BoardGanglion(String ipAddress) {
+        super();
+        this.ipAddress = ipAddress;
+
+        boardId = BoardIds.GANGLION_WIFI_BOARD;
     }
 
     // implement mandatory abstract functions
@@ -19,12 +30,14 @@ class BoardGanglion extends BoardBrainFlow {
         BrainFlowInputParams params = new BrainFlowInputParams();
         params.serial_port = serialPort;
         params.mac_address = macAddress;
+        params.ip_address = ipAddress;
+        params.ip_port = 6677;
         return params;
     }
 
     @Override
     public BoardIds getBoardId() {
-        return BoardIds.GANGLION_BOARD;
+        return boardId;
     }
 
     @Override

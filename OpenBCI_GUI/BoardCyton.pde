@@ -29,27 +29,38 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
-    private String port = "";
+    private String serialPort = "";
+    private String ipAddress = "";
     private BoardIds boardId = BoardIds.CYTON_BOARD;
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
 
-    public BoardCyton(String serialPort, boolean daisy) {
+    public BoardCyton(String serialPort, String ipAddress, boolean daisy, boolean wifi) {
         super();
 
-        // TODO[brainflow] : WIFI MODE
-        if (daisy) { // 16 channels selected
-            boardId = BoardIds.CYTON_DAISY_BOARD;
+        if (wifi) {
+            if (daisy) { // 16 channels selected
+                boardId = BoardIds.CYTON_DAISY_WIFI_BOARD;
+            } else {
+                boardId = BoardIds.CYTON_WIFI_BOARD;
+            }
+            this.ipAddress = ipAddress;
         } else {
-            boardId = BoardIds.CYTON_BOARD;
+            if (daisy) { // 16 channels selected
+                boardId = BoardIds.CYTON_DAISY_BOARD;
+            } else {
+                boardId = BoardIds.CYTON_BOARD;
+            }
+            this.serialPort = serialPort;
         }
-        port = serialPort;
     }
 
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.serial_port = port;
+        params.serial_port = serialPort;
+        params.ip_address = ipAddress;
+        params.ip_port = 6677;
         return params;
     }
 

@@ -153,6 +153,11 @@ final static String UDP_BURST = "udpBurst";
 final static String WIFI_DYNAMIC = "dynamic";
 final static String WIFI_STATIC = "static";
 
+final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_BLED112 = "bled112";
+final static String PROTOCOL_SERIAL = "serial";
+final static String PROTOCOL_WIFI = "wifi";
+
 void clientEvent(Client someClient) {
     int p;
     char newChar;
