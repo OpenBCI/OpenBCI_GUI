@@ -8,7 +8,7 @@ clone_depth: 3
 build: off
 
 install:
-  - mkdir %APPVEYOR_BUILD_FOLDER%\temp && cd %APPVEYOR_BUILD_FOLDER%\temp && Start-FileDownload 'https://download.processing.org/processing-3.5.4-windows64.zip'
+  - mkdir %APPVEYOR_BUILD_FOLDER%\temp && cd %APPVEYOR_BUILD_FOLDER%\temp && appveyor DownloadFile 'https://download.processing.org/processing-3.5.4-windows64.zip'
   - cd %APPVEYOR_BUILD_FOLDER%\temp && 7z e processing-3.5.4-windows64.zip && ls 
   # Processing creates Processing folder in Documents if there is no one, run it with error to create folder
   - echo "running processing" || %APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4\processing-java.exe --force --sketch=%APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\ --output=%APPVEYOR_BUILD_FOLDER%\tmp --build || echo "set ec to 0"
