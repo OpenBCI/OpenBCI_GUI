@@ -143,9 +143,10 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
             return true;
         }
         catch (RuntimeException e){
-            if (e.getMessage().contains("<init>")) {
+            if (e.getMessage().contains("Port busy")) {
                 serial_output = null;
-                println("Radios_Config: connect_to_portName: Port in use, trying again later...");
+                rcConfig.print_onscreen("Port Busy.\n\nTry a different port?");
+                outputError("Radios_Config: Serial Port in use. Try another port or unplug/plug dongle.");
                 // portIsOpen = false;
             } else {
                 println("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
@@ -177,11 +178,10 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
 
 void system_status(RadioConfigBox rcConfig){
     println("Radios_Config: system_status");
-
-    if(board == null){
-        if(!connect_to_portName(rcConfig)){
-            return;
-        }
+    rcStringReceived = "";
+    board = null;
+    if(!connect_to_portName(rcConfig)){
+        return;
     }
     if(board != null){
         board.write(0xF0);
