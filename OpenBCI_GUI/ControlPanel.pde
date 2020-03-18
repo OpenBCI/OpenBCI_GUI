@@ -1189,7 +1189,6 @@ class ControlPanel {
                         wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                         println("Static IP address of " + wifi_ipAddress);
                         output("Static IP address of " + wifi_ipAddress);
-                        hub.examineWifi(wifi_ipAddress);
                         wcBox.isShowing = true;
                         popOutWifiConfigButton.setString("<");
                     } else {
@@ -1197,7 +1196,6 @@ class ControlPanel {
                             output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at openbci.github.io/Documentation/");
                         } else {
                             output("Attempting to connect to WiFi Shield named " + wifi_portName);
-                            hub.examineWifi(wifi_portName);
                             wcBox.isShowing = true;
                             popOutWifiConfigButton.setString("<");
                         }
@@ -1265,7 +1263,7 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Wifi Devices Refreshing");
                 wifiList.items.clear();
-                hub.searchDeviceStart();
+                //hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
             }
@@ -1335,7 +1333,7 @@ class ControlPanel {
                 output("Protocol Wifi Selected for Cyton");
                 if (hub.isPortOpen()) hub.closePort();
                 selectedProtocol = BoardProtocol.WIFI;
-                hub.searchDeviceStart();
+                //hub.searchDeviceStart();
             } else {
                 output("Please wait till hub is fully initalized");
             }
