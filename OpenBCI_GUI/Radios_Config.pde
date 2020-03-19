@@ -163,6 +163,37 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
     }
 }
 
+boolean connect_to_portName(){
+    if(openBCI_portName != "N/A"){
+        output("Attempting to open Serial/COM port: " + openBCI_portName);
+        try {
+            println("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
+            serial_output = new Serial(this, openBCI_portName, openBCI_baud); //open the com port
+            serial_output.clear(); // clear anything in the com port's buffer
+            // portIsOpen = true;
+            println("Radios_Config: connect_to_portName: Port is open!");
+            // changeState(HubState.COMINIT);
+            board = serial_output;
+            return true;
+        }
+        catch (RuntimeException e){
+            if (e.getMessage().contains("Port busy")) {
+                serial_output = null;
+                outputError("Radios_Config: Serial Port in use. Try another port or unplug/plug dongle.");
+                // portIsOpen = false;
+            } else {
+                println("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
+            }
+            board = null;
+            println("Failed to connect using " + openBCI_portName);
+            return false;
+        }
+    } else {
+        output("No Serial/COM port selected. Please select your Serial/COM port and retry");
+        return false;
+    }
+}
+
 
 
 //=========== GET SYSTEM STATUS ============

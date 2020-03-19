@@ -1755,8 +1755,11 @@ class SerialBox {
         if (comPort != null) {
             println("ControlPanel: Connect using comPort: " + comPort);
             openBCI_portName = comPort;
-            initButtonPressed();
-            buttonHelpText.setVisible(false);
+            if (connect_to_portName()) {
+                board.stop();
+                initButtonPressed();
+                buttonHelpText.setVisible(false);
+            }
         }
     }
 
