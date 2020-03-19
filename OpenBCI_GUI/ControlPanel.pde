@@ -123,7 +123,7 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
-Serial board;
+Serial serial_direct_board;
 
 ChannelPopup channelPopup;
 PollPopup pollPopup;
@@ -642,10 +642,10 @@ class ControlPanel {
         // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOutRadioConfigButton.setString("Manual >");
         rcBox.print_onscreen("");
-        if (board != null) {
-            board.stop();
+        if (serial_direct_board != null) {
+            serial_direct_board.stop();
         }
-        board = null;
+        serial_direct_board = null;
     }
 
     public void hideWifiPopoutBox() {
@@ -1142,7 +1142,7 @@ class ControlPanel {
 
         if (rcBox.isShowing) {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
-                // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
+                // if(serial_direct_board != null) // Radios_Config will handle creating the serial port JAM 1/2017
                 get_channel(rcBox);
                 getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
@@ -1755,8 +1755,8 @@ class SerialBox {
         if (comPort != null) {
             openBCI_portName = comPort;
             if (system_status()) {
-                board.stop(); //Stop serial port connection
-                board = null;
+                serial_direct_board.stop(); //Stop serial port connection
+                serial_direct_board = null;
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
