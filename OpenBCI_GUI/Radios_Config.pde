@@ -121,9 +121,31 @@ boolean print_bytes(RadioConfigBox rc){
     }
 }
 
+boolean print_bytes(){
+    if(board_message != null){
+        println("Radios_Config: " + board_message.toString());
+        rcStringReceived = board_message.toString();
+        if(rcStringReceived.equals("Failure: System is Down")) {
+            rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN.";
+        } else if (rcStringReceived.equals("Success: System is Up")) {
+            rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
+        } else if (rcStringReceived.startsWith("Success: Host override")) {
+            rcStringReceived = "Please press AUTOSCAN one more time.";
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void print_bytes_error(RadioConfigBox rcConfig){
     println("Radios_Config: Error reading from Serial/COM port");
     rcConfig.print_onscreen("Error reading from Serial port.\n\nTry a different port?");
+    board = null;
+}
+
+void print_bytes_error(){
+    println("Radios_Config: Error reading from Serial/COM port");
     board = null;
 }
 
@@ -232,6 +254,37 @@ void system_status(RadioConfigBox rcConfig){
     } else {
         println("Error, no board connected");
         rcConfig.print_onscreen("No board connected!");
+    }
+}
+
+boolean system_status(){
+    println("Cyton AutoConnect Button: system_status");
+    rcStringReceived = "";
+    board = null;
+    if(!connect_to_portName()){
+        return false;
+    }
+    if(board != null){
+        board.write(0xF0);
+        board.write(0x07);
+        delay(100);
+        if(!print_bytes()){
+            print_bytes_error();
+            return false;
+        } else {
+            String[] s = split(rcStringReceived, ':');
+            if (s[0].equals("Success")) {
+                print_bytes();
+                outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                return true;
+            } else {
+                outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                return false;
+            }
+        }
+    } else {
+        println("Error, no board connected");
+        return false;
     }
 }
 

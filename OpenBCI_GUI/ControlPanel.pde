@@ -1753,10 +1753,10 @@ class SerialBox {
         println("ControlPanel: Attempting to Auto-Connect to Cyton");
         String comPort = getCytonComPort();
         if (comPort != null) {
-            println("ControlPanel: Connect using comPort: " + comPort);
             openBCI_portName = comPort;
-            if (connect_to_portName()) {
-                board.stop();
+            if (system_status()) {
+                board.stop(); //Stop serial port connection
+                board = null;
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
