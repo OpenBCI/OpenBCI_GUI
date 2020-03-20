@@ -123,7 +123,7 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
-Serial board;
+Serial serial_direct_board;
 
 ChannelPopup channelPopup;
 PollPopup pollPopup;
@@ -642,10 +642,10 @@ class ControlPanel {
         // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOutRadioConfigButton.setString("Manual >");
         rcBox.print_onscreen("");
-        if (board != null) {
-            board.stop();
+        if (serial_direct_board != null) {
+            serial_direct_board.stop();
         }
-        board = null;
+        serial_direct_board = null;
     }
 
     public void hideWifiPopoutBox() {
@@ -1142,7 +1142,7 @@ class ControlPanel {
 
         if (rcBox.isShowing) {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
-                // if(board != null) // Radios_Config will handle creating the serial port JAM 1/2017
+                // if(serial_direct_board != null) // Radios_Config will handle creating the serial port JAM 1/2017
                 get_channel(rcBox);
                 getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
@@ -1751,38 +1751,32 @@ class SerialBox {
 
     public void attemptAutoConnectCyton() {
         println("ControlPanel: Attempting to Auto-Connect to Cyton");
-        //Fetch the number of com ports...
-        int numComPorts = cp5.get(MenuList.class, "serialList").getListSize();
-        String _regex = "";
-        if (isMac()) {
-            _regex = "^/dev/cu.usbserial-DM.*$";
-        } else if (isWindows()) {
-            _regex = "COM.*$";
-        } else if (isLinux()) {
-            _regex = "^/dev/ttyUSB.*$";
-        }
-        //Then look for matching cyton dongle
-        for (int i = 0; i < numComPorts; i++) {
-            String comPort = (String)cp5.get(MenuList.class, "serialList").getItem(i).get("headline");
-            if (ableToConnect(comPort, _regex)) return;
-        }
-    } //end attempAutoConnectCyton 
-
-    private boolean ableToConnect(String _comPort, String _regex) {
-        if (systemMode < SYSTEMMODE_POSTINIT) {
-            //There are quite a few serial ports on Linux, but not many that start with /dev/ttyUSB
-            String[] foundCytonPort = match(_comPort, _regex);
-            if (foundCytonPort != null) {  // If not null, then a match was found
-                println("ControlPanel: Connect using comPort: " + _comPort);
-                openBCI_portName = foundCytonPort[0];
+        String comPort = getCytonComPort();
+        if (comPort != null) {
+            openBCI_portName = comPort;
+            if (system_status()) {
+                serial_direct_board.stop(); //Stop serial port connection
+                serial_direct_board = null;
                 initButtonPressed();
-                return true;
+                buttonHelpText.setVisible(false);
             }
-            return false;
-        } else {
-            return true;
         }
     }
+
+    private String getCytonComPort() {
+        String name = "FT231X USB UART";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                return found;
+            }
+        }
+        return null;
+    }    
 };
 
 class ComPortBox {
