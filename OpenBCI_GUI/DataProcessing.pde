@@ -58,7 +58,7 @@ int getDataIfAvailable(int pointCounter) {
     }
 
     // todo[brainflow] - this code here is just a copypaste get rid of it
-    if (eegDataSource == DATASOURCE_CYTON) {
+    if (currentBoard instanceof BoardCyton) {
         //get data from serial port as it streams in
         //next, gather any new data into the "little buffer"
         while ((curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
@@ -72,7 +72,7 @@ int getDataIfAvailable(int pointCounter) {
             long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
             // todo[brainflow] This method will be used to save data to ODF or BDF playback file
             //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
-            //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
+            saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  ((AccelerometerCapableBoard)currentBoard).getLastValidAccelValues());
             pointCounter++; //increment counter for "little buffer"
         }
     } else if (eegDataSource == DATASOURCE_GANGLION) {

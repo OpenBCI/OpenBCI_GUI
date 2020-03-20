@@ -157,7 +157,7 @@ abstract class BoardBrainFlow implements Board {
     protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
 
         dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
-        dataPacket.timeStamp = (long)values[timeStampChannel]*1000;
+        dataPacket.timeStamp = (long) (values[timeStampChannel]*1000);
 
         for (int i=0; i < dataChannels.length; i++)
         {
