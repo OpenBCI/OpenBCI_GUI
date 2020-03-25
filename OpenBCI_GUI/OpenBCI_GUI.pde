@@ -828,6 +828,8 @@ int getSampleRateSafe() {
 int getNfftSafe() {
     int sampleRate = getSampleRateSafe();
     switch (sampleRate) {
+        case 500:
+            return 512;
         case 1000:
             return 1024;
         case 1600:
