@@ -70,8 +70,8 @@ int getDataIfAvailable(int pointCounter) {
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
-            //for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            if (eegDataSource != DATASOURCE_SYNTHETIC) {
+            if (currentBoard instanceof BoardCyton ||
+                currentBoard instanceof BoardGanglion ||) {
                 long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
                 saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  ((AccelerometerCapableBoard)currentBoard).getLastValidAccelValues());
             }
