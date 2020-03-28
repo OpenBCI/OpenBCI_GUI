@@ -122,8 +122,26 @@ int getDataIfAvailable(int pointCounter) {
             int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/getSampleRateSafe())/playback_speed_fac);
             if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
             nextPlayback_millis += increment_millis;
-
+            /*
+            // generate or read the data
+            lastReadDataPacketInd = 0;
+            for (int i = 0; i < nPointsPerUpdate; i++) {
+                dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
+                switch (eegDataSource) {
+                case DATASOURCE_PLAYBACKFILE:
+                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
+                    break;
+                default:
+                    //no action
+                }
+                //gather the data into the "little buffer"
+                for (int Ichan=0; Ichan < nchan; Ichan++) {
+                    //scale the data into engineering units..."microvolts"
+                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* scaler;
+                }
+                */
             pointCounter++;
+            // } //close the loop over data points
         } // close "has enough time passed"
     }
     return pointCounter;
