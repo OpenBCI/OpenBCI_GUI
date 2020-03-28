@@ -173,7 +173,6 @@ float dataBuffY_filtY_uV[][];
 float yLittleBuff[];
 float yLittleBuff_uV[][]; //small buffer used to send data to the filters
 float accelerometerBuff[][]; // accelerometer buff 500 points
-float auxBuff[][];
 float data_elec_imp_ohm[];
 
 float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -852,7 +851,6 @@ void initCoreDataObjects() {
     dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
     yLittleBuff = new float[nPointsPerUpdate];
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
-    auxBuff = new float[3][nPointsPerUpdate];
     accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
     for (int i=0; i<n_aux_ifEnabled; i++) {
         for (int j=0; j<accelerometerBuff[0].length; j++) {
