@@ -71,7 +71,7 @@ int getDataIfAvailable(int pointCounter) {
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             if (currentBoard instanceof BoardCyton ||
-                currentBoard instanceof BoardGanglion ||) {
+                currentBoard instanceof BoardGanglion) {
                 long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
                 saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  ((AccelerometerCapableBoard)currentBoard).getLastValidAccelValues());
             }
