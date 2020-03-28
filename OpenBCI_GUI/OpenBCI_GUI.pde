@@ -699,6 +699,7 @@ void initSystem() throws Exception {
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
+            currentBoard = new BoardPlayback();
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
