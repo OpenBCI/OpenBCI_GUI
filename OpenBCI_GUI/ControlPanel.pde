@@ -228,6 +228,20 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
+    if (theEvent.isFrom("maxFileDurationCyton")) {
+        int n = (int)theEvent.getValue();
+        settings.cytonOBCIMaxFileSize = n;
+        controlPanel.dataLogBoxCyton.closeDropdown();
+        println("ControlPanel: Cyton Max Recording Duration: " + settings.fileDurations[n]);
+    }
+
+    if (theEvent.isFrom("maxFileDurationGanglion")) {
+        int n = (int)theEvent.getValue();
+        settings.ganglionOBCIMaxFileSize = n;
+        controlPanel.dataLogBoxGanglion.closeDropdown();
+        println("ControlPanel: Ganglion Max Recording Duration: " + settings.fileDurations[n]);
+    }
+
     //Check control events from widgets
     if (systemMode >= SYSTEMMODE_POSTINIT) {
         //Check for event in PlaybackHistory Widget MenuList
@@ -284,6 +298,11 @@ class ControlPanel {
     SampleRateCytonBox sampleRateCytonBox;
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
+
+    //Track Dynamic and Static WiFi mode in Control Panel
+    final public String WIFI_DYNAMIC = "dynamic";
+    final public String WIFI_STATIC = "static";
+    private String wifiSearchStyle = WIFI_DYNAMIC;
 
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
@@ -358,6 +377,14 @@ class ControlPanel {
     public void close(){
         isOpen = false;
         topNav.controlPanelCollapser.setIsActive(false);
+    }
+
+    public String getWifiSearchStyle() {
+        return wifiSearchStyle;
+    }
+
+    private void setWiFiSearchStyle(String s) {
+        wifiSearchStyle = s;
     }
 
     public void update() {
@@ -468,7 +495,7 @@ class ControlPanel {
                         wifiBox.draw();
                         dataLogBoxCyton.y = wifiBox.y + wifiBox.h;
 
-                        if (hub.getWiFiStyle() == WIFI_STATIC) {
+                        if (getWifiSearchStyle() == WIFI_STATIC) {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
                             cp5.get(MenuList.class, "wifiList").setVisible(false);
                         } else {
@@ -518,7 +545,7 @@ class ControlPanel {
                         wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
                         wifiBox.draw();
-                        if (hub.getWiFiStyle() == WIFI_STATIC) {
+                        if (getWifiSearchStyle() == WIFI_STATIC) {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
                             cp5.get(MenuList.class, "wifiList").setVisible(false);
                         } else {
@@ -856,7 +883,6 @@ class ControlPanel {
                     sampleRate200.wasPressed = true;
                     sampleRate200.setColorNotPressed(isSelected_color);
                     sampleRate1600.setColorNotPressed(colorNotPressed); //default color of button
-                    println("<<<<MouseClickedSampleRate200");
                 }
 
                 if (sampleRate1600.isMouseHere()) {
@@ -1034,9 +1060,8 @@ class ControlPanel {
                 if(wcBox.isShowing){
                     hideWifiPopoutBox();
                 } else {
-                    if (hub.getWiFiStyle() == WIFI_STATIC) {
+                    if (getWifiSearchStyle() == WIFI_STATIC) {
                         wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-                        println("Static IP address of " + wifi_ipAddress);
                         output("Static IP address of " + wifi_ipAddress);
                         wcBox.isShowing = true;
                         popOutWifiConfigButton.setString("<");
@@ -1122,12 +1147,14 @@ class ControlPanel {
         // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
             wifiBox.h = 200;
+            setWiFiSearchStyle(WIFI_DYNAMIC);
             String output = "Using Dynamic IP address of the WiFi Shield!";
             println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
             wifiBox.h = 120;
+            setWiFiSearchStyle(WIFI_STATIC);
             String output = "Using Static IP address of the WiFi Shield!";
             outputInfo(output);
             println("CP: WiFi IP: " + output);
@@ -1217,7 +1244,6 @@ class ControlPanel {
 
         if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
             currentBoard.setSampleRate(200);
-            println("Setting sample rate to 200");
         }
 
         if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
@@ -1338,7 +1364,7 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+        } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
             output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
@@ -1353,7 +1379,7 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+        } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
             output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
@@ -1389,7 +1415,7 @@ public void initButtonPressed(){
                 settings.setLogFileMaxDuration();
             }
 
-            if (hub.getWiFiStyle() == WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
+            if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
@@ -1637,9 +1663,9 @@ class WifiBox {
         padding = _padding;
 
         wifiIPAddressDynamic = new Button (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
-        if (hub.getWiFiStyle() == WIFI_DYNAMIC) wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiIPAddressStatic = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
-        if (hub.getWiFiStyle() == WIFI_STATIC) wifiIPAddressStatic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
 
         refreshWifi = new Button (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
@@ -1689,7 +1715,7 @@ class WifiBox {
         popOutWifiConfigButton.but_y = y + padding;
         popOutWifiConfigButton.draw();
 
-        if (hub.getWiFiStyle() == WIFI_STATIC) {
+        if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
             pushStyle();
             fill(bgColor);
             textFont(h3, 16);
@@ -2004,23 +2030,8 @@ class SessionDataBox {
         cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
         dropdownWasClicked = true;
         lockElements(false);
-        //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
-//////////////////////////////////////////////////////////////
-// Global functions used by the above SessionDataBox dropdowns
-void maxFileDurationCyton (int n) {
-    settings.cytonOBCIMaxFileSize = n;
-    controlPanel.dataLogBoxCyton.closeDropdown();
-    println("ControlPanel: Cyton Max Recording Duration: " + settings.fileDurations[n]);
-}
-
-void maxFileDurationGanglion (int n) {
-    settings.ganglionOBCIMaxFileSize = n;
-    controlPanel.dataLogBoxGanglion.closeDropdown();
-    println("ControlPanel: Ganglion Max Recording Duration: " + settings.fileDurations[n]);
-}
-//////////////////////////////////////////////////////////////
 
 class ChannelCountBox {
     int x, y, w, h, padding; //size and position

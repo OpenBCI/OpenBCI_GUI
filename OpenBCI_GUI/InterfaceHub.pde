@@ -150,9 +150,6 @@ final static String TCP = "tcp";
 final static String UDP = "udp";
 final static String UDP_BURST = "udpBurst";
 
-final static String WIFI_DYNAMIC = "dynamic";
-final static String WIFI_STATIC = "static";
-
 final static String PROTOCOL_BLE = "ble";
 final static String PROTOCOL_BLED112 = "bled112";
 final static String PROTOCOL_SERIAL = "serial";
@@ -244,7 +241,7 @@ class Hub {
     public int tcpBufferPositon = 0;
     private String curProtocol = PROTOCOL_WIFI;
     private String curInternetProtocol = TCP;
-    private String curWiFiStyle = WIFI_DYNAMIC;
+    private String curWiFiStyle = "dynamic"; //this has been moved to ControlPanel class
 
     private boolean waitingForResponse = false;
     private boolean searching = false;
