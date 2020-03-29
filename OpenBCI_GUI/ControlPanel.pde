@@ -189,9 +189,10 @@ public void controlEvent(ControlEvent theEvent) {
         output("Wifi Device Name = " + wifi_portName);
     }
 
-    if (theEvent.isFrom("sdTimes")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        sdSettingString = (String)bob.get("headline");
+    // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
+    if (theEvent.isFrom("sdCardTimes")) {
+        Map bob = ((ScrollableList)theEvent.getController()).getItem(int(theEvent.getValue()));
+        sdSettingString = (String)bob.get("text");
         sdSetting = int(theEvent.getValue());
         if (sdSetting != 0) {
             output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
@@ -452,15 +453,12 @@ class ControlPanel {
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-                                //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                                // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-                                //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -489,8 +487,6 @@ class ControlPanel {
                     sdBox.draw();
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
-                    // todo[brainflow] This might be necessary...checking later
-                    //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
@@ -499,10 +495,7 @@ class ControlPanel {
                 sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
-                // cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
-                // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
                 cp5.get(MenuList.class, "serialList").setVisible(false);
-                //cp5.get(MenuList.class, "sdTimes").setVisible(false);
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
@@ -659,13 +652,11 @@ class ControlPanel {
 
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
-        //
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
-        //cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
@@ -1131,14 +1122,13 @@ class ControlPanel {
         // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
             wifiBox.h = 200;
-            //String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
-            outputInfo(output);
+            String output = "Using Dynamic IP address of the WiFi Shield!";
             println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
             wifiBox.h = 120;
-            //String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
+            String output = "Using Static IP address of the WiFi Shield!";
             outputInfo(output);
             println("CP: WiFi IP: " + output);
         }
@@ -1997,14 +1987,6 @@ class SessionDataBox {
             //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
             chanButton8.setIgnoreHover(_toggle);
             chanButton16.setIgnoreHover(_toggle);
-            /*
-            if (_toggle) {
-                cp5.get(MenuList.class, "sdTimes").lock();
-            } else {
-                cp5.get(MenuList.class, "sdTimes").unlock();
-            }
-            cp5.get(MenuList.class, "sdTimes").setUpdate(!_toggle);
-            */
             if (_toggle) {
                 controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
             } else {
@@ -2475,25 +2457,6 @@ class SDBox {
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setSize(w - padding*2, int((sdTimesStrings.length / 2) + 1) * 24);
         cp5_sdBox.setAutoDraw(false);
-        //sdTimes = new MenuList(cp5, "sdTimes", w - padding*2, 108, p4);
-        //sdTimes.setPosition(x + padding, y + padding*2 + 13);
-        
-        serialPorts = Serial.list();
-
-        /*
-        //add items for the various SD times
-        sdTimes.addItem(makeItem("Do not write to SD..."));
-        sdTimes.addItem(makeItem("5 minute maximum"));
-        sdTimes.addItem(makeItem("15 minute maximum"));
-        sdTimes.addItem(makeItem("30 minute maximum"));
-        sdTimes.addItem(makeItem("1 hour maximum"));
-        sdTimes.addItem(makeItem("2 hours maximum"));
-        sdTimes.addItem(makeItem("4 hour maximum"));
-        sdTimes.addItem(makeItem("12 hour maximum"));
-        sdTimes.addItem(makeItem("24 hour maximum"));
-
-        sdTimes.activeItem = sdSetting; //added to indicate default choice (sdSetting is in OpenBCI_GUI)
-        */
     }
 
     public void update() {
@@ -2516,16 +2479,12 @@ class SDBox {
         pushStyle();
         fill(150);
         rect(cp5_sdBox.getController(sdBoxDropdownName).getPosition()[0]-1, cp5_sdBox.getController(sdBoxDropdownName).getPosition()[1]-1, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getWidth()+2, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getHeight()+2);
-        //cp5_sdBox.draw();
         popStyle();
 
         //set the correct position of the dropdown and make it visible if the SDBox class is being drawn
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setVisible(true);
         cp5_sdBox.draw();
-        
-        //sdTimes.setPosition(x + padding, y + padding*2 + 13);
-        //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
     }
 
     void createDropdown(String name, List<String> _items){
@@ -2574,7 +2533,6 @@ class SDBox {
             if (!cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
                 //println("----Closing dropdown " + maxDurDropdownName);
                 cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
-                //lockElements(false);
             }
 
         }
@@ -2585,7 +2543,6 @@ class SDBox {
                 if (cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
                     //println("++++Opening dropdown " + maxDurDropdownName);
                     cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).open();
-                    //lockElements(true);
                 }
             }
         } else {
@@ -2597,26 +2554,10 @@ class SDBox {
     void closeDropdown() {
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
         dropdownWasClicked = true;
-        //lockElements(false);
         //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
 
-//////////////////////////////////////////////////////////////
-// Global function used by the above SDBox dropdown
-void sdCardTimes (int n) {
-    //settings.cytonOBCIMaxFileSize = n;
-    sdSetting = n;
-    if (sdSetting != 0) {
-        output("OpenBCI microSD Setting = " + controlPanel.sdBox.sdTimesStrings[n] + " recording time");
-    } else {
-        output("OpenBCI microSD Setting = " + controlPanel.sdBox.sdTimesStrings[n]);
-    }
-    verbosePrint("SD setting = " + controlPanel.sdBox.sdTimesStrings[n]);
-
-    controlPanel.sdBox.closeDropdown();
-    //println("ControlPanel: Cyton SD Card Duration: " + controlPanel.sdBox.sdTimesStrings[n]);
-}
 
 class RadioConfigBox {
     int x, y, w, h, padding; //size and position
