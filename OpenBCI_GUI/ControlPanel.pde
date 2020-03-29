@@ -877,7 +877,7 @@ class ControlPanel {
             }
 
             //active buttons during DATASOURCE_PLAYBACKFILE
-            if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 if (selectPlaybackFile.isMouseHere()) {
                     selectPlaybackFile.setIsActive(true);
                     selectPlaybackFile.wasPressed = true;
@@ -893,7 +893,7 @@ class ControlPanel {
             }
 
             //active buttons during DATASOURCE_SYNTHETIC
-            if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            else if (eegDataSource == DATASOURCE_SYNTHETIC) {
                 if (synthChanButton4.isMouseHere()) {
                     synthChanButton4.setIsActive(true);
                     synthChanButton4.wasPressed = true;
@@ -918,7 +918,8 @@ class ControlPanel {
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
                 }
             }
-
+            
+            //active buttons during Cyton+WiFi/Ganglion+WiFi
             if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
                 
                 if(getIpAddress.isMouseHere()) {
@@ -1061,34 +1062,35 @@ class ControlPanel {
             }
         }
 
+        // todo[brainflow] Here are commands to interact with WiFi shield
         if (wcBox.isShowing) {
             if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_GET_IP_ADDRESS);
+                //hub.getWifiInfo(TCP_WIFI_GET_IP_ADDRESS);
                 getIpAddress.wasPressed = false;
                 getIpAddress.setIsActive(false);
             }
 
             if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_GET_FIRMWARE_VERSION);
+                //hub.getWifiInfo(TCP_WIFI_GET_FIRMWARE_VERSION);
                 getFirmwareVersion.wasPressed = false;
                 getFirmwareVersion.setIsActive(false);
             }
 
             if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_GET_MAC_ADDRESS);
+                //hub.getWifiInfo(TCP_WIFI_GET_MAC_ADDRESS);
                 getMacAddress.wasPressed = false;
                 getMacAddress.setIsActive(false);
             }
 
             if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_ERASE_CREDENTIALS);
+                //hub.getWifiInfo(TCP_WIFI_ERASE_CREDENTIALS);
                 eraseCredentials.wasPressed=false;
                 eraseCredentials.setIsActive(false);
             }
 
             if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
                 // Wifi_Config will handle creating the connection
-                hub.getWifiInfo(TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
+                //hub.getWifiInfo(TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
                 getTypeOfAttachedBoard.wasPressed=false;
                 getTypeOfAttachedBoard.setIsActive(false);
             }
@@ -1126,16 +1128,17 @@ class ControlPanel {
             }
         }
 
+        // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
             wifiBox.h = 200;
-            String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
+            //String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
             println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
             wifiBox.h = 120;
-            String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
+            //String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
             println("CP: WiFi IP: " + output);
         }
@@ -1153,17 +1156,6 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
-            /*
-            println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
-            if (isHubObjectInitialized) {
-                output("Protocol Wifi Selected for Ganglion");
-                if (hub.isPortOpen()) hub.closePort();
-                // ganglion.setInterface(BoardProtocol.WIFI);
-                hub.searchDeviceStart();
-            } else {
-                output("Please wait till hub is fully initalized");
-            }
-            */
             selectedProtocol = BoardProtocol.WIFI;
         }
 
@@ -1186,7 +1178,7 @@ class ControlPanel {
             controlPanel.hideAllBoxes();
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Cyton");
-                if (hub.isPortOpen()) hub.closePort();
+                //if (hub.isPortOpen()) hub.closePort();
                 selectedProtocol = BoardProtocol.WIFI;
                 //hub.searchDeviceStart();
             } else {
