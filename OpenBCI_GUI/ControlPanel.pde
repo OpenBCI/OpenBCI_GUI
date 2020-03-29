@@ -100,22 +100,10 @@ Button getFirmwareVersion;
 Button getMacAddress;
 Button getTypeOfAttachedBoard;
 Button sampleRate200; //Ganglion
-Button sampleRate250;
-Button sampleRate500;
-Button sampleRate1000;
+Button sampleRate250; //Cyton
+Button sampleRate500; //Cyton
+Button sampleRate1000;  //Cyton
 Button sampleRate1600; //Ganglion
-Button latencyCyton5ms;
-Button latencyCyton10ms;
-Button latencyCyton20ms;
-Button latencyGanglion5ms;
-Button latencyGanglion10ms;
-Button latencyGanglion20ms;
-Button wifiInternetProtocolCytonTCP;
-Button wifiInternetProtocolCytonUDP;
-Button wifiInternetProtocolCytonUDPBurst;
-Button wifiInternetProtocolGanglionTCP;
-Button wifiInternetProtocolGanglionUDP;
-Button wifiInternetProtocolGanglionUDPBurst;
 Button wifiIPAddressDynamic;
 Button wifiIPAddressStatic;
 
@@ -162,28 +150,12 @@ public void controlEvent(ControlEvent theEvent) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-            latencyCyton5ms.setColorNotPressed(colorNotPressed);
-            latencyCyton10ms.setColorNotPressed(isSelected_color);
-            latencyCyton20ms.setColorNotPressed(colorNotPressed);
-            hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
-            hub.setWifiInternetProtocol(UDP_BURST);
-            hub.setWiFiStyle(WIFI_DYNAMIC);
+            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_GANGLION){
             updateToNChan(4);
-            latencyGanglion5ms.setColorNotPressed(colorNotPressed);
-            latencyGanglion10ms.setColorNotPressed(isSelected_color);
-            latencyGanglion20ms.setColorNotPressed(colorNotPressed);
-            hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color);
-            wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed);
-            hub.setWifiInternetProtocol(TCP);
-            hub.setWiFiStyle(WIFI_DYNAMIC);
+            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
@@ -310,10 +282,6 @@ class ControlPanel {
     InterfaceBoxGanglion interfaceBoxGanglion;
     SampleRateCytonBox sampleRateCytonBox;
     SampleRateGanglionBox sampleRateGanglionBox;
-    LatencyCytonBox latencyCytonBox;
-    LatencyGanglionBox latencyGanglionBox;
-    WifiTransferProtcolCytonBox wifiTransferProtcolCytonBox;
-    WifiTransferProtcolGanglionBox wifiTransferProtcolGanglionBox;
     SDBox sdBox;
 
     boolean drawStopInstructions;
@@ -351,9 +319,7 @@ class ControlPanel {
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
         sampleRateCytonBox = new SampleRateCytonBox(x + w + x + w - 3, channelCountBox.y, w, h, globalPadding);
-        latencyCytonBox = new LatencyCytonBox(x + w + x + w - 3, (sampleRateCytonBox.y + sampleRateCytonBox.h), w, h, globalPadding);
-        wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
-
+        
         //boxes active when eegDataSource = Playback
         int playbackWidth = int(w * 1.35);
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
@@ -375,9 +341,6 @@ class ControlPanel {
         bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
         dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION);
         sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
-        latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
-        wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w, (latencyGanglionBox.y + latencyGanglionBox.h), w, h, globalPadding);
-        // bleHardwareBox = new BLEHardwareBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     }
 
     public void resetListItems(){
@@ -442,14 +405,10 @@ class ControlPanel {
         bleList.updateMenu();
         wifiList.updateMenu();
         dataLogBoxGanglion.update();
-        latencyCytonBox.update();
-        wifiTransferProtcolCytonBox.update();
 
         wifiBox.update();
         interfaceBoxCyton.update();
         interfaceBoxGanglion.update();
-        latencyGanglionBox.update();
-        wifiTransferProtcolGanglionBox.update();
 
         //SD File Conversion
         while (convertingSD == true) {
@@ -522,18 +481,15 @@ class ControlPanel {
                             wcBox.draw();
                         }
                         sampleRateCytonBox.draw();
-                        latencyCytonBox.draw();
-                        wifiTransferProtcolCytonBox.draw();
                     }
                     channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
                     sdBox.y = channelCountBox.y + channelCountBox.h;
                     sampleRateCytonBox.y = channelCountBox.y;
-                    latencyCytonBox.y = sampleRateCytonBox.y + sampleRateCytonBox.h;
-                    wifiTransferProtcolCytonBox.y = latencyCytonBox.y + latencyCytonBox.h;
                     channelCountBox.draw();
                     sdBox.draw();
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
+                    // todo[brainflow] This might be necessary...checking later
                     //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
@@ -579,12 +535,8 @@ class ControlPanel {
                         if(wcBox.isShowing){
                             wcBox.draw();
                         }
-                        latencyGanglionBox.y = dataLogBoxGanglion.y + dataLogBoxGanglion.h;
-                        sampleRateGanglionBox.y = latencyGanglionBox.y + latencyGanglionBox.h;
-                        wifiTransferProtcolGanglionBox.y = wifiTransferProtcolGanglionBox.y + wifiTransferProtcolGanglionBox.h;
-                        latencyGanglionBox.draw();
+                        sampleRateGanglionBox.y = dataLogBoxGanglion.y +dataLogBoxGanglion.h;
                         sampleRateGanglionBox.draw();
-                        wifiTransferProtcolGanglionBox.draw();
                     }
                     dataLogBoxGanglion.draw(); //Drawing here allows max file size dropdown to be drawn on top
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
@@ -670,7 +622,6 @@ class ControlPanel {
         try {
             output("BLE Devices Refreshing");
             bleList.items.clear();
-            // todo[brainflow] get serial port
             String comPort = getBLED112Port();
             if (comPort != null) {
                 BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
@@ -909,54 +860,6 @@ class ControlPanel {
                     sampleRate250.setColorNotPressed(colorNotPressed); //default color of button
                     sampleRate500.setColorNotPressed(colorNotPressed);
                 }
-
-                if (latencyCyton5ms.isMouseHere()) {
-                    latencyCyton5ms.setIsActive(true);
-                    latencyCyton5ms.wasPressed = true;
-                    latencyCyton5ms.setColorNotPressed(isSelected_color);
-                    latencyCyton10ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyCyton20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyCyton10ms.isMouseHere()) {
-                    latencyCyton10ms.setIsActive(true);
-                    latencyCyton10ms.wasPressed = true;
-                    latencyCyton10ms.setColorNotPressed(isSelected_color);
-                    latencyCyton5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyCyton20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyCyton20ms.isMouseHere()) {
-                    latencyCyton20ms.setIsActive(true);
-                    latencyCyton20ms.wasPressed = true;
-                    latencyCyton20ms.setColorNotPressed(isSelected_color);
-                    latencyCyton5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyCyton10ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolCytonTCP.isMouseHere()) {
-                    wifiInternetProtocolCytonTCP.setIsActive(true);
-                    wifiInternetProtocolCytonTCP.wasPressed = true;
-                    wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolCytonUDP.isMouseHere()) {
-                    wifiInternetProtocolCytonUDP.setIsActive(true);
-                    wifiInternetProtocolCytonUDP.wasPressed = true;
-                    wifiInternetProtocolCytonUDP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolCytonUDPBurst.isMouseHere()) {
-                    wifiInternetProtocolCytonUDPBurst.setIsActive(true);
-                    wifiInternetProtocolCytonUDPBurst.wasPressed = true;
-                    wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed); //default color of button
-                }
             }
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -1015,54 +918,6 @@ class ControlPanel {
                     sampleRate1600.wasPressed = true;
                     sampleRate1600.setColorNotPressed(isSelected_color);
                     sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyGanglion5ms.isMouseHere()) {
-                    latencyGanglion5ms.setIsActive(true);
-                    latencyGanglion5ms.wasPressed = true;
-                    latencyGanglion5ms.setColorNotPressed(isSelected_color);
-                    latencyGanglion10ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyGanglion20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyGanglion10ms.isMouseHere()) {
-                    latencyGanglion10ms.setIsActive(true);
-                    latencyGanglion10ms.wasPressed = true;
-                    latencyGanglion10ms.setColorNotPressed(isSelected_color);
-                    latencyGanglion5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyGanglion20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyGanglion20ms.isMouseHere()) {
-                    latencyGanglion20ms.setIsActive(true);
-                    latencyGanglion20ms.wasPressed = true;
-                    latencyGanglion20ms.setColorNotPressed(isSelected_color);
-                    latencyGanglion5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyGanglion10ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolGanglionTCP.isMouseHere()) {
-                    wifiInternetProtocolGanglionTCP.setIsActive(true);
-                    wifiInternetProtocolGanglionTCP.wasPressed = true;
-                    wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolGanglionUDP.isMouseHere()) {
-                    wifiInternetProtocolGanglionUDP.setIsActive(true);
-                    wifiInternetProtocolGanglionUDP.wasPressed = true;
-                    wifiInternetProtocolGanglionUDP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolGanglionTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolGanglionUDPBurst.isMouseHere()) {
-                    wifiInternetProtocolGanglionUDPBurst.setIsActive(true);
-                    wifiInternetProtocolGanglionUDPBurst.wasPressed = true;
-                    wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolGanglionTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed); //default color of button
                 }
             }
 
@@ -1410,54 +1265,6 @@ class ControlPanel {
             updateToNChan(16);
         }
 
-        if (latencyCyton5ms.isMouseHere() && latencyCyton5ms.wasPressed) {
-            hub.setLatency(LATENCY_5_MS);
-        }
-
-        if (latencyCyton10ms.isMouseHere() && latencyCyton10ms.wasPressed) {
-            hub.setLatency(LATENCY_10_MS);
-        }
-
-        if (latencyCyton20ms.isMouseHere() && latencyCyton20ms.wasPressed) {
-            hub.setLatency(LATENCY_20_MS);
-        }
-
-        if (latencyGanglion5ms.isMouseHere() && latencyGanglion5ms.wasPressed) {
-            hub.setLatency(LATENCY_5_MS);
-        }
-
-        if (latencyGanglion10ms.isMouseHere() && latencyGanglion10ms.wasPressed) {
-            hub.setLatency(LATENCY_10_MS);
-        }
-
-        if (latencyGanglion20ms.isMouseHere() && latencyGanglion20ms.wasPressed) {
-            hub.setLatency(LATENCY_20_MS);
-        }
-
-        if (wifiInternetProtocolCytonTCP.isMouseHere() && wifiInternetProtocolCytonTCP.wasPressed) {
-            hub.setWifiInternetProtocol(TCP);
-        }
-
-        if (wifiInternetProtocolCytonUDP.isMouseHere() && wifiInternetProtocolCytonUDP.wasPressed) {
-            hub.setWifiInternetProtocol(UDP);
-        }
-
-        if (wifiInternetProtocolCytonUDPBurst.isMouseHere() && wifiInternetProtocolCytonUDPBurst.wasPressed) {
-            hub.setWifiInternetProtocol(UDP_BURST);
-        }
-
-        if (wifiInternetProtocolGanglionTCP.isMouseHere() && wifiInternetProtocolGanglionTCP.wasPressed) {
-            hub.setWifiInternetProtocol(TCP);
-        }
-
-        if (wifiInternetProtocolGanglionUDP.isMouseHere() && wifiInternetProtocolGanglionUDP.wasPressed) {
-            hub.setWifiInternetProtocol(UDP);
-        }
-
-        if (wifiInternetProtocolGanglionUDPBurst.isMouseHere() && wifiInternetProtocolGanglionUDPBurst.wasPressed) {
-            hub.setWifiInternetProtocol(UDP_BURST);
-        }
-
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", 
@@ -1519,30 +1326,6 @@ class ControlPanel {
         sampleRate500.wasPressed = false;
         sampleRate1000.setIsActive(false);
         sampleRate1000.wasPressed = false;
-        latencyCyton5ms.setIsActive(false);
-        latencyCyton5ms.wasPressed = false;
-        latencyCyton10ms.setIsActive(false);
-        latencyCyton10ms.wasPressed = false;
-        latencyCyton20ms.setIsActive(false);
-        latencyCyton20ms.wasPressed = false;
-        latencyGanglion5ms.setIsActive(false);
-        latencyGanglion5ms.wasPressed = false;
-        latencyGanglion10ms.setIsActive(false);
-        latencyGanglion10ms.wasPressed = false;
-        latencyGanglion20ms.setIsActive(false);
-        latencyGanglion20ms.wasPressed = false;
-        wifiInternetProtocolCytonTCP.setIsActive(false);
-        wifiInternetProtocolCytonTCP.wasPressed = false;
-        wifiInternetProtocolCytonUDP.setIsActive(false);
-        wifiInternetProtocolCytonUDP.wasPressed = false;
-        wifiInternetProtocolCytonUDPBurst.setIsActive(false);
-        wifiInternetProtocolCytonUDPBurst.wasPressed = false;
-        wifiInternetProtocolGanglionTCP.setIsActive(false);
-        wifiInternetProtocolGanglionTCP.wasPressed = false;
-        wifiInternetProtocolGanglionUDP.setIsActive(false);
-        wifiInternetProtocolGanglionUDP.wasPressed = false;
-        wifiInternetProtocolGanglionUDPBurst.setIsActive(false);
-        wifiInternetProtocolGanglionUDPBurst.wasPressed = false;
         synthChanButton4.setIsActive(false);
         synthChanButton4.wasPressed = false;
         synthChanButton8.setIsActive(false);
@@ -2110,7 +1893,7 @@ class SessionDataBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("Session Data", x + padding, y + padding);
+        text("SESSION DATA", x + padding, y + padding);
         textFont(p4, 14);
         text("Name", x + padding, y + padding*2 + 14);
         popStyle();
@@ -2237,9 +2020,6 @@ class SessionDataBox {
             controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
         } else {
             //Ganglion + Wifi
-            latencyGanglion5ms.setIgnoreHover(_toggle);
-            latencyGanglion10ms.setIgnoreHover(_toggle);
-            latencyGanglion20ms.setIgnoreHover(_toggle);
             sampleRate200.setIgnoreHover(_toggle);
             sampleRate1600.setIgnoreHover(_toggle);
         }
@@ -2392,206 +2172,6 @@ class SampleRateCytonBox {
         sampleRate250.but_y = y + padding*2 + 18;
         sampleRate500.but_y = sampleRate250.but_y;
         sampleRate1000.but_y = sampleRate250.but_y;
-    }
-};
-
-class LatencyGanglionBox {
-    int x, y, w, h, padding; //size and position
-
-    LatencyGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        latencyGanglion5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_5_MS) latencyGanglion5ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyGanglion10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_10_MS) latencyGanglion10ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyGanglion20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_20_MS) latencyGanglion20ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("LATENCY ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        latencyGanglion5ms.draw();
-        latencyGanglion10ms.draw();
-        latencyGanglion20ms.draw();
-        latencyGanglion5ms.but_y = y + padding*2 + 18;
-        latencyGanglion10ms.but_y = latencyGanglion5ms.but_y;
-        latencyGanglion20ms.but_y = latencyGanglion5ms.but_y;
-    }
-};
-
-class LatencyCytonBox {
-    int x, y, w, h, padding; //size and position
-
-    LatencyCytonBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        latencyCyton5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_5_MS) latencyCyton5ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyCyton10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_10_MS) latencyCyton10ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyCyton20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_20_MS) latencyCyton20ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("LATENCY ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        latencyCyton5ms.draw();
-        latencyCyton10ms.draw();
-        latencyCyton20ms.draw();
-        latencyCyton5ms.but_y = y + padding*2 + 18;
-        latencyCyton10ms.but_y = latencyCyton5ms.but_y;
-        latencyCyton20ms.but_y = latencyCyton5ms.but_y;
-    }
-};
-
-class WifiTransferProtcolGanglionBox {
-    int x, y, w, h, padding; //size and position
-
-    WifiTransferProtcolGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        wifiInternetProtocolGanglionTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolGanglionUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolGanglionUDP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolGanglionUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WiFi Transfer Protocol ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        String dispText;
-        if (hub.getWifiInternetProtocol().equals(TCP)) {
-            dispText = "TCP";
-        } else if (hub.getWifiInternetProtocol().equals(UDP)) {
-            dispText = "UDP";
-        } else {
-            dispText = "UDPx3";
-        }
-        text(dispText, x + padding + 184, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        wifiInternetProtocolGanglionTCP.draw();
-        wifiInternetProtocolGanglionUDP.draw();
-        wifiInternetProtocolGanglionUDPBurst.draw();
-        wifiInternetProtocolGanglionTCP.but_y = y + padding*2 + 18;
-        wifiInternetProtocolGanglionUDP.but_y = wifiInternetProtocolGanglionTCP.but_y;
-        wifiInternetProtocolGanglionUDPBurst.but_y = wifiInternetProtocolGanglionTCP.but_y;
-    }
-};
-
-class WifiTransferProtcolCytonBox {
-    int x, y, w, h, padding; //size and position
-
-    WifiTransferProtcolCytonBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        wifiInternetProtocolCytonTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolCytonUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolCytonUDP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolCytonUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WiFi Transfer Protocol ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        String dispText;
-        if (hub.getWifiInternetProtocol().equals(TCP)) {
-            dispText = "TCP";
-        } else if (hub.getWifiInternetProtocol().equals(UDP)) {
-            dispText = "UDP";
-        } else {
-            dispText = "UDPx3";
-        }
-        text(dispText, x + padding + 184, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        wifiInternetProtocolCytonTCP.draw();
-        wifiInternetProtocolCytonUDP.draw();
-        wifiInternetProtocolCytonUDPBurst.draw();
-        wifiInternetProtocolCytonTCP.but_y = y + padding*2 + 18;
-        wifiInternetProtocolCytonUDP.but_y = wifiInternetProtocolCytonTCP.but_y;
-        wifiInternetProtocolCytonUDPBurst.but_y = wifiInternetProtocolCytonTCP.but_y;
     }
 };
 
