@@ -674,7 +674,7 @@ class ControlPanel {
 
     //mouse pressed in control panel
     public void CPmousePressed() {
-        println("CPmousePressed");
+        verbosePrint("CPmousePressed");
 
         if (initSystemButton.isMouseHere()) {
             initSystemButton.setIsActive(true);
