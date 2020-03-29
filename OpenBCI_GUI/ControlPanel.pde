@@ -683,64 +683,18 @@ class ControlPanel {
 
     //mouse pressed in control panel
     public void CPmousePressed() {
-        // verbosePrint("CPmousePressed");
+        println("CPmousePressed");
 
         if (initSystemButton.isMouseHere()) {
             initSystemButton.setIsActive(true);
             initSystemButton.wasPressed = true;
         }
-
+    
         //only able to click buttons of control panel when system is not running
-        if (systemMode != 10) {
-
-            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
-                if(getIpAddress.isMouseHere()) {
-                    getIpAddress.setIsActive(true);
-                    getIpAddress.wasPressed = true;
-                }
-
-                if(getFirmwareVersion.isMouseHere()) {
-                    getFirmwareVersion.setIsActive(true);
-                    getFirmwareVersion.wasPressed = true;
-                }
-
-                if(getMacAddress.isMouseHere()) {
-                    getMacAddress.setIsActive(true);
-                    getMacAddress.wasPressed = true;
-                }
-
-                if(eraseCredentials.isMouseHere()) {
-                    eraseCredentials.setIsActive(true);
-                    eraseCredentials.wasPressed = true;
-                }
-
-                if(getTypeOfAttachedBoard.isMouseHere()) {
-                    getTypeOfAttachedBoard.setIsActive(true);
-                    getTypeOfAttachedBoard.wasPressed = true;
-                }
-
-                if (popOutWifiConfigButton.isMouseHere()){
-                    popOutWifiConfigButton.setIsActive(true);
-                    popOutWifiConfigButton.wasPressed = true;
-                }
-
-                if(wifiIPAddressDynamic.isMouseHere()) {
-                    wifiIPAddressDynamic.setIsActive(true);
-                    wifiIPAddressDynamic.wasPressed = true;
-                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-                }
-
-                if(wifiIPAddressStatic.isMouseHere()) {
-                    wifiIPAddressStatic.setIsActive(true);
-                    wifiIPAddressStatic.wasPressed = true;
-                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);
-                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);
-                }
-            }
+        if (systemMode != SYSTEMMODE_POSTINIT) {
 
             //active buttons during DATASOURCE_CYTON
-            else if (eegDataSource == DATASOURCE_CYTON) {
+            if (eegDataSource == DATASOURCE_CYTON) {
                 
                 if (selectedProtocol == BoardProtocol.SERIAL) {
                     if (popOutRadioConfigButton.isMouseHere()){
@@ -843,6 +797,7 @@ class ControlPanel {
                     sampleRate250.setColorNotPressed(isSelected_color);
                     sampleRate500.setColorNotPressed(colorNotPressed);
                     sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
+                    println("Sample Rate 250 Pressed!!!!!!");
                 }
 
                 if (sampleRate500.isMouseHere()) {
@@ -863,7 +818,6 @@ class ControlPanel {
             }
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
-
                 // This is where we check for button presses if we are searching for BLE devices
                 if (autoSessionName.isMouseHere()) {
                     autoSessionName.setIsActive(true);
@@ -911,6 +865,7 @@ class ControlPanel {
                     sampleRate200.wasPressed = true;
                     sampleRate200.setColorNotPressed(isSelected_color);
                     sampleRate1600.setColorNotPressed(colorNotPressed); //default color of button
+                    println("<<<<MouseClickedSampleRate200");
                 }
 
                 if (sampleRate1600.isMouseHere()) {
@@ -961,6 +916,53 @@ class ControlPanel {
                     synthChanButton16.setColorNotPressed(isSelected_color);
                     synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                }
+            }
+
+            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
+                
+                if(getIpAddress.isMouseHere()) {
+                    getIpAddress.setIsActive(true);
+                    getIpAddress.wasPressed = true;
+                }
+
+                if(getFirmwareVersion.isMouseHere()) {
+                    getFirmwareVersion.setIsActive(true);
+                    getFirmwareVersion.wasPressed = true;
+                }
+
+                if(getMacAddress.isMouseHere()) {
+                    getMacAddress.setIsActive(true);
+                    getMacAddress.wasPressed = true;
+                }
+
+                if(eraseCredentials.isMouseHere()) {
+                    eraseCredentials.setIsActive(true);
+                    eraseCredentials.wasPressed = true;
+                }
+
+                if(getTypeOfAttachedBoard.isMouseHere()) {
+                    getTypeOfAttachedBoard.setIsActive(true);
+                    getTypeOfAttachedBoard.wasPressed = true;
+                }
+
+                if (popOutWifiConfigButton.isMouseHere()){
+                    popOutWifiConfigButton.setIsActive(true);
+                    popOutWifiConfigButton.wasPressed = true;
+                }
+
+                if(wifiIPAddressDynamic.isMouseHere()) {
+                    wifiIPAddressDynamic.setIsActive(true);
+                    wifiIPAddressDynamic.wasPressed = true;
+                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
+                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
+                }
+
+                if(wifiIPAddressStatic.isMouseHere()) {
+                    wifiIPAddressStatic.setIsActive(true);
+                    wifiIPAddressStatic.wasPressed = true;
+                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);
+                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);
                 }
             }
 
@@ -1125,7 +1127,6 @@ class ControlPanel {
         }
 
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
-            hub.setWiFiStyle(WIFI_DYNAMIC);
             wifiBox.h = 200;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
@@ -1133,7 +1134,6 @@ class ControlPanel {
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
-            hub.setWiFiStyle(WIFI_STATIC);
             wifiBox.h = 120;
             String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
             outputInfo(output);
@@ -1235,6 +1235,7 @@ class ControlPanel {
 
         if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
             currentBoard.setSampleRate(200);
+            println("Setting sample rate to 200");
         }
 
         if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
