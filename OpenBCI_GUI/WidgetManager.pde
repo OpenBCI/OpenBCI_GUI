@@ -48,9 +48,11 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets fft -- " + millis());
 
     //Widget_2
-    w_accelerometer = new W_Accelerometer(_this);
-    w_accelerometer.setTitle("Accelerometer");
-    addWidget(w_accelerometer, w);
+    if(!(currentBoard instanceof BoardNovaXR)){
+        w_accelerometer = new W_Accelerometer(_this);
+        w_accelerometer.setTitle("Accelerometer");
+        addWidget(w_accelerometer, w);
+    }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
     if(nchan == 4 && currentBoard instanceof BoardGanglion){
