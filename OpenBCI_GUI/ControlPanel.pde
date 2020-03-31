@@ -100,22 +100,10 @@ Button getFirmwareVersion;
 Button getMacAddress;
 Button getTypeOfAttachedBoard;
 Button sampleRate200; //Ganglion
-Button sampleRate250;
-Button sampleRate500;
-Button sampleRate1000;
+Button sampleRate250; //Cyton
+Button sampleRate500; //Cyton
+Button sampleRate1000;  //Cyton
 Button sampleRate1600; //Ganglion
-Button latencyCyton5ms;
-Button latencyCyton10ms;
-Button latencyCyton20ms;
-Button latencyGanglion5ms;
-Button latencyGanglion10ms;
-Button latencyGanglion20ms;
-Button wifiInternetProtocolCytonTCP;
-Button wifiInternetProtocolCytonUDP;
-Button wifiInternetProtocolCytonUDPBurst;
-Button wifiInternetProtocolGanglionTCP;
-Button wifiInternetProtocolGanglionUDP;
-Button wifiInternetProtocolGanglionUDPBurst;
 Button wifiIPAddressDynamic;
 Button wifiIPAddressStatic;
 
@@ -162,28 +150,12 @@ public void controlEvent(ControlEvent theEvent) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-            latencyCyton5ms.setColorNotPressed(colorNotPressed);
-            latencyCyton10ms.setColorNotPressed(isSelected_color);
-            latencyCyton20ms.setColorNotPressed(colorNotPressed);
-            hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
-            hub.setWifiInternetProtocol(UDP_BURST);
-            hub.setWiFiStyle(WIFI_DYNAMIC);
+            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_GANGLION){
             updateToNChan(4);
-            latencyGanglion5ms.setColorNotPressed(colorNotPressed);
-            latencyGanglion10ms.setColorNotPressed(isSelected_color);
-            latencyGanglion20ms.setColorNotPressed(colorNotPressed);
-            hub.setLatency(LATENCY_10_MS);
-            wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color);
-            wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed);
-            wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed);
-            hub.setWifiInternetProtocol(TCP);
-            hub.setWiFiStyle(WIFI_DYNAMIC);
+            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
@@ -217,9 +189,10 @@ public void controlEvent(ControlEvent theEvent) {
         output("Wifi Device Name = " + wifi_portName);
     }
 
-    if (theEvent.isFrom("sdTimes")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        sdSettingString = (String)bob.get("headline");
+    // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
+    if (theEvent.isFrom("sdCardTimes")) {
+        Map bob = ((ScrollableList)theEvent.getController()).getItem(int(theEvent.getValue()));
+        sdSettingString = (String)bob.get("text");
         sdSetting = int(theEvent.getValue());
         if (sdSetting != 0) {
             output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
@@ -253,6 +226,20 @@ public void controlEvent(ControlEvent theEvent) {
         } else {
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
+    }
+
+    if (theEvent.isFrom("maxFileDurationCyton")) {
+        int n = (int)theEvent.getValue();
+        settings.cytonOBCIMaxFileSize = n;
+        controlPanel.dataLogBoxCyton.closeDropdown();
+        println("ControlPanel: Cyton Max Recording Duration: " + settings.fileDurations[n]);
+    }
+
+    if (theEvent.isFrom("maxFileDurationGanglion")) {
+        int n = (int)theEvent.getValue();
+        settings.ganglionOBCIMaxFileSize = n;
+        controlPanel.dataLogBoxGanglion.closeDropdown();
+        println("ControlPanel: Ganglion Max Recording Duration: " + settings.fileDurations[n]);
     }
 
     //Check control events from widgets
@@ -310,11 +297,12 @@ class ControlPanel {
     InterfaceBoxGanglion interfaceBoxGanglion;
     SampleRateCytonBox sampleRateCytonBox;
     SampleRateGanglionBox sampleRateGanglionBox;
-    LatencyCytonBox latencyCytonBox;
-    LatencyGanglionBox latencyGanglionBox;
-    WifiTransferProtcolCytonBox wifiTransferProtcolCytonBox;
-    WifiTransferProtcolGanglionBox wifiTransferProtcolGanglionBox;
     SDBox sdBox;
+
+    //Track Dynamic and Static WiFi mode in Control Panel
+    final public String WIFI_DYNAMIC = "dynamic";
+    final public String WIFI_STATIC = "static";
+    private String wifiSearchStyle = WIFI_DYNAMIC;
 
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
@@ -351,9 +339,7 @@ class ControlPanel {
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
         sampleRateCytonBox = new SampleRateCytonBox(x + w + x + w - 3, channelCountBox.y, w, h, globalPadding);
-        latencyCytonBox = new LatencyCytonBox(x + w + x + w - 3, (sampleRateCytonBox.y + sampleRateCytonBox.h), w, h, globalPadding);
-        wifiTransferProtcolCytonBox = new WifiTransferProtcolCytonBox(x + w + x + w - 3, (latencyCytonBox.y + latencyCytonBox.h), w, h, globalPadding);
-
+        
         //boxes active when eegDataSource = Playback
         int playbackWidth = int(w * 1.35);
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
@@ -375,9 +361,6 @@ class ControlPanel {
         bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
         dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION);
         sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
-        latencyGanglionBox = new LatencyGanglionBox(x + w, (sampleRateGanglionBox.y + sampleRateGanglionBox.h), w, h, globalPadding);
-        wifiTransferProtcolGanglionBox = new WifiTransferProtcolGanglionBox(x + w, (latencyGanglionBox.y + latencyGanglionBox.h), w, h, globalPadding);
-        // bleHardwareBox = new BLEHardwareBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     }
 
     public void resetListItems(){
@@ -394,6 +377,14 @@ class ControlPanel {
     public void close(){
         isOpen = false;
         topNav.controlPanelCollapser.setIsActive(false);
+    }
+
+    public String getWifiSearchStyle() {
+        return wifiSearchStyle;
+    }
+
+    private void setWiFiSearchStyle(String s) {
+        wifiSearchStyle = s;
     }
 
     public void update() {
@@ -442,14 +433,10 @@ class ControlPanel {
         bleList.updateMenu();
         wifiList.updateMenu();
         dataLogBoxGanglion.update();
-        latencyCytonBox.update();
-        wifiTransferProtcolCytonBox.update();
 
         wifiBox.update();
         interfaceBoxCyton.update();
         interfaceBoxGanglion.update();
-        latencyGanglionBox.update();
-        wifiTransferProtcolGanglionBox.update();
 
         //SD File Conversion
         while (convertingSD == true) {
@@ -493,15 +480,12 @@ class ControlPanel {
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-                                //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                                // cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                                 cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
-                                //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -511,7 +495,7 @@ class ControlPanel {
                         wifiBox.draw();
                         dataLogBoxCyton.y = wifiBox.y + wifiBox.h;
 
-                        if (hub.getWiFiStyle() == WIFI_STATIC) {
+                        if (getWifiSearchStyle() == WIFI_STATIC) {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
                             cp5.get(MenuList.class, "wifiList").setVisible(false);
                         } else {
@@ -522,19 +506,14 @@ class ControlPanel {
                             wcBox.draw();
                         }
                         sampleRateCytonBox.draw();
-                        latencyCytonBox.draw();
-                        wifiTransferProtcolCytonBox.draw();
                     }
                     channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
                     sdBox.y = channelCountBox.y + channelCountBox.h;
                     sampleRateCytonBox.y = channelCountBox.y;
-                    latencyCytonBox.y = sampleRateCytonBox.y + sampleRateCytonBox.h;
-                    wifiTransferProtcolCytonBox.y = latencyCytonBox.y + latencyCytonBox.h;
                     channelCountBox.draw();
                     sdBox.draw();
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
-                    //cp5.get(MenuList.class, "sdTimes").setVisible(true); //make sure the SD time record options menulist is visible
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
@@ -543,10 +522,7 @@ class ControlPanel {
                 sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
-                // cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
-                // cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is visible
                 cp5.get(MenuList.class, "serialList").setVisible(false);
-                //cp5.get(MenuList.class, "sdTimes").setVisible(false);
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
@@ -569,7 +545,7 @@ class ControlPanel {
                         wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
                         wifiBox.draw();
-                        if (hub.getWiFiStyle() == WIFI_STATIC) {
+                        if (getWifiSearchStyle() == WIFI_STATIC) {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
                             cp5.get(MenuList.class, "wifiList").setVisible(false);
                         } else {
@@ -579,12 +555,8 @@ class ControlPanel {
                         if(wcBox.isShowing){
                             wcBox.draw();
                         }
-                        latencyGanglionBox.y = dataLogBoxGanglion.y + dataLogBoxGanglion.h;
-                        sampleRateGanglionBox.y = latencyGanglionBox.y + latencyGanglionBox.h;
-                        wifiTransferProtcolGanglionBox.y = wifiTransferProtcolGanglionBox.y + wifiTransferProtcolGanglionBox.h;
-                        latencyGanglionBox.draw();
+                        sampleRateGanglionBox.y = dataLogBoxGanglion.y +dataLogBoxGanglion.h;
                         sampleRateGanglionBox.draw();
-                        wifiTransferProtcolGanglionBox.draw();
                     }
                     dataLogBoxGanglion.draw(); //Drawing here allows max file size dropdown to be drawn on top
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
@@ -670,7 +642,6 @@ class ControlPanel {
         try {
             output("BLE Devices Refreshing");
             bleList.items.clear();
-            // todo[brainflow] get serial port
             String comPort = getBLED112Port();
             if (comPort != null) {
                 BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
@@ -708,13 +679,11 @@ class ControlPanel {
 
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
-        //
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
         cp5.get(MenuList.class, "serialList").setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
-        //cp5.get(MenuList.class, "sdTimes").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
@@ -732,64 +701,18 @@ class ControlPanel {
 
     //mouse pressed in control panel
     public void CPmousePressed() {
-        // verbosePrint("CPmousePressed");
+        verbosePrint("CPmousePressed");
 
         if (initSystemButton.isMouseHere()) {
             initSystemButton.setIsActive(true);
             initSystemButton.wasPressed = true;
         }
-
+    
         //only able to click buttons of control panel when system is not running
-        if (systemMode != 10) {
-
-            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
-                if(getIpAddress.isMouseHere()) {
-                    getIpAddress.setIsActive(true);
-                    getIpAddress.wasPressed = true;
-                }
-
-                if(getFirmwareVersion.isMouseHere()) {
-                    getFirmwareVersion.setIsActive(true);
-                    getFirmwareVersion.wasPressed = true;
-                }
-
-                if(getMacAddress.isMouseHere()) {
-                    getMacAddress.setIsActive(true);
-                    getMacAddress.wasPressed = true;
-                }
-
-                if(eraseCredentials.isMouseHere()) {
-                    eraseCredentials.setIsActive(true);
-                    eraseCredentials.wasPressed = true;
-                }
-
-                if(getTypeOfAttachedBoard.isMouseHere()) {
-                    getTypeOfAttachedBoard.setIsActive(true);
-                    getTypeOfAttachedBoard.wasPressed = true;
-                }
-
-                if (popOutWifiConfigButton.isMouseHere()){
-                    popOutWifiConfigButton.setIsActive(true);
-                    popOutWifiConfigButton.wasPressed = true;
-                }
-
-                if(wifiIPAddressDynamic.isMouseHere()) {
-                    wifiIPAddressDynamic.setIsActive(true);
-                    wifiIPAddressDynamic.wasPressed = true;
-                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-                }
-
-                if(wifiIPAddressStatic.isMouseHere()) {
-                    wifiIPAddressStatic.setIsActive(true);
-                    wifiIPAddressStatic.wasPressed = true;
-                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);
-                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);
-                }
-            }
+        if (systemMode != SYSTEMMODE_POSTINIT) {
 
             //active buttons during DATASOURCE_CYTON
-            else if (eegDataSource == DATASOURCE_CYTON) {
+            if (eegDataSource == DATASOURCE_CYTON) {
                 
                 if (selectedProtocol == BoardProtocol.SERIAL) {
                     if (popOutRadioConfigButton.isMouseHere()){
@@ -892,6 +815,7 @@ class ControlPanel {
                     sampleRate250.setColorNotPressed(isSelected_color);
                     sampleRate500.setColorNotPressed(colorNotPressed);
                     sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
+                    println("Sample Rate 250 Pressed!!!!!!");
                 }
 
                 if (sampleRate500.isMouseHere()) {
@@ -909,58 +833,9 @@ class ControlPanel {
                     sampleRate250.setColorNotPressed(colorNotPressed); //default color of button
                     sampleRate500.setColorNotPressed(colorNotPressed);
                 }
-
-                if (latencyCyton5ms.isMouseHere()) {
-                    latencyCyton5ms.setIsActive(true);
-                    latencyCyton5ms.wasPressed = true;
-                    latencyCyton5ms.setColorNotPressed(isSelected_color);
-                    latencyCyton10ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyCyton20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyCyton10ms.isMouseHere()) {
-                    latencyCyton10ms.setIsActive(true);
-                    latencyCyton10ms.wasPressed = true;
-                    latencyCyton10ms.setColorNotPressed(isSelected_color);
-                    latencyCyton5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyCyton20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyCyton20ms.isMouseHere()) {
-                    latencyCyton20ms.setIsActive(true);
-                    latencyCyton20ms.wasPressed = true;
-                    latencyCyton20ms.setColorNotPressed(isSelected_color);
-                    latencyCyton5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyCyton10ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolCytonTCP.isMouseHere()) {
-                    wifiInternetProtocolCytonTCP.setIsActive(true);
-                    wifiInternetProtocolCytonTCP.wasPressed = true;
-                    wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolCytonUDP.isMouseHere()) {
-                    wifiInternetProtocolCytonUDP.setIsActive(true);
-                    wifiInternetProtocolCytonUDP.wasPressed = true;
-                    wifiInternetProtocolCytonUDP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolCytonUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolCytonUDPBurst.isMouseHere()) {
-                    wifiInternetProtocolCytonUDPBurst.setIsActive(true);
-                    wifiInternetProtocolCytonUDPBurst.wasPressed = true;
-                    wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolCytonTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolCytonUDP.setColorNotPressed(colorNotPressed); //default color of button
-                }
             }
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
-
                 // This is where we check for button presses if we are searching for BLE devices
                 if (autoSessionName.isMouseHere()) {
                     autoSessionName.setIsActive(true);
@@ -1016,58 +891,10 @@ class ControlPanel {
                     sampleRate1600.setColorNotPressed(isSelected_color);
                     sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                 }
-
-                if (latencyGanglion5ms.isMouseHere()) {
-                    latencyGanglion5ms.setIsActive(true);
-                    latencyGanglion5ms.wasPressed = true;
-                    latencyGanglion5ms.setColorNotPressed(isSelected_color);
-                    latencyGanglion10ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyGanglion20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyGanglion10ms.isMouseHere()) {
-                    latencyGanglion10ms.setIsActive(true);
-                    latencyGanglion10ms.wasPressed = true;
-                    latencyGanglion10ms.setColorNotPressed(isSelected_color);
-                    latencyGanglion5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyGanglion20ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (latencyGanglion20ms.isMouseHere()) {
-                    latencyGanglion20ms.setIsActive(true);
-                    latencyGanglion20ms.wasPressed = true;
-                    latencyGanglion20ms.setColorNotPressed(isSelected_color);
-                    latencyGanglion5ms.setColorNotPressed(colorNotPressed); //default color of button
-                    latencyGanglion10ms.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolGanglionTCP.isMouseHere()) {
-                    wifiInternetProtocolGanglionTCP.setIsActive(true);
-                    wifiInternetProtocolGanglionTCP.wasPressed = true;
-                    wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolGanglionUDP.isMouseHere()) {
-                    wifiInternetProtocolGanglionUDP.setIsActive(true);
-                    wifiInternetProtocolGanglionUDP.wasPressed = true;
-                    wifiInternetProtocolGanglionUDP.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolGanglionTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (wifiInternetProtocolGanglionUDPBurst.isMouseHere()) {
-                    wifiInternetProtocolGanglionUDPBurst.setIsActive(true);
-                    wifiInternetProtocolGanglionUDPBurst.wasPressed = true;
-                    wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(isSelected_color);
-                    wifiInternetProtocolGanglionTCP.setColorNotPressed(colorNotPressed); //default color of button
-                    wifiInternetProtocolGanglionUDP.setColorNotPressed(colorNotPressed); //default color of button
-                }
             }
 
             //active buttons during DATASOURCE_PLAYBACKFILE
-            if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 if (selectPlaybackFile.isMouseHere()) {
                     selectPlaybackFile.setIsActive(true);
                     selectPlaybackFile.wasPressed = true;
@@ -1083,7 +910,7 @@ class ControlPanel {
             }
 
             //active buttons during DATASOURCE_SYNTHETIC
-            if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            else if (eegDataSource == DATASOURCE_SYNTHETIC) {
                 if (synthChanButton4.isMouseHere()) {
                     synthChanButton4.setIsActive(true);
                     synthChanButton4.wasPressed = true;
@@ -1106,6 +933,54 @@ class ControlPanel {
                     synthChanButton16.setColorNotPressed(isSelected_color);
                     synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                }
+            }
+            
+            //active buttons during Cyton+WiFi/Ganglion+WiFi
+            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
+                
+                if(getIpAddress.isMouseHere()) {
+                    getIpAddress.setIsActive(true);
+                    getIpAddress.wasPressed = true;
+                }
+
+                if(getFirmwareVersion.isMouseHere()) {
+                    getFirmwareVersion.setIsActive(true);
+                    getFirmwareVersion.wasPressed = true;
+                }
+
+                if(getMacAddress.isMouseHere()) {
+                    getMacAddress.setIsActive(true);
+                    getMacAddress.wasPressed = true;
+                }
+
+                if(eraseCredentials.isMouseHere()) {
+                    eraseCredentials.setIsActive(true);
+                    eraseCredentials.wasPressed = true;
+                }
+
+                if(getTypeOfAttachedBoard.isMouseHere()) {
+                    getTypeOfAttachedBoard.setIsActive(true);
+                    getTypeOfAttachedBoard.wasPressed = true;
+                }
+
+                if (popOutWifiConfigButton.isMouseHere()){
+                    popOutWifiConfigButton.setIsActive(true);
+                    popOutWifiConfigButton.wasPressed = true;
+                }
+
+                if(wifiIPAddressDynamic.isMouseHere()) {
+                    wifiIPAddressDynamic.setIsActive(true);
+                    wifiIPAddressDynamic.wasPressed = true;
+                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
+                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
+                }
+
+                if(wifiIPAddressStatic.isMouseHere()) {
+                    wifiIPAddressStatic.setIsActive(true);
+                    wifiIPAddressStatic.wasPressed = true;
+                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);
+                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);
                 }
             }
 
@@ -1185,9 +1060,8 @@ class ControlPanel {
                 if(wcBox.isShowing){
                     hideWifiPopoutBox();
                 } else {
-                    if (hub.getWiFiStyle() == WIFI_STATIC) {
+                    if (getWifiSearchStyle() == WIFI_STATIC) {
                         wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-                        println("Static IP address of " + wifi_ipAddress);
                         output("Static IP address of " + wifi_ipAddress);
                         wcBox.isShowing = true;
                         popOutWifiConfigButton.setString("<");
@@ -1204,34 +1078,35 @@ class ControlPanel {
             }
         }
 
+        // todo[brainflow] Here are commands to interact with WiFi shield
         if (wcBox.isShowing) {
             if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_GET_IP_ADDRESS);
+                //hub.getWifiInfo(TCP_WIFI_GET_IP_ADDRESS);
                 getIpAddress.wasPressed = false;
                 getIpAddress.setIsActive(false);
             }
 
             if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_GET_FIRMWARE_VERSION);
+                //hub.getWifiInfo(TCP_WIFI_GET_FIRMWARE_VERSION);
                 getFirmwareVersion.wasPressed = false;
                 getFirmwareVersion.setIsActive(false);
             }
 
             if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_GET_MAC_ADDRESS);
+                //hub.getWifiInfo(TCP_WIFI_GET_MAC_ADDRESS);
                 getMacAddress.wasPressed = false;
                 getMacAddress.setIsActive(false);
             }
 
             if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
-                hub.getWifiInfo(TCP_WIFI_ERASE_CREDENTIALS);
+                //hub.getWifiInfo(TCP_WIFI_ERASE_CREDENTIALS);
                 eraseCredentials.wasPressed=false;
                 eraseCredentials.setIsActive(false);
             }
 
             if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
                 // Wifi_Config will handle creating the connection
-                hub.getWifiInfo(TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
+                //hub.getWifiInfo(TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
                 getTypeOfAttachedBoard.wasPressed=false;
                 getTypeOfAttachedBoard.setIsActive(false);
             }
@@ -1269,18 +1144,18 @@ class ControlPanel {
             }
         }
 
+        // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
-            hub.setWiFiStyle(WIFI_DYNAMIC);
             wifiBox.h = 200;
-            String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
-            outputInfo(output);
+            setWiFiSearchStyle(WIFI_DYNAMIC);
+            String output = "Using Dynamic IP address of the WiFi Shield!";
             println("CP: WiFi IP: " + output);
         }
 
         if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
-            hub.setWiFiStyle(WIFI_STATIC);
             wifiBox.h = 120;
-            String output = "Using " + (hub.getWiFiStyle() == WIFI_STATIC ? "Static" : "Dynamic") + " IP address of the WiFi Shield!";
+            setWiFiSearchStyle(WIFI_STATIC);
+            String output = "Using Static IP address of the WiFi Shield!";
             outputInfo(output);
             println("CP: WiFi IP: " + output);
         }
@@ -1298,17 +1173,6 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
-            /*
-            println("isHubObjectInitialized: " + (isHubObjectInitialized ? "true" : "else"));
-            if (isHubObjectInitialized) {
-                output("Protocol Wifi Selected for Ganglion");
-                if (hub.isPortOpen()) hub.closePort();
-                // ganglion.setInterface(BoardProtocol.WIFI);
-                hub.searchDeviceStart();
-            } else {
-                output("Please wait till hub is fully initalized");
-            }
-            */
             selectedProtocol = BoardProtocol.WIFI;
         }
 
@@ -1331,7 +1195,7 @@ class ControlPanel {
             controlPanel.hideAllBoxes();
             if (isHubObjectInitialized) {
                 output("Protocol Wifi Selected for Cyton");
-                if (hub.isPortOpen()) hub.closePort();
+                //if (hub.isPortOpen()) hub.closePort();
                 selectedProtocol = BoardProtocol.WIFI;
                 //hub.searchDeviceStart();
             } else {
@@ -1410,54 +1274,6 @@ class ControlPanel {
             updateToNChan(16);
         }
 
-        if (latencyCyton5ms.isMouseHere() && latencyCyton5ms.wasPressed) {
-            hub.setLatency(LATENCY_5_MS);
-        }
-
-        if (latencyCyton10ms.isMouseHere() && latencyCyton10ms.wasPressed) {
-            hub.setLatency(LATENCY_10_MS);
-        }
-
-        if (latencyCyton20ms.isMouseHere() && latencyCyton20ms.wasPressed) {
-            hub.setLatency(LATENCY_20_MS);
-        }
-
-        if (latencyGanglion5ms.isMouseHere() && latencyGanglion5ms.wasPressed) {
-            hub.setLatency(LATENCY_5_MS);
-        }
-
-        if (latencyGanglion10ms.isMouseHere() && latencyGanglion10ms.wasPressed) {
-            hub.setLatency(LATENCY_10_MS);
-        }
-
-        if (latencyGanglion20ms.isMouseHere() && latencyGanglion20ms.wasPressed) {
-            hub.setLatency(LATENCY_20_MS);
-        }
-
-        if (wifiInternetProtocolCytonTCP.isMouseHere() && wifiInternetProtocolCytonTCP.wasPressed) {
-            hub.setWifiInternetProtocol(TCP);
-        }
-
-        if (wifiInternetProtocolCytonUDP.isMouseHere() && wifiInternetProtocolCytonUDP.wasPressed) {
-            hub.setWifiInternetProtocol(UDP);
-        }
-
-        if (wifiInternetProtocolCytonUDPBurst.isMouseHere() && wifiInternetProtocolCytonUDPBurst.wasPressed) {
-            hub.setWifiInternetProtocol(UDP_BURST);
-        }
-
-        if (wifiInternetProtocolGanglionTCP.isMouseHere() && wifiInternetProtocolGanglionTCP.wasPressed) {
-            hub.setWifiInternetProtocol(TCP);
-        }
-
-        if (wifiInternetProtocolGanglionUDP.isMouseHere() && wifiInternetProtocolGanglionUDP.wasPressed) {
-            hub.setWifiInternetProtocol(UDP);
-        }
-
-        if (wifiInternetProtocolGanglionUDPBurst.isMouseHere() && wifiInternetProtocolGanglionUDPBurst.wasPressed) {
-            hub.setWifiInternetProtocol(UDP_BURST);
-        }
-
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", 
@@ -1519,30 +1335,6 @@ class ControlPanel {
         sampleRate500.wasPressed = false;
         sampleRate1000.setIsActive(false);
         sampleRate1000.wasPressed = false;
-        latencyCyton5ms.setIsActive(false);
-        latencyCyton5ms.wasPressed = false;
-        latencyCyton10ms.setIsActive(false);
-        latencyCyton10ms.wasPressed = false;
-        latencyCyton20ms.setIsActive(false);
-        latencyCyton20ms.wasPressed = false;
-        latencyGanglion5ms.setIsActive(false);
-        latencyGanglion5ms.wasPressed = false;
-        latencyGanglion10ms.setIsActive(false);
-        latencyGanglion10ms.wasPressed = false;
-        latencyGanglion20ms.setIsActive(false);
-        latencyGanglion20ms.wasPressed = false;
-        wifiInternetProtocolCytonTCP.setIsActive(false);
-        wifiInternetProtocolCytonTCP.wasPressed = false;
-        wifiInternetProtocolCytonUDP.setIsActive(false);
-        wifiInternetProtocolCytonUDP.wasPressed = false;
-        wifiInternetProtocolCytonUDPBurst.setIsActive(false);
-        wifiInternetProtocolCytonUDPBurst.wasPressed = false;
-        wifiInternetProtocolGanglionTCP.setIsActive(false);
-        wifiInternetProtocolGanglionTCP.wasPressed = false;
-        wifiInternetProtocolGanglionUDP.setIsActive(false);
-        wifiInternetProtocolGanglionUDP.wasPressed = false;
-        wifiInternetProtocolGanglionUDPBurst.setIsActive(false);
-        wifiInternetProtocolGanglionUDPBurst.wasPressed = false;
         synthChanButton4.setIsActive(false);
         synthChanButton4.wasPressed = false;
         synthChanButton8.setIsActive(false);
@@ -1572,7 +1364,7 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+        } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
             output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
@@ -1587,7 +1379,7 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && hub.getWiFiStyle() == WIFI_DYNAMIC) {
+        } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
             output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
@@ -1623,7 +1415,7 @@ public void initButtonPressed(){
                 settings.setLogFileMaxDuration();
             }
 
-            if (hub.getWiFiStyle() == WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
+            if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
@@ -1871,9 +1663,9 @@ class WifiBox {
         padding = _padding;
 
         wifiIPAddressDynamic = new Button (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
-        if (hub.getWiFiStyle() == WIFI_DYNAMIC) wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiIPAddressStatic = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
-        if (hub.getWiFiStyle() == WIFI_STATIC) wifiIPAddressStatic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
 
         refreshWifi = new Button (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
@@ -1923,7 +1715,7 @@ class WifiBox {
         popOutWifiConfigButton.but_y = y + padding;
         popOutWifiConfigButton.draw();
 
-        if (hub.getWiFiStyle() == WIFI_STATIC) {
+        if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
             pushStyle();
             fill(bgColor);
             textFont(h3, 16);
@@ -2110,7 +1902,7 @@ class SessionDataBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("Session Data", x + padding, y + padding);
+        text("SESSION DATA", x + padding, y + padding);
         textFont(p4, 14);
         text("Name", x + padding, y + padding*2 + 14);
         popStyle();
@@ -2221,14 +2013,6 @@ class SessionDataBox {
             //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
             chanButton8.setIgnoreHover(_toggle);
             chanButton16.setIgnoreHover(_toggle);
-            /*
-            if (_toggle) {
-                cp5.get(MenuList.class, "sdTimes").lock();
-            } else {
-                cp5.get(MenuList.class, "sdTimes").unlock();
-            }
-            cp5.get(MenuList.class, "sdTimes").setUpdate(!_toggle);
-            */
             if (_toggle) {
                 controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
             } else {
@@ -2237,9 +2021,6 @@ class SessionDataBox {
             controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
         } else {
             //Ganglion + Wifi
-            latencyGanglion5ms.setIgnoreHover(_toggle);
-            latencyGanglion10ms.setIgnoreHover(_toggle);
-            latencyGanglion20ms.setIgnoreHover(_toggle);
             sampleRate200.setIgnoreHover(_toggle);
             sampleRate1600.setIgnoreHover(_toggle);
         }
@@ -2249,23 +2030,8 @@ class SessionDataBox {
         cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
         dropdownWasClicked = true;
         lockElements(false);
-        //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
-//////////////////////////////////////////////////////////////
-// Global functions used by the above SessionDataBox dropdowns
-void maxFileDurationCyton (int n) {
-    settings.cytonOBCIMaxFileSize = n;
-    controlPanel.dataLogBoxCyton.closeDropdown();
-    println("ControlPanel: Cyton Max Recording Duration: " + settings.fileDurations[n]);
-}
-
-void maxFileDurationGanglion (int n) {
-    settings.ganglionOBCIMaxFileSize = n;
-    controlPanel.dataLogBoxGanglion.closeDropdown();
-    println("ControlPanel: Ganglion Max Recording Duration: " + settings.fileDurations[n]);
-}
-//////////////////////////////////////////////////////////////
 
 class ChannelCountBox {
     int x, y, w, h, padding; //size and position
@@ -2392,206 +2158,6 @@ class SampleRateCytonBox {
         sampleRate250.but_y = y + padding*2 + 18;
         sampleRate500.but_y = sampleRate250.but_y;
         sampleRate1000.but_y = sampleRate250.but_y;
-    }
-};
-
-class LatencyGanglionBox {
-    int x, y, w, h, padding; //size and position
-
-    LatencyGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        latencyGanglion5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_5_MS) latencyGanglion5ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyGanglion10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_10_MS) latencyGanglion10ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyGanglion20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_20_MS) latencyGanglion20ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("LATENCY ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        latencyGanglion5ms.draw();
-        latencyGanglion10ms.draw();
-        latencyGanglion20ms.draw();
-        latencyGanglion5ms.but_y = y + padding*2 + 18;
-        latencyGanglion10ms.but_y = latencyGanglion5ms.but_y;
-        latencyGanglion20ms.but_y = latencyGanglion5ms.but_y;
-    }
-};
-
-class LatencyCytonBox {
-    int x, y, w, h, padding; //size and position
-
-    LatencyCytonBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        latencyCyton5ms = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "5ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_5_MS) latencyCyton5ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyCyton10ms = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "10ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_10_MS) latencyCyton10ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        latencyCyton20ms = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "20ms", fontInfo.buttonLabel_size);
-        if (hub.getLatency() == LATENCY_20_MS) latencyCyton20ms.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("LATENCY ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("  " + str(hub.getLatency()/1000) + "ms", x + padding + 142, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        latencyCyton5ms.draw();
-        latencyCyton10ms.draw();
-        latencyCyton20ms.draw();
-        latencyCyton5ms.but_y = y + padding*2 + 18;
-        latencyCyton10ms.but_y = latencyCyton5ms.but_y;
-        latencyCyton20ms.but_y = latencyCyton5ms.but_y;
-    }
-};
-
-class WifiTransferProtcolGanglionBox {
-    int x, y, w, h, padding; //size and position
-
-    WifiTransferProtcolGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        wifiInternetProtocolGanglionTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolGanglionTCP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolGanglionUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolGanglionUDP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolGanglionUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolGanglionUDPBurst.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WiFi Transfer Protocol ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        String dispText;
-        if (hub.getWifiInternetProtocol().equals(TCP)) {
-            dispText = "TCP";
-        } else if (hub.getWifiInternetProtocol().equals(UDP)) {
-            dispText = "UDP";
-        } else {
-            dispText = "UDPx3";
-        }
-        text(dispText, x + padding + 184, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        wifiInternetProtocolGanglionTCP.draw();
-        wifiInternetProtocolGanglionUDP.draw();
-        wifiInternetProtocolGanglionUDPBurst.draw();
-        wifiInternetProtocolGanglionTCP.but_y = y + padding*2 + 18;
-        wifiInternetProtocolGanglionUDP.but_y = wifiInternetProtocolGanglionTCP.but_y;
-        wifiInternetProtocolGanglionUDPBurst.but_y = wifiInternetProtocolGanglionTCP.but_y;
-    }
-};
-
-class WifiTransferProtcolCytonBox {
-    int x, y, w, h, padding; //size and position
-
-    WifiTransferProtcolCytonBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        wifiInternetProtocolCytonTCP = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "TCP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(TCP)) wifiInternetProtocolCytonTCP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolCytonUDP = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "UDP", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP)) wifiInternetProtocolCytonUDP.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiInternetProtocolCytonUDPBurst = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "UDPx3", fontInfo.buttonLabel_size);
-        if (hub.getWifiInternetProtocol().equals(UDP_BURST)) wifiInternetProtocolCytonUDPBurst.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WiFi Transfer Protocol ", x + padding, y + padding);
-        fill(bgColor); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        String dispText;
-        if (hub.getWifiInternetProtocol().equals(TCP)) {
-            dispText = "TCP";
-        } else if (hub.getWifiInternetProtocol().equals(UDP)) {
-            dispText = "UDP";
-        } else {
-            dispText = "UDPx3";
-        }
-        text(dispText, x + padding + 184, y + padding); // print the channel count in green next to the box title
-        popStyle();
-
-        wifiInternetProtocolCytonTCP.draw();
-        wifiInternetProtocolCytonUDP.draw();
-        wifiInternetProtocolCytonUDPBurst.draw();
-        wifiInternetProtocolCytonTCP.but_y = y + padding*2 + 18;
-        wifiInternetProtocolCytonUDP.but_y = wifiInternetProtocolCytonTCP.but_y;
-        wifiInternetProtocolCytonUDPBurst.but_y = wifiInternetProtocolCytonTCP.but_y;
     }
 };
 
@@ -2902,25 +2468,6 @@ class SDBox {
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setSize(w - padding*2, int((sdTimesStrings.length / 2) + 1) * 24);
         cp5_sdBox.setAutoDraw(false);
-        //sdTimes = new MenuList(cp5, "sdTimes", w - padding*2, 108, p4);
-        //sdTimes.setPosition(x + padding, y + padding*2 + 13);
-        
-        serialPorts = Serial.list();
-
-        /*
-        //add items for the various SD times
-        sdTimes.addItem(makeItem("Do not write to SD..."));
-        sdTimes.addItem(makeItem("5 minute maximum"));
-        sdTimes.addItem(makeItem("15 minute maximum"));
-        sdTimes.addItem(makeItem("30 minute maximum"));
-        sdTimes.addItem(makeItem("1 hour maximum"));
-        sdTimes.addItem(makeItem("2 hours maximum"));
-        sdTimes.addItem(makeItem("4 hour maximum"));
-        sdTimes.addItem(makeItem("12 hour maximum"));
-        sdTimes.addItem(makeItem("24 hour maximum"));
-
-        sdTimes.activeItem = sdSetting; //added to indicate default choice (sdSetting is in OpenBCI_GUI)
-        */
     }
 
     public void update() {
@@ -2943,16 +2490,12 @@ class SDBox {
         pushStyle();
         fill(150);
         rect(cp5_sdBox.getController(sdBoxDropdownName).getPosition()[0]-1, cp5_sdBox.getController(sdBoxDropdownName).getPosition()[1]-1, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getWidth()+2, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getHeight()+2);
-        //cp5_sdBox.draw();
         popStyle();
 
         //set the correct position of the dropdown and make it visible if the SDBox class is being drawn
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setVisible(true);
         cp5_sdBox.draw();
-        
-        //sdTimes.setPosition(x + padding, y + padding*2 + 13);
-        //the drawing of the sdTimes is handled earlier in ControlPanel.draw()
     }
 
     void createDropdown(String name, List<String> _items){
@@ -3001,7 +2544,6 @@ class SDBox {
             if (!cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
                 //println("----Closing dropdown " + maxDurDropdownName);
                 cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
-                //lockElements(false);
             }
 
         }
@@ -3012,7 +2554,6 @@ class SDBox {
                 if (cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
                     //println("++++Opening dropdown " + maxDurDropdownName);
                     cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).open();
-                    //lockElements(true);
                 }
             }
         } else {
@@ -3024,26 +2565,10 @@ class SDBox {
     void closeDropdown() {
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
         dropdownWasClicked = true;
-        //lockElements(false);
         //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
 
-//////////////////////////////////////////////////////////////
-// Global function used by the above SDBox dropdown
-void sdCardTimes (int n) {
-    //settings.cytonOBCIMaxFileSize = n;
-    sdSetting = n;
-    if (sdSetting != 0) {
-        output("OpenBCI microSD Setting = " + controlPanel.sdBox.sdTimesStrings[n] + " recording time");
-    } else {
-        output("OpenBCI microSD Setting = " + controlPanel.sdBox.sdTimesStrings[n]);
-    }
-    verbosePrint("SD setting = " + controlPanel.sdBox.sdTimesStrings[n]);
-
-    controlPanel.sdBox.closeDropdown();
-    //println("ControlPanel: Cyton SD Card Duration: " + controlPanel.sdBox.sdTimesStrings[n]);
-}
 
 class RadioConfigBox {
     int x, y, w, h, padding; //size and position
