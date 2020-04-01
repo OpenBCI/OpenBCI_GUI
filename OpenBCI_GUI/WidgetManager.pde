@@ -30,6 +30,7 @@ W_MarkerMode w_markermode;
 W_playback w_playback;
 W_SSVEP w_ssvep;
 W_Spectrogram w_spectrogram;
+W_NovaAux w_novaAux;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -52,6 +53,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_accelerometer = new W_Accelerometer(_this);
         w_accelerometer.setTitle("Accelerometer");
         addWidget(w_accelerometer, w);
+    }
+
+    if (currentBoard instanceof BoardNovaXR || currentBoard instanceof BoardSynthetic) {
+        w_novaAux = new W_NovaAux(_this);
+        w_novaAux.setTitle("NovaXR Aux");
+        addWidget(w_novaAux, w);
     }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
