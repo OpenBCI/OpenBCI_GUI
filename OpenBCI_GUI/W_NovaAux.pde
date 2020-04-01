@@ -229,7 +229,7 @@ class AuxReadBar{
     int nPoints;
     int numSeconds;
     float timeBetweenPoints;
-    int arBuffSize;
+    int bufferSize;
 
     color channelColor; //color of plot trace
 
@@ -278,13 +278,13 @@ class AuxReadBar{
         }
 
         nPoints = nPointsBasedOnDataSource(); //max duration 20s
-        arBuffSize = nPoints;
+        bufferSize = nPoints;
         analogReadData = new int[nPoints];
 
         auxReadPoints = new GPointsArray(nPoints);
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
 
-        for (int i = 0; i < arBuffSize; i++) {
+        for (int i = 0; i < bufferSize; i++) {
             float time = -(float)numSeconds + (float)i*timeBetweenPoints;
             float analog_value = 0.0; //0.0 for all points to start
             GPoint tempPoint = new GPoint(time, analog_value);
@@ -367,14 +367,14 @@ class AuxReadBar{
             samplesProcessed++;
         }
 
-        int arBuffDiff = arBuffSize - nPoints;
+        int buffDiff = bufferSize - nPoints;
         if (numSamplesToProcess > 0) {
-            for (int i = arBuffDiff; i < arBuffSize; i++) {
-                float timey = -(float)numSeconds + (float)(i-arBuffDiff)*timeBetweenPoints;
+            for (int i = buffDiff; i < bufferSize; i++) {
+                float timey = -(float)numSeconds + (float)(i-buffDiff)*timeBetweenPoints;
                 float voltage = analogReadData[i];
 
                 GPoint tempPoint = new GPoint(timey, voltage);
-                auxReadPoints.set(i-arBuffDiff, tempPoint);
+                auxReadPoints.set(i-buffDiff, tempPoint);
 
             }
             plot.setPoints(auxReadPoints); //reset the plot with updated auxReadPoints
