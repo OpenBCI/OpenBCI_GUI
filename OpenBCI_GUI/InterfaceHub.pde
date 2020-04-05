@@ -230,7 +230,7 @@ class Hub {
 
     private String firmwareVersion = "";
 
-    private DataPacket_ADS1299 dataPacket;
+    private DataPacket dataPacket;
 
     public Client tcpClient;
     private boolean portIsOpen = false;
@@ -296,7 +296,7 @@ class Hub {
         nEEGValuesPerPacket = _nEEGValuesPerPacket;
         nAuxValuesPerPacket = _nAuxValuesPerPacket;
         // For storing data into
-        dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
+        dataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
         for(int i = 0; i < nEEGValuesPerPacket; i++) {
             dataPacket.values[i] = 0;
         }
@@ -694,8 +694,8 @@ class Hub {
                         // 162, 163, 164 --- X --- X --- X --- 168, 169, 170...
                         int numSections = numPacketsDroppedHub + 1;
 
-                        DataPacket_ADS1299 current = dataPacket;                        
-                        DataPacket_ADS1299 previous = dataPacketBuff[curDataPacketInd];
+                        DataPacket current = dataPacket;                        
+                        DataPacket previous = dataPacketBuff[curDataPacketInd];
 
                         for (int i = 1; i <= numPacketsDroppedHub; i++){
                             // increment current packet index
@@ -704,7 +704,7 @@ class Hub {
                             // this bias allows us to handle multiple dropped packets in a row
                             // by adjusting the lerp coefficient depending on which packet we are filling in
                             float bias = (float)i / (float)numSections;
-                            DataPacket_ADS1299 interpolated = CreateInterpolatedPacket(previous, current, bias);
+                            DataPacket interpolated = CreateInterpolatedPacket(previous, current, bias);
                             interpolated.copyTo(dataPacketBuff[curDataPacketInd]);
                         }
                     }
@@ -1023,7 +1023,7 @@ class Hub {
         fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
     }
 
-    public int copyDataPacketTo(DataPacket_ADS1299 target) {
+    public int copyDataPacketTo(DataPacket target) {
         return dataPacket.copyTo(target);
     }
 
@@ -1031,7 +1031,7 @@ class Hub {
         return firmwareVersion;
     }
 
-    private void getRawValues(DataPacket_ADS1299 packet) {
+    private void getRawValues(DataPacket packet) {
         for (int i=0; i < nchan; i++) {
             int val = packet.values[i];
             //println(binary(val, 24));

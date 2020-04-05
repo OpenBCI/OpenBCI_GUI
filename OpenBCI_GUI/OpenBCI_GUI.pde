@@ -145,7 +145,7 @@ int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
 //cyton data packet
 int nDataBackBuff;
-DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
+DataPacket dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
 int lastReadDataPacketInd = -1;
@@ -845,7 +845,7 @@ int getNfftSafe() {
 void initCoreDataObjects() {
     // Nfft = getNfftSafe();
     nDataBackBuff = 3*getSampleRateSafe();
-    dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
+    dataPacketBuff = new DataPacket[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
     dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
     dataBuffY_uV = new float[nchan][dataBuffX.length];
@@ -864,7 +864,7 @@ void initCoreDataObjects() {
     is_railed = new DataStatus[nchan];
     for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
     for (int i=0; i<nDataBackBuff; i++) {
-        dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
+        dataPacketBuff[i] = new DataPacket(nchan, n_aux_ifEnabled);
     }
     dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
     dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());

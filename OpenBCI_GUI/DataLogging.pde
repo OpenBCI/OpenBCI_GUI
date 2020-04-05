@@ -217,7 +217,7 @@ public class OutputFile_rawtxt {
     }
 
     //This has been updated to temporarily work with Brainflow
-    public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float[] auxData, float scale_for_aux, int stopByte, long timestamp) {
+    public void writeRawData_dataPacket(DataPacket data, float scale_to_uV, float[] auxData, float scale_for_aux, int stopByte, long timestamp) {
         //get current date time with Date()
         if (output != null) {
             output.print(Integer.toString(data.sampleIndex));
@@ -264,7 +264,7 @@ public class OutputFile_rawtxt {
         }
     }
 
-    private void writeAuxValues(DataPacket_ADS1299 data) {
+    private void writeAuxValues(DataPacket data) {
         // TODO[brainflow] does aux values work?
         if (eegDataSource == DATASOURCE_CYTON) {
             BoardCyton cytonBoard = (BoardCyton)currentBoard;
@@ -542,9 +542,9 @@ public class OutputFile_BDF {
       * @description Writes a raw data packet to the buffer. Also will flush the
       *  buffer if it is filled with one second worth of data. Will also capture
       *  the start time, or the first time a packet is recieved.
-      * @param `data` {DataPacket_ADS1299} - A data packet
+      * @param `data` {DataPacket} - A data packet
       */
-    public void writeRawData_dataPacket(DataPacket_ADS1299 data) {
+    public void writeRawData_dataPacket(DataPacket data) {
 
         if (!startTimeCaptured) {
             startTime = new Date();

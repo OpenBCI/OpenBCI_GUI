@@ -262,7 +262,7 @@ void appendAndShift(float[] data, float newData) {
 final float sine_freq_Hz = 10.0f;
 float[] sine_phase_rad = new float[nchan];
 
-void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
+void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket curDataPacket) {
     float val_uV;
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         if (isChannelActive(Ichan)) {
@@ -343,7 +343,7 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float
 }
 
 
-int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float scale_fac_uVolts_per_count, float scale_fac_accel_G_per_count, DataPacket_ADS1299 curDataPacket) {
+int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float scale_fac_uVolts_per_count, float scale_fac_accel_G_per_count, DataPacket curDataPacket) {
     float val_uV = 0.0f;
     float[] acc_G = new float[n_aux_ifEnabled];
     boolean acc_newData = false;

@@ -204,13 +204,13 @@ class InterfaceSerial {
 
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
-    private DataPacket_ADS1299 rawReceivedDataPacket;
-    private DataPacket_ADS1299 missedDataPacket;
-    private DataPacket_ADS1299 dataPacket;
+    private DataPacket rawReceivedDataPacket;
+    private DataPacket missedDataPacket;
+    private DataPacket dataPacket;
     public int [] validAuxValues = {0, 0, 0};
     public boolean[] freshAuxValuesAvailable = {false, false, false};
     public boolean freshAuxValues = false;
-    //DataPacket_ADS1299 prevDataPacket;
+    //DataPacket prevDataPacket;
 
     private int nAuxValues;
     private boolean isNewDataPacketAvailable = false;
@@ -279,9 +279,9 @@ class InterfaceSerial {
         nEEGValuesPerPacket = numEEG;
         nAuxValuesPerPacket = numAux;
         //allocate space for data packet
-        rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
+        rawReceivedDataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
+        missedDataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
+        dataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
 
         for (int i = 0; i < nEEGValuesPerPacket; i++) {
             rawReceivedDataPacket.values[i] = 0;
@@ -729,7 +729,7 @@ class InterfaceSerial {
         }
     }
 
-    public int copyDataPacketTo(DataPacket_ADS1299 target) {
+    public int copyDataPacketTo(DataPacket target) {
         isNewDataPacketAvailable = false;
         return dataPacket.copyTo(target);
     }

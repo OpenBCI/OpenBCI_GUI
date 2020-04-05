@@ -3,7 +3,7 @@ import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow implements Board {
-    private DataPacket_ADS1299 dataPacket;
+    private DataPacket dataPacket;
     private BoardShim boardShim = null;
 
     protected int samplingRate = 0;
@@ -87,7 +87,7 @@ abstract class BoardBrainFlow implements Board {
 
         lastAccelValues = new float[accelChannels.length];
         lastValidAccelValues = new float[accelChannels.length];
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
+        dataPacket = new DataPacket(getNumChannels(), accelChannels.length);
 
         try {
             updateToNChan(getNumChannels());
@@ -154,7 +154,7 @@ abstract class BoardBrainFlow implements Board {
         }
     }
 
-    protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
+    protected void fillDataPacketWithValues(DataPacket dataPacket, double[] values) {
 
         dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
         dataPacket.timeStamp = (long)values[timeStampChannel]*1000;

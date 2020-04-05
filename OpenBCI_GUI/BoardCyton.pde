@@ -264,9 +264,9 @@ class CytonLegacy {
 
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
-    private DataPacket_ADS1299 rawReceivedDataPacket;
-    private DataPacket_ADS1299 missedDataPacket;
-    private DataPacket_ADS1299 dataPacket;
+    private DataPacket rawReceivedDataPacket;
+    private DataPacket missedDataPacket;
+    private DataPacket dataPacket;
 
     private final int fsHzSerialCyton = 250;  //sample rate used by OpenBCI board...set by its Arduino code
     private final int fsHzSerialCytonDaisy = 125;  //sample rate used by OpenBCI board...set by its Arduino code
@@ -372,9 +372,9 @@ class CytonLegacy {
         nEEGValuesPerPacket = _nEEGValuesPerPacket;
         nAuxValuesPerPacket = _nAuxValuesPerPacket;
         //allocate space for data packet
-        rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
+        rawReceivedDataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
+        missedDataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
+        dataPacket = new DataPacket(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
         //set all values to 0 so not null
 
         for (int i = 0; i < nEEGValuesPerPacket; i++) {
@@ -738,7 +738,7 @@ class CytonLegacy {
         hub.writeJSON(json);
     }
 
-    public int copyDataPacketTo(DataPacket_ADS1299 target) {
+    public int copyDataPacketTo(DataPacket target) {
         return dataPacket.copyTo(target);
     }
 };

@@ -7,7 +7,7 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float sine_freq_Hz = 10.0f;
 
-    private DataPacket_ADS1299 dataPacket;
+    private DataPacket dataPacket;
     private boolean streaming = false;
     private boolean isInitialized = false;
     private float[] sine_phase_rad;
@@ -18,7 +18,7 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     private int accelSynthTime;
 
     public BoardSynthetic() {        
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), NUM_ACCEL_DIMS);
+        dataPacket = new DataPacket(getNumChannels(), NUM_ACCEL_DIMS);
         sine_phase_rad = new float[getNumChannels()];
         lastAccelValues = new float[NUM_ACCEL_DIMS];
     }
