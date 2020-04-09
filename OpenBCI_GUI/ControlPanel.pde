@@ -18,6 +18,13 @@ import controlP5.*;
 
 import openbci_gui_helpers.*;
 
+import java.io.IOException;
+import java.util.List;
+
+import openbci_gui_helpers.GanglionError;
+import com.vmichalak.protocol.ssdp.Device;
+import com.vmichalak.protocol.ssdp.SSDPClient;
+
 //------------------------------------------------------------------------
 //                       Global Variables  & Instances
 //------------------------------------------------------------------------
@@ -185,8 +192,8 @@ public void controlEvent(ControlEvent theEvent) {
 
     if (theEvent.isFrom("wifiList")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        wifi_portName = (String)bob.get("headline");
-        output("Wifi Device Name = " + wifi_portName);
+        wifi_ipAddress = (String)bob.get("headline");
+        output("Wifi IP Address = " + wifi_ipAddress);
     }
 
     // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
@@ -1138,7 +1145,19 @@ class ControlPanel {
             if (isHubObjectInitialized) {
                 output("Wifi Devices Refreshing");
                 wifiList.items.clear();
-                //hub.searchDeviceStart();
+                try {
+                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
+                    if (devices.isEmpty ()) {
+                        println("No WIFI Shields found");
+                    }
+                    for (int i = 0; i < devices.size(); i++) {
+                        wifiList.addItem(makeItem(devices.get(i).getIPAddress()));
+                    }
+                    wifiList.updateMenu();
+                } catch (Exception e) {
+                    println("Exception in wifi shield scanning");
+                    e.printStackTrace ();
+                }
             } else {
                 output("Please wait till hub is fully initalized");
             }
