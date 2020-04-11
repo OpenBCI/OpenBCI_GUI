@@ -1152,6 +1152,7 @@ class ControlPanel {
                     }
                     for (int i = 0; i < devices.size(); i++) {
                         wifiList.addItem(makeItem(devices.get(i).getIPAddress()));
+                        println(devices.get(i).toString());
                     }
                     wifiList.updateMenu();
                 } catch (Exception e) {
