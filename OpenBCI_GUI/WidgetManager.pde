@@ -30,6 +30,7 @@ W_MarkerMode w_markermode;
 W_playback w_playback;
 W_SSVEP w_ssvep;
 W_Spectrogram w_spectrogram;
+W_Media w_media;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -97,6 +98,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_focus.setTitle("Focus Widget");
     addWidget(w_focus, w);
     // println("  setupWidgets focus widget -- " + millis());
+
+    w_media = new W_Media(_this);
+    w_media.setTitle("Media");
+    addWidget(w_media, w);
 
     w_ssvep = new W_SSVEP(_this);
     w_ssvep.setTitle("SSVEP_beta");

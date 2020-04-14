@@ -408,7 +408,7 @@ void delayedSetup() {
 
     buttonHelpText = new ButtonHelpText();
 
-    myPresentation = new Presentation();
+    
 
     // Create GUI data folder and copy sample data if meditation file doesn't exist
     copyGUISampleData();
@@ -1210,12 +1210,11 @@ void systemDraw() { //for drawing to the screen
     // }
 
     //draw presentation last, bc it is intended to be rendered on top of the GUI ...
-    if (drawPresentation) {
-        myPresentation.draw();
-        //emg_widget.drawTriggerFeedback();
-        //dataProcessing_user.drawTriggerFeedback();
+    if (w_media != null) {
+        if (w_media.drawPresentation) {
+            w_media.myPresentation.draw();
+        }
     }
-
     // use commented code below to verify frameRate and check latency
     // println("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
     // timeOfLastFrame = millis();

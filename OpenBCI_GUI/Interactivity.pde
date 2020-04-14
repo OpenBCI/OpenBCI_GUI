@@ -27,13 +27,12 @@ synchronized void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if (settings.expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
-            if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
+        if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
+            if (settings.expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
                 parseKey(key);
-            } else {
-                parseKeycode(keyCode);
             }
         }
+        parseKeycode(keyCode); // This checks for special keys (Escape, Enter, etc.)
     }
 
     if(key==27){
@@ -303,9 +302,11 @@ void parseKeycode(int val) {
             // gui.incrementGUIpage(); //deprecated with new channel controller
             break;
         case 10:
+            /*
             println("Enter was pressed.");
             drawPresentation = !drawPresentation;
             break;
+            */
         case 16:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
             break;
@@ -319,8 +320,9 @@ void parseKeycode(int val) {
             println("OpenBCI_GUI: parseKeycode(" + val + "): received CAPS LOCK keypress.  Ignoring...");
             break;
         case 27:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Stopping OpenBCI...");
+            println("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Escaping Presentation Mode");
             //stopRunning();
+            w_media.drawPresentation = !w_media.drawPresentation;
             break;
         case 33:
             println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE UP keypress.  Ignoring...");
@@ -335,10 +337,10 @@ void parseKeycode(int val) {
             println("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
             break;
         case 37:
-            if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
-                if(myPresentation.currentSlide >= 0){
-                    myPresentation.slideBack();
-                    myPresentation.timeOfLastSlideChange = millis();
+            if (millis() - w_media.myPresentation.timeOfLastSlideChange >= 250) {
+                if(w_media.myPresentation.currentSlide >= 0){
+                    w_media.myPresentation.slideBack();
+                    w_media.myPresentation.timeOfLastSlideChange = millis();
                 }
             }
             break;
@@ -346,10 +348,10 @@ void parseKeycode(int val) {
             println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
             break;
         case 39:
-            if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
-                if(myPresentation.currentSlide < myPresentation.presentationSlides.length - 1){
-                    myPresentation.slideForward();
-                    myPresentation.timeOfLastSlideChange = millis();
+            if (millis() - w_media.myPresentation.timeOfLastSlideChange >= 250) {
+                if(w_media.myPresentation.currentSlide < w_media.myPresentation.presentationSlides.length - 1){
+                    w_media.myPresentation.slideForward();
+                    w_media.myPresentation.timeOfLastSlideChange = millis();
                 }
             }
             break;
