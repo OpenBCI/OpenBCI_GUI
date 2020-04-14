@@ -372,7 +372,7 @@ void Spillover(int n) {
 //========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
-class ChannelBar implements Runnable {
+class ChannelBar{
 
     int channelNumber; //duh
     String channelString;
@@ -398,6 +398,8 @@ class ChannelBar implements Runnable {
 
     boolean drawVoltageValue;
     boolean drawImpValue;
+
+    Thread updatePointsThread;
 
     ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
@@ -532,16 +534,24 @@ class ChannelBar implements Runnable {
             return fmt;
     }
 
+    class PlotPointUpdater implements Runnable {
+        ChannelBar channelBar;
+
+        PlotPointUpdater(ChannelBar _channelBar) {
+            channelBar = _channelBar;
+        }
+
+        void run() {
+            channelBar.updatePlotPointsThreaded();
+        }
+    };
+
     void updatePlotPoints() {
-        Thread t = new Thread(this);
-        t.start();
+        updatePointsThread = new Thread(new PlotPointUpdater(this));
+        updatePointsThread.start();
     }
 
-    void run() {
-        updatePlotPointsThread();
-    }
-
-    synchronized void updatePlotPointsThread() {
+    void updatePlotPointsThreaded() {
         // update data in plot
         if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints) {
             for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
@@ -555,7 +565,15 @@ class ChannelBar implements Runnable {
         }
     }
 
-    synchronized void draw() {
+    void draw() {
+        try {
+            updatePointsThread.join();
+        }
+        catch (InterruptedException e) {
+            println("InterruptedException when joining update points thread");
+            e.printStackTrace();
+        }
+        
         pushStyle();
 
         //draw channel holder background
