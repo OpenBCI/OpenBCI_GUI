@@ -1298,7 +1298,7 @@ void systemDraw() { //for drawing to the screen
     // timeOfLastFrame = millis();
 
     buttonHelpText.draw();
-    mouseOutOfBounds(); // to fix
+    //mouseOutOfBounds(); // to fix
 
     if (midInit) {
         drawOverlay();
