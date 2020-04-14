@@ -372,7 +372,7 @@ void Spillover(int n) {
 //========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
-class ChannelBar{
+class ChannelBar implements Runnable {
 
     int channelNumber; //duh
     String channelString;
@@ -533,20 +533,29 @@ class ChannelBar{
     }
 
     void updatePlotPoints() {
+        Thread t = new Thread(this);
+        t.start();
+    }
+
+    void run() {
+        updatePlotPointsThread();
+    }
+
+    synchronized void updatePlotPointsThread() {
         // update data in plot
         if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints) {
             for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
                 float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
                 float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
-                // float filt_uV_value = 0.0;
-                GPoint tempPoint = new GPoint(time, filt_uV_value);
-                channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), tempPoint);
+
+                // update channel point in place
+                channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), time, filt_uV_value, "");
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
 
-    void draw() {
+    synchronized void draw() {
         pushStyle();
 
         //draw channel holder background
