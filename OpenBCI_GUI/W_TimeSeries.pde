@@ -399,6 +399,8 @@ class ChannelBar{
     boolean drawVoltageValue;
     boolean drawImpValue;
 
+    Thread updatePointsThread;
+
     ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
         channelNumber = _channelNumber;
@@ -532,21 +534,46 @@ class ChannelBar{
             return fmt;
     }
 
+    class PlotPointUpdater implements Runnable {
+        ChannelBar channelBar;
+
+        PlotPointUpdater(ChannelBar _channelBar) {
+            channelBar = _channelBar;
+        }
+
+        void run() {
+            channelBar.updatePlotPointsThreaded();
+        }
+    };
+
     void updatePlotPoints() {
+        updatePointsThread = new Thread(new PlotPointUpdater(this));
+        updatePointsThread.start();
+    }
+
+    void updatePlotPointsThreaded() {
         // update data in plot
         if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints) {
             for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
                 float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
                 float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
-                // float filt_uV_value = 0.0;
-                GPoint tempPoint = new GPoint(time, filt_uV_value);
-                channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), tempPoint);
+
+                // update channel point in place
+                channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), time, filt_uV_value, "");
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
 
     void draw() {
+        try {
+            updatePointsThread.join();
+        }
+        catch (InterruptedException e) {
+            println("InterruptedException when joining update points thread");
+            e.printStackTrace();
+        }
+        
         pushStyle();
 
         //draw channel holder background

@@ -21,8 +21,8 @@
  * Boston, MA  02111-1307  USA
  * 
  * @author      Javier Gracia Carpio http://jagracar.com
- * @modified    11/21/2019
- * @version     1.9.1 (11)
+ * @modified    04/14/2020
+ * @version     1.9.2 (12)
  */
 
 package grafica;
@@ -907,24 +907,32 @@ public class GLayer implements PConstants {
 		parent.strokeWeight(lineWidth);
 		parent.strokeCap(SQUARE);
 
+		parent.noFill();
+		parent.beginShape();
 		for (int i = 0; i < plotPoints.getNPoints() - 1; i++) {
 			if (inside.get(i) && inside.get(i + 1)) {
-				parent.line(plotPoints.getX(i), plotPoints.getY(i), plotPoints.getX(i + 1), plotPoints.getY(i + 1));
+				if(i==0) parent.vertex(plotPoints.getX(i), plotPoints.getY(i));
+				parent.vertex(plotPoints.getX(i + 1), plotPoints.getY(i + 1));
 			} else if (plotPoints.isValid(i) && plotPoints.isValid(i + 1)) {
 				// At least one of the points is outside the inner region.
 				// Obtain the valid line box intersections
 				int nCuts = obtainBoxIntersections(plotPoints.get(i), plotPoints.get(i + 1));
 
 				if (inside.get(i)) {
-					parent.line(plotPoints.getX(i), plotPoints.getY(i), cuts[0][0], cuts[0][1]);
+					if(i==0) parent.vertex(plotPoints.getX(i), plotPoints.getY(i));
+					parent.vertex(cuts[0][0], cuts[0][1]);
+
 				} else if (inside.get(i + 1)) {
-					parent.line(cuts[0][0], cuts[0][1], plotPoints.getX(i + 1), plotPoints.getY(i + 1));
+					if(i==0) parent.vertex(cuts[0][0], cuts[0][1]);
+					parent.vertex(plotPoints.getX(i + 1), plotPoints.getY(i + 1));
 				} else if (nCuts >= 2) {
-					parent.line(cuts[0][0], cuts[0][1], cuts[1][0], cuts[1][1]);
+					if(i==0) parent.vertex(cuts[0][0], cuts[0][1]);
+					parent.vertex(cuts[1][0], cuts[1][1]);
 				}
 			}
 		}
-
+		parent.endShape();
+		
 		parent.popStyle();
 	}
 
