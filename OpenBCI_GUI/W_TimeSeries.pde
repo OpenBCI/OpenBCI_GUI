@@ -271,10 +271,16 @@ class W_timeSeries extends Widget {
                 if(showHardwareSettings) {
                     showHardwareSettings = false;
                     hsc.isVisible = false;
+                    if (isRunning) {
+                        currentBoard.startStreaming();
+                    }
                     hardwareSettingsButton.setString("Hardware Settings");
                 } else{
                     showHardwareSettings = true;
                     hsc.isVisible = true;
+                    if (isRunning) {
+                        currentBoard.stopStreaming();
+                    }
                     hardwareSettingsButton.setString("Time Series");
                 }
             }
