@@ -655,13 +655,11 @@ class DataProcessing {
 
     class SingleChannelProcessor implements Runnable {
         int Ichan;
-        DataProcessing dataProcessing;
         float[][] data_forDisplay_uV;
         float[] prevFFTdata;
 
-        SingleChannelProcessor(DataProcessing dataProcessing, int chan, float[][] data_forDisplay_uV, float[] prevFFTdata) {
+        SingleChannelProcessor(int chan, float[][] data_forDisplay_uV, float[] prevFFTdata) {
             Ichan = chan;
-            this.dataProcessing = dataProcessing;
             this.data_forDisplay_uV = data_forDisplay_uV;
             this.prevFFTdata = prevFFTdata;
         }
@@ -773,7 +771,7 @@ class DataProcessing {
         //loop over each EEG channel
         Thread[] perChannelThreads = new Thread[nchan];
         for (int Ichan=0; Ichan < nchan; Ichan++) { 
-            perChannelThreads[Ichan] = new Thread(new SingleChannelProcessor(this, Ichan, data_forDisplay_uV, prevFFTdata));
+            perChannelThreads[Ichan] = new Thread(new SingleChannelProcessor(Ichan, data_forDisplay_uV, prevFFTdata));
             perChannelThreads[Ichan].start();
         } //end the loop over channels.
         
