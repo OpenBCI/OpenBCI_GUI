@@ -553,12 +553,9 @@ class AccelerometerBar {
         if (numSamplesToProcess > 0) {
             try {
                 for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
-                    GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);
-                    GPoint tempPointY = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[1][i]);
-                    GPoint tempPointZ = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[2][i]);
-                    accelPointsX.set(i-accelBuffDiff, tempPointX);
-                    accelPointsY.set(i-accelBuffDiff, tempPointY);
-                    accelPointsZ.set(i-accelBuffDiff, tempPointZ);
+                    accelPointsX.set(i-accelBuffDiff, accelTimeArray[i-accelBuffDiff], accelArray[0][i], "");
+                    accelPointsY.set(i-accelBuffDiff, accelTimeArray[i-accelBuffDiff], accelArray[1][i], "");
+                    accelPointsZ.set(i-accelBuffDiff, accelTimeArray[i-accelBuffDiff], accelArray[2][i], "");
                 }
                 //set points in three layers on the same plot, just like old graph
                 plot.setPoints(accelPointsX, "layer 1");

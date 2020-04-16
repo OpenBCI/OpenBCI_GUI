@@ -726,13 +726,20 @@ class DataProcessing {
         settings.dataProcessingNotchSave = currentNotch_ind;
     }
 
-    public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
-        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
-        float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
-        FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
-        int Nfft = getNfftSafe();
-        //loop over each EEG channel
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
+    class SingleChannelProcessor implements Runnable {
+        int Ichan;
+        float[][] data_forDisplay_uV;
+        float[] prevFFTdata;
+
+        SingleChannelProcessor(int chan, float[][] data_forDisplay_uV, float[] prevFFTdata) {
+            Ichan = chan;
+            this.data_forDisplay_uV = data_forDisplay_uV;
+            this.prevFFTdata = prevFFTdata;
+        }
+
+        void run() {            
+            int Nfft = getNfftSafe();
+            double foo;
 
             //filter the data in the time domain
             filterIIR(filtCoeff_notch[currentNotch_ind].b, filtCoeff_notch[currentNotch_ind].a, data_forDisplay_uV[Ichan]); //notch
@@ -742,18 +749,6 @@ class DataProcessing {
             float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
             fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
             data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
-        } //close loop over channels
-
-
-        // calculate FFT after filter
-
-        //println("PPP" + fftBuff[0].specSize());
-        float prevFFTdata[] = new float[fftBuff[0].specSize()];
-        double foo;
-
-        //update the FFT (frequency spectrum)
-        // println("nchan = " + nchan);
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
 
             //copy the previous FFT data...enables us to apply some smoothing to the FFT data
             for (int I=0; I < fftBuff[Ichan].specSize(); I++) {
@@ -836,7 +831,34 @@ class DataProcessing {
                 avgPowerInBins[Ichan][i] = sum;   // total power in a band
                 // println(i, binNum, sum);
             }
+        }
+    }
+
+    public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
+        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
+        float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
+        FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+
+        float prevFFTdata[] = new float[fftBuff[0].specSize()];
+
+        //loop over each EEG channel
+        Thread[] perChannelThreads = new Thread[nchan];
+        for (int Ichan=0; Ichan < nchan; Ichan++) { 
+            perChannelThreads[Ichan] = new Thread(new SingleChannelProcessor(Ichan, data_forDisplay_uV, prevFFTdata));
+            perChannelThreads[Ichan].start();
         } //end the loop over channels.
+        
+        for (int Ichan=0; Ichan < nchan; Ichan++) {
+            try {
+                perChannelThreads[Ichan].join();
+            }
+            catch (InterruptedException e) {
+                println("InterruptedException when joining threads for processing");
+                e.printStackTrace();
+            }
+        } //end the loop over channels.
+
+
         for (int i = 0; i < processing_band_low_Hz.length; i++) {
             float sum = 0;
 
