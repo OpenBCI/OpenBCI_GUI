@@ -409,8 +409,7 @@ class AnalogReadBar{
                 float timey = -(float)numSeconds + (float)(i-arBuffDiff)*timeBetweenPoints;
                 float voltage = analogReadData[i];
 
-                GPoint tempPoint = new GPoint(timey, voltage);
-                analogReadPoints.set(i-arBuffDiff, tempPoint);
+                analogReadPoints.set(i-arBuffDiff, timey, voltage, "");
 
             }
             plot.setPoints(analogReadPoints); //reset the plot with updated analogReadPoints
