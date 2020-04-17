@@ -192,7 +192,8 @@ public void controlEvent(ControlEvent theEvent) {
 
     if (theEvent.isFrom("wifiList")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        wifi_ipAddress = (String)bob.get("headline");
+        wifi_portName = (String)bob.get("headline");
+        wifi_ipAddress = (String)bob.get("subline");
         output("Wifi IP Address = " + wifi_ipAddress);
     }
 
@@ -1151,8 +1152,7 @@ class ControlPanel {
                         println("No WIFI Shields found");
                     }
                     for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(makeItem(devices.get(i).getIPAddress()));
-                        println(devices.get(i).toString());
+                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(),""));
                     }
                     wifiList.updateMenu();
                 } catch (Exception e) {
