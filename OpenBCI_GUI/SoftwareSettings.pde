@@ -18,7 +18,7 @@
 //        - in Interactivty.pde with the rest of the keyboard shortcuts
 //        - in TopNav.pde when "Config" --> "Save Settings" || "Load Settings" is clicked
 //    -- This allows User to store snapshots of most GUI settings in Users/.../Documents/OpenBCI_GUI/Settings/
-//    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port,  turn on/off Analog Read
+//    -- After loading, only a few actions are required: start/stop the data stream and networking streams, open/close serial port
 //
 //      Tips on adding a new setting:
 //      -- figure out if the setting is Global, in an existing widget, or in a new class or widget
@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "1.0.5";
+    String settingsVersion = "2.0.0";
     //impose minimum gui width and height in openBCI_GUI.pde
     int minGUIWidth = 705;
     int minGUIHeight = 400;
@@ -74,7 +74,6 @@ class SoftwareSettings {
     //Time Series settings
     int tsVertScaleSave;
     int tsHorizScaleSave;
-    int checkForSuccessTS = 0;
     //Accelerometer settings
     int accVertScaleSave;
     int accHorizScaleSave;
@@ -128,6 +127,7 @@ class SoftwareSettings {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
         "GanglionUserSettings.json",
+        "NovaXRUserSettings.json",
         "PlaybackUserSettings.json",
         "SynthFourUserSettings.json",
         "SynthEightUserSettings.json",
@@ -137,6 +137,7 @@ class SoftwareSettings {
         "CytonDefaultSettings.json",
         "DaisyDefaultSettings.json",
         "GanglionDefaultSettings.json",
+        "NovaXRDefaultSettings.json",
         "PlaybackDefaultSettings.json",
         "SynthFourDefaultSettings.json",
         "SynthEightDefaultSettings.json",
@@ -199,19 +200,10 @@ class SoftwareSettings {
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
     String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz", "20 Hz", "40 Hz"};
 
-    //Save Time Series settings variables
-    int tsActiveSetting = 1;
-    int tsGainSetting;
-    int tsInputTypeSetting;
-    int tsBiasSetting;
-    int tsSrb2Setting;
-    int tsSrb1Setting;
-
     //Load global settings variables
     int loadLayoutSetting;
     int loadNotchSetting;
     int loadBandpassSetting;
-    BoardMode loadBoardMode;
 
     //Load TS dropdown variables
     int loadTimeSeriesVertScale;
@@ -402,6 +394,7 @@ class SoftwareSettings {
             this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
         } catch (Exception e) {
             println("InitSettings: Error trying to save settings");
+            //e.printStackTrace();
         }
 
         //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
@@ -444,71 +437,8 @@ class SoftwareSettings {
         JSONObject saveTSSettings = new JSONObject();
         saveTSSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
         saveTSSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
-        ////////////////////////////////////////////////////////////////////////////////////
-        //                 Case for saving TS settings in Cyton Data Modes                //
-        if (eegDataSource == DATASOURCE_CYTON)  {
-            //Set up an array to store channel settings
-            JSONArray saveTSSettingsJSONArray = new JSONArray();
-            //Save all of the channel settings for number of Time Series channels being used
-            for (int i = 0; i < slnchan; i++) {
-                //Make a JSON Object for each of the Time Series Channels
-                JSONObject saveChannelSettings = new JSONObject();
-                //Copy channel settings from channelSettingValues
-                for (int j = 0; j < numSettingsPerChannel; j++) {
-                    switch(j) {  //what setting are we looking at
-                        case 0: //on/off
-                            tsActiveSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for active channel (0 or 1) from char array channelSettingValues
-                            break;
-                        case 1: //GAIN
-                            tsGainSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for gain
-                            break;
-                        case 2: //input type
-                            tsInputTypeSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for input type
-                            break;
-                        case 3: //BIAS
-                            tsBiasSetting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for bias
-                            break;
-                        case 4: // SRB2
-                            tsSrb2Setting = Character.getNumericValue(channelSettingValues[i][j]);  //Store integer value for srb2
-                            break;
-                        case 5: // SRB1
-                            tsSrb1Setting = Character.getNumericValue(channelSettingValues[i][j]); //Store integer value for srb1
-                            break;
-                        }
-                    //Store all channel settings in Time Series JSON object, one channel at a time
-                    saveChannelSettings.setInt("Channel_Number", (i+1));
-                    saveChannelSettings.setInt("Active", tsActiveSetting);
-                    saveChannelSettings.setInt("PGA Gain", int(tsGainSetting));
-                    saveChannelSettings.setInt("Input Type", tsInputTypeSetting);
-                    saveChannelSettings.setInt("Bias", tsBiasSetting);
-                    saveChannelSettings.setInt("SRB2", tsSrb2Setting);
-                    saveChannelSettings.setInt("SRB1", tsSrb1Setting);
-                    saveTSSettingsJSONArray.setJSONObject(i, saveChannelSettings);
-                } //end channel settings for loop
-            } //end all channels for loop
-            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
-        }
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_GANGLION) {
-            //Set up an array to store channel settings
-            JSONArray saveTSSettingsJSONArray = new JSONArray();
-            for (int i = 0; i < slnchan; i++) { //For all channels...
-                //Make a JSON Object for each of the Time Series Channels
-                JSONObject saveTimeSeriesSettings = new JSONObject();
-                //Get integer value from char array channelSettingValues
-                tsActiveSetting = Character.getNumericValue(channelSettingValues[i][0]);
-                //Catch case where channel settings is not 0 or 1, due to unkown error
-                tsActiveSetting = (tsActiveSetting == 0 ||  tsActiveSetting == 1) ?
-                    tsActiveSetting ^= 1 :
-                    1; //save channel setting as active if there is an error
-                saveTimeSeriesSettings.setInt("Channel_Number", (i+1));
-                saveTimeSeriesSettings.setInt("Active", tsActiveSetting);
-                saveTSSettingsJSONArray.setJSONObject(i, saveTimeSeriesSettings);
-            } //end loop for all channels
-            saveTSSettings.setJSONArray("channelSettings", saveTSSettingsJSONArray); //Set the JSON array for all channels
-        }
         saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
+
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
@@ -516,16 +446,8 @@ class SoftwareSettings {
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
         saveGlobalSettings.setInt("Framerate", frameRateCounter);
-        saveGlobalSettings.setBoolean("Accelerometer Mode", w_accelerometer.isAccelModeActive());
-        if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
-            saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
-            saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
-            saveGlobalSettings.setBoolean("Pulse Analog Read", w_pulsesensor.analogReadOn);
-            saveGlobalSettings.setBoolean("Analog Read", w_analogRead.analogReadOn);
-            saveGlobalSettings.setBoolean("Digital Read", w_digitalRead.digitalReadOn);
-            saveGlobalSettings.setBoolean("Marker Mode", w_markermode.markerModeOn);
-            saveGlobalSettings.setInt("Board Mode", cyton.curBoardMode.ordinal());
-        }
+        saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
+        saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
 
         /////Setup JSON Object for gui version and settings Version
@@ -736,6 +658,8 @@ class SoftwareSettings {
         //Load all saved User Settings from a JSON file if it exists
         loadSettingsJSONData = loadJSONObject(loadGUISettingsFileLocation);
 
+        verbosePrint(loadSettingsJSONData.toString());
+
         //Check the number of channels saved to json first!
         JSONObject loadDataSettings = loadSettingsJSONData.getJSONObject(kJSONKeyDataInfo);
         numChanloaded = loadDataSettings.getInt("Channels");
@@ -766,33 +690,11 @@ class SoftwareSettings {
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
         loadFramerate = loadGlobalSettings.getInt("Framerate");
         Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
-        Boolean loadAccelerometer = loadGlobalSettings.getBoolean("Accelerometer Mode");
-        if (eegDataSource == DATASOURCE_CYTON) { //Only save these settings if you are using a Cyton board for live streaming
-            loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
-            loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
-            loadBoardMode = BoardMode.values()[loadGlobalSettings.getInt("Board Mode")];
-        }
+        loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
+        loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
         //Store loaded layout to current layout variable
         currentLayout = loadLayoutSetting;
         //Load more global settings after this line, if needed
-
-        //Create a string array to print global settings to console
-        String[] loadedGlobalSettings = {
-            "Using Layout Number: " + loadLayoutSetting,
-            "Default Notch: " + loadNotchSetting, //default notch
-            "Default BP: " + loadBandpassSetting, //default bp
-            "Default Framerate: " + loadFramerate, //default framerate
-            "Expert Mode: " + loadExpertModeToggle,
-            "TS Vert Scale: " + loadTimeSeriesVertScale,
-            "TS Horiz Scale: " + loadTimeSeriesHorizScale,
-            "Analog Vert Scale: " + loadAnalogReadVertScale,
-            "Analog Horiz Scale: " + loadAnalogReadHorizScale,
-            "Accelerometer: " + loadAccelerometer,
-            "Board Mode: " + loadBoardMode,
-            //Add new global settings above this line to print to console
-            };
-        //Print the global settings that have been loaded to the console
-        //printArray(loadedGlobalSettings);
 
         //get the FFT settings
         JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
@@ -802,25 +704,10 @@ class SoftwareSettings {
         fftSmoothingLoad = loadFFTSettings.getInt("FFT_Smoothing");
         fftFilterLoad = loadFFTSettings.getInt("FFT_Filter");
 
-        //Create a string array to print to console
-        String[] loadedFFTSettings = {
-            "FFT_Max Frequency: " + fftMaxFrqLoad,
-            "FFT_Max uV: " + fftMaxuVLoad,
-            "FFT_Log/Lin: " + fftLogLinLoad,
-            "FFT_Smoothing: " + fftSmoothingLoad,
-            "FFT_Filter: " + fftFilterLoad
-            };
-        //Print the FFT settings that have been loaded to the console
-        //printArray(loadedFFTSettings);
-
         //get the Accelerometer settings
         JSONObject loadAccSettings = loadSettingsJSONData.getJSONObject(kJSONKeyAccel);
         loadAccelVertScale = loadAccSettings.getInt("Accelerometer Vert Scale");
         loadAccelHorizScale = loadAccSettings.getInt("Accelerometer Horiz Scale");
-        String[] loadedAccSettings = {
-            "Accelerometer Vert Scale: " + loadAccelVertScale,
-            "Accelerometer Horiz Scale: " + loadAccelHorizScale
-        };
 
         //get the Networking Settings
         JSONObject loadNetworkingSettings = loadSettingsJSONData.getJSONObject(kJSONKeyNetworking);
@@ -894,16 +781,6 @@ class SoftwareSettings {
         hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
         hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
 
-        //Create a string array to print to console
-        String[] loadedHPSettings = {
-            "HP_intensity: " + hpIntensityLoad,
-            "HP_polarity: " + hpPolarityLoad,
-            "HP_contours: " + hpContoursLoad,
-            "HP_smoothing: " + hpSmoothingLoad
-            };
-        //Print the Headplot settings
-        //printArray(loadedHPSettings);
-
         //get the EMG settings
         JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
         emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
@@ -911,28 +788,10 @@ class SoftwareSettings {
         emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
         emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
-        //Create a string array to print to console
-        String[] loadedEMGSettings = {
-            "EMG_smoothing: " + emgSmoothingLoad,
-            "EMG_uVlimit: " + emguVLimLoad,
-            "EMG_creepspeed: " + emgCreepLoad,
-            "EMG_minuV: " + emgMinDeltauVLoad
-            };
-        //Print the EMG settings
-        //printArray(loadedEMGSettings);
-
         //get the  Focus settings
         JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
         focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
         focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
-
-        //Create a string array to print to console
-        String[] loadedFocusSettings = {
-            "Focus_theme: " + focusThemeLoad,
-            "Focus_keypress: " + focusKeyLoad
-            };
-        //Print the EMG settings
-        //printArray(loadedFocusSettings);
 
         //Clear the list and array for holding SSVEP settings
         loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
@@ -1026,11 +885,6 @@ class SoftwareSettings {
         dataProcessing.currentFilt_ind = loadBandpassSetting;
         topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
 
-        //Apply Board Mode to Cyton Only
-        if (eegDataSource == DATASOURCE_CYTON) {
-            applyBoardMode();
-        }
-
         //Apply Expert Mode toggle
         if (loadExpertModeToggle) {
             topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode Off");
@@ -1048,20 +902,16 @@ class SoftwareSettings {
         frameRateCounter = loadFramerate;
         switch (frameRateCounter) {
             case 0:
-                topNav.fpsButton.setString("24 fps");
-                frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(24);
                 break;
             case 1:
-                topNav.fpsButton.setString("30 fps");
-                frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(30);
                 break;
             case 2:
-                topNav.fpsButton.setString("45 fps");
-                frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(45);
                 break;
             case 3:
-                topNav.fpsButton.setString("60 fps");
-                frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+                setFrameRate(60);
                 break;
         }
 
@@ -1082,99 +932,10 @@ class SoftwareSettings {
             w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
             println("Headplot is active: Redrawing");
         }
-
-        //Apply the accelerometer boolean to backend and frontend when using Ganglion. When using Cyton, applyBoardMode does the work.
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            if (loadAccelerometer) { //if loadAccelerometer is true. This has been loaded from JSON file.
-                // daniellasry: it seems the ganglion board does not like turning on the accelerometer
-                // immediately after activating channels. From what I can tell, the issue is in the
-                // firmware. This delay is a workaround for the issue.
-                // retiutut: Containing this fix to BLED112 only!
-                if (ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-                    delay(1000);
-                }
-                ganglion.accelStart(); //send message to hub
-            } else {
-                ganglion.accelStop(); //send message to hub
-            }
-        }
-
     } //end of loadGUISettings
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    private void applyBoardMode() {
-        //Apply Board Mode
-        switch(loadBoardMode) { //Switch-case for loaded board mode
-            case DEFAULT:
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                //outputSuccess("Starting to read accelerometer");
-                w_analogRead.analogReadOn = false;
-                w_pulsesensor.analogReadOn = false;
-                w_digitalRead.digitalReadOn = false;
-                w_markermode.markerModeOn = false;
-                break;
-            case DEBUG: //Not being used currently
-                break;
-            case ANALOG:
-                if (cyton.isPortOpen()) { //This code has been copied from AnalogRead
-                    if (cyton.getBoardMode() != BoardMode.ANALOG) {
-                        cyton.setBoardMode(BoardMode.ANALOG);
-                        if (cyton.isWifi()) {
-                            output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
-                        } else {
-                            output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
-                        }
-                        w_digitalRead.digitalReadOn = false;
-                        w_markermode.markerModeOn = false;
-                        w_pulsesensor.analogReadOn = true;
-                        w_analogRead.analogReadOn = true;
-                    } else {
-                        cyton.setBoardMode(BoardMode.DEFAULT);
-                        output("Starting to read accelerometer");
-                    }
-                }
-                break;
-            case DIGITAL:
-                if (cyton.isPortOpen()) { //This code has been copied from DigitalRead
-                    if (cyton.getBoardMode() != BoardMode.DIGITAL) {
-                        cyton.setBoardMode(BoardMode.DIGITAL);
-                        if (cyton.isWifi()) {
-                            output("Starting to read digital inputs on pin marked D11, D12 and D17");
-                        } else {
-                            output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
-                        }
-                        w_analogRead.analogReadOn = false;
-                        w_pulsesensor.analogReadOn = false;
-                        w_markermode.markerModeOn = false;
-                    } else {
-                        cyton.setBoardMode(BoardMode.DEFAULT);
-                        outputSuccess("Starting to read accelerometer");
-                    }
-                }
-                break;
-            case MARKER:
-                if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
-                    if (cyton.getBoardMode() != BoardMode.MARKER) {
-                        cyton.setBoardMode(BoardMode.MARKER);
-                        output("Starting to read markers");
-                        w_markermode.markerModeButton.setString("Turn Marker Off");
-                        w_analogRead.analogReadOn = false;
-                        w_pulsesensor.analogReadOn = false;
-                        w_digitalRead.digitalReadOn = false;
-                    } else {
-                        cyton.setBoardMode(BoardMode.DEFAULT);
-                        output("Starting to read accelerometer");
-                        w_markermode.markerModeButton.setString("Turn Marker On");
-                        w_analogRead.analogReadOn = false;
-                        w_pulsesensor.analogReadOn = false;
-                        w_digitalRead.digitalReadOn = false;
-                    }
-                }
-                break;
-        }//end switch/case
-    }
-
     private void loadApplyWidgetDropdownText() {
 
         ////////Apply Time Series dropdown settings in loadApplyTimeSeriesSettings() instead of here
@@ -1460,118 +1221,7 @@ class SoftwareSettings {
             w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
         Duration(loadTimeSeriesHorizScale);
             w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
-
-        //Make a JSON object to load channel setting array
-        JSONArray loadTimeSeriesJSONArray = loadTimeSeriesSettings.getJSONArray("channelSettings");
-
-        //Case for loading time series settings in Live Data mode
-        if (eegDataSource == DATASOURCE_CYTON)  {
-            //get the channel settings first for only the number of channels being used
-            for (int i = 0; i < numChanloaded; i++) {
-                JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-                int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-                int active = loadTSChannelSettings.getInt("Active");
-                int gainSetting = loadTSChannelSettings.getInt("PGA Gain");
-                int inputType = loadTSChannelSettings.getInt("Input Type");
-                int biasSetting = loadTSChannelSettings.getInt("Bias");
-                int srb2Setting = loadTSChannelSettings.getInt("SRB2");
-                int srb1Setting = loadTSChannelSettings.getInt("SRB1");
-                println("Ch " + channel + ", " +
-                    channelsActiveArray[active] + ", " +
-                    gainSettingsArray[gainSetting] + ", " +
-                    inputTypeArray[inputType] + ", " +
-                    biasIncludeArray[biasSetting] + ", " +
-                    srb2SettingArray[srb2Setting] + ", " +
-                    srb1SettingArray[srb1Setting]);
-
-                //Use channelSettingValues variable to store these settings once they are loaded from JSON file. Update occurs in hwSettingsController
-                channelSettingValues[i][0] = (char)(active + '0');
-                if (active == 0) {
-                    if (eegDataSource == DATASOURCE_GANGLION) {
-                        activateChannel(channel);// power down == false, set color to vibrant
-                    }
-                    w_timeSeries.channelBars[i].isOn = true;
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(channel)%8]);
-                } else {
-                    if (eegDataSource == DATASOURCE_GANGLION) {
-                        deactivateChannel(channel); // power down == true, set color to dark gray, indicating power down
-                    }
-                    w_timeSeries.channelBars[i].isOn = false; // deactivate it
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-                }
-                //Set gain
-                channelSettingValues[i][1] = (char)(gainSetting + '0');  //Convert int to char by adding the gainSetting to ASCII char '0'
-                //Set inputType
-                channelSettingValues[i][2] = (char)(inputType + '0');
-                //Set Bias
-                channelSettingValues[i][3] = (char)(biasSetting + '0');
-                //Set SRB2
-                channelSettingValues[i][4] = (char)(srb2Setting + '0');
-                //Set SRB1
-                channelSettingValues[i][5] = (char)(srb1Setting + '0');
-            } //end case for all channels
-
-            loadErrorTimerStart = millis();
-            for (int i = 0; i < slnchan; i++) { //For all time series channels...
-                try {
-                    cyton.writeChannelSettings(i, channelSettingValues); //Write the channel settings to the board!
-                } catch (RuntimeException e) {
-                    verbosePrint("Runtime Error when trying to write channel settings to cyton...");
-                }
-                if (checkForSuccessTS > 0) { // If we receive a return code...
-                    println("Return code: " + checkForSuccessTS);
-                    //when successful, iterate to next channel(i++) and set Check to null
-                    if (checkForSuccessTS == RESP_SUCCESS) {
-                        // i++;
-                        checkForSuccessTS = 0;
-                    }
-
-                    //This catches the error when there is difficulty connecting to Cyton. Tested by using dongle with Cyton turned off!
-                    int timeElapsed = millis() - loadErrorTimerStart;
-                    if (timeElapsed >= loadErrorTimeWindow) { //If the time window (3.8 seconds) has elapsed...
-                        println("FAILED TO APPLY SETTINGS TO CYTON WITHIN TIME WINDOW. STOPPING SYSTEM.");
-                        loadErrorCytonEvent = true; //Set true because an error has occured
-                        haltSystem(); //Halt the system to stop the initialization process
-                        return;
-                    }
-                }
-                //delay(10);// Works on 8 chan sometimes
-                delay(250); // Works on 8 and 16 channels 3/3 trials applying settings to all channels.
-                //Tested by setting gain 1x and loading 24x.
-            }
-            loadErrorCytonEvent = false;
-        } //end Cyton case
-
-        //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
-        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
-            //get the channel settings first for only the number of channels being used
-            if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
-            for (int i = 0; i < numChanloaded; i++) {
-                JSONObject loadTSChannelSettings = loadTimeSeriesJSONArray.getJSONObject(i);
-                //int channel = loadTSChannelSettings.getInt("Channel_Number") - 1; //when using with channelSettingsValues, will need to subtract 1
-                int active = loadTSChannelSettings.getInt("Active");
-                //println("Ch " + channel + ", " + channelsActiveArray[active]);
-                if (active == 1) {
-                    if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-                        println("Ganglion: loadApplyChannelSettings(): activate: sending " + command_activate_channel[i]);
-                        hub.sendCommand(command_activate_channel[i]);
-                        w_timeSeries.hsc.powerUpChannel(i);
-                    }
-                    w_timeSeries.channelBars[i].isOn = true;
-                    channelSettingValues[i][0] = '0';
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(channelColors[(i)%8]);
-                } else {
-                    if (eegDataSource == DATASOURCE_GANGLION) { //if using Ganglion, send the appropriate command to the hub to activate a channel
-                        println("Ganglion: loadApplyChannelSettings(): deactivate: sending " + command_deactivate_channel[i]);
-                        hub.sendCommand(command_deactivate_channel[i]);
-                        w_timeSeries.hsc.powerDownChannel(i);
-                    }
-                    w_timeSeries.channelBars[i].isOn = false; // deactivate it
-                    channelSettingValues[i][0] = '1';
-                    w_timeSeries.channelBars[i].onOffButton.setColorNotPressed(color(50));
-                }
-            }
-        } //end of Ganglion/Playback/Synthetic case
+            
     } //end loadApplyTimeSeriesSettings
 
     /**
@@ -1611,15 +1261,17 @@ class SoftwareSettings {
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
-            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+            } else if (dataSource ==  DATASOURCE_NOVAXR) {
                 filePath += fileNames[3];
+            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+                filePath += fileNames[4];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
                 if (_nchan == NCHAN_GANGLION) {
-                    filePath += fileNames[4];
-                } else if (_nchan == NCHAN_CYTON) {
                     filePath += fileNames[5];
-                } else {
+                } else if (_nchan == NCHAN_CYTON) {
                     filePath += fileNames[6];
+                } else {
+                    filePath += fileNames[7];
                 }
             }
         }
@@ -1662,6 +1314,11 @@ class SoftwareSettings {
             verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
             outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
         }
+
+        if (eegDataSource == DATASOURCE_NOVAXR) {
+            outputSuccess("Settings Loaded! NovaXR Firmware == " + "WIP");
+        }
+
         //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
         settingsLoaded = true;
     }

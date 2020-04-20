@@ -52,10 +52,11 @@ import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
 import edu.ucsd.sccn.LSL; //for LSL
 //These are used by LSL
-import com.sun.jna.Library;
-import com.sun.jna.Native;
-import com.sun.jna.Platform;
-import com.sun.jna.Pointer;
+//import com.sun.jna.Library;
+//import com.sun.jna.Native;
+//import com.sun.jna.Platform;
+//import com.sun.jna.Pointer;
+import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -70,7 +71,6 @@ DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
-final int SYSTEMMODE_MIDINIT = 5;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
@@ -90,15 +90,19 @@ Gif loadingGIF_blue;
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
-final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
-final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
+final int DATASOURCE_NOVAXR = 2;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
+final int DATASOURCE_PLAYBACKFILE = 3;  //playback from a pre-recorded text file
+final int DATASOURCE_SYNTHETIC = 4;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
-final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interface
-final int INTERFACE_SERIAL = 0; // Used only by cyton
-final int INTERFACE_HUB_BLE = 1; // used only by ganglion
-final int INTERFACE_HUB_WIFI = 2; // used by both cyton and ganglion
-final int INTERFACE_HUB_BLED112 = 3; // used only by ganglion with bled dongle
+enum BoardProtocol {
+    NONE,  
+    SERIAL,
+    BLE,
+    WIFI,
+    BLED112
+}
+public BoardProtocol selectedProtocol = BoardProtocol.NONE;
 
 boolean showStartupError = false;
 String startupErrorMessage = "";
@@ -109,9 +113,9 @@ int currentTableRowIndex = 0;
 Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
-// Initialize boards for constants
-Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
-Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
+// Initialize board
+Board currentBoard = new BoardNull();
+
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
 Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
@@ -124,10 +128,9 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
 
-final static String PROTOCOL_BLE = "ble";
-final static String PROTOCOL_BLED112 = "bled112";
-final static String PROTOCOL_SERIAL = "serial";
-final static String PROTOCOL_WIFI = "wifi";
+// TODO remove, unused (I dont know how box should look like cause we have no inputs for it, so keep for now for ui only)
+// and I dont brave enough to touch code in ControlPanel.pde
+String novaXR_ipAddress = "192.168.4.1";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
@@ -244,7 +247,7 @@ final int totalColumns16ChanThresh = 16;
 
 boolean setupComplete = false;
 boolean isHubInitialized = false;
-boolean isHubObjectInitialized = false;
+boolean isHubObjectInitialized = true;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
@@ -679,16 +682,49 @@ void initSystem() throws Exception {
 
     timeOfInit = millis(); //store this for timeout in case init takes too long
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
-    //Checking status here causes "error: resource busy" during init
-    /*
-    if (eegDataSource == DATASOURCE_CYTON) {
-        verbosePrint("OpenBCI_GUI: initSystem: Checking Cyton Connection...");
-        system_status(rcBox);
-        if (rcStringReceived.startsWith("Cyton dongle could not connect") || rcStringReceived.startsWith("Failure")) {
-            throw new Exception("OpenBCI_GUI: initSystem: Dongle failed to connect to Cyton...");
-        }
+
+    //reset init variables
+    systemHasHalted = false;
+    boolean abandonInit = false;
+
+    //prepare the source of the input data
+    switch (eegDataSource) {
+        case DATASOURCE_CYTON:
+            // TODO[brainflow] : do we need these two lines?
+            int nEEDataValuesPerPacket = nchan;
+            boolean useAux = true;
+            currentBoard = new BoardCyton(openBCI_portName, wifi_ipAddress, nchan == 16, selectedProtocol == BoardProtocol.WIFI);
+            break;
+        case DATASOURCE_SYNTHETIC:
+            currentBoard = new BoardSynthetic();
+            break;
+        case DATASOURCE_PLAYBACKFILE:
+            break;
+        case DATASOURCE_GANGLION:
+            if (selectedProtocol == BoardProtocol.WIFI) {
+                currentBoard = new BoardGanglion(wifi_ipAddress);
+            }
+            else {
+                // todo[brainflow] temp hardcode
+                String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
+                String ganglionMac = BLEMACAddrMap.get(ganglionName);
+                println("MAC address for Ganglion is " + ganglionMac);
+                currentBoard = new BoardGanglion(controlPanel.getBLED112Port(), ganglionMac);
+            }
+            break;
+        case DATASOURCE_NOVAXR:
+            currentBoard = new BoardNovaXR();
+            //TODO[brainflow]
+            //currentBoard = new BoardBrainFlowSynthetic();
+            break;
+        default:
+            break;
     }
-    */
+
+    // initialize the chosen board
+    boolean success = currentBoard.initialize();
+    abandonInit = !success; // abandon if init fails
+
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
     //initialize playback file if necessary
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
@@ -713,41 +749,6 @@ void initSystem() throws Exception {
     hub.changeState(HubState.COMINIT);
     // hub.searchDeviceStop();
 
-    //prepare the source of the input data
-    switch (eegDataSource) {
-        case DATASOURCE_CYTON:
-            int nEEDataValuesPerPacket = nchan;
-            boolean useAux = true;
-            if (cyton.getInterface() == INTERFACE_SERIAL) {
-                cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-            } else {
-                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    cyton = new Cyton(this, wifi_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-                } else {
-                    cyton = new Cyton(this, wifi_ipAddress, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
-                }
-            }
-            break;
-        case DATASOURCE_SYNTHETIC:
-            //do nothing
-            break;
-        case DATASOURCE_PLAYBACKFILE:
-            break;
-        case DATASOURCE_GANGLION:
-            if (ganglion.getInterface() == INTERFACE_HUB_BLE || ganglion.getInterface() == INTERFACE_HUB_BLED112) {
-                hub.connectBLE(ganglion_portName);
-            } else {
-                if (hub.getWiFiStyle() == WIFI_DYNAMIC) {
-                    hub.connectWifi(wifi_portName);
-                } else {
-                    hub.connectWifi(wifi_ipAddress);
-                }
-            }
-            break;
-        default:
-            break;
-        }
-
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
     if (abandonInit) {
@@ -763,10 +764,9 @@ void initSystem() throws Exception {
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
-
-            if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
-                systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-            }
+            
+            systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
+            
             if (!abandonInit) {
                 controlPanel.close();
             } else {
@@ -800,40 +800,24 @@ void initSystem() throws Exception {
         settings.initCheckPointFive();
     } else {
         haltSystem();
-        if (eegDataSource == DATASOURCE_CYTON) {
-            //Normally, this message appears if you have a dongle plugged in, and the Cyton is not On, or on the wrong channel.
-            if (cyton.daisyNotAttached) {
-                outputError("Daisy is not attached to the Cyton board. Check connection or select 8 Channels.");
-            } else {
-                outputError("Check that the device is powered on and in range. Also, try AUTOSCAN. Otherwise, Cyton firmware is out of date.");
-            }
-        } else {
-            outputError("Failed to connect. Check that the device is powered on and in range.");
-        }
+        outputError("Failed to connect. Check that the device is powered on and in range.");
         controlPanel.open();
         systemMode = SYSTEMMODE_PREINIT; // leave this here
     }
 
-    //reset init variables
-    cyton.daisyNotAttached = false;
     midInit = false;
-    abandonInit = false;
-    systemHasHalted = false;
 } //end initSystem
 
 /**
   * @description Useful function to get the correct sample rate based on data source
   * @returns `float` - The frequency / sample rate of the data source
   */
-float getSampleRateSafe() {
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        return ganglion.getSampleRate();
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-        return cyton.getSampleRate();
-    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+// TODO[brainflow] investigate this function and probably remove it
+int getSampleRateSafe() {
+    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         return playbackData_table.getSampleRate();
     } else {
-        return 250;
+        return currentBoard.getSampleRate();
     }
 }
 
@@ -842,8 +826,10 @@ float getSampleRateSafe() {
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
 int getNfftSafe() {
-    int sampleRate = (int)getSampleRateSafe();
+    int sampleRate = getSampleRateSafe();
     switch (sampleRate) {
+        case 500:
+            return 512;
         case 1000:
             return 1024;
         case 1600:
@@ -858,7 +844,7 @@ int getNfftSafe() {
 
 void initCoreDataObjects() {
     // Nfft = getNfftSafe();
-    nDataBackBuff = 3*(int)getSampleRateSafe();
+    nDataBackBuff = 3*getSampleRateSafe();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
     dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
@@ -908,15 +894,9 @@ void initFFTObjectsAndBuffer() {
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion != null) {
-            ganglion.startDataTransfer();
-        }
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton != null) {
-            cyton.startDataTransfer();
-        }
-    }
+    
+    // start streaming on the chosen board
+    currentBoard.startStreaming();
     isRunning = true;
 }
 
@@ -926,16 +906,9 @@ void stopRunning() {
     if (isRunning) {
         output("Data stream stopped.");
     }
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion != null) {
-            ganglion.stopDataTransfer();
-        }
-    } else {
-        if (cyton != null) {
-            cyton.stopDataTransfer();
-        }
-    }
 
+    // stop streaming on chosen board
+    currentBoard.stopStreaming();
     isRunning = false;
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     // systemMode = 0;
@@ -951,9 +924,6 @@ void stopButtonWasPressed() {
         stopRunning();
         topNav.stopButton.setString(stopButton_pressToStart_txt);
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-        if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
-            ganglion.impedanceStop();
-        }
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
         //BDF+ allows for breaks in the file, so leave the temp file open!
@@ -969,9 +939,6 @@ void stopButtonWasPressed() {
         topNav.stopButton.setString(stopButton_pressToStop_txt);
         topNav.stopButton.setColorNotPressed(color(224, 56, 45));
         nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-        if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
-            ganglion.impedanceStop();
-        }
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
@@ -1005,27 +972,6 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-        if(cyton.isPortOpen()) { //On halt and the port is open, reset board mode to Default.
-            if (w_pulsesensor.analogReadOn || w_analogRead.analogReadOn) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_pulsesensor.analogModeButton.setString("Turn Analog Read On");
-                w_pulsesensor.analogReadOn = false;
-                w_analogRead.analogModeButton.setString("Turn Analog Read On");
-                w_analogRead.analogReadOn = false;
-            } else if (w_digitalRead.digitalReadOn) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_digitalRead.digitalModeButton.setString("Turn Digital Read On");
-                w_digitalRead.digitalReadOn = false;
-            } else if (w_markermode.markerModeOn) {
-                cyton.setBoardMode(BoardMode.DEFAULT);
-                output("Starting to read accelerometer");
-                w_markermode.markerModeButton.setString("Turn Marker On");
-                w_markermode.markerModeOn = false;
-            }
-        }
-
         //reset variables for data processing
         curDataPacketInd = -1;
         lastReadDataPacketInd = -1;
@@ -1046,22 +992,13 @@ void haltSystem() {
 
         //reset connect loadStrings
         openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
-        ganglion_portName = "N/A";
-        wifi_portName = "N/A";
+        ganglion_portName = "";
+        wifi_portName = "";
 
         controlPanel.resetListItems();
 
-        if (eegDataSource == DATASOURCE_CYTON) {
+        if ((eegDataSource == DATASOURCE_CYTON) || (eegDataSource == DATASOURCE_GANGLION)){
             closeLogFile();  //close log file
-            cyton.closeSDandPort();
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            if(ganglion.isCheckingImpedance()) {
-                ganglion.impedanceStop();
-                w_ganglionImpedance.startStopCheck.but_txt = "Start Impedance Check";
-            }
-            closeLogFile();  //close log file
-            ganglion.impedanceArray = new int[NCHAN_GANGLION + 1];
-            ganglion.closePort();
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
         }
@@ -1070,39 +1007,14 @@ void haltSystem() {
 
         recentPlaybackFilesHaveUpdated = false;
 
-        // bleList.items.clear();
-        // wifiList.items.clear();
-
-        // if (ganglion.isBLE() || ganglion.isWifi() || cyton.isWifi()) {
-        //   hub.searchDeviceStart();
-        // }
+        currentBoard.uninitialize();
+        currentBoard = new BoardNull(); // back to null
 
         systemHasHalted = true;
     }
 } //end of halt system
 
 void systemUpdate() { // for updating data values and variables
-
-    //Instantiate Hub Object, wait until next step to try to startTCPClient
-    if (isHubInitialized && isHubObjectInitialized == false) {
-        hub = new Hub(this);
-        println("Instantiating hub object...");
-        isHubObjectInitialized = true;
-    }
-    //Then, immediately start trying to connect to Hub for X seconds
-    if (!hub.isHubRunning()) {
-        if (!hubTimerHasStarted) {
-            hubTimer.schedule(new CheckHubInit(), 0, hubTimerInterval);
-            hubTimerHasStarted = true;
-        } else {
-            if (hubTimerCounter == hubTimerLimit) {
-                hubTimer.cancel();
-                outputError("Unable to find or connect to Hub. LIVE functionality will be disabled.");
-                hubTimerCounter = 0;
-            }
-        }
-    }
-
     //prepare for updating the GUI
     win_x = width;
     win_y = height;
@@ -1125,7 +1037,6 @@ void systemUpdate() { // for updating data values and variables
         if (isRunning) {
             //get the data, if it is available
             pointCounter = getDataIfAvailable(pointCounter);
-
             //has enough data arrived to process it and update the GUI?
             if (pointCounter >= nPointsPerUpdate) {
                  //reset for next time
@@ -1141,11 +1052,12 @@ void systemUpdate() { // for updating data values and variables
             //New feature to address #461, defined in DataLogging.pde
             //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
             //Don't check duration if user has selected "No Limit"
-            if (outputDataSource == OUTPUT_SOURCE_ODF
-                && eegDataSource < DATASOURCE_PLAYBACKFILE
-                && settings.limitOBCILogFileDuration()) {
-                    fileoutput_odf.limitRecordingFileDuration();
-            }
+            //TODO[brainflow] commented this out to get brainflow working. Undo comment and fix.
+            // if (outputDataSource == OUTPUT_SOURCE_ODF
+            //     && eegDataSource < DATASOURCE_PLAYBACKFILE
+            //     && settings.limitOBCILogFileDuration()) {
+            //         fileoutput_odf.limitRecordingFileDuration();
+            // }
 
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
@@ -1189,6 +1101,8 @@ void systemUpdate() { // for updating data values and variables
             wm.update();
         }
     }
+
+    currentBoard.update();
 }
 
 void systemDraw() { //for drawing to the screen
@@ -1203,7 +1117,6 @@ void systemDraw() { //for drawing to the screen
             //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
             drawLoop_counter=0; //reset for next time
             redrawScreenNow = false;  //reset for next time
-
             //update the title of the figure;
             switch (eegDataSource) {
             case DATASOURCE_CYTON:
@@ -1232,6 +1145,9 @@ void systemDraw() { //for drawing to the screen
                 break;
             case DATASOURCE_GANGLION:
                 surface.setTitle(int(frameRate) + " fps, Ganglion!");
+                break;
+            default:
+                surface.setTitle(int(frameRate) + " fps");
                 break;
             }
         }
@@ -1271,20 +1187,27 @@ void systemDraw() { //for drawing to the screen
         helpWidget.draw();
     }
 
-    if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
-        if (!attemptingToConnect) {
-            output("Attempting to establish a connection with your OpenBCI Board...");
-            attemptingToConnect = true;
-        }
+    // TODO[brainflow]
+    // if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
+    //     if (!attemptingToConnect) {
+    //         output("Attempting to establish a connection with your OpenBCI Board...");
+    //         attemptingToConnect = true;
+    //     } else {
+    //         //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
+    //         pushStyle();
+    //         imageMode(CENTER);
+    //         image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
+    //         popStyle();
+    //     }
 
-        if (millis() - timeOfInit > settings.initTimeoutThreshold) {
-            haltSystem();
-            initSystemButton.but_txt = "START SESSION";
-            output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
-            controlPanel.open();
-            attemptingToConnect = false;
-        }
-    }
+    //     if (millis() - timeOfInit > settings.initTimeoutThreshold) {
+    //         haltSystem();
+    //         initSystemButton.but_txt = "START SESSION";
+    //         output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
+    //         controlPanel.open();
+    //         attemptingToConnect = false;
+    //     }
+    // }
 
     //draw presentation last, bc it is intended to be rendered on top of the GUI ...
     if (drawPresentation) {
@@ -1316,6 +1239,7 @@ void systemInitSession() {
             haltSystem();
         }
         midInitCheck2 = false;
+        midInit = false;
     } else {
         midInitCheck2 = true;
     }

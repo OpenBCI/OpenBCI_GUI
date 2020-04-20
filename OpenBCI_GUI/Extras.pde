@@ -206,7 +206,7 @@ String shortenString(String str, float maxWidth, PFont font) {
     return s1 + "..." + s2;
 }
 
-int lerpInt(int first, int second, float bias)
+int lerpInt(long first, long second, float bias)
 {
     return round(lerp(first, second, bias));    
 }
@@ -235,6 +235,7 @@ DataPacket_ADS1299 CreateInterpolatedPacket(DataPacket_ADS1299 first, DataPacket
     }
 
     interpolated.sampleIndex = lerpInt(first.sampleIndex, second.sampleIndex, bias);
+    interpolated.timeStamp = lerpInt(first.timeStamp, second.timeStamp, bias);
 
     return interpolated;
 }
@@ -264,6 +265,7 @@ class DataPacket_ADS1299 {
     private final int rawAuxSize = 2;
 
     int sampleIndex;
+    long timeStamp;
     int[] values;
     int[] auxValues;
     byte[][] rawValues;
@@ -283,8 +285,9 @@ class DataPacket_ADS1299 {
     }
 
     int copyTo(DataPacket_ADS1299 target) { return copyTo(target, 0, 0); }
-    int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
+    private int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
         target.sampleIndex = sampleIndex;
+        target.timeStamp = timeStamp;
         return copyValuesAndAuxTo(target, target_startInd_values, target_startInd_aux);
     }
     int copyValuesAndAuxTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
@@ -315,10 +318,15 @@ class DataStatus {
         threshold_railed_warn = thresh_railed_warn;
     }
     public void update(int data_value) {
+        // here we scale threshold which is originally is not converted to uVolts
+        float reversed_scaler = 1;
+        if (currentBoard instanceof BoardBrainFlow) {
+            reversed_scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+        }
         is_railed = false;
-        if (abs(data_value) >= threshold_railed) is_railed = true;
+        if (abs(data_value) >= threshold_railed * reversed_scaler) is_railed = true;
         is_railed_warn = false;
-        if (abs(data_value) >= threshold_railed_warn) is_railed_warn = true;
+        if (abs(data_value) >= threshold_railed_warn * reversed_scaler) is_railed_warn = true;
     }
 };
 

@@ -26,9 +26,13 @@ float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster p
 void process_input_file() throws Exception {
     index_of_times = new HashMap<Integer, String>();
     indices = 0;
+    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    if (currentBoard instanceof BoardBrainFlow) {
+        scaler = 1;
+    }
     try {
         while (!hasRepeated) {
-            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
             if (curTimestamp != null) {
                 index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
             } else {
@@ -48,17 +52,27 @@ void process_input_file() throws Exception {
 
 /*************************/
 int getDataIfAvailable(int pointCounter) {
+    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    if (currentBoard instanceof BoardBrainFlow) {
+        scaler = 1;
+    }
 
+    // todo[brainflow] - this code here is just a copypaste get rid of it
     if (eegDataSource == DATASOURCE_CYTON) {
         //get data from serial port as it streams in
         //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+        while ((curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * cyton.get_scale_fac_uVolts_per_count();
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
             for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+            //println(timestamps.length);
+            long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
+            // todo[brainflow] This method will be used to save data to ODF or BDF playback file
+            //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
+            //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
             pointCounter++; //increment counter for "little buffer"
         }
     } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -68,8 +82,33 @@ int getDataIfAvailable(int pointCounter) {
             lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
             for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * ganglion.get_scale_fac_uVolts_per_count();
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
             }
+            pointCounter++; //increment counter for "little buffer"
+        }
+
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
+        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+            
+            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+                //scale the data into engineering units ("microvolts") and save to the "little buffer"
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan];
+            }
+            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+            pointCounter++; //increment counter for "little buffer"
+        }
+
+    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+
+        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+            
+            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+                //scale the data into engineering units ("microvolts") and save to the "little buffer"
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+            }
+            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
             pointCounter++; //increment counter for "little buffer"
         }
 
@@ -89,11 +128,8 @@ int getDataIfAvailable(int pointCounter) {
             for (int i = 0; i < nPointsPerUpdate; i++) {
                 dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
                 switch (eegDataSource) {
-                case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-                    synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-                    break;
                 case DATASOURCE_PLAYBACKFILE:
-                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
                     break;
                 default:
                     //no action
@@ -101,7 +137,7 @@ int getDataIfAvailable(int pointCounter) {
                 //gather the data into the "little buffer"
                 for (int Ichan=0; Ichan < nchan; Ichan++) {
                     //scale the data into engineering units..."microvolts"
-                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* cyton.get_scale_fac_uVolts_per_count();
+                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* scaler;
                 }
 
                 pointCounter++;
@@ -111,10 +147,48 @@ int getDataIfAvailable(int pointCounter) {
     return pointCounter;
 }
 
+void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] _auxBuff) {
+    //If data is available, save to playback file...
+    float auxScaler = scaler;
+    int stopByte = 0xC0;
+    switch (outputDataSource) {
+        case OUTPUT_SOURCE_ODF:
+            if (eegDataSource == DATASOURCE_GANGLION) {
+                //auxScaler = ganglion.get_scale_fac_accel_G_per_count();
+                auxScaler = 1;
+            } else {
+                if (eegDataSource == DATASOURCE_CYTON) {
+                    /*
+                    if (currentBoard.isDigitalActive() || currentBoard.isAnalogActive()) {
+                        stopByte = 0xC1;
+                    }
+                    */
+                }
+            }
+            fileoutput_odf.writeRawData_dataPacket(
+                            dataPacketBuff[curDataPacketInd],
+                            scaler,
+                            _auxBuff,
+                            auxScaler,
+                            stopByte,
+                            timestamp
+                        );
+            break;
+        case OUTPUT_SOURCE_BDF:
+            // curBDFDataPacketInd = curDataPacketInd;
+            // thread("writeRawData_dataPacket_bdf");
+            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+            break;
+        case OUTPUT_SOURCE_NONE:
+        default:
+            // Do nothing...
+            break;
+    }
+}
+
 RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
 void processNewData() {
-
     //compute instantaneous byte rate
     float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
 
@@ -150,9 +224,9 @@ void processNewData() {
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // Calculate the impedance
-        float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / cyton.get_leadOffDrive_amps();
+        float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / BoardCytonConstants.leadOffDrive_amps;
         // Subtract the 2.2kOhm resistor
-        impedance -= cyton.get_series_resistor();
+        impedance -= BoardCytonConstants.series_resistor_ohms;
         // Verify the impedance is not less than 0
         if (impedance < 0) {
             // Incase impedance some how dipped below 2.2kOhm
@@ -221,7 +295,12 @@ void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, Da
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
                 val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
             } else if (Ichan==6) {
-                //60 Hz interference at 20 uVrms
+                //50 Hz interference at 80 uVrms
+                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //50 Hz
+                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
+                val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //80 uVrms
+            } else if (Ichan==7) {
+                //60 Hz interference at 100 uVrms
                 sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //60 Hz
                 if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
                 val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
@@ -244,7 +323,6 @@ void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
         }
     }
 }
-
 
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
 

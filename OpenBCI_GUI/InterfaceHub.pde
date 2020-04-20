@@ -150,8 +150,10 @@ final static String TCP = "tcp";
 final static String UDP = "udp";
 final static String UDP_BURST = "udpBurst";
 
-final static String WIFI_DYNAMIC = "dynamic";
-final static String WIFI_STATIC = "static";
+final static String PROTOCOL_BLE = "ble";
+final static String PROTOCOL_BLED112 = "bled112";
+final static String PROTOCOL_SERIAL = "serial";
+final static String PROTOCOL_WIFI = "wifi";
 
 void clientEvent(Client someClient) {
     int p;
@@ -176,7 +178,7 @@ void clientEvent(Client someClient) {
                 // Send the new string message to be processed
 
                 if (eegDataSource == DATASOURCE_GANGLION) {
-                    hub.parseMessage(msg);
+                    /*hub.parseMessage(msg);
                     // Check to see if the ganglion ble list needs to be updated
                     if (hub.deviceListUpdated) {
                         hub.deviceListUpdated = false;
@@ -185,7 +187,7 @@ void clientEvent(Client someClient) {
                         } else {
                             controlPanel.wifiBox.refreshWifiList();
                         }
-                    }
+                    }*/
                 } else if (eegDataSource == DATASOURCE_CYTON) {
                     // Do stuff for cyton
                     hub.parseMessage(msg);
@@ -239,7 +241,7 @@ class Hub {
     public int tcpBufferPositon = 0;
     private String curProtocol = PROTOCOL_WIFI;
     private String curInternetProtocol = TCP;
-    private String curWiFiStyle = WIFI_DYNAMIC;
+    private String curWiFiStyle = "dynamic"; //this has been moved to ControlPanel class
 
     private boolean waitingForResponse = false;
     private boolean searching = false;
@@ -372,7 +374,7 @@ class Hub {
             } else if (type.equals(TCP_TYPE_LOG)) {
                 String logMessage = json.getString(TCP_JSON_KEY_MESSAGE);
                 println("Hub: Log: " + logMessage);
-                if (logMessage.startsWith("no daisy to attach")) cyton.daisyNotAttached = true;
+                //if (logMessage.startsWith("no daisy to attach")) cyton.daisyNotAttached = true;
             } else if (type.equals(TCP_TYPE_PROTOCOL)) {
                 processProtocol(json);
             } else if (type.equals(TCP_TYPE_SCAN)) {
@@ -524,11 +526,12 @@ class Hub {
 
     private void killAndShowMsg(String msg) {
         println("Hub: killAndShowMsg: " + msg);
-        abandonInit = true;
-        initSystemButton.setString("START SESSION");
-        controlPanel.open();
-        portIsOpen = false;
-        haltSystem();
+        // TODO[brainflow]
+        // abandonInit = true;
+        // initSystemButton.setString("START SESSION");
+        // controlPanel.open();
+        // portIsOpen = false;
+        // haltSystem();
     }
 
     /**
@@ -682,6 +685,7 @@ class Hub {
                     getRawValues(dataPacket);
 
                     // KILL SPIKES!!!
+                    // TODO[brainflow] this needs to be moved
                     if(numPacketsDroppedHub > 0) {
                         println("Interpolating dropped packets...");
 
@@ -708,24 +712,33 @@ class Hub {
                     curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
                     copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
 
+                    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+                    if (currentBoard instanceof BoardBrainFlow) {
+                        scaler = 1;
+                    }
                     switch (outputDataSource) {
                         case OUTPUT_SOURCE_ODF:
                             if (eegDataSource == DATASOURCE_GANGLION) {
+                                //DEPRECATED
+                                /*
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
-                                    ganglion.get_scale_fac_uVolts_per_count(),
+                                    scaler,
                                     ganglion.get_scale_fac_accel_G_per_count(),
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
                                 );
+                                */
                             } else {
+                                /*
                                 fileoutput_odf.writeRawData_dataPacket(
                                     dataPacketBuff[curDataPacketInd],
-                                    cyton.get_scale_fac_uVolts_per_count(),
-                                    cyton.get_scale_fac_accel_G_per_count(),
+                                    scaler,
+                                    scaler,
                                     stopByte,
                                     json.getLong(TCP_JSON_KEY_TIMESTAMP)
                                 );
+                                */
                             }
                             break;
                         case OUTPUT_SOURCE_BDF:
@@ -773,17 +786,17 @@ class Hub {
         String message = "";
         int code = json.getInt(TCP_JSON_KEY_CODE);
         switch (code) {
-            case RESP_ERROR_IMPEDANCE_COULD_NOT_START:
-                ganglion.overrideCheckingImpedance(false);
+            // case RESP_ERROR_IMPEDANCE_COULD_NOT_START:
+            //     ganglion.overrideCheckingImpedance(false);
             case RESP_ERROR_IMPEDANCE_COULD_NOT_STOP:
             case RESP_ERROR_IMPEDANCE_FAILED_TO_SET_IMPEDANCE:
             case RESP_ERROR_IMPEDANCE_FAILED_TO_PARSE:
                 message = json.getString(TCP_JSON_KEY_MESSAGE);
                 handleError(code, message);
                 break;
-            case RESP_SUCCESS_DATA_IMPEDANCE:
-                ganglion.processImpedance(json);
-                break;
+            // case RESP_SUCCESS_DATA_IMPEDANCE:
+            //     ganglion.processImpedance(json);
+            //     break;
             case RESP_SUCCESS:
                 action = json.getString(TCP_JSON_KEY_ACTION);
                 output("Success: Impedance " + action + ".");
@@ -808,10 +821,6 @@ class Hub {
             case RESP_SUCCESS:
                 protocol = json.getString(TCP_JSON_KEY_PROTOCOL);
                 output("Transfer Protocol set to " + protocol);
-                if (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE()) {
-                    // hub.searchDeviceStart();
-                    outputInfo("BLE was powered up sucessfully, now searching for BLE devices.");
-                }
                 break;
             case RESP_ERROR_PROTOCOL_BLE_START:
                 outputError("Failed to start Ganglion BLE Driver, please see https://openbci.github.io/Documentation/docs/01GettingStarted/01-Boards/GanglionGS");
@@ -865,7 +874,6 @@ class Hub {
                 if (action.equals(TCP_ACTION_START)) {
                     println("Query registers for cyton channel settings");
                 } else if (action.equals(TCP_ACTION_SET)) {
-                    settings.checkForSuccessTS = json.getInt(TCP_JSON_KEY_CODE);
                     println("Success writing channel " + json.getInt(TCP_JSON_KEY_CHANNEL_NUMBER));
 
                 }
@@ -876,9 +884,9 @@ class Hub {
                 channelSettingValues[channelNumber][0] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN) ? '1' : '0';
                 // gain comes in as an int, either 1, 2, 4, 6, 8, 12, 24 and must get converted to
                 //  '0', '1', '2', '3', '4', '5', '6' respectively, of course.
-                channelSettingValues[channelNumber][1] = cyton.getCommandForGain(json.getInt(TCP_JSON_KEY_CHANNEL_SET_GAIN));
+                //channelSettingValues[channelNumber][1] = cyton.getCommandForGain(json.getInt(TCP_JSON_KEY_CHANNEL_SET_GAIN));
                 // input type comes in as a string version and must get converted to char
-                channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(json.getString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE));
+                //channelSettingValues[channelNumber][2] = cyton.getCommandForInputType(json.getString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE));
                 // bias is like power down
                 channelSettingValues[channelNumber][3] = json.getBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS) ? '1' : '0';
                 // srb2 is like power down
@@ -963,7 +971,7 @@ class Hub {
     }
 
     public void sdCardStart(int sdSetting) {
-        String sdSettingStr = cyton.getSDSettingForSetting(sdSetting);
+        String sdSettingStr = "";//cyton.getSDSettingForSetting(sdSetting);
         println("Hub: sdCardStart(): sending \'" + sdSettingStr + "\' with value " + sdSetting);
         JSONObject json = new JSONObject();
         json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_START);
@@ -1233,6 +1241,8 @@ class Hub {
       * @returns {boolean} - True if able to write, false otherwise.
       */
     public boolean write(String out) {
+        // TODO[brainflow]
+        new Exception().printStackTrace();
         try {
             // println("out " + out);
             tcpClient.write(out);
@@ -1304,32 +1314,3 @@ class Hub {
     }
 
 };
-
-class CheckHubInit extends TimerTask {
-    public void run() {
-        //Every hubTimerInterval seconds until hubTimerLimit is reached
-        //try to open a new socket. If successful, close the socket and try to startTCPClient.
-        try {
-            Socket socket = new Socket(hub.getHubIP(), hub.getHubPort());
-            if (socket != null) {
-                socket.close();
-                socket = null;
-                if (hub.startTCPClient()) {
-                    if (hubTimerCounter > 0) {
-                        outputSuccess("The GUI is connected to the Hub!");
-                    } else {
-                        println("Hub: CheckHubInit: The GUI is connected to the Hub!");
-                    }
-                    hub.setHubIsRunning(true);
-                    this.cancel();
-                } else {
-                    outputError("Hub: CheckHubInit: Unable to startTCPClient even though a socket was opened...");
-                }
-            }
-        } catch (IOException e) {
-            outputWarn("Unable to establish link with the OpenBCI Hub, trying again...");
-        }
-
-        hubTimerCounter++;
-    }
-}

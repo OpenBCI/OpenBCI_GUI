@@ -263,14 +263,18 @@ void parseKey(char val) {
             break;
 
         case '?':
-            cyton.printRegisters();
+            if(currentBoard instanceof BoardCyton) {
+                ((BoardCyton)currentBoard).printRegisters();
+            }
             break;
 
         case 'd':
             verbosePrint("Updating GUI's channel settings to default...");
             w_timeSeries.hsc.loadDefaultChannelSettings();
-            //cyton.serial_openBCI.write('d');
-            cyton.configureAllChannelsToDefault();
+            
+            if(currentBoard instanceof BoardCyton) {
+                ((BoardCyton)currentBoard).configureAllChannelsToDefault();
+            }
             break;
 
         case 'm':
@@ -279,23 +283,10 @@ void parseKey(char val) {
             saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
-        /*
-        //Used for testing marker mode
-        case 'M':
-            if (eegDataSource == DATASOURCE_CYTON) {
-                hub.sendCommand("`9");
-                println("Cyton: Setting a Marker +++++");
-            }
-            break;
-        */
+            
         default:
-            if (eegDataSource == DATASOURCE_CYTON) {
-                println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-                cyton.write(key);
-            } else if (eegDataSource == DATASOURCE_GANGLION) {
-                println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
-                hub.sendCommand(key);
-            }
+            println("Interactivity: '" + key + "' Pressed...sending to Board...");
+            currentBoard.sendCommand(str(key));
             break;
     }
 }
@@ -888,21 +879,22 @@ void toggleFrameRate(){
         frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
     }
     if(frameRateCounter==0){
-        frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-        topNav.fpsButton.setString("24 fps");
+        setFrameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     }
     if(frameRateCounter==1){
-        frameRate(30);
-        topNav.fpsButton.setString("30 fps");
+        setFrameRate(30);
     }
     if(frameRateCounter==2){
-        frameRate(45);
-        topNav.fpsButton.setString("45 fps");
+        setFrameRate(45);
     }
     if(frameRateCounter==3){
-        frameRate(60);
-        topNav.fpsButton.setString("60 fps");
+        setFrameRate(60);
     }
+}
+
+void setFrameRate(int fps) {
+    frameRate(fps);
+    topNav.fpsButton.setString(fps + " fps");
 }
 
 //loop through networking textfields and find out if any are active

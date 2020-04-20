@@ -40,8 +40,9 @@ class W_MarkerMode extends Widget {
     float synthTime;
     int synthCount;
 
-    boolean markerModeOn = false;
     Button markerModeButton;
+
+    private MarkerCapableBoard markerBoard;
 
     W_MarkerMode(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -71,6 +72,8 @@ class W_MarkerMode extends Widget {
         markerModeButton.textColorNotActive = color(255);
         markerModeButton.hasStroke(false);
         markerModeButton.setHelpText("Click this button to activate/deactivate the MarkerMode of your Cyton board!");
+
+        markerBoard = (MarkerCapableBoard)currentBoard;
     }
 
     void update(){
@@ -88,7 +91,7 @@ class W_MarkerMode extends Widget {
             localValidLastMarker = synthesizeMarkerData();
         }
         if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {
-            if (isRunning && cyton.getBoardMode() == BoardMode.MARKER) {
+            if (isRunning && markerBoard.isMarkerActive()) {
                 if (localValidLastMarker > 0){
                     lastMarker = localValidLastMarker;  // this holds the last marker for the display
                 }
@@ -133,22 +136,20 @@ class W_MarkerMode extends Widget {
             fill(50);
             textFont(p3, 16);
 
-            if (eegDataSource == DATASOURCE_CYTON && cyton.getBoardMode() != BoardMode.MARKER) {
-                markerModeButton.setString("Turn Marker On");
-                markerModeButton.draw();
-            } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                markerModeButton.draw();
-                drawMarkerValues();
-                drawMarkerWave();
-            } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {  // PLAYBACK
-                drawMarkerValues();
-                drawMarkerWave2();
-            } else {
+            if (markerBoard.isMarkerActive()) {
                 markerModeButton.setString("Turn Marker Off");
-                markerModeButton.draw();
                 drawMarkerValues();
-                drawMarkerWave();
+                if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+                    drawMarkerWave2();
+                } else {
+                    drawMarkerWave();
+                }
             }
+            else {
+                markerModeButton.setString("Turn Marker On");
+            }
+
+            markerModeButton.draw();
         }
         popStyle();
     }
@@ -195,25 +196,16 @@ class W_MarkerMode extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-            if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
-                if (cyton.getBoardMode() != BoardMode.MARKER) {
-                    cyton.setBoardMode(BoardMode.MARKER);
+            if(currentBoard.isConnected()) {
+                if (!markerBoard.isMarkerActive()) {
+                    markerBoard.setMarkerActive(true);
                     output("Starting to read markers");
-                    markerModeButton.setString("Turn Marker Off");
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_digitalRead.digitalReadOn = false;
                     setupUDPMarkerListener();
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    markerBoard.setMarkerActive(false);
                     output("Starting to read accelerometer");
-                    markerModeButton.setString("Turn Marker On");
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_digitalRead.digitalReadOn = false;
                     killUDPMarkerListener();
                 }
-                markerModeOn = !markerModeOn;
             } 
         }
         markerModeButton.setIsActive(false);

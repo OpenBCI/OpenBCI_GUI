@@ -67,18 +67,12 @@ class W_PulseSensor extends Widget {
     boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
     boolean QS = false;        // becomes true when Arduoino finds a beat.
     int lastProcessedDataPacketInd = 0;
-    boolean analogReadOn = false;
-
-    // testing stuff
-
     Button analogModeButton;
 
-
+    private AnalogCapableBoard analogBoard;
 
     W_PulseSensor(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-
 
         // Pulse Sensor Stuff
         eggshell = color(255, 253, 248);
@@ -90,7 +84,7 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
+        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p5,12);
         analogModeButton.setColorNotPressed(color(57,128,204));
@@ -98,23 +92,13 @@ class W_PulseSensor extends Widget {
         analogModeButton.hasStroke(false);
         analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton.");
 
+        analogBoard = (AnalogCapableBoard)currentBoard;
     }
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
         if (curDataPacketInd < 0) return;
-
-        if (eegDataSource == DATASOURCE_CYTON) {  // LIVE FROM CYTON
-
-        } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
-
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-
-        }
-        else {  // PLAYBACK
-
-        }
 
         int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
         if (numSamplesToProcess < 0) {
@@ -176,7 +160,7 @@ class W_PulseSensor extends Widget {
         text("BPM "+BPM, BPMposX, BPMposY);
         text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-        if (cyton.getBoardMode() != BoardMode.ANALOG) {
+        if (!analogBoard.isAnalogActive()) {
             analogModeButton.setString("Turn Analog Read On");
         } else {
             analogModeButton.setString("Turn Analog Read Off");
@@ -209,23 +193,14 @@ class W_PulseSensor extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-            if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BoardMode.ANALOG) {
-                    cyton.setBoardMode(BoardMode.ANALOG);
+            if(currentBoard.isConnected()) {
+                if (!analogBoard.isAnalogActive()) {
+                    analogBoard.setAnalogActive(true);
                     output("Starting to read analog inputs on pin marked D11.");
-                    analogModeButton.setString("Turn Analog Read Off");
-                    w_analogRead.analogReadOn = true; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be activated also, this variable documents the change
-                    w_digitalRead.digitalReadOn = false;
-                    w_markermode.markerModeOn = false;
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                    analogBoard.setAnalogActive(false);
                     output("Starting to read accelerometer");
-                    analogModeButton.setString("Turn Analog Read On");
-                    w_analogRead.analogReadOn = false; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be de-activated also, this variable documents the change
-                    w_digitalRead.digitalReadOn = false;
-                    w_markermode.markerModeOn = false;
                 }
-                analogReadOn = !analogReadOn;
             }
         }
         analogModeButton.setIsActive(false);

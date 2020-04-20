@@ -311,6 +311,7 @@ class W_Networking extends Widget {
             text("Name", column0,row2);
             text("Type", column0,row3);
             text("# Chan", column0, row4);
+            text("Filters",column0,row5);
         } else if (protocolMode.equals("Serial")) {
             textFont(f4,40);
             text("Serial", x+20,y+h/8+15);
@@ -1253,33 +1254,7 @@ class Stream extends Thread {
                     }
                 } else {
                         if (checkForData()) {
-                            if (this.dataType.equals("TimeSeries")) {
-                                sendTimeSeriesData();
-                            } else if (this.dataType.equals("FFT")) {
-                                sendFFTData();
-                            } else if (this.dataType.equals("EMG")) {
-                                sendEMGData();
-                            } else if (this.dataType.equals("BandPower")) {
-                                sendPowerBandData();
-                            } else if (this.dataType.equals("Accel/Aux")) {
-                                if (eegDataSource == DATASOURCE_CYTON) {
-                                    if (cyton.getBoardMode() == BoardMode.ANALOG) {
-                                        sendAnalogReadData();
-                                    } else if (cyton.getBoardMode() == BoardMode.DIGITAL) {
-                                        sendDigitalReadData();
-                                    } else {
-                                        sendAccelerometerData();
-                                    }
-                                } else {
-                                    sendAccelerometerData();
-                                }
-                            } else if (this.dataType.equals("Focus")) {
-                                sendFocusData();
-                            } else if (this.dataType.equals("Pulse")) {
-                                sendPulseData();
-                            } else if (this.dataType.equals("SSVEP")) {
-                                sendSSVEPData();
-                            }
+                            sendData();
                             setDataFalse();
                         } else {
                             try {
@@ -1299,33 +1274,7 @@ class Stream extends Thread {
                 }
             } else {
                 if (checkForData()) {
-                    if (this.dataType.equals("TimeSeries")) {
-                        sendTimeSeriesData();
-                    } else if (this.dataType.equals("FFT")) {
-                        sendFFTData();
-                    } else if (this.dataType.equals("EMG")) {
-                        sendEMGData();
-                    } else if (this.dataType.equals("BandPower")) {
-                        sendPowerBandData();
-                    } else if (this.dataType.equals("Accel/Aux")) {
-                        if (eegDataSource == DATASOURCE_CYTON) {
-                            if (cyton.getBoardMode() == BoardMode.ANALOG) {
-                                sendAnalogReadData();
-                            } else if (cyton.getBoardMode() == BoardMode.DIGITAL) {
-                                sendDigitalReadData();
-                            } else {
-                                sendAccelerometerData();
-                            }
-                        } else {
-                            sendAccelerometerData();
-                        }
-                    } else if (this.dataType.equals("Focus")) {
-                        sendFocusData();
-                    } else if (this.dataType.equals("Pulse")) {
-                        sendPulseData();
-                    } else if (this.dataType.equals("SSVEP")) {
-                        sendSSVEPData();
-                    }
+                    sendData();
                     //setDataFalse(); //Wait until all streams are done, Fixes 592
                 }
             }
@@ -1370,6 +1319,43 @@ class Stream extends Thread {
             dataProcessing.newDataToSend = false;
         } else if (this.dataType.equals("SSVEP")) {
             dataProcessing.newDataToSend = false;
+        }
+    }
+
+    void sendData() {
+        if (this.dataType.equals("TimeSeries")) {
+            sendTimeSeriesData();
+        } else if (this.dataType.equals("FFT")) {
+            sendFFTData();
+        } else if (this.dataType.equals("EMG")) {
+            sendEMGData();
+        } else if (this.dataType.equals("BandPower")) {
+            sendPowerBandData();
+        } else if (this.dataType.equals("Accel/Aux")) {
+            if(currentBoard instanceof AccelerometerCapableBoard) {
+                AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard)currentBoard;
+                if (accelBoard.isAccelerometerActive()) {
+                    sendAccelerometerData();
+                }
+            }
+            if(currentBoard instanceof AnalogCapableBoard) {
+                AnalogCapableBoard analogBoard = (AnalogCapableBoard)currentBoard;
+                if (analogBoard.isAnalogActive()) {
+                    sendAnalogReadData();
+                }
+            }
+            if(currentBoard instanceof DigitalCapableBoard) {
+                DigitalCapableBoard digitalBoard = (DigitalCapableBoard)currentBoard;
+                if (digitalBoard.isDigitalActive()) {
+                    sendDigitalReadData();
+                }
+            }
+        } else if (this.dataType.equals("Focus")) {
+            sendFocusData();
+        } else if (this.dataType.equals("Pulse")) {
+            sendPulseData();
+        } else if (this.dataType.equals("SSVEP")) {
+            sendSSVEPData();
         }
     }
 

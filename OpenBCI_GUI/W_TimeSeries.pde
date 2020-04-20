@@ -103,7 +103,7 @@ class W_timeSeries extends Widget {
             channelBars[i] = tempBar;
         }
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
             hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
@@ -151,7 +151,7 @@ class W_timeSeries extends Widget {
                 timeDisplay.update();
             }
             
-            if (eegDataSource == DATASOURCE_CYTON) {
+            if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
                 //ignore top left button interaction when widgetSelector dropdown is active
                 ignoreButtonCheck(hardwareSettingsButton);
             }
@@ -178,7 +178,8 @@ class W_timeSeries extends Widget {
                 channelBars[i].draw();
             }
 
-            if(eegDataSource == DATASOURCE_CYTON) {
+            // TODO[brainflow] move this behavior to the board classes
+            if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
                 hardwareSettingsButton.draw();
             }
 
@@ -220,7 +221,7 @@ class W_timeSeries extends Widget {
 
         hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-        if (eegDataSource == DATASOURCE_CYTON) {
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
             hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
         }
         
@@ -241,7 +242,7 @@ class W_timeSeries extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         if (!this.dropdownIsActive) {
-            if(eegDataSource == DATASOURCE_CYTON) {
+            if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
                 if (hardwareSettingsButton.isMouseHere()) {
                     hardwareSettingsButton.setIsActive(true);
                 }
@@ -263,7 +264,8 @@ class W_timeSeries extends Widget {
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        // TODO[brainflow] get rid of this insane if-statement logic
+        if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
                 if(showHardwareSettings) {
@@ -345,7 +347,7 @@ void Duration(int n) {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
     }
-    if (cyton.getBoardMode() == BoardMode.ANALOG) {
+    if (currentBoard instanceof AnalogCapableBoard) {
         if (settings.arHorizScaleSave == 0) {
             //set analog read x axis to the duration selected from dropdown
             for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
@@ -594,7 +596,7 @@ class ChannelBar{
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * (int)getSampleRateSafe();
+        return numSeconds * getSampleRateSafe();
     }
 
     void adjustTimeAxis(int _newTimeSize) {

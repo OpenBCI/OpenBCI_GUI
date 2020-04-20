@@ -16,29 +16,18 @@ public void updateChannelArrays(int _nchan) {
 //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
 void activateChannel(int Ichan) {
     println("OpenBCI_GUI: activating channel " + (Ichan+1));
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton.isPortOpen()) {
-            cyton.changeChannelState(Ichan, true); //activate
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        // println("activating channel on ganglion");
-        ganglion.changeChannelState(Ichan, true);
-    }
+
+    currentBoard.setChannelActive(Ichan, true);
     if (Ichan < nchan) {
         channelSettingValues[Ichan][0] = '0';
         // gui.cc.update();
     }
 }
+
 void deactivateChannel(int Ichan) {
     println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton.isPortOpen()) {
-            verbosePrint("**");
-            cyton.changeChannelState(Ichan, false); //de-activate
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        ganglion.changeChannelState(Ichan, false);
-    }
+    
+    currentBoard.setChannelActive(Ichan, false);
     if (Ichan < nchan) {
         channelSettingValues[Ichan][0] = '1';
     }
@@ -46,6 +35,7 @@ void deactivateChannel(int Ichan) {
 
 //Ichan is zero referenced (not one referenced)
 boolean isChannelActive(int Ichan) {
+    //TODO [brainflow] this functionality can be moved to the board itself
     boolean return_val = false;
     if (channelSettingValues[Ichan][0] == '1') {
         return_val = false;
@@ -161,17 +151,6 @@ class HardwareSettingsController{
             text("  Bias ", x + (w/10)*5, y-1);
             text("SRB2", x + (w/10)*7, y-1);
             text("SRB1", x + (w/10)*9, y-1);
-
-            //if mode is not from OpenBCI, draw a dark overlay to indicate that you cannot edit these settings
-            if (eegDataSource != DATASOURCE_CYTON) {
-                fill(0, 0, 0, 200);
-                noStroke();
-                rect(x-2, y, w+1, h);
-                fill(255);
-                textAlign(CENTER,CENTER);
-                textFont(h1,18);
-                text("DATA SOURCE (LIVE) only", x + (w/2), y + (h/2));
-            }
         }
         popStyle();
     }
@@ -192,52 +171,8 @@ class HardwareSettingsController{
         update(); //update 1 time to refresh button values based on new loaded settings
     }
 
-    //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
-    void activateChannel(int Ichan) {
-        println("OpenBCI_GUI: activating channel " + (Ichan+1));
-        if (eegDataSource == DATASOURCE_CYTON) {
-            if (cyton.isPortOpen()) {
-                verbosePrint("**");
-                cyton.changeChannelState(Ichan, true); //activate
-            }
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            ganglion.changeChannelState(Ichan, true);
-        }
-        if (Ichan < nchan) {
-            channelSettingValues[Ichan][0] = '0';
-            w_timeSeries.hsc.update(); //previously gui.cc.update();
-        }
-    }
-
-    void deactivateChannel(int Ichan) {
-        println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-        if (eegDataSource == DATASOURCE_CYTON) {
-            if (cyton.isPortOpen()) {
-                verbosePrint("**");
-                cyton.changeChannelState(Ichan, false); //de-activate
-            }
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            // println("deactivating channel on ganglion");
-            ganglion.changeChannelState(Ichan, false);
-        }
-        if (Ichan < nchan) {
-            channelSettingValues[Ichan][0] = '1';
-            w_timeSeries.hsc.update();
-        }
-    }
-
-    //Ichan is zero referenced (not one referenced)
-    boolean isChannelActive(int Ichan) {
-        boolean return_val = false;
-        if (channelSettingValues[Ichan][0] == '1') {
-            return_val = false;
-        } else {
-            return_val = true;
-        }
-        return return_val;
-    }
-
     public void powerDownChannel(int _numChannel) {
+        // TODO[brainflow] How is this different from deactivateChannel?
         verbosePrint("Powering down channel " + str(int(_numChannel) + int(1)));
         //save SRB2 and BIAS settings in 2D history array (to turn back on when channel is reactivated)
         previousBIAS[_numChannel] = channelSettingValues[_numChannel][3];
@@ -246,8 +181,7 @@ class HardwareSettingsController{
         channelSettingValues[_numChannel][4] = '0'; //make sure to disconnect from SRB2
 
         channelSettingValues[_numChannel][0] = '1'; //update powerUp/powerDown value of 2D array
-        verbosePrint("Command: " + command_deactivate_channel[_numChannel]);
-        cyton.deactivateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels
+        currentBoard.setChannelActive(_numChannel, false);
     }
 
     public void powerUpChannel(int _numChannel) {
@@ -257,19 +191,26 @@ class HardwareSettingsController{
         channelSettingValues[_numChannel][4] = previousSRB2[_numChannel];
 
         channelSettingValues[_numChannel][0] = '0'; //update powerUp/powerDown value of 2D array
-        verbosePrint("Command: " + command_activate_channel[_numChannel]);
-        cyton.activateChannel(_numChannel);  //assumes numChannel counts from zero (not one)...handles regular and daisy channels//assumes numChannel counts from zero (not one)...handles regular and daisy channels
+        currentBoard.setChannelActive(_numChannel, true);
     }
 
     public void initImpWrite(int _numChannel, char pORn, char onORoff) {
         verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel) + " to OpenBCI!");
+
+        // TODO[brainflow] clean this up
         if (pORn == 'p') {
             impedanceCheckValues[_numChannel-1][0] = onORoff;
         }
         if (pORn == 'n') {
             impedanceCheckValues[_numChannel-1][1] = onORoff;
         }
-        cyton.writeImpedanceSettings(_numChannel, impedanceCheckValues);
+
+        if (currentBoard instanceof ImpedanceSettingsBoard) {
+            ((ImpedanceSettingsBoard)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
+        }
+        else {
+            outputError("Impedance settings not implemented for this board");
+        }
     }
 
     public void createChannelSettingButtons(int _channelBarHeight) {
@@ -320,7 +261,16 @@ class HardwareSettingsController{
                         } else {
                             channelSettingValues[i][j] = '0';
                         }
-                        cyton.writeChannelSettings(i, channelSettingValues);
+                        // TODO[brainflow] some cleanup here
+                        if (currentBoard instanceof BoardCyton) {
+                            ((BoardCyton)currentBoard).setChannelSettings(i, channelSettingValues[i]);
+                        }
+                        else if (currentBoard instanceof BoardNovaXR) {
+                            ((BoardNovaXR)currentBoard).setChannelSettings(i, channelSettingValues[i]);
+                        }
+                        else {
+                            outputError("Channel settings not implemented for this board.");
+                        }
                     }
 
                     // if(!channelSettingButtons[i][j].isMouseHere()){

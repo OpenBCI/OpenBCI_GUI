@@ -56,10 +56,8 @@ class W_Accelerometer extends Widget {
     private boolean updating = true;
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
-    private boolean accelerometerModeOn = true;
 
-    // Synthetic data timer. Track frame count for synthetic data.
-    int synthTime;
+    private AccelerometerCapableBoard accelBoard;
 
     W_Accelerometer(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -93,7 +91,8 @@ class W_Accelerometer extends Widget {
         accelModeButton.hasStroke(false);
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
 
-        synthTime = 0;
+        // This widget is only instantiated when the board is accel capable, so we don't need to check
+        accelBoard = (AccelerometerCapableBoard)currentBoard;
     }
 
     void initAccelData() {
@@ -119,7 +118,7 @@ class W_Accelerometer extends Widget {
     }
 
     int nPointsBasedOnDataSource() {
-        return accelHorizLimit * (int)getSampleRateSafe();
+        return accelHorizLimit * getSampleRateSafe();
     }
 
     public boolean isVisible() {
@@ -139,7 +138,7 @@ class W_Accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && isAccelModeActive()) {
+        if (isRunning && accelBoard.isAccelerometerActive()) {
             //update the current Accelerometer values
             updateAccelPoints();
             //update the line graph and corresponding gplot points
@@ -148,16 +147,25 @@ class W_Accelerometer extends Widget {
     }
 
     void updateAccelPoints() {
+        //TODO[brainflow]
+        // NUM_ACCEL_DIMS will go away, will need to get from board
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-            if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                synthesizeAccelData();
-            } else if (eegDataSource == DATASOURCE_CYTON) {
-                currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
-            } else if (eegDataSource == DATASOURCE_GANGLION) {
-                currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
-            } else {  //playback data
+            if(eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
+            } else {
+                currentAccelVals[i] = accelBoard.getLastValidAccelValues()[i];
             }
+
+            // TODO[brainflow] : delete this after accel scaling is confirmed to be OK
+            // if (eegDataSource == DATASOURCE_CYTON) {
+            //     currentAccelVals[i] = hub.validAccelValues[i] * BoardCytonConstants.scale_fac_uVolts_per_count;
+            // } else if (eegDataSource == DATASOURCE_GANGLION) {
+            //     currentAccelVals[i] = hub.validAccelValues[i] * ganglion.get_scale_fac_accel_G_per_count();
+            // } else if (eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
+            //     currentAccelVals[i] = currentBoard.getLastAccelValues()[i];
+            // } else {  //playback data
+            //     currentAccelVals[i] = accelerometerBuff[i][accelerometerBuff[i].length-1];
+            // }    
         }
     }
 
@@ -165,21 +173,8 @@ class W_Accelerometer extends Widget {
         return currentAccelVals[val];
     }
 
-    // check the approrpiate board to see if accel mode is on
-    boolean isAccelModeActive() {
-        if (eegDataSource == DATASOURCE_CYTON) {
-            return (cyton.getBoardMode() == BoardMode.DEFAULT) && accelerometerModeOn;
-        }
-        else if (eegDataSource == DATASOURCE_GANGLION) {
-            return ganglion.isAccelModeActive();
-        }
-        else {
-            return true;
-        }
-    }
-
     String getButtonString() {
-        if (isAccelModeActive()) {
+        if (accelBoard.isAccelerometerActive()) {
             return "Turn Accel. Off";
         }
         else {
@@ -212,12 +207,11 @@ class W_Accelerometer extends Widget {
         textFont(p3, 16);
         accelModeButton.setString(getButtonString());
 
-        if (eegDataSource == DATASOURCE_CYTON
-        || (eegDataSource == DATASOURCE_GANGLION && ganglion.isBLE())) {
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
             accelModeButton.draw();
         }
 
-        if (isAccelModeActive()) {
+        if (accelBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
@@ -253,14 +247,7 @@ class W_Accelerometer extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        if (eegDataSource == DATASOURCE_GANGLION) {
-            if (ganglion.isBLE()) {
-                if (accelModeButton.isMouseHere()) {
-                    accelModeButton.setIsActive(true);
-                }
-            }
-        } else if (eegDataSource == DATASOURCE_CYTON) {
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
             if (accelModeButton.isMouseHere()) {
                 accelModeButton.setIsActive(true);
             }
@@ -270,27 +257,14 @@ class W_Accelerometer extends Widget {
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        if (eegDataSource == DATASOURCE_GANGLION) {
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+            //TODO[brainflow]
             if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (isAccelModeActive()) {
-                    ganglion.accelStop();
-                } else{
-                    ganglion.accelStart();
-                }
-            }
-            accelModeButton.setIsActive(false);
-        } else if (eegDataSource == DATASOURCE_CYTON) {
-            if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (!accelerometerModeOn) {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
+                if (!accelBoard.isAccelerometerActive()) {
+                    accelBoard.setAccelerometerActive(true);
                     output("Starting to read accelerometer");
-                    accelerometerModeOn = true;
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_digitalRead.digitalReadOn = false;
-                    w_markermode.markerModeOn = false;
-                } else {
-                    accelerometerModeOn = false;
+                } else {                    
+                    accelBoard.setAccelerometerActive(false);
                 }
             }
             accelModeButton.setIsActive(false);
@@ -299,18 +273,9 @@ class W_Accelerometer extends Widget {
 
     //Draw the current accelerometer values as text
     void drawAccValues() {
-        float displayX = 0;
-        float displayY = 0;
-        float displayZ = 0;
-        if (eegDataSource == DATASOURCE_GANGLION) { //Fix implemented for #398
-            displayX = currentAccelVals[1]; //Swap X and Y
-            displayY = currentAccelVals[0];
-            displayZ = -currentAccelVals[2]; //Invert Z
-        } else {
-            displayX = currentAccelVals[0];
-            displayY = currentAccelVals[1];
-            displayZ = currentAccelVals[2];
-        }
+        float displayX = currentAccelVals[0];
+        float displayY = currentAccelVals[1];
+        float displayZ = currentAccelVals[2];
         textAlign(LEFT,CENTER);
         textFont(h1,20);
         fill(ACCEL_X_COLOR);
@@ -334,16 +299,6 @@ class W_Accelerometer extends Widget {
         strokeWeight(1);
     }
 
-    //Used during Synthetic data mode
-    void synthesizeAccelData() {
-        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-            // simple sin wave tied to current time.
-            // offset each axis by its index * 2
-            // multiply by accelXyzLimit to fill the height of the plot
-            currentAccelVals[i] = sin(synthTime/100.f + i*2.f) * accelXyzLimit;
-        }
-        synthTime ++;
-    }//end void synthesizeAccelData
 };//end W_Accelerometer class
 
 //These functions are activated when an item from the corresponding dropdown is selected
@@ -481,7 +436,7 @@ class AccelerometerBar {
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * (int)getSampleRateSafe();
+        return numSeconds * getSampleRateSafe();
     }
 
     void adjustTimeAxis(int _newTimeSize) {
@@ -516,7 +471,7 @@ class AccelerometerBar {
     //Used to update the Points within the graph
     void updateGPlotPoints() {
         int accelBuffSize = w_accelerometer.accelBuffSize;
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION || eegDataSource == DATASOURCE_NOVAXR || eegDataSource == DATASOURCE_SYNTHETIC) {
             //Update data in plot
             numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
             if (numSamplesToProcess < 0) {
@@ -558,9 +513,6 @@ class AccelerometerBar {
         } else {
 
             switch (eegDataSource) {
-                case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-                    numSamplesToProcess = 1;
-                    break;
                 case DATASOURCE_PLAYBACKFILE:
                     // handle wrap-around
                     lastProcessedDataPacketInd = min(lastProcessedDataPacketInd, currentTableRowIndex);
@@ -598,7 +550,7 @@ class AccelerometerBar {
     void setGPlotPoints(int accelBuffSize) {
         //println("UPDATING ACCEL GRAPH");
         int accelBuffDiff = accelBuffSize - nPoints;
-        if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
+        if (numSamplesToProcess > 0) {
             try {
                 for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
                     GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);

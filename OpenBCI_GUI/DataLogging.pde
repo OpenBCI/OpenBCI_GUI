@@ -216,18 +216,19 @@ public class OutputFile_rawtxt {
         output.flush();
     }
 
-    public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float scale_for_aux, int stopByte, long timestamp) {
+    //This has been updated to temporarily work with Brainflow
+    public void writeRawData_dataPacket(DataPacket_ADS1299 data, float scale_to_uV, float[] auxData, float scale_for_aux, int stopByte, long timestamp) {
         //get current date time with Date()
         if (output != null) {
             output.print(Integer.toString(data.sampleIndex));
             writeValues(data.values,scale_to_uV);
             if (eegDataSource == DATASOURCE_GANGLION) {
-                writeAccValues(data.auxValues, scale_for_aux);
+                writeAccValues(auxData);
             } else {
                 if (stopByte == 0xC1) {
                     writeAuxValues(data);
                 } else {
-                    writeAccValues(data.auxValues, scale_for_aux);
+                    writeAccValues(auxData);
                 }
             }
             output.print( ", " + dateFormat.format(new Date(timestamp)));
@@ -245,6 +246,7 @@ public class OutputFile_rawtxt {
         }
     }
 
+    //This is deprecated, and can be removed after brainflow is integrated
     private void writeAccValues(int[] values, float scale_fac) {
         int nVal = values.length;
         for (int Ival = 0; Ival < nVal; Ival++) {
@@ -252,12 +254,23 @@ public class OutputFile_rawtxt {
             output.print(String.format(Locale.US, "%.3f", scale_fac * float(values[Ival])));
         }
     }
+    
+    //This is the current method used to accept data from Brainflow as floats
+    private void writeAccValues(float[] values) {
+        int nVal = values.length;
+        for (int i = 0; i < nVal; i++) {
+            output.print(", ");
+            output.print(String.format(Locale.US, "%.3f", values[i]));
+        }
+    }
 
     private void writeAuxValues(DataPacket_ADS1299 data) {
+        // TODO[brainflow] does aux values work?
         if (eegDataSource == DATASOURCE_CYTON) {
+            BoardCyton cytonBoard = (BoardCyton)currentBoard;
             // println("board mode: " + cyton.getBoardMode());
-            if (cyton.getBoardMode() == BoardMode.DIGITAL) {
-                if (cyton.isWifi()) {
+            if (cytonBoard.getBoardMode() == CytonBoardMode.DIGITAL) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     output.print(", " + ((data.auxValues[0] & 0xFF00) >> 8));
                     output.print(", " + (data.auxValues[0] & 0xFF));
                     output.print(", " + data.auxValues[1]);
@@ -268,8 +281,8 @@ public class OutputFile_rawtxt {
                     output.print(", " + (data.auxValues[1] & 0xFF));
                     output.print(", " + data.auxValues[2]);
                 }
-            } else if (cyton.getBoardMode() == BoardMode.ANALOG) {
-                if (cyton.isWifi()) {
+            } else if (cytonBoard.getBoardMode() == CytonBoardMode.ANALOG) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     output.print(", " + data.auxValues[0]);
                     output.print(", " + data.auxValues[1]);
                 } else {
@@ -277,7 +290,7 @@ public class OutputFile_rawtxt {
                     output.print(", " + data.auxValues[1]);
                     output.print(", " + data.auxValues[2]);
                 }
-            } else if (cyton.getBoardMode() == BoardMode.MARKER) {
+            } else if (cytonBoard.getBoardMode() == CytonBoardMode.MARKER) {
                 output.print(", " + data.auxValues[0]);
                 if ( data.auxValues[0] > 0) {
                     hub.validLastMarker = data.auxValues[0];
@@ -394,10 +407,6 @@ public class OutputFile_BDF {
 
     private String bdf_physical_minimum_ADC_24bit_ganglion = "-15686";
     private String bdf_physical_maximum_ADC_24bit_ganglion = "15686";
-
-    private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-    private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2,23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
 
     public boolean continuous = true;
     public boolean write_accel = true;
@@ -1489,6 +1498,14 @@ void convert16channelLine() {
         println("convert16channelLine: " + consoleMsg);
         return;
     }
+
+    // for brainflow we dont need to apply gain but for non-brainflow boards we need and it can not be 
+    // patched gracefully without major changes, sorry for this code
+    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    if (currentBoard instanceof BoardBrainFlow) {
+        scaler = 1;
+    }
+
     for (int i=0; i<hexNums.length; i++) {
         h = hexNums[i];
         if (i > 0) {
@@ -1513,9 +1530,9 @@ void convert16channelLine() {
         }
 
         if (i>=1 && i<=16) {
-            floatData[i] *= cyton.get_scale_fac_uVolts_per_count();
+            floatData[i] *= scaler;
         }else if(i != 0){
-            floatData[i] *= cyton.get_scale_fac_accel_G_per_count();
+            floatData[i] *= scaler;
         }
 
         if(i == 0){
@@ -1578,9 +1595,9 @@ void convert8channelLine() {
         }
 
         if (i>=1 && i<=8) {
-            floatData[i] *= cyton.get_scale_fac_uVolts_per_count();
+            floatData[i] *= BoardCytonConstants.scale_fac_uVolts_per_count;
         }else if(i != 0){
-            floatData[i] *= cyton.get_scale_fac_accel_G_per_count();
+            floatData[i] *= BoardCytonConstants.scale_fac_uVolts_per_count;
         }
 
         if(i == 0){

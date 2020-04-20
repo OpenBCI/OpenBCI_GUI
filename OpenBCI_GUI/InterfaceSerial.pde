@@ -38,6 +38,9 @@ boolean werePacketsDroppedSerial = false;
 int numPacketsDroppedSerial = 0;
 
 
+CytonLegacy cytonLegacy = new CytonLegacy();
+
+
 //everything below is now deprecated...
 // final String[] command_activate_leadoffP_channel = {"!", "@", "#", "$", "%", "^", "&", "*"};  //shift + 1-8
 // final String[] command_deactivate_leadoffP_channel = {"Q", "W", "E", "R", "T", "Y", "U", "I"};   //letters (plus shift) right below 1-8
@@ -60,7 +63,7 @@ void serialEvent(Serial port){
     //check to see which serial port it is
     if (iSerial.isOpenBCISerial(port)) {
 
-        // boolean echoBytes = !cyton.isStateNormal();
+        // boolean echoBytes = !cytonLegacy.isStateNormal();
         boolean echoBytes;
 
         if (iSerial.isStateNormal() != true) {  // || printingRegisters == true){
@@ -75,7 +78,7 @@ void serialEvent(Serial port){
             //copy packet into buffer of data packets
             curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
 
-            cyton.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
+            cytonLegacy.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
             iSerial.set_isNewDataPacketAvailable(false); //resets isNewDataPacketAvailable to false
 
             // KILL SPIKES!!!
@@ -83,9 +86,9 @@ void serialEvent(Serial port){
                 for(int i = numPacketsDroppedSerial; i > 0; i--){
                     int tempDataPacketInd = curDataPacketInd - i; //
                     if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-                        cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
+                        cytonLegacy.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
                     } else {
-                        cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
+                        cytonLegacy.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
                     }
                     //put the last stored packet in # of packets dropped after that packet
                 }
@@ -97,7 +100,7 @@ void serialEvent(Serial port){
 
             switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), byte(0xC0), (new Date()).getTime());
+                //fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cytonLegacy.get_scale_fac_uVolts_per_count(), cytonLegacy.get_scale_fac_accel_G_per_count(), byte(0xC0), (new Date()).getTime());
                 break;
             case OUTPUT_SOURCE_BDF:
                 curBDFDataPacketInd = curDataPacketInd;
@@ -318,7 +321,7 @@ class InterfaceSerial {
             } else {
                 println("RunttimeException: " + e);
                 output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
-                abandonInit = true; //global variable in OpenBCI_GUI.pde
+                //abandonInit = true; //global variable in OpenBCI_GUI.pde
             }
             return 0;
         }
@@ -338,12 +341,12 @@ class InterfaceSerial {
     public int closeSDandSerialPort() {
         int returnVal=0;
 
-        cyton.closeSDFile();
+        cytonLegacy.closeSDFile();
 
         readyToSend = false;
         returnVal = closeSerialPort();
         prevState_millis = 0;  //reset Serial state clock to use as a conditional for timing at the beginnign of systemUpdate()
-        cyton.hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
+        cytonLegacy.hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
 
         return returnVal;
     }
@@ -367,9 +370,9 @@ class InterfaceSerial {
             state = STATE_SYNCWITHHARDWARE;
             timeOfLastCommand = millis();
             serial_openBCI.clear();
-            cyton.potentialFailureMessage = "";
-            cyton.defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
-            cyton.daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
+            cytonLegacy.potentialFailureMessage = "";
+            cytonLegacy.defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
+            cytonLegacy.daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
             println("InterfaceSerial: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
             serial_openBCI.write('v');
         }
@@ -379,8 +382,8 @@ class InterfaceSerial {
             if (millis() - timeOfLastCommand > 200 && readyToSend == true) {
                 println("sdSetting: " + sdSetting);
                 timeOfLastCommand = millis();
-                cyton.hardwareSyncStep++;
-                cyton.syncWithHardware(sdSetting);
+                cytonLegacy.hardwareSyncStep++;
+                cytonLegacy.syncWithHardware(sdSetting);
             }
         }
     }
@@ -452,18 +455,18 @@ class InterfaceSerial {
             prev3chars[1] = prev3chars[2];
             prev3chars[2] = inASCII;
 
-            if (cyton.hardwareSyncStep == 0 && inASCII != '$') {
-                cyton.potentialFailureMessage+=inASCII;
+            if (cytonLegacy.hardwareSyncStep == 0 && inASCII != '$') {
+                cytonLegacy.potentialFailureMessage+=inASCII;
             }
 
-            if (cyton.hardwareSyncStep == 1 && inASCII != '$') {
-                cyton.daisyOrNot+=inASCII;
+            if (cytonLegacy.hardwareSyncStep == 1 && inASCII != '$') {
+                cytonLegacy.daisyOrNot+=inASCII;
                 //if hardware returns 8 because daisy is not attached, switch the GUI mode back to 8 channels
                 // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
-                if (nchan == 16 && cyton.daisyOrNot.charAt(cyton.daisyOrNot.length() - 1) == '8') {
+                if (nchan == 16 && cytonLegacy.daisyOrNot.charAt(cytonLegacy.daisyOrNot.length() - 1) == '8') {
                     // verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
                     verbosePrint(" received from OpenBCI... Abandoning hardware initiation.");
-                    abandonInit = true;
+                    //abandonInit = true;
                     // haltSystem();
 
                     // updateToNChan(8);
@@ -479,26 +482,26 @@ class InterfaceSerial {
                 }
             }
 
-            if (cyton.hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
-                cyton.defaultChannelSettings+=inASCII;
+            if (cytonLegacy.hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
+                cytonLegacy.defaultChannelSettings+=inASCII;
             }
 
             //if the last three chars are $$$, it means we are moving on to the next stage of initialization
             if (prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]) {
                 verbosePrint(" > EOT detected...");
                 // Added for V2 system down rejection line
-                if (cyton.hardwareSyncStep == 0) {
+                if (cytonLegacy.hardwareSyncStep == 0) {
                     // Failure: Communications timeout - Device failed to poll Host$$$
-                    if (cyton.potentialFailureMessage.equals(failureMessage)) {
+                    if (cytonLegacy.potentialFailureMessage.equals(failureMessage)) {
                         closeLogFile();
                         return 0;
                     }
                 }
                 // hardwareSyncStep++;
                 prev3chars[2] = '#';
-                if (cyton.hardwareSyncStep == 3) {
+                if (cytonLegacy.hardwareSyncStep == 3) {
                     println("InterfaceSerial: read(): x");
-                    println("InterfaceSerial: defaultChanSettings: " + cyton.defaultChannelSettings);
+                    println("InterfaceSerial: defaultChanSettings: " + cytonLegacy.defaultChannelSettings);
                     println("InterfaceSerial: read(): y");
                     w_timeSeries.hsc.loadDefaultChannelSettings();
                     println("InterfaceSerial: read(): z");

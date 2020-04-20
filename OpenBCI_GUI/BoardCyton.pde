@@ -1,3 +1,211 @@
+
+import brainflow.*;
+
+enum CytonBoardMode {
+    DEFAULT(0),
+    DEBUG(1),
+    ANALOG(2),
+    DIGITAL(3),
+    MARKER(4);
+
+    private final int value;
+    CytonBoardMode(final int newValue) {
+        value = newValue;
+    }
+    public int getValue() { return value; }
+}
+
+static class BoardCytonConstants {
+    static final float series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
+    static final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
+    static final float ADS1299_gain = 24.f;  //assumed gain setting for ADS1299.  set by its Arduino code
+    static final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
+    static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
+}
+
+class BoardCyton extends BoardBrainFlow
+implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, MarkerCapableBoard {
+    private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+    private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    
+    private String serialPort = "";
+    private String ipAddress = "";
+    private BoardIds boardId = BoardIds.CYTON_BOARD;
+    private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
+
+    public BoardCyton(String serialPort, String ipAddress, boolean daisy, boolean wifi) {
+        super();
+
+        if (wifi) {
+            if (daisy) { // 16 channels selected
+                boardId = BoardIds.CYTON_DAISY_WIFI_BOARD;
+            } else {
+                boardId = BoardIds.CYTON_WIFI_BOARD;
+            }
+            this.ipAddress = ipAddress;
+        } else {
+            if (daisy) { // 16 channels selected
+                boardId = BoardIds.CYTON_DAISY_BOARD;
+            } else {
+                boardId = BoardIds.CYTON_BOARD;
+            }
+            this.serialPort = serialPort;
+        }
+    }
+
+    // implement mandatory abstract functions
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_port = serialPort;
+        params.ip_address = ipAddress;
+        params.ip_port = 6677;
+        return params;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return boardId;
+    }
+
+    @Override
+    public void uninitialize() {
+        closeSDFile();
+        super.uninitialize();
+    }
+
+    @Override
+    public void setChannelActive(int channelIndex, boolean active) {
+        if (channelIndex >= getNumChannels()) {
+            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumChannels() + "channels");
+        }
+
+        char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
+        configBoard(str(charsToUse[channelIndex]));
+    }
+
+    @Override
+    public boolean isAccelerometerActive() {
+        return getBoardMode() == CytonBoardMode.DEFAULT;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        if(active) {
+            setBoardMode(CytonBoardMode.DEFAULT);
+        }
+        // no way of turning off accel.
+    }
+
+    @Override
+    public float[] getLastValidAccelValues() {
+        return lastValidAccelValues;
+    }
+
+    @Override
+    public boolean isAnalogActive() {
+        return getBoardMode() == CytonBoardMode.ANALOG;
+    }
+
+    @Override
+    public void setAnalogActive(boolean active) {
+        if(active) {
+            setBoardMode(CytonBoardMode.ANALOG);
+        } else {
+            setBoardMode(CytonBoardMode.DEFAULT);
+        }
+    }
+
+    @Override
+    public boolean isDigitalActive() {
+        return getBoardMode() == CytonBoardMode.DIGITAL;
+    }
+
+    @Override
+    public void setDigitalActive(boolean active) { 
+        if(active) {
+            setBoardMode(CytonBoardMode.DIGITAL);
+        } else {
+            setBoardMode(CytonBoardMode.DEFAULT);
+        }
+    }
+
+    @Override
+    public boolean isMarkerActive() {
+        return getBoardMode() == CytonBoardMode.MARKER;
+    }
+
+    @Override
+    public void setMarkerActive(boolean active) {
+        if(active) {
+            setBoardMode(CytonBoardMode.MARKER);
+        } else {
+            setBoardMode(CytonBoardMode.DEFAULT);
+        }
+    }
+
+    @Override
+    public void setImpedanceSettings(int channel, char pORn, boolean active) {
+        char p = '0';
+        char n = '0';
+
+        if (active) {
+            if (pORn == 'p') {
+                p = '1';
+            }
+            else if (pORn == 'n') {
+                n = '1';
+            }
+        }
+
+        // for example: z 4 1 0 Z
+        String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        configBoard(command);
+    }
+
+    public void setChannelSettings(int channel, char[] channelSettings) {
+        char powerDown = channelSettings[0];
+        char gain = channelSettings[1];
+        char inputType = channelSettings[2];
+        char bias = channelSettings[3];
+        char srb2 = channelSettings[4];
+        char srb1 = channelSettings[5];
+
+        String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
+                                        powerDown, gain, inputType, bias, srb2, srb1);
+        configBoard(command);
+    }
+
+    public CytonBoardMode getBoardMode() {
+        return currentBoardMode;
+    }
+
+    private void setBoardMode(CytonBoardMode boardMode) {
+        configBoard("/" + boardMode.getValue());
+        currentBoardMode = boardMode;
+    }
+
+    public void closeSDFile() {
+        println("Closing any open SD file. Writing 'j' to OpenBCI.");
+        configBoard("j"); // tell the SD file to close if one is open...
+        delay(100); //make sure 'j' gets sent to the board
+    }
+
+    public void printRegisters() {
+        println("Cyton: printRegisters(): Writing ? to OpenBCI...");
+        configBoard("?");
+    }
+
+    public void configureAllChannelsToDefault() {
+        configBoard("d");
+    };
+};
+
+
+// TODO[brainflow] keeping this ghost alive because the InterfaceSerial class does some magic to 
+// test serial ports and switch channels.
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // This class configures and manages the connection to the OpenBCI shield for
@@ -22,32 +230,37 @@
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 
-final char command_stop = 's';
-// final String command_startText = "x";
-final char command_startBinary = 'b';
+// final char command_stop = 's';
+// // final String command_startText = "x";
+// final char command_startBinary = 'b';
 
-final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
-final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+// final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+// final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-enum BoardMode {
-    DEFAULT(0),
-    DEBUG(1),
-    ANALOG(2),
-    DIGITAL(3),
-    MARKER(4);
+// enum BoardMode {
+//     DEFAULT(0),
+//     DEBUG(1),
+//     ANALOG(2),
+//     DIGITAL(3),
+//     MARKER(4);
 
-    private final int value;
-    BoardMode(final int newValue) {
-        value = newValue;
-    }
-    public int getValue() { return value; }
-}
+//     private final int value;
+//     BoardMode(final int newValue) {
+//         value = newValue;
+//     }
+//     public int getValue() { return value; }
+// }
 
 //------------------------------------------------------------------------
 //                       Classes
 //------------------------------------------------------------------------
 
-class Cyton {
+class CytonLegacy {
+
+    private final char command_startBinary = 'b';
+    private final char command_stop = 's';
+    private final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+    private final char[] command_activate_channel =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
@@ -66,9 +279,9 @@ class Cyton {
     //private final float scale_fac_accel_G_per_count = 1.0;  //to test stimulations  //final float scale_fac_accel_G_per_count = 1.0;
     private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 
-    private BoardMode curBoardMode = BoardMode.DEFAULT;
+    private int curBoardMode = 0;
 
-    private int curInterface = INTERFACE_SERIAL;
+    private BoardProtocol curInterface = BoardProtocol.SERIAL;
     private int sampleRate = fsHzWifi;
 
     // needed by interfaceserial
@@ -77,7 +290,7 @@ class Cyton {
     public String defaultChannelSettings = "";
     public String daisyOrNot = "";
 
-    // used to detect and flag error during initialization
+    //used to detect and flag error during initialization
     public boolean daisyNotAttached = false;
 
     //some get methods
@@ -93,12 +306,14 @@ class Cyton {
         }
     }
 
-    public BoardMode getBoardMode() {
+    public int getBoardMode() {
         return curBoardMode;
     }
-    public int getInterface() {
+    
+    public BoardProtocol getInterface() {
         return curInterface;
     }
+
     public float get_series_resistor() {
         return openBCI_series_resistor_ohms;
     }
@@ -112,8 +327,8 @@ class Cyton {
         return leadOffDrive_amps;
     }
 
-    public void setBoardMode(BoardMode boardMode) {
-        hub.sendCommand("/" + boardMode.getValue());
+    public void setBoardMode(int boardMode) {
+        hub.sendCommand("/" + boardMode);
         curBoardMode = boardMode;
         println("Cyton: setBoardMode to :" + curBoardMode);
     }
@@ -125,23 +340,23 @@ class Cyton {
         hub.setSampleRate(sampleRate);
     }
 
-    public boolean setInterface(int _interface) {
+    public boolean setInterface(BoardProtocol _interface) {
         curInterface = _interface;
         // println("current interface: " + curInterface);
-        println("setInterface: curInterface: " + getInterface());
+        println("setInterface: curInterface: " + selectedProtocol);
         if (isWifi()) {
-            setSampleRate((int)fsHzWifi);
+            //setSampleRate((int)fsHzWifi);
             hub.setProtocol(PROTOCOL_WIFI);
         } else if (isSerial()) {
-            setSampleRate((int)fsHzSerialCyton);
+            //setSampleRate((int)fsHzSerialCyton);
             hub.setProtocol(PROTOCOL_SERIAL);
         }
         return true;
     }
 
     //constructors
-    Cyton() {};  //only use this if you simply want access to some of the constants
-    Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, int _interface) {
+    CytonLegacy() {};  //only use this if you simply want access to some of the constants
+    CytonLegacy(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, BoardProtocol _interface) {
         curInterface = _interface;
 
         initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
@@ -254,12 +469,12 @@ class Cyton {
             }
             println("Cyton: syncWithHardware: [5] Writing selected SD setting (" + sdSettingString + ") to OpenBCI...");
             //final hacky way of abandoning initiation if someone selected daisy but doesn't have one connected.
-            if(abandonInit){
-            haltSystem();
-            output("No daisy board present. Make sure you selected the correct number of channels.");
-            controlPanel.open();
-            abandonInit = false;
-            }
+            // if(abandonInit){
+            //     haltSystem();
+            //     output("No daisy board present. Make sure you selected the correct number of channels.");
+            //     controlPanel.open();
+            //     abandonInit = false;
+            // }
             break;
         case 6:
             println("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
@@ -286,11 +501,11 @@ class Cyton {
 
     private boolean isSerial () {
         // println("My interface is " + curInterface);
-        return curInterface == INTERFACE_SERIAL;
+        return curInterface == BoardProtocol.SERIAL;
     }
 
     private boolean isWifi () {
-        return curInterface == INTERFACE_HUB_WIFI;
+        return curInterface == BoardProtocol.WIFI;
     }
 
     public void startDataTransfer() {
@@ -497,7 +712,7 @@ class Cyton {
         }
     }
 
-    // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
+    //FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
     public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
         JSONObject json = new JSONObject();
         json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CHANNEL_SETTINGS);
