@@ -188,7 +188,7 @@ class W_NovaAux extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_NovaAux(int n) {
-    settings.arVertScaleSave = n;
+    //settings.arVertScaleSave = n;
     for(int i = 0; i < w_novaAux.numAnalogReadBars; i++) {
             w_novaAux.analogReadBars[i].adjustVertScale(w_novaAux.yLimOptions[n]);
     }
@@ -199,7 +199,7 @@ void VertScale_NovaAux(int n) {
 void Duration_NovaAux(int n) {
     // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
     //set analog read x axis to the duration selected from dropdown
-    settings.arHorizScaleSave = n;
+    //settings.arHorizScaleSave = n;
 
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     for(int i = 0; i < w_novaAux.numAnalogReadBars; i++) {
