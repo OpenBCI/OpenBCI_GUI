@@ -15,6 +15,7 @@ abstract class BoardBrainFlow implements Board {
     protected boolean streaming = false;
     protected float[] lastAccelValues = {};
     protected float[] lastValidAccelValues = {};
+    protected double[][] rawData = null;
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -129,9 +130,8 @@ abstract class BoardBrainFlow implements Board {
             return; // early out
         }
 
-        double[][] data;
         try {
-            data = boardShim.get_board_data();
+            rawData = boardShim.get_board_data();
         }
         catch (BrainFlowError e) {
             println ("ERROR: Exception trying to get board data");
@@ -139,11 +139,11 @@ abstract class BoardBrainFlow implements Board {
             return; // early out
         }
 
-        for (int count = 0; count < data[0].length; count++)
+        for (int count = 0; count < rawData[0].length; count++)
         {
-            double[] values = new double[data.length];
-            for (int i=0; i < data.length; i++) {
-                values[i] = data[i][count];
+            double[] values = new double[rawData.length];
+            for (int i=0; i < rawData.length; i++) {
+                values[i] = rawData[i][count];
             }
 
             fillDataPacketWithValues(dataPacket, values);

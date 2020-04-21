@@ -713,9 +713,8 @@ void initSystem() throws Exception {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR();
-            //TODO[brainflow]
-            //currentBoard = new BoardBrainFlowSynthetic();
+            // currentBoard = new BoardNovaXR();
+            currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;
