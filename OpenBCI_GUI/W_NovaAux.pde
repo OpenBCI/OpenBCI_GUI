@@ -367,14 +367,14 @@ class AuxReadBar{
 
             //int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
             double voltage = 0D;
-            try {
-                if (auxValuesPosition == 1) {
+            if (auxValuesPosition == 1) {
+                if (edaBoard.getEDAValues()[0].length > 0 && lastProcessedDataPacketInd < edaBoard.getEDAValues()[0].length) {
                     voltage = edaBoard.getEDAValues()[0][lastProcessedDataPacketInd];
-                } else {
+                }
+            } else {
+                if (ppgBoard.getPPGValues()[0].length > 0 && lastProcessedDataPacketInd < ppgBoard.getPPGValues()[0].length) {
                     voltage = ppgBoard.getPPGValues()[0][lastProcessedDataPacketInd];
                 }
-            } catch (Exception e) {
-                //e.printStackTrace();
             }
             auxReadData[auxReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
 
