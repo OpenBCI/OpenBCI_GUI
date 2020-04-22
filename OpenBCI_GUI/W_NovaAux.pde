@@ -299,9 +299,9 @@ class AuxReadBar{
         analogPin.alignH = CENTER;
 
         drawAnalogValue = true;
-        if (auxChanNum == 1) {
+        if (auxValuesPosition == 1) {
             edaBoard = (EDACapableBoard) currentBoard;
-        } else if (auxChanNum == 2) {
+        } else if (auxValuesPosition == 2) {
             ppgBoard = (PPGCapableBoard) currentBoard;
         }
     }
@@ -368,7 +368,11 @@ class AuxReadBar{
             //int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
             double voltage = 0D;
             try {
-                voltage = edaBoard.getEDAValues()[0][lastProcessedDataPacketInd];
+                if (auxValuesPosition == 1) {
+                    voltage = edaBoard.getEDAValues()[0][lastProcessedDataPacketInd];
+                } else {
+                    voltage = ppgBoard.getPPGValues()[0][lastProcessedDataPacketInd];
+                }
             } catch (Exception e) {
                 //e.printStackTrace();
             }
