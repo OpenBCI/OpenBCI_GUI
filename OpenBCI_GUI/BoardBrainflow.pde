@@ -132,8 +132,7 @@ abstract class BoardBrainFlow implements Board {
 
         try {
             rawData = boardShim.get_board_data();
-        }
-        catch (BrainFlowError e) {
+        } catch (BrainFlowError e) {
             println ("ERROR: Exception trying to get board data");
             e.printStackTrace();
             return; // early out

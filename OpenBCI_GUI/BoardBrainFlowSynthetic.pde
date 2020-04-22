@@ -63,9 +63,13 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     @Override
     public double[][] getPPGValues() {
         double[][] res = new double[ppgChannels.length][];
+        int dataCount = 0;
+        if (rawData != null) {
+            dataCount = rawData[0].length;
+        }
         for (int i = 0; i < ppgChannels.length; i++) {
-            res[i] = new double[rawData[0].length];
-            for (int j = 0; j < rawData[0].length; j++) {
+            res[i] = new double[dataCount];
+            for (int j = 0; j < dataCount; j++) {
                 res[i][j] = rawData[ppgChannels[i]][j];
             }
         }
@@ -85,9 +89,13 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     @Override
     public double[][] getEDAValues() {
         double[][] res = new double[edaChannels.length][];
+        int dataCount = 0;
+        if (rawData != null) {
+            dataCount = rawData[0].length;
+        }
         for (int i = 0; i < edaChannels.length; i++) {
-            res[i] = new double[rawData[0].length];
-            for (int j = 0; j < rawData[0].length; j++) {
+            res[i] = new double[dataCount];
+            for (int j = 0; j < dataCount; j++) {
                 res[i][j] = rawData[edaChannels[i]][j];
             }
         }
