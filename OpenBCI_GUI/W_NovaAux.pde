@@ -242,7 +242,9 @@ class AuxReadBar{
     boolean drawAnalogValue;
     int lastProcessedDataPacketInd = 0;
 
-    int[] analogReadData;
+    double[] auxReadData;
+    private EDACapableBoard edaBoard;
+    private PPGCapableBoard ppgBoard;
 
     AuxReadBar(PApplet _parent, int auxChanNum, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
@@ -267,19 +269,11 @@ class AuxReadBar{
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            if(auxValuesPosition == 1) {
-                plot.getXAxis().setAxisLabelText("Time (s)");
-            }
-        } else {
-            if(auxValuesPosition == 2) {
-                plot.getXAxis().setAxisLabelText("Time (s)");
-            }
-        }
+        plot.getXAxis().setAxisLabelText("Time (s)");
 
         nPoints = nPointsBasedOnDataSource(); //max duration 20s
         bufferSize = nPoints;
-        analogReadData = new int[nPoints];
+        auxReadData = new double[nPoints];
 
         auxReadPoints = new GPointsArray(nPoints);
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
@@ -305,7 +299,11 @@ class AuxReadBar{
         analogPin.alignH = CENTER;
 
         drawAnalogValue = true;
-
+        if (auxValuesPosition == 1) {
+            edaBoard = (EDACapableBoard) currentBoard;
+        } else if (auxValuesPosition == 2) {
+            ppgBoard = (PPGCapableBoard) currentBoard;
+        }
     }
 
     void update() {
@@ -314,11 +312,18 @@ class AuxReadBar{
         float val = 0f;
 
         //update the voltage values
-        // val = hub.validAccelValues[auxValuesPosition];
+        //val = hub.validAccelValues[auxValuesPosition];
         analogValue.string = String.format(getFmt(val),val);
-
+        try {
+            //println(Arrays.deepToString(edaBoard.getEDAValues()));
+            //double[] edaData = edaBoard.getEDAValues()[0];
+            //println(edaData);
+        } catch (Exception e) {
+            //oops
+        }
         // update data in plot
-        //updatePlotPoints();
+        updatePlotPoints();
+        
         if(isAutoscale) {
             autoScale();
         }
@@ -345,8 +350,8 @@ class AuxReadBar{
 
         // Shift internal ring buffer numSamplesToProcess
         if (numSamplesToProcess > 0) {
-            for(int i = 0; i < analogReadData.length - numSamplesToProcess; i++) {
-                analogReadData[i] = analogReadData[i + numSamplesToProcess];
+            for(int i = 0; i < auxReadData.length - numSamplesToProcess; i++) {
+                auxReadData[i] = auxReadData[i + numSamplesToProcess];
             }
         }
 
@@ -360,9 +365,18 @@ class AuxReadBar{
                 lastProcessedDataPacketInd = 0;
             }
 
-            int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
-
-            analogReadData[analogReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
+            //int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
+            double voltage = 0D;
+            if (auxValuesPosition == 1) {
+                if (edaBoard.getEDAValues()[0].length > 0 && lastProcessedDataPacketInd < edaBoard.getEDAValues()[0].length) {
+                    voltage = edaBoard.getEDAValues()[0][lastProcessedDataPacketInd];
+                }
+            } else {
+                if (ppgBoard.getPPGValues()[0].length > 0 && lastProcessedDataPacketInd < ppgBoard.getPPGValues()[0].length) {
+                    voltage = ppgBoard.getPPGValues()[0][lastProcessedDataPacketInd];
+                }
+            }
+            auxReadData[auxReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
 
             samplesProcessed++;
         }
@@ -371,7 +385,7 @@ class AuxReadBar{
         if (numSamplesToProcess > 0) {
             for (int i = buffDiff; i < bufferSize; i++) {
                 float timey = -(float)numSeconds + (float)(i-buffDiff)*timeBetweenPoints;
-                float voltage = analogReadData[i];
+                float voltage = (float)auxReadData[i];
 
                 GPoint tempPoint = new GPoint(timey, voltage);
                 auxReadPoints.set(i-buffDiff, tempPoint);
@@ -394,17 +408,10 @@ class AuxReadBar{
         plot.drawBox(); // we won't draw this eventually ...
         plot.drawGridLines(0);
         plot.drawLines();
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            if(auxValuesPosition == 1) { //only draw the x axis label on the bottom channel bar
-                plot.drawXAxis();
-                plot.getXAxis().draw();
-            }
-        }
-        else {
-            if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
-                plot.drawXAxis();
-                plot.getXAxis().draw();
-            }
+        
+        if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
+            plot.drawXAxis();
+            plot.getXAxis().draw();
         }
 
         plot.endDraw();
