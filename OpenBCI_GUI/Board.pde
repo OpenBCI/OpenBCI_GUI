@@ -17,10 +17,17 @@ interface Board {
     
     public int getNumEXGChannels();
 
+    // returns a list of all the channels that contain EXG data.
+    // the numbers in this list can be used to index the array
+    // returned by getData() to cherrypick EXG data out of it.
     public int[] getEXGChannels();
 
+    // returns all the data this board has, all the data types
+    // maxSamples limits the amount of samples returned
     public double[][] getData(int maxSamples);
 
+    // number of data samples the board is holding
+    // (getData cannot return more than this number of samples)
     public int getDataCount();
 
     public void setChannelActive(int channelIndex, boolean active);
