@@ -1019,6 +1019,8 @@ void systemUpdate() { // for updating data values and variables
     win_x = width;
     win_y = height;
 
+    currentBoard.update();
+
     helpWidget.update();
     topNav.update();
     if (systemMode == SYSTEMMODE_PREINIT) {
@@ -1101,8 +1103,6 @@ void systemUpdate() { // for updating data values and variables
             wm.update();
         }
     }
-
-    currentBoard.update();
 }
 
 void systemDraw() { //for drawing to the screen

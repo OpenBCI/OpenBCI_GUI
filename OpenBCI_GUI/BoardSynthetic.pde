@@ -1,3 +1,4 @@
+import java.util.stream.IntStream;
 
 /* Generates synthetic data
  */
@@ -7,24 +8,39 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float sine_freq_Hz = 10.0f;
 
-    private DataPacket_ADS1299 dataPacket;
     private boolean streaming = false;
     private boolean isInitialized = false;
     private float[] sine_phase_rad;
     private int lastSynthTime;
     private float[] lastAccelValues;
+    private int samplingIntervalMS;
+    private int[] exgChannels;
+    private int[] accelChanels;
+    private ArrayList<Double>[] rawData;
 
     // Synthetic accel data timer. Track frame count for synthetic data.
     private int accelSynthTime;
 
     public BoardSynthetic() {        
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), NUM_ACCEL_DIMS);
-        sine_phase_rad = new float[getNumChannels()];
-        lastAccelValues = new float[NUM_ACCEL_DIMS];
     }
 
     @Override
     public boolean initialize() {
+        exgChannels = range(0, nchan);
+        accelChanels = range(nchan, nchan + NUM_ACCEL_DIMS);
+        
+        sine_phase_rad = new float[getNumEXGChannels()];
+        lastAccelValues = new float[NUM_ACCEL_DIMS];
+
+        int totalChannels = exgChannels.length + accelChanels.length;
+        rawData = (ArrayList<Double>[]) new ArrayList[totalChannels];
+        for (int i=0; i<totalChannels; i++) {
+            rawData[i] = new ArrayList<Double>();
+        }
+
+
+        samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
+
         isInitialized = true;
         return true;
     }
@@ -39,21 +55,8 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
         if (!streaming) {
             return; // early out
         }
-        
-        int samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
 
-        while (millis() - lastSynthTime > samplingIntervalMS)
-        {
-            synthesizeData();
-            synthesizeAccelData();
-
-            // TODO[brainflow] this is common to all boards. refactor it?
-            // This is also used to let the rest of the code that it may be time to do something
-            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
-            dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
-
-            lastSynthTime += samplingIntervalMS;
-        }
+        synthesizeData();
     }
 
     @Override
@@ -86,8 +89,29 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
     
     @Override
-    public int getNumChannels() {
-        return nchan;
+    public int getNumEXGChannels() {
+        return getEXGChannels().length;
+    }
+
+    @Override
+    public int[] getEXGChannels() {
+        return exgChannels;
+    }
+
+    @Override
+    public double[][] getData(int maxSamples) {
+        int actualSamples = min(maxSamples, rawData[0].size());
+
+        double[][] result = new double[rawData.length][actualSamples];
+
+        for(int i=0; i< rawData.length; i++) {
+            for (int j=0; j<actualSamples; j++) {
+                int rawDataIndex = rawData[i].size() - actualSamples + j;
+                result[i][j] = rawData[i].get(rawDataIndex);
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -120,10 +144,20 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
         outputWarn("Changing the sampling rate is not implemented for Sythetic board. Sampling rate will stay at " + getSampleRate());
     }
 
-    //Synthesize Time Series Data to Test GUI Functionality
     void synthesizeData() {
+        while (millis() - lastSynthTime > samplingIntervalMS)
+        {
+            synthesizeEXGData();
+            synthesizeAccelData();
+            
+            lastSynthTime += samplingIntervalMS;
+        }
+    }
+
+    //Synthesize Time Series Data to Test GUI Functionality
+    void synthesizeEXGData() {
         float val_uV;
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
+        for (int Ichan : getEXGChannels()) {
             if (isChannelActive(Ichan)) {
                 val_uV = randomGaussian()*sqrt(getSampleRate()/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
                 if (Ichan==0) {
@@ -167,7 +201,7 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
             } else {
                 val_uV = 0.0f;
             }
-            dataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+            rawData[Ichan].add((double)(0.5 + val_uV / scale_fac_uVolts_per_count)); //convert to counts, the 0.5 is to ensure rounding
         }
     }
 

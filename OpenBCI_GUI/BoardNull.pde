@@ -39,8 +39,18 @@ class BoardNull implements Board {
     }
     
     @Override
-    public int getNumChannels() {
+    public int getNumEXGChannels() {
         return 0;
+    }
+
+    @Override
+    public int[] getEXGChannels() {
+        return new int[0];
+    }
+
+    @Override
+    public double[][] getData(int maxSamples) {
+        return new double[0][0];
     }
 
     @Override

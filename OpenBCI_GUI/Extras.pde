@@ -206,9 +206,27 @@ String shortenString(String str, float maxWidth, PFont font) {
     return s1 + "..." + s2;
 }
 
-int lerpInt(long first, long second, float bias)
-{
+int lerpInt(long first, long second, float bias) {
     return round(lerp(first, second, bias));    
+}
+
+int[] range(int first, int second) {
+    int total = abs(first-second);
+    int[] result = new int[total];
+
+    for(int i=0; i<total; i++) {
+        int newNumber = first;
+        if(first > second) {
+            newNumber -= i;
+        }
+        else {
+            newNumber += i;
+        }
+
+        result[i] = newNumber;
+    }
+
+    return result;
 }
 
 // creates an DataPacket_ADS1299 with interpolated values.

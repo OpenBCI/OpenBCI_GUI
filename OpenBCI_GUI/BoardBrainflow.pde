@@ -9,7 +9,7 @@ abstract class BoardBrainFlow implements Board {
     protected int samplingRate = 0;
     protected int packetNumberChannel = 0;
     protected int timeStampChannel = 0;
-    protected int[] dataChannels = {};
+    protected int[] exgChannels = {};
     protected int[] accelChannels = {};
 
     protected boolean streaming = false;
@@ -25,7 +25,7 @@ abstract class BoardBrainFlow implements Board {
     protected BoardBrainFlow() {
     }
 
-    protected int[] getEXGChannels() throws BrainFlowError{
+    protected int[] calculateEXGChannels() throws BrainFlowError{
         int[] channels;
         // for some boards there can be duplicates
         SortedSet<Integer> set = new TreeSet<Integer>();
@@ -78,7 +78,7 @@ abstract class BoardBrainFlow implements Board {
             samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
             timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
-            dataChannels = getEXGChannels();
+            exgChannels = calculateEXGChannels();
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
@@ -87,10 +87,10 @@ abstract class BoardBrainFlow implements Board {
 
         lastAccelValues = new float[accelChannels.length];
         lastValidAccelValues = new float[accelChannels.length];
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
+        dataPacket = new DataPacket_ADS1299(getNumEXGChannels(), accelChannels.length);
 
         try {
-            updateToNChan(getNumChannels());
+            updateToNChan(getNumEXGChannels());
 
             boardShim = new BoardShim (getBoardIdInt(), getParams());
             // for some reason logger configuration doesnt work in contructor or static initializer block
@@ -159,9 +159,9 @@ abstract class BoardBrainFlow implements Board {
         dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
         dataPacket.timeStamp = (long)values[timeStampChannel]*1000;
 
-        for (int i=0; i < dataChannels.length; i++)
+        for (int i=0; i < exgChannels.length; i++)
         {
-            dataPacket.values[i] = (int)Math.round(values[dataChannels[i]]);
+            dataPacket.values[i] = (int)Math.round(values[exgChannels[i]]);
         }
 
         boolean accelValid = false;
@@ -232,8 +232,24 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public int getNumChannels() {
-        return dataChannels.length;
+    public int getNumEXGChannels() {
+        return getEXGChannels().length;
+    }
+
+    @Override
+    public int[] getEXGChannels() {
+        return exgChannels;
+    }
+
+    @Override public double[][] getData(int numSamples) {
+        try {
+            return boardShim.get_current_board_data(numSamples);
+        }
+        catch (BrainFlowError e) {
+            println("Error when getting current board data.");
+            e.printStackTrace();
+            return new double[0][0];
+        }
     }
 
     public int getBoardIdInt() {

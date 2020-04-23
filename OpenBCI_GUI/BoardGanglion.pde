@@ -43,8 +43,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
 
     @Override
     public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumChannels() + "channels");
+        if (channelIndex >= getNumEXGChannels()) {
+            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
         }
 
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;

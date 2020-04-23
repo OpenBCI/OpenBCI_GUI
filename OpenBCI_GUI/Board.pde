@@ -15,7 +15,11 @@ interface Board {
 
     public int getSampleRate();
     
-    public int getNumChannels();
+    public int getNumEXGChannels();
+
+    public int[] getEXGChannels();
+
+    public double[][] getData(int maxSamples);
 
     public void setChannelActive(int channelIndex, boolean active);
 
