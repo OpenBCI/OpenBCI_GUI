@@ -200,7 +200,6 @@ PlotFontInfo fontInfo;
 
 //program variables
 boolean isRunning = false;
-boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
 StringBuilder board_message;
 
@@ -470,7 +469,6 @@ synchronized void draw() {
     if (showStartupError) {
         drawStartupError();
     } else if (setupComplete && systemMode != SYSTEMMODE_INTROANIMATION) {
-        drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
         if (midInit) {
@@ -663,7 +661,6 @@ int pointCounter = 0;
 int prevBytes = 0;
 int prevMillis = millis();
 int byteRate_perSec = 0;
-int drawLoop_counter = 0;
 
 //used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
 
@@ -867,7 +864,6 @@ void initCoreDataObjects() {
         dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
     }
     dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
-    dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
 
     //initialize the data
     prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
@@ -980,7 +976,6 @@ void haltSystem() {
         prevBytes = 0;
         prevMillis = millis();
         byteRate_perSec = 0;
-        drawLoop_counter = 0;
         // eegDataSource = -1;
         //set all data source list items inactive
 
@@ -1046,7 +1041,6 @@ void systemUpdate() { // for updating data values and variables
                 //process the data
                 processNewData();
                 //set this flag to true, checked at the beginning of systemDraw()
-                redrawScreenNow=true;
             } else {
                 //not enough data has arrived yet... only update the channel controller
             }
@@ -1112,44 +1106,38 @@ void systemDraw() { //for drawing to the screen
     //background(255);  //clear the screen
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        int drawLoopCounter_thresh = 100;
-        if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
-            //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
-            drawLoop_counter=0; //reset for next time
-            redrawScreenNow = false;  //reset for next time
-            //update the title of the figure;
-            switch (eegDataSource) {
-            case DATASOURCE_CYTON:
-                switch (outputDataSource) {
-                case OUTPUT_SOURCE_ODF:
-                    if (fileoutput_odf != null) {
-                        surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
-                    }
-                    break;
-                case OUTPUT_SOURCE_BDF:
-                    if (fileoutput_bdf != null) {
-                        surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
-                    }
-                    break;
-                case OUTPUT_SOURCE_NONE:
-                default:
-                    surface.setTitle(int(frameRate) + " fps");
-                    break;
+        //update the title of the figure;
+        switch (eegDataSource) {
+        case DATASOURCE_CYTON:
+            switch (outputDataSource) {
+            case OUTPUT_SOURCE_ODF:
+                if (fileoutput_odf != null) {
+                    surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
                 }
                 break;
-            case DATASOURCE_SYNTHETIC:
-                surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
+            case OUTPUT_SOURCE_BDF:
+                if (fileoutput_bdf != null) {
+                    surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+                }
                 break;
-            case DATASOURCE_PLAYBACKFILE:
-                surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
-                break;
-            case DATASOURCE_GANGLION:
-                surface.setTitle(int(frameRate) + " fps, Ganglion!");
-                break;
+            case OUTPUT_SOURCE_NONE:
             default:
                 surface.setTitle(int(frameRate) + " fps");
                 break;
             }
+            break;
+        case DATASOURCE_SYNTHETIC:
+            surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
+            break;
+        case DATASOURCE_PLAYBACKFILE:
+            surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
+            break;
+        case DATASOURCE_GANGLION:
+            surface.setTitle(int(frameRate) + " fps, Ganglion!");
+            break;
+        default:
+            surface.setTitle(int(frameRate) + " fps");
+            break;
         }
 
         //wait 1 second for GUI to reinitialize

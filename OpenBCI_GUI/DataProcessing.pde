@@ -215,7 +215,6 @@ void processNewData() {
     //apply additional processing for the time-domain montage plot (ie, filtering)
     dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
 
-    dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI

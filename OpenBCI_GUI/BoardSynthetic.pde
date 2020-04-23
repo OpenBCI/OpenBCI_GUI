@@ -3,9 +3,6 @@ import java.util.stream.IntStream;
 /* Generates synthetic data
  */
 class BoardSynthetic implements Board, AccelerometerCapableBoard {
-    private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-    private final float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-    private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float sine_freq_Hz = 10.0f;
 
     private boolean streaming = false;
@@ -37,7 +34,6 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
         for (int i=0; i<totalChannels; i++) {
             rawData[i] = new ArrayList<Double>();
         }
-
 
         samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
 
@@ -201,7 +197,7 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
             } else {
                 val_uV = 0.0f;
             }
-            rawData[Ichan].add((double)(0.5 + val_uV / scale_fac_uVolts_per_count)); //convert to counts, the 0.5 is to ensure rounding
+            rawData[Ichan].add((double)(0.5 + val_uV)); //convert to counts, the 0.5 is to ensure rounding
         }
     }
 

@@ -455,8 +455,6 @@ synchronized void mousePressed() {
             }
         }
     }
-
-    redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is pressed
 }
 
 synchronized void mouseReleased() {
@@ -481,8 +479,6 @@ synchronized void mouseReleased() {
 
         // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
         wm.mouseReleased();
-
-        redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
     }
 
     if (settings.screenHasBeenResized) {
