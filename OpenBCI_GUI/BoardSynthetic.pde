@@ -97,7 +97,6 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     @Override
     public double[][] getData(int maxSamples) {
         int actualSamples = min(maxSamples, rawData[0].size());
-
         double[][] result = new double[rawData.length][actualSamples];
 
         for(int i=0; i< rawData.length; i++) {
@@ -108,11 +107,6 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
         }
 
         return result;
-    }
-
-    @Override
-    public double[][] getData() {
-        return getData(rawData[0].size());
     }
 
     @Override
@@ -212,6 +206,9 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
             // offset each axis by its index * 2
             // multiply by accelXyzLimit to fill the height of the plot
             lastAccelValues[i] = sin(accelSynthTime/100.f + i*2.f) * accelXyzLimit;
+
+            //TODO[brainflow] temp
+            rawData[accelChanels[i]].add(0.0d);
         }
         accelSynthTime ++;
     }//end void synthesizeAccelData

@@ -192,25 +192,31 @@ void processNewData() {
     //compute instantaneous byte rate
     float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
 
-    prevMillis=millis();           //store for next time
+    prevMillis = millis();           //store for next time
     prevBytes = openBCI_byteCount; //store for next time
 
     //compute smoothed byte rate
     avgBitRate.addValue(inst_byteRate_perSec);
     byteRate_perSec = (int)avgBitRate.calcMean();
 
-    double[][] boardData = currentBoard.getData();
+    double[][] boardData = currentBoard.getData((int)(dataBuff_len_sec * currentBoard.getSampleRate()));
     int[] exgChannels = currentBoard.getEXGChannels();
+    int channelCount = currentBoard.getNumEXGChannels();
+    int sampleCount = boardData[0].length;
 
     //update the data buffers
-    for (int Ichan=0; Ichan < currentBoard.getNumEXGChannels(); Ichan++) {
+    for (int Ichan=0; Ichan < channelCount; Ichan++) {
         //append the new data to the larger data buffer...because we want the plotting routines
         //to show more than just the most recent chunk of data.  This will be our "raw" data.
-        // TODO BRAINFLOW!! Delete these buffers
-        appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
+        // TODO[BRAINFLOW]!! Delete yLittleBuff_uV
+        //appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
 
-        //make a copy of the data that we'll apply processing to.  This will be what is displayed on the full montage
-        dataBuffY_filtY_uV[Ichan] = boardData[exgChannels[Ichan]].clone();
+        int startIndex = dataBuffY_uV[Ichan].length - sampleCount;
+        for (int i=0; i<sampleCount; i++) {
+            // unfortunately we have to convert to float
+            dataBuffY_uV[Ichan][startIndex+i] = (float)boardData[exgChannels[Ichan]][i];
+        }
+        dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
     }
 
     //apply additional processing for the time-domain montage plot (ie, filtering)
@@ -219,7 +225,7 @@ void processNewData() {
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataPacketBuff[lastReadDataPacketInd].values[Ichan]);
+    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataBuffY_uV[Ichan][dataBuffY_uV.length-1]);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -694,7 +700,8 @@ class DataProcessing {
 
             //compute the standard deviation of the filtered signal...this is for the head plot
             float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
-            fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
+
+            fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-currentBoard.getSampleRate(), fooData_filt.length);   //just grab the most recent second of data
             data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
 
             //copy the previous FFT data...enables us to apply some smoothing to the FFT data
@@ -709,6 +716,7 @@ class DataProcessing {
             } else {
                 fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
             }
+
             fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
             float meanData = mean(fooData);  //compute the mean
             for (int I=0; I < fooData.length; I++) fooData[I] -= meanData; //remove the mean (for a better looking FFT

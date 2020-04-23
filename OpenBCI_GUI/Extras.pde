@@ -318,7 +318,7 @@ class DataStatus {
         is_railed_warn = false;
         threshold_railed_warn = thresh_railed_warn;
     }
-    public void update(int data_value) {
+    public void update(float data_value) {
         // here we scale threshold which is originally is not converted to uVolts
         float reversed_scaler = 1;
         if (currentBoard instanceof BoardBrainFlow) {
