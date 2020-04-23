@@ -3,18 +3,13 @@ import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow implements Board {
-    private DataPacket_ADS1299 dataPacket;
     private BoardShim boardShim = null;
 
     protected int samplingRate = 0;
     protected int packetNumberChannel = 0;
     protected int timeStampChannel = 0;
     protected int[] exgChannels = {};
-    protected int[] accelChannels = {};
-
     protected boolean streaming = false;
-    protected float[] lastAccelValues = {};
-    protected float[] lastValidAccelValues = {};
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -79,15 +74,10 @@ abstract class BoardBrainFlow implements Board {
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
             timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
             exgChannels = calculateEXGChannels();
-            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
         }
-
-        lastAccelValues = new float[accelChannels.length];
-        lastValidAccelValues = new float[accelChannels.length];
-        dataPacket = new DataPacket_ADS1299(getNumEXGChannels(), accelChannels.length);
 
         try {
             updateToNChan(getNumEXGChannels());
@@ -125,57 +115,7 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public void update() {
-        if (!streaming || boardShim == null) {
-            return; // early out
-        }
-
-        double[][] data;
-        try {
-            data = boardShim.get_board_data();
-        }
-        catch (BrainFlowError e) {
-            println ("ERROR: Exception trying to get board data");
-            e.printStackTrace();
-            return; // early out
-        }
-
-        for (int count = 0; count < data[0].length; count++)
-        {
-            double[] values = new double[data.length];
-            for (int i=0; i < data.length; i++) {
-                values[i] = data[i][count];
-            }
-
-            fillDataPacketWithValues(dataPacket, values);
-
-            // This is also used to let the rest of the code that it may be time to do something
-            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
-            dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
-        }
-    }
-
-    protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
-
-        dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
-        dataPacket.timeStamp = (long)values[timeStampChannel]*1000;
-
-        for (int i=0; i < exgChannels.length; i++)
-        {
-            dataPacket.values[i] = (int)Math.round(values[exgChannels[i]]);
-        }
-
-        boolean accelValid = false;
-        for (int i=0; i<accelChannels.length; i++)
-        {
-            lastAccelValues[i] = (float)values[accelChannels[i]];
-            if (lastAccelValues[i] != 0.f) {
-                accelValid = true;
-            }
-        }
-        
-        if(accelValid) {
-            lastValidAccelValues = lastAccelValues.clone();
-        }
+        // nothing
     }
 
     @Override
@@ -241,7 +181,8 @@ abstract class BoardBrainFlow implements Board {
         return exgChannels;
     }
 
-    @Override public double[][] getData(int numSamples) {
+    @Override
+    public double[][] getData(int numSamples) {
         try {
             return boardShim.get_current_board_data(numSamples);
         }
@@ -249,6 +190,17 @@ abstract class BoardBrainFlow implements Board {
             println("Error when getting current board data.");
             e.printStackTrace();
             return new double[0][0];
+        }
+    }
+
+    @Override
+    public int getDataCount() {
+        try {
+            return boardShim.get_board_data_count();
+        } catch (BrainFlowError e) {
+            println("Error when getting current board data.");
+            e.printStackTrace();
+            return 0;
         }
     }
 
@@ -263,7 +215,7 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sampling rate is not possible on brainflow boards. Sampling rate will stay at " + getSampleRate());
+        outputWarn("Changing the sampling rate is not possible on this board. Sampling rate will stay at " + getSampleRate());
     }
 
     protected void configBoard(String configStr) {

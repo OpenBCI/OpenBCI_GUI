@@ -54,6 +54,11 @@ class BoardNull implements Board {
     }
 
     @Override
+    public int getDataCount() {
+        return 0;
+    }
+
+    @Override
     public void setChannelActive(int channelIndex, boolean active) {
         // empty
     }

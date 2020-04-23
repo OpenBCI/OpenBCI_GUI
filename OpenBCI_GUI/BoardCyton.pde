@@ -124,6 +124,17 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
+    public int[] getAnalogChannels() {
+        try {
+            return BoardShim.get_analog_channels(getBoardIdInt());
+        } catch (BrainFlowError e) {
+            println("Error when getting analog channels.");
+            e.printStackTrace();
+            return new int[0];
+        }
+    }
+
+    @Override
     public boolean isDigitalActive() {
         return getBoardMode() == CytonBoardMode.DIGITAL;
     }
@@ -135,6 +146,19 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         } else {
             setBoardMode(CytonBoardMode.DEFAULT);
         }
+    }
+
+    @Override
+    public int[] getDigitalChannels() {
+        // TODO[brainflow]
+        return new int[0];
+        // try {
+        //     return BoardShim.get_digital_channels(getBoardIdInt());
+        // } catch (BrainFlowError e) {
+        //     println("Error when getting digital channels.");
+        //     e.printStackTrace();
+        //     return new int[0];
+        // }
     }
 
     @Override

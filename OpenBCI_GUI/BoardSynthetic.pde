@@ -110,6 +110,11 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
 
     @Override
+    public int getDataCount() {
+        return rawData[0].size();
+    }
+
+    @Override
     public int[] getAccelerometerChannels() {
         return accelChanels;
     }

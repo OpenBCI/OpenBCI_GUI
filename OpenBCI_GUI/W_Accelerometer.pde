@@ -124,7 +124,7 @@ class W_Accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && accelBoard.isAccelerometerActive()) {
+        if (isRunning && accelBoard.isAccelerometerActive() && currentBoard.getDataCount() > 0) {
             //update the current Accelerometer values
 
             double[][] lastSample = currentBoard.getData(1);
