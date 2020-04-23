@@ -479,9 +479,11 @@ class Hub {
             case RESP_SUCCESS:
                 portIsOpen = true;
                 output("Connected to WiFi Shield named " + wifi_portName);
+                /*
                 if (wcBox.isShowing) {
                     wcBox.updateMessage("Connected to WiFi Shield named " + wifi_portName);
                 }
+                */
                 break;
             case RESP_ERROR_ALREADY_CONNECTED:
                 portIsOpen = true;
@@ -491,7 +493,7 @@ class Hub {
                 output("No WiFi Shield found. Please visit https://openbci.github.io/Documentation/docs/01GettingStarted/01-Boards/WiFiGS");
                 break;
             default:
-                if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
+                //if (wcBox.isShowing) println("it is showing"); //controlPanel.hideWifiPopoutBox();
                 String message = json.getString(TCP_JSON_KEY_MESSAGE, "none");
                 handleError(code, message);
                 break;
@@ -1198,6 +1200,7 @@ class Hub {
                 println("an error was thrown trying to call the function to set the channels | error: " + message);
                 break;
             case RESP_SUCCESS:
+            /*
                 // Sent when either a scan was stopped or started Successfully
                 if (wcBox.isShowing) {
                     String msgForWcBox = json.getString(TCP_JSON_KEY_MESSAGE);
@@ -1231,6 +1234,7 @@ class Hub {
                     println("Success for wifi " + command + ": " + msgForWcBox);
                     wcBox.updateMessage(msgForWcBox);
                 }
+                */
                 break;
         }
     }

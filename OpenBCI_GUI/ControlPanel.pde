@@ -92,7 +92,6 @@ Button chanButton16;
 Button selectPlaybackFile;
 Button selectSDFile;
 Button popOutRadioConfigButton;
-Button popOutWifiConfigButton;
 
 //Radio Button Definitions
 Button getChannel;
@@ -101,11 +100,6 @@ Button ovrChannel;
 Button autoscan;
 Button systemStatus;
 
-Button eraseCredentials;
-Button getIpAddress;
-Button getFirmwareVersion;
-Button getMacAddress;
-Button getTypeOfAttachedBoard;
 Button sampleRate200; //Ganglion
 Button sampleRate250; //Cyton
 Button sampleRate500; //Cyton
@@ -123,8 +117,6 @@ Serial serial_direct_board;
 ChannelPopup channelPopup;
 PollPopup pollPopup;
 RadioConfigBox rcBox;
-
-WifiConfigBox wcBox;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
 
@@ -194,7 +186,7 @@ public void controlEvent(ControlEvent theEvent) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         wifi_portName = (String)bob.get("headline");
         wifi_ipAddress = (String)bob.get("subline");
-        output("Wifi IP Address = " + wifi_ipAddress);
+        output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
     }
 
     // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
@@ -361,8 +353,6 @@ class ControlPanel {
         channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
         pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
-        wcBox = new WifiConfigBox(x+w, y, w, h, globalPadding);
-
         initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
         // Ganglion
@@ -433,7 +423,6 @@ class ControlPanel {
         sdBox.update();
         rcBox.update();
         comPortBox.update();
-        wcBox.update();
         initBox.update();
 
         channelPopup.update();
@@ -510,9 +499,6 @@ class ControlPanel {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             cp5.get(MenuList.class, "wifiList").setVisible(true);
                         }
-                        if(wcBox.isShowing){
-                            wcBox.draw();
-                        }
                         sampleRateCytonBox.draw();
                     }
                     channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
@@ -559,9 +545,6 @@ class ControlPanel {
                         } else {
                             cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             cp5.get(MenuList.class, "wifiList").setVisible(true);
-                        }
-                        if(wcBox.isShowing){
-                            wcBox.draw();
                         }
                         sampleRateGanglionBox.y = dataLogBoxGanglion.y +dataLogBoxGanglion.h;
                         sampleRateGanglionBox.draw();
@@ -626,13 +609,6 @@ class ControlPanel {
             serial_direct_board.stop();
         }
         serial_direct_board = null;
-    }
-
-    public void hideWifiPopoutBox() {
-        wcBox.isShowing = false;
-        popOutWifiConfigButton.setString(">");
-        wcBox.updateMessage("");
-        if (hub.isPortOpen()) hub.closePort();
     }
 
     private void refreshPortListCyton(){
@@ -899,6 +875,16 @@ class ControlPanel {
                     sampleRate1600.setColorNotPressed(isSelected_color);
                     sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                 }
+
+                if (wifiIPAddressDynamic.isMouseHere()) {
+                    wifiIPAddressDynamic.setIsActive(true);
+                    wifiIPAddressDynamic.wasPressed = true;
+                }
+
+                if (wifiIPAddressStatic.isMouseHere()) {
+                    wifiIPAddressStatic.setIsActive(true);
+                    wifiIPAddressStatic.wasPressed = true;
+                }
             }
 
             //active buttons during DATASOURCE_PLAYBACKFILE
@@ -941,54 +927,6 @@ class ControlPanel {
                     synthChanButton16.setColorNotPressed(isSelected_color);
                     synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                }
-            }
-            
-            //active buttons during Cyton+WiFi/Ganglion+WiFi
-            if ((eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) && selectedProtocol == BoardProtocol.WIFI) {
-                
-                if(getIpAddress.isMouseHere()) {
-                    getIpAddress.setIsActive(true);
-                    getIpAddress.wasPressed = true;
-                }
-
-                if(getFirmwareVersion.isMouseHere()) {
-                    getFirmwareVersion.setIsActive(true);
-                    getFirmwareVersion.wasPressed = true;
-                }
-
-                if(getMacAddress.isMouseHere()) {
-                    getMacAddress.setIsActive(true);
-                    getMacAddress.wasPressed = true;
-                }
-
-                if(eraseCredentials.isMouseHere()) {
-                    eraseCredentials.setIsActive(true);
-                    eraseCredentials.wasPressed = true;
-                }
-
-                if(getTypeOfAttachedBoard.isMouseHere()) {
-                    getTypeOfAttachedBoard.setIsActive(true);
-                    getTypeOfAttachedBoard.wasPressed = true;
-                }
-
-                if (popOutWifiConfigButton.isMouseHere()){
-                    popOutWifiConfigButton.setIsActive(true);
-                    popOutWifiConfigButton.wasPressed = true;
-                }
-
-                if(wifiIPAddressDynamic.isMouseHere()) {
-                    wifiIPAddressDynamic.setIsActive(true);
-                    wifiIPAddressDynamic.wasPressed = true;
-                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-                }
-
-                if(wifiIPAddressStatic.isMouseHere()) {
-                    wifiIPAddressStatic.setIsActive(true);
-                    wifiIPAddressStatic.wasPressed = true;
-                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);
-                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);
                 }
             }
 
@@ -1061,71 +999,9 @@ class ControlPanel {
             }
         }
 
-        if(popOutWifiConfigButton.isMouseHere() && popOutWifiConfigButton.wasPressed){
-            popOutWifiConfigButton.wasPressed = false;
-            popOutWifiConfigButton.setIsActive(false);
-            if (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) {
-                if(wcBox.isShowing){
-                    hideWifiPopoutBox();
-                } else {
-                    if (getWifiSearchStyle() == WIFI_STATIC) {
-                        wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-                        output("Static IP address of " + wifi_ipAddress);
-                        wcBox.isShowing = true;
-                        popOutWifiConfigButton.setString("<");
-                    } else {
-                        if (wifi_portName == "N/A") {
-                            output("Please select a WiFi Shield first. Can't see your WiFi Shield? Learn how at openbci.github.io/Documentation/");
-                        } else {
-                            output("Attempting to connect to WiFi Shield named " + wifi_portName);
-                            wcBox.isShowing = true;
-                            popOutWifiConfigButton.setString("<");
-                        }
-                    }
-                }
-            }
-        }
-
-        // todo[brainflow] Here are commands to interact with WiFi shield
-        if (wcBox.isShowing) {
-            if(getIpAddress.isMouseHere() && getIpAddress.wasPressed){
-                //hub.getWifiInfo(TCP_WIFI_GET_IP_ADDRESS);
-                getIpAddress.wasPressed = false;
-                getIpAddress.setIsActive(false);
-            }
-
-            if(getFirmwareVersion.isMouseHere() && getFirmwareVersion.wasPressed){
-                //hub.getWifiInfo(TCP_WIFI_GET_FIRMWARE_VERSION);
-                getFirmwareVersion.wasPressed = false;
-                getFirmwareVersion.setIsActive(false);
-            }
-
-            if(getMacAddress.isMouseHere() && getMacAddress.wasPressed){
-                //hub.getWifiInfo(TCP_WIFI_GET_MAC_ADDRESS);
-                getMacAddress.wasPressed = false;
-                getMacAddress.setIsActive(false);
-            }
-
-            if(eraseCredentials.isMouseHere() && eraseCredentials.wasPressed){
-                //hub.getWifiInfo(TCP_WIFI_ERASE_CREDENTIALS);
-                eraseCredentials.wasPressed=false;
-                eraseCredentials.setIsActive(false);
-            }
-
-            if(getTypeOfAttachedBoard.isMouseHere() && getTypeOfAttachedBoard.wasPressed){
-                // Wifi_Config will handle creating the connection
-                //hub.getWifiInfo(TCP_WIFI_GET_TYPE_OF_ATTACHED_BOARD);
-                getTypeOfAttachedBoard.wasPressed=false;
-                getTypeOfAttachedBoard.setIsActive(false);
-            }
-        }
-
         if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
             if (rcBox.isShowing) {
                 hideRadioPopoutBox();
-            }
-            if (wcBox.isShowing) {
-                hideWifiPopoutBox();
             }
             //if system is not active ... initate system and flip button state
             initButtonPressed();
@@ -1166,7 +1042,7 @@ class ControlPanel {
 
         // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
-            wifiBox.h = 200;
+            wifiBox.h = 208;
             setWiFiSearchStyle(WIFI_DYNAMIC);
             String output = "Using Dynamic IP address of the WiFi Shield!";
             println("CP: WiFi IP: " + output);
@@ -1679,7 +1555,7 @@ class WifiBox {
         x = _x;
         y = _y;
         w = _w;
-        h = 184 + _padding;
+        h = 184 + _padding + 14;
         padding = _padding;
 
         wifiIPAddressDynamic = new Button (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
@@ -1689,7 +1565,6 @@ class WifiBox {
 
         refreshWifi = new Button (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
-        popOutWifiConfigButton = new Button(x+padding + (w-padding*4), y + padding, 20,20,">",fontInfo.buttonLabel_size);
 
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
         // Call to update the list
@@ -1732,9 +1607,6 @@ class WifiBox {
 
         popStyle();
 
-        popOutWifiConfigButton.but_y = y + padding;
-        popOutWifiConfigButton.draw();
-
         if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
             pushStyle();
             fill(bgColor);
@@ -1748,6 +1620,16 @@ class WifiBox {
 
             refreshWifi.draw();
             refreshWifi.but_y = y + h - padding - 24;
+
+            String boardIpInfo = "BOARD IP: ";
+            if (wifi_portName != "N/A") { // If user has selected a board from the menulist...
+                boardIpInfo += wifi_ipAddress;
+            }
+            fill(bgColor);
+            textFont(h3, 16);
+            textAlign(LEFT, TOP);
+            text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
+
             if((selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
                 refreshWifi.setString("SEARCHING...");
@@ -1940,7 +1822,7 @@ class SessionDataBox {
             rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
             fill(bgColor);
             textFont(p4, 14);
-            text("Max File Duration", maxDurText_x, outputODF.but_y + outputODF.but_dy + padding*3 - 3);
+            text("Max File Duration", maxDurText_x, outputODF.but_y + 24 + padding);
             popStyle();
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
@@ -2650,68 +2532,6 @@ class RadioConfigBox {
         textFont(h3, 15);
         text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
         this.last_message = localstring;
-    }
-};
-
-class WifiConfigBox {
-    int x, y, w, h, padding; //size and position
-    String last_message = "";
-    boolean isShowing;
-
-    WifiConfigBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x + _w;
-        y = _y;
-        w = _w;
-        h = 255;
-        padding = _padding;
-        isShowing = false;
-
-        getTypeOfAttachedBoard = new Button(x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "OPENBCI BOARD", fontInfo.buttonLabel_size);
-        getIpAddress = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "IP ADDRESS", fontInfo.buttonLabel_size);
-        getMacAddress = new Button(x + padding, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "MAC ADDRESS", fontInfo.buttonLabel_size);
-        getFirmwareVersion = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24, (w-padding*3)/2, 24, "FIRMWARE VERS.", fontInfo.buttonLabel_size);
-        eraseCredentials = new Button(x + padding, y + padding*4 + 18 + 24*2, w-(padding*2), 24, "ERASE NETWORK CREDENTIALS", fontInfo.buttonLabel_size);
-
-        //Set help text
-        getTypeOfAttachedBoard.setHelpText("Get the type of OpenBCI board attached to the WiFi Shield");
-        getIpAddress.setHelpText("Get the IP Address of the WiFi shield");
-        getMacAddress.setHelpText("Get the MAC Address of the WiFi shield");
-        getFirmwareVersion.setHelpText("Get the firmware version of the WiFi Shield");
-        eraseCredentials.setHelpText("Erase the store credentials on the WiFi Shield to join another wireless network. Always remove WiFi Shield from OpenBCI board prior to erase and WiFi Shield will become a hotspot again.");
-    }
-    public void update() {}
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WIFI CONFIGURATION", x + padding, y + padding);
-        popStyle();
-        getTypeOfAttachedBoard.draw();
-        getIpAddress.draw();
-        getMacAddress.draw();
-        getFirmwareVersion.draw();
-        eraseCredentials.draw();
-
-        this.print_onscreen(last_message);
-    }
-
-    public void updateMessage(String str) {
-        last_message = str;
-    }
-
-    public void print_onscreen(String localstring){
-        textAlign(LEFT);
-        fill(bgColor);
-        rect(x + padding, y + (padding*8) + 13 + (24*2), w-(padding*2), 135 - 21 - padding);
-        fill(255);
-        textFont(h3, 15);
-        text(localstring, x + padding + 10, y + (padding*8) + 5 + (24*2) + 15, (w-padding*3 ), 135 - 24 - padding -15);
     }
 };
 
