@@ -258,59 +258,6 @@ void appendAndShift(float[] data, float newData) {
     data[end] = newData;  //append new data
 }
 
-final float sine_freq_Hz = 10.0f;
-float[] sine_phase_rad = new float[nchan];
-
-void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV;
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-        if (isChannelActive(Ichan)) {
-            val_uV = randomGaussian()*sqrt(fs_Hz/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-            if (Ichan==0) val_uV*= 10f;  //scale one channel higher
-
-            if (Ichan==1) {
-                //add sine wave at 10 Hz at 10 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * sine_freq_Hz / fs_Hz;
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);
-            } else if (Ichan==2) {
-                //15 Hz interference at 20 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 15.0f / fs_Hz;  //15 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //20 uVrms
-            } else if (Ichan==3) {
-                //20 Hz interference at 30 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 20.0f / fs_Hz;  //20 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 30.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //30 uVrms
-            } else if (Ichan==4) {
-                //25 Hz interference at 40 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 25.0f / fs_Hz;  //25 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 40.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //40 uVrms
-            } else if (Ichan==5) {
-                //30 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 30.0f / fs_Hz;  //30 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
-            } else if (Ichan==6) {
-                //50 Hz interference at 80 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //50 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //80 uVrms
-            } else if (Ichan==7) {
-                //60 Hz interference at 100 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //60 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
-            }
-        } else {
-            val_uV = 0.0f;
-        }
-        curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-    }
-}
-
 //some data initialization routines
 void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
     //initialize the x and y data
