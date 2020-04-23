@@ -1199,7 +1199,7 @@ void systemInitSession() {
         try {
             initSystem(); //found in OpenBCI_GUI.pde
         } catch (Exception e) {
-            println(e.getMessage());
+            e.printStackTrace();
             haltSystem();
         }
         midInitCheck2 = false;

@@ -110,8 +110,8 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return lastAccelValues;
+    public int[] getAccelerometerChannels() {
+        return accelChanels;
     }
 
     @Override
@@ -201,14 +201,11 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
 
     void synthesizeAccelData() {
-        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+        for (int i = 0; i < accelChanels.length; i++) {
             // simple sin wave tied to current time.
             // offset each axis by its index * 2
             // multiply by accelXyzLimit to fill the height of the plot
-            lastAccelValues[i] = sin(accelSynthTime/100.f + i*2.f) * accelXyzLimit;
-
-            //TODO[brainflow] temp
-            rawData[accelChanels[i]].add(0.0d);
+            rawData[accelChanels[i]].add((double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit);
         }
         accelSynthTime ++;
     }//end void synthesizeAccelData

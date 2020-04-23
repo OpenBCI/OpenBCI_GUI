@@ -99,8 +99,14 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return lastValidAccelValues;
+    public int[] getAccelerometerChannels() {
+        try {
+            return BoardShim.get_accel_channels(getBoardIdInt());
+        } catch (BrainFlowError e) {
+            println("Error when getting accel channels.");
+            e.printStackTrace();
+            return new int[0];
+        }
     }
 
     @Override

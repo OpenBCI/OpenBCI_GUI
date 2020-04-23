@@ -1718,8 +1718,8 @@ class Stream extends Thread {
                     msg.clearArguments();
                     msg.add(i+1);
                     //ADD Accelerometer data
-                    msg.add(w_accelerometer.getCurrentAccelVal(i));
-                    // println(i + " | " + w_accelerometer.getCurrentAccelVal(i));
+                    msg.add(w_accelerometer.getLastAccelVal(i));
+                    // println(i + " | " + w_accelerometer.getLastAccelVal(i));
                     try {
                         this.osc.send(msg,this.netaddress);
                     } catch (Exception e) {
@@ -1730,7 +1730,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("UDP")) {
                 String outputter = "{\"type\":\"accelerometer\",\"data\":[";
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    float accelData = w_accelerometer.getCurrentAccelVal(i);
+                    float accelData = w_accelerometer.getLastAccelVal(i);
                     String accelData_3dec = String.format("%.3f", accelData);
                     outputter += accelData_3dec;
                     if (i != NUM_ACCEL_DIMS - 1) {
@@ -1747,7 +1747,7 @@ class Stream extends Thread {
                 // LSL
             } else if (this.protocol.equals("LSL")) {
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    dataToSend[i] = w_accelerometer.getCurrentAccelVal(i);
+                    dataToSend[i] = w_accelerometer.getLastAccelVal(i);
                 }
                 // Add timestamp to LSL Stream
                 outlet_data.push_sample(dataToSend, System.currentTimeMillis());
@@ -1756,7 +1756,7 @@ class Stream extends Thread {
                 // 7 chars per axis, including \n char for Z
                 serialMessage = "";
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    float accelData = w_accelerometer.getCurrentAccelVal(i);
+                    float accelData = w_accelerometer.getLastAccelVal(i);
                     String accelData_3dec = String.format("%.3f", accelData);
                     if (accelData >= 0) serialMessage += "+";
                     serialMessage += accelData_3dec;
