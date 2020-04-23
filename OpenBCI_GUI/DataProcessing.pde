@@ -115,6 +115,9 @@ void processNewData() {
         //appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
 
         int startIndex = dataBuffY_uV[Ichan].length - sampleCount;
+        for (int i=0; i<startIndex; i++) {
+            dataBuffY_uV[Ichan][i] = 0.f;
+        }
         for (int i=0; i<sampleCount; i++) {
             // unfortunately we have to convert to float
             dataBuffY_uV[Ichan][startIndex+i] = (float)boardData[exgChannels[Ichan]][i];

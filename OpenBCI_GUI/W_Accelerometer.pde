@@ -445,6 +445,12 @@ class AccelerometerBar {
         int numSamples = allData[0].length;
 
         int startIndex = nPoints - numSamples;
+
+        for (int i=0; i<startIndex; i++) {
+            accelPointsX.set(i, accelTimeArray[i], 0.f, "");
+            accelPointsY.set(i, accelTimeArray[i], 0.f, "");
+            accelPointsZ.set(i, accelTimeArray[i], 0.f, "");
+        }
         for (int i=0; i<numSamples; i++) {
             accelPointsX.set(startIndex + i, accelTimeArray[startIndex + i], (float)allData[accelChannels[0]][i], "");
             accelPointsY.set(startIndex + i, accelTimeArray[startIndex + i], (float)allData[accelChannels[1]][i], "");
