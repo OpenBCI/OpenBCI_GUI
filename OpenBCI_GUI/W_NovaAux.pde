@@ -281,8 +281,17 @@ class AuxReadBar{
             edaValues.push(edaData[0][i]);
             ppgValues.push(ppgData[0][i]);
         }
-
+        
+        if (edaData[0].length > 0) {
+            //Fetch the last value in the buffer to display on screen
+            if (auxValuesPosition == 1) {
+                val = (float) edaData[0][edaData[0].length-1];
+            } else {
+                val = (float) ppgData[0][ppgData[0].length-1];
+            }
+        }
         analogValue.string = String.format(getFmt(val),val);
+
         // update data in plot
         if (isRunning) {
             updatePlotPoints();
