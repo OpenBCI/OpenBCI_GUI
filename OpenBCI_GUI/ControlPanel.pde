@@ -1062,6 +1062,7 @@ class ControlPanel {
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
             refreshPortListGanglion();
+            println("DataLogBoxGanglion Height = " + dataLogBoxGanglion.h);
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
@@ -1070,6 +1071,8 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.WIFI;
+            println("DataLogBoxGanglion Height = " + dataLogBoxGanglion.h);
+            
         }
 
         if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
@@ -1822,7 +1825,8 @@ class SessionDataBox {
             rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
             fill(bgColor);
             textFont(p4, 14);
-            text("Max File Duration", maxDurText_x, outputODF.but_y + 24 + padding);
+            int extraPadding = selectedProtocol == BoardProtocol.BLED112 || selectedProtocol == BoardProtocol.SERIAL ? 16 : 2;
+            text("Max File Duration", maxDurText_x, outputODF.but_y + 24 + padding + extraPadding);
             popStyle();
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
