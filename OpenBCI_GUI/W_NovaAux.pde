@@ -1,8 +1,7 @@
+import java.util.*; 
+
 
 class W_NovaAux extends Widget {
-
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
 
     private int numAnalogReadBars;
     float xF, yF, wF, hF;
@@ -67,22 +66,8 @@ class W_NovaAux extends Widget {
             analogReadBars[i] = tempBar;
             analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
             //sync horiz axis to Time Series by default
-            analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
+            analogReadBars[i].adjustTimeAxis(20);
         }
-
-        /*
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
-        analogModeButton.setCornerRoundess((int)(navHeight-6));
-        analogModeButton.setFont(p5,12);
-        analogModeButton.setColorNotPressed(color(57,128,204));
-        analogModeButton.textColorNotActive = color(255);
-        analogModeButton.hasStroke(false);
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12).");
-        } else {
-            analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).");
-        }
-        */
     }
 
     public boolean isVisible() {
@@ -112,8 +97,6 @@ class W_NovaAux extends Widget {
                 analogReadBars[i].update();
             }
 
-            //ignore top left button interaction when widgetSelector dropdown is active
-            //ignoreButtonCheck(analogModeButton);
         }
     }
 
@@ -152,47 +135,13 @@ class W_NovaAux extends Widget {
 
         // analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
     }
-
-    void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        /*
-        if (analogModeButton.isMouseHere()) {
-            analogModeButton.setIsActive(true);
-        }
-        */
-    }
-
-    void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        /*
-        if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
-            // println("analogModeButton...");
-            if (!analogBoard.isAnalogActive()) {
-                analogBoard.setAnalogActive(true);
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
-                } else {
-                    output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
-                }
-            } else {
-                analogBoard.setAnalogActive(false);
-                output("Starting to read accelerometer");
-            }
-        }
-        analogModeButton.setIsActive(false);
-        */
-    }
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_NovaAux(int n) {
-    //settings.arVertScaleSave = n;
     for(int i = 0; i < w_novaAux.numAnalogReadBars; i++) {
             w_novaAux.analogReadBars[i].adjustVertScale(w_novaAux.yLimOptions[n]);
     }
-    //closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -243,6 +192,11 @@ class AuxReadBar{
     int lastProcessedDataPacketInd = 0;
 
     double[] auxReadData;
+
+    // todo board may have multiple eda/ppg sensors and EDA/PPGCapableBoard return 2d array due to it
+    // this widget should also operate on 2d arrays. Temporary get only the first row from 2d array
+    private FixedStack<Double> edaValues = new FixedStack<Double>();
+    private FixedStack<Double> ppgValues = new FixedStack<Double>();
     private EDACapableBoard edaBoard;
     private PPGCapableBoard ppgBoard;
 
@@ -274,6 +228,11 @@ class AuxReadBar{
         nPoints = nPointsBasedOnDataSource(); //max duration 20s
         bufferSize = nPoints;
         auxReadData = new double[nPoints];
+        edaValues.setSize(nPoints);
+        ppgValues.setSize(nPoints);
+        Double initialValue =  Double.valueOf(0.0);
+        edaValues.fill (initialValue);
+        ppgValues.fill (initialValue);
 
         auxReadPoints = new GPointsArray(nPoints);
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
@@ -299,30 +258,44 @@ class AuxReadBar{
         analogPin.alignH = CENTER;
 
         drawAnalogValue = true;
-        if (auxValuesPosition == 1) {
-            edaBoard = (EDACapableBoard) currentBoard;
-        } else if (auxValuesPosition == 2) {
-            ppgBoard = (PPGCapableBoard) currentBoard;
-        }
+        // todo add check that current board implements these interfaces before casting
+        // otherwise should throw and exception and maybe popup message
+        edaBoard = (EDACapableBoard) currentBoard;
+        ppgBoard = (PPGCapableBoard) currentBoard;
     }
 
     void update() {
-
         //update the voltage value text string
         float val = 0f;
-
-        //update the voltage values
-        //val = hub.validAccelValues[auxValuesPosition];
-        analogValue.string = String.format(getFmt(val),val);
-        try {
-            //println(Arrays.deepToString(edaBoard.getEDAValues()));
-            //double[] edaData = edaBoard.getEDAValues()[0];
-            //println(edaData);
-        } catch (Exception e) {
-            //oops
+        if ((edaBoard == null) || (ppgBoard == null)) {
+            System.out.println("Board is not ready yet");
+            return;
         }
+
+        double[][] edaData = edaBoard.getEDAValues();
+        double[][] ppgData = ppgBoard.getPPGValues();
+
+        // ignore all sensors except the first one temporary
+        for (int i = 0; i < edaData[0].length; i++) {
+            // ppg and eda sizes are the same
+            edaValues.push(edaData[0][i]);
+            ppgValues.push(ppgData[0][i]);
+        }
+        
+        if (edaData[0].length > 0) {
+            //Fetch the last value in the buffer to display on screen
+            if (auxValuesPosition == 1) {
+                val = (float) edaData[0][edaData[0].length-1];
+            } else {
+                val = (float) ppgData[0][ppgData[0].length-1];
+            }
+        }
+        analogValue.string = String.format(getFmt(val),val);
+
         // update data in plot
-        updatePlotPoints();
+        if (isRunning) {
+            updatePlotPoints();
+        }
         
         if(isAutoscale) {
             autoScale();
@@ -342,57 +315,26 @@ class AuxReadBar{
     }
 
     void updatePlotPoints() {
-        // update data in plot
-        int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
-        if (numSamplesToProcess < 0) {
-            numSamplesToProcess += dataPacketBuff.length;
+        Enumeration enu = null;
+        // its bad we can rewrite it wo auxValuesPosition
+        if (auxValuesPosition == 1) {
+            enu = edaValues.elements(); 
+        } else {
+            enu = ppgValues.elements();
         }
 
-        // Shift internal ring buffer numSamplesToProcess
-        if (numSamplesToProcess > 0) {
-            for(int i = 0; i < auxReadData.length - numSamplesToProcess; i++) {
-                auxReadData[i] = auxReadData[i + numSamplesToProcess];
-            }
+        int id = 0;
+        while (enu.hasMoreElements()) { // there are exactly nPoints elements
+            float timey = -(float)numSeconds + (float)id * timeBetweenPoints;
+            //System.out.println("time " + timey);
+            Double val = (Double)enu.nextElement();
+            double rawVal = val.doubleValue();
+            float value = (float)rawVal;
+            GPoint tempPoint = new GPoint(timey, value);
+            auxReadPoints.set(id, tempPoint);
+            id++;
         }
-
-        // for each new sample
-        int samplesProcessed = 0;
-        while (samplesProcessed < numSamplesToProcess) {
-            lastProcessedDataPacketInd++;
-
-            // Watch for wrap around
-            if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-                lastProcessedDataPacketInd = 0;
-            }
-
-            //int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
-            double voltage = 0D;
-            if (auxValuesPosition == 1) {
-                if (edaBoard.getEDAValues()[0].length > 0 && lastProcessedDataPacketInd < edaBoard.getEDAValues()[0].length) {
-                    voltage = edaBoard.getEDAValues()[0][lastProcessedDataPacketInd];
-                }
-            } else {
-                if (ppgBoard.getPPGValues()[0].length > 0 && lastProcessedDataPacketInd < ppgBoard.getPPGValues()[0].length) {
-                    voltage = ppgBoard.getPPGValues()[0][lastProcessedDataPacketInd];
-                }
-            }
-            auxReadData[auxReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
-
-            samplesProcessed++;
-        }
-
-        int buffDiff = bufferSize - nPoints;
-        if (numSamplesToProcess > 0) {
-            for (int i = buffDiff; i < bufferSize; i++) {
-                float timey = -(float)numSeconds + (float)(i-buffDiff)*timeBetweenPoints;
-                float voltage = (float)auxReadData[i];
-
-                GPoint tempPoint = new GPoint(timey, voltage);
-                auxReadPoints.set(i-buffDiff, tempPoint);
-
-            }
-            plot.setPoints(auxReadPoints); //reset the plot with updated auxReadPoints
-        }
+        plot.setPoints(auxReadPoints);
     }
 
     void draw() {
