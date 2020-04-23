@@ -876,15 +876,19 @@ class ControlPanel {
                     sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                 }
 
-                if (wifiIPAddressDynamic.isMouseHere()) {
-                    wifiIPAddressDynamic.setIsActive(true);
-                    wifiIPAddressDynamic.wasPressed = true;
-                }
+                 if(wifiIPAddressDynamic.isMouseHere()) {		
+                     wifiIPAddressDynamic.setIsActive(true);		
+                     wifiIPAddressDynamic.wasPressed = true;		
+                     wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
+                     wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
+                 }		
 
-                if (wifiIPAddressStatic.isMouseHere()) {
-                    wifiIPAddressStatic.setIsActive(true);
-                    wifiIPAddressStatic.wasPressed = true;
-                }
+                  if(wifiIPAddressStatic.isMouseHere()) {		
+                     wifiIPAddressStatic.setIsActive(true);		
+                     wifiIPAddressStatic.wasPressed = true;		
+                     wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
+                     wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
+                 }
             }
 
             //active buttons during DATASOURCE_PLAYBACKFILE
