@@ -252,6 +252,17 @@ abstract class BoardBrainFlow implements Board {
         }
     }
 
+    @Override public double[][] getData() {
+        try {
+            return getData(boardShim.get_board_data_count());        }
+        catch (BrainFlowError e) {
+            println("Error when getting board data count.");
+            e.printStackTrace();
+            return new double[0][0];
+        }
+        
+    }
+
     public int getBoardIdInt() {
         return getBoardId().get_code();
     }

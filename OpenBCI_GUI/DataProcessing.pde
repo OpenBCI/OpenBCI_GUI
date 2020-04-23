@@ -51,101 +51,101 @@ void process_input_file() throws Exception {
 }
 
 /*************************/
-int getDataIfAvailable(int pointCounter) {
-    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
-    if (currentBoard instanceof BoardBrainFlow) {
-        scaler = 1;
-    }
+// int getDataIfAvailable(int pointCounter) {
+//     float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
+    // if (currentBoard instanceof BoardBrainFlow) {
+    //     scaler = 1;
+    // }
 
-    // todo[brainflow] - this code here is just a copypaste get rid of it
-    if (eegDataSource == DATASOURCE_CYTON) {
-        //get data from serial port as it streams in
-        //next, gather any new data into the "little buffer"
-        while ((curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            //println(timestamps.length);
-            long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
-            // todo[brainflow] This method will be used to save data to ODF or BDF playback file
-            //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
-            //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
-            pointCounter++; //increment counter for "little buffer"
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        //get data from ble as it streams in
-        //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
-            }
-            pointCounter++; //increment counter for "little buffer"
-        }
+    // // todo[brainflow] - this code here is just a copypaste get rid of it
+    // if (eegDataSource == DATASOURCE_CYTON) {
+    //     //get data from serial port as it streams in
+    //     //next, gather any new data into the "little buffer"
+    //     while ((curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+    //         lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+    //         for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+    //             //scale the data into engineering units ("microvolts") and save to the "little buffer"
+    //             yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+    //         }
+    //         for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+    //         //println(timestamps.length);
+    //         long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
+    //         // todo[brainflow] This method will be used to save data to ODF or BDF playback file
+    //         //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
+    //         //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
+    //         pointCounter++; //increment counter for "little buffer"
+    //     }
+    // } else if (eegDataSource == DATASOURCE_GANGLION) {
+    //     //get data from ble as it streams in
+    //     //next, gather any new data into the "little buffer"
+    //     while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+    //         lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
+    //         for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+    //             //scale the data into engineering units ("microvolts") and save to the "little buffer"
+    //             yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+    //         }
+    //         pointCounter++; //increment counter for "little buffer"
+    //     }
 
-    } else if (eegDataSource == DATASOURCE_NOVAXR) {
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+    // } else if (eegDataSource == DATASOURCE_NOVAXR) {
+    //     while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+    //         lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan];
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            pointCounter++; //increment counter for "little buffer"
-        }
+    //         for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+    //             //scale the data into engineering units ("microvolts") and save to the "little buffer"
+    //             yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan];
+    //         }
+    //         for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+    //         pointCounter++; //increment counter for "little buffer"
+    //     }
 
-    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+    // } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
 
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
+    //     while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+    //         lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
             
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            pointCounter++; //increment counter for "little buffer"
-        }
+    //         for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+    //             //scale the data into engineering units ("microvolts") and save to the "little buffer"
+    //             yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
+    //         }
+    //         for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
+    //         pointCounter++; //increment counter for "little buffer"
+    //     }
 
-    } else {
-        // make or load data to simulate real time
+//     if(eegDataSource == DATASOURCE_PLAYBACKFILE) {
+//         // make or load data to simulate real time
 
-        //has enough time passed?
-        int current_millis = millis();
-        if (current_millis >= nextPlayback_millis) {
-            //prepare for next time
-            int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/getSampleRateSafe())/playback_speed_fac);
-            if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
-            nextPlayback_millis += increment_millis;
+//         //has enough time passed?
+//         int current_millis = millis();
+//         if (current_millis >= nextPlayback_millis) {
+//             //prepare for next time
+//             int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/getSampleRateSafe())/playback_speed_fac);
+//             if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
+//             nextPlayback_millis += increment_millis;
 
-            // generate or read the data
-            lastReadDataPacketInd = 0;
-            for (int i = 0; i < nPointsPerUpdate; i++) {
-                dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
-                switch (eegDataSource) {
-                case DATASOURCE_PLAYBACKFILE:
-                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
-                    break;
-                default:
-                    //no action
-                }
-                //gather the data into the "little buffer"
-                for (int Ichan=0; Ichan < nchan; Ichan++) {
-                    //scale the data into engineering units..."microvolts"
-                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* scaler;
-                }
+//             // generate or read the data
+//             lastReadDataPacketInd = 0;
+//             for (int i = 0; i < nPointsPerUpdate; i++) {
+//                 dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
+//                 switch (eegDataSource) {
+//                 case DATASOURCE_PLAYBACKFILE:
+//                     currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
+//                     break;
+//                 default:
+//                     //no action
+//                 }
+//                 //gather the data into the "little buffer"
+//                 for (int Ichan=0; Ichan < nchan; Ichan++) {
+//                     //scale the data into engineering units..."microvolts"
+//                     yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* scaler;
+//                 }
 
-                pointCounter++;
-            } //close the loop over data points
-        } // close "has enough time passed"
-    }
-    return pointCounter;
-}
+//                 pointCounter++;
+//             } //close the loop over data points
+//         } // close "has enough time passed"
+//     }
+//     return pointCounter;
+// }
 
 void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] _auxBuff) {
     //If data is available, save to playback file...
@@ -199,21 +199,22 @@ void processNewData() {
     avgBitRate.addValue(inst_byteRate_perSec);
     byteRate_perSec = (int)avgBitRate.calcMean();
 
+    double[][] boardData = currentBoard.getData();
+    int[] exgChannels = currentBoard.getEXGChannels();
+
     //update the data buffers
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
+    for (int Ichan=0; Ichan < currentBoard.getNumEXGChannels(); Ichan++) {
         //append the new data to the larger data buffer...because we want the plotting routines
         //to show more than just the most recent chunk of data.  This will be our "raw" data.
+        // TODO BRAINFLOW!! Delete these buffers
         appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
 
         //make a copy of the data that we'll apply processing to.  This will be what is displayed on the full montage
-        dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
+        dataBuffY_filtY_uV[Ichan] = boardData[exgChannels[Ichan]].clone();
     }
 
-    //if you want to, re-reference the montage to make it be a mean-head reference
-    if (false) rereferenceTheMontage(dataBuffY_filtY_uV);
-
     //apply additional processing for the time-domain montage plot (ie, filtering)
-    dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+    dataProcessing.process(dataBuffY_filtY_uV, fftBuff);
 
     dataProcessing.newDataToSend = true;
 
@@ -780,10 +781,7 @@ class DataProcessing {
         }
     }
 
-    public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
-        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
-        float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
-        FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+    public void process(float[][] data_forDisplay_uV, FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
         float prevFFTdata[] = new float[fftBuff[0].specSize()];
 

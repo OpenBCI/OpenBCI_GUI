@@ -54,6 +54,11 @@ class BoardNull implements Board {
     }
 
     @Override
+    public double[][] getData() {
+        return new double[0][0];
+    }
+
+    @Override
     public void setChannelActive(int channelIndex, boolean active) {
         // empty
     }

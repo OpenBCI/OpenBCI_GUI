@@ -21,6 +21,8 @@ interface Board {
 
     public double[][] getData(int maxSamples);
 
+    public double[][] getData(); // gets all data
+
     public void setChannelActive(int channelIndex, boolean active);
 
     public void sendCommand(String command);

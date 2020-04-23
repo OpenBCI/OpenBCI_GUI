@@ -657,7 +657,6 @@ void endProcess(int pid) {
     }
 }
 
-int pointCounter = 0;
 int prevBytes = 0;
 int prevMillis = millis();
 int byteRate_perSec = 0;
@@ -971,7 +970,6 @@ void haltSystem() {
         //reset variables for data processing
         curDataPacketInd = -1;
         lastReadDataPacketInd = -1;
-        pointCounter = 0;
         currentTableRowIndex = 0;
         prevBytes = 0;
         prevMillis = millis();
@@ -1032,32 +1030,10 @@ void systemUpdate() { // for updating data values and variables
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
         if (isRunning) {
-            //get the data, if it is available
-            pointCounter = getDataIfAvailable(pointCounter);
-            //has enough data arrived to process it and update the GUI?
-            if (pointCounter >= nPointsPerUpdate) {
-                 //reset for next time
-                pointCounter = 0;
-                //process the data
-                processNewData();
-                //set this flag to true, checked at the beginning of systemDraw()
-            } else {
-                //not enough data has arrived yet... only update the channel controller
-            }
-
-            //New feature to address #461, defined in DataLogging.pde
-            //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
-            //Don't check duration if user has selected "No Limit"
-            //TODO[brainflow] commented this out to get brainflow working. Undo comment and fix.
-            // if (outputDataSource == OUTPUT_SOURCE_ODF
-            //     && eegDataSource < DATASOURCE_PLAYBACKFILE
-            //     && settings.limitOBCILogFileDuration()) {
-            //         fileoutput_odf.limitRecordingFileDuration();
-            // }
+            processNewData();
 
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
-            pointCounter = 0;
             try {
                 process_input_file();
                 println("^^^GUI update process file has occurred");

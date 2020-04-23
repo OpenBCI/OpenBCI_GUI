@@ -163,23 +163,6 @@ void removeMean(float[] filty, int Nback) {
     }
 }
 
-void rereferenceTheMontage(float[][] data) {
-    int n_chan = data.length;
-    int n_points = data[0].length;
-    float sum, mean;
-
-    //loop over all data points
-    for (int Ipoint=0;Ipoint<n_points;Ipoint++) {
-        //compute mean signal right now
-        sum=0.0;
-        for (int Ichan=0;Ichan<n_chan;Ichan++) sum += data[Ichan][Ipoint];
-        mean = sum / n_chan;
-
-        //remove the mean signal from all channels
-        for (int Ichan=0;Ichan<n_chan;Ichan++) data[Ichan][Ipoint] -= mean;
-    }
-}
-
 // shortens a string to a given width by adding [...] in the middle
 // make sure to pass the right font for accurate sizing
 String shortenString(String str, float maxWidth, PFont font) {

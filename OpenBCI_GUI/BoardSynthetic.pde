@@ -111,6 +111,11 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
 
     @Override
+    public double[][] getData() {
+        return getData(rawData[0].size());
+    }
+
+    @Override
     public float[] getLastValidAccelValues() {
         return lastAccelValues;
     }
