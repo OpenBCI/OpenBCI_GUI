@@ -1066,7 +1066,6 @@ class ControlPanel {
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
             refreshPortListGanglion();
-            println("DataLogBoxGanglion Height = " + dataLogBoxGanglion.h);
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
@@ -1075,8 +1074,6 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.WIFI;
-            println("DataLogBoxGanglion Height = " + dataLogBoxGanglion.h);
-            
         }
 
         if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
