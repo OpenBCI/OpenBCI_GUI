@@ -284,7 +284,9 @@ class AuxReadBar{
 
         analogValue.string = String.format(getFmt(val),val);
         // update data in plot
-        updatePlotPoints();
+        if (isRunning) {
+            updatePlotPoints();
+        }
         
         if(isAutoscale) {
             autoScale();
@@ -315,7 +317,7 @@ class AuxReadBar{
         int id = 0;
         while (enu.hasMoreElements()) { // there are exactly nPoints elements
             float timey = -(float)numSeconds + (float)id * timeBetweenPoints;
-            System.out.println("time " + timey);
+            //System.out.println("time " + timey);
             Double val = (Double)enu.nextElement();
             double rawVal = val.doubleValue();
             float value = (float)rawVal;
