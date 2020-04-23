@@ -794,15 +794,18 @@ void initSystem() throws Exception {
         }
     }
 
-    if (!abandonInit) {
-        //Init software settings: create default settings files, load user settings, etc.
-        settings.init();
-        settings.initCheckPointFive();
-    } else {
-        haltSystem();
-        outputError("Failed to connect. Check that the device is powered on and in range.");
-        controlPanel.open();
-        systemMode = SYSTEMMODE_PREINIT; // leave this here
+    //DISABLE SOFTWARE SETTINGS FOR NOVAXR
+    if (eegDataSource != DATASOURCE_NOVAXR) {
+        if (!abandonInit) {
+            //Init software settings: create default settings files, load user settings, etc.
+            settings.init();
+            settings.initCheckPointFive();
+        } else {
+            haltSystem();
+            outputError("Failed to connect. Check that the device is powered on and in range.");
+            controlPanel.open();
+            systemMode = SYSTEMMODE_PREINIT; // leave this here
+        }
     }
 
     midInit = false;
