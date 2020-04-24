@@ -29,6 +29,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
+    private int[] accelChannels;
+    private int[] analogChannels;
+
     private String serialPort = "";
     private String ipAddress = "";
     private BoardIds boardId = BoardIds.CYTON_BOARD;
@@ -70,6 +73,21 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
+    public boolean initialize() {
+        boolean res = super.initialize();
+
+        try {
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+            analogChannels = BoardShim.get_analog_channels(getBoardIdInt());
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+            res = false;
+        }
+
+        return res;
+    }
+
+    @Override
     public void uninitialize() {
         closeSDFile();
         super.uninitialize();
@@ -100,13 +118,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getAccelerometerChannels() {
-        try {
-            return BoardShim.get_accel_channels(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            println("Error when getting accel channels.");
-            e.printStackTrace();
-            return new int[0];
-        }
+        return accelChannels;
     }
 
     @Override
@@ -125,13 +137,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getAnalogChannels() {
-        try {
-            return BoardShim.get_analog_channels(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            println("Error when getting analog channels.");
-            e.printStackTrace();
-            return new int[0];
-        }
+        return analogChannels;
     }
 
     @Override
@@ -152,13 +158,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public int[] getDigitalChannels() {
         // TODO[brainflow]
         return new int[0];
-        // try {
-        //     return BoardShim.get_digital_channels(getBoardIdInt());
-        // } catch (BrainFlowError e) {
-        //     println("Error when getting digital channels.");
-        //     e.printStackTrace();
-        //     return new int[0];
-        // }
+        // return digitalChannels;
     }
 
     @Override

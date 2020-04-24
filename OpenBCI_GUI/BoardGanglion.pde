@@ -3,6 +3,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
+    private int[] accelChannels;
+
     private String serialPort = "";
     private String macAddress = "";
     private String ipAddress = "";
@@ -56,14 +58,23 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     {
         // turn on accel by default, or is it handled somewhere else?
         boolean res = super.initialize();
-        if (res)
+
+        try {
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+            res = false;
+        }
+
+        if (res) {
             setAccelerometerActive(true);
+        }
+
         return res;
     }
 
     @Override
-    public boolean isAccelerometerActive()
-    {
+    public boolean isAccelerometerActive() {
         return isGettingAccel;
     }
 
@@ -75,13 +86,7 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
 
     @Override
     public int[] getAccelerometerChannels() {
-        try {
-            return BoardShim.get_accel_channels(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            println("Error when getting accel channels.");
-            e.printStackTrace();
-            return new int[0];
-        }
+        return accelChannels;
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {

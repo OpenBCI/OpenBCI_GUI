@@ -1,9 +1,27 @@
 import brainflow.*;
 
-class BoardBrainFlowSynthetic extends BoardBrainFlow implements AccelerometerCapableBoard{
+class BoardBrainFlowSynthetic extends BoardBrainFlow
+implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
-    public BoardBrainFlowSynthetic() {
-        super();
+    private int[] accelChannels = {};
+    private int[] edaChannels = {};
+    private int[] ppgChannels = {};
+
+    @Override
+    public boolean  initialize() {
+        boolean res = super.initialize();
+
+        try {
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+            edaChannels = BoardShim.get_eda_channels(getBoardIdInt());
+            ppgChannels = BoardShim.get_ppg_channels(getBoardIdInt());
+
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+            res = false;
+        }
+
+        return res;
     }
 
     // implement mandatory abstract functions
@@ -36,12 +54,36 @@ class BoardBrainFlowSynthetic extends BoardBrainFlow implements AccelerometerCap
 
     @Override
     public int[] getAccelerometerChannels() {
-        try {
-            return BoardShim.get_accel_channels(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            println("Error when getting accel channels.");
-            e.printStackTrace();
-            return new int[0];
-        }
+        return accelChannels;
+    }
+
+    @Override
+    public boolean isPPGActive() {
+        return true;
+    }
+
+    @Override
+    public void setPPGActive(boolean active) {
+        outputWarn("PPG is always active for BrainflowSyntheticBoard");
+    }
+
+    @Override
+    public int[] getPPGChannels() {
+        return ppgChannels;
+    }
+
+    @Override
+    public boolean isEDAActive() {
+        return true;
+    }
+
+    @Override
+    public void setEDAActive(boolean active) {
+        outputWarn("EDA is always active for BrainflowSyntheticBoard");
+    }
+
+    @Override
+    public int[] getEDAChannels() {
+        return edaChannels;
     }
 };
