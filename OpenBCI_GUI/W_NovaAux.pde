@@ -192,6 +192,7 @@ class AuxReadBar{
 
     // todo board may have multiple eda/ppg sensors and EDA/PPGCapableBoard return 2d array due to it
     // this widget should also operate on 2d arrays. Temporary get only the first row from 2d array
+    private FixedStack<Double> valueStack = new FixedStack<Double>();
     private EDACapableBoard edaBoard;
     private PPGCapableBoard ppgBoard;
 
@@ -243,6 +244,9 @@ class AuxReadBar{
     void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
+
+        valueStack.setSize(nPoints);
+        valueStack.fill(Double.valueOf(0.0));
         auxReadPoints = new GPointsArray(nPoints);
 
         for (int i = 0; i < nPoints; i++) {
@@ -261,6 +265,20 @@ class AuxReadBar{
             return;
         }
 
+        double[][] allData = currentBoard.getData(nPoints);
+        int numSamples = allData[0].length;
+        int[] channels;
+
+        if (auxValuesPosition == 1) {
+            channels = edaBoard.getEDAChannels(); 
+        } else {
+            channels = ppgBoard.getPPGChannels(); 
+        }
+
+        for(int i = 0; i < numSamples; i++) {
+            valueStack.push(allData[channels[0]][i]);
+        }
+
         // update data in plot
         if (isRunning) {
             updatePlotPoints();
@@ -271,7 +289,7 @@ class AuxReadBar{
         }
 
         //Fetch the last value in the buffer to display on screen
-        float val = auxReadPoints.getY(nPoints-1);
+        float val = valueStack.peek().floatValue();
         analogValue.string = String.format(getFmt(val),val);
     }
 
@@ -292,25 +310,14 @@ class AuxReadBar{
     }
 
     void updatePlotPoints() {
-        double[][] allData = currentBoard.getData(nPoints);
-        int[] channels;
+        Enumeration enu = valueStack.elements();    
+        int id = 0;
+        while (enu.hasMoreElements()) { // there are exactly nPoints elements
+            float timey = calcTimeAxis(id);
 
-        if (auxValuesPosition == 1) {
-            channels = edaBoard.getEDAChannels(); 
-        } else {
-            channels = ppgBoard.getPPGChannels(); 
-        }
-
-        int numSamples = allData[0].length;
-        int startIndex = nPoints - numSamples;
-
-        for (int i=0; i<startIndex; i++) {
-            float timey = calcTimeAxis(i);
-            auxReadPoints.set(i, timey, 0.f, "");
-        }
-        for (int i=0; i<numSamples; i++) {
-            float timey = calcTimeAxis(startIndex + i);
-            auxReadPoints.set(startIndex + i, timey, (float)allData[channels[0]][i], "");
+            Double val = (Double)enu.nextElement();
+            auxReadPoints.set(id, timey, val.floatValue(), "");
+            id++;
         }
 
         plot.setPoints(auxReadPoints);
