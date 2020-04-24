@@ -651,113 +651,100 @@ class DataProcessing {
         currentNotch_ind++;
         if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
         settings.dataProcessingNotchSave = currentNotch_ind;
-    }
+}
+    void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
+        int Nfft = getNfftSafe();
+        double foo;
 
-    class SingleChannelProcessor implements Runnable {
-        int Ichan;
-        float[][] data_forDisplay_uV;
-        float[] prevFFTdata;
+        //filter the data in the time domain
+        filterIIR(filtCoeff_notch[currentNotch_ind].b, filtCoeff_notch[currentNotch_ind].a, data_forDisplay_uV[Ichan]); //notch
+        filterIIR(filtCoeff_bp[currentFilt_ind].b, filtCoeff_bp[currentFilt_ind].a, data_forDisplay_uV[Ichan]); //bandpass
 
-        SingleChannelProcessor(int chan, float[][] data_forDisplay_uV, float[] prevFFTdata) {
-            Ichan = chan;
-            this.data_forDisplay_uV = data_forDisplay_uV;
-            this.prevFFTdata = prevFFTdata;
+        //compute the standard deviation of the filtered signal...this is for the head plot
+        float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
+        fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
+        data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
+
+        //copy the previous FFT data...enables us to apply some smoothing to the FFT data
+        for (int I=0; I < fftBuff[Ichan].specSize(); I++) {
+            prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
         }
 
-        void run() {            
-            int Nfft = getNfftSafe();
-            double foo;
+        //prepare the data for the new FFT
+        float[] fooData;
+        if (isFFTFiltered == true) {
+            fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+        } else {
+            fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
+        }
+        fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
+        float meanData = mean(fooData);  //compute the mean
+        for (int I=0; I < fooData.length; I++) fooData[I] -= meanData; //remove the mean (for a better looking FFT
 
-            //filter the data in the time domain
-            filterIIR(filtCoeff_notch[currentNotch_ind].b, filtCoeff_notch[currentNotch_ind].a, data_forDisplay_uV[Ichan]); //notch
-            filterIIR(filtCoeff_bp[currentFilt_ind].b, filtCoeff_bp[currentFilt_ind].a, data_forDisplay_uV[Ichan]); //bandpass
+        //compute the FFT
+        fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
 
-            //compute the standard deviation of the filtered signal...this is for the head plot
-            float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
-            fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
-            data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
+        //convert to uV_per_bin...still need to confirm the accuracy of this code.
+        //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
 
-            //copy the previous FFT data...enables us to apply some smoothing to the FFT data
-            for (int I=0; I < fftBuff[Ichan].specSize(); I++) {
-                prevFFTdata[I] = fftBuff[Ichan].getBand(I); //copy the old spectrum values
-            }
+        // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
+        // first calculate double-sided FFT amplitude spectrum
+        for (int I=0; I <= Nfft/2; I++) {
+            fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / Nfft));
+        }
+        // then convert into single-sided FFT spectrum: DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two.
+        for (int I=1; I < Nfft/2; I++) {
+            fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
+        }
 
-            //prepare the data for the new FFT
-            float[] fooData;
-            if (isFFTFiltered == true) {
-                fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+        //average the FFT with previous FFT data so that it makes it smoother in time
+        double min_val = 0.01d;
+        for (int I=0; I < fftBuff[Ichan].specSize(); I++) {   //loop over each fft bin
+            if (prevFFTdata[I] < min_val) prevFFTdata[I] = (float)min_val; //make sure we're not too small for the log calls
+            foo = fftBuff[Ichan].getBand(I);
+            if (foo < min_val) foo = min_val; //make sure this value isn't too small
+
+            if (true) {
+                //smooth in dB power space
+                foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.log(java.lang.Math.pow(foo, 2));
+                foo += smoothFac[smoothFac_ind] * java.lang.Math.log(java.lang.Math.pow((double)prevFFTdata[I], 2));
+                foo = java.lang.Math.sqrt(java.lang.Math.exp(foo)); //average in dB space
             } else {
-                fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
+                //smooth (average) in linear power space
+                foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.pow(foo, 2);
+                foo+= smoothFac[smoothFac_ind] * java.lang.Math.pow((double)prevFFTdata[I], 2);
+                // take sqrt to be back into uV_rtHz
+                foo = java.lang.Math.sqrt(foo);
             }
-            fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
-            float meanData = mean(fooData);  //compute the mean
-            for (int I=0; I < fooData.length; I++) fooData[I] -= meanData; //remove the mean (for a better looking FFT
+            fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
+            // fftBuff[Ichan].setBand(I, 1.0f);  // test
+        } //end loop over FFT bins
 
-            //compute the FFT
-            fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
+        // calculate single-sided psd by single-sided FFT amplitude spectrum
+        // PSD ref: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
+        // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
+        // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
 
-            //convert to uV_per_bin...still need to confirm the accuracy of this code.
-            //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
-
-            // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
-            // first calculate double-sided FFT amplitude spectrum
-            for (int I=0; I <= Nfft/2; I++) {
-                fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) / Nfft));
-            }
-            // then convert into single-sided FFT spectrum: DC & Nyquist (i=0 & i=N/2) remain the same, others multiply by two.
-            for (int I=1; I < Nfft/2; I++) {
-                fftBuff[Ichan].setBand(I, (float)(fftBuff[Ichan].getBand(I) * 2));
-            }
-
-            //average the FFT with previous FFT data so that it makes it smoother in time
-            double min_val = 0.01d;
-            for (int I=0; I < fftBuff[Ichan].specSize(); I++) {   //loop over each fft bin
-                if (prevFFTdata[I] < min_val) prevFFTdata[I] = (float)min_val; //make sure we're not too small for the log calls
-                foo = fftBuff[Ichan].getBand(I);
-                if (foo < min_val) foo = min_val; //make sure this value isn't too small
-
-                if (true) {
-                    //smooth in dB power space
-                    foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.log(java.lang.Math.pow(foo, 2));
-                    foo += smoothFac[smoothFac_ind] * java.lang.Math.log(java.lang.Math.pow((double)prevFFTdata[I], 2));
-                    foo = java.lang.Math.sqrt(java.lang.Math.exp(foo)); //average in dB space
-                } else {
-                    //smooth (average) in linear power space
-                    foo =   (1.0d-smoothFac[smoothFac_ind]) * java.lang.Math.pow(foo, 2);
-                    foo+= smoothFac[smoothFac_ind] * java.lang.Math.pow((double)prevFFTdata[I], 2);
-                    // take sqrt to be back into uV_rtHz
-                    foo = java.lang.Math.sqrt(foo);
-                }
-                fftBuff[Ichan].setBand(I, (float)foo); //put the smoothed data back into the fftBuff data holder for use by everyone else
-                // fftBuff[Ichan].setBand(I, 1.0f);  // test
-            } //end loop over FFT bins
-
-            // calculate single-sided psd by single-sided FFT amplitude spectrum
-            // PSD ref: https://www.mathworks.com/help/dsp/ug/estimate-the-power-spectral-density-in-matlab.html
-            // when i = 1 ~ (N/2-1), psd = (N / fs) * mag(i)^2 / 4
-            // when i = 0 or i = N/2, psd = (N / fs) * mag(i)^2
-
-            for (int i = 0; i < processing_band_low_Hz.length; i++) {
-                float sum = 0;
-                // int binNum = 0;
-                for (int Ibin = 0; Ibin <= Nfft/2; Ibin ++) { // loop over FFT bins
-                    float FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);   // center frequency of this bin
-                    float psdx = 0;
-                    // if the frequency matches a band
-                    if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
-                        if (Ibin != 0 && Ibin != Nfft/2) {
-                            psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe() / 4;
-                        }
-                        else {
-                            psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe();
-                        }
-                        sum += psdx;
-                        // binNum ++;
+        for (int i = 0; i < processing_band_low_Hz.length; i++) {
+            float sum = 0;
+            // int binNum = 0;
+            for (int Ibin = 0; Ibin <= Nfft/2; Ibin ++) { // loop over FFT bins
+                float FFT_freq_Hz = fftBuff[Ichan].indexToFreq(Ibin);   // center frequency of this bin
+                float psdx = 0;
+                // if the frequency matches a band
+                if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
+                    if (Ibin != 0 && Ibin != Nfft/2) {
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe() / 4;
                     }
+                    else {
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe();
+                    }
+                    sum += psdx;
+                    // binNum ++;
                 }
-                avgPowerInBins[Ichan][i] = sum;   // total power in a band
-                // println(i, binNum, sum);
             }
+            avgPowerInBins[Ichan][i] = sum;   // total power in a band
+            // println(i, binNum, sum);
         }
     }
 
@@ -768,23 +755,9 @@ class DataProcessing {
 
         float prevFFTdata[] = new float[fftBuff[0].specSize()];
 
-        //loop over each EEG channel
-        Thread[] perChannelThreads = new Thread[nchan];
         for (int Ichan=0; Ichan < nchan; Ichan++) { 
-            perChannelThreads[Ichan] = new Thread(new SingleChannelProcessor(Ichan, data_forDisplay_uV, prevFFTdata));
-            perChannelThreads[Ichan].start();
+            processChannel(Ichan, data_forDisplay_uV, prevFFTdata);
         } //end the loop over channels.
-        
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
-            try {
-                perChannelThreads[Ichan].join();
-            }
-            catch (InterruptedException e) {
-                println("InterruptedException when joining threads for processing");
-                e.printStackTrace();
-            }
-        } //end the loop over channels.
-
 
         for (int i = 0; i < processing_band_low_Hz.length; i++) {
             float sum = 0;
