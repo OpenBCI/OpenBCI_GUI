@@ -8,8 +8,11 @@ abstract class BoardBrainFlow implements Board {
     protected int samplingRate = 0;
     protected int packetNumberChannel = 0;
     protected int timeStampChannel = 0;
+    protected int totalChannels = 0;
     protected int[] exgChannels = {};
     protected boolean streaming = false;
+    protected double[][] dataThisFrame = null;
+    protected double[][] emptyData = null;
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -74,9 +77,13 @@ abstract class BoardBrainFlow implements Board {
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
             timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
             exgChannels = calculateEXGChannels();
+            totalChannels = BoardShim.get_num_rows(getBoardIdInt());
+            emptyData = new double[totalChannels][0];
+            dataThisFrame = emptyData;
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
+            return false;
         }
 
         try {
@@ -115,7 +122,17 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public void update() {
-        // nothing
+        if(streaming) {
+            try {
+                dataThisFrame = boardShim.get_board_data();
+            } catch (BrainFlowError e) {
+                println("WARNING: could not get board data.");
+                e.printStackTrace();
+            }
+        }
+        else {
+            dataThisFrame = emptyData;
+        }
     }
 
     @Override
@@ -182,26 +199,8 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public double[][] getData(int numSamples) {
-        try {
-            return boardShim.get_current_board_data(numSamples);
-        }
-        catch (BrainFlowError e) {
-            println("Error when getting current board data.");
-            e.printStackTrace();
-            return new double[0][0];
-        }
-    }
-
-    @Override
-    public int getDataCount() {
-        try {
-            return boardShim.get_board_data_count();
-        } catch (BrainFlowError e) {
-            println("Error when getting current board data.");
-            e.printStackTrace();
-            return 0;
-        }
+    public double[][] getDataThisFrame() {
+        return dataThisFrame;
     }
 
     public int getBoardIdInt() {

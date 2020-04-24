@@ -89,7 +89,7 @@ class W_NovaAux extends Widget {
     }
 
     void update() {
-        if(visible && updating) {
+        if(visible && updating && isRunning) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
@@ -244,7 +244,6 @@ class AuxReadBar{
     void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
-
         valueStack.setSize(nPoints);
         valueStack.fill(Double.valueOf(0.0));
         auxReadPoints = new GPointsArray(nPoints);
@@ -259,13 +258,7 @@ class AuxReadBar{
     }
 
     void update() {
-        //update the voltage value text string
-        if ((edaBoard == null) || (ppgBoard == null)) {
-            System.out.println("Board is not ready yet");
-            return;
-        }
-
-        double[][] allData = currentBoard.getData(nPoints);
+        double[][] allData = currentBoard.getDataThisFrame();
         int numSamples = allData[0].length;
         int[] channels;
 
@@ -280,9 +273,7 @@ class AuxReadBar{
         }
 
         // update data in plot
-        if (isRunning) {
-            updatePlotPoints();
-        }
+        updatePlotPoints();
         
         if(isAutoscale) {
             autoScale();

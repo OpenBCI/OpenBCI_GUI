@@ -22,13 +22,8 @@ interface Board {
     // returned by getData() to cherrypick EXG data out of it.
     public int[] getEXGChannels();
 
-    // returns all the data this board has, all the data types
-    // maxSamples limits the amount of samples returned
-    public double[][] getData(int maxSamples);
-
-    // number of data samples the board is holding
-    // (getData cannot return more than this number of samples)
-    public int getDataCount();
+    // returns all the data this board has received in this frame
+    public double[][] getDataThisFrame();
 
     public void setChannelActive(int channelIndex, boolean active);
 

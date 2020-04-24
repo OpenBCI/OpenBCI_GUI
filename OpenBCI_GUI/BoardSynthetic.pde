@@ -9,11 +9,13 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     private boolean isInitialized = false;
     private float[] sine_phase_rad;
     private int lastSynthTime;
-    private float[] lastAccelValues;
     private int samplingIntervalMS;
     private int[] exgChannels;
     private int[] accelChanels;
-    private ArrayList<Double>[] rawData;
+    private int totalChannels;
+    private double[][] dataThisFrame;
+
+    private double[][] emptyData;
 
     // Synthetic accel data timer. Track frame count for synthetic data.
     private int accelSynthTime;
@@ -27,15 +29,12 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
         accelChanels = range(nchan, nchan + NUM_ACCEL_DIMS);
         
         sine_phase_rad = new float[getNumEXGChannels()];
-        lastAccelValues = new float[NUM_ACCEL_DIMS];
 
-        int totalChannels = exgChannels.length + accelChanels.length;
-        rawData = (ArrayList<Double>[]) new ArrayList[totalChannels];
-        for (int i=0; i<totalChannels; i++) {
-            rawData[i] = new ArrayList<Double>();
-        }
+        totalChannels = exgChannels.length + accelChanels.length;
 
         samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
+
+        emptyData = new double[totalChannels][0];
 
         isInitialized = true;
         return true;
@@ -49,6 +48,7 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     @Override
     public void update() {
         if (!streaming) {
+            dataThisFrame = emptyData;
             return; // early out
         }
 
@@ -95,23 +95,8 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
 
     @Override
-    public double[][] getData(int maxSamples) {
-        int actualSamples = min(maxSamples, rawData[0].size());
-        double[][] result = new double[rawData.length][actualSamples];
-
-        for(int i=0; i< rawData.length; i++) {
-            for (int j=0; j<actualSamples; j++) {
-                int rawDataIndex = rawData[i].size() - actualSamples + j;
-                result[i][j] = rawData[i].get(rawDataIndex);
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public int getDataCount() {
-        return rawData[0].size();
+    public double[][] getDataThisFrame() {
+        return dataThisFrame;
     }
 
     @Override
@@ -145,17 +130,22 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     }
 
     void synthesizeData() {
-        while (millis() - lastSynthTime > samplingIntervalMS)
+        int timeElapsed = millis() - lastSynthTime;
+        int totalSamples = timeElapsed / samplingIntervalMS;
+
+        dataThisFrame = new double[totalChannels][totalSamples];
+
+        for (int i=0; i<totalSamples; i++)
         {
-            synthesizeEXGData();
-            synthesizeAccelData();
+            synthesizeEXGData(i);
+            synthesizeAccelData(i);
             
             lastSynthTime += samplingIntervalMS;
         }
     }
 
     //Synthesize Time Series Data to Test GUI Functionality
-    void synthesizeEXGData() {
+    void synthesizeEXGData(int sampleIndex) {
         float val_uV;
         for (int Ichan : getEXGChannels()) {
             if (isChannelActive(Ichan)) {
@@ -201,16 +191,17 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
             } else {
                 val_uV = 0.0f;
             }
-            rawData[Ichan].add((double)(0.5 + val_uV)); //convert to counts, the 0.5 is to ensure rounding
+
+            dataThisFrame[Ichan][sampleIndex] = (double)(0.5 + val_uV); //convert to counts, the 0.5 is to ensure rounding
         }
     }
 
-    void synthesizeAccelData() {
+    void synthesizeAccelData(int sampleIndex) {
         for (int i = 0; i < accelChanels.length; i++) {
             // simple sin wave tied to current time.
             // offset each axis by its index * 2
             // multiply by accelXyzLimit to fill the height of the plot
-            rawData[accelChanels[i]].add((double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit);
+            dataThisFrame[accelChanels[i]][sampleIndex] = (double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit;
         }
         accelSynthTime ++;
     }//end void synthesizeAccelData

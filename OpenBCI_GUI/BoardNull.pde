@@ -49,13 +49,8 @@ class BoardNull implements Board {
     }
 
     @Override
-    public double[][] getData(int maxSamples) {
+    public double[][] getDataThisFrame() {
         return new double[0][0];
-    }
-
-    @Override
-    public int getDataCount() {
-        return 0;
     }
 
     @Override

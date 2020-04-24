@@ -30,7 +30,7 @@ class W_Accelerometer extends Widget {
     int[] yLimOptions = {0, 1, 2, 4};
     float accelXyzLimit = 4.0; //hard limit on all accel values
     int accelHorizLimit = 20;
-    double[] lastAccelVals;
+    float[] lastAccelVals;
     AccelerometerBar accelerometerBar;
 
     //Bottom xyz graph
@@ -58,8 +58,7 @@ class W_Accelerometer extends Widget {
 
     W_Accelerometer(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-        // This widget is only instantiated when the board is accel capable, so we don't need to check
+        
         accelBoard = (AccelerometerCapableBoard)currentBoard;
 
         //Default dropdown settings
@@ -74,11 +73,10 @@ class W_Accelerometer extends Widget {
         yMaxMin = adjustYMaxMinBasedOnSource();
 
         //XYZ buffer for bottom graph
-        int[] accelChannels = accelBoard.getAccelerometerChannels();
-        lastAccelVals = new double[accelChannels.length];
+        lastAccelVals = new float[NUM_ACCEL_DIMS];
 
         //create our channel bar and populate our accelerometerBar array!
-        accelerometerBar = new AccelerometerBar(_parent, accelBoard, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
+        accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
         accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
@@ -124,22 +122,17 @@ class W_Accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (isRunning && accelBoard.isAccelerometerActive() && currentBoard.getDataCount() > 0) {
-            //update the current Accelerometer values
-
-            double[][] lastSample = currentBoard.getData(1);
-            int[] accelChannels = accelBoard.getAccelerometerChannels();
-            
-            for (int i=0; i<accelChannels.length; i++) {
-                lastAccelVals[i] = lastSample[accelChannels[i]][0];
-            }
+        if (visible && updating && isRunning && accelBoard.isAccelerometerActive()) {
             //update the line graph and corresponding gplot points
             accelerometerBar.update();
+
+            //update the current Accelerometer values
+            lastAccelVals = accelerometerBar.getLastAccelVals();
         }
     }
 
     public float getLastAccelVal(int val) {
-        return (float)lastAccelVals[val];
+        return lastAccelVals[val];
     }
 
     String getButtonString() {
@@ -325,11 +318,17 @@ class AccelerometerBar {
 
     boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
     int lastProcessedDataPacketInd = 0;
+    
     private AccelerometerCapableBoard accelBoard;
+    
+    private FixedStack<Double> valueStackX = new FixedStack<Double>();
+    private FixedStack<Double> valueStackY = new FixedStack<Double>();
+    private FixedStack<Double> valueStackZ = new FixedStack<Double>();
 
-    AccelerometerBar(PApplet _parent, AccelerometerCapableBoard _accelBoard, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    AccelerometerBar(PApplet _parent, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
-        accelBoard = _accelBoard;
+        // This widget is only instantiated when the board is accel capable, so we don't need to check
+        accelBoard = (AccelerometerCapableBoard)currentBoard;
         isOn = true;
 
         x = _x;
@@ -359,18 +358,6 @@ class AccelerometerBar {
 
         initArrays();
 
-        // //int accelBuffDiff = accelArrayX.length - nPoints;
-        // for (int i = 0; i < nPoints; i++) {
-        //     //float time = -(float)numSeconds + (float)(i-accelBuffDiff)*timeBetweenPoints;
-        //     GPoint tempPointX = new GPoint(accelTimeArray[i], accelArray[0][i]);
-        //     GPoint tempPointY = new GPoint(accelTimeArray[i], accelArray[1][i]);
-        //     GPoint tempPointZ = new GPoint(accelTimeArray[i], accelArray[2][i]);
-        //     //println(accelTimeArray[i]);
-        //     accelPointsX.set(i, tempPointX);
-        //     accelPointsY.set(i, tempPointY);
-        //     accelPointsZ.set(i, tempPointZ);
-        // }
-
         //set the plot points for X, Y, and Z axes
         plot.addLayer("layer 1", accelPointsX);
         plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
@@ -383,6 +370,14 @@ class AccelerometerBar {
     void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
+        
+        valueStackX.setSize(nPoints);
+        valueStackY.setSize(nPoints);
+        valueStackZ.setSize(nPoints);
+        valueStackX.fill(Double.valueOf(0.0));
+        valueStackY.fill(Double.valueOf(0.0));
+        valueStackZ.fill(Double.valueOf(0.0));
+
         accelTimeArray = new float[nPoints];
         for (int i = 0; i < accelTimeArray.length; i++) {
             accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
@@ -400,7 +395,18 @@ class AccelerometerBar {
 
     //Used to update the accelerometerBar class
     void update() {
+        double[][] allData = currentBoard.getDataThisFrame();
+        int numSamples = allData[0].length;
+        int[] accelChannels = accelBoard.getAccelerometerChannels();
+
+        for(int i = 0; i < numSamples; i++) {
+            valueStackX.push(allData[accelChannels[0]][i]);
+            valueStackY.push(allData[accelChannels[1]][i]);
+            valueStackZ.push(allData[accelChannels[2]][i]);
+        }
+        
         updateGPlotPoints();
+
         if (isAutoscale) {
             autoScale();
         }
@@ -440,26 +446,34 @@ class AccelerometerBar {
 
     //Used to update the Points within the graph
     void updateGPlotPoints() {
-        double[][] allData = currentBoard.getData(nPoints);
-        int[] accelChannels = accelBoard.getAccelerometerChannels();
-        int numSamples = allData[0].length;
+        Enumeration enuX = valueStackX.elements();   
+        Enumeration enuY = valueStackY.elements();   
+        Enumeration enuZ = valueStackZ.elements();    
+        int id = 0;
+        while (enuX.hasMoreElements()) { // there are exactly nPoints elements
+            Double valX = (Double)enuX.nextElement();
+            Double valY = (Double)enuY.nextElement();
+            Double valZ = (Double)enuZ.nextElement();
 
-        int startIndex = nPoints - numSamples;
-
-        for (int i=0; i<startIndex; i++) {
-            accelPointsX.set(i, accelTimeArray[i], 0.f, "");
-            accelPointsY.set(i, accelTimeArray[i], 0.f, "");
-            accelPointsZ.set(i, accelTimeArray[i], 0.f, "");
-        }
-        for (int i=0; i<numSamples; i++) {
-            accelPointsX.set(startIndex + i, accelTimeArray[startIndex + i], (float)allData[accelChannels[0]][i], "");
-            accelPointsY.set(startIndex + i, accelTimeArray[startIndex + i], (float)allData[accelChannels[1]][i], "");
-            accelPointsZ.set(startIndex + i, accelTimeArray[startIndex + i], (float)allData[accelChannels[2]][i], "");
+            accelPointsX.set(id, accelTimeArray[id], valX.floatValue(), "");
+            accelPointsY.set(id, accelTimeArray[id], valY.floatValue(), "");
+            accelPointsZ.set(id, accelTimeArray[id], valZ.floatValue(), "");
+            
+            id++;
         }
 
         plot.setPoints(accelPointsX, "layer 1");
         plot.setPoints(accelPointsY, "layer 2");
         plot.setPoints(accelPointsZ, "layer 3");
+    }
+
+    float[] getLastAccelVals() {
+        float[] result = new float[NUM_ACCEL_DIMS];
+        result[0] = valueStackX.peek().floatValue();   
+        result[1] = valueStackY.peek().floatValue();   
+        result[2] = valueStackZ.peek().floatValue();   
+
+        return result;
     }
 
     void adjustVertScale(int _vertScaleValue) {
