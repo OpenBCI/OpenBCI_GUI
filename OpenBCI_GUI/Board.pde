@@ -1,33 +1,94 @@
 
-interface Board {
+abstract class Board {
 
-    public boolean initialize();
+    private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
+    private double[][] dataThisFrame;
 
-    public void uninitialize();
+    // accessible by all boards, can be returned as valid empty data
+    protected double[][] emptyData;
 
-    public void update();
+// ***************************************
+// public interface
+    public int getBufferSize() {
+        return dataBuff_len_sec * getSampleRate();
+    }
 
-    public void startStreaming();
+    public boolean initialize() {
+        boolean res = initializeInternal();
 
-    public void stopStreaming();
+        double[] fillData = new double[getTotalChannelCount()];
+        accumulatedData.setSize(getBufferSize());
+        accumulatedData.fill(fillData);
 
-    public boolean isConnected();
+        emptyData = new double[getTotalChannelCount()][0];
 
-    public int getSampleRate();
-    
-    public int getNumEXGChannels();
+        return res;
+    }
 
-    // returns a list of all the channels that contain EXG data.
-    // the numbers in this list can be used to index the array
-    // returned by getData() to cherrypick EXG data out of it.
-    public int[] getEXGChannels();
+    public void uninitialize() {
+        uninitializeInternal();
+    }
+
+    public void update() {
+        updateInternal();
+
+        dataThisFrame = getNewDataInternal();
+
+        for (int i = 0; i < dataThisFrame[0].length; i++) {
+            double[] newEntry = new double[getTotalChannelCount()];
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                newEntry[j] = dataThisFrame[j][i];
+            }
+
+            accumulatedData.push(newEntry);
+        }
+    }
+
+    public abstract void startStreaming();
+
+    public abstract void stopStreaming();
+
+    public abstract boolean isConnected();
+
+    public abstract int getSampleRate();
+
+    public abstract void setChannelActive(int channelIndex, boolean active);
+
+    public abstract void sendCommand(String command);
+
+    public abstract void setSampleRate(int sampleRate);
+
+    public abstract int[] getEXGChannels();
+
+    public int getNumEXGChannels() {
+        return getEXGChannels().length;
+    }
 
     // returns all the data this board has received in this frame
-    public double[][] getDataThisFrame();
+    public double[][] getFrameData() {
+        return dataThisFrame;
+    }
 
-    public void setChannelActive(int channelIndex, boolean active);
+    public List<double[]> getData(int maxSamples) {
+        int endIndex = accumulatedData.size();
+        int startIndex = max(0, endIndex - maxSamples);
 
-    public void sendCommand(String command);
+        return accumulatedData.subList(startIndex, endIndex);
+    }    
 
-    public void setSampleRate(int sampleRate);
+// ***************************************
+// protected methods implemented by board
+
+    // implemented by each board class and used internally here to accumulate the FixedStack
+    // and provide with public interfaces getDataThisFrame() and getData(int)
+    protected abstract double[][] getNewDataInternal();
+
+    protected abstract boolean initializeInternal();
+
+    protected abstract void uninitializeInternal();
+
+    protected abstract void updateInternal();
+
+    protected abstract int getTotalChannelCount();
+
 };

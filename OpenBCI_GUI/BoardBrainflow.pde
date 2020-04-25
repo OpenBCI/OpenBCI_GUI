@@ -2,7 +2,7 @@ import brainflow.*;
 import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
-abstract class BoardBrainFlow implements Board {
+abstract class BoardBrainFlow extends Board {
     private BoardShim boardShim = null;
 
     protected int samplingRate = 0;
@@ -11,8 +11,6 @@ abstract class BoardBrainFlow implements Board {
     protected int totalChannels = 0;
     protected int[] exgChannels = {};
     protected boolean streaming = false;
-    protected double[][] dataThisFrame = null;
-    protected double[][] emptyData = null;
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -71,21 +69,21 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public boolean initialize() {
+    public boolean initializeInternal() {
+        // cache some board info
         try {
             samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
             timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
             exgChannels = calculateEXGChannels();
             totalChannels = BoardShim.get_num_rows(getBoardIdInt());
-            emptyData = new double[totalChannels][0];
-            dataThisFrame = emptyData;
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
             return false;
         }
 
+        // initiate the board shim
         try {
             updateToNChan(getNumEXGChannels());
 
@@ -109,7 +107,7 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public void uninitialize() {
+    public void uninitializeInternal() {
         if(isConnected()) {
             try {
                 boardShim.release_session();
@@ -121,18 +119,8 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public void update() {
-        if(streaming) {
-            try {
-                dataThisFrame = boardShim.get_board_data();
-            } catch (BrainFlowError e) {
-                println("WARNING: could not get board data.");
-                e.printStackTrace();
-            }
-        }
-        else {
-            dataThisFrame = emptyData;
-        }
+    public void updateInternal() {
+        // empty
     }
 
     @Override
@@ -172,15 +160,15 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public boolean isConnected() {
-        boolean res = false;
         if (boardShim != null) {
             try {
-                res = boardShim.is_prepared();
+                return boardShim.is_prepared();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return res;
+
+        return false;
     }
 
     @Override
@@ -189,18 +177,8 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public int getNumEXGChannels() {
-        return getEXGChannels().length;
-    }
-
-    @Override
     public int[] getEXGChannels() {
         return exgChannels;
-    }
-
-    @Override
-    public double[][] getDataThisFrame() {
-        return dataThisFrame;
     }
 
     public int getBoardIdInt() {
@@ -230,5 +208,24 @@ abstract class BoardBrainFlow implements Board {
             println("ERROR: Exception sending config string to board: " + configStr);
             e.printStackTrace();
         }
+    }
+    
+    @Override
+    protected double[][] getNewDataInternal() {
+        if(streaming) {
+            try {
+                return boardShim.get_board_data();
+            } catch (BrainFlowError e) {
+                println("WARNING: could not get board data.");
+                e.printStackTrace();
+            }
+        }
+    
+        return emptyData;
+    }
+
+    @Override
+    protected int getTotalChannelCount() {
+        return totalChannels;
     }
 };

@@ -320,10 +320,6 @@ class AccelerometerBar {
     int lastProcessedDataPacketInd = 0;
     
     private AccelerometerCapableBoard accelBoard;
-    
-    private FixedStack<Double> valueStackX = new FixedStack<Double>();
-    private FixedStack<Double> valueStackY = new FixedStack<Double>();
-    private FixedStack<Double> valueStackZ = new FixedStack<Double>();
 
     AccelerometerBar(PApplet _parent, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
@@ -370,13 +366,6 @@ class AccelerometerBar {
     void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
-        
-        valueStackX.setSize(nPoints);
-        valueStackY.setSize(nPoints);
-        valueStackZ.setSize(nPoints);
-        valueStackX.fill(Double.valueOf(0.0));
-        valueStackY.fill(Double.valueOf(0.0));
-        valueStackZ.fill(Double.valueOf(0.0));
 
         accelTimeArray = new float[nPoints];
         for (int i = 0; i < accelTimeArray.length; i++) {
@@ -395,16 +384,7 @@ class AccelerometerBar {
 
     //Used to update the accelerometerBar class
     void update() {
-        double[][] allData = currentBoard.getDataThisFrame();
-        int numSamples = allData[0].length;
-        int[] accelChannels = accelBoard.getAccelerometerChannels();
 
-        for(int i = 0; i < numSamples; i++) {
-            valueStackX.push(allData[accelChannels[0]][i]);
-            valueStackY.push(allData[accelChannels[1]][i]);
-            valueStackZ.push(allData[accelChannels[2]][i]);
-        }
-        
         updateGPlotPoints();
 
         if (isAutoscale) {
@@ -446,20 +426,13 @@ class AccelerometerBar {
 
     //Used to update the Points within the graph
     void updateGPlotPoints() {
-        Enumeration enuX = valueStackX.elements();   
-        Enumeration enuY = valueStackY.elements();   
-        Enumeration enuZ = valueStackZ.elements();    
-        int id = 0;
-        while (enuX.hasMoreElements()) { // there are exactly nPoints elements
-            Double valX = (Double)enuX.nextElement();
-            Double valY = (Double)enuY.nextElement();
-            Double valZ = (Double)enuZ.nextElement();
+        List<double[]> allData = currentBoard.getData(nPoints);
+        int[] accelChannels = accelBoard.getAccelerometerChannels();
 
-            accelPointsX.set(id, accelTimeArray[id], valX.floatValue(), "");
-            accelPointsY.set(id, accelTimeArray[id], valY.floatValue(), "");
-            accelPointsZ.set(id, accelTimeArray[id], valZ.floatValue(), "");
-            
-            id++;
+        for (int i=0; i < nPoints; i++) {
+            accelPointsX.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[0]], "");
+            accelPointsY.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[1]], "");
+            accelPointsZ.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[2]], "");
         }
 
         plot.setPoints(accelPointsX, "layer 1");
@@ -469,9 +442,9 @@ class AccelerometerBar {
 
     float[] getLastAccelVals() {
         float[] result = new float[NUM_ACCEL_DIMS];
-        result[0] = valueStackX.peek().floatValue();   
-        result[1] = valueStackY.peek().floatValue();   
-        result[2] = valueStackZ.peek().floatValue();   
+        result[0] = accelPointsX.getY(nPoints-1);   
+        result[1] = accelPointsY.getY(nPoints-1);   
+        result[2] = accelPointsZ.getY(nPoints-1);   
 
         return result;
     }

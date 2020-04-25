@@ -2,20 +2,20 @@
 /* This class does nothing, it serves as a signal that the board we are using
  * is null, but does not crash if we use it.
  */
-class BoardNull implements Board {
+class BoardNull extends Board {
 
     @Override
-    public boolean initialize() {
+    public boolean initializeInternal() {
         return true;
     }
 
     @Override
-    public void uninitialize() {
+    public void uninitializeInternal() {
         // empty
     }
 
     @Override
-    public void update() {
+    public void updateInternal() {
         // empty
     }
 
@@ -37,20 +37,10 @@ class BoardNull implements Board {
     public int getSampleRate() {
         return 0;
     }
-    
-    @Override
-    public int getNumEXGChannels() {
-        return 0;
-    }
 
     @Override
     public int[] getEXGChannels() {
         return new int[0];
-    }
-
-    @Override
-    public double[][] getDataThisFrame() {
-        return new double[0][0];
     }
 
     @Override
@@ -66,5 +56,14 @@ class BoardNull implements Board {
     @Override
     public void setSampleRate(int sampleRate) {
         // empty
+    }
+
+    protected double[][] getNewDataInternal() {
+        return new double[1][0];
+    }
+
+    @Override
+    protected int getTotalChannelCount() {
+        return 0;
     }
 };

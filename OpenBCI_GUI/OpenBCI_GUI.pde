@@ -175,8 +175,8 @@ float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
 
-float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
+int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
 OutputFile_rawtxt fileoutput_odf;
@@ -845,9 +845,9 @@ void initCoreDataObjects() {
     nDataBackBuff = 3*getSampleRateSafe();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
-    dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
-    dataBuffY_uV = new float[nchan][dataBuffX.length];
-    dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
+    dataBuffX = new float[currentBoard.getBufferSize()];
+    dataBuffY_uV = new float[nchan][currentBoard.getBufferSize()];
+    dataBuffY_filtY_uV = new float[nchan][currentBoard.getBufferSize()];
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
     auxBuff = new float[3][nPointsPerUpdate];
     accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)

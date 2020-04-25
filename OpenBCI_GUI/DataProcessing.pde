@@ -102,25 +102,16 @@ void processNewData() {
     avgBitRate.addValue(inst_byteRate_perSec);
     byteRate_perSec = (int)avgBitRate.calcMean();
 
-    double[][] dataThisFrame = currentBoard.getDataThisFrame();
+    List<double[]> currentData = currentBoard.getData(currentBoard.getBufferSize());
     int[] exgChannels = currentBoard.getEXGChannels();
     int channelCount = currentBoard.getNumEXGChannels();
-    int sampleCount = dataThisFrame[0].length;
 
     //update the data buffers
     for (int Ichan=0; Ichan < channelCount; Ichan++) {
-        //append the new data to the larger data buffer...because we want the plotting routines
-        //to show more than just the most recent chunk of data.  This will be our "raw" data.
-
-        // TODO[brainflow] implement data stream smoothing and restore yLittleBuff_uV
-        //appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
-
-        float[] newChannelData = new float[sampleCount];
-        for (int i=0; i<sampleCount; i++) {
-            newChannelData[i] = (float)dataThisFrame[exgChannels[Ichan]][i];
+        
+        for(int i = 0; i < currentBoard.getBufferSize(); i++) {
+            dataBuffY_uV[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
         }
-
-        appendAndShift(dataBuffY_uV[Ichan], newChannelData);
 
         dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
     }
