@@ -44,22 +44,6 @@ abstract class Board {
         }
     }
 
-    public abstract void startStreaming();
-
-    public abstract void stopStreaming();
-
-    public abstract boolean isConnected();
-
-    public abstract int getSampleRate();
-
-    public abstract void setChannelActive(int channelIndex, boolean active);
-
-    public abstract void sendCommand(String command);
-
-    public abstract void setSampleRate(int sampleRate);
-
-    public abstract int[] getEXGChannels();
-
     public int getNumEXGChannels() {
         return getEXGChannels().length;
     }
@@ -76,11 +60,27 @@ abstract class Board {
         return accumulatedData.subList(startIndex, endIndex);
     }    
 
+    public abstract void startStreaming();
+
+    public abstract void stopStreaming();
+
+    public abstract boolean isConnected();
+
+    public abstract int getSampleRate();
+
+    public abstract void setChannelActive(int channelIndex, boolean active);
+
+    public abstract void sendCommand(String command);
+
+    public abstract void setSampleRate(int sampleRate);
+
+    public abstract int[] getEXGChannels();
+
 // ***************************************
 // protected methods implemented by board
 
     // implemented by each board class and used internally here to accumulate the FixedStack
-    // and provide with public interfaces getDataThisFrame() and getData(int)
+    // and provide with public interfaces getFrameData() and getData(int)
     protected abstract double[][] getNewDataInternal();
 
     protected abstract boolean initializeInternal();

@@ -8,8 +8,8 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     private int[] ppgChannels = {};
 
     @Override
-    public boolean  initialize() {
-        boolean res = super.initialize();
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
 
         try {
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());

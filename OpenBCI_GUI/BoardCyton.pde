@@ -73,8 +73,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public boolean initialize() {
-        boolean res = super.initialize();
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
 
         try {
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
@@ -88,9 +88,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public void uninitialize() {
+    public void uninitializeInternal() {
         closeSDFile();
-        super.uninitialize();
+        super.uninitializeInternal();
     }
 
     @Override

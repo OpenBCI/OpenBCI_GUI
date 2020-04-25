@@ -54,20 +54,17 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     }
 
     @Override
-    public boolean initialize()
+    public boolean initializeInternal()
     {
         // turn on accel by default, or is it handled somewhere else?
-        boolean res = super.initialize();
+        boolean res = super.initializeInternal();
 
         try {
             accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+            setAccelerometerActive(true);
         } catch (BrainFlowError e) {
             e.printStackTrace();
             res = false;
-        }
-
-        if (res) {
-            setAccelerometerActive(true);
         }
 
         return res;
