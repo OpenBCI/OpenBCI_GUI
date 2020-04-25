@@ -574,7 +574,8 @@ class DataProcessing {
         currentNotch_ind++;
         if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
         settings.dataProcessingNotchSave = currentNotch_ind;
-}
+    }
+    
     void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
         int Nfft = getNfftSafe();
         double foo;
