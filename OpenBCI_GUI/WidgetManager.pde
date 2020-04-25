@@ -55,7 +55,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_accelerometer, w);
     }
 
-    if (currentBoard instanceof BoardNovaXR || currentBoard instanceof BoardSynthetic || currentBoard instanceof BoardBrainFlowSynthetic) {
+    if (currentBoard instanceof BoardNovaXR || currentBoard instanceof BoardBrainFlowSynthetic) {
         w_novaAux = new W_NovaAux(_this);
         w_novaAux.setTitle("NovaXR Aux");
         addWidget(w_novaAux, w);

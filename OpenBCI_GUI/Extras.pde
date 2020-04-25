@@ -163,23 +163,6 @@ void removeMean(float[] filty, int Nback) {
     }
 }
 
-void rereferenceTheMontage(float[][] data) {
-    int n_chan = data.length;
-    int n_points = data[0].length;
-    float sum, mean;
-
-    //loop over all data points
-    for (int Ipoint=0;Ipoint<n_points;Ipoint++) {
-        //compute mean signal right now
-        sum=0.0;
-        for (int Ichan=0;Ichan<n_chan;Ichan++) sum += data[Ichan][Ipoint];
-        mean = sum / n_chan;
-
-        //remove the mean signal from all channels
-        for (int Ichan=0;Ichan<n_chan;Ichan++) data[Ichan][Ipoint] -= mean;
-    }
-}
-
 // shortens a string to a given width by adding [...] in the middle
 // make sure to pass the right font for accurate sizing
 String shortenString(String str, float maxWidth, PFont font) {
@@ -206,9 +189,27 @@ String shortenString(String str, float maxWidth, PFont font) {
     return s1 + "..." + s2;
 }
 
-int lerpInt(long first, long second, float bias)
-{
+int lerpInt(long first, long second, float bias) {
     return round(lerp(first, second, bias));    
+}
+
+int[] range(int first, int second) {
+    int total = abs(first-second);
+    int[] result = new int[total];
+
+    for(int i=0; i<total; i++) {
+        int newNumber = first;
+        if(first > second) {
+            newNumber -= i;
+        }
+        else {
+            newNumber += i;
+        }
+
+        result[i] = newNumber;
+    }
+
+    return result;
 }
 
 // creates an DataPacket_ADS1299 with interpolated values.
@@ -317,7 +318,7 @@ class DataStatus {
         is_railed_warn = false;
         threshold_railed_warn = thresh_railed_warn;
     }
-    public void update(int data_value) {
+    public void update(float data_value) {
         // here we scale threshold which is originally is not converted to uVolts
         float reversed_scaler = 1;
         if (currentBoard instanceof BoardBrainFlow) {

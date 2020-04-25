@@ -804,7 +804,6 @@ class PlaybackScrollbar {
                 //process the file
                 if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
                     lastReadDataPacketInd = 0;
-                    pointCounter = 0;
                     try {
                         process_input_file();
                         ///println("TimeSeriesFileProcessed");

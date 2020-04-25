@@ -89,7 +89,7 @@ class W_NovaAux extends Widget {
     }
 
     void update() {
-        if(visible && updating) {
+        if(visible && updating && isRunning) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
@@ -178,7 +178,6 @@ class AuxReadBar{
     int nPoints;
     int numSeconds;
     float timeBetweenPoints;
-    int bufferSize;
 
     color channelColor; //color of plot trace
 
@@ -191,12 +190,8 @@ class AuxReadBar{
     boolean drawAnalogValue;
     int lastProcessedDataPacketInd = 0;
 
-    double[] auxReadData;
-
     // todo board may have multiple eda/ppg sensors and EDA/PPGCapableBoard return 2d array due to it
     // this widget should also operate on 2d arrays. Temporary get only the first row from 2d array
-    private FixedStack<Double> edaValues = new FixedStack<Double>();
-    private FixedStack<Double> ppgValues = new FixedStack<Double>();
     private EDACapableBoard edaBoard;
     private PPGCapableBoard ppgBoard;
 
@@ -225,26 +220,7 @@ class AuxReadBar{
         plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().setAxisLabelText("Time (s)");
 
-        nPoints = nPointsBasedOnDataSource(); //max duration 20s
-        bufferSize = nPoints;
-        auxReadData = new double[nPoints];
-        edaValues.setSize(nPoints);
-        ppgValues.setSize(nPoints);
-        Double initialValue =  Double.valueOf(0.0);
-        edaValues.fill (initialValue);
-        ppgValues.fill (initialValue);
-
-        auxReadPoints = new GPointsArray(nPoints);
-        timeBetweenPoints = (float)numSeconds / (float)nPoints;
-
-        for (int i = 0; i < bufferSize; i++) {
-            float time = -(float)numSeconds + (float)i*timeBetweenPoints;
-            float analog_value = 0.0; //0.0 for all points to start
-            GPoint tempPoint = new GPoint(time, analog_value);
-            auxReadPoints.set(i, tempPoint);
-        }
-
-        plot.setPoints(auxReadPoints); //set the plot with 0.0 for all auxReadPoints to start
+        initArrays();
 
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
         analogValue.textColor = color(bgColor);
@@ -264,42 +240,31 @@ class AuxReadBar{
         ppgBoard = (PPGCapableBoard) currentBoard;
     }
 
+    void initArrays() {
+        nPoints = nPointsBasedOnDataSource();
+        timeBetweenPoints = (float)numSeconds / (float)nPoints;
+        auxReadPoints = new GPointsArray(nPoints);
+
+        for (int i = 0; i < nPoints; i++) {
+            float time = calcTimeAxis(i);
+            float analog_value = 0.0; //0.0 for all points to start
+            auxReadPoints.set(i, time, analog_value, "");
+        }
+
+        plot.setPoints(auxReadPoints); //set the plot with 0.0 for all auxReadPoints to start
+    }
+
     void update() {
-        //update the voltage value text string
-        float val = 0f;
-        if ((edaBoard == null) || (ppgBoard == null)) {
-            System.out.println("Board is not ready yet");
-            return;
-        }
-
-        double[][] edaData = edaBoard.getEDAValues();
-        double[][] ppgData = ppgBoard.getPPGValues();
-
-        // ignore all sensors except the first one temporary
-        for (int i = 0; i < edaData[0].length; i++) {
-            // ppg and eda sizes are the same
-            edaValues.push(edaData[0][i]);
-            ppgValues.push(ppgData[0][i]);
-        }
-        
-        if (edaData[0].length > 0) {
-            //Fetch the last value in the buffer to display on screen
-            if (auxValuesPosition == 1) {
-                val = (float) edaData[0][edaData[0].length-1];
-            } else {
-                val = (float) ppgData[0][ppgData[0].length-1];
-            }
-        }
-        analogValue.string = String.format(getFmt(val),val);
-
         // update data in plot
-        if (isRunning) {
-            updatePlotPoints();
-        }
+        updatePlotPoints();
         
         if(isAutoscale) {
             autoScale();
         }
+
+        //Fetch the last value in the buffer to display on screen
+        float val = auxReadPoints.getY(nPoints-1);
+        analogValue.string = String.format(getFmt(val),val);
     }
 
     private String getFmt(float val) {
@@ -314,26 +279,26 @@ class AuxReadBar{
             return fmt;
     }
 
+    float calcTimeAxis(int sampleIndex) {
+        return -(float)numSeconds + (float)sampleIndex * timeBetweenPoints;
+    }
+
     void updatePlotPoints() {
-        Enumeration enu = null;
-        // its bad we can rewrite it wo auxValuesPosition
+        List<double[]> allData = currentBoard.getData(nPoints);
+        int[] channels;
+
         if (auxValuesPosition == 1) {
-            enu = edaValues.elements(); 
+            channels = edaBoard.getEDAChannels(); 
         } else {
-            enu = ppgValues.elements();
+            channels = ppgBoard.getPPGChannels(); 
         }
 
-        int id = 0;
-        while (enu.hasMoreElements()) { // there are exactly nPoints elements
-            float timey = -(float)numSeconds + (float)id * timeBetweenPoints;
-            //System.out.println("time " + timey);
-            Double val = (Double)enu.nextElement();
-            double rawVal = val.doubleValue();
-            float value = (float)rawVal;
-            GPoint tempPoint = new GPoint(timey, value);
-            auxReadPoints.set(id, tempPoint);
-            id++;
+        for (int i=0; i < nPoints; i++) {
+            float timey = calcTimeAxis(i);
+            float value = (float)allData.get(i)[channels[0]];
+            auxReadPoints.set(i, timey, value, "");
         }
+
         plot.setPoints(auxReadPoints);
     }
 
@@ -374,9 +339,8 @@ class AuxReadBar{
         numSeconds = _newTimeSize;
         plot.setXLim(-_newTimeSize,0);
 
-        nPoints = nPointsBasedOnDataSource();
+        initArrays();
 
-        auxReadPoints = new GPointsArray(nPoints);
         if (_newTimeSize > 1) {
             plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
         }

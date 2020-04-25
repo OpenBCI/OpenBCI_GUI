@@ -431,7 +431,6 @@ void reinitializeCoreDataAndFFTBuffer() {
     dataProcessing.fs_Hz = getSampleRateSafe();
     dataProcessing.data_std_uV = new float[nchan];
     dataProcessing.polarity = new float[nchan];
-    dataProcessing.newDataToSend = false;
     dataProcessing.avgPowerInBins = new float[nchan][dataProcessing.processing_band_low_Hz.length];
     dataProcessing.headWidePower = new float[dataProcessing.processing_band_low_Hz.length];
     dataProcessing.defineFilters();  //define the filters anyway just so that the code doesn't bomb

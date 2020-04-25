@@ -2,20 +2,15 @@ import brainflow.*;
 import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
-abstract class BoardBrainFlow implements Board {
-    private DataPacket_ADS1299 dataPacket;
+abstract class BoardBrainFlow extends Board {
     private BoardShim boardShim = null;
 
     protected int samplingRate = 0;
     protected int packetNumberChannel = 0;
     protected int timeStampChannel = 0;
-    protected int[] dataChannels = {};
-    protected int[] accelChannels = {};
-
+    protected int totalChannels = 0;
+    protected int[] exgChannels = {};
     protected boolean streaming = false;
-    protected float[] lastAccelValues = {};
-    protected float[] lastValidAccelValues = {};
-    protected double[][] rawData = null;
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -26,7 +21,7 @@ abstract class BoardBrainFlow implements Board {
     protected BoardBrainFlow() {
     }
 
-    protected int[] getEXGChannels() throws BrainFlowError{
+    protected int[] calculateEXGChannels() throws BrainFlowError{
         int[] channels;
         // for some boards there can be duplicates
         SortedSet<Integer> set = new TreeSet<Integer>();
@@ -74,24 +69,23 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public boolean initialize() {
+    public boolean initializeInternal() {
+        // cache some board info
         try {
             samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
             packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
             timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
-            dataChannels = getEXGChannels();
-            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+            exgChannels = calculateEXGChannels();
+            totalChannels = BoardShim.get_num_rows(getBoardIdInt());
         } catch (BrainFlowError e) {
             println("WARNING: failed to get board info from BoardShim");
             e.printStackTrace();
+            return false;
         }
 
-        lastAccelValues = new float[accelChannels.length];
-        lastValidAccelValues = new float[accelChannels.length];
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), accelChannels.length);
-
+        // initiate the board shim
         try {
-            updateToNChan(getNumChannels());
+            updateToNChan(getNumEXGChannels());
 
             boardShim = new BoardShim (getBoardIdInt(), getParams());
             // for some reason logger configuration doesnt work in contructor or static initializer block
@@ -113,7 +107,7 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public void uninitialize() {
+    public void uninitializeInternal() {
         if(isConnected()) {
             try {
                 boardShim.release_session();
@@ -125,56 +119,8 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public void update() {
-        if (!streaming || boardShim == null) {
-            return; // early out
-        }
-
-        try {
-            rawData = boardShim.get_board_data();
-        } catch (BrainFlowError e) {
-            println ("ERROR: Exception trying to get board data");
-            e.printStackTrace();
-            return; // early out
-        }
-
-        for (int count = 0; count < rawData[0].length; count++)
-        {
-            double[] values = new double[rawData.length];
-            for (int i=0; i < rawData.length; i++) {
-                values[i] = rawData[i][count];
-            }
-
-            fillDataPacketWithValues(dataPacket, values);
-
-            // This is also used to let the rest of the code that it may be time to do something
-            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
-            dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
-        }
-    }
-
-    protected void fillDataPacketWithValues(DataPacket_ADS1299 dataPacket, double[] values) {
-
-        dataPacket.sampleIndex = (int)Math.round(values[packetNumberChannel]);
-        dataPacket.timeStamp = (long)values[timeStampChannel]*1000;
-
-        for (int i=0; i < dataChannels.length; i++)
-        {
-            dataPacket.values[i] = (int)Math.round(values[dataChannels[i]]);
-        }
-
-        boolean accelValid = false;
-        for (int i=0; i<accelChannels.length; i++)
-        {
-            lastAccelValues[i] = (float)values[accelChannels[i]];
-            if (lastAccelValues[i] != 0.f) {
-                accelValid = true;
-            }
-        }
-        
-        if(accelValid) {
-            lastValidAccelValues = lastAccelValues.clone();
-        }
+    public void updateInternal() {
+        // empty
     }
 
     @Override
@@ -214,15 +160,15 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public boolean isConnected() {
-        boolean res = false;
         if (boardShim != null) {
             try {
-                res = boardShim.is_prepared();
+                return boardShim.is_prepared();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return res;
+
+        return false;
     }
 
     @Override
@@ -231,8 +177,8 @@ abstract class BoardBrainFlow implements Board {
     }
 
     @Override
-    public int getNumChannels() {
-        return dataChannels.length;
+    public int[] getEXGChannels() {
+        return exgChannels;
     }
 
     public int getBoardIdInt() {
@@ -246,7 +192,7 @@ abstract class BoardBrainFlow implements Board {
 
     @Override
     public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sampling rate is not possible on brainflow boards. Sampling rate will stay at " + getSampleRate());
+        outputWarn("Changing the sampling rate is not possible on this board. Sampling rate will stay at " + getSampleRate());
     }
 
     protected void configBoard(String configStr) {
@@ -262,5 +208,24 @@ abstract class BoardBrainFlow implements Board {
             println("ERROR: Exception sending config string to board: " + configStr);
             e.printStackTrace();
         }
+    }
+    
+    @Override
+    protected double[][] getNewDataInternal() {
+        if(streaming) {
+            try {
+                return boardShim.get_board_data();
+            } catch (BrainFlowError e) {
+                println("WARNING: could not get board data.");
+                e.printStackTrace();
+            }
+        }
+    
+        return emptyData;
+    }
+
+    @Override
+    protected int getTotalChannelCount() {
+        return totalChannels;
     }
 };

@@ -170,14 +170,13 @@ int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float yLittleBuff[];
 float yLittleBuff_uV[][]; //small buffer used to send data to the filters
 float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
 
-float displayTime_sec = 20f;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-float dataBuff_len_sec = displayTime_sec + 3f; //needs to be wider than actual display so that filter startup is hidden
+int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
 
 //variables for writing EEG data out to a file
 OutputFile_rawtxt fileoutput_odf;
@@ -200,7 +199,6 @@ PlotFontInfo fontInfo;
 
 //program variables
 boolean isRunning = false;
-boolean redrawScreenNow = true;
 int openBCI_byteCount = 0;
 StringBuilder board_message;
 
@@ -470,7 +468,6 @@ synchronized void draw() {
     if (showStartupError) {
         drawStartupError();
     } else if (setupComplete && systemMode != SYSTEMMODE_INTROANIMATION) {
-        drawLoop_counter++; //signPost("10");
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
         if (midInit) {
@@ -659,11 +656,9 @@ void endProcess(int pid) {
     }
 }
 
-int pointCounter = 0;
 int prevBytes = 0;
 int prevMillis = millis();
 int byteRate_perSec = 0;
-int drawLoop_counter = 0;
 
 //used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
 
@@ -714,7 +709,8 @@ void initSystem() throws Exception {
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR();
-            // currentBoard = new BoardBrainFlowSynthetic();
+            //TODO[brainflow]
+            //currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;
@@ -849,10 +845,9 @@ void initCoreDataObjects() {
     nDataBackBuff = 3*getSampleRateSafe();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
-    dataBuffX = new float[(int)(dataBuff_len_sec * getSampleRateSafe())];
-    dataBuffY_uV = new float[nchan][dataBuffX.length];
-    dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
-    yLittleBuff = new float[nPointsPerUpdate];
+    dataBuffX = new float[currentBoard.getBufferSize()];
+    dataBuffY_uV = new float[nchan][currentBoard.getBufferSize()];
+    dataBuffY_filtY_uV = new float[nchan][currentBoard.getBufferSize()];
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
     auxBuff = new float[3][nPointsPerUpdate];
     accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
@@ -869,7 +864,6 @@ void initCoreDataObjects() {
         dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
     }
     dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
-    dataProcessing_user = new DataProcessing_User(nchan, getSampleRateSafe());
 
     //initialize the data
     prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
@@ -977,12 +971,10 @@ void haltSystem() {
         //reset variables for data processing
         curDataPacketInd = -1;
         lastReadDataPacketInd = -1;
-        pointCounter = 0;
         currentTableRowIndex = 0;
         prevBytes = 0;
         prevMillis = millis();
         byteRate_perSec = 0;
-        drawLoop_counter = 0;
         // eegDataSource = -1;
         //set all data source list items inactive
 
@@ -1021,6 +1013,8 @@ void systemUpdate() { // for updating data values and variables
     win_x = width;
     win_y = height;
 
+    currentBoard.update();
+
     helpWidget.update();
     topNav.update();
     if (systemMode == SYSTEMMODE_PREINIT) {
@@ -1037,33 +1031,10 @@ void systemUpdate() { // for updating data values and variables
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
         if (isRunning) {
-            //get the data, if it is available
-            pointCounter = getDataIfAvailable(pointCounter);
-            //has enough data arrived to process it and update the GUI?
-            if (pointCounter >= nPointsPerUpdate) {
-                 //reset for next time
-                pointCounter = 0;
-                //process the data
-                processNewData();
-                //set this flag to true, checked at the beginning of systemDraw()
-                redrawScreenNow=true;
-            } else {
-                //not enough data has arrived yet... only update the channel controller
-            }
-
-            //New feature to address #461, defined in DataLogging.pde
-            //Applied to OpenBCI Data Format for LIVE mode recordings (Cyton and Ganglion)
-            //Don't check duration if user has selected "No Limit"
-            //TODO[brainflow] commented this out to get brainflow working. Undo comment and fix.
-            // if (outputDataSource == OUTPUT_SOURCE_ODF
-            //     && eegDataSource < DATASOURCE_PLAYBACKFILE
-            //     && settings.limitOBCILogFileDuration()) {
-            //         fileoutput_odf.limitRecordingFileDuration();
-            // }
+            processNewData();
 
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
             lastReadDataPacketInd = 0;
-            pointCounter = 0;
             try {
                 process_input_file();
                 println("^^^GUI update process file has occurred");
@@ -1103,8 +1074,6 @@ void systemUpdate() { // for updating data values and variables
             wm.update();
         }
     }
-
-    currentBoard.update();
 }
 
 void systemDraw() { //for drawing to the screen
@@ -1114,44 +1083,38 @@ void systemDraw() { //for drawing to the screen
     //background(255);  //clear the screen
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        int drawLoopCounter_thresh = 100;
-        if ((redrawScreenNow) || (drawLoop_counter >= drawLoopCounter_thresh)) {
-            //if (drawLoop_counter >= drawLoopCounter_thresh) println("OpenBCI_GUI: redrawing based on loop counter...");
-            drawLoop_counter=0; //reset for next time
-            redrawScreenNow = false;  //reset for next time
-            //update the title of the figure;
-            switch (eegDataSource) {
-            case DATASOURCE_CYTON:
-                switch (outputDataSource) {
-                case OUTPUT_SOURCE_ODF:
-                    if (fileoutput_odf != null) {
-                        surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
-                    }
-                    break;
-                case OUTPUT_SOURCE_BDF:
-                    if (fileoutput_bdf != null) {
-                        surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
-                    }
-                    break;
-                case OUTPUT_SOURCE_NONE:
-                default:
-                    surface.setTitle(int(frameRate) + " fps");
-                    break;
+        //update the title of the figure;
+        switch (eegDataSource) {
+        case DATASOURCE_CYTON:
+            switch (outputDataSource) {
+            case OUTPUT_SOURCE_ODF:
+                if (fileoutput_odf != null) {
+                    surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
                 }
                 break;
-            case DATASOURCE_SYNTHETIC:
-                surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
+            case OUTPUT_SOURCE_BDF:
+                if (fileoutput_bdf != null) {
+                    surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
+                }
                 break;
-            case DATASOURCE_PLAYBACKFILE:
-                surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
-                break;
-            case DATASOURCE_GANGLION:
-                surface.setTitle(int(frameRate) + " fps, Ganglion!");
-                break;
+            case OUTPUT_SOURCE_NONE:
             default:
                 surface.setTitle(int(frameRate) + " fps");
                 break;
             }
+            break;
+        case DATASOURCE_SYNTHETIC:
+            surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
+            break;
+        case DATASOURCE_PLAYBACKFILE:
+            surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
+            break;
+        case DATASOURCE_GANGLION:
+            surface.setTitle(int(frameRate) + " fps, Ganglion!");
+            break;
+        default:
+            surface.setTitle(int(frameRate) + " fps");
+            break;
         }
 
         //wait 1 second for GUI to reinitialize
@@ -1237,7 +1200,7 @@ void systemInitSession() {
         try {
             initSystem(); //found in OpenBCI_GUI.pde
         } catch (Exception e) {
-            println(e.getMessage());
+            e.printStackTrace();
             haltSystem();
         }
         midInitCheck2 = false;

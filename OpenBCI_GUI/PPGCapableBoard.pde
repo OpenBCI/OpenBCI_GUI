@@ -5,5 +5,5 @@ interface PPGCapableBoard {
 
     public void setPPGActive(boolean active);
 
-    public double[][] getPPGValues();
+    public int[] getPPGChannels();
 };

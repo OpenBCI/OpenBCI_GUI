@@ -29,6 +29,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
+    private int[] accelChannels;
+    private int[] analogChannels;
+
     private String serialPort = "";
     private String ipAddress = "";
     private BoardIds boardId = BoardIds.CYTON_BOARD;
@@ -70,15 +73,30 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public void uninitialize() {
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
+
+        try {
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+            analogChannels = BoardShim.get_analog_channels(getBoardIdInt());
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+            res = false;
+        }
+
+        return res;
+    }
+
+    @Override
+    public void uninitializeInternal() {
         closeSDFile();
-        super.uninitialize();
+        super.uninitializeInternal();
     }
 
     @Override
     public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumChannels() + "channels");
+        if (channelIndex >= getNumEXGChannels()) {
+            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
         }
 
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
@@ -99,8 +117,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return lastValidAccelValues;
+    public int[] getAccelerometerChannels() {
+        return accelChannels;
     }
 
     @Override
@@ -118,6 +136,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
+    public int[] getAnalogChannels() {
+        return analogChannels;
+    }
+
+    @Override
     public boolean isDigitalActive() {
         return getBoardMode() == CytonBoardMode.DIGITAL;
     }
@@ -129,6 +152,13 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         } else {
             setBoardMode(CytonBoardMode.DEFAULT);
         }
+    }
+
+    @Override
+    public int[] getDigitalChannels() {
+        // TODO[brainflow]
+        return new int[0];
+        // return digitalChannels;
     }
 
     @Override

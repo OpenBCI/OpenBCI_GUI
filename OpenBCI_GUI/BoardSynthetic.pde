@@ -1,59 +1,50 @@
+import java.util.stream.IntStream;
 
 /* Generates synthetic data
  */
-class BoardSynthetic implements Board, AccelerometerCapableBoard {
-    private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-    private final float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-    private final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
+class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private final float sine_freq_Hz = 10.0f;
 
-    private DataPacket_ADS1299 dataPacket;
     private boolean streaming = false;
     private boolean isInitialized = false;
     private float[] sine_phase_rad;
     private int lastSynthTime;
-    private float[] lastAccelValues;
+    private int samplingIntervalMS;
+    private int[] exgChannels;
+    private int[] accelChanels;
+    private int totalChannels;
 
     // Synthetic accel data timer. Track frame count for synthetic data.
     private int accelSynthTime;
 
     public BoardSynthetic() {        
-        dataPacket = new DataPacket_ADS1299(getNumChannels(), NUM_ACCEL_DIMS);
-        sine_phase_rad = new float[getNumChannels()];
-        lastAccelValues = new float[NUM_ACCEL_DIMS];
     }
 
     @Override
-    public boolean initialize() {
+    public boolean initializeInternal() {
+        exgChannels = range(0, nchan);
+        accelChanels = range(nchan, nchan + NUM_ACCEL_DIMS);
+        
+        sine_phase_rad = new float[getNumEXGChannels()];
+
+        totalChannels = exgChannels.length + accelChanels.length;
+
+        samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
+
+        accelSynthTime = 0;
+        
         isInitialized = true;
         return true;
     }
 
     @Override
-    public void uninitialize() {
+    public void uninitializeInternal() {
         isInitialized = false;
     }
 
     @Override
-    public void update() {
-        if (!streaming) {
-            return; // early out
-        }
-        
-        int samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
-
-        while (millis() - lastSynthTime > samplingIntervalMS)
-        {
-            synthesizeData();
-            synthesizeAccelData();
-
-            // TODO[brainflow] this is common to all boards. refactor it?
-            // This is also used to let the rest of the code that it may be time to do something
-            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length;
-            dataPacket.copyTo(dataPacketBuff[curDataPacketInd]);
-
-            lastSynthTime += samplingIntervalMS;
-        }
+    public void updateInternal() {
+        //empty
     }
 
     @Override
@@ -63,7 +54,6 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
             return;
         }
         lastSynthTime = millis();
-        accelSynthTime = 0;
         streaming = true;
     }
 
@@ -84,15 +74,15 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
     public int getSampleRate() {
         return 250;
     }
-    
+
     @Override
-    public int getNumChannels() {
-        return nchan;
+    public int[] getEXGChannels() {
+        return exgChannels;
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return lastAccelValues;
+    public int[] getAccelerometerChannels() {
+        return accelChanels;
     }
 
     @Override
@@ -120,10 +110,32 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
         outputWarn("Changing the sampling rate is not implemented for Sythetic board. Sampling rate will stay at " + getSampleRate());
     }
 
+    @Override
+    protected double[][] getNewDataInternal() {
+        if(!streaming) {
+            return emptyData;
+        }
+
+        int timeElapsed = millis() - lastSynthTime;
+        int totalSamples = timeElapsed / samplingIntervalMS;
+
+        double[][] newData = new double[totalChannels][totalSamples];
+
+        for (int i=0; i<totalSamples; i++)
+        {
+            synthesizeEXGData(newData, i);
+            synthesizeAccelData(newData, i);
+            
+            lastSynthTime += samplingIntervalMS;
+        }
+
+        return newData;
+    }
+
     //Synthesize Time Series Data to Test GUI Functionality
-    void synthesizeData() {
+    private void synthesizeEXGData(double[][] buffer, int sampleIndex) {
         float val_uV;
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
+        for (int Ichan : getEXGChannels()) {
             if (isChannelActive(Ichan)) {
                 val_uV = randomGaussian()*sqrt(getSampleRate()/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
                 if (Ichan==0) {
@@ -167,17 +179,23 @@ class BoardSynthetic implements Board, AccelerometerCapableBoard {
             } else {
                 val_uV = 0.0f;
             }
-            dataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+
+            buffer[Ichan][sampleIndex] = (double)(0.5 + val_uV); //convert to counts, the 0.5 is to ensure rounding
         }
     }
 
-    void synthesizeAccelData() {
-        for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+    private void synthesizeAccelData(double[][] buffer, int sampleIndex) {
+        for (int i = 0; i < accelChanels.length; i++) {
             // simple sin wave tied to current time.
             // offset each axis by its index * 2
             // multiply by accelXyzLimit to fill the height of the plot
-            lastAccelValues[i] = sin(accelSynthTime/100.f + i*2.f) * accelXyzLimit;
+            buffer[accelChanels[i]][sampleIndex] = (double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit;
         }
         accelSynthTime ++;
     }//end void synthesizeAccelData
+
+    @Override
+    protected int getTotalChannelCount() {
+        return totalChannels;
+    }
 };

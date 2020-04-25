@@ -36,8 +36,8 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     @Override
     public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumChannels() + "channels");
+        if (channelIndex >= getNumEXGChannels()) {
+            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
         }
 
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
@@ -87,19 +87,8 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     }
 
     @Override
-    public double[][] getPPGValues() {
-        double[][] res = new double[ppgChannels.length][];
-        int dataCount = 0;
-        if (rawData != null) {
-            dataCount = rawData[0].length;
-        }
-        for (int i = 0; i < ppgChannels.length; i++) {
-            res[i] = new double[dataCount];
-            for (int j = 0; j < dataCount; j++) {
-                res[i][j] = rawData[ppgChannels[i]][j];
-            }
-        }
-        return res;
+    public int[] getPPGChannels() {
+        return ppgChannels;
     }
 
     @Override
@@ -113,18 +102,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     }
 
     @Override
-    public double[][] getEDAValues() {
-        double[][] res = new double[edaChannels.length][];
-        int dataCount = 0;
-        if (rawData != null) {
-            dataCount = rawData[0].length;
-        }
-        for (int i = 0; i < edaChannels.length; i++) {
-            res[i] = new double[dataCount];
-            for (int j = 0; j < dataCount; j++) {
-                res[i][j] = rawData[edaChannels[i]][j];
-            }
-        }
-        return res;
+    public int[] getEDAChannels() {
+        return edaChannels;
     }
 };

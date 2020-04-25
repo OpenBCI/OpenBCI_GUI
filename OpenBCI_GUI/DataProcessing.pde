@@ -50,103 +50,6 @@ void process_input_file() throws Exception {
     }
 }
 
-/*************************/
-int getDataIfAvailable(int pointCounter) {
-    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
-    if (currentBoard instanceof BoardBrainFlow) {
-        scaler = 1;
-    }
-
-    // todo[brainflow] - this code here is just a copypaste get rid of it
-    if (eegDataSource == DATASOURCE_CYTON) {
-        //get data from serial port as it streams in
-        //next, gather any new data into the "little buffer"
-        while ((curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            //println(timestamps.length);
-            long timestamp = dataPacketBuff[lastReadDataPacketInd].timeStamp;
-            // todo[brainflow] This method will be used to save data to ODF or BDF playback file
-            //println(timestamp + " | " + pointCounter % (timestamps.length + 1) + " of " + timestamps.length);
-            //saveDataToFile(scaler, lastReadDataPacketInd, timestamp,  currentBoard.getLastValidAccelValues());
-            pointCounter++; //increment counter for "little buffer"
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        //get data from ble as it streams in
-        //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
-            }
-            pointCounter++; //increment counter for "little buffer"
-        }
-
-    } else if (eegDataSource == DATASOURCE_NOVAXR) {
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan];
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            pointCounter++; //increment counter for "little buffer"
-        }
-
-    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * scaler;
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            pointCounter++; //increment counter for "little buffer"
-        }
-
-    } else {
-        // make or load data to simulate real time
-
-        //has enough time passed?
-        int current_millis = millis();
-        if (current_millis >= nextPlayback_millis) {
-            //prepare for next time
-            int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/getSampleRateSafe())/playback_speed_fac);
-            if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
-            nextPlayback_millis += increment_millis;
-
-            // generate or read the data
-            lastReadDataPacketInd = 0;
-            for (int i = 0; i < nPointsPerUpdate; i++) {
-                dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
-                switch (eegDataSource) {
-                case DATASOURCE_PLAYBACKFILE:
-                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
-                    break;
-                default:
-                    //no action
-                }
-                //gather the data into the "little buffer"
-                for (int Ichan=0; Ichan < nchan; Ichan++) {
-                    //scale the data into engineering units..."microvolts"
-                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* scaler;
-                }
-
-                pointCounter++;
-            } //close the loop over data points
-        } // close "has enough time passed"
-    }
-    return pointCounter;
-}
-
 void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] _auxBuff) {
     //If data is available, save to playback file...
     float auxScaler = scaler;
@@ -192,34 +95,34 @@ void processNewData() {
     //compute instantaneous byte rate
     float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
 
-    prevMillis=millis();           //store for next time
+    prevMillis = millis();           //store for next time
     prevBytes = openBCI_byteCount; //store for next time
 
     //compute smoothed byte rate
     avgBitRate.addValue(inst_byteRate_perSec);
     byteRate_perSec = (int)avgBitRate.calcMean();
 
-    //update the data buffers
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-        //append the new data to the larger data buffer...because we want the plotting routines
-        //to show more than just the most recent chunk of data.  This will be our "raw" data.
-        appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
+    List<double[]> currentData = currentBoard.getData(currentBoard.getBufferSize());
+    int[] exgChannels = currentBoard.getEXGChannels();
+    int channelCount = currentBoard.getNumEXGChannels();
 
-        //make a copy of the data that we'll apply processing to.  This will be what is displayed on the full montage
+    //update the data buffers
+    for (int Ichan=0; Ichan < channelCount; Ichan++) {
+        
+        for(int i = 0; i < currentBoard.getBufferSize(); i++) {
+            dataBuffY_uV[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
+        }
+
         dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
     }
 
-    //if you want to, re-reference the montage to make it be a mean-head reference
-    if (false) rereferenceTheMontage(dataBuffY_filtY_uV);
-
     //apply additional processing for the time-domain montage plot (ie, filtering)
-    dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+    dataProcessing.process(dataBuffY_filtY_uV, fftBuff);
 
-    dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataPacketBuff[lastReadDataPacketInd].values[Ichan]);
+    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataBuffY_uV[Ichan][dataBuffY_uV.length-1]);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -257,59 +160,6 @@ void appendAndShift(float[] data, float newData) {
         data[i]=data[i+nshift];  //shift data points down by 1
     }
     data[end] = newData;  //append new data
-}
-
-final float sine_freq_Hz = 10.0f;
-float[] sine_phase_rad = new float[nchan];
-
-void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV;
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-        if (isChannelActive(Ichan)) {
-            val_uV = randomGaussian()*sqrt(fs_Hz/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-            if (Ichan==0) val_uV*= 10f;  //scale one channel higher
-
-            if (Ichan==1) {
-                //add sine wave at 10 Hz at 10 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * sine_freq_Hz / fs_Hz;
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);
-            } else if (Ichan==2) {
-                //15 Hz interference at 20 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 15.0f / fs_Hz;  //15 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //20 uVrms
-            } else if (Ichan==3) {
-                //20 Hz interference at 30 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 20.0f / fs_Hz;  //20 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 30.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //30 uVrms
-            } else if (Ichan==4) {
-                //25 Hz interference at 40 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 25.0f / fs_Hz;  //25 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 40.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //40 uVrms
-            } else if (Ichan==5) {
-                //30 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 30.0f / fs_Hz;  //30 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
-            } else if (Ichan==6) {
-                //50 Hz interference at 80 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //50 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //80 uVrms
-            } else if (Ichan==7) {
-                //60 Hz interference at 100 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //60 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
-            }
-        } else {
-            val_uV = 0.0f;
-        }
-        curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-    }
 }
 
 //some data initialization routines
@@ -724,7 +574,8 @@ class DataProcessing {
         currentNotch_ind++;
         if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
         settings.dataProcessingNotchSave = currentNotch_ind;
-}
+    }
+    
     void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
         int Nfft = getNfftSafe();
         double foo;
@@ -756,9 +607,6 @@ class DataProcessing {
 
         //compute the FFT
         fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
-
-        //convert to uV_per_bin...still need to confirm the accuracy of this code.
-        //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
 
         // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
         // first calculate double-sided FFT amplitude spectrum
@@ -821,10 +669,7 @@ class DataProcessing {
         }
     }
 
-    public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
-        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
-        float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
-        FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+    public void process(float[][] data_forDisplay_uV, FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
         float prevFFTdata[] = new float[fftBuff[0].specSize()];
 

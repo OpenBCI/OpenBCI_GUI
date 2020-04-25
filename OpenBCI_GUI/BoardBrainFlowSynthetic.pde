@@ -3,18 +3,25 @@ import brainflow.*;
 class BoardBrainFlowSynthetic extends BoardBrainFlow
 implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
+    private int[] accelChannels = {};
     private int[] edaChannels = {};
     private int[] ppgChannels = {};
 
+    @Override
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
 
-    public BoardBrainFlowSynthetic() {
-        super();
         try {
-            edaChannels = BoardShim.get_eda_channels(BoardIds.SYNTHETIC_BOARD.get_code ());
-            ppgChannels = BoardShim.get_ppg_channels(BoardIds.SYNTHETIC_BOARD.get_code ());
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
+            edaChannels = BoardShim.get_eda_channels(getBoardIdInt());
+            ppgChannels = BoardShim.get_ppg_channels(getBoardIdInt());
+
         } catch (BrainFlowError e) {
             e.printStackTrace();
+            res = false;
         }
+
+        return res;
     }
 
     // implement mandatory abstract functions
@@ -46,8 +53,8 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return lastValidAccelValues;
+    public int[] getAccelerometerChannels() {
+        return accelChannels;
     }
 
     @Override
@@ -61,19 +68,8 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     }
 
     @Override
-    public double[][] getPPGValues() {
-        double[][] res = new double[ppgChannels.length][];
-        int dataCount = 0;
-        if (rawData != null) {
-            dataCount = rawData[0].length;
-        }
-        for (int i = 0; i < ppgChannels.length; i++) {
-            res[i] = new double[dataCount];
-            for (int j = 0; j < dataCount; j++) {
-                res[i][j] = rawData[ppgChannels[i]][j];
-            }
-        }
-        return res;
+    public int[] getPPGChannels() {
+        return ppgChannels;
     }
 
     @Override
@@ -87,18 +83,7 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     }
 
     @Override
-    public double[][] getEDAValues() {
-        double[][] res = new double[edaChannels.length][];
-        int dataCount = 0;
-        if (rawData != null) {
-            dataCount = rawData[0].length;
-        }
-        for (int i = 0; i < edaChannels.length; i++) {
-            res[i] = new double[dataCount];
-            for (int j = 0; j < dataCount; j++) {
-                res[i][j] = rawData[edaChannels[i]][j];
-            }
-        }
-        return res;
+    public int[] getEDAChannels() {
+        return edaChannels;
     }
 };

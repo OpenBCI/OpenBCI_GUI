@@ -5,5 +5,5 @@ interface EDACapableBoard {
 
     public void setEDAActive(boolean active);
 
-    public double[][] getEDAValues();
+    public int[] getEDAChannels();
 };

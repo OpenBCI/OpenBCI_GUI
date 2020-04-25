@@ -3,6 +3,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
+    private int[] accelChannels;
+
     private String serialPort = "";
     private String macAddress = "";
     private String ipAddress = "";
@@ -43,8 +45,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
 
     @Override
     public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumChannels() + "channels");
+        if (channelIndex >= getNumEXGChannels()) {
+            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
         }
 
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
@@ -52,18 +54,24 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     }
 
     @Override
-    public boolean initialize()
+    public boolean initializeInternal()
     {
         // turn on accel by default, or is it handled somewhere else?
-        boolean res = super.initialize();
-        if (res)
+        boolean res = super.initializeInternal();
+
+        try {
+            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
             setAccelerometerActive(true);
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+            res = false;
+        }
+
         return res;
     }
 
     @Override
-    public boolean isAccelerometerActive()
-    {
+    public boolean isAccelerometerActive() {
         return isGettingAccel;
     }
 
@@ -74,8 +82,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     }
 
     @Override
-    public float[] getLastValidAccelValues() {
-        return lastValidAccelValues;
+    public int[] getAccelerometerChannels() {
+        return accelChannels;
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
