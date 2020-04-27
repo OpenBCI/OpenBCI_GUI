@@ -199,9 +199,9 @@ void convert8channelLine() {
 }
 
 void createPlaybackFileFromSD() {
-    logFileName = settings.guiDataPath+"SDconverted-"+DirectoryManager.getDateString()+".csv";
+    logFileName = settings.guiDataPath+"SDconverted-"+DirectoryManager.getFileNameDateTime()+".csv";
     dataWriter = createWriter(logFileName);
-    dataWriter.println("%OBCI SD Convert - " + DirectoryManager.getDateString());
+    dataWriter.println("%OBCI SD Convert - " + DirectoryManager.getFileNameDateTime());
     dataWriter.println("%");
     dataWriter.println("%Sample Rate = 250.0 Hz");
     dataWriter.println("%First Column = SampleIndex");

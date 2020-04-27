@@ -66,7 +66,6 @@ String localGUIVersionString = "v4.2.0";
 String localGUIVersionDate = "January 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
-DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -336,7 +335,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    println("Console Log Started at Local Time: " + DirectoryManager.getDateString());
+    println("Console Log Started at Local Time: " + DirectoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");

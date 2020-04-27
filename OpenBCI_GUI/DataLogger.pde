@@ -52,7 +52,7 @@ class DataLogger {
         if (settings.isLogFileOpen() && outputDataSource == OUTPUT_SOURCE_ODF && settings.maxLogTimeReached()) {
             println("DataLogging: Max recording duration reached for OpenBCI data format. Creating a new recording file in the session folder.");
             closeLogFile();
-            openNewLogFile(DirectoryManager.getDateString());
+            openNewLogFile(DirectoryManager.getFileNameDateTime());
             settings.setLogFileStartTime(System.nanoTime());
         }
     }
@@ -61,7 +61,7 @@ class DataLogger {
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource != DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
-                openNewLogFile(DirectoryManager.getDateString());
+                openNewLogFile(DirectoryManager.getFileNameDateTime());
             }
             settings.setLogFileStartTime(System.nanoTime());
         }

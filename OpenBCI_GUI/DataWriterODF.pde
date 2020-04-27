@@ -1,9 +1,10 @@
 
 //write data to a text file
 public class DataWriterODF {
-    PrintWriter output;
-    String fname;
+    private PrintWriter output;
+    private String fname;
     private int rowsWritten;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     //variation on constructor to have custom name
     DataWriterODF(String _sessionName, String _fileName) {
@@ -45,7 +46,7 @@ public class DataWriterODF {
             // *1000 to convert from seconds to milliserconds
             long timestampMS = (long)(data[timestampChan][iSample] * 1000.0);
 
-            output.print(dateFormat.format(new Date(timestamp)));
+            output.print(dateFormat.format(new Date(timestampMS)));
             output.println();
             
             rowsWritten++;
