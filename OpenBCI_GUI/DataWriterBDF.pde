@@ -55,7 +55,7 @@ public class OutputFile_BDF {
     private String bdf_patient_id_subfield_name = "X"; // the patients name. No spaces! Use "_" where ever a space is
 
     private String bdf_recording_id_subfield_prefix = "X"; //"Startdate"; // The text 'Startdate'
-    private String bdf_recording_id_subfield_startdate = "X"; // getFileNameDateTime(startDateFormat); // The startdate itself in dd-MM-yyyy format using the English 3-character abbreviations of the month in capitals.
+    private String bdf_recording_id_subfield_startdate = "X"; // getDateString(startDateFormat); // The startdate itself in dd-MM-yyyy format using the English 3-character abbreviations of the month in capitals.
     private String bdf_recording_id_subfield_admin_code = "X"; // The hospital administration code of the investigation, i.e. EEG number or PSG number.
     private String bdf_recording_id_subfield_investigator = "X"; // A code specifying the responsible investigator or technician.
     private String bdf_recording_id_subfield_equipment = "X"; // A code specifying the used equipment.
@@ -569,7 +569,7 @@ public class OutputFile_BDF {
       * @param `d` {DateFormat} - The format you want the date/time in
       * @returns {String} - The current date/time formatted based on `d`
       */
-    private String getFileNameDateTime(DateFormat d) {
+    private String getDateString(DateFormat d) {
         // Get current date time with Date()
         return d.format(new Date());
     }
@@ -579,7 +579,7 @@ public class OutputFile_BDF {
       * @param `d` {DateFormat} - The format you want the date/time in
       * @returns {String} - The current date/time formatted based on `d`
       */
-    private String getFileNameDateTime(Date d, DateFormat df) {
+    private String getDateString(Date d, DateFormat df) {
         // Get current date time with Date()
         return df.format(d);
     }
@@ -908,8 +908,8 @@ public class OutputFile_BDF {
             writeString(padStringRight(joinStringArray(temp1, " "), BDF_HEADER_SIZE_PATIENT_ID), o);
             String[] temp2 = {bdf_recording_id_subfield_prefix,bdf_recording_id_subfield_startdate,bdf_recording_id_subfield_admin_code,bdf_recording_id_subfield_investigator,bdf_recording_id_subfield_equipment};
             writeString(padStringRight(joinStringArray(temp2, " "), BDF_HEADER_SIZE_RECORDING_ID), o);
-            writeString(getFileNameDateTime(startTime, startDateFormat), o);
-            writeString(getFileNameDateTime(startTime, startTimeFormat), o);
+            writeString(getDateString(startTime, startDateFormat), o);
+            writeString(getDateString(startTime, startTimeFormat), o);
             writeString(padStringRight(Integer.toString(getBytesInHeader()),BDF_HEADER_SIZE_BYTES_IN_HEADER), o);
             verbosePrint("writeHeader: Bytes in header == " + getBytesInHeader());
             totalByteCount += getBytesInHeader();
