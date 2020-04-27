@@ -59,11 +59,9 @@ class SoftwareSettings {
     public final String[] fileDurations = {"5 Minutes", "15 minutes", "30 Minutes", "60 Minutes", "120 Minutes", "No Limit"};
     public final int[] fileDurationInts = {5, 15, 30, 60, 120, -1};
     public final int defaultOBCIMaxFileSize = 3; //4th option from the above list
-    public int cytonOBCIMaxFileSize = defaultOBCIMaxFileSize;
-    public int ganglionOBCIMaxFileSize = defaultOBCIMaxFileSize;
     private boolean logFileIsOpen = false;
     private long logFileStartTime;
-    private long logFileMaxDuration;
+    private long logFileMaxDurationNano = -1;
     //this is a global CColor that determines the style of all widget dropdowns ... this should go in WidgetManager.pde
     CColor dropdownColors = new CColor();
     ///These `Save` vars are set to default when each widget instantiates
@@ -343,28 +341,17 @@ class SoftwareSettings {
         verbosePrint("Settings: LogFileStartTime = " + _time);
     }
 
-    public void setLogFileMaxDuration() {
-        int _maxFileSize = (eegDataSource == DATASOURCE_CYTON) ? cytonOBCIMaxFileSize : ganglionOBCIMaxFileSize;
-        logFileMaxDuration = fileDurationInts[_maxFileSize] * 1000000000L * 60;
-        println("Settings: LogFileMaxDuration = " + fileDurationInts[_maxFileSize] + " minutes");
+    public void setLogFileDurationChoice(int choice) {
+        logFileMaxDurationNano = fileDurationInts[choice] * 1000000000L * 60;
+        println("Settings: LogFileMaxDuration = " + fileDurationInts[choice] + " minutes");
     }
 
     //Only called during live mode && using OpenBCI Data Format
     public boolean maxLogTimeReached() {
-        if (logFileMaxDuration < 0) {
+        if (logFileMaxDurationNano < 0) {
             return false;
         } else {
-            return (System.nanoTime() - logFileStartTime) > (logFileMaxDuration);
-        }
-    }
-
-    //Called in OpenBCI_GUI.pde to gate the above function
-    public boolean limitOBCILogFileDuration() {
-        if (logFileMaxDuration > 0) {
-            return true;
-        } else {
-            //If the value is less than zero, don't call maxLogTimeReached()
-            return false;
+            return (System.nanoTime() - logFileStartTime) > (logFileMaxDurationNano);
         }
     }
 

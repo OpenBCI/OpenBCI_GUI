@@ -228,18 +228,11 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    if (theEvent.isFrom("maxFileDurationCyton")) {
+    if (theEvent.isFrom("maxFileDuration")) {
         int n = (int)theEvent.getValue();
-        settings.cytonOBCIMaxFileSize = n;
+        settings.setLogFileDurationChoice(n);
         controlPanel.dataLogBoxCyton.closeDropdown();
-        println("ControlPanel: Cyton Max Recording Duration: " + settings.fileDurations[n]);
-    }
-
-    if (theEvent.isFrom("maxFileDurationGanglion")) {
-        int n = (int)theEvent.getValue();
-        settings.ganglionOBCIMaxFileSize = n;
-        controlPanel.dataLogBoxGanglion.closeDropdown();
-        println("ControlPanel: Ganglion Max Recording Duration: " + settings.fileDurations[n]);
+        println("ControlPanel: Chosen Recording Duration: " + n);
     }
 
     //Check control events from widgets
@@ -1310,9 +1303,8 @@ public void initButtonPressed(){
                 // }
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             }
-
-            if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
-                settings.setLogFileMaxDuration();
+            else {
+                sessionName = DirectoryManager.getFileNameDateTime();
             }
 
             if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
@@ -1787,7 +1779,7 @@ class SessionDataBox {
 
         //The OpenBCI data format max duration dropdown is controlled by the local cp5 instance
         cp5_dataLog_dropdown = new ControlP5(ourApplet);
-        maxDurDropdownName = (_dataSource == DATASOURCE_CYTON) ? "maxFileDurationCyton" : "maxFileDurationGanglion";
+        maxDurDropdownName = "maxFileDuration";
         createDropdown(maxDurDropdownName, Arrays.asList(settings.fileDurations));
         cp5_dataLog_dropdown.setGraphics(ourApplet, 0,0);
         cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
