@@ -54,8 +54,13 @@ class BoardNull extends Board {
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         // empty
+    }
+    
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return false;
     }
 
     @Override

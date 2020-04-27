@@ -84,7 +84,9 @@ abstract class Board {
 
     public abstract int getSampleRate();
 
-    public abstract void setChannelActive(int channelIndex, boolean active);
+    public abstract void setEXGChannelActive(int channelIndex, boolean active);
+
+    public abstract boolean isEXGChannelActive(int channelIndex);
 
     public abstract void sendCommand(String command);
 

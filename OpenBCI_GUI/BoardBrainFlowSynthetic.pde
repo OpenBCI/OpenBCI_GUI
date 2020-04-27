@@ -37,9 +37,14 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         // Dummy string
         configBoard("SYNTHETIC PLACEHOLDER");
+    }
+
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return true;
     }
 
     @Override

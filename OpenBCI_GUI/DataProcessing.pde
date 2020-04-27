@@ -172,7 +172,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
 
         //get each value
         for (int Ichan=0; Ichan < nchan; Ichan++) {
-            if (isChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
+            if (currentBoard.isEXGChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
                 val_uV = row.getFloat(Ichan);
             } else {
                 //use zeros for the missing channels
