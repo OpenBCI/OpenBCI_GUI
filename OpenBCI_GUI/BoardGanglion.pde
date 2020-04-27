@@ -94,4 +94,11 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     public boolean isCheckingImpedance() {
         return isCheckingImpedance;
     }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
+    }
 };

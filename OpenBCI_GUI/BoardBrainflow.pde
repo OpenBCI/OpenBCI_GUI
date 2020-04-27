@@ -181,6 +181,16 @@ abstract class BoardBrainFlow extends Board {
         return exgChannels;
     }
 
+    @Override
+    public int getTimestampChannel() {
+        return timeStampChannel;
+    }
+    
+    @Override
+    public int getSampleNumberChannel() {
+        return packetNumberChannel;
+    }
+
     public int getBoardIdInt() {
         return getBoardId().get_code();
     }

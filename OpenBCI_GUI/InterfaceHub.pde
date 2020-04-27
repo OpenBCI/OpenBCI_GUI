@@ -746,7 +746,7 @@ class Hub {
                         case OUTPUT_SOURCE_BDF:
                             // curBDFDataPacketInd = curDataPacketInd;
                             // thread("writeRawData_dataPacket_bdf");
-                            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+                            //fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
                             break;
                         case OUTPUT_SOURCE_NONE:
                         default:
@@ -1022,7 +1022,7 @@ class Hub {
     }
 
     void writeRawData_dataPacket_bdf() {
-        fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
+        //fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curBDFDataPacketInd]);
     }
 
     public int copyDataPacketTo(DataPacket_ADS1299 target) {

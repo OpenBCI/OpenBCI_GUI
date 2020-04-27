@@ -230,6 +230,16 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public void configureAllChannelsToDefault() {
         configBoard("d");
     };
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
+        for (int i=0; i<analogChannels.length; i++) {
+            channelNames[analogChannels[i]] = "Analog Channel " + i;
+        }
+    }
 };
 
 

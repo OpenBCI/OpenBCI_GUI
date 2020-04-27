@@ -180,9 +180,6 @@ float data_elec_imp_ohm[];
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
 
-//variables for writing EEG data out to a file
-OutputFile_rawtxt fileoutput_odf;
-OutputFile_BDF fileoutput_bdf;
 String output_fname;
 String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
@@ -1085,14 +1082,10 @@ void systemDraw() { //for drawing to the screen
         case DATASOURCE_CYTON:
             switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
-                if (fileoutput_odf != null) {
-                    surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
-                }
+                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
                 break;
             case OUTPUT_SOURCE_BDF:
-                if (fileoutput_bdf != null) {
-                    surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
-                }
+                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
                 break;
             case OUTPUT_SOURCE_NONE:
             default:

@@ -10,8 +10,10 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private float[] sine_phase_rad;
     private int lastSynthTime;
     private int samplingIntervalMS;
+    private int sampleNumberChannel;
     private int[] exgChannels;
-    private int[] accelChanels;
+    private int[] accelChannels;
+    private int timestampChannel;
     private int totalChannels;
 
     // Synthetic accel data timer. Track frame count for synthetic data.
@@ -22,12 +24,17 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
 
     @Override
     public boolean initializeInternal() {
-        exgChannels = range(0, nchan);
-        accelChanels = range(nchan, nchan + NUM_ACCEL_DIMS);
+        int count = 0;
+        sampleNumberChannel = count++;
+        exgChannels = range(count, count + nchan);
+        count += nchan;
+        accelChannels = range(count, count + NUM_ACCEL_DIMS);
+        count += NUM_ACCEL_DIMS;
+        timestampChannel = count++;
         
         sine_phase_rad = new float[getNumEXGChannels()];
 
-        totalChannels = exgChannels.length + accelChanels.length;
+        totalChannels = exgChannels.length + accelChannels.length;
 
         samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
 
@@ -81,8 +88,18 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
 
     @Override
+    public int getTimestampChannel() {
+        return timestampChannel;
+    }
+    
+    @Override
+    public int getSampleNumberChannel() {
+        return sampleNumberChannel;
+    }
+
+    @Override
     public int[] getAccelerometerChannels() {
-        return accelChanels;
+        return accelChannels;
     }
 
     @Override
@@ -185,11 +202,11 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
 
     private void synthesizeAccelData(double[][] buffer, int sampleIndex) {
-        for (int i = 0; i < accelChanels.length; i++) {
+        for (int i = 0; i < accelChannels.length; i++) {
             // simple sin wave tied to current time.
             // offset each axis by its index * 2
             // multiply by accelXyzLimit to fill the height of the plot
-            buffer[accelChanels[i]][sampleIndex] = (double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit;
+            buffer[accelChannels[i]][sampleIndex] = (double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit;
         }
         accelSynthTime ++;
     }//end void synthesizeAccelData
@@ -197,5 +214,12 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     @Override
     protected int getTotalChannelCount() {
         return totalChannels;
+    }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
     }
 };

@@ -86,4 +86,17 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     public int[] getEDAChannels() {
         return edaChannels;
     }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<edaChannels.length; i++) {
+            channelNames[edaChannels[i]] = "EDA Channel " + i;
+        }
+        for (int i=0; i<ppgChannels.length; i++) {
+            channelNames[ppgChannels[i]] = "PPG Channel " + i;
+        }
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
+    }
 };

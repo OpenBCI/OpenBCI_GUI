@@ -1,4 +1,8 @@
 class DataLogger {
+    //variables for writing EEG data out to a file
+    private DataWriterODF fileWriterODF;
+    private OutputFile_BDF fileoutput_bdf;
+
     DataLogger() {
 
     }
@@ -15,6 +19,33 @@ class DataLogger {
 
     public void update() {
         limitRecordingFileDuration();
+
+        saveNewData();
+    }
+
+    
+    private void saveNewData() {
+        //If data is available, save to playback file...
+        if(!settings.isLogFileOpen()) {
+            return;
+        }
+
+        double[][] newData = currentBoard.getFrameData();
+
+        switch (outputDataSource) {
+            case OUTPUT_SOURCE_ODF:
+                fileWriterODF.append(newData);
+                break;
+            case OUTPUT_SOURCE_BDF:
+                // curBDFDataPacketInd = curDataPacketInd;
+                // thread("writeRawData_dataPacket_bdf");
+                fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+                break;
+            case OUTPUT_SOURCE_NONE:
+            default:
+                // Do nothing...
+                break;
+        }
     }
 
     public void limitRecordingFileDuration() {
@@ -39,6 +70,18 @@ class DataLogger {
     public void onStopStreaming() {
         //Close the log file when using OpenBCI Data Format (.txt)
         if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
+    }
+
+    public float getSecondsWritten() {
+        if (outputDataSource == OUTPUT_SOURCE_ODF && fileWriterODF != null) {
+            return float(fileWriterODF.getRowsWritten())/getSampleRateSafe();
+        }
+        
+        if (outputDataSource == OUTPUT_SOURCE_BDF && fileoutput_bdf != null) {
+            return fileoutput_bdf.getRecordsWritten();
+        }
+
+        return 0.f;
     }
 
     private void openNewLogFile(String _fileName) {
@@ -81,14 +124,14 @@ class DataLogger {
     * @param `_fileName` {String} - The meat of the file name
     */
     private void openNewLogFileODF(String _fileName) {
-        if (fileoutput_odf != null) {
+        if (fileWriterODF != null) {
             println("OpenBCI_GUI: closing log file");
             closeLogFile();
         }
         //open the new file
-        fileoutput_odf = new OutputFile_rawtxt(getSampleRateSafe(), sessionName, _fileName);
+        fileWriterODF = new DataWriterODF(sessionName, _fileName);
 
-        output_fname = fileoutput_odf.fname;
+        output_fname = fileWriterODF.fname;
         println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
     }
 
@@ -123,10 +166,10 @@ class DataLogger {
     * @description Close an open ODF file.
     */
     private void closeLogFileODF() {
-        if (fileoutput_odf != null) {
-            fileoutput_odf.closeFile();
+        if (fileWriterODF != null) {
+            fileWriterODF.closeFile();
         }
-        fileoutput_odf = null;
+        fileWriterODF = null;
     }
 
     private void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
