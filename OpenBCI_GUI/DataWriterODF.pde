@@ -4,7 +4,6 @@ public class DataWriterODF {
     PrintWriter output;
     String fname;
     private int rowsWritten;
-    private long logFileStartTime;
 
     //variation on constructor to have custom name
     DataWriterODF(String _sessionName, String _fileName) {
@@ -24,6 +23,7 @@ public class DataWriterODF {
         output.println("%Sample Rate = " + currentBoard.getSampleRate() + " Hz");
 
         String[] colNames = currentBoard.getChannelNames();
+        
         for (int i=0; i<colNames.length; i++) {
             output.print(colNames[i]);
             output.print(", ");
@@ -42,7 +42,9 @@ public class DataWriterODF {
             }
 
             int timestampChan = currentBoard.getTimestampChannel();
-            long timestamp = (long)data[timestampChan][iSample];
+            // *1000 to convert from seconds to milliserconds
+            long timestampMS = (long)(data[timestampChan][iSample] * 1000.0);
+
             output.print(dateFormat.format(new Date(timestamp)));
             output.println();
             
