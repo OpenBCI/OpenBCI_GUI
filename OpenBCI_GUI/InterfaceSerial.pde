@@ -493,7 +493,7 @@ class InterfaceSerial {
                 if (cytonLegacy.hardwareSyncStep == 0) {
                     // Failure: Communications timeout - Device failed to poll Host$$$
                     if (cytonLegacy.potentialFailureMessage.equals(failureMessage)) {
-                        closeLogFile();
+                        //closeLogFile();
                         return 0;
                     }
                 }

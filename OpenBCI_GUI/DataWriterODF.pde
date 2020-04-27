@@ -163,17 +163,4 @@ public class OutputFile_rawtxt {
     public int getRowsWritten() {
         return rowsWritten;
     }
-
-    public void limitRecordingFileDuration() {
-        if (settings.maxLogTimeReached()) {
-            println("DataLogging: Max recording duration reached for OpenBCI data format. Creating a new recording file in the session folder.");
-            closeLogFile();
-            //open data file if it has not already been opened
-            if (!settings.isLogFileOpen()) {
-                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
-                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
-            }
-            settings.setLogFileStartTime(System.nanoTime());
-        }
-    }
 };
