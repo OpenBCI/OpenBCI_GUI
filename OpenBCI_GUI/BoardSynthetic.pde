@@ -10,9 +10,12 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private float[] sine_phase_rad;
     private int lastSynthTime;
     private int samplingIntervalMS;
+    private int sampleNumberChannel;
     private int[] exgChannels;
-    private int[] accelChanels;
+    private int[] accelChannels;
+    private int timestampChannel;
     private int totalChannels;
+    private boolean[] exgChannelActive;
 
     // Synthetic accel data timer. Track frame count for synthetic data.
     private int accelSynthTime;
@@ -22,12 +25,18 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
 
     @Override
     public boolean initializeInternal() {
-        exgChannels = range(0, nchan);
-        accelChanels = range(nchan, nchan + NUM_ACCEL_DIMS);
+        totalChannels = 0;
+        sampleNumberChannel = totalChannels++;
+        exgChannels = range(totalChannels, totalChannels + nchan);
+        totalChannels += nchan;
+        accelChannels = range(totalChannels, totalChannels + NUM_ACCEL_DIMS);
+        totalChannels += NUM_ACCEL_DIMS;
+        timestampChannel = totalChannels++;
+
+        exgChannelActive = new boolean[exgChannels.length];
+        Arrays.fill(exgChannelActive, true);
         
         sine_phase_rad = new float[getNumEXGChannels()];
-
-        totalChannels = exgChannels.length + accelChanels.length;
 
         samplingIntervalMS = (int)((1.f/getSampleRate()) * 1000);
 
@@ -81,8 +90,18 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
 
     @Override
+    public int getTimestampChannel() {
+        return timestampChannel;
+    }
+    
+    @Override
+    public int getSampleNumberChannel() {
+        return sampleNumberChannel;
+    }
+
+    @Override
     public int[] getAccelerometerChannels() {
-        return accelChanels;
+        return accelChannels;
     }
 
     @Override
@@ -96,8 +115,13 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
-        // empty
+    public void setEXGChannelActive(int channelIndex, boolean active) {
+        exgChannelActive[channelIndex] = active;
+    }
+
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return exgChannelActive[channelIndex];
     }
 
     @Override
@@ -135,8 +159,9 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     //Synthesize Time Series Data to Test GUI Functionality
     private void synthesizeEXGData(double[][] buffer, int sampleIndex) {
         float val_uV;
-        for (int Ichan : getEXGChannels()) {
-            if (isChannelActive(Ichan)) {
+        for (int i = 0; i<getNumEXGChannels(); i++) {
+            int Ichan = exgChannels[i];
+            if (isEXGChannelActive(i)) {
                 val_uV = randomGaussian()*sqrt(getSampleRate()/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
                 if (Ichan==0) {
                     val_uV*= 10f;  //scale one channel higher
@@ -185,11 +210,11 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
 
     private void synthesizeAccelData(double[][] buffer, int sampleIndex) {
-        for (int i = 0; i < accelChanels.length; i++) {
+        for (int i = 0; i < accelChannels.length; i++) {
             // simple sin wave tied to current time.
             // offset each axis by its index * 2
             // multiply by accelXyzLimit to fill the height of the plot
-            buffer[accelChanels[i]][sampleIndex] = (double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit;
+            buffer[accelChannels[i]][sampleIndex] = (double)sin(accelSynthTime/100.0 + i*2.0) * w_accelerometer.accelXyzLimit;
         }
         accelSynthTime ++;
     }//end void synthesizeAccelData
@@ -197,5 +222,12 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     @Override
     protected int getTotalChannelCount() {
         return totalChannels;
+    }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
     }
 };

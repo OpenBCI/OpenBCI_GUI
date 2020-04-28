@@ -31,6 +31,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     
     private int[] accelChannels;
     private int[] analogChannels;
+    private boolean[] exgChannelActive;
 
     private String serialPort = "";
     private String ipAddress = "";
@@ -83,6 +84,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             e.printStackTrace();
             res = false;
         }
+        
+        exgChannelActive = new boolean[getNumEXGChannels()];
+        Arrays.fill(exgChannelActive, true);
 
         return res;
     }
@@ -94,13 +98,15 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumEXGChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
-        }
-
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
         configBoard(str(charsToUse[channelIndex]));
+        exgChannelActive[channelIndex] = active;
+    }
+    
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return exgChannelActive[channelIndex];
     }
 
     @Override
@@ -230,6 +236,16 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public void configureAllChannelsToDefault() {
         configBoard("d");
     };
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
+        for (int i=0; i<analogChannels.length; i++) {
+            channelNames[analogChannels[i]] = "Analog Channel " + i;
+        }
+    }
 };
 
 

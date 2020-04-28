@@ -37,9 +37,14 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         // Dummy string
         configBoard("SYNTHETIC PLACEHOLDER");
+    }
+
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return true;
     }
 
     @Override
@@ -85,5 +90,18 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     @Override
     public int[] getEDAChannels() {
         return edaChannels;
+    }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<edaChannels.length; i++) {
+            channelNames[edaChannels[i]] = "EDA Channel " + i;
+        }
+        for (int i=0; i<ppgChannels.length; i++) {
+            channelNames[ppgChannels[i]] = "PPG Channel " + i;
+        }
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
     }
 };

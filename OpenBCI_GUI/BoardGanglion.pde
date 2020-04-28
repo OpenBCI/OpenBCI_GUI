@@ -4,6 +4,7 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
     private int[] accelChannels;
+    private boolean[] exgChannelActive;
 
     private String serialPort = "";
     private String macAddress = "";
@@ -44,13 +45,15 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumEXGChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
-        }
-
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
         configBoard(str(charsToUse[channelIndex]));
+        exgChannelActive[channelIndex] = active;
+    }
+    
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return exgChannelActive[channelIndex];
     }
 
     @Override
@@ -66,6 +69,9 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
             e.printStackTrace();
             res = false;
         }
+        
+        exgChannelActive = new boolean[getNumEXGChannels()];
+        Arrays.fill(exgChannelActive, true);
 
         return res;
     }
@@ -93,5 +99,12 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     
     public boolean isCheckingImpedance() {
         return isCheckingImpedance;
+    }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<accelChannels.length; i++) {
+            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        }
     }
 };

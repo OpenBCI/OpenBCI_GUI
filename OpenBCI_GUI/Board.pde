@@ -58,7 +58,23 @@ abstract class Board {
         int startIndex = max(0, endIndex - maxSamples);
 
         return accumulatedData.subList(startIndex, endIndex);
-    }    
+    }
+
+    public String[] getChannelNames() {
+        String[] names = new String[getTotalChannelCount()];
+        Arrays.fill(names, "Other");
+
+        names[getTimestampChannel()] = "Timestamp";
+        names[getSampleNumberChannel()] = "Sample Index";
+
+        int[] exgChannels = getEXGChannels();
+        for (int i=0; i<exgChannels.length; i++) {
+            names[exgChannels[i]] = "EXG Channel " + i;
+        }
+
+        addChannelNamesInternal(names);
+        return names;
+    }
 
     public abstract void startStreaming();
 
@@ -68,13 +84,21 @@ abstract class Board {
 
     public abstract int getSampleRate();
 
-    public abstract void setChannelActive(int channelIndex, boolean active);
+    public abstract void setEXGChannelActive(int channelIndex, boolean active);
+
+    public abstract boolean isEXGChannelActive(int channelIndex);
 
     public abstract void sendCommand(String command);
 
     public abstract void setSampleRate(int sampleRate);
 
     public abstract int[] getEXGChannels();
+
+    public abstract int getTimestampChannel();
+
+    public abstract int getSampleNumberChannel();
+
+    protected abstract int getTotalChannelCount();
 
 // ***************************************
 // protected methods implemented by board
@@ -89,6 +113,6 @@ abstract class Board {
 
     protected abstract void updateInternal();
 
-    protected abstract int getTotalChannelCount();
+    protected abstract void addChannelNamesInternal(String[] channelNames);
 
 };

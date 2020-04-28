@@ -50,45 +50,6 @@ void process_input_file() throws Exception {
     }
 }
 
-void saveDataToFile(float scaler, int curDataPacketInd, long timestamp, float[] _auxBuff) {
-    //If data is available, save to playback file...
-    float auxScaler = scaler;
-    int stopByte = 0xC0;
-    switch (outputDataSource) {
-        case OUTPUT_SOURCE_ODF:
-            if (eegDataSource == DATASOURCE_GANGLION) {
-                //auxScaler = ganglion.get_scale_fac_accel_G_per_count();
-                auxScaler = 1;
-            } else {
-                if (eegDataSource == DATASOURCE_CYTON) {
-                    /*
-                    if (currentBoard.isDigitalActive() || currentBoard.isAnalogActive()) {
-                        stopByte = 0xC1;
-                    }
-                    */
-                }
-            }
-            fileoutput_odf.writeRawData_dataPacket(
-                            dataPacketBuff[curDataPacketInd],
-                            scaler,
-                            _auxBuff,
-                            auxScaler,
-                            stopByte,
-                            timestamp
-                        );
-            break;
-        case OUTPUT_SOURCE_BDF:
-            // curBDFDataPacketInd = curDataPacketInd;
-            // thread("writeRawData_dataPacket_bdf");
-            fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-            break;
-        case OUTPUT_SOURCE_NONE:
-        default:
-            // Do nothing...
-            break;
-    }
-}
-
 RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
 void processNewData() {
@@ -211,7 +172,7 @@ int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float sc
 
         //get each value
         for (int Ichan=0; Ichan < nchan; Ichan++) {
-            if (isChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
+            if (currentBoard.isEXGChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
                 val_uV = row.getFloat(Ichan);
             } else {
                 //use zeros for the missing channels

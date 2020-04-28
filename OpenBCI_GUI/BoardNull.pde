@@ -44,8 +44,23 @@ class BoardNull extends Board {
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
+    public int getTimestampChannel() {
+        return 0;
+    }
+    
+    @Override
+    public int getSampleNumberChannel() {
+        return 0;
+    }
+
+    @Override
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         // empty
+    }
+    
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return false;
     }
 
     @Override
@@ -65,5 +80,9 @@ class BoardNull extends Board {
     @Override
     protected int getTotalChannelCount() {
         return 0;
+    }
+
+    protected void addChannelNamesInternal(String[] channelNames) {
+        // nothing
     }
 };

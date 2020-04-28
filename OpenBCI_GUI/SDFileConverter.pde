@@ -197,3 +197,27 @@ void convert8channelLine() {
     }
     dataWriter.println();
 }
+
+void createPlaybackFileFromSD() {
+    logFileName = settings.guiDataPath+"SDconverted-"+DirectoryManager.getFileNameDateTime()+".csv";
+    dataWriter = createWriter(logFileName);
+    dataWriter.println("%OBCI SD Convert - " + DirectoryManager.getFileNameDateTime());
+    dataWriter.println("%");
+    dataWriter.println("%Sample Rate = 250.0 Hz");
+    dataWriter.println("%First Column = SampleIndex");
+    dataWriter.println("%Last Column = Timestamp");
+    dataWriter.println("%Other Columns = EEG data in microvolts followed by Accel Data (in G) interleaved with Aux Data");
+
+}
+
+void sdFileSelected(File selection) {
+    if (selection == null) {
+        println("Window was closed or the user hit cancel.");
+    } else {
+        println("User selected " + selection.getAbsolutePath());
+        dataReader = createReader(selection.getAbsolutePath()); // ("positions.txt");
+        controlPanel.convertingSD = true;
+        println("Timing SD file conversion...");
+        thatTime = millis();
+    }
+}

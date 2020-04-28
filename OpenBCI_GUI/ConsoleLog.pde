@@ -303,7 +303,7 @@ class CustomOutputStream extends PrintStream {
     private StringList data;
     private PrintWriter fileOutput;
     private Textarea textArea;
-    private final String filePath = settings.consoleDataPath+"Console_"+getDateString()+".txt";
+    private final String filePath = settings.consoleDataPath+"Console_"+DirectoryManager.getFileNameDateTime()+".txt";
 
     public CustomOutputStream(OutputStream out) {
         super(out);

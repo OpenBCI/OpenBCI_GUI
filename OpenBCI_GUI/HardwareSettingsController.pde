@@ -17,7 +17,7 @@ public void updateChannelArrays(int _nchan) {
 void activateChannel(int Ichan) {
     println("OpenBCI_GUI: activating channel " + (Ichan+1));
 
-    currentBoard.setChannelActive(Ichan, true);
+    currentBoard.setEXGChannelActive(Ichan, true);
     if (Ichan < nchan) {
         channelSettingValues[Ichan][0] = '0';
         // gui.cc.update();
@@ -27,22 +27,10 @@ void activateChannel(int Ichan) {
 void deactivateChannel(int Ichan) {
     println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
     
-    currentBoard.setChannelActive(Ichan, false);
+    currentBoard.setEXGChannelActive(Ichan, false);
     if (Ichan < nchan) {
         channelSettingValues[Ichan][0] = '1';
     }
-}
-
-//Ichan is zero referenced (not one referenced)
-boolean isChannelActive(int Ichan) {
-    //TODO [brainflow] this functionality can be moved to the board itself
-    boolean return_val = false;
-    if (channelSettingValues[Ichan][0] == '1') {
-        return_val = false;
-    } else {
-        return_val = true;
-    }
-    return return_val;
 }
 
 class HardwareSettingsController{
@@ -181,7 +169,7 @@ class HardwareSettingsController{
         channelSettingValues[_numChannel][4] = '0'; //make sure to disconnect from SRB2
 
         channelSettingValues[_numChannel][0] = '1'; //update powerUp/powerDown value of 2D array
-        currentBoard.setChannelActive(_numChannel, false);
+        currentBoard.setEXGChannelActive(_numChannel, false);
     }
 
     public void powerUpChannel(int _numChannel) {
@@ -191,7 +179,7 @@ class HardwareSettingsController{
         channelSettingValues[_numChannel][4] = previousSRB2[_numChannel];
 
         channelSettingValues[_numChannel][0] = '0'; //update powerUp/powerDown value of 2D array
-        currentBoard.setChannelActive(_numChannel, true);
+        currentBoard.setEXGChannelActive(_numChannel, true);
     }
 
     public void initImpWrite(int _numChannel, char pORn, char onORoff) {

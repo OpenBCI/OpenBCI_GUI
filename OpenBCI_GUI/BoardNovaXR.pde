@@ -11,15 +11,29 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     private int[] edaChannels = {};
     private int[] ppgChannels = {};
+    private boolean[] exgChannelActive;
+
+    private BoardIds boardId = BoardIds.NOVAXR_BOARD;
 
     public BoardNovaXR() {
         super();
+    }
+
+    @Override
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
+
         try {
-            edaChannels = BoardShim.get_eda_channels(BoardIds.NOVAXR_BOARD.get_code ());
-            ppgChannels = BoardShim.get_ppg_channels(BoardIds.NOVAXR_BOARD.get_code ());
+            edaChannels = BoardShim.get_eda_channels(getBoardIdInt());
+            ppgChannels = BoardShim.get_ppg_channels(getBoardIdInt());
         } catch (BrainFlowError e) {
             e.printStackTrace();
         }
+        
+        exgChannelActive = new boolean[getNumEXGChannels()];
+        Arrays.fill(exgChannelActive, true);
+
+        return res;
     }
 
     // implement mandatory abstract functions
@@ -31,17 +45,19 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     @Override
     public BoardIds getBoardId() {
-        return BoardIds.NOVAXR_BOARD;
+        return boardId;
     }
 
     @Override
-    public void setChannelActive(int channelIndex, boolean active) {
-        if (channelIndex >= getNumEXGChannels()) {
-            println("ERROR: Can't toggle channel " + (channelIndex + 1) + " when there are only " + getNumEXGChannels() + "channels");
-        }
-
+    public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
         configBoard(str(charsToUse[channelIndex]));
+        exgChannelActive[channelIndex] = active;
+    }
+    
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return exgChannelActive[channelIndex];
     }
 
     @Override
@@ -104,5 +120,15 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     @Override
     public int[] getEDAChannels() {
         return edaChannels;
+    }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<edaChannels.length; i++) {
+            channelNames[edaChannels[i]] = "EDA Channel " + i;
+        }
+        for (int i=0; i<ppgChannels.length; i++) {
+            channelNames[ppgChannels[i]] = "PPG Channel " + i;
+        }
     }
 };

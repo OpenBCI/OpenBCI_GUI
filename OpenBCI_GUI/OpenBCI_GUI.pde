@@ -66,7 +66,6 @@ String localGUIVersionString = "v4.2.0";
 String localGUIVersionDate = "January 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
-DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -115,6 +114,8 @@ int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
 Board currentBoard = new BoardNull();
+
+DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
@@ -178,9 +179,6 @@ float data_elec_imp_ohm[];
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
 
-//variables for writing EEG data out to a file
-OutputFile_rawtxt fileoutput_odf;
-OutputFile_BDF fileoutput_bdf;
 String output_fname;
 String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
@@ -337,7 +335,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    println("Console Log Started at Local Time: " + getDateString());
+    println("Console Log Started at Local Time: " + DirectoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
@@ -720,6 +718,8 @@ void initSystem() throws Exception {
     boolean success = currentBoard.initialize();
     abandonInit = !success; // abandon if init fails
 
+    dataLogger.initialize();
+
     verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
     //initialize playback file if necessary
     if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
@@ -891,6 +891,8 @@ void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
     
+    dataLogger.onStartStreaming();
+
     // start streaming on the chosen board
     currentBoard.startStreaming();
     isRunning = true;
@@ -903,12 +905,11 @@ void stopRunning() {
         output("Data stream stopped.");
     }
 
+    dataLogger.onStopStreaming();
+
     // stop streaming on chosen board
     currentBoard.stopStreaming();
     isRunning = false;
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
-    // systemMode = 0;
-    // closeLogFile();
 }
 
 //execute this function whenver the stop button is pressed
@@ -916,13 +917,11 @@ void stopButtonWasPressed() {
     //toggle the data transfer state of the ADS1299...stop it or start it...
     if (isRunning) {
         verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
+        // todo[brainflow] Investigate if we need this setUpdating() thing
         wm.setUpdating(false);
         stopRunning();
         topNav.stopButton.setString(stopButton_pressToStart_txt);
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-        //Close the log file when using OpenBCI Data Format (.txt)
-        if (outputDataSource == OUTPUT_SOURCE_ODF) closeLogFile();
-        //BDF+ allows for breaks in the file, so leave the temp file open!
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
@@ -935,14 +934,6 @@ void stopButtonWasPressed() {
         topNav.stopButton.setString(stopButton_pressToStop_txt);
         topNav.stopButton.setColorNotPressed(color(224, 56, 45));
         nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
-            //open data file if it has not already been opened
-            if (!settings.isLogFileOpen()) {
-                if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
-                if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
-            }
-            settings.setLogFileStartTime(System.nanoTime());
-        }
     }
 }
 
@@ -991,15 +982,15 @@ void haltSystem() {
 
         controlPanel.resetListItems();
 
-        if ((eegDataSource == DATASOURCE_CYTON) || (eegDataSource == DATASOURCE_GANGLION)){
-            closeLogFile();  //close log file
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
         }
         systemMode = SYSTEMMODE_PREINIT;
         hub.changeState(HubState.NOCOM);
 
         recentPlaybackFilesHaveUpdated = false;
+
+        dataLogger.uninitialize();
 
         currentBoard.uninitialize();
         currentBoard = new BoardNull(); // back to null
@@ -1014,6 +1005,8 @@ void systemUpdate() { // for updating data values and variables
     win_y = height;
 
     currentBoard.update();
+
+    dataLogger.update();
 
     helpWidget.update();
     topNav.update();
@@ -1088,14 +1081,10 @@ void systemDraw() { //for drawing to the screen
         case DATASOURCE_CYTON:
             switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
-                if (fileoutput_odf != null) {
-                    surface.setTitle(int(frameRate) + " fps, " + int(float(fileoutput_odf.getRowsWritten())/getSampleRateSafe()) + " secs Saved, Writing to " + output_fname);
-                }
+                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
                 break;
             case OUTPUT_SOURCE_BDF:
-                if (fileoutput_bdf != null) {
-                    surface.setTitle(int(frameRate) + " fps, " + int(fileoutput_bdf.getRecordsWritten()) + " secs Saved, Writing to " + output_fname);
-                }
+                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
                 break;
             case OUTPUT_SOURCE_NONE:
             default:

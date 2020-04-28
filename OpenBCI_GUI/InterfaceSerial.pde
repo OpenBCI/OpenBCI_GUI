@@ -493,7 +493,7 @@ class InterfaceSerial {
                 if (cytonLegacy.hardwareSyncStep == 0) {
                     // Failure: Communications timeout - Device failed to poll Host$$$
                     if (cytonLegacy.potentialFailureMessage.equals(failureMessage)) {
-                        closeLogFile();
+                        //closeLogFile();
                         return 0;
                     }
                 }
@@ -581,7 +581,7 @@ class InterfaceSerial {
                     if (outputDataSource == OUTPUT_SOURCE_BDF) {
                         int fakePacketsToWrite = (rawReceivedDataPacket.sampleIndex - prevSampleIndex) - 1;
                         for (int i = 0; i < fakePacketsToWrite; i++) {
-                            fileoutput_bdf.writeRawData_dataPacket(missedDataPacket);
+                            //fileoutput_bdf.writeRawData_dataPacket(missedDataPacket);
                         }
                         println("InterfaceSerial: because BDF, wrote " + fakePacketsToWrite + " empty data packet(s)");
                     }
