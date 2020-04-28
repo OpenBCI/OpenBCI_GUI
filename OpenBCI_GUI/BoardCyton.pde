@@ -29,8 +29,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
-    private int[] accelChannels;
-    private int[] analogChannels;
+    private int[] accelChannelsCache = null;
+    private int[] analogChannelsCache = null;
+
     private boolean[] exgChannelActive;
 
     private String serialPort = "";
@@ -74,21 +75,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public boolean initializeInternal() {
-        boolean res = super.initializeInternal();
-
-        try {
-            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
-            analogChannels = BoardShim.get_analog_channels(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            e.printStackTrace();
-            res = false;
-        }
-        
+    public boolean initializeInternal() {        
         exgChannelActive = new boolean[getNumEXGChannels()];
         Arrays.fill(exgChannelActive, true);
 
-        return res;
+        return super.initializeInternal();
     }
 
     @Override
@@ -124,7 +115,15 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getAccelerometerChannels() {
-        return accelChannels;
+        if (accelChannelsCache == null) {
+            try {
+                accelChannelsCache = BoardShim.get_accel_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return accelChannelsCache;
     }
 
     @Override
@@ -143,7 +142,15 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getAnalogChannels() {
-        return analogChannels;
+        if (analogChannelsCache == null) {
+            try {
+                analogChannelsCache = BoardShim.get_analog_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return analogChannelsCache;
     }
 
     @Override
@@ -239,11 +246,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<accelChannels.length; i++) {
-            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        for (int i=0; i<getAccelerometerChannels().length; i++) {
+            channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-        for (int i=0; i<analogChannels.length; i++) {
-            channelNames[analogChannels[i]] = "Analog Channel " + i;
+        for (int i=0; i<getAnalogChannels().length; i++) {
+            channelNames[getAnalogChannels()[i]] = "Analog Channel " + i;
         }
     }
 };

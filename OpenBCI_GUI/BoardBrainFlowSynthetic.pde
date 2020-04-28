@@ -3,26 +3,9 @@ import brainflow.*;
 class BoardBrainFlowSynthetic extends BoardBrainFlow
 implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
-    private int[] accelChannels = {};
-    private int[] edaChannels = {};
-    private int[] ppgChannels = {};
-
-    @Override
-    public boolean initializeInternal() {
-        boolean res = super.initializeInternal();
-
-        try {
-            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
-            edaChannels = BoardShim.get_eda_channels(getBoardIdInt());
-            ppgChannels = BoardShim.get_ppg_channels(getBoardIdInt());
-
-        } catch (BrainFlowError e) {
-            e.printStackTrace();
-            res = false;
-        }
-
-        return res;
-    }
+    private int[] accelChannelsCache = null;
+    private int[] edaChannelsCache = null;
+    private int[] ppgChannelsCache = null;
 
     // implement mandatory abstract functions
     @Override
@@ -59,7 +42,16 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
     @Override
     public int[] getAccelerometerChannels() {
-        return accelChannels;
+        if (accelChannelsCache == null) {
+            try {
+                accelChannelsCache = BoardShim.get_accel_channels(getBoardIdInt());
+
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return accelChannelsCache;
     }
 
     @Override
@@ -74,7 +66,16 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
     @Override
     public int[] getPPGChannels() {
-        return ppgChannels;
+        if(ppgChannelsCache == null) {
+            try {
+                ppgChannelsCache = BoardShim.get_ppg_channels(getBoardIdInt());
+
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return ppgChannelsCache;
     }
 
     @Override
@@ -89,19 +90,28 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
     @Override
     public int[] getEDAChannels() {
-        return edaChannels;
+        if (edaChannelsCache == null) {
+            try {
+                edaChannelsCache = BoardShim.get_eda_channels(getBoardIdInt());
+
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return edaChannelsCache;
     }
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<edaChannels.length; i++) {
-            channelNames[edaChannels[i]] = "EDA Channel " + i;
+        for (int i=0; i<getEDAChannels().length; i++) {
+            channelNames[getEDAChannels()[i]] = "EDA Channel " + i;
         }
-        for (int i=0; i<ppgChannels.length; i++) {
-            channelNames[ppgChannels[i]] = "PPG Channel " + i;
+        for (int i=0; i<getPPGChannels().length; i++) {
+            channelNames[getPPGChannels()[i]] = "PPG Channel " + i;
         }
-        for (int i=0; i<accelChannels.length; i++) {
-            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        for (int i=0; i<getAccelerometerChannels().length; i++) {
+            channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
     }
 };

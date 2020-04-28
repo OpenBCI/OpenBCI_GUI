@@ -3,7 +3,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
-    private int[] accelChannels;
+    private int[] accelChannelsCache = null;
+
     private boolean[] exgChannelActive;
 
     private String serialPort = "";
@@ -61,15 +62,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     {
         // turn on accel by default, or is it handled somewhere else?
         boolean res = super.initializeInternal();
-
-        try {
-            accelChannels = BoardShim.get_accel_channels(getBoardIdInt());
-            setAccelerometerActive(true);
-        } catch (BrainFlowError e) {
-            e.printStackTrace();
-            res = false;
-        }
         
+        setAccelerometerActive(true);
         exgChannelActive = new boolean[getNumEXGChannels()];
         Arrays.fill(exgChannelActive, true);
 
@@ -89,7 +83,15 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
 
     @Override
     public int[] getAccelerometerChannels() {
-        return accelChannels;
+        if (accelChannelsCache == null) {
+            try {
+                accelChannelsCache = BoardShim.get_accel_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return accelChannelsCache;
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
@@ -103,8 +105,8 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<accelChannels.length; i++) {
-            channelNames[accelChannels[i]] = "Accel Channel " + i;
+        for (int i=0; i<getAccelerometerChannels().length; i++) {
+            channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
     }
 };
