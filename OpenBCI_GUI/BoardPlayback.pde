@@ -53,9 +53,11 @@ class BoardPlayback extends Board {
 
                 try {
                     Class<?> boardClass = Class.forName(classString);
-                    underlyingBoard = (Board)boardClass.newInstance();
+                    Constructor<?> constructor = boardClass.getConstructor(OpenBCI_GUI.class);
+                    underlyingBoard = (Board)constructor.newInstance(ourApplet);
                 } catch (Exception e) {
                     println("Cannot instantiate a board of class " + classString);
+                    println(e.getMessage());
                     e.printStackTrace();
                     return false;
                 }
@@ -82,7 +84,7 @@ class BoardPlayback extends Board {
         for (int iData=0; iData<dataLength; iData++) {
             String line = lines[dataStart + iData];
             String[] valStrs = line.split(",");
-            for (int iCol = 0; iCol < valStrs.length; iCol++) {
+            for (int iCol = 0; iCol < getTotalChannelCount(); iCol++) {
                 rawData[iCol][iData] = Double.parseDouble(valStrs[iCol]);
             }
         }

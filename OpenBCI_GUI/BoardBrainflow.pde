@@ -18,10 +18,7 @@ abstract class BoardBrainFlow extends Board {
      */
     abstract protected BrainFlowInputParams getParams();
     abstract public BoardIds getBoardId();
-
-    protected BoardBrainFlow() {
-    }
-
+    
     @Override
     public boolean initializeInternal() {
         // initiate the board shim

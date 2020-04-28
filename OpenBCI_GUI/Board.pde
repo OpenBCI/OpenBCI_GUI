@@ -9,6 +9,7 @@ abstract class Board {
 
 // ***************************************
 // public interface
+
     public int getBufferSize() {
         return dataBuff_len_sec * getSampleRate();
     }
