@@ -692,6 +692,7 @@ void initSystem() throws Exception {
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
+            currentBoard = new BoardPlayback(playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
@@ -810,13 +811,9 @@ void initSystem() throws Exception {
   * @description Useful function to get the correct sample rate based on data source
   * @returns `float` - The frequency / sample rate of the data source
   */
-// TODO[brainflow] investigate this function and probably remove it
+// TODO[brainflow] remove this function
 int getSampleRateSafe() {
-    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        return playbackData_table.getSampleRate();
-    } else {
-        return currentBoard.getSampleRate();
-    }
+    return currentBoard.getSampleRate();
 }
 
 /**
@@ -925,11 +922,7 @@ void stopButtonWasPressed() {
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
-        // Clear plots when start button is pressed in playback mode
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            clearAllTimeSeriesGPlots();
-            clearAllAccelGPlots();
-        }
+
         startRunning();
         topNav.stopButton.setString(stopButton_pressToStop_txt);
         topNav.stopButton.setColorNotPressed(color(224, 56, 45));
@@ -1025,18 +1018,6 @@ void systemUpdate() { // for updating data values and variables
     if (systemMode == SYSTEMMODE_POSTINIT) {
         if (isRunning) {
             processNewData();
-
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
-            lastReadDataPacketInd = 0;
-            try {
-                process_input_file();
-                println("^^^GUI update process file has occurred");
-            }
-            catch(Exception e) {
-                isOldData = true;
-                println("^^^Error processing timestamps");
-                output("Error processing timestamps, are you using old data?");
-            }
         }
 
         // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
