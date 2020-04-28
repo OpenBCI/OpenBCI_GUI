@@ -22,6 +22,7 @@ public class DataWriterODF {
         output.println("%OpenBCI Raw EEG Data");
         output.println("%Number of channels = " + nchan);
         output.println("%Sample Rate = " + currentBoard.getSampleRate() + " Hz");
+        output.println("%Board = " + currentBoard.getClass().getName());
 
         String[] colNames = currentBoard.getChannelNames();
         

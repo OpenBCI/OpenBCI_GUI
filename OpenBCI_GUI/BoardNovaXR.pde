@@ -9,8 +9,9 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-    private int[] edaChannels = {};
-    private int[] ppgChannels = {};
+    private int[] edaChannelsCache = null;
+    private int[] ppgChannelsCache = null;
+
     private boolean[] exgChannelActive;
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
@@ -20,20 +21,11 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     }
 
     @Override
-    public boolean initializeInternal() {
-        boolean res = super.initializeInternal();
-
-        try {
-            edaChannels = BoardShim.get_eda_channels(getBoardIdInt());
-            ppgChannels = BoardShim.get_ppg_channels(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            e.printStackTrace();
-        }
-        
+    public boolean initializeInternal() {        
         exgChannelActive = new boolean[getNumEXGChannels()];
         Arrays.fill(exgChannelActive, true);
 
-        return res;
+        return super.initializeInternal();
     }
 
     // implement mandatory abstract functions
@@ -104,7 +96,15 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     @Override
     public int[] getPPGChannels() {
-        return ppgChannels;
+        if (ppgChannelsCache == null) {
+            try {
+                ppgChannelsCache = BoardShim.get_ppg_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return ppgChannelsCache;
     }
 
     @Override
@@ -119,16 +119,24 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     @Override
     public int[] getEDAChannels() {
-        return edaChannels;
+        if (edaChannelsCache == null) {
+            try {
+                edaChannelsCache = BoardShim.get_eda_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return edaChannelsCache;
     }
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<edaChannels.length; i++) {
-            channelNames[edaChannels[i]] = "EDA Channel " + i;
+        for (int i=0; i<getEDAChannels().length; i++) {
+            channelNames[getEDAChannels()[i]] = "EDA Channel " + i;
         }
-        for (int i=0; i<ppgChannels.length; i++) {
-            channelNames[ppgChannels[i]] = "PPG Channel " + i;
+        for (int i=0; i<getPPGChannels().length; i++) {
+            channelNames[getPPGChannels()[i]] = "PPG Channel " + i;
         }
     }
 };

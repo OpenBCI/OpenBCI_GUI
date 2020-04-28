@@ -10,28 +10,30 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private float[] sine_phase_rad;
     private int lastSynthTime;
     private int samplingIntervalMS;
+    private boolean[] exgChannelActive;
+
     private int sampleNumberChannel;
     private int[] exgChannels;
     private int[] accelChannels;
     private int timestampChannel;
     private int totalChannels;
-    private boolean[] exgChannelActive;
+
 
     // Synthetic accel data timer. Track frame count for synthetic data.
     private int accelSynthTime;
 
-    public BoardSynthetic() {        
-    }
-
-    @Override
-    public boolean initializeInternal() {
+    public BoardSynthetic() {    
         totalChannels = 0;
         sampleNumberChannel = totalChannels++;
         exgChannels = range(totalChannels, totalChannels + nchan);
         totalChannels += nchan;
         accelChannels = range(totalChannels, totalChannels + NUM_ACCEL_DIMS);
         totalChannels += NUM_ACCEL_DIMS;
-        timestampChannel = totalChannels++;
+        timestampChannel = totalChannels++;    
+    }
+
+    @Override
+    public boolean initializeInternal() {
 
         exgChannelActive = new boolean[exgChannels.length];
         Arrays.fill(exgChannelActive, true);

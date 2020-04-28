@@ -5,11 +5,12 @@ import org.apache.commons.lang3.SystemUtils;
 abstract class BoardBrainFlow extends Board {
     private BoardShim boardShim = null;
 
-    protected int samplingRate = 0;
-    protected int packetNumberChannel = 0;
-    protected int timeStampChannel = 0;
-    protected int totalChannels = 0;
-    protected int[] exgChannels = {};
+    protected int samplingRateCache = -1;
+    protected int packetNumberChannelCache = -1;
+    protected int timeStampChannelCache = -1;
+    protected int totalChannelsCache = -1;
+    protected int[] exgChannelsCache = null;
+
     protected boolean streaming = false;
 
     /* Abstract Functions.
@@ -21,68 +22,8 @@ abstract class BoardBrainFlow extends Board {
     protected BoardBrainFlow() {
     }
 
-    protected int[] calculateEXGChannels() throws BrainFlowError{
-        int[] channels;
-        // for some boards there can be duplicates
-        SortedSet<Integer> set = new TreeSet<Integer>();
-        // maybe it will be nice to add method like get_exg_channels to brainflow to avoid this ugly code?
-        // but I doubt that smth else will need it and in python I know how to implement it better using existing API
-        try {
-            channels = BoardShim.get_eeg_channels(getBoardIdInt());
-            for(int i = 0; i < channels.length; i++) {
-                set.add(channels[i]);
-            }
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get eeg channels from BoardShim");
-        }
-        try {
-            channels = BoardShim.get_emg_channels(getBoardIdInt());
-            for(int i = 0; i < channels.length; i++) {
-                set.add(channels[i]);
-            }
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get emg channels from BoardShim");
-        }
-        try {
-            channels = BoardShim.get_ecg_channels(getBoardIdInt());
-            for(int i = 0; i < channels.length; i++) {
-                set.add(channels[i]);
-            }
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get ecg channels from BoardShim");
-        }
-        try {
-            channels = BoardShim.get_eog_channels(getBoardIdInt());
-            for(int i = 0; i < channels.length; i++) {
-                set.add(channels[i]);
-            }
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get eog channels from BoardShim");
-        }
-        Integer[] toArray = set.toArray(new Integer[set.size()]);
-        int[] primitives = new int[toArray.length];
-        for (int i = 0; i < toArray.length; i++) {
-            primitives[i] = toArray[i].intValue();
-        }
-
-        return primitives;
-    }
-
     @Override
     public boolean initializeInternal() {
-        // cache some board info
-        try {
-            samplingRate = BoardShim.get_sampling_rate(getBoardIdInt());
-            packetNumberChannel = BoardShim.get_package_num_channel(getBoardIdInt());
-            timeStampChannel = BoardShim.get_timestamp_channel(getBoardIdInt());
-            exgChannels = calculateEXGChannels();
-            totalChannels = BoardShim.get_num_rows(getBoardIdInt());
-        } catch (BrainFlowError e) {
-            println("WARNING: failed to get board info from BoardShim");
-            e.printStackTrace();
-            return false;
-        }
-
         // initiate the board shim
         try {
             updateToNChan(getNumEXGChannels());
@@ -173,22 +114,94 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public int getSampleRate() {
-        return samplingRate;
+        if(samplingRateCache < 0) {
+            try {
+                samplingRateCache = BoardShim.get_sampling_rate(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get sample rate from BoardShim");
+                e.printStackTrace();
+            }
+        }
+
+        return samplingRateCache;
     }
 
     @Override
     public int[] getEXGChannels() {
-        return exgChannels;
+        if(exgChannelsCache == null) {
+            int[] channels;
+            // for some boards there can be duplicates
+            SortedSet<Integer> set = new TreeSet<Integer>();
+            // maybe it will be nice to add method like get_exg_channels to brainflow to avoid this ugly code?
+            // but I doubt that smth else will need it and in python I know how to implement it better using existing API
+            try {
+                channels = BoardShim.get_eeg_channels(getBoardIdInt());
+                for(int i = 0; i < channels.length; i++) {
+                    set.add(channels[i]);
+                }
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get eeg channels from BoardShim");
+            }
+            try {
+                channels = BoardShim.get_emg_channels(getBoardIdInt());
+                for(int i = 0; i < channels.length; i++) {
+                    set.add(channels[i]);
+                }
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get emg channels from BoardShim");
+            }
+            try {
+                channels = BoardShim.get_ecg_channels(getBoardIdInt());
+                for(int i = 0; i < channels.length; i++) {
+                    set.add(channels[i]);
+                }
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get ecg channels from BoardShim");
+            }
+            try {
+                channels = BoardShim.get_eog_channels(getBoardIdInt());
+                for(int i = 0; i < channels.length; i++) {
+                    set.add(channels[i]);
+                }
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get eog channels from BoardShim");
+            }
+            Integer[] toArray = set.toArray(new Integer[set.size()]);
+            exgChannelsCache = new int[toArray.length];
+            for (int i = 0; i < toArray.length; i++) {
+                exgChannelsCache[i] = toArray[i].intValue();
+            }
+        }
+
+        return exgChannelsCache;
     }
 
     @Override
     public int getTimestampChannel() {
-        return timeStampChannel;
+        if(timeStampChannelCache < 0) {
+            try {
+                timeStampChannelCache = BoardShim.get_timestamp_channel(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get timestamp channel from BoardShim");
+                e.printStackTrace();
+            }
+        }
+
+        return timeStampChannelCache;
     }
     
     @Override
     public int getSampleNumberChannel() {
-        return packetNumberChannel;
+        if(packetNumberChannelCache < 0) {
+            try {
+                packetNumberChannelCache = BoardShim.get_package_num_channel(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get package num channel from BoardShim");
+                e.printStackTrace();
+            }
+        }
+
+        return packetNumberChannelCache;
     }
 
     public int getBoardIdInt() {
@@ -236,6 +249,15 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     protected int getTotalChannelCount() {
-        return totalChannels;
+        if(totalChannelsCache < 0) {
+            try {
+                totalChannelsCache = BoardShim.get_num_rows(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                println("WARNING: failed to get num rows from BoardShim");
+                e.printStackTrace();
+            }
+        }
+
+        return totalChannelsCache;
     }
 };
