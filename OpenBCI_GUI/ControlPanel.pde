@@ -713,29 +713,6 @@ class ControlPanel {
                     }
                 }
 
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    if (refreshWifi.isMouseHere()) {
-                        refreshWifi.setIsActive(true);
-                        refreshWifi.wasPressed = true;
-                    }
-                }
-
-
-                if (autoSessionName.isMouseHere()) {
-                    autoSessionName.setIsActive(true);
-                    autoSessionName.wasPressed = true;
-                }
-
-                if (outputODF.isMouseHere()) {
-                    outputODF.setIsActive(true);
-                    outputODF.wasPressed = true;
-                }
-
-                if (outputBDF.isMouseHere()) {
-                    outputBDF.setIsActive(true);
-                    outputBDF.wasPressed = true;
-                }
-
                 if (chanButton8.isMouseHere()) {
                     chanButton8.setIsActive(true);
                     chanButton8.wasPressed = true;
@@ -766,8 +743,6 @@ class ControlPanel {
                     ovrChannel.wasPressed = true;
                     setChannel.wasPressed = false;
                 }
-
-
 
                 if (protocolWifiCyton.isMouseHere()) {
                     protocolWifiCyton.setIsActive(true);
@@ -821,31 +796,10 @@ class ControlPanel {
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
                 // This is where we check for button presses if we are searching for BLE devices
-                if (autoSessionName.isMouseHere()) {
-                    autoSessionName.setIsActive(true);
-                    autoSessionName.wasPressed = true;
-                }
-
-                if (outputODF.isMouseHere()) {
-                    outputODF.setIsActive(true);
-                    outputODF.wasPressed = true;
-                }
-
-                if (outputBDF.isMouseHere()) {
-                    outputBDF.setIsActive(true);
-                    outputBDF.wasPressed = true;
-                }
-
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    if (refreshWifi.isMouseHere()) {
-                        refreshWifi.setIsActive(true);
-                        refreshWifi.wasPressed = true;
-                    }
-                } else {
-                    if (refreshBLE.isMouseHere()) {
-                        refreshBLE.setIsActive(true);
-                        refreshBLE.wasPressed = true;
-                    }
+                
+                if (refreshBLE.isMouseHere()) {
+                    refreshBLE.setIsActive(true);
+                    refreshBLE.wasPressed = true;
                 }
 
                 if (protocolWifiGanglion.isMouseHere()) {
@@ -875,20 +829,6 @@ class ControlPanel {
                     sampleRate1600.setColorNotPressed(isSelected_color);
                     sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                 }
-
-                 if(wifiIPAddressDynamic.isMouseHere()) {		
-                     wifiIPAddressDynamic.setIsActive(true);		
-                     wifiIPAddressDynamic.wasPressed = true;		
-                     wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
-                     wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
-                 }		
-
-                  if(wifiIPAddressStatic.isMouseHere()) {		
-                     wifiIPAddressStatic.setIsActive(true);		
-                     wifiIPAddressStatic.wasPressed = true;		
-                     wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
-                     wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
-                 }
             }
 
             //active buttons during DATASOURCE_PLAYBACKFILE
@@ -931,6 +871,43 @@ class ControlPanel {
                     synthChanButton16.setColorNotPressed(isSelected_color);
                     synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                }
+            }
+
+            
+            //The following buttons apply only to Cyton and Ganglion Modes for now
+            if (autoSessionName.isMouseHere()) {
+                autoSessionName.setIsActive(true);
+                autoSessionName.wasPressed = true;
+            }
+
+            if (outputODF.isMouseHere()) {
+                outputODF.setIsActive(true);
+                outputODF.wasPressed = true;
+            }
+
+            if (outputBDF.isMouseHere()) {
+                outputBDF.setIsActive(true);
+                outputBDF.wasPressed = true;
+            }
+
+            if (selectedProtocol == BoardProtocol.WIFI) {
+                if (refreshWifi.isMouseHere()) {
+                    refreshWifi.setIsActive(true);
+                    refreshWifi.wasPressed = true;
+                }
+                if (wifiIPAddressDynamic.isMouseHere()) {		
+                    wifiIPAddressDynamic.setIsActive(true);		
+                    wifiIPAddressDynamic.wasPressed = true;		
+                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
+                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
+                }		
+
+                if (wifiIPAddressStatic.isMouseHere()) {		
+                    wifiIPAddressStatic.setIsActive(true);		
+                    wifiIPAddressStatic.wasPressed = true;		
+                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
+                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
                 }
             }
 
@@ -1822,16 +1799,18 @@ class SessionDataBox {
         if (outputDataSource == OUTPUT_SOURCE_ODF) {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
+            //Dropdown is drawn at the end of ControlPanel.draw()
             fill(bgColor);
             rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
-            fill(bgColor);
-            textFont(p4, 14);
-            int extraPadding = selectedProtocol == BoardProtocol.BLED112 || selectedProtocol == BoardProtocol.SERIAL ? 16 : 2;
-            text("Max File Duration", maxDurText_x, outputODF.but_y + 24 + padding + extraPadding);
-            popStyle();
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
-            //Dropdown is drawn at the end of ControlPanel.draw()
+            //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
+            int extraPadding = controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC ? 20 : 5;
+            fill(bgColor);
+            textFont(p4, 14);
+            text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
+            popStyle();
+            
         }
     }
 
