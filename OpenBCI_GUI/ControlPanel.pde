@@ -2169,8 +2169,8 @@ class RecentPlaybackBox {
             }
             shortFileNames.clear();
             longFilePaths.clear();
-            for (int i = numFilesToShow - 1; i >= 0; i--) {
-                JSONObject playbackFile = recentFilesArray.getJSONObject(i);
+            for (int i = 0; i < numFilesToShow; i++) {
+                JSONObject playbackFile = recentFilesArray.getJSONObject(recentFilesArray.size()-i-1);
                 String shortFileName = playbackFile.getString("id");
                 String longFilePath = playbackFile.getString("filePath");
                 //truncate display name, if needed
@@ -2184,6 +2184,7 @@ class RecentPlaybackBox {
             playbackHistoryFileExists = true;
         } catch (Exception e) {
             println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
+            println(e.getMessage());
             playbackHistoryFileExists = false;
         }
         recentPlaybackFilesHaveUpdated = true;

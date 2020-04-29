@@ -670,6 +670,10 @@ void initSystem() {
     timeOfInit = millis(); //store this for timeout in case init takes too long
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
 
+    if (initSystemButton.but_txt == "START SESSION") {
+        initSystemButton.but_txt = "STOP SESSION";
+    }
+
     //reset init variables
     systemHasHalted = false;
     boolean abandonInit = false;

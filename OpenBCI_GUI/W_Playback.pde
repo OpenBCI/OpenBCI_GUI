@@ -255,7 +255,7 @@ void playbackFileSelected (String longName, String shortName) {
     //Output new playback settings to GUI as success
     outputSuccess("You have selected \""
     + longName + "\" for playback.");
-    
+
     try {
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
