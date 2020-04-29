@@ -24,7 +24,7 @@ class BoardPlayback implements BoardDataSource, AccelerometerCapableBoard, Analo
         boolean dataParsed = parseData(lines);
         currentSample = 0;
 
-        return headerParsed && boardInstantiated && dataParse;
+        return headerParsed && boardInstantiated && dataParsed;
     }
 
     @Override
