@@ -1,4 +1,4 @@
-class BoardPlayback implements BoardDataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard  {
+class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard  {
     private String playbackFilePath;
     private ArrayList<double[]> rawData;
     private int currentSample;
@@ -11,7 +11,7 @@ class BoardPlayback implements BoardDataSource, AccelerometerCapableBoard, Analo
     private Board underlyingBoard = null;
     private int sampleRate = -1;
 
-    BoardPlayback(String filePath) {
+    DataSourcePlayback(String filePath) {
         playbackFilePath = filePath;
     }
 

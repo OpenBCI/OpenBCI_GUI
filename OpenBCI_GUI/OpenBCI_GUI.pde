@@ -112,7 +112,7 @@ String playbackData_fname = "N/A"; //only used if loading input data from a file
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
-BoardDataSource currentBoard = new BoardNull();
+DataSource currentBoard = new BoardNull();
 
 DataLogger dataLogger = new DataLogger();
 
@@ -702,7 +702,7 @@ void initSystem() {
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
-            currentBoard = new BoardPlayback(playbackData_fname);
+            currentBoard = new DataSourcePlayback(playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {

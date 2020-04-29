@@ -1,5 +1,5 @@
 
-abstract class Board implements BoardDataSource {
+abstract class Board implements DataSource {
 
     private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
     private double[][] dataThisFrame;

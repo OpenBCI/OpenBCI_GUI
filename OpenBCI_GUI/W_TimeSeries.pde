@@ -742,7 +742,7 @@ class PlaybackScrollbar {
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
-    private BoardPlayback playbackBoard;
+    private DataSourcePlayback playbackBoard;
     
     private final DateFormat currentTimeFormatShort = new SimpleDateFormat("mm:ss");
     private final DateFormat currentTimeFormatLong = new SimpleDateFormat("HH:mm:ss");
@@ -767,7 +767,7 @@ class PlaybackScrollbar {
         PImage bgImage = loadImage("skipToStart-30x26.png");
         skipToStartButton.setBackgroundImage(bgImage);
 
-        playbackBoard = (BoardPlayback)currentBoard;
+        playbackBoard = (DataSourcePlayback)currentBoard;
     }
 
     /////////////// Update loop for PlaybackScrollbar

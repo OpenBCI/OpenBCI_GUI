@@ -1,5 +1,5 @@
 
-interface BoardDataSource {
+interface DataSource {
 
     public boolean initialize();
 
