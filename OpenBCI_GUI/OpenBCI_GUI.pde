@@ -108,8 +108,6 @@ String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
-int currentTableRowIndex = 0;
-Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
@@ -149,7 +147,6 @@ int nDataBackBuff;
 DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
-int lastReadDataPacketInd = -1;
 ////// ---- End variables related to the OpenBCI boards
 
 // define some timing variables for this program's operation
@@ -231,15 +228,6 @@ PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
-
-//Used for playback file
-boolean has_processed = false;
-boolean isOldData = false;
-boolean playbackFileIsEmpty = false;
-int indices = 0;
-//# columns used by a playback file determines number of channels
-final int totalColumns4ChanThresh = 10;
-final int totalColumns16ChanThresh = 16;
 
 boolean setupComplete = false;
 boolean isHubInitialized = false;
@@ -733,20 +721,12 @@ void initSystem() {
 
     dataLogger.initialize();
 
-    verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
-    //initialize playback file if necessary
-    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        initPlaybackFileToTable(); //found in W_Playback.pde
-    }
     verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
     initCoreDataObjects();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
     verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
     initFFTObjectsAndBuffer();
-
-    //prepare some signal processing stuff
-    //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
     verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
@@ -966,18 +946,10 @@ void haltSystem() {
 
         //reset variables for data processing
         curDataPacketInd = -1;
-        lastReadDataPacketInd = -1;
-        currentTableRowIndex = 0;
         prevBytes = 0;
         prevMillis = millis();
         byteRate_perSec = 0;
-        // eegDataSource = -1;
-        //set all data source list items inactive
 
-        //Fix issue for processing successive playback files
-        indices = 0;
-        hasRepeated = false;
-        has_processed = false;
         settings.settingsLoaded = false; //on halt, reset this value
 
         //reset connect loadStrings
@@ -1089,7 +1061,7 @@ void systemDraw() { //for drawing to the screen
             surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
             break;
         case DATASOURCE_PLAYBACKFILE:
-            surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
+            surface.setTitle(int(frameRate) + " fps, Reading from: " + playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
             surface.setTitle(int(frameRate) + " fps, Ganglion!");

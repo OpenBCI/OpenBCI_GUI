@@ -1282,11 +1282,6 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (playbackFileIsEmpty) {
-            outputError("Playback file appears empty. Try loading a different file.");
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
         } else { //otherwise, initiate system!
             //verbosePrint("ControlPanel: CPmouseReleased: init");
             initSystemButton.setString("STOP SESSION");

@@ -488,8 +488,3 @@ class AccelerometerBar {
         initArrays();
     }
 }; //end of class
-
-//Global method
-void clearAllAccelGPlots() {
-    w_accelerometer.accelerometerBar.clearAllGPlots();
-}

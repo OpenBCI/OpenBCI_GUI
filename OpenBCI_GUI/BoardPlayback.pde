@@ -3,6 +3,7 @@ class BoardPlayback extends Board {
     private double[][] rawData;
     private int newDataStartIndex;
     private int newDataEndIndex;
+    private int lastDeliveredSample;
     private int timeOfLastUpdateMS;
 
     private boolean initialized = false;
@@ -25,6 +26,7 @@ class BoardPlayback extends Board {
 
         newDataStartIndex = 0;
         newDataEndIndex = 0;
+        lastDeliveredSample = 0;
 
         return initialized;
     }
@@ -140,6 +142,27 @@ class BoardPlayback extends Board {
         return underlyingBoard.getSampleNumberChannel();
     }
 
+    public int getTotalSamples() {
+        return rawData[0].length;
+    }
+
+    public float getTotalTimeSeconds() {
+        return float(getTotalSamples()) / float(getSampleRate());
+    }
+
+    public int getCurrentSample() {
+        return lastDeliveredSample;
+    }
+
+    public float getCurrentTimeSeconds() {
+        return float(getCurrentSample()) / float(getSampleRate());
+    }
+
+    public void goToIndex(int index) {
+        newDataEndIndex = index;
+        newDataStartIndex = max(0, newDataEndIndex - getBufferSize());
+    }
+
     protected int getTotalChannelCount() {
         return underlyingBoard.getTotalChannelCount();
     }
@@ -155,6 +178,7 @@ class BoardPlayback extends Board {
         }
 
         newDataStartIndex = newDataEndIndex;
+        lastDeliveredSample = newDataEndIndex;
 
         return result;
     }
@@ -176,7 +200,7 @@ class BoardPlayback extends Board {
         timeOfLastUpdateMS += numNewSamplesThisFrame / sampleRateMS;
 
         newDataEndIndex += numNewSamplesThisFrame;
-        newDataEndIndex = min(newDataEndIndex, rawData.length);
+        newDataEndIndex = min(newDataEndIndex, getTotalSamples());
     }
 
     protected void addChannelNamesInternal(String[] channelNames) {

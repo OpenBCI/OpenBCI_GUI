@@ -6,7 +6,6 @@ import ddf.minim.analysis.*; //for FFT
 
 DataProcessing dataProcessing;
 String curTimestamp;
-boolean hasRepeated = false;
 HashMap<Integer,String> index_of_times;
 
 // indexes
@@ -21,34 +20,6 @@ float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster p
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
-
-//called from systemUpdate when mode=10 and isRunning = true
-void process_input_file() throws Exception {
-    index_of_times = new HashMap<Integer, String>();
-    indices = 0;
-    float scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
-    if (currentBoard instanceof BoardBrainFlow) {
-        scaler = 1;
-    }
-    try {
-        while (!hasRepeated) {
-            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, scaler, scaler, dataPacketBuff[lastReadDataPacketInd]);
-            if (curTimestamp != null) {
-                index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
-            } else {
-                index_of_times.put(indices, "notFound");
-            }
-            indices++;
-        }
-        println("number of indexes "+indices);
-        println("Finished filling hashmap");
-        has_processed = true;
-    }
-    catch (Exception e) {
-        e.printStackTrace();
-        throw new Exception();
-    }
-}
 
 RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
@@ -151,81 +122,6 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float
         fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);
         fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
     }
-}
-
-
-int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float scale_fac_uVolts_per_count, float scale_fac_accel_G_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV = 0.0f;
-    float[] acc_G = new float[n_aux_ifEnabled];
-    boolean acc_newData = false;
-
-    //check to see if we can load a value from the table
-    if (currentTableRowIndex >= datatable.getRowCount()) {
-        //end of file
-        println("OpenBCI_GUI: getPlaybackDataFromTable: End of playback data file.  Starting over...");
-        hasRepeated = true;
-        currentTableRowIndex = 0;
-    } else {
-        //get the row
-        TableRow row = datatable.getRow(currentTableRowIndex);
-        currentTableRowIndex++; //increment to the next row
-
-        //get each value
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
-            if (currentBoard.isEXGChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
-                val_uV = row.getFloat(Ichan);
-            } else {
-                //use zeros for the missing channels
-                val_uV = 0.0f;
-            }
-
-            //put into data structure
-            curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-        }
-
-        // get accelerometer data
-        try{
-            for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
-
-                if (Iacc < datatable.getColumnCount()) {
-                    acc_G[Iacc] = row.getFloat(Iacc + nchan);
-                    if (Float.isNaN(acc_G[Iacc])) {
-                        acc_G[Iacc] = 0.0f;
-                    }
-                } else {
-                    //use zeros for bad data :)
-                    acc_G[Iacc] = 0.0f;
-                }
-
-                //put into data structure
-                curDataPacket.auxValues[Iacc] = (int) (0.5f+ acc_G[Iacc] / scale_fac_accel_G_per_count); //convert to counts, the 0.5 is to ensure rounding
-
-                // Wangshu Dec.6 2016
-                // as long as xyz are not zero at the same time, it should be fine...otherwise it will ignore it.
-                if (acc_G[Iacc] > 0.000001) {
-                    acc_newData = true;
-                }
-            }
-        } catch (ArrayIndexOutOfBoundsException e){
-        // println("Data does not exist... possibly an old file.");
-        }
-        if (acc_newData) {
-            for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
-                appendAndShift(accelerometerBuff[Iacc], acc_G[Iacc]);
-            }
-        }
-        // if available, get time stamp for use in playback
-        if (row.getColumnCount() >= nchan + NUM_ACCEL_DIMS + 2) {
-            try{
-                if (!isOldData) curTimestamp = row.getString(row.getColumnCount() - 1);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                println("Data does not exist... possibly an old file.");
-            }
-        } else {
-            curTimestamp = "-1";
-        }
-    } //end else
-    return currentTableRowIndex;
 }
 
 //------------------------------------------------------------------------

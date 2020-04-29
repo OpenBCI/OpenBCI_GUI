@@ -85,7 +85,7 @@ class W_timeSeries extends Widget {
             pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
             //Make a new scrollbar
-            scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h), indices);
+            scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h));
         } else {
             int td_h = 18;
             timeDisplay = new TimeDisplay(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
@@ -731,26 +731,24 @@ class ChannelBar{
 
 //========================== PLAYBACKSLIDER ==========================
 class PlaybackScrollbar {
-    int swidth, sheight;    // width and height of bar
-    float xpos, ypos;       // x and y position of bar
-    float spos, newspos;    // x position of slider
-    float sposMin, sposMax; // max and min values of slider
-    boolean over;           // is the mouse over the slider?
-    boolean locked;
-    float ratio;
-    int num_indices;
-    int indexStartPosition = 0;
-    int indexPosition = indexStartPosition;
-    Button skipToStartButton;
-    int skipToStart_diameter;
-    Boolean indicatorAtStart; //true means the indicator is at index 0
-    int clearBufferThreshold = 5;
-    float ps_Padding = 50.0; //used to make room for skip to start button
-    String currentAbsoluteTimeToDisplay = "";
-    String currentTimeInSecondsToDisplay = "";
-    Boolean updatePosition = false;
+    private final float ps_Padding = 50.0; //used to make room for skip to start button
+    private int swidth, sheight;    // width and height of bar
+    private float xpos, ypos;       // x and y position of bar
+    private float spos;    // x position of slider
+    private float sposMin, sposMax; // max and min values of slider
+    private boolean over;           // is the mouse over the slider?
+    private boolean locked;
+    private Button skipToStartButton;
+    private int skipToStart_diameter;
+    private String currentAbsoluteTimeToDisplay = "";
+    private String currentTimeInSecondsToDisplay = "";
+    private BoardPlayback playbackBoard;
+    
+    private final DateFormat currentTimeFormatShort = new SimpleDateFormat("mm:ss");
+    private final DateFormat currentTimeFormatLong = new SimpleDateFormat("HH:mm:ss");
+    private final DateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    PlaybackScrollbar (float xp, float yp, int sw, int sh, int is) {
+    PlaybackScrollbar (float xp, float yp, int sw, int sh) {
         swidth = sw;
         sheight = sh;
         //float widthtoheight = sw - sh;
@@ -758,11 +756,8 @@ class PlaybackScrollbar {
         xpos = xp + ps_Padding; //lots of padding to make room for button
         ypos = yp-sheight/2;
         spos = xpos;
-        newspos = spos;
         sposMin = xpos;
         sposMax = xpos + swidth - sheight/2;
-        num_indices = is;
-        indicatorAtStart = true;
 
         //Let's make a button to return to the start of playback!!
         skipToStart_diameter = 30;
@@ -771,12 +766,12 @@ class PlaybackScrollbar {
         skipToStartButton.hasStroke(false);
         PImage bgImage = loadImage("skipToStart-30x26.png");
         skipToStartButton.setBackgroundImage(bgImage);
+
+        playbackBoard = (BoardPlayback)currentBoard;
     }
 
     /////////////// Update loop for PlaybackScrollbar
     void update() {
-        num_indices = indices;
-
         checkMouseOver(); // check if mouse is over
 
         if (mousePressed && over) {
@@ -787,81 +782,76 @@ class PlaybackScrollbar {
         }
         //if the slider is being used, update new position based on user mouseX
         if (locked) {
-            newspos = constrain(mouseX-sheight/2, sposMin, sposMax);
-            if (updatePosition) { //if the slider has been moved
-                try {
-                    clearAllTimeSeriesGPlots();
-                    clearAllAccelGPlots();
-                    playbackScrubbing(); //perform scrubbing
-                } catch (Exception e) {
-                    println("PlaybackScrollbar: Error: " + e);
-                }
-                updatePosition = false;
-            }
-        } else {
-            //if the slider is not being used, let playback control it when (isRunning)
-            if (isRunning) {
-                //process the file
-                if (systemMode == SYSTEMMODE_POSTINIT && !has_processed && !isOldData) {
-                    lastReadDataPacketInd = 0;
-                    try {
-                        process_input_file();
-                        ///println("TimeSeriesFileProcessed");
-                    } catch(Exception e) {
-                        isOldData = true;
-                        output("###Error processing timestamps, are you using old data?");
-                    }
-                }
-                //Set the new position of playback indicator using mapped value
-                newspos = updatePos();
-                updatePosition = false;
-            }
+            spos = constrain(mouseX-sheight/2, sposMin, sposMax);
+            scrubToPosition();
         }
-        if (abs(newspos - spos) > 1) { //if the slider has been moved
-            spos = spos + (newspos-spos); //update position
-            updatePosition = true;
-        }
-        if (getIndex() == 0) { //if the current index is 0, the indicator is at start
-            indicatorAtStart = true;
-        } else {
-            indicatorAtStart = false;
+        else {
+            updateCursor();
         }
 
-        if (mousePressed && skipToStartButton.isMouseHere() && !indicatorAtStart) {
+        if (mousePressed && skipToStartButton.isMouseHere()) {
             //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
             skipToStartButton.setIsActive(true);
             skipToStartButtonAction(); //skip to start
-            indicatorAtStart = true;
         } else if (!mousePressed && !skipToStartButton.isMouseHere()) {
             skipToStartButton.setIsActive(false); //set button to not active
         }
 
-        //Catch error when trying to fetch current timestamp
-        if (!isOldData) {
-            try {
-                if (curTimestamp.equals("-1") || (getCurrentTimeStamp() == null && getCurrentTimeStamp().isEmpty())) {
-                    currentAbsoluteTimeToDisplay = "";
-                } else {
-                    if (!getCurrentTimeStamp().equals("notFound")) {
-                        long t = new Long(getCurrentTimeStamp());
-                        Date d =  new Date(t);
-                        currentAbsoluteTimeToDisplay = new SimpleDateFormat("HH:mm:ss").format(d);
-                    }
-                }
-            } catch (NullPointerException e) {
-                println("TimeSeries: Timestamp error...");
-                e.printStackTrace();
-            }
-        }
+        // update timestamp
+        currentAbsoluteTimeToDisplay = getAbsoluteTimeToDisplay();
 
         //update elapsed time to display
-        int numSecondsInFile = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-        currentTimeInSecondsToDisplay = getElapsedTimeInSeconds(currentTableRowIndex) + " of " + numSecondsInFile + " s";
+        currentTimeInSecondsToDisplay = getCurrentTimeToDisplaySeconds();
 
     } //end update loop for PlaybackScrollbar
 
-    float constrain(float val, float minv, float maxv) {
-        return min(max(val, minv), maxv);
+    void updateCursor() {
+        float currentSample = float(playbackBoard.getCurrentSample());
+        float totalSamples = float(playbackBoard.getTotalSamples());
+        float currentPlaybackPos = currentSample / totalSamples;
+
+        spos =  lerp(sposMin, sposMax, currentPlaybackPos);
+    }
+
+    void scrubToPosition() {
+        int totalSamples = playbackBoard.getTotalSamples();
+        int newSamplePos = floor(totalSamples * getCursorPercentage());
+
+        playbackBoard.goToIndex(newSamplePos);
+    }
+
+    float getCursorPercentage() {
+        return (spos - sposMin) / (sposMax - sposMin);
+    }
+
+    String getAbsoluteTimeToDisplay() {
+        List<double[]> currentData = currentBoard.getData(1);
+        int timeStampChan = currentBoard.getTimestampChannel();
+        long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
+        if(timestampMS == 0) {
+            return "";
+        }
+        
+        return timeStampFormat.format(new Date(timestampMS));
+    }
+
+    String getCurrentTimeToDisplaySeconds() {
+        double totalMillis = playbackBoard.getTotalTimeSeconds() * 1000.0;
+        double currentMillis = playbackBoard.getCurrentTimeSeconds() * 1000.0;
+
+        String totalTimeStr = formatCurrentTime(totalMillis);
+        String currentTimeStr = formatCurrentTime(currentMillis);
+
+        return currentTimeStr + " / " + totalTimeStr;
+    }
+
+    String formatCurrentTime(double millis) {
+        DateFormat formatter = currentTimeFormatShort;
+        if (millis >= 3600000.0) { // bigger than 60 minutes
+            formatter = currentTimeFormatLong;
+        }
+
+        return formatter.format(new Date((long)millis));
     }
 
     //checks if mouse is over the playback scrollbar
@@ -911,14 +901,12 @@ class PlaybackScrollbar {
         rect(spos, ypos, sheight/2, sheight);
 
         //draw current timestamp and X of Y Seconds above scrollbar
-        if (!currentAbsoluteTimeToDisplay.equals(null)) {
-            int fontSize = 17;
-            textFont(p2, fontSize);
-            fill(0);
-            float tw = textWidth(currentAbsoluteTimeToDisplay);
-            text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
-            text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
-        }
+        int fontSize = 17;
+        textFont(p2, fontSize);
+        fill(0);
+        float tw = textWidth(currentAbsoluteTimeToDisplay);
+        text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
+        text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
 
         popStyle();
     }
@@ -931,130 +919,20 @@ class PlaybackScrollbar {
         sposMin = xpos;
         sposMax = xpos + swidth - sheight/2;
         //update the position of the playback indicator us
-        newspos = updatePos();
+        //newspos = updatePos();
 
         skipToStartButton.setPos(
             int(_x) + int(skipToStart_diameter*.5),
             int(_y) - int(skipToStart_diameter*.5)
             );
-
-    }
-
-    //Fetch index using playback indicator position
-    int getIndex() {
-        //Divide the width (Max - Min) by the number of indices
-        //Store this value for scrollbar step size as a float
-        float scrollbarStepSize = (sposMax-sposMin) / num_indices;
-        //println("sep val : " + scrollbarStepSize);
-        int index_Position = int(getPos());
-        int indexCounter;
-
-        //Set index position by finding the playback indicator
-        for (indexCounter = 0; indexCounter < num_indices + 1; indexCounter++) {
-            if (spos == sposMin) { //Indicator is at the beginning
-                indexPosition = 0;
-                indicatorAtStart = true;
-            }
-            //If not at the beginning or the end, use step size from above
-            if (index_Position > scrollbarStepSize * indexCounter && index_Position <= scrollbarStepSize * (indexCounter + 1)) {
-                indexPosition = indexCounter;
-                indicatorAtStart = false;
-                //println(">= val: " + (scrollbarStepSize * indexCounter) + " || <= val: " + (scrollbarStepSize * (indexCounter +1)) );
-            }
-            if (spos == sposMax) { //Indicator is at the end
-                indexPosition = num_indices;
-                indicatorAtStart = false;
-            }
-        }
-
-        return indexPosition;
-    }
-
-    //Get current position of the playback indicator
-    float getPos() {
-        //Return the slider position and account for button space
-        return spos - ps_Padding;
-    }
-
-    //Update the position of the playback indicator during playback
-    float updatePos() {
-        //Fetch the counter and the max time in Seconds
-        int secondCounter = int(float(currentTableRowIndex)/getSampleRateSafe());
-        int secondCounterMax = int(float(playbackData_table.getRowCount())/getSampleRateSafe());
-        //Map the values to playbackslider min and max
-        float m = map(secondCounter, 0, secondCounterMax, sposMin, sposMax);
-        //println("mapval_"+m);
-        //Returns mapped value to set the new position of playback indicator
-        return m;
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    //                        PlaybackScrubbing                           //
-    // Gets called when the playback slider position is moved by the user //
-    // This function should scrub the file using the slider position      //
-    void playbackScrubbing() {
-        num_indices = indices;
-        //println("INDEXES: "+num_indices);
-        if(has_processed) {
-            //This updates Time Series playback position and the value at the top of the GUI in title bar
-            currentTableRowIndex = getIndex();
-            String newTimeStamp = index_of_times.get(currentTableRowIndex);
-            if (currentTableRowIndex >= playbackData_table.getRowCount()) newTimeStamp = index_of_times.get(playbackData_table.getRowCount());
-            //If system is stopped, success print detailed position to bottom of GUI
-            if (!isRunning) {
-                outputSuccess("New Position{ " + getPos() + "/" + sposMax
-                + " Index: " + currentTableRowIndex
-                + " } --- Time: " + newTimeStamp
-                + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
-                + " seconds" );
-            }
-        }
-    }
-
-    //Find times to display for playback position
-    String getCurrentTimeStamp() {
-        //update the value for the number of indices
-        num_indices = indices;
-        //return current playback time
-        if (index_of_times != null) { //Check if the hashmap is null to prevent exception
-            if (index_of_times.get(0) != null) {
-                if (currentTableRowIndex > playbackData_table.getRowCount()) {
-                    return index_of_times.get(playbackData_table.getRowCount());
-                } else {
-                    return index_of_times.get(currentTableRowIndex);
-                }
-            } else {
-                //This is a sanity check for null exception, and this would print on screen
-                return "TimeNotFound";
-            }
-        } else {
-            //Same here
-            return "TimeNotFound";
-        }
     }
 
     //This function scrubs to the beginning of the playback file
     //Useful to 'reset' the scrollbar before loading a new playback file
-    void skipToStartButtonAction() {
-        if (!indicatorAtStart) { //if indicator is not at start
-            newspos = sposMin; //move slider to min position
-            indexPosition = 0; //set index position to 0
-            currentTableRowIndex = 0; //set playback position to 0
-            indicatorAtStart = true;
-
-            clearAllTimeSeriesGPlots();
-            clearAllAccelGPlots();
-
-            if (!isRunning) { //if the system is not running
-                //Success print detailed position to bottom of GUI
-                outputSuccess("New Position{ " + getPos() + "/" + sposMax
-                + " Index: " + getIndex()
-                + " } --- Time: " +  getCurrentTimeStamp()
-                + " --- " + getElapsedTimeInSeconds(currentTableRowIndex)
-                + " seconds" );
-            }
-        }
-    }// end skipToStartButtonAction
+    void skipToStartButtonAction() {       
+        playbackBoard.goToIndex(0);
+    }
+    
 };//end PlaybackScrollbar class
 
 //========================== TimeDisplay ==========================
@@ -1132,16 +1010,4 @@ class TimeDisplay {
 int getElapsedTimeInSeconds(int tableRowIndex) {
     int elapsedTime = int(float(tableRowIndex)/getSampleRateSafe());
     return elapsedTime;
-}
-
-void clearAllTimeSeriesGPlots() {
-    dataBuffY_uV = new float[nchan][dataBuffX.length];
-    dataBuffY_filtY_uV = new float[nchan][dataBuffX.length];
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
-        for(int j = 0; j < dataBuffY_filtY_uV[i].length; j++) {
-            dataBuffY_uV[i][j] = 0.0;
-            dataBuffY_filtY_uV[i][j] = 0.0;
-        }
-        w_timeSeries.channelBars[i].update();
-    }
 }
