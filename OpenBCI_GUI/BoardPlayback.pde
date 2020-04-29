@@ -1,8 +1,9 @@
-class BoardPlayback implements BoardDataSource {
+class BoardPlayback implements BoardDataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard  {
     private String playbackFilePath;
     private ArrayList<double[]> rawData;
     private int currentSample;
     private int timeOfLastUpdateMS;
+    private String underlyingClassName;
 
     private boolean initialized = false;
     private boolean streaming = false;
@@ -19,9 +20,10 @@ class BoardPlayback implements BoardDataSource {
         String[] lines = loadStrings(playbackFilePath);
         
         boolean headerParsed = parseHeader(lines);
+        boolean boardInstantiated = instantiateUnderlyingBoard();
         boolean dataParsed = parseData(lines);
 
-        initialized = headerParsed && dataParsed;
+        initialized = headerParsed && boardInstantiated && dataParsed;
 
         currentSample = 0;
 
@@ -38,6 +40,12 @@ class BoardPlayback implements BoardDataSource {
             if (!line.startsWith("%")) {
                 break; // reached end of header
             }
+            if (line.startsWith("%Number of channels")) {
+                int startIndex = line.indexOf('=') + 2;
+                String nchanStr = line.substring(startIndex);
+                int chanCount = Integer.parseInt(nchanStr);
+                updateToNChan(chanCount);
+            }
 
             if (line.startsWith("%Sample Rate")) {
                 int startIndex = line.indexOf('=') + 2;
@@ -49,23 +57,26 @@ class BoardPlayback implements BoardDataSource {
 
             if (line.startsWith("%Board")) {
                 int startIndex = line.indexOf('=') + 2;
-                String classString = line.substring(startIndex);
-
-                try {
-                    Class<?> boardClass = Class.forName(classString);
-                    Constructor<?> constructor = boardClass.getConstructor(OpenBCI_GUI.class);
-                    underlyingBoard = (Board)constructor.newInstance(ourApplet);
-                } catch (Exception e) {
-                    println("Cannot instantiate a board of class " + classString);
-                    println(e.getMessage());
-                    e.printStackTrace();
-                    return false;
-                }
-
+                underlyingClassName = line.substring(startIndex);
             }
         }
 
-        return sampleRate > 0 && underlyingBoard != null;
+        return sampleRate > 0 && underlyingClassName != "";
+    }
+
+    protected boolean instantiateUnderlyingBoard() {
+        try {
+            Class<?> boardClass = Class.forName(underlyingClassName);
+            Constructor<?> constructor = boardClass.getConstructor(OpenBCI_GUI.class);
+            underlyingBoard = (Board)constructor.newInstance(ourApplet);
+        } catch (Exception e) {
+            println("Cannot instantiate a board of class " + underlyingClassName);
+            println(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+
+        return underlyingBoard != null;
     }
 
     protected boolean parseData(String[] lines) {
@@ -217,5 +228,100 @@ class BoardPlayback implements BoardDataSource {
         }
 
         return result;
+    }
+
+    @Override
+    public boolean isAccelerometerActive() { 
+        return underlyingBoard instanceof AccelerometerCapableBoard;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        // nothing
+    }
+
+    @Override
+    public int[] getAccelerometerChannels() {
+        if (underlyingBoard instanceof AccelerometerCapableBoard) {
+            return ((AccelerometerCapableBoard)underlyingBoard).getAccelerometerChannels();
+        }
+
+        return new int[0];
+    }
+
+    @Override
+    public boolean isAnalogActive() {
+        return underlyingBoard instanceof AnalogCapableBoard;
+    }
+
+    @Override
+    public void setAnalogActive(boolean active) {
+        // nothing
+    }
+
+    @Override
+    public int[] getAnalogChannels() {
+        if (underlyingBoard instanceof AnalogCapableBoard) {
+            return ((AnalogCapableBoard)underlyingBoard).getAnalogChannels();
+        }
+
+        return new int[0];
+    }
+
+    @Override
+    public boolean isDigitalActive() {
+        return underlyingBoard instanceof DigitalCapableBoard;
+    }
+
+    @Override
+    public void setDigitalActive(boolean active) {
+        // nothing
+    }
+
+    @Override
+    public int[] getDigitalChannels() {
+        if (underlyingBoard instanceof DigitalCapableBoard) {
+            return ((DigitalCapableBoard)underlyingBoard).getDigitalChannels();
+        }
+
+        return new int[0];
+    }
+
+    @Override
+    public boolean isEDAActive() {
+        return underlyingBoard instanceof EDACapableBoard;
+    }
+
+    @Override
+    public void setEDAActive(boolean active) {
+        // nothing
+    }
+
+    @Override
+    public int[] getEDAChannels() {
+        if (underlyingBoard instanceof EDACapableBoard) {
+            return ((EDACapableBoard)underlyingBoard).getEDAChannels();
+        }
+
+        return new int[0];
+    }
+
+    @Override
+    public boolean isPPGActive() {
+        return underlyingBoard instanceof PPGCapableBoard;
+    }
+
+    @Override
+    public void setPPGActive(boolean active) {
+        // nothing
+    }
+
+    @Override
+    public int[] getPPGChannels() {
+        if (underlyingBoard instanceof PPGCapableBoard) {
+            return ((PPGCapableBoard)underlyingBoard).getPPGChannels();
+        }
+
+        return new int[0];
     }
 }

@@ -77,6 +77,7 @@ boolean midInit = false;
 boolean midInitCheck2 = false;
 boolean abandonInit = false;
 boolean systemHasHalted = false;
+boolean reinitRequested = false;
 
 final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
@@ -461,6 +462,11 @@ synchronized void draw() {
             //When Init session is started, the screen will seem to hang.
             systemInitSession();
         }
+        if(reinitRequested) {
+            haltSystem();
+            initSystem();
+            reinitRequested = false;
+        }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
             settings.introAnimationInit = millis();
@@ -719,6 +725,8 @@ void initSystem() {
     boolean success = currentBoard.initialize();
     abandonInit = !success; // abandon if init fails
 
+    updateToNChan(currentBoard.getNumEXGChannels());
+
     dataLogger.initialize();
 
     verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
@@ -929,7 +937,7 @@ void stopButtonWasPressed() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) { //prevents system from halting more than once
+    if (!systemHasHalted) { //prevents system from halting more than once\
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         if (initSystemButton.but_txt == "STOP SESSION") {
             initSystemButton.but_txt = "START SESSION";
@@ -1147,6 +1155,10 @@ void systemDraw() { //for drawing to the screen
     if (midInit) {
         drawOverlay();
     }
+}
+
+void requestReinit() {
+    reinitRequested = true;
 }
 
 //Always Called after systemDraw()

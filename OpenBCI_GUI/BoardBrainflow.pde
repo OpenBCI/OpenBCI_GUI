@@ -23,7 +23,6 @@ abstract class BoardBrainFlow extends Board {
     public boolean initializeInternal() {
         // initiate the board shim
         try {
-            updateToNChan(getNumEXGChannels());
 
             boardShim = new BoardShim (getBoardIdInt(), getParams());
             // for some reason logger configuration doesnt work in contructor or static initializer block

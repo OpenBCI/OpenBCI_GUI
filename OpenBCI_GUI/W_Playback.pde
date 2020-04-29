@@ -214,13 +214,8 @@ void userSelectedPlaybackMenuList (String filePath, int listItem) {
 }
 
 void reInitAfterPlaybackSelected() {
-    //Tell TS widget that the number of channel bars needs to be updated
-    w_timeSeries.updateNumberOfChannelBars = true;
-    //Reinitialize core data, EMG, FFT, and Headplot number of channels
-    reinitializeCoreDataAndFFTBuffer();
-    //Update the MenuList in the PlaybackHistory Widget
-    w_playback.refreshPlaybackList();
-    //Process the file again to fix issue. This makes indexes for playback slider load properly
+    // restart the session with the new file
+    requestReinit();
 }
 
 //Called when user selects a playback file from dialog box
@@ -256,12 +251,11 @@ void playbackFileSelected (String longName, String shortName) {
     playbackData_fname = longName;
     playbackData_ShortName = shortName;
     //Process the playback file
-    processNewPlaybackFile();
 
     //Output new playback settings to GUI as success
     outputSuccess("You have selected \""
-    + shortName + "\" for playback. "
-    + str(nchan) + " channels found.");
+    + longName + "\" for playback.");
+    
     try {
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
@@ -278,53 +272,6 @@ void playbackFileSelected (String longName, String shortName) {
     }
     //add playback file that was processed to the JSON history
     savePlaybackFileToHistory(longName);
-}
-
-void processNewPlaybackFile() { //Also used in DataLogging.pde
-    //Fix issue for processing successive playback files
-    if (systemMode == SYSTEMMODE_POSTINIT) {
-        w_timeSeries.scrollbar.skipToStartButtonAction(); //sets scrollbar to 0
-    }
-}
-
-//This gets called when a playback file is selected from the Playback History Widget
-void reinitializeCoreDataAndFFTBuffer() {
-    //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
-    dataProcessing.nchan = nchan;
-    dataProcessing.fs_Hz = getSampleRateSafe();
-    dataProcessing.data_std_uV = new float[nchan];
-    dataProcessing.polarity = new float[nchan];
-    dataProcessing.avgPowerInBins = new float[nchan][dataProcessing.processing_band_low_Hz.length];
-    dataProcessing.headWidePower = new float[dataProcessing.processing_band_low_Hz.length];
-    dataProcessing.defineFilters();  //define the filters anyway just so that the code doesn't bomb
-
-    //initialize core data objects
-    initCoreDataObjects();
-    //verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
-
-    initFFTObjectsAndBuffer();
-
-    //verbosePrint("W_Playback: initSystem: -- Init 2 -- " + millis());
-
-    //Update the number of channels for FFT
-    w_fft.fft_points = null;
-    w_fft.fft_points = new GPointsArray[nchan];
-    w_fft.initializeFFTPlot(ourApplet);
-    w_fft.update();
-
-    //Update the number of channels for EMG
-    w_emg.motorWidgets = null;
-    w_emg.updateEMGMotorWidgets(nchan);
-
-    //Update the number of channels for HeadPlot
-    w_headPlot.headPlot = null;
-    w_headPlot.updateHeadPlot(nchan);
-    
-    //Update channelSelect in bandPower and SSVEP widgets
-    w_bandPower.bpChanSelect.createCheckList(nchan);
-    w_bandPower.activateAllChannels();
-    w_ssvep.ssvepChanSelect.createCheckList(nchan);
-    w_ssvep.activateDefaultChannels();
 }
 
 void savePlaybackFileToHistory(String fileName) {

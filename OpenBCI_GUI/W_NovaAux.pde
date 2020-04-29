@@ -89,7 +89,7 @@ class W_NovaAux extends Widget {
     }
 
     void update() {
-        if(visible && updating && isRunning) {
+        if(visible && updating) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
@@ -255,6 +255,17 @@ class AuxReadBar{
     }
 
     void update() {
+        // early out if unactive
+        if (auxValuesPosition == 1) {
+            if (!edaBoard.isEDAActive()) {
+                return;
+            }
+        } else {
+            if (!ppgBoard.isPPGActive()) {
+                return;
+            }
+        }
+
         // update data in plot
         updatePlotPoints();
         
@@ -346,11 +357,6 @@ class AuxReadBar{
         }
         else {
             plot.getXAxis().setNTicks(10);
-        }
-        if (w_analogRead != null) {
-            if(w_analogRead.isUpdating()) {
-                updatePlotPoints();
-            }
         }
     }
 
