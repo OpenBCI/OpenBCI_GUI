@@ -21,7 +21,6 @@ W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
 W_template w_template1;
 W_emg w_emg;
-W_openBionics w_openbionics;
 W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
 W_AnalogRead w_analogRead;
@@ -152,10 +151,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // w_template2 = new W_template(_this);
     // w_template2.setTitle("Widget Template 2");
     // addWidget(w_template2, w);
-
-    // w_openbionics = new W_OpenBionics(_this);
-    // w_openbionics.setTitle("OpenBionics");
-    // addWidget(w_openbionics,w);
 
     // w_template3 = new W_template(_this);
     // w_template3.setTitle("LSL Stream");
