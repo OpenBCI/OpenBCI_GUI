@@ -131,7 +131,7 @@ public void controlEvent(ControlEvent theEvent) {
         controlPanel.hideAllBoxes();
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        String str = (String)bob.get("headline"); // Get the text display in the MenuList
+        String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
         settings.controlEventDataSource = str; //Used for output message on system start
 
         protocolWifiGanglion.setColorNotPressed(colorNotPressed);
@@ -169,8 +169,6 @@ public void controlEvent(ControlEvent theEvent) {
             controlPanel.novaXRBox.isShowing = true;
             eegDataSource = DATASOURCE_NOVAXR;
         }
-
-        //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
     }
 
     if (theEvent.isFrom("serialList")) {
