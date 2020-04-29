@@ -10,6 +10,7 @@ public class DataWriterODF {
 
     //variation on constructor to have custom name
     DataWriterODF(String _sessionName, String _fileName) {
+        streamingBoard = (Board)currentBoard;
         settings.setSessionPath(settings.recordingsPath + "OpenBCISession_" + _sessionName + File.separator);
         fname = settings.getSessionPath();
         fname += "OpenBCI-RAW-";
@@ -18,8 +19,6 @@ public class DataWriterODF {
         output = createWriter(fname);        //open the file
         writeHeader();    //add the header
         rowsWritten = 0;    //init the counter
-
-        streamingBoard = (Board)currentBoard;
     }
 
     public void writeHeader() {
