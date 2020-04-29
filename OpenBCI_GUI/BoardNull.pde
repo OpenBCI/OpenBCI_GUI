@@ -78,7 +78,7 @@ class BoardNull extends Board {
     }
 
     @Override
-    protected int getTotalChannelCount() {
+    public int getTotalChannelCount() {
         return 0;
     }
 

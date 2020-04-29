@@ -196,17 +196,15 @@ class W_MarkerMode extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-            if(currentBoard.isConnected()) {
-                if (!markerBoard.isMarkerActive()) {
-                    markerBoard.setMarkerActive(true);
-                    output("Starting to read markers");
-                    setupUDPMarkerListener();
-                } else {
-                    markerBoard.setMarkerActive(false);
-                    output("Starting to read accelerometer");
-                    killUDPMarkerListener();
-                }
-            } 
+            if (!markerBoard.isMarkerActive()) {
+                markerBoard.setMarkerActive(true);
+                output("Starting to read markers");
+                setupUDPMarkerListener();
+            } else {
+                markerBoard.setMarkerActive(false);
+                output("Starting to read accelerometer");
+                killUDPMarkerListener();
+            }
         }
         markerModeButton.setIsActive(false);
     }

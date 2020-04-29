@@ -222,7 +222,7 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }//end void synthesizeAccelData
 
     @Override
-    protected int getTotalChannelCount() {
+    public int getTotalChannelCount() {
         return totalChannels;
     }
     

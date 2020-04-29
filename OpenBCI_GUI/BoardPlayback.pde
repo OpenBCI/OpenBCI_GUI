@@ -1,9 +1,7 @@
-class BoardPlayback extends Board {
+class BoardPlayback implements BoardDataSource {
     private String playbackFilePath;
-    private double[][] rawData;
-    private int newDataStartIndex;
-    private int newDataEndIndex;
-    private int lastDeliveredSample;
+    private ArrayList<double[]> rawData;
+    private int currentSample;
     private int timeOfLastUpdateMS;
 
     private boolean initialized = false;
@@ -16,7 +14,8 @@ class BoardPlayback extends Board {
         playbackFilePath = filePath;
     }
 
-    protected boolean initializeInternal() {
+    @Override
+    public boolean initialize() {
         String[] lines = loadStrings(playbackFilePath);
         
         boolean headerParsed = parseHeader(lines);
@@ -24,14 +23,13 @@ class BoardPlayback extends Board {
 
         initialized = headerParsed && dataParsed;
 
-        newDataStartIndex = 0;
-        newDataEndIndex = 0;
-        lastDeliveredSample = 0;
+        currentSample = 0;
 
         return initialized;
     }
 
-    protected void uninitializeInternal() {
+    @Override
+    public void uninitialize() {
         initialized = false;
     }
 
@@ -81,109 +79,24 @@ class BoardPlayback extends Board {
         }
 
         int dataLength = lines.length - dataStart;
-        rawData = new double[getTotalChannelCount()][dataLength];
+        rawData = new ArrayList<double[]>(dataLength);
         
         for (int iData=0; iData<dataLength; iData++) {
             String line = lines[dataStart + iData];
             String[] valStrs = line.split(",");
+
+            double[] row = new double[getTotalChannelCount()];
             for (int iCol = 0; iCol < getTotalChannelCount(); iCol++) {
-                rawData[iCol][iData] = Double.parseDouble(valStrs[iCol]);
+                row[iCol] = Double.parseDouble(valStrs[iCol]);
             }
+            rawData.add(row);
         }
 
         return true;
     }
 
-    public void startStreaming() {
-        streaming = true;
-        timeOfLastUpdateMS = millis();
-    }
-
-    public void stopStreaming() {
-        streaming = false;
-    }
-
-    public boolean isConnected() {
-        return initialized;
-    }
-
     @Override
-    public int getSampleRate() {
-        return sampleRate;
-    }
-
-    public void setEXGChannelActive(int channelIndex, boolean active) {
-        outputWarn("Deactivating channels is not possible for Playback board.");
-    }
-
-    public boolean isEXGChannelActive(int channelIndex) {
-        return true;
-    }
-
-    @Override
-    public void sendCommand(String command) {
-        outputWarn("Sending commands is not implemented for Playback board. Command: " + command);
-    }
-
-    public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sample rate is not possible for Playback board.");
-    }
-
-    @Override
-    public int[] getEXGChannels() {
-        return underlyingBoard.getEXGChannels();
-    }
-
-    public int getTimestampChannel() {
-        return underlyingBoard.getTimestampChannel();
-    }
-
-    public int getSampleNumberChannel() {
-        return underlyingBoard.getSampleNumberChannel();
-    }
-
-    public int getTotalSamples() {
-        return rawData[0].length;
-    }
-
-    public float getTotalTimeSeconds() {
-        return float(getTotalSamples()) / float(getSampleRate());
-    }
-
-    public int getCurrentSample() {
-        return lastDeliveredSample;
-    }
-
-    public float getCurrentTimeSeconds() {
-        return float(getCurrentSample()) / float(getSampleRate());
-    }
-
-    public void goToIndex(int index) {
-        newDataEndIndex = index;
-        newDataStartIndex = max(0, newDataEndIndex - getBufferSize());
-    }
-
-    protected int getTotalChannelCount() {
-        return underlyingBoard.getTotalChannelCount();
-    }
-
-    protected double[][] getNewDataInternal() {
-        int newDataCount = newDataEndIndex - newDataStartIndex;
-        double[][] result = new double[getTotalChannelCount()][newDataCount];
-
-        for (int iSample=0; iSample<newDataCount; iSample++) {
-            for (int iChan=0; iChan<getTotalChannelCount(); iChan++) {
-                result[iChan][iSample] = rawData[iChan][iSample + newDataStartIndex];
-            }
-        }
-
-        newDataStartIndex = newDataEndIndex;
-        lastDeliveredSample = newDataEndIndex;
-
-        return result;
-    }
-
-    protected void updateInternal() {
+    public void update() {
         if (!streaming) {
             return; // do not update
         }
@@ -199,11 +112,110 @@ class BoardPlayback extends Board {
         // based on how many samples we incremented this frame.
         timeOfLastUpdateMS += numNewSamplesThisFrame / sampleRateMS;
 
-        newDataEndIndex += numNewSamplesThisFrame;
-        newDataEndIndex = min(newDataEndIndex, getTotalSamples());
+        currentSample += numNewSamplesThisFrame;
+        currentSample = min(currentSample, getTotalSamples());
     }
 
-    protected void addChannelNamesInternal(String[] channelNames) {
-        underlyingBoard.addChannelNamesInternal(channelNames);
+    @Override
+    public void startStreaming() {
+        streaming = true;
+        timeOfLastUpdateMS = millis();
+    }
+
+    @Override
+    public void stopStreaming() {
+        streaming = false;
+    }
+
+    @Override
+    public int getSampleRate() {
+        return sampleRate;
+    }
+
+    @Override
+    public void setEXGChannelActive(int channelIndex, boolean active) {
+        outputWarn("Deactivating channels is not possible for Playback board.");
+    }
+
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return true;
+    }
+
+    @Override
+    public void setSampleRate(int sampleRate) {
+        outputWarn("Changing the sample rate is not possible for Playback board.");
+    }
+
+    @Override
+    public int[] getEXGChannels() {
+        return underlyingBoard.getEXGChannels();
+    }
+    
+    @Override
+    public int getNumEXGChannels() {
+        return getEXGChannels().length;
+    }
+
+    @Override
+    public int getTimestampChannel() {
+        return underlyingBoard.getTimestampChannel();
+    }
+
+    @Override
+    public int getSampleNumberChannel() {
+        return underlyingBoard.getSampleNumberChannel();
+    }
+
+    public int getTotalSamples() {
+        return rawData.size();
+    }
+
+    public float getTotalTimeSeconds() {
+        return float(getTotalSamples()) / float(getSampleRate());
+    }
+
+    public int getCurrentSample() {
+        return currentSample;
+    }
+
+    public float getCurrentTimeSeconds() {
+        return float(getCurrentSample()) / float(getSampleRate());
+    }
+
+    public void goToIndex(int index) {
+        currentSample = index;
+    }
+
+    @Override
+    public int getTotalChannelCount() {
+        return underlyingBoard.getTotalChannelCount();
+    }
+
+    @Override
+    public double[][] getFrameData() {
+        // empty data (for now?)
+        return new double[getTotalChannelCount()][0];
+    }
+
+    @Override
+    public List<double[]> getData(int maxSamples) {
+        int firstSample = max(0, currentSample - maxSamples);
+        List<double[]> result = rawData.subList(firstSample, currentSample);
+
+        if (maxSamples > currentSample) {
+            int sampleDiff = maxSamples - currentSample;
+
+            double[] emptyData = new double[getTotalChannelCount()];
+            ArrayList<double[]> newResult = new ArrayList(maxSamples);
+            for (int i=0; i<sampleDiff; i++) {
+                newResult.add(emptyData);
+            }
+            
+            newResult.addAll(result);
+            return newResult;
+        }
+
+        return result;
     }
 }

@@ -193,14 +193,12 @@ class W_PulseSensor extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-            if(currentBoard.isConnected()) {
-                if (!analogBoard.isAnalogActive()) {
-                    analogBoard.setAnalogActive(true);
-                    output("Starting to read analog inputs on pin marked D11.");
-                } else {
-                    analogBoard.setAnalogActive(false);
-                    output("Starting to read accelerometer");
-                }
+            if (!analogBoard.isAnalogActive()) {
+                analogBoard.setAnalogActive(true);
+                output("Starting to read analog inputs on pin marked D11.");
+            } else {
+                analogBoard.setAnalogActive(false);
+                output("Starting to read accelerometer");
             }
         }
         analogModeButton.setIsActive(false);

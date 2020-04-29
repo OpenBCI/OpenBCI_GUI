@@ -245,7 +245,7 @@ abstract class BoardBrainFlow extends Board {
     }
 
     @Override
-    protected int getTotalChannelCount() {
+    public int getTotalChannelCount() {
         if(totalChannelsCache < 0) {
             try {
                 totalChannelsCache = BoardShim.get_num_rows(getBoardIdInt());

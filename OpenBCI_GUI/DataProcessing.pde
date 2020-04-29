@@ -34,14 +34,14 @@ void processNewData() {
     avgBitRate.addValue(inst_byteRate_perSec);
     byteRate_perSec = (int)avgBitRate.calcMean();
 
-    List<double[]> currentData = currentBoard.getData(currentBoard.getBufferSize());
+    List<double[]> currentData = currentBoard.getData(getCurrentBoardBufferSize());
     int[] exgChannels = currentBoard.getEXGChannels();
     int channelCount = currentBoard.getNumEXGChannels();
 
     //update the data buffers
     for (int Ichan=0; Ichan < channelCount; Ichan++) {
         
-        for(int i = 0; i < currentBoard.getBufferSize(); i++) {
+        for(int i = 0; i < getCurrentBoardBufferSize(); i++) {
             dataBuffY_uV[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
         }
 

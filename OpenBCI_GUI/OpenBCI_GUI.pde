@@ -111,7 +111,7 @@ String playbackData_fname = "N/A"; //only used if loading input data from a file
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
-Board currentBoard = new BoardNull();
+BoardDataSource currentBoard = new BoardNull();
 
 DataLogger dataLogger = new DataLogger();
 
@@ -808,6 +808,10 @@ int getSampleRateSafe() {
     return currentBoard.getSampleRate();
 }
 
+public int getCurrentBoardBufferSize() {
+    return dataBuff_len_sec * currentBoard.getSampleRate();
+}
+
 /**
 * @description Get the correct points of FFT based on sampling rate
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
@@ -834,9 +838,9 @@ void initCoreDataObjects() {
     nDataBackBuff = 3*getSampleRateSafe();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
-    dataBuffX = new float[currentBoard.getBufferSize()];
-    dataBuffY_uV = new float[nchan][currentBoard.getBufferSize()];
-    dataBuffY_filtY_uV = new float[nchan][currentBoard.getBufferSize()];
+    dataBuffX = new float[getCurrentBoardBufferSize()];
+    dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
+    dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
     auxBuff = new float[3][nPointsPerUpdate];
     accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
@@ -1000,9 +1004,7 @@ void systemUpdate() { // for updating data values and variables
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
-        if (isRunning) {
-            processNewData();
-        }
+        processNewData();
 
         // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
 
