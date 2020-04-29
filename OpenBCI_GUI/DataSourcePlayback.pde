@@ -43,13 +43,16 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
             if (!line.startsWith("%")) {
                 break; // reached end of header
             }
+
+            //only needed for synthetic board. can delete if we get rid of synthetic board.
             if (line.startsWith("%Number of channels")) {
                 int startIndex = line.indexOf('=') + 2;
                 String nchanStr = line.substring(startIndex);
                 int chanCount = Integer.parseInt(nchanStr);
-                updateToNChan(chanCount);
+                updateToNChan(chanCount); // sythetic board depends on this being set before it's initialized
             }
 
+            // some boards have configurable sample rate, so read it from header
             if (line.startsWith("%Sample Rate")) {
                 int startIndex = line.indexOf('=') + 2;
                 int endIndex = line.indexOf("Hz") - 1;
@@ -58,6 +61,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
                 sampleRate = Integer.parseInt(hzString);
             }
 
+            // used to figure out the underlying board type
             if (line.startsWith("%Board")) {
                 int startIndex = line.indexOf('=') + 2;
                 underlyingClassName = line.substring(startIndex);
@@ -73,7 +77,9 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     protected boolean instantiateUnderlyingBoard() {
         try {
+            // get class from name
             Class<?> boardClass = Class.forName(underlyingClassName);
+            // find default contructor (since this is processing, PApplet is required arg in all constructors)
             Constructor<?> constructor = boardClass.getConstructor(OpenBCI_GUI.class);
             underlyingBoard = (Board)constructor.newInstance(ourApplet);
         } catch (Exception e) {
@@ -88,6 +94,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     protected boolean parseData(String[] lines) {
         int dataStart;
+        // set data start to first line of data (skip header)
         for (dataStart = 0; dataStart < lines.length; dataStart++) {
             String line = lines[dataStart];
             if (!line.startsWith("%")) {
@@ -125,12 +132,13 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         int numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
 
         // account for the fact that each update will not coincide with a sample exactly. 
-        // numNewSamplesThisFrame will actually be floor()'s down to the nearest sample
-        // to keep the sample rate accurate, we increate the time of last update
+        // to keep the streaming rate accurate, we increment the time of last update
         // based on how many samples we incremented this frame.
         timeOfLastUpdateMS += numNewSamplesThisFrame / sampleRateMS;
 
         currentSample += numNewSamplesThisFrame;
+
+        // don't go beyond raw data array size
         currentSample = min(currentSample, getTotalSamples());
     }
 
@@ -221,6 +229,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         int firstSample = max(0, currentSample - maxSamples);
         List<double[]> result = rawData.subList(firstSample, currentSample);
 
+        // if needed, pad the beginning of the array with empty data
         if (maxSamples > currentSample) {
             int sampleDiff = maxSamples - currentSample;
 
