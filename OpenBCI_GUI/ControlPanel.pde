@@ -131,11 +131,8 @@ public void controlEvent(ControlEvent theEvent) {
         controlPanel.hideAllBoxes();
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        String str = (String)bob.get("headline");
+        String str = (String)bob.get("headline"); // Get the text display in the MenuList
         settings.controlEventDataSource = str; //Used for output message on system start
-        int newDataSource = int(theEvent.getValue());
-
-        eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
         protocolWifiGanglion.setColorNotPressed(colorNotPressed);
         protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
@@ -145,26 +142,32 @@ public void controlEvent(ControlEvent theEvent) {
         selectedProtocol = BoardProtocol.NONE;
         controlPanel.novaXRBox.isShowing = false;
 
-        if(newDataSource == DATASOURCE_CYTON){
+        //Perform this check in a way that ignores order of items in the menulist
+        if (str.equals("LIVE (from Cyton)")) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
             // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-        } else if(newDataSource == DATASOURCE_GANGLION){
+            eegDataSource = DATASOURCE_CYTON;
+        } else if (str.equals("LIVE (from Ganglion)")) {
             updateToNChan(4);
             // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-        } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
+            eegDataSource = DATASOURCE_GANGLION;
+        } else if (str.equals("PLAYBACK (from file)")) {
             //GUI auto detects number of channels for playback when file is selected
-        } else if(newDataSource == DATASOURCE_SYNTHETIC){
+            eegDataSource = DATASOURCE_PLAYBACKFILE;
+        } else if (str.equals("SYNTHETIC (algorithmic)")) {
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
-        } else if (newDataSource == DATASOURCE_NOVAXR) {
+            eegDataSource = DATASOURCE_SYNTHETIC;
+        } else if (str.equals("LIVE (from NovaXR)")) {
             controlPanel.novaXRBox.isShowing = true;
+            eegDataSource = DATASOURCE_NOVAXR;
         }
 
         //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
@@ -1333,13 +1336,14 @@ void updateToNChan(int _nchan) {
 
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
-    int numItems = 5;
+    int numItems = 4;
     int boxHeight = 24;
     int spacing = 43;
 
     CheckBox sourceCheckBox;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
+        if (novaXREnabled) numItems = 5;
         x = _x;
         y = _y;
         w = _w;
@@ -1352,7 +1356,7 @@ class DataSourceBox {
         sourceList.setPosition(x + padding, y + padding*2 + 13);
         sourceList.addItem(makeItem("LIVE (from Cyton)"));
         sourceList.addItem(makeItem("LIVE (from Ganglion)"));
-        sourceList.addItem(makeItem("LIVE (from NovaXR)"));
+        if (novaXREnabled) sourceList.addItem(makeItem("LIVE (from NovaXR)"));
         sourceList.addItem(makeItem("PLAYBACK (from file)"));
         sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));
 

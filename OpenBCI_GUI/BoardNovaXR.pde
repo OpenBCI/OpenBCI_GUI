@@ -2,6 +2,8 @@ import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+final boolean novaXREnabled = true;
+
 class BoardNovaXR extends BoardBrainFlow
 implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
