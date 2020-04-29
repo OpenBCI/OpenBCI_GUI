@@ -17,14 +17,20 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     @Override
     public boolean initialize() {
+        currentSample = 0;
         String[] lines = loadStrings(playbackFilePath);
         
-        boolean headerParsed = parseHeader(lines);
-        boolean boardInstantiated = instantiateUnderlyingBoard();
-        boolean dataParsed = parseData(lines);
-        currentSample = 0;
+        if(!parseHeader(lines)) {
+            return false;
+        }
+        if(!instantiateUnderlyingBoard()) {
+            return false;
+        }
+        if(!parseData(lines)) {
+            return false;
+        }
 
-        return headerParsed && boardInstantiated && dataParsed;
+        return true;
     }
 
     @Override
@@ -58,7 +64,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
             }
         }
 
-        return sampleRate > 0 && underlyingClassName != "";
+        boolean success = sampleRate > 0 && underlyingClassName != "";
+        if(!success) {
+            outputError("Playback file does not contain the required header data.");
+        }
+        return success;
     }
 
     protected boolean instantiateUnderlyingBoard() {
@@ -67,7 +77,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
             Constructor<?> constructor = boardClass.getConstructor(OpenBCI_GUI.class);
             underlyingBoard = (Board)constructor.newInstance(ourApplet);
         } catch (Exception e) {
-            println("Cannot instantiate a board of class " + underlyingClassName);
+            outputError("Cannot instantiate underlying board of class " + underlyingClassName);
             println(e.getMessage());
             e.printStackTrace();
             return false;

@@ -742,7 +742,7 @@ class PlaybackScrollbar {
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
-    private DataSourcePlayback playbackBoard;
+    private DataSourcePlayback playbackDataSource;
     
     private final DateFormat currentTimeFormatShort = new SimpleDateFormat("mm:ss");
     private final DateFormat currentTimeFormatLong = new SimpleDateFormat("HH:mm:ss");
@@ -767,7 +767,7 @@ class PlaybackScrollbar {
         PImage bgImage = loadImage("skipToStart-30x26.png");
         skipToStartButton.setBackgroundImage(bgImage);
 
-        playbackBoard = (DataSourcePlayback)currentBoard;
+        playbackDataSource = (DataSourcePlayback)currentBoard;
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -806,18 +806,18 @@ class PlaybackScrollbar {
     } //end update loop for PlaybackScrollbar
 
     void updateCursor() {
-        float currentSample = float(playbackBoard.getCurrentSample());
-        float totalSamples = float(playbackBoard.getTotalSamples());
+        float currentSample = float(playbackDataSource.getCurrentSample());
+        float totalSamples = float(playbackDataSource.getTotalSamples());
         float currentPlaybackPos = currentSample / totalSamples;
 
         spos =  lerp(sposMin, sposMax, currentPlaybackPos);
     }
 
     void scrubToPosition() {
-        int totalSamples = playbackBoard.getTotalSamples();
+        int totalSamples = playbackDataSource.getTotalSamples();
         int newSamplePos = floor(totalSamples * getCursorPercentage());
 
-        playbackBoard.goToIndex(newSamplePos);
+        playbackDataSource.goToIndex(newSamplePos);
     }
 
     float getCursorPercentage() {
@@ -836,8 +836,8 @@ class PlaybackScrollbar {
     }
 
     String getCurrentTimeToDisplaySeconds() {
-        double totalMillis = playbackBoard.getTotalTimeSeconds() * 1000.0;
-        double currentMillis = playbackBoard.getCurrentTimeSeconds() * 1000.0;
+        double totalMillis = playbackDataSource.getTotalTimeSeconds() * 1000.0;
+        double currentMillis = playbackDataSource.getCurrentTimeSeconds() * 1000.0;
 
         String totalTimeStr = formatCurrentTime(totalMillis);
         String currentTimeStr = formatCurrentTime(currentMillis);
@@ -930,7 +930,7 @@ class PlaybackScrollbar {
     //This function scrubs to the beginning of the playback file
     //Useful to 'reset' the scrollbar before loading a new playback file
     void skipToStartButtonAction() {       
-        playbackBoard.goToIndex(0);
+        playbackDataSource.goToIndex(0);
     }
     
 };//end PlaybackScrollbar class
