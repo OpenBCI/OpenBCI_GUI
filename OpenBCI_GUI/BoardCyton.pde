@@ -203,7 +203,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         }
 
         // for example: z 4 1 0 Z
-        String command = String.format("z%c%c%cZ", channelSelectForSettings[channel-1], p, n);
+        String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
         configBoard(command);
     }
 
