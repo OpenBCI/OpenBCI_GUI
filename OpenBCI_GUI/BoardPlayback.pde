@@ -22,12 +22,9 @@ class BoardPlayback implements BoardDataSource, AccelerometerCapableBoard, Analo
         boolean headerParsed = parseHeader(lines);
         boolean boardInstantiated = instantiateUnderlyingBoard();
         boolean dataParsed = parseData(lines);
-
-        initialized = headerParsed && boardInstantiated && dataParsed;
-
         currentSample = 0;
 
-        return initialized;
+        return headerParsed && boardInstantiated && dataParse;
     }
 
     @Override
