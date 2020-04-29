@@ -132,7 +132,9 @@ public void controlEvent(ControlEvent theEvent) {
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
+        int newDataSource = (int)bob.get("value");
         settings.controlEventDataSource = str; //Used for output message on system start
+        eegDataSource = newDataSource;
 
         protocolWifiGanglion.setColorNotPressed(colorNotPressed);
         protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
@@ -143,31 +145,26 @@ public void controlEvent(ControlEvent theEvent) {
         controlPanel.novaXRBox.isShowing = false;
 
         //Perform this check in a way that ignores order of items in the menulist
-        if (str.equals("LIVE (from Cyton)")) {
+        if (eegDataSource == DATASOURCE_CYTON) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
             // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-            eegDataSource = DATASOURCE_CYTON;
-        } else if (str.equals("LIVE (from Ganglion)")) {
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
             updateToNChan(4);
             // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-            eegDataSource = DATASOURCE_GANGLION;
-        } else if (str.equals("PLAYBACK (from file)")) {
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             //GUI auto detects number of channels for playback when file is selected
-            eegDataSource = DATASOURCE_PLAYBACKFILE;
-        } else if (str.equals("SYNTHETIC (algorithmic)")) {
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
-            eegDataSource = DATASOURCE_SYNTHETIC;
-        } else if (str.equals("LIVE (from NovaXR)")) {
+        } else if (eegDataSource == DATASOURCE_NOVAXR) {
             controlPanel.novaXRBox.isShowing = true;
-            eegDataSource = DATASOURCE_NOVAXR;
         }
     }
 
@@ -1010,7 +1007,7 @@ class ControlPanel {
                         println("No WIFI Shields found");
                     }
                     for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(),""));
+                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
                     }
                     wifiList.updateMenu();
                 } catch (Exception e) {
@@ -1352,11 +1349,11 @@ class DataSourceBox {
         // sourceList.itemHeight = 28;
         // sourceList.padding = 9;
         sourceList.setPosition(x + padding, y + padding*2 + 13);
-        sourceList.addItem(makeItem("LIVE (from Cyton)"));
-        sourceList.addItem(makeItem("LIVE (from Ganglion)"));
-        if (novaXREnabled) sourceList.addItem(makeItem("LIVE (from NovaXR)"));
-        sourceList.addItem(makeItem("PLAYBACK (from file)"));
-        sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));
+        sourceList.addItem(makeItem("LIVE (from Cyton)", DATASOURCE_CYTON));
+        sourceList.addItem(makeItem("LIVE (from Ganglion)", DATASOURCE_GANGLION));
+        if (novaXREnabled) sourceList.addItem(makeItem("LIVE (from NovaXR)", DATASOURCE_NOVAXR));
+        sourceList.addItem(makeItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE));
+        sourceList.addItem(makeItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC));
 
         sourceList.scrollerLength = 10;
     }
@@ -2676,6 +2673,14 @@ class InitBox {
 Map<String, Object> makeItem(String theHeadline) {
     Map m = new HashMap<String, Object>();
     m.put("headline", theHeadline);
+    return m;
+}
+
+//makeItem function used by MenuList class below
+Map<String, Object> makeItem(String theHeadline, int value) {
+    Map m = new HashMap<String, Object>();
+    m.put("headline", theHeadline);
+    m.put("value", value);
     return m;
 }
 
