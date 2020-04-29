@@ -3,8 +3,8 @@ import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow extends Board {
-    private BoardShim boardShim = null;
 
+    protected BoardShim boardShim = null;
     protected int samplingRateCache = -1;
     protected int packetNumberChannelCache = -1;
     protected int timeStampChannelCache = -1;

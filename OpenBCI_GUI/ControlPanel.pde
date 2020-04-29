@@ -119,6 +119,7 @@ PollPopup pollPopup;
 RadioConfigBox rcBox;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
+int selectedSamplingRate = -1;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -1136,23 +1137,23 @@ class ControlPanel {
         }
 
         if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
-            currentBoard.setSampleRate(200);
+            selectedSamplingRate = 200;
         }
 
         if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
-            currentBoard.setSampleRate(1600);
+            selectedSamplingRate = 1600;
         }
 
         if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
-            currentBoard.setSampleRate(250);
+            selectedSamplingRate = 250;
         }
 
         if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
-            currentBoard.setSampleRate(500);
+            selectedSamplingRate = 500;
         }
 
         if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
-            currentBoard.setSampleRate(1000);
+            selectedSamplingRate = 1000;
         }
 
         if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
