@@ -169,6 +169,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getDigitalChannels() {
+        // the removeAll function will remove array indices 0 and 5.
+        // remove other_channel[0] because it's the end byte
+        // remove other_channels[5] because it does not contain digital data
         int[] digitalChannels = ArrayUtils.removeAll(getOtherChannels(), 0, 5); // remove non-digital channels
         return digitalChannels;
     }
