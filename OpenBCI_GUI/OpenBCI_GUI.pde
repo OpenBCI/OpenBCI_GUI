@@ -686,7 +686,7 @@ void initSystem() throws Exception {
             // TODO[brainflow] : do we need these two lines?
             int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
-            currentBoard = new BoardCyton(openBCI_portName, wifi_ipAddress, nchan == 16, selectedProtocol == BoardProtocol.WIFI);
+            currentBoard = new BoardCyton(openBCI_portName, wifi_ipAddress, nchan == 16, selectedProtocol == BoardProtocol.WIFI, selectedSamplingRate);
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardSynthetic();
@@ -695,7 +695,7 @@ void initSystem() throws Exception {
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
-                currentBoard = new BoardGanglion(wifi_ipAddress);
+                currentBoard = new BoardGanglion(wifi_ipAddress, selectedSamplingRate);
             }
             else {
                 // todo[brainflow] temp hardcode

@@ -39,8 +39,20 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private BoardIds boardId = BoardIds.CYTON_BOARD;
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
 
-    public BoardCyton(String serialPort, String ipAddress, boolean daisy, boolean wifi) {
+    // https://docs.openbci.com/docs/02Cyton/CytonSDK#sample-rate
+    private Map<Integer, String> samplingRateCommands = new HashMap<Integer, String>() {{
+        put(16000, "~0");
+        put(8000, "~1");
+        put(4000, "~2");
+        put(2000, "~3");
+        put(1000, "~4");
+        put(500, "~5");
+        put(250, "~6");
+    }};
+
+    public BoardCyton(String serialPort, String ipAddress, boolean daisy, boolean wifi, int samplingRate) {
         super();
+        samplingRateCache = samplingRate;
 
         if (wifi) {
             if (daisy) { // 16 channels selected
@@ -79,7 +91,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         exgChannelActive = new boolean[getNumEXGChannels()];
         Arrays.fill(exgChannelActive, true);
 
-        return super.initializeInternal();
+        boolean res = super.initializeInternal();
+        if ((res) && (samplingRateCache > 0)){
+            String command = samplingRateCommands.get(samplingRateCache);
+            sendCommand(command);
+        }
+        return res;
     }
 
     @Override

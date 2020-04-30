@@ -90,8 +90,6 @@ abstract class Board {
 
     public abstract void sendCommand(String command);
 
-    public abstract void setSampleRate(int sampleRate);
-
     public abstract int[] getEXGChannels();
 
     public abstract int getTimestampChannel();

@@ -3,8 +3,8 @@ import java.util.*;
 import org.apache.commons.lang3.SystemUtils;
 
 abstract class BoardBrainFlow extends Board {
-    private BoardShim boardShim = null;
 
+    protected BoardShim boardShim = null;
     protected int samplingRateCache = -1;
     protected int packetNumberChannelCache = -1;
     protected int timeStampChannelCache = -1;
@@ -210,12 +210,8 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void sendCommand(String command) {
-        configBoard(command);
-    }
-
-    @Override
-    public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sampling rate is not possible on this board. Sampling rate will stay at " + getSampleRate());
+        if (command != null)
+            configBoard(command);
     }
 
     protected void configBoard(String configStr) {
