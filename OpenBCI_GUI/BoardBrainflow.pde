@@ -10,6 +10,7 @@ abstract class BoardBrainFlow extends Board {
     protected int timeStampChannelCache = -1;
     protected int totalChannelsCache = -1;
     protected int[] exgChannelsCache = null;
+    protected int[] otherChannelsCache = null;
 
     protected boolean streaming = false;
 
@@ -259,5 +260,17 @@ abstract class BoardBrainFlow extends Board {
         }
 
         return totalChannelsCache;
+    }
+
+    protected int[] getOtherChannels() {
+        if (otherChannelsCache == null) {
+            try {
+                otherChannelsCache = BoardShim.get_other_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return otherChannelsCache;
     }
 };

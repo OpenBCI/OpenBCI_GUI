@@ -169,9 +169,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getDigitalChannels() {
-        // TODO[brainflow]
-        return new int[0];
-        // return digitalChannels;
+        int[] digitalChannels = ArrayUtils.removeAll(getOtherChannels(), 0, 5); // remove non-digital channels
+        return digitalChannels;
     }
 
     @Override
