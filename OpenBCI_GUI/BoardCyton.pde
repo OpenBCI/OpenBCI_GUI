@@ -93,12 +93,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         boolean res = super.initializeInternal();
         if ((res) && (samplingRateCache > 0)){
-            try {
-                String command = samplingRateCommands.get(samplingRateCache);
-                boardShim.config_board(command);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            String command = samplingRateCommands.get(samplingRateCache);
+            sendCommand(command);
         }
         return res;
     }

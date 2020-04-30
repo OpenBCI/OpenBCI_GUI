@@ -210,12 +210,8 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void sendCommand(String command) {
-        configBoard(command);
-    }
-
-    @Override
-    public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sampling rate is not possible on this board. Sampling rate will stay at " + getSampleRate());
+        if (command != null)
+            configBoard(command);
     }
 
     protected void configBoard(String configStr) {
