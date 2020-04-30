@@ -194,7 +194,7 @@ class HardwareSettingsController{
         }
 
         if (currentBoard instanceof ImpedanceSettingsBoard) {
-            ((ImpedanceSettingsBoard)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
+            ((ImpedanceSettingsBoard)currentBoard).setImpedanceSettings(_numChannel-1, pORn, onORoff == '1');
         }
         else {
             outputError("Impedance settings not implemented for this board");
