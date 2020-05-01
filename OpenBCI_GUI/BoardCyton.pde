@@ -55,12 +55,12 @@ class BoardCytonSerialDaisy extends BoardCyton {
     }
 };
 
-class BoardCytonWifi extends BoardCyton {
+class BoardCytonWifi extends BoardCytonWifiBase {
     public BoardCytonWifi() {
         super();
     }
-    public BoardCytonWifi(String ipAddress) {
-        super();
+    public BoardCytonWifi(String ipAddress, int samplingRate) {
+        super(samplingRate);
         this.ipAddress = ipAddress;
     }
 
@@ -70,18 +70,51 @@ class BoardCytonWifi extends BoardCyton {
     }
 };
 
-class BoardCytonWifiDaisy extends BoardCyton {
+class BoardCytonWifiDaisy extends BoardCytonWifiBase {
     public BoardCytonWifiDaisy() {
         super();
     }
-    public BoardCytonWifiDaisy(String ipAddress) {
-        super();
+    public BoardCytonWifiDaisy(String ipAddress, int samplingRate) {
+        super(samplingRate);
         this.ipAddress = ipAddress;
     }
 
     @Override
     public BoardIds getBoardId() {
         return BoardIds.CYTON_DAISY_WIFI_BOARD;
+    }
+};
+
+abstract class BoardCytonWifiBase extends BoardCyton {
+    // https://docs.openbci.com/docs/02Cyton/CytonSDK#sample-rate
+    private Map<Integer, String> samplingRateCommands = new HashMap<Integer, String>() {{
+        put(16000, "~0");
+        put(8000, "~1");
+        put(4000, "~2");
+        put(2000, "~3");
+        put(1000, "~4");
+        put(500, "~5");
+        put(250, "~6");
+    }};
+
+    public BoardCytonWifiBase() {
+        super();
+    }
+
+    public BoardCytonWifiBase(int samplingRate) {
+        super();
+        samplingRateCache = samplingRate;
+    }
+
+    @Override
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
+
+        if ((res) && (samplingRateCache > 0)){
+            String command = samplingRateCommands.get(samplingRateCache);
+            sendCommand(command);
+        }
+        return res;
     }
 };
 
@@ -205,9 +238,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public int[] getDigitalChannels() {
-        // TODO[brainflow]
-        return new int[0];
-        // return digitalChannels;
+        // the removeAll function will remove array indices 0 and 5.
+        // remove other_channel[0] because it's the end byte
+        // remove other_channels[5] because it does not contain digital data
+        int[] digitalChannels = ArrayUtils.removeAll(getOtherChannels(), 0, 5); // remove non-digital channels
+        return digitalChannels;
     }
 
     @Override

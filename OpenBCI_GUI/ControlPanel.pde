@@ -119,6 +119,7 @@ PollPopup pollPopup;
 RadioConfigBox rcBox;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
+int selectedSamplingRate = -1;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -131,11 +132,10 @@ public void controlEvent(ControlEvent theEvent) {
         controlPanel.hideAllBoxes();
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        String str = (String)bob.get("headline");
+        String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
+        int newDataSource = (int)bob.get("value");
         settings.controlEventDataSource = str; //Used for output message on system start
-        int newDataSource = int(theEvent.getValue());
-
-        eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
+        eegDataSource = newDataSource;
 
         protocolWifiGanglion.setColorNotPressed(colorNotPressed);
         protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
@@ -145,29 +145,28 @@ public void controlEvent(ControlEvent theEvent) {
         selectedProtocol = BoardProtocol.NONE;
         controlPanel.novaXRBox.isShowing = false;
 
-        if(newDataSource == DATASOURCE_CYTON){
+        //Perform this check in a way that ignores order of items in the menulist
+        if (eegDataSource == DATASOURCE_CYTON) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
             // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-        } else if(newDataSource == DATASOURCE_GANGLION){
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
             updateToNChan(4);
             // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-        } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             //GUI auto detects number of channels for playback when file is selected
-        } else if(newDataSource == DATASOURCE_SYNTHETIC){
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
-        } else if (newDataSource == DATASOURCE_NOVAXR) {
+        } else if (eegDataSource == DATASOURCE_NOVAXR) {
             controlPanel.novaXRBox.isShowing = true;
         }
-
-        //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
     }
 
     if (theEvent.isFrom("serialList")) {
@@ -706,29 +705,6 @@ class ControlPanel {
                     }
                 }
 
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    if (refreshWifi.isMouseHere()) {
-                        refreshWifi.setIsActive(true);
-                        refreshWifi.wasPressed = true;
-                    }
-                }
-
-
-                if (autoSessionName.isMouseHere()) {
-                    autoSessionName.setIsActive(true);
-                    autoSessionName.wasPressed = true;
-                }
-
-                if (outputODF.isMouseHere()) {
-                    outputODF.setIsActive(true);
-                    outputODF.wasPressed = true;
-                }
-
-                if (outputBDF.isMouseHere()) {
-                    outputBDF.setIsActive(true);
-                    outputBDF.wasPressed = true;
-                }
-
                 if (chanButton8.isMouseHere()) {
                     chanButton8.setIsActive(true);
                     chanButton8.wasPressed = true;
@@ -759,8 +735,6 @@ class ControlPanel {
                     ovrChannel.wasPressed = true;
                     setChannel.wasPressed = false;
                 }
-
-
 
                 if (protocolWifiCyton.isMouseHere()) {
                     protocolWifiCyton.setIsActive(true);
@@ -814,31 +788,10 @@ class ControlPanel {
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
                 // This is where we check for button presses if we are searching for BLE devices
-                if (autoSessionName.isMouseHere()) {
-                    autoSessionName.setIsActive(true);
-                    autoSessionName.wasPressed = true;
-                }
-
-                if (outputODF.isMouseHere()) {
-                    outputODF.setIsActive(true);
-                    outputODF.wasPressed = true;
-                }
-
-                if (outputBDF.isMouseHere()) {
-                    outputBDF.setIsActive(true);
-                    outputBDF.wasPressed = true;
-                }
-
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    if (refreshWifi.isMouseHere()) {
-                        refreshWifi.setIsActive(true);
-                        refreshWifi.wasPressed = true;
-                    }
-                } else {
-                    if (refreshBLE.isMouseHere()) {
-                        refreshBLE.setIsActive(true);
-                        refreshBLE.wasPressed = true;
-                    }
+                
+                if (refreshBLE.isMouseHere()) {
+                    refreshBLE.setIsActive(true);
+                    refreshBLE.wasPressed = true;
                 }
 
                 if (protocolWifiGanglion.isMouseHere()) {
@@ -868,20 +821,6 @@ class ControlPanel {
                     sampleRate1600.setColorNotPressed(isSelected_color);
                     sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                 }
-
-                 if(wifiIPAddressDynamic.isMouseHere()) {		
-                     wifiIPAddressDynamic.setIsActive(true);		
-                     wifiIPAddressDynamic.wasPressed = true;		
-                     wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
-                     wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
-                 }		
-
-                  if(wifiIPAddressStatic.isMouseHere()) {		
-                     wifiIPAddressStatic.setIsActive(true);		
-                     wifiIPAddressStatic.wasPressed = true;		
-                     wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
-                     wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
-                 }
             }
 
             //active buttons during DATASOURCE_PLAYBACKFILE
@@ -924,6 +863,43 @@ class ControlPanel {
                     synthChanButton16.setColorNotPressed(isSelected_color);
                     synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                }
+            }
+
+            
+            //The following buttons apply only to Cyton and Ganglion Modes for now
+            if (autoSessionName.isMouseHere()) {
+                autoSessionName.setIsActive(true);
+                autoSessionName.wasPressed = true;
+            }
+
+            if (outputODF.isMouseHere()) {
+                outputODF.setIsActive(true);
+                outputODF.wasPressed = true;
+            }
+
+            if (outputBDF.isMouseHere()) {
+                outputBDF.setIsActive(true);
+                outputBDF.wasPressed = true;
+            }
+
+            if (selectedProtocol == BoardProtocol.WIFI) {
+                if (refreshWifi.isMouseHere()) {
+                    refreshWifi.setIsActive(true);
+                    refreshWifi.wasPressed = true;
+                }
+                if (wifiIPAddressDynamic.isMouseHere()) {		
+                    wifiIPAddressDynamic.setIsActive(true);		
+                    wifiIPAddressDynamic.wasPressed = true;		
+                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
+                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
+                }		
+
+                if (wifiIPAddressStatic.isMouseHere()) {		
+                    wifiIPAddressStatic.setIsActive(true);		
+                    wifiIPAddressStatic.wasPressed = true;		
+                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
+                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
                 }
             }
 
@@ -1025,7 +1001,7 @@ class ControlPanel {
                         println("No WIFI Shields found");
                     }
                     for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(),""));
+                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
                     }
                     wifiList.updateMenu();
                 } catch (Exception e) {
@@ -1136,23 +1112,23 @@ class ControlPanel {
         }
 
         if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
-            currentBoard.setSampleRate(200);
+            selectedSamplingRate = 200;
         }
 
         if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
-            currentBoard.setSampleRate(1600);
+            selectedSamplingRate = 1600;
         }
 
         if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
-            currentBoard.setSampleRate(250);
+            selectedSamplingRate = 250;
         }
 
         if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
-            currentBoard.setSampleRate(500);
+            selectedSamplingRate = 500;
         }
 
         if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
-            currentBoard.setSampleRate(1000);
+            selectedSamplingRate = 1000;
         }
 
         if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
@@ -1343,13 +1319,14 @@ void updateToNChan(int _nchan) {
 
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
-    int numItems = 5;
+    int numItems = 4;
     int boxHeight = 24;
     int spacing = 43;
 
     CheckBox sourceCheckBox;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
+        if (novaXREnabled) numItems = 5;
         x = _x;
         y = _y;
         w = _w;
@@ -1360,11 +1337,11 @@ class DataSourceBox {
         // sourceList.itemHeight = 28;
         // sourceList.padding = 9;
         sourceList.setPosition(x + padding, y + padding*2 + 13);
-        sourceList.addItem(makeItem("LIVE (from Cyton)"));
-        sourceList.addItem(makeItem("LIVE (from Ganglion)"));
-        sourceList.addItem(makeItem("LIVE (from NovaXR)"));
-        sourceList.addItem(makeItem("PLAYBACK (from file)"));
-        sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));
+        sourceList.addItem(makeItem("LIVE (from Cyton)", DATASOURCE_CYTON));
+        sourceList.addItem(makeItem("LIVE (from Ganglion)", DATASOURCE_GANGLION));
+        if (novaXREnabled) sourceList.addItem(makeItem("LIVE (from NovaXR)", DATASOURCE_NOVAXR));
+        sourceList.addItem(makeItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE));
+        sourceList.addItem(makeItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC));
 
         sourceList.scrollerLength = 10;
     }
@@ -1809,16 +1786,18 @@ class SessionDataBox {
         if (outputDataSource == OUTPUT_SOURCE_ODF) {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
+            //Dropdown is drawn at the end of ControlPanel.draw()
             fill(bgColor);
             rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
-            fill(bgColor);
-            textFont(p4, 14);
-            int extraPadding = selectedProtocol == BoardProtocol.BLED112 || selectedProtocol == BoardProtocol.SERIAL ? 16 : 2;
-            text("Max File Duration", maxDurText_x, outputODF.but_y + 24 + padding + extraPadding);
-            popStyle();
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
-            //Dropdown is drawn at the end of ControlPanel.draw()
+            //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
+            int extraPadding = controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC ? 20 : 5;
+            fill(bgColor);
+            textFont(p4, 14);
+            text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
+            popStyle();
+            
         }
     }
 
@@ -2683,6 +2662,14 @@ class InitBox {
 Map<String, Object> makeItem(String theHeadline) {
     Map m = new HashMap<String, Object>();
     m.put("headline", theHeadline);
+    return m;
+}
+
+//makeItem function used by MenuList class below
+Map<String, Object> makeItem(String theHeadline, int value) {
+    Map m = new HashMap<String, Object>();
+    m.put("headline", theHeadline);
+    m.put("value", value);
     return m;
 }
 

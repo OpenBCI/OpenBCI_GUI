@@ -130,11 +130,6 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     public void sendCommand(String command) {
         outputWarn("Sending commands is not implemented for Sythetic board. Command: " + command);
     }
-    
-    @Override
-    public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sampling rate is not implemented for Sythetic board. Sampling rate will stay at " + getSampleRate());
-    }
 
     @Override
     protected double[][] getNewDataInternal() {

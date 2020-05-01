@@ -68,11 +68,6 @@ class BoardNull extends Board {
         // empty
     }
 
-    @Override
-    public void setSampleRate(int sampleRate) {
-        // empty
-    }
-
     protected double[][] getNewDataInternal() {
         return new double[1][0];
     }

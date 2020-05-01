@@ -23,8 +23,6 @@ interface DataSource {
 
     public boolean isEXGChannelActive(int channelIndex);
 
-    public void setSampleRate(int sampleRate);
-
     public int[] getEXGChannels();
 
     public int getTimestampChannel();

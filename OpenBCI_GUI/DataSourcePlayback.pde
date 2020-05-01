@@ -167,12 +167,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     public boolean isEXGChannelActive(int channelIndex) {
         return true;
     }
-
-    @Override
-    public void setSampleRate(int sampleRate) {
-        outputWarn("Changing the sample rate is not possible for Playback board.");
-    }
-
+    
     @Override
     public int[] getEXGChannels() {
         return underlyingBoard.getEXGChannels();
