@@ -235,7 +235,11 @@ class DigitalReadDot{
     int dotHeight;
     float dotCorner;
 
+    DigitalCapableBoard digitalBoard;
+
     DigitalReadDot(PApplet _parent, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding){ // channel number, x/y location, height, width
+
+        digitalBoard = (DigitalCapableBoard)currentBoard;
 
         digitalInputPin = _digitalInputPin;
         digitalInputString = str(digitalInputPin);
@@ -271,18 +275,23 @@ class DigitalReadDot{
         digitalPin.alignH = CENTER;
     }
 
-    void update(){
+    void update() {
+        List<double[]> lastData = currentBoard.getData(1);
+        double[] lastSample = lastData.get(0);
+        int[] digitalChannels = digitalBoard.getDigitalChannels();
+
         //update the voltage values
         if (digitalInputPin == 11) {
-            digitalInputVal = (hub.validAccelValues[0] & 0xFF00) >> 8;
+            digitalInputVal = (int)lastSample[digitalChannels[0]];
         } else if (digitalInputPin == 12) {
-            digitalInputVal = hub.validAccelValues[0] & 0xFF;
+            digitalInputVal = (int)lastSample[digitalChannels[1]];
         } else if (digitalInputPin == 13) {
-            digitalInputVal = (hub.validAccelValues[1] & 0xFF00) >> 8;
+            digitalInputVal = (int)lastSample[digitalChannels[2]];
         } else if (digitalInputPin == 17) {
-            digitalInputVal = hub.validAccelValues[1] & 0xFF;
-        } else { // 18
-            digitalInputVal = hub.validAccelValues[2];
+            digitalInputVal = (int)lastSample[digitalChannels[3]];
+        } else {
+            // 18
+            digitalInputVal = (int)lastSample[digitalChannels[4]];
         }
 
         digitalValue.string = String.format("%d", digitalInputVal);
