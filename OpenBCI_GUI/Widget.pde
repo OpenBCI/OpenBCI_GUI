@@ -25,7 +25,7 @@ class Widget{
     ControlP5 cp5_widget;
     String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
-    private final float widgetDropdownScaling = .35;
+    private final float widgetDropdownScaling = .90;
     private boolean isWidgetActive = false;
 
     //some variables for the dropdowns

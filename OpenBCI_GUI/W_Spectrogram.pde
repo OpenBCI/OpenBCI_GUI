@@ -465,6 +465,7 @@ class W_Spectrogram extends Widget {
     String getCurrentTimeStamp() {
         //return current playback time
         if (index_of_times != null && index_of_times.get(0) != null) { //Check if the hashmap is null to prevent exception
+            // TODO[brainflow] Fix up retrieval of time stamps
             // if (currentTableRowIndex > playbackData_table.getRowCount()) {
             //     return index_of_times.get(playbackData_table.getRowCount());
             // } else {
