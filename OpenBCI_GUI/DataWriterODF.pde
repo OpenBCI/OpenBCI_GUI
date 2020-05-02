@@ -6,8 +6,11 @@ public class DataWriterODF {
     private int rowsWritten;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
+    private Board streamingBoard;
+
     //variation on constructor to have custom name
     DataWriterODF(String _sessionName, String _fileName) {
+        streamingBoard = (Board)currentBoard;
         settings.setSessionPath(settings.recordingsPath + "OpenBCISession_" + _sessionName + File.separator);
         fname = settings.getSessionPath();
         fname += "OpenBCI-RAW-";
@@ -21,10 +24,10 @@ public class DataWriterODF {
     public void writeHeader() {
         output.println("%OpenBCI Raw EEG Data");
         output.println("%Number of channels = " + nchan);
-        output.println("%Sample Rate = " + currentBoard.getSampleRate() + " Hz");
-        output.println("%Board = " + currentBoard.getClass().getName());
+        output.println("%Sample Rate = " + streamingBoard.getSampleRate() + " Hz");
+        output.println("%Board = " + streamingBoard.getClass().getName());
 
-        String[] colNames = currentBoard.getChannelNames();
+        String[] colNames = streamingBoard.getChannelNames();
         
         for (int i=0; i<colNames.length; i++) {
             output.print(colNames[i]);
@@ -43,7 +46,7 @@ public class DataWriterODF {
                 output.print(", ");
             }
 
-            int timestampChan = currentBoard.getTimestampChannel();
+            int timestampChan = streamingBoard.getTimestampChannel();
             // *1000 to convert from seconds to milliserconds
             long timestampMS = (long)(data[timestampChan][iSample] * 1000.0);
 

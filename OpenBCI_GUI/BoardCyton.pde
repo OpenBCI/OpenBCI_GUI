@@ -23,22 +23,69 @@ static class BoardCytonConstants {
     static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 }
 
-class BoardCyton extends BoardBrainFlow
-implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, MarkerCapableBoard {
-    private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
-    private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
-    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+class BoardCytonSerial extends BoardCyton {
+    public BoardCytonSerial() {
+        super();
+    }
+
+    public BoardCytonSerial(String serialPort) {
+        super();
+        this.serialPort = serialPort;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_BOARD;
+    }
+};
+
+class BoardCytonSerialDaisy extends BoardCyton {
+    public BoardCytonSerialDaisy() {
+        super();
+    }
     
-    private int[] accelChannelsCache = null;
-    private int[] analogChannelsCache = null;
+    public BoardCytonSerialDaisy(String serialPort) {
+        super();
+        this.serialPort = serialPort;
+    }
 
-    private boolean[] exgChannelActive;
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_DAISY_BOARD;
+    }
+};
 
-    private String serialPort = "";
-    private String ipAddress = "";
-    private BoardIds boardId = BoardIds.CYTON_BOARD;
-    private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
+class BoardCytonWifi extends BoardCytonWifiBase {
+    public BoardCytonWifi() {
+        super();
+    }
+    public BoardCytonWifi(String ipAddress, int samplingRate) {
+        super(samplingRate);
+        this.ipAddress = ipAddress;
+    }
 
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_WIFI_BOARD;
+    }
+};
+
+class BoardCytonWifiDaisy extends BoardCytonWifiBase {
+    public BoardCytonWifiDaisy() {
+        super();
+    }
+    public BoardCytonWifiDaisy(String ipAddress, int samplingRate) {
+        super(samplingRate);
+        this.ipAddress = ipAddress;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_DAISY_WIFI_BOARD;
+    }
+};
+
+abstract class BoardCytonWifiBase extends BoardCyton {
     // https://docs.openbci.com/docs/02Cyton/CytonSDK#sample-rate
     private Map<Integer, String> samplingRateCommands = new HashMap<Integer, String>() {{
         put(16000, "~0");
@@ -50,26 +97,41 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         put(250, "~6");
     }};
 
-    public BoardCyton(String serialPort, String ipAddress, boolean daisy, boolean wifi, int samplingRate) {
+    public BoardCytonWifiBase() {
+        super();
+    }
+
+    public BoardCytonWifiBase(int samplingRate) {
         super();
         samplingRateCache = samplingRate;
-
-        if (wifi) {
-            if (daisy) { // 16 channels selected
-                boardId = BoardIds.CYTON_DAISY_WIFI_BOARD;
-            } else {
-                boardId = BoardIds.CYTON_WIFI_BOARD;
-            }
-            this.ipAddress = ipAddress;
-        } else {
-            if (daisy) { // 16 channels selected
-                boardId = BoardIds.CYTON_DAISY_BOARD;
-            } else {
-                boardId = BoardIds.CYTON_BOARD;
-            }
-            this.serialPort = serialPort;
-        }
     }
+
+    @Override
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
+
+        if ((res) && (samplingRateCache > 0)){
+            String command = samplingRateCommands.get(samplingRateCache);
+            sendCommand(command);
+        }
+        return res;
+    }
+};
+
+abstract class BoardCyton extends BoardBrainFlow
+implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, MarkerCapableBoard {
+    private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+    private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    
+    private int[] accelChannelsCache = null;
+    private int[] analogChannelsCache = null;
+
+    private boolean[] exgChannelActive;
+
+    protected String serialPort = "";
+    protected String ipAddress = "";
+    private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
 
     // implement mandatory abstract functions
     @Override
@@ -82,21 +144,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public BoardIds getBoardId() {
-        return boardId;
-    }
-
-    @Override
     public boolean initializeInternal() {        
         exgChannelActive = new boolean[getNumEXGChannels()];
         Arrays.fill(exgChannelActive, true);
 
-        boolean res = super.initializeInternal();
-        if ((res) && (samplingRateCache > 0)){
-            String command = samplingRateCommands.get(samplingRateCache);
-            sendCommand(command);
-        }
-        return res;
+        return super.initializeInternal();
     }
 
     @Override

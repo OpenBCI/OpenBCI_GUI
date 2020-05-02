@@ -19,15 +19,11 @@ abstract class BoardBrainFlow extends Board {
      */
     abstract protected BrainFlowInputParams getParams();
     abstract public BoardIds getBoardId();
-
-    protected BoardBrainFlow() {
-    }
-
+    
     @Override
     public boolean initializeInternal() {
         // initiate the board shim
         try {
-            updateToNChan(getNumEXGChannels());
 
             boardShim = new BoardShim (getBoardIdInt(), getParams());
             // for some reason logger configuration doesnt work in contructor or static initializer block
@@ -245,7 +241,7 @@ abstract class BoardBrainFlow extends Board {
     }
 
     @Override
-    protected int getTotalChannelCount() {
+    public int getTotalChannelCount() {
         if(totalChannelsCache < 0) {
             try {
                 totalChannelsCache = BoardShim.get_num_rows(getBoardIdInt());

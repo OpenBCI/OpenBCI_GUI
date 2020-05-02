@@ -122,7 +122,7 @@ class W_Accelerometer extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (visible && updating && isRunning && accelBoard.isAccelerometerActive()) {
+        if (visible && updating && accelBoard.isAccelerometerActive()) {
             //update the line graph and corresponding gplot points
             accelerometerBar.update();
 
@@ -384,7 +384,6 @@ class AccelerometerBar {
 
     //Used to update the accelerometerBar class
     void update() {
-
         updateGPlotPoints();
 
         if (isAutoscale) {
@@ -483,13 +482,4 @@ class AccelerometerBar {
         plot.setDim(w - 36 - 4 - xOffset, h);
 
     }
-
-    void clearAllGPlots() {
-        initArrays();
-    }
 }; //end of class
-
-//Global method
-void clearAllAccelGPlots() {
-    w_accelerometer.accelerometerBar.clearAllGPlots();
-}

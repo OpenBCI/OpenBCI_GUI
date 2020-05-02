@@ -285,8 +285,10 @@ void parseKey(char val) {
             break;
             
         default:
-            println("Interactivity: '" + key + "' Pressed...sending to Board...");
-            currentBoard.sendCommand(str(key));
+            if (currentBoard instanceof Board) {
+                println("Interactivity: '" + key + "' Pressed...sending to Board...");
+                ((Board)currentBoard).sendCommand(str(key));
+            }
             break;
     }
 }

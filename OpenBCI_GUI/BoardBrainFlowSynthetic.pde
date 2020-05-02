@@ -7,6 +7,10 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
 
+    public BoardBrainFlowSynthetic() {
+        super();
+    }
+
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {

@@ -77,6 +77,7 @@ boolean midInit = false;
 boolean midInitCheck2 = false;
 boolean abandonInit = false;
 boolean systemHasHalted = false;
+boolean reinitRequested = false;
 
 final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
@@ -108,12 +109,10 @@ String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
 // String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
-int currentTableRowIndex = 0;
-Table_CSV playbackData_table;
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
-Board currentBoard = new BoardNull();
+DataSource currentBoard = new BoardNull();
 
 DataLogger dataLogger = new DataLogger();
 
@@ -149,7 +148,6 @@ int nDataBackBuff;
 DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
-int lastReadDataPacketInd = -1;
 ////// ---- End variables related to the OpenBCI boards
 
 // define some timing variables for this program's operation
@@ -231,15 +229,6 @@ PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
 ButtonHelpText buttonHelpText;
-
-//Used for playback file
-boolean has_processed = false;
-boolean isOldData = false;
-boolean playbackFileIsEmpty = false;
-int indices = 0;
-//# columns used by a playback file determines number of channels
-final int totalColumns4ChanThresh = 10;
-final int totalColumns16ChanThresh = 16;
 
 boolean setupComplete = false;
 boolean isHubInitialized = false;
@@ -473,6 +462,11 @@ synchronized void draw() {
             //When Init session is started, the screen will seem to hang.
             systemInitSession();
         }
+        if(reinitRequested) {
+            haltSystem();
+            initSystem();
+            reinitRequested = false;
+        }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
             settings.introAnimationInit = millis();
@@ -665,7 +659,7 @@ void setupWidgetManager() {
 }
 
 //Initialize the system
-void initSystem() throws Exception {
+void initSystem() {
     println("");
     println("");
     println("=================================================");
@@ -676,6 +670,10 @@ void initSystem() throws Exception {
     timeOfInit = millis(); //store this for timeout in case init takes too long
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
 
+    if (initSystemButton.but_txt == "START SESSION") {
+        initSystemButton.but_txt = "STOP SESSION";
+    }
+
     //reset init variables
     systemHasHalted = false;
     boolean abandonInit = false;
@@ -683,26 +681,39 @@ void initSystem() throws Exception {
     //prepare the source of the input data
     switch (eegDataSource) {
         case DATASOURCE_CYTON:
-            // TODO[brainflow] : do we need these two lines?
-            int nEEDataValuesPerPacket = nchan;
-            boolean useAux = true;
-            currentBoard = new BoardCyton(openBCI_portName, wifi_ipAddress, nchan == 16, selectedProtocol == BoardProtocol.WIFI, selectedSamplingRate);
+            if (selectedProtocol == BoardProtocol.SERIAL) {
+                if(nchan == 16) {
+                    currentBoard = new BoardCytonSerialDaisy(openBCI_portName);
+                }
+                else {
+                    currentBoard = new BoardCytonSerial(openBCI_portName);
+                }
+            }
+            else if (selectedProtocol == BoardProtocol.WIFI) {
+                if(nchan == 16) {
+                    currentBoard = new BoardCytonWifiDaisy(wifi_ipAddress, selectedSamplingRate);
+                }
+                else {
+                    currentBoard = new BoardCytonWifi(wifi_ipAddress, selectedSamplingRate);
+                }
+            }
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
+            currentBoard = new DataSourcePlayback(playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
-                currentBoard = new BoardGanglion(wifi_ipAddress, selectedSamplingRate);
+                currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
             }
             else {
                 // todo[brainflow] temp hardcode
                 String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
                 String ganglionMac = BLEMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglion(controlPanel.getBLED112Port(), ganglionMac);
+                currentBoard = new BoardGanglionBLE(controlPanel.getBLED112Port(), ganglionMac);
             }
             break;
         case DATASOURCE_NOVAXR:
@@ -718,22 +729,16 @@ void initSystem() throws Exception {
     boolean success = currentBoard.initialize();
     abandonInit = !success; // abandon if init fails
 
+    updateToNChan(currentBoard.getNumEXGChannels());
+
     dataLogger.initialize();
 
-    verbosePrint("OpenBCI_GUI: initSystem: Preparing data variables...");
-    //initialize playback file if necessary
-    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        initPlaybackFileToTable(); //found in W_Playback.pde
-    }
     verbosePrint("OpenBCI_GUI: initSystem: Initializing core data objects");
     initCoreDataObjects();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 1 -- " + millis());
     verbosePrint("OpenBCI_GUI: initSystem: Initializing FFT data objects");
     initFFTObjectsAndBuffer();
-
-    //prepare some signal processing stuff
-    //for (int Ichan=0; Ichan < nchan; Ichan++) { detData_freqDomain[Ichan] = new DetectionData_FreqDomain(); }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 2 -- " + millis());
     verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
@@ -810,13 +815,13 @@ void initSystem() throws Exception {
   * @description Useful function to get the correct sample rate based on data source
   * @returns `float` - The frequency / sample rate of the data source
   */
-// TODO[brainflow] investigate this function and probably remove it
+// TODO[brainflow] remove this function
 int getSampleRateSafe() {
-    if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-        return playbackData_table.getSampleRate();
-    } else {
-        return currentBoard.getSampleRate();
-    }
+    return currentBoard.getSampleRate();
+}
+
+public int getCurrentBoardBufferSize() {
+    return dataBuff_len_sec * currentBoard.getSampleRate();
 }
 
 /**
@@ -845,9 +850,9 @@ void initCoreDataObjects() {
     nDataBackBuff = 3*getSampleRateSafe();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
-    dataBuffX = new float[currentBoard.getBufferSize()];
-    dataBuffY_uV = new float[nchan][currentBoard.getBufferSize()];
-    dataBuffY_filtY_uV = new float[nchan][currentBoard.getBufferSize()];
+    dataBuffX = new float[getCurrentBoardBufferSize()];
+    dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
+    dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
     auxBuff = new float[3][nPointsPerUpdate];
     accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
@@ -925,11 +930,7 @@ void stopButtonWasPressed() {
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
         wm.setUpdating(true);
-        // Clear plots when start button is pressed in playback mode
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            clearAllTimeSeriesGPlots();
-            clearAllAccelGPlots();
-        }
+
         startRunning();
         topNav.stopButton.setString(stopButton_pressToStop_txt);
         topNav.stopButton.setColorNotPressed(color(224, 56, 45));
@@ -940,7 +941,7 @@ void stopButtonWasPressed() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) { //prevents system from halting more than once
+    if (!systemHasHalted) { //prevents system from halting more than once\
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         if (initSystemButton.but_txt == "STOP SESSION") {
             initSystemButton.but_txt = "START SESSION";
@@ -961,18 +962,10 @@ void haltSystem() {
 
         //reset variables for data processing
         curDataPacketInd = -1;
-        lastReadDataPacketInd = -1;
-        currentTableRowIndex = 0;
         prevBytes = 0;
         prevMillis = millis();
         byteRate_perSec = 0;
-        // eegDataSource = -1;
-        //set all data source list items inactive
 
-        //Fix issue for processing successive playback files
-        indices = 0;
-        hasRepeated = false;
-        has_processed = false;
         settings.settingsLoaded = false; //on halt, reset this value
 
         //reset connect loadStrings
@@ -1023,21 +1016,7 @@ void systemUpdate() { // for updating data values and variables
         }
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
-        if (isRunning) {
-            processNewData();
-
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && !has_processed && !isOldData) {
-            lastReadDataPacketInd = 0;
-            try {
-                process_input_file();
-                println("^^^GUI update process file has occurred");
-            }
-            catch(Exception e) {
-                isOldData = true;
-                println("^^^Error processing timestamps");
-                output("Error processing timestamps, are you using old data?");
-            }
-        }
+        processNewData();
 
         // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
 
@@ -1096,7 +1075,7 @@ void systemDraw() { //for drawing to the screen
             surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
             break;
         case DATASOURCE_PLAYBACKFILE:
-            surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);
+            surface.setTitle(int(frameRate) + " fps, Reading from: " + playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
             surface.setTitle(int(frameRate) + " fps, Ganglion!");
@@ -1180,6 +1159,10 @@ void systemDraw() { //for drawing to the screen
     if (midInit) {
         drawOverlay();
     }
+}
+
+void requestReinit() {
+    reinitRequested = true;
 }
 
 //Always Called after systemDraw()

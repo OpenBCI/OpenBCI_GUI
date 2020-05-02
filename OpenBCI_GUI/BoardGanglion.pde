@@ -1,19 +1,21 @@
-class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard {
+class BoardGanglionBLE extends BoardGanglion {
+    public BoardGanglionBLE() {
+        super();
+    }
 
-    private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
-    private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
-    
-    private int[] accelChannelsCache = null;
+    public BoardGanglionBLE(String serialPort, String macAddress) {
+        super();
+        this.serialPort = serialPort;
+        this.macAddress = macAddress;
+    }
 
-    private boolean[] exgChannelActive;
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.GANGLION_BOARD;
+    }
+};
 
-    private String serialPort = "";
-    private String macAddress = "";
-    private String ipAddress = "";
-    private BoardIds boardId = BoardIds.GANGLION_BOARD;
-    private boolean isCheckingImpedance = false;
-    private boolean isGettingAccel = false;
-
+class BoardGanglionWifi extends BoardGanglion {
     // https://docs.openbci.com/docs/03Ganglion/GanglionSDK
     private Map<Integer, String> samplingRateCommands = new HashMap<Integer, String>() {{
         put(25600, "~0");
@@ -26,21 +28,46 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
         put(200, "~7");
     }};
 
-    public BoardGanglion(String serialPort, String macAddress) {
-        super();
-        this.serialPort = serialPort;
-        this.macAddress = macAddress;
-
-        boardId = BoardIds.GANGLION_BOARD;
-    }
-
-    public BoardGanglion(String ipAddress, int samplingRate) {
+    public BoardGanglionWifi(String ipAddress, int samplingRate) {
         super();
         this.ipAddress = ipAddress;
         samplingRateCache = samplingRate;
-
-        boardId = BoardIds.GANGLION_WIFI_BOARD;
     }
+    
+    @Override
+    public boolean initializeInternal()
+    {
+        // turn on accel by default, or is it handled somewhere else?
+        boolean res = super.initializeInternal();
+        
+        if ((res) && (samplingRateCache > 0)){
+            String command = samplingRateCommands.get(samplingRateCache);
+            sendCommand(command);
+        }
+
+        return res;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.GANGLION_WIFI_BOARD;
+    }
+};
+
+abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard {
+
+    private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
+    private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    
+    private int[] accelChannelsCache = null;
+
+    private boolean[] exgChannelActive;
+
+    protected String serialPort = "";
+    protected String macAddress = "";
+    protected String ipAddress = "";
+    private boolean isCheckingImpedance = false;
+    private boolean isGettingAccel = false;
 
     // implement mandatory abstract functions
     @Override
@@ -51,11 +78,6 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
         params.ip_address = ipAddress;
         params.ip_port = 6677;
         return params;
-    }
-
-    @Override
-    public BoardIds getBoardId() {
-        return boardId;
     }
 
     @Override
@@ -79,11 +101,6 @@ class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard 
         setAccelerometerActive(true);
         exgChannelActive = new boolean[getNumEXGChannels()];
         Arrays.fill(exgChannelActive, true);
-
-        if ((res) && (samplingRateCache > 0)){
-            String command = samplingRateCommands.get(samplingRateCache);
-            sendCommand(command);
-        }
 
         return res;
     }

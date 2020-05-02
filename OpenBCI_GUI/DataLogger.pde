@@ -171,13 +171,4 @@ class DataLogger {
         }
         fileWriterODF = null;
     }
-
-    private void fileSelected(File selection) {  //called by the Open File dialog box after a file has been selected
-        if (selection == null) {
-            println("fileSelected: no selection so far...");
-        } else {
-            //inputFile = selection;
-            playbackData_fname = selection.getAbsolutePath(); //<>// //<>//
-        }
-    }
 };

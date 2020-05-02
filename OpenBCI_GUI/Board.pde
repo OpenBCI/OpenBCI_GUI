@@ -1,5 +1,5 @@
 
-abstract class Board {
+abstract class Board implements DataSource {
 
     private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
     private double[][] dataThisFrame;
@@ -7,17 +7,12 @@ abstract class Board {
     // accessible by all boards, can be returned as valid empty data
     protected double[][] emptyData;
 
-// ***************************************
-// public interface
-    public int getBufferSize() {
-        return dataBuff_len_sec * getSampleRate();
-    }
-
+    @Override
     public boolean initialize() {
         boolean res = initializeInternal();
 
         double[] fillData = new double[getTotalChannelCount()];
-        accumulatedData.setSize(getBufferSize());
+        accumulatedData.setSize(getCurrentBoardBufferSize());
         accumulatedData.fill(fillData);
 
         emptyData = new double[getTotalChannelCount()][0];
@@ -25,10 +20,12 @@ abstract class Board {
         return res;
     }
 
+    @Override
     public void uninitialize() {
         uninitializeInternal();
     }
 
+    @Override
     public void update() {
         updateInternal();
 
@@ -44,15 +41,18 @@ abstract class Board {
         }
     }
 
+    @Override
     public int getNumEXGChannels() {
         return getEXGChannels().length;
     }
 
     // returns all the data this board has received in this frame
+    @Override
     public double[][] getFrameData() {
         return dataThisFrame;
     }
 
+    @Override
     public List<double[]> getData(int maxSamples) {
         int endIndex = accumulatedData.size();
         int startIndex = max(0, endIndex - maxSamples);
@@ -76,30 +76,12 @@ abstract class Board {
         return names;
     }
 
-    public abstract void startStreaming();
-
-    public abstract void stopStreaming();
-
     public abstract boolean isConnected();
-
-    public abstract int getSampleRate();
-
-    public abstract void setEXGChannelActive(int channelIndex, boolean active);
-
-    public abstract boolean isEXGChannelActive(int channelIndex);
 
     public abstract void sendCommand(String command);
 
-    public abstract int[] getEXGChannels();
-
-    public abstract int getTimestampChannel();
-
-    public abstract int getSampleNumberChannel();
-
-    protected abstract int getTotalChannelCount();
-
-// ***************************************
-// protected methods implemented by board
+    // ***************************************
+    // protected methods implemented by board
 
     // implemented by each board class and used internally here to accumulate the FixedStack
     // and provide with public interfaces getFrameData() and getData(int)
