@@ -1,0 +1,1 @@
+On mac, the only way to install processing-java is to open the Processing IDE and go to Tools->Install "processing-java". We can't do this in travis. Since processing-java is jsut a simple bash sscript that runs some jar files, we can copy it here and install the latest verison of processing separately during the travis run.

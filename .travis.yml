@@ -1,0 +1,40 @@
+os:
+  - linux
+  - osx
+
+addons:
+  artifacts:
+    paths: 
+      - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_macosx.dmg | tr "\n" ":")
+      - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_linux64.zip | tr "\n" ":")
+    target_paths:
+      - /${TRAVIS_BRANCH}/${TRAVIS_COMMIT}
+      - /${TRAVIS_BRANCH}/latest
+    working_dir: $TRAVIS_BUILD_DIR
+
+install:
+  - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
+
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L https://download.processing.org/processing-3.5.4-linux64.tgz                            ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-3.5.4-linux64.tgz                                                             ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-3.5.4:$PATH                                          ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir -p $HOME/sketchbook/libraries/                                                               ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/                        ;fi
+  
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L https://download.processing.org/processing-3.5.4-macosx.zip                               ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-3.5.4-macosx.zip                                                                    ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv Processing.app /Applications/Processing.app                                                       ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=$TRAVIS_BUILD_DIR/release_script/mac_only:$PATH                                          ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then chmod +x $TRAVIS_BUILD_DIR/release_script/mac_only/processing-java                                   ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir -p $HOME/Documents/Processing/libraries/                                                       ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/Documents/Processing/libraries/                ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip install dmgbuild                                                                                 ;fi
+
+script:
+  - cd $TRAVIS_BUILD_DIR
+  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts  
+
+notifications:
+  email:
+    on_success: never
+    on_failure: always

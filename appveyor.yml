@@ -5,18 +5,39 @@ stack: python 3
 
 clone_depth: 3
 
+artifacts:
+  - path: openbcigui_*.zip
+
+environment:
+  AWS_ACCESS_KEY_ID:
+    secure: 41Lh3mnlU+lVcr5eX3bTgmsKqcebacVgDOww7zb0r4E=
+  AWS_SECRET_ACCESS_KEY:
+    secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
+
 build: off
 
-install:
-  - mkdir %APPVEYOR_BUILD_FOLDER%\temp && cd %APPVEYOR_BUILD_FOLDER%\temp && appveyor DownloadFile https://download.processing.org/processing-3.5.4-windows64.zip
-  - cd %APPVEYOR_BUILD_FOLDER%\temp && 7z x processing-3.5.4-windows64.zip -y -aoa
-  # Processing creates Processing folder in Documents if there is no one, run it with error to create folder
-  - echo "running processing" || %APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4\processing-java.exe --force --sketch=%APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\ --output=%APPVEYOR_BUILD_FOLDER%\tmp --build || echo "set ec to 0"
-  # cp libraries
-  - xcopy %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i
+init:
+  # add processing-kava to the math as well as mt.exe (release script uses it to mopdify the manifest.xml)
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4;C:\Program Files (x86)\Windows Kits\10\bin\x64;%PATH%
 
-test_script:
-  - echo "running processing" && %APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4\processing-java.exe --force --sketch=%APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\ --output=%APPVEYOR_BUILD_FOLDER%\tmp --build
+install:
+  - mkdir %APPVEYOR_BUILD_FOLDER%\temp
+  - cd %APPVEYOR_BUILD_FOLDER%\temp
+  - appveyor DownloadFile https://download.processing.org/processing-3.5.4-windows64.zip
+  - cd %APPVEYOR_BUILD_FOLDER%\temp
+  - 7z x processing-3.5.4-windows64.zip -y -aoa
+  # cp libraries
+  - mkdir %userprofile%\documents\processing\libraries
+  - xcopy %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
+  - python -m pip install awscli > awscli_install.txt
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts  
+
+deploy_script:
+  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%APPVEYOR_REPO_COMMIT% --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
 
 notifications:
   - provider: Email
