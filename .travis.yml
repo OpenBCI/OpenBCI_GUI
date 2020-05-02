@@ -15,19 +15,25 @@ addons:
 install:
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
+### ### LINUX ### ###
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L https://download.processing.org/processing-3.5.4-linux64.tgz                            ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-3.5.4-linux64.tgz                                                             ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-3.5.4:$PATH                                          ;fi
+  # copy libraries to linux location
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir -p $HOME/sketchbook/libraries/                                                               ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/                        ;fi
   
+### ### MAC ### ###
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L https://download.processing.org/processing-3.5.4-macosx.zip                               ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-3.5.4-macosx.zip                                                                    ;fi
+  # Processing.app must be in this location for processing-java to work
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv Processing.app /Applications/Processing.app                                                       ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=$TRAVIS_BUILD_DIR/release_script/mac_only:$PATH                                          ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then chmod +x $TRAVIS_BUILD_DIR/release_script/mac_only/processing-java                                   ;fi
+  # copy libraries to mac location
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir -p $HOME/Documents/Processing/libraries/                                                       ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/Documents/Processing/libraries/                ;fi
+  # used to create .dmg
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip install dmgbuild                                                                                 ;fi
 
 script:

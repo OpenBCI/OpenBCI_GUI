@@ -17,14 +17,13 @@ environment:
 build: off
 
 init:
-  # add processing-kava to the math as well as mt.exe (release script uses it to mopdify the manifest.xml)
+  # add processing-java to the path as well as mt.exe (release script uses it to modify the manifest.xml)
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4;C:\Program Files (x86)\Windows Kits\10\bin\x64;%PATH%
 
 install:
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
   - appveyor DownloadFile https://download.processing.org/processing-3.5.4-windows64.zip
-  - cd %APPVEYOR_BUILD_FOLDER%\temp
   - 7z x processing-3.5.4-windows64.zip -y -aoa
   # cp libraries
   - mkdir %userprofile%\documents\processing\libraries
