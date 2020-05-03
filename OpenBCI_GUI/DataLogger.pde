@@ -7,6 +7,10 @@ class DataLogger {
 
     }
 
+    ~DataLogger() {
+        closeLogFile();
+    }
+
     public void initialize() {
 
     }

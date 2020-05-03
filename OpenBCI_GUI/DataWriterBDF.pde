@@ -168,6 +168,10 @@ public class DataWriterBDF {
         init();
     }
 
+    ~DataWriterBDF() {
+        closeFile();
+    }
+
     /**
       * @description Used to initalize the writer.
       */
