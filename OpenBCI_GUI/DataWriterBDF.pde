@@ -1,6 +1,6 @@
 
 //write data to a text file in BDF+ format http://www.biosemi.com/faq/file_format.htm
-public class OutputFile_BDF {
+public class DataWriterBDF {
     private PrintWriter writer;
     private OutputStream dstream;
     // private FileOutputStream fstream;
@@ -143,39 +143,27 @@ public class OutputFile_BDF {
     /**
       * @description Creates an EDF writer! Name of output file based on current
       *  date and time.
-      * @param `_fs_Hz` {float} - The sample rate of the data source. Going to be
-      *  `250` for OpenBCI 32bit board, `125` for OpenBCI 32bit board + daisy, or
-      *  `256` for the Ganglion.
-      * @param `_nbChan` {int} - The number of channels of the data source. Going to be
-      *  `8` for OpenBCI 32bit board, `16` for OpenBCI 32bit board + daisy, or
-      *  `4` for the Ganglion.
       * @constructor
       */
-    OutputFile_BDF(float _fs_Hz, int _nbChan) {
+    DataWriterBDF() {
 
         fname = getFileName();
-        fs_Hz = (int)_fs_Hz;
-        nbChan = _nbChan;
+        fs_Hz = currentBoard.getSampleRate();
+        nbChan = currentBoard.getNumEXGChannels();
 
         init();
     }
 
     /**
       * @description Creates an EDF writer! The output file will contain the `_filename`.
-      * @param `_fs_Hz` {float} - The sample rate of the data source. Going to be
-      *  `250` for OpenBCI 32bit board, `125` for OpenBCI 32bit board + daisy, or
-      *  `256` for the Ganglion.
-      * @param `_nbChan` {int} - The number of channels of the data source. Going to be
-      *  `8` for OpenBCI 32bit board, `16` for OpenBCI 32bit board + daisy, or
-      *  `4` for the Ganglion.
       * @param `_fileName` {String} - Main component of the output file name.
       * @constructor
       */
-    OutputFile_BDF(float _fs_Hz, int _nbChan, String _fileName) {
+    DataWriterBDF(String _fileName) {
 
         fname = getFileName(_fileName);
-        fs_Hz = (int)_fs_Hz;
-        nbChan = _nbChan;
+        fs_Hz = currentBoard.getSampleRate();
+        nbChan = currentBoard.getNumEXGChannels();
 
         init();
     }
@@ -209,30 +197,32 @@ public class OutputFile_BDF {
       * @description Writes a raw data packet to the buffer. Also will flush the
       *  buffer if it is filled with one second worth of data. Will also capture
       *  the start time, or the first time a packet is recieved.
-      * @param `data` {DataPacket_ADS1299} - A data packet
+      * @param `data` double[][] - A data packet
       */
-    public void writeRawData_dataPacket(DataPacket_ADS1299 data) {
+    public void writeRawData_dataPacket(double[][] data) {
+        for (int i=0; i<data[0].length; i++) {
 
-        if (!startTimeCaptured) {
-            startTime = new Date();
-            startTimeCaptured = true;
-            timeDataRecordStart = millis();
-        }
-
-        writeChannelDataValues(data.rawValues);
-        if (eegDataSource == DATASOURCE_CYTON) {
-            writeAuxDataValues(data.rawAuxValues);
-        }
-        samplesInDataRecord++;
-        // writeValues(data.auxValues,scale_for_aux);
-        if (samplesInDataRecord >= fs_Hz) {
-            arrayCopy(chanValBuf,chanValBuf_buffer);
-            if (eegDataSource == DATASOURCE_CYTON) {
-                arrayCopy(auxValBuf,auxValBuf_buffer);
+            if (!startTimeCaptured) {
+                startTime = new Date();
+                startTimeCaptured = true;
+                timeDataRecordStart = millis();
             }
 
-            samplesInDataRecord = 0;
-            writeDataOut();
+            writeChannelDataValues(data, i);
+            if (currentBoard instanceof AccelerometerCapableBoard) {
+                writeAuxDataValues(data, i);
+            }
+            samplesInDataRecord++;
+            // writeValues(data.auxValues,scale_for_aux);
+            if (samplesInDataRecord >= fs_Hz) {
+                arrayCopy(chanValBuf,chanValBuf_buffer);
+                if (currentBoard instanceof AccelerometerCapableBoard) {
+                    arrayCopy(auxValBuf,auxValBuf_buffer);
+                }
+
+                samplesInDataRecord = 0;
+                writeDataOut();
+            }
         }
     }
 
@@ -804,14 +794,27 @@ public class OutputFile_BDF {
       * @description Moves a packet worth of data into channel buffer, also converts
       *  from Big Endian to Little Indian as per the specs of BDF+.
       *  Ref [1]: http://www.biosemi.com/faq/file_format.htm
-      * @param `values` {byte[][]} - A byte array that is n_chan X sample size (3)
       */
-    private void writeChannelDataValues(byte[][] values) {
+    private void writeChannelDataValues(double[][] allData, int sampleIndex) {
+        int[] exgchannels = currentBoard.getEXGChannels();
+
         for (int i = 0; i < nbChan; i++) {
+            // [daniellasry 5/3/2020] This function has been updated to work
+            // with brainflow and the new data flow.
+            // the following lines convert the new input type (double)
+            // to the input type this function originally expected
+            // (24 bit integer in a byte array of length 3)
+            int value = (int)allData[exgchannels[i]][sampleIndex];
+            ByteBuffer bb = ByteBuffer.allocate(4); 
+            bb.putInt(value); 
+            byte[] bytes = bb.array();
+            byte[] values = {bytes[1], bytes[2], bytes[3]};
+
             // Make the values little endian
-            chanValBuf[i][samplesInDataRecord][0] = swapByte(values[i][2]);
-            chanValBuf[i][samplesInDataRecord][1] = swapByte(values[i][1]);
-            chanValBuf[i][samplesInDataRecord][2] = swapByte(values[i][0]);
+            // skip the first byte which sould be full of zeroes anyway (24 bit int)
+            chanValBuf[i][samplesInDataRecord][0] = swapByte(values[2]);
+            chanValBuf[i][samplesInDataRecord][1] = swapByte(values[1]);
+            chanValBuf[i][samplesInDataRecord][2] = swapByte(values[0]);
         }
     }
 
@@ -819,27 +822,39 @@ public class OutputFile_BDF {
       * @description Moves a packet worth of data into aux buffer, also converts
       *  from Big Endian to Little Indian as per the specs of BDF+.
       *  Ref [1]: http://www.biosemi.com/faq/file_format.htm
-      * @param `values` {byte[][]} - A byte array that is n_aux X sample size (3)
       */
-    private void writeAuxDataValues(byte[][] values) {
+    private void writeAuxDataValues(double[][] allData, int sampleIndex) {
+        int[] accelChannels = ((AccelerometerCapableBoard)currentBoard).getAccelerometerChannels();
+
         for (int i = 0; i < nbAux; i++) {
             if (write_accel) {
+                // [daniellasry 5/3/2020] This function has been updated to work
+                // with brainflow and the new data flow.
+                // the following lines convert the new input type (double)
+                // to the input type this function originally expected
+                // (16 bit integer in a byte array of length 2)
+                int accelInt = (int)allData[accelChannels[i]][sampleIndex];
+                ByteBuffer bb = ByteBuffer.allocate(4); 
+                bb.putInt(accelInt);
+                byte[] bytes = bb.array();
+                byte[] values = {bytes[2], bytes[3]};
+
                 // grab the lower part of
                 boolean zeroPack = true;
                 // shift right
-                int t = (int)values[i][0] & 0x0F;
-                values[i][0] = (byte)((int)values[i][0] >> 4);
-                if (values[i][0] >= 8) {
+                int t = (int)values[0] & 0x0F;
+                values[0] = (byte)((int)values[0] >> 4);
+                if (values[0] >= 8) {
                     zeroPack = false;
                 }
-                values[i][1] = (byte)((int)values[i][1] >> 4);
-                values[i][1] = (byte)((int)values[i][1] | t);
+                values[1] = (byte)((int)values[1] >> 4);
+                values[1] = (byte)((int)values[1] | t);
                 if (!zeroPack) {
-                    values[i][0] = (byte)((int)values[i][0] | 0xF0);
+                    values[0] = (byte)((int)values[0] | 0xF0);
                 }
                 // make msb -> lsb
-                auxValBuf[i][samplesInDataRecord][0] = swapByte(values[i][1]);
-                auxValBuf[i][samplesInDataRecord][1] = swapByte(values[i][0]);
+                auxValBuf[i][samplesInDataRecord][0] = swapByte(values[1]);
+                auxValBuf[i][samplesInDataRecord][1] = swapByte(values[0]);
                 // pad byte
                 if (zeroPack) {
                     auxValBuf[i][samplesInDataRecord][2] = (byte)0x00;
