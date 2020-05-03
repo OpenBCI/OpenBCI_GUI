@@ -21,10 +21,6 @@ public class DataWriterODF {
         rowsWritten = 0;    //init the counter
     }
 
-    ~DataWriterODF() {
-        closeFile();
-    }
-
     public void writeHeader() {
         output.println("%OpenBCI Raw EEG Data");
         output.println("%Number of channels = " + nchan);
