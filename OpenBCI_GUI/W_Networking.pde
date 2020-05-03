@@ -1785,9 +1785,8 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
                     msg.clearArguments();
                     msg.add(i+1);
-                    //ADD Accelerometer data
-                    msg.add(hub.validAccelValues[i]);
-                    // println(i + " | " + hub.validAccelValues[i]);
+                    //todo[brainflow] get analog data
+                    //msg.add(BRAINFLOW_ANALOG_VALS);
                     try {
                         this.osc.send(msg,this.netaddress);
                     } catch (Exception e) {
@@ -1798,7 +1797,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("UDP")) {
                 String outputter = "{\"type\":\"auxiliary\",\"data\":[";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = hub.validAccelValues[i];
+                    int auxData = 0; //todo[brainflow] get analog data 
                     String auxData_formatted = String.format("%04d", auxData);
                     outputter += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {
@@ -1815,7 +1814,7 @@ class Stream extends Thread {
                 // LSL
             } else if (this.protocol.equals("LSL")) {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    dataToSend[i] = hub.validAccelValues[i];
+                    dataToSend[i] = 0;//todo[brainflow] get analog data 
                 }
                 // Add timestamp to LSL Stream
                 outlet_data.push_sample(dataToSend, System.currentTimeMillis());
@@ -1824,7 +1823,7 @@ class Stream extends Thread {
                 // 5 chars per pin, including \n char for Z
                 serialMessage = "";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = hub.validAccelValues[i];
+                    int auxData = 0;//todo[brainflow] get analog data 
                     String auxData_formatted = String.format("%04d", auxData);
                     serialMessage += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {
@@ -1852,9 +1851,7 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                     msg.clearArguments();
                     msg.add(i+1);
-                    //ADD Accelerometer data
                     msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
-                    // println(i + " | " + hub.validAccelValues[i]);
                     try {
                         this.osc.send(msg,this.netaddress);
                     } catch (Exception e) {

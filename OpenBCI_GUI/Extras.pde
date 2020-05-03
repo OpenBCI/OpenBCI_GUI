@@ -14,6 +14,30 @@
 //                       Global Functions
 //------------------------------------------------------------------------
 
+/**
+  * @description Helper function to determine if the system is linux or not.
+  * @return {boolean} true if os is linux, false otherwise.
+  */
+private boolean isLinux() {
+    return System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
+}
+
+/**
+  * @description Helper function to determine if the system is windows or not.
+  * @return {boolean} true if os is windows, false otherwise.
+  */
+private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+}
+
+/**
+  * @description Helper function to determine if the system is macOS or not.
+  * @return {boolean} true if os is windows, false otherwise.
+  */
+private boolean isMac() {
+    return !isWindows() && !isLinux();
+}
+
 //////////////////////////////////////////////////
 //
 // Formerly, Math.pde

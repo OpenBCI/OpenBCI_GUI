@@ -15,6 +15,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+Serial serial_direct_board;
 String rcStringReceived = "";
 
 void autoconnect(){
@@ -160,7 +161,6 @@ boolean connect_to_portName(RadioConfigBox rcConfig){
             serial_output.clear(); // clear anything in the com port's buffer
             // portIsOpen = true;
             println("Radios_Config: connect_to_portName: Port is open!");
-            // changeState(HubState.COMINIT);
             serial_direct_board = serial_output;
             return true;
         }
@@ -194,7 +194,6 @@ boolean connect_to_portName(){
             serial_output.clear(); // clear anything in the com port's buffer
             // portIsOpen = true;
             println("Radios_Config: connect_to_portName: Port is open!");
-            // changeState(HubState.COMINIT);
             serial_direct_board = serial_output;
             return true;
         }
@@ -239,7 +238,7 @@ void system_status(RadioConfigBox rcConfig){
     if(serial_direct_board != null){
         serial_direct_board.write(0xF0);
         serial_direct_board.write(0x07);
-        delay(100);
+        delay(1000);
         if(!print_bytes(rcConfig)){
             print_bytes_error(rcConfig);
         } else {
@@ -251,11 +250,11 @@ void system_status(RadioConfigBox rcConfig){
                 outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
             }
         }
+        if(serial_direct_board != null) serial_direct_board.stop();
     } else {
         println("Error, no board connected");
         rcConfig.print_onscreen("No board connected!");
     }
-    serial_direct_board.stop();
 }
 
 boolean system_status(){

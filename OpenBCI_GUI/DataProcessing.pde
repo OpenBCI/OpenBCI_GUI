@@ -17,6 +17,10 @@ final int GAMMA = 4; // 30-55 Hz
 
 float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
 
+int prevBytes = 0;
+int prevMillis = millis();
+int byteRate_perSec = 0;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------

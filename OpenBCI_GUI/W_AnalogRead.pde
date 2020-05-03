@@ -344,10 +344,9 @@ class AnalogReadBar{
     void update() {
 
         //update the voltage value text string
-        float val;
+        float val = 0;
 
         //update the voltage values
-        val = hub.validAccelValues[auxValuesPosition];
         analogValue.string = String.format(getFmt(val),val);
 
         // update data in plot
