@@ -1125,17 +1125,16 @@ public class OutputFile_BDF {
     }
 
     /**
-      * @description Moves a packet worth of data into channel buffer, also converts
-      *  from Big Endian to Little Indian as per the specs of BDF+.
+      * @description Moves a packet worth of data into channel buffer. Reverses byte order.
       *  Ref [1]: http://www.biosemi.com/faq/file_format.htm
       * @param `values` {byte[][]} - A byte array that is n_chan X sample size (3)
       */
     private void writeChannelDataValues(byte[][] values) {
         for (int i = 0; i < nbChan; i++) {
             // Make the values little endian
-            chanValBuf[i][samplesInDataRecord][0] = swapByte(values[i][2]);
-            chanValBuf[i][samplesInDataRecord][1] = swapByte(values[i][1]);
-            chanValBuf[i][samplesInDataRecord][2] = swapByte(values[i][0]);
+            chanValBuf[i][samplesInDataRecord][0] = values[i][2];
+            chanValBuf[i][samplesInDataRecord][1] = values[i][1];
+            chanValBuf[i][samplesInDataRecord][2] = values[i][0];
         }
     }
 
@@ -1162,8 +1161,8 @@ public class OutputFile_BDF {
                     values[i][0] = (byte)((int)values[i][0] | 0xF0);
                 }
                 // make msb -> lsb
-                auxValBuf[i][samplesInDataRecord][0] = swapByte(values[i][1]);
-                auxValBuf[i][samplesInDataRecord][1] = swapByte(values[i][0]);
+                auxValBuf[i][samplesInDataRecord][0] = values[i][1];
+                auxValBuf[i][samplesInDataRecord][1] = values[i][0];
                 // pad byte
                 if (zeroPack) {
                     auxValBuf[i][samplesInDataRecord][2] = (byte)0x00;
