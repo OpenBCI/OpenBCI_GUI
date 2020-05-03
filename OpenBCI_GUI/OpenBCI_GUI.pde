@@ -510,6 +510,9 @@ private void prepareExitHandler () {
             } catch (Exception ex) {
                 ex.printStackTrace(); // not much else to do at this point
             }
+
+            // finalize any playback files
+            dataLogger.onShutDown();
         }
     }
     ));

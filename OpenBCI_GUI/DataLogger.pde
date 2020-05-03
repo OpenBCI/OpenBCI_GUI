@@ -12,9 +12,11 @@ class DataLogger {
     }
 
     public void uninitialize() {
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE){
-            closeLogFile();  //close log file
-        } 
+        closeLogFile();  //close log file
+    }
+
+    public void onShutDown() {
+        closeLogFile();  //close log file
     }
 
     public void update() {
