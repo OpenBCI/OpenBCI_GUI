@@ -807,10 +807,10 @@ public class DataWriterBDF {
             ByteBuffer bb = ByteBuffer.allocate(4); 
             bb.putInt(value); 
             byte[] bytes = bb.array();
+            // skip the first byte which should be full of zeroes anyway (24 bit int)
             byte[] values = {bytes[1], bytes[2], bytes[3]};
 
             // Make the values little endian
-            // skip the first byte which sould be full of zeroes anyway (24 bit int)
             chanValBuf[i][samplesInDataRecord][0] = values[2];
             chanValBuf[i][samplesInDataRecord][1] = values[1];
             chanValBuf[i][samplesInDataRecord][2] = values[0];
@@ -836,6 +836,7 @@ public class DataWriterBDF {
                 ByteBuffer bb = ByteBuffer.allocate(4); 
                 bb.putInt(accelInt);
                 byte[] bytes = bb.array();
+                // skip the first 2 bytes which should be full of zeroes anyway (16 bit int)
                 byte[] values = {bytes[2], bytes[3]};
 
                 // grab the lower part of
