@@ -123,6 +123,19 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+
+    private Map<Integer, Double> scalers = new HashMap<Integer, Double>();
+    private Map<Character, Integer> gainCommandMap = new HashMap<Character, Integer>() {{
+        put('0', 1);
+        put('1', 2);
+        put('2', 4);
+        put('3', 6);
+        put('4', 8);
+        put('5', 12);
+        put('6', 24);
+    }};
+    // same for all channels
+    private final double brainflowGain = 24.0;
     
     private int[] accelChannelsCache = null;
     private int[] analogChannelsCache = null;
@@ -132,6 +145,15 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     protected String serialPort = "";
     protected String ipAddress = "";
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
+
+    public BoardCyton() {
+        super();
+        int[] exgChannels = getEXGChannels();
+        for (int i = 0; i < exgChannels.length; i++) {
+            // its not a bug, egChannels dont match channels in hardwaresettingscontroller
+            scalers.put(Integer.valueOf(i), Double.valueOf(1.0));
+        }
+    }
 
     // implement mandatory abstract functions
     @Override
@@ -278,6 +300,18 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         configBoard(command);
     }
 
+    @Override
+    protected double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        int[] exgChannels = getEXGChannels();
+        for (int i = 0; i < exgChannels.length; i++) {
+            for (int j = 0; j < data[exgChannels[i]].length; j++) {
+                data[exgChannels[i]][j] *= scalers.get(i);
+            }
+        }
+        return data;
+    }
+
     public void setChannelSettings(int channel, char[] channelSettings) {
         char powerDown = channelSettings[0];
         char gain = channelSettings[1];
@@ -289,6 +323,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
                                         powerDown, gain, inputType, bias, srb2, srb1);
         configBoard(command);
+        Integer newGain = gainCommandMap.get(gain);
+        scalers.replace(Integer.valueOf(channel), Double.valueOf(brainflowGain / newGain));
+        println("New scaler for channel" + channel + " is " + (brainflowGain / newGain));
     }
 
     public CytonBoardMode getBoardMode() {
