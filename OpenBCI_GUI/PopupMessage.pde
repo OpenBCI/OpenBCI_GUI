@@ -64,24 +64,32 @@ class PopupMessage extends PApplet {
         final int h = defaultHeight;
 
         pushStyle();
+
+        // draw bg
         background(bgColor);
         stroke(204);
         fill(238);
         rect((width - w)/2, (height - h)/2, w, h);
+
+        // draw header
         noStroke();
         fill(headerColor);
         rect((width - w)/2, (height - h)/2, w, headerHeight);
+
+        //draw header text
         textFont(p0, 24);
         fill(255);
         textAlign(LEFT, CENTER);
         text(headerMessage, (width - w)/2 + padding, (height - h)/2, w, headerHeight);
+
+        //draw message
         textFont(p3, 16);
         fill(102);
         textAlign(LEFT, TOP);
         text(message, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight);
 
         popStyle();
-
+        
         cp5.draw();
     }
 
