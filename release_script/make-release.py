@@ -231,6 +231,8 @@ def main ():
     parser = argparse.ArgumentParser ()
     # use docs to check which parameters are required for specific board, e.g. for Cyton - set serial port
     parser.add_argument ('--no-prompts', action = 'store_true', help  = 'whether to prompt the user for anything', required = False)
+    parser.add_argument ('--pfx-path', type = str, help  = 'path to the pfx file for windows signing', required = False, default = '')
+    parser.add_argument ('--pfx-password', type = str, help  = 'password for the pfx file for windows signing', required = False, default = '')
     args = parser.parse_args ()
 
     # grab the sketch directory
@@ -238,9 +240,12 @@ def main ():
 
     # ask about signing
     windows_signing = False
-    windows_pfx_path = ''
-    windows_pfx_password = ''
-    if(not args.no_prompts):
+    windows_pfx_path = args.pfx_path;
+    windows_pfx_password = args.pfx_password;
+
+    if windows_pfx_path and windows_pfx_password:
+        windows_signing = True;
+    elif(not args.no_prompts):
         windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
 
     # Cleanup to start

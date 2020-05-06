@@ -13,6 +13,12 @@ environment:
     secure: 41Lh3mnlU+lVcr5eX3bTgmsKqcebacVgDOww7zb0r4E=
   AWS_SECRET_ACCESS_KEY:
     secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
+  PFX_PASS:
+    secure: XgRchp0saDkbKAdG0Jx21w==
+  PFX_SECRET:
+    secure: 3PhIPc0E+l0wwYbXtM+/mw==
+  PFX_SALT:
+    secure: Nf+E++9sy+bvPgZnZtj6qx8A/pF0JIRKnZ5QLOBfaeRZtrpSa2tWwZ6Dka9nCRDKuX485dFm3SHN9RsZOuR7MA==
 
 build: off
 
@@ -21,6 +27,10 @@ init:
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4;C:\Program Files (x86)\Windows Kits\10\bin\x64;%PATH%
 
 install:
+  # decrypt pfx file
+  - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
+  - cmd: appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
+
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
   - appveyor DownloadFile https://download.processing.org/processing-3.5.4-windows64.zip
@@ -32,7 +42,7 @@ install:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts  
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx
 
 deploy_script:
   -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%APPVEYOR_REPO_COMMIT% --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
