@@ -43,7 +43,7 @@ install:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx
-  - ps: SignTool sign /f C:\projects\openbci-gui-jsygc\release_script\windows_only\OpenBCI_Windows.pfx /p ***** /tr http://tsa.starfieldtech.com /td SHA256 C:\projects\openbci-gui-jsygc\openbcigui_v4.2.0_windows64\OpenBCI_GUI.exe
+  - ps: SignTool sign /f C:\projects\openbci-gui-jsygc\release_script\windows_only\OpenBCI_Windows.pfx /p d806i4h7TLavw4l /tr http://tsa.starfieldtech.com /td SHA256 C:\projects\openbci-gui-jsygc\openbcigui_v4.2.0_windows64\OpenBCI_GUI.exe
 
 
 deploy_script:
