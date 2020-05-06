@@ -159,16 +159,6 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
         assert(os.path.isfile(exe_dir))
 
-        ### On Windows, just sign the app
-        ###########################################################
-        if windows_signing:
-            try:
-                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
-                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
-            except subprocess.CalledProcessError as err:
-                print (err)
-                print ("WARNING: Failed to sign app.")
-
         # On Windows, set the application manifest
         ###########################################################
         try:
@@ -190,6 +180,16 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         except subprocess.CalledProcessError as err:
             print (err)
             print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
+
+        ### On Windows, sign the app
+        ###########################################################
+        if windows_signing:
+            try:
+                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+            except subprocess.CalledProcessError as err:
+                print (err)
+                print ("WARNING: Failed to sign app.")
 
     ### On Mac, make a .dmg and sign it
     ###########################################################
