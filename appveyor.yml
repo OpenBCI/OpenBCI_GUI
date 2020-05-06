@@ -27,9 +27,9 @@ init:
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\;%PATH%
 
 install:
-  # decrypt pfx file
-  - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-  - cmd: appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
+  # decrypt pfx file if env are set (not set in PR builds)
+  - ps: if($env:PFX_SECRET) { iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1')) }
+  - cmd: if($env:PFX_SECRET) { appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT% }
 
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
