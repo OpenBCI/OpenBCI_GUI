@@ -29,7 +29,7 @@ init:
 install:
   # decrypt pfx file if env are set (not set in PR builds)
   - ps: if($env:PFX_SECRET) { iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1')) }
-  - cmd: if %PFX_SECRET% ( appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT% )
+  - cmd: If %PFX_SECRET% appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
   - 
 
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
