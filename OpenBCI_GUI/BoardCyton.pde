@@ -706,24 +706,6 @@ class CytonLegacy {
         }
     }
 
-    //activate or deactivate an EEG channel...channel counting is zero through nchan-1
-    public void changeChannelState(int Ichan, boolean activate) {
-        if (isPortOpen()) {
-            // if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
-            if ((Ichan >= 0)) {
-                if (activate) {
-                    // write(command_activate_channel[Ichan]);
-                    // gui.cc.powerUpChannel(Ichan);
-                    w_timeSeries.hsc.powerUpChannel(Ichan);
-                } else {
-                    // write(command_deactivate_channel[Ichan]);
-                    // gui.cc.powerDownChannel(Ichan);
-                    w_timeSeries.hsc.powerDownChannel(Ichan);
-                }
-            }
-        }
-    }
-
     //deactivate an EEG channel...channel counting is zero through nchan-1
     public void deactivateChannel(int Ichan) {
         if (isPortOpen()) {
