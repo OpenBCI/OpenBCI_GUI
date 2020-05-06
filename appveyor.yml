@@ -18,7 +18,7 @@ environment:
   PFX_SECRET:
     secure: 3PhIPc0E+l0wwYbXtM+/mw==
   PFX_SALT:
-    secure: nwbsQC9hqvHI6kucHV3SuNV0WfNOe6J2xqK1dBiikRFks5mwdysLHJD2N6XaUJ/uJGfqfQ39TyVVftiDtAYzXQ==
+    secure: fu1hEkY0JvK5daAoB40qhAYIxB53vdyB+1XE0cUS+jg1sv/qnPLeBjH7RDBmxgclvOLxYrr/Eu9uveQZqhHxew==
 
 build: off
 
@@ -43,7 +43,7 @@ install:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx
-  - ps: SignTool sign /f C:\projects\openbci-gui-jsygc\release_script\windows_only\OpenBCI_Windows.pfx /p d806i4h7TLavw4l /tr http://tsa.starfieldtech.com /td SHA256 C:\projects\openbci-gui-jsygc\openbcigui_v4.2.0_windows64\OpenBCI_GUI.exe
+  - ps: SignTool sign /f C:\projects\openbci-gui-jsygc\release_script\windows_only\OpenBCI_Windows.pfx /p %PFX_PASS% /tr http://tsa.starfieldtech.com /td SHA256 C:\projects\openbci-gui-jsygc\openbcigui_v4.2.0_windows64\OpenBCI_GUI.exe
 
 
 deploy_script:
