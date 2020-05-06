@@ -171,25 +171,25 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
 
         # On Windows, set the application manifest
         ###########################################################
-        # try:
-        #     subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
-        #         "-outputresource:" + exe_dir + ";#1"])
-        # except subprocess.CalledProcessError as err:
-        #     print (err)
-        #     print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
+        try:
+            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
+                "-outputresource:" + exe_dir + ";#1"])
+        except subprocess.CalledProcessError as err:
+            print (err)
+            print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
 
         java_exe_dir = os.path.join(build_dir, "java", "bin", "java.exe")
         javaw_exe_dir = os.path.join(build_dir, "java", "bin", "javaw.exe")
         assert (os.path.isfile(java_exe_dir))
         assert (os.path.isfile(javaw_exe_dir))
-        # try:
-        #     subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
-        #         "-outputresource:" + java_exe_dir + ";#1"])
-        #     subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
-        #         "-outputresource:" + javaw_exe_dir + ";#1"])
-        # except subprocess.CalledProcessError as err:
-        #     print (err)
-        #     print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
+        try:
+            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
+                "-outputresource:" + java_exe_dir + ";#1"])
+            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
+                "-outputresource:" + javaw_exe_dir + ";#1"])
+        except subprocess.CalledProcessError as err:
+            print (err)
+            print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
 
     ### On Mac, make a .dmg and sign it
     ###########################################################

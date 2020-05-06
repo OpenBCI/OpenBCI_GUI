@@ -24,10 +24,9 @@ build: off
 
 init:
   # add processing-java to the path as well as mt.exe (release script uses it to modify the manifest.xml)
-  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4;C:\Program Files (x86)\Windows Kits\10\bin\x64;%PATH%
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.4;C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x64\;%PATH%
 
 install:
-  - ls "C:\Program Files (x86)\Windows Kits\10\bin\
   # decrypt pfx file
   - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
   - cmd: appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
