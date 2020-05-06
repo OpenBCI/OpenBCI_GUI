@@ -171,12 +171,12 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
 
         # On Windows, set the application manifest
         ###########################################################
-        try:
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
-                "-outputresource:" + exe_dir + ";#1"])
-        except subprocess.CalledProcessError as err:
-            print (err)
-            print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
+        # try:
+        #     subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
+        #         "-outputresource:" + exe_dir + ";#1"])
+        # except subprocess.CalledProcessError as err:
+        #     print (err)
+        #     print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
 
         java_exe_dir = os.path.join(build_dir, "java", "bin", "java.exe")
         javaw_exe_dir = os.path.join(build_dir, "java", "bin", "javaw.exe")
