@@ -18,7 +18,7 @@ environment:
   PFX_SECRET:
     secure: 3PhIPc0E+l0wwYbXtM+/mw==
   PFX_SALT:
-    secure: fu1hEkY0JvK5daAoB40qhAYIxB53vdyB+1XE0cUS+jg1sv/qnPLeBjH7RDBmxgclvOLxYrr/Eu9uveQZqhHxew==
+    secure: gah3v2hyC7YDFI+GNs6FzFyMk7ei/sUdcpOUKlsWntjX30LXSxyfdSo3ZKBmYqkNMX7BnUNwxiN0vTzSj2zdhw==
 
 build: off
 
@@ -29,7 +29,7 @@ init:
 install:
   # decrypt pfx file
   - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-  - cmd: appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
+  - cmd: appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
 
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
@@ -42,9 +42,7 @@ install:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx
-  - ps: SignTool sign /f C:\projects\openbci-gui-jsygc\release_script\windows_only\OpenBCI_Windows.pfx /p %PFX_PASS% /tr http://tsa.starfieldtech.com /td SHA256 C:\projects\openbci-gui-jsygc\openbcigui_v4.2.0_windows64\OpenBCI_GUI.exe
-
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx
 
 deploy_script:
   -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%APPVEYOR_REPO_COMMIT% --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
