@@ -276,8 +276,7 @@ class W_timeSeries extends Widget {
                     // if we change gains and other setting during the streaming there will be sync issue
                     // force user to stop streaming first
                     if (isRunning) {
-                        // todo better option to notify user? popup window doesnt work in processing....
-                        println("Need to pause streaming to configure the board.");
+                        PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
                         return;
                     }
                     showHardwareSettings = true;
