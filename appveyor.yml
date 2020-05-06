@@ -31,6 +31,9 @@ install:
   - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
   - cmd: appveyor-tools\secure-file -decrypt %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\OpenBCI_Windows.pfx.enc -secret %PFX_SECRET% -salt %PFX_SALT%
 
+  - ls %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\
+  - ls %APPVEYOR_BUILD_FOLDER%\
+
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
   - appveyor DownloadFile https://download.processing.org/processing-3.5.4-windows64.zip
