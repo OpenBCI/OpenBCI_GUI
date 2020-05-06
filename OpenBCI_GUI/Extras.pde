@@ -313,6 +313,7 @@ class DataStatus {
     private double threshold_railed_warn_uv;
 
     DataStatus(int thresh_railed, int thresh_railed_warn) {
+        // convert int24 value to uV
         double eeg_scaler =  (4.5 / (pow (2, 23) - 1) / 24.0 * 1000000.);
         is_railed = false;
         // convert thresholds to uV

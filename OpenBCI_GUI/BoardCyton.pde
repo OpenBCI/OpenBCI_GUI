@@ -124,7 +124,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-    private Map<Integer, Double> scalers = new HashMap<Integer, Double>();
+    private double[] scalers = null;
     private Map<Character, Integer> gainCommandMap = new HashMap<Character, Integer>() {{
         put('0', 1);
         put('1', 2);
@@ -148,10 +148,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     public BoardCyton() {
         super();
-        int[] exgChannels = getEXGChannels();
-        for (int i = 0; i < exgChannels.length; i++) {
-            // its not a bug, egChannels dont match channels in hardwaresettingscontroller
-            scalers.put(Integer.valueOf(i), Double.valueOf(1.0));
+        scalers = new double[getNumEXGChannels()];
+        for (int i = 0; i < scalers.length; i++) {
+            scalers[i] = 1.0;
         }
     }
 
@@ -306,7 +305,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         int[] exgChannels = getEXGChannels();
         for (int i = 0; i < exgChannels.length; i++) {
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
-                data[exgChannels[i]][j] *= scalers.get(i);
+                data[exgChannels[i]][j] *= scalers[i];
             }
         }
         return data;
@@ -323,9 +322,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
                                         powerDown, gain, inputType, bias, srb2, srb1);
         configBoard(command);
-        Integer newGain = gainCommandMap.get(gain);
-        scalers.replace(Integer.valueOf(channel), Double.valueOf(brainflowGain / newGain));
-        println("New scaler for channel" + channel + " is " + (brainflowGain / newGain));
+        scalers[channel] = brainflowGain / gainCommandMap.get(gain);
     }
 
     public CytonBoardMode getBoardMode() {
