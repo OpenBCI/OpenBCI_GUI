@@ -1308,8 +1308,6 @@ void updateToNChan(int _nchan) {
     yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("channel count set to " + str(nchan));
     hub.initDataPackets(_nchan, 3);
-    // ganglion.initDataPackets(_nchan, 3);
-    updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
 //==============================================================================//

@@ -1,37 +1,3 @@
-//////////////////////////////////////////////////////////////////////////
-//
-//    Hardware Settings Controller
-//    - this is the user interface for allowing you to control the hardware settings of the 32bit Board & 16chan Setup (32bit + Daisy)
-//
-//    Written by: Conor Russomanno (Oct. 2016) ... adapted from ChannelController.pde of GUI V1 ... it's a little bit simpler now :|
-//    Based on some original GUI code by: Chip Audette 2013/2014
-//
-//////////////////////////////////////////////////////////////////////////
-
-public void updateChannelArrays(int _nchan) {
-    channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-    impedanceCheckValues = new char [_nchan][2];
-}
-
-//activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
-void activateChannel(int Ichan) {
-    println("OpenBCI_GUI: activating channel " + (Ichan+1));
-
-    currentBoard.setEXGChannelActive(Ichan, true);
-    if (Ichan < nchan) {
-        channelSettingValues[Ichan][0] = '0';
-        // gui.cc.update();
-    }
-}
-
-void deactivateChannel(int Ichan) {
-    println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-    
-    currentBoard.setEXGChannelActive(Ichan, false);
-    if (Ichan < nchan) {
-        channelSettingValues[Ichan][0] = '1';
-    }
-}
 
 class HardwareSettingsController{
 
@@ -66,6 +32,31 @@ class HardwareSettingsController{
         h = _h;
 
         createChannelSettingButtons(_channelBarHeight);
+    }
+
+    void updateChannelArrays(int _nchan) {
+        channelSettingValues = new char [_nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+        impedanceCheckValues = new char [_nchan][2];
+    }
+
+    //activateChannel: Ichan is [0 nchan-1] (aka zero referenced)
+    void activateChannel(int Ichan) {
+        println("OpenBCI_GUI: activating channel " + (Ichan+1));
+
+        currentBoard.setEXGChannelActive(Ichan, true);
+        if (Ichan < nchan) {
+            channelSettingValues[Ichan][0] = '0';
+            // gui.cc.update();
+        }
+    }
+
+    void deactivateChannel(int Ichan) {
+        println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
+        
+        currentBoard.setEXGChannelActive(Ichan, false);
+        if (Ichan < nchan) {
+            channelSettingValues[Ichan][0] = '1';
+        }
     }
 
     void update(){

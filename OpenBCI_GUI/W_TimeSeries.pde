@@ -697,12 +697,12 @@ class ChannelBar{
             println("[" + channelNumber + "] onOff released");
             if(isOn) {  // if channel is active
                 isOn = false; // deactivate it
-                deactivateChannel(channelNumber - 1); //got to - 1 to make 0 indexed
+                w_timeSeries.hsc.deactivateChannel(channelNumber - 1); //got to - 1 to make 0 indexed
                 onOffButton.setColorNotPressed(color(50));
             }
             else { // if channel is not active
                 isOn = true;
-                activateChannel(channelNumber - 1);       // activate it
+                w_timeSeries.hsc.activateChannel(channelNumber - 1);       // activate it
                 onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
             }
         }
