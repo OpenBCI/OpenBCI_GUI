@@ -186,7 +186,7 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         if windows_signing:
             try:
                 subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
-                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
+                    windows_pfx_password, "/tr", "http://timestamp.digicert.com", "/td", "SHA256", exe_dir])
             except subprocess.CalledProcessError as err:
                 print (err)
                 print ("WARNING: Failed to sign app.")
