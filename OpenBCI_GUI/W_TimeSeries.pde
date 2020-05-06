@@ -273,6 +273,12 @@ class W_timeSeries extends Widget {
                     hsc.isVisible = false;
                     hardwareSettingsButton.setString("Hardware Settings");
                 } else{
+                    // if we change gains and other setting during the streaming there will be sync issue
+                    // force user to stop streaming first
+                    if (isRunning) {
+                        PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
+                        return;
+                    }
                     showHardwareSettings = true;
                     hsc.isVisible = true;
                     hardwareSettingsButton.setString("Time Series");
