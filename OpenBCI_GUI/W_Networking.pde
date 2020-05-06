@@ -1816,7 +1816,13 @@ class Stream extends Thread {
     }
 
     void sendAnalogReadData() {
-        final int NUM_ANALOG_READS = w_analogRead.getNumAnalogReads();
+        // this function is only called if the board is analog capable
+        int[] analogChannels = ((AnalogCapableBoard)currentBoard).getAnalogChannels();
+        List<double[]> lastData = currentBoard.getData(1);
+        double[] lastSample = lastData.get(0);
+
+        final int NUM_ANALOG_READS = analogChannels.length;
+
         // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
         if (this.filter==0 || this.filter==1) {
             // OSC
@@ -1825,8 +1831,7 @@ class Stream extends Thread {
                     msg.clearArguments();
                     msg.add(i+1);
                     //ADD Accelerometer data
-                    msg.add(hub.validAccelValues[i]);
-                    // println(i + " | " + hub.validAccelValues[i]);
+                    msg.add((int)lastSample[analogChannels[i]]);
                     try {
                         this.osc.send(msg,this.netaddress);
                     } catch (Exception e) {
@@ -1837,7 +1842,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("UDP")) {
                 String outputter = "{\"type\":\"auxiliary\",\"data\":[";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = hub.validAccelValues[i];
+                    int auxData = (int)lastSample[analogChannels[i]];
                     String auxData_formatted = String.format("%04d", auxData);
                     outputter += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {
@@ -1854,7 +1859,7 @@ class Stream extends Thread {
                 // LSL
             } else if (this.protocol.equals("LSL")) {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    dataToSend[i] = hub.validAccelValues[i];
+                    dataToSend[i] = (int)lastSample[analogChannels[i]];
                 }
                 // Add timestamp to LSL Stream
                 outlet_data.push_sample(dataToSend, System.currentTimeMillis());
@@ -1863,7 +1868,7 @@ class Stream extends Thread {
                 // 5 chars per pin, including \n char for Z
                 serialMessage = "";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = hub.validAccelValues[i];
+                    int auxData = (int)lastSample[analogChannels[i]];
                     String auxData_formatted = String.format("%04d", auxData);
                     serialMessage += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {
@@ -1893,7 +1898,6 @@ class Stream extends Thread {
                     msg.add(i+1);
                     //ADD Accelerometer data
                     msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
-                    // println(i + " | " + hub.validAccelValues[i]);
                     try {
                         this.osc.send(msg,this.netaddress);
                     } catch (Exception e) {
