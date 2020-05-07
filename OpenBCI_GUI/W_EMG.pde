@@ -232,7 +232,7 @@ class W_emg extends Widget {
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+        process(dataBuffY_filtY_uV, fftBuff);
     }
 
     void draw() {
@@ -385,8 +385,6 @@ class W_emg extends Widget {
     }
 
     public void process(
-        float[][] data_newest_uV, //holds raw EEG data that is new since the last call
-        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
         float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
         FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 

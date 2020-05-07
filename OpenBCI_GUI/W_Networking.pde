@@ -108,6 +108,11 @@ class W_Networking extends Widget {
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;
 
+    private LinkedList<double[]> dataAccumulationQueue;
+    // accessed by individual streams. yes, i hate it too
+    public float[][] dataBufferToSend;
+    public boolean newDataToSend = false; 
+
     HashMap<String, Object> cp5Map = new HashMap<String, Object>();
 
     W_Networking(PApplet _parent) {
@@ -149,6 +154,9 @@ class W_Networking extends Widget {
         cp5_networking_baudRate.setAutoDraw(false);
 
         fetchCP5Data();
+        
+        dataBufferToSend = new float[currentBoard.getNumEXGChannels()][nPointsPerUpdate];
+        dataAccumulationQueue = new LinkedList<double[]>();
     }
 
     //Used to update the Hashmap
@@ -198,7 +206,7 @@ class W_Networking extends Widget {
                 stream3.run();
             }
             //Setting this var here fixes #592 to allow multiple LSL streams
-            dataProcessing.newDataToSend = false;
+            newDataToSend = false;
         }
 
         checkTopNovEvents();
@@ -232,8 +240,39 @@ class W_Networking extends Widget {
             previousCP5State = cp5ElementsAreActive;
         }
 
+        accumulateNewData();
 
-    } //end update()
+        checkIfEnoughDataToSend();
+    }
+
+    private void accumulateNewData() {
+        // accumulate data
+        double[][] newData = currentBoard.getFrameData();
+        int[] exgChannels = currentBoard.getEXGChannels();
+        for (int iSample = 0; iSample < newData[0].length; iSample ++) {
+            
+            double[] sample = new double[exgChannels.length];
+            for (int iChan = 0; iChan < exgChannels.length; iChan++) {
+                sample[iChan] = newData[iChan][iSample];
+            }
+
+            dataAccumulationQueue.add(sample);
+        }
+    }
+
+    private void checkIfEnoughDataToSend() {
+        if (dataAccumulationQueue.size() >= nPointsPerUpdate) {
+            for (int iSample=0; iSample<nPointsPerUpdate; iSample++) {
+                double[] sample = dataAccumulationQueue.pop();
+
+                for (int iChan = 0; iChan < sample.length; iChan++) {
+                    dataBufferToSend[iChan][iSample] = (float)sample[iChan];
+                }
+            }
+
+            newDataToSend = true;
+        }
+    }
 
     Boolean textfieldsAreActive(String[] names) {
         boolean isActive = false;
@@ -1283,42 +1322,42 @@ class Stream extends Thread {
 
     Boolean checkForData() {
         if (this.dataType.equals("TimeSeries")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("FFT")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("EMG")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("BandPower")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("Accel/Aux")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("Focus")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("Pulse")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("SSVEP")) {
-            return dataProcessing.newDataToSend;
+            return w_networking.newDataToSend;
         }
         return false;
     }
 
     void setDataFalse() {
         if (this.dataType.equals("TimeSeries")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("FFT")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("EMG")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("BandPower")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("Accel/Aux")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("Focus")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("Pulse")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("SSVEP")) {
-            dataProcessing.newDataToSend = false;
+            w_networking.newDataToSend = false;
         }
     }
 
@@ -1369,7 +1408,7 @@ class Stream extends Thread {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     msg.clearArguments();
                     for (int j=0;j<numChan;j++) {
-                        msg.add(yLittleBuff_uV[j][i]);
+                        msg.add(w_networking.dataBufferToSend[j][i]);
                     }
                     try {
                         this.osc.send(msg,this.netaddress);
@@ -1382,7 +1421,7 @@ class Stream extends Thread {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     String outputter = "{\"type\":\"eeg\",\"data\":[";
                     for (int j = 0; j < numChan; j++) {
-                        outputter += str(yLittleBuff_uV[j][i]);
+                        outputter += str(w_networking.dataBufferToSend[j][i]);
                         if (j != numChan - 1) {
                             outputter += ",";
                         } else {
@@ -1399,7 +1438,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 for (int i=0; i<nPointsPerUpdate;i++) {
                     for (int j=0;j<numChan;j++) {
-                        dataToSend[j+numChan*i] = yLittleBuff_uV[j][i];
+                        dataToSend[j+numChan*i] = w_networking.dataBufferToSend[j][i];
                     }
                 }
                 // Add timestamp to LSL Stream
@@ -1410,7 +1449,7 @@ class Stream extends Thread {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     serialMessage = "["; //clear message
                     for (int j=0;j<numChan;j++) {
-                        float chan_uV = yLittleBuff_uV[j][i];//get chan uV float value and truncate to 3 decimal places
+                        float chan_uV = w_networking.dataBufferToSend[j][i];//get chan uV float value and truncate to 3 decimal places
                         String chan_uV_3dec = String.format("%.3f", chan_uV);
                         serialMessage += chan_uV_3dec;//  serialMesage += //add 3 decimal float chan uV value as string to serialMessage
                         if (j < numChan-1) {
@@ -1777,7 +1816,13 @@ class Stream extends Thread {
     }
 
     void sendAnalogReadData() {
-        final int NUM_ANALOG_READS = w_analogRead.getNumAnalogReads();
+        // this function is only called if the board is analog capable
+        int[] analogChannels = ((AnalogCapableBoard)currentBoard).getAnalogChannels();
+        List<double[]> lastData = currentBoard.getData(1);
+        double[] lastSample = lastData.get(0);
+
+        final int NUM_ANALOG_READS = analogChannels.length;
+
         // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
         if (this.filter==0 || this.filter==1) {
             // OSC
@@ -1785,8 +1830,7 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
                     msg.clearArguments();
                     msg.add(i+1);
-                    //todo[brainflow] get analog data
-                    //msg.add(BRAINFLOW_ANALOG_VALS);
+                    msg.add((int)lastSample[analogChannels[i]]);
                     try {
                         this.osc.send(msg,this.netaddress);
                     } catch (Exception e) {
@@ -1797,7 +1841,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("UDP")) {
                 String outputter = "{\"type\":\"auxiliary\",\"data\":[";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = 0; //todo[brainflow] get analog data 
+                    int auxData = (int)lastSample[analogChannels[i]];
                     String auxData_formatted = String.format("%04d", auxData);
                     outputter += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {
@@ -1814,7 +1858,7 @@ class Stream extends Thread {
                 // LSL
             } else if (this.protocol.equals("LSL")) {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    dataToSend[i] = 0;//todo[brainflow] get analog data 
+                    dataToSend[i] = (int)lastSample[analogChannels[i]];
                 }
                 // Add timestamp to LSL Stream
                 outlet_data.push_sample(dataToSend, System.currentTimeMillis());
@@ -1823,7 +1867,7 @@ class Stream extends Thread {
                 // 5 chars per pin, including \n char for Z
                 serialMessage = "";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = 0;//todo[brainflow] get analog data 
+                    int auxData = (int)lastSample[analogChannels[i]];
                     String auxData_formatted = String.format("%04d", auxData);
                     serialMessage += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {

@@ -1272,7 +1272,6 @@ void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-    yLittleBuff_uV = new float[nchan][nPointsPerUpdate];
     println("Channel count set to " + str(nchan));
     updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }

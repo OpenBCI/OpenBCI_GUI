@@ -167,7 +167,6 @@ int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float yLittleBuff_uV[][]; //small buffer used to send data to the filters
 float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
@@ -674,7 +673,6 @@ void initCoreDataObjects() {
     dataBuffX = new float[getCurrentBoardBufferSize()];
     dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
     dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
-    yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
     auxBuff = new float[3][nPointsPerUpdate];
     accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
     for (int i=0; i<n_aux_ifEnabled; i++) {
