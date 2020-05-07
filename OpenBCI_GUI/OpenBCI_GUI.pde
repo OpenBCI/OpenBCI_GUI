@@ -94,9 +94,10 @@ final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 final int DATASOURCE_NOVAXR = 4;
 public int eegDataSource = -1; //default to none of the options
+final static int NUM_ACCEL_DIMS = 3;
 
 enum BoardProtocol {
-    NONE,  
+    NONE,
     SERIAL,
     BLE,
     WIFI,
@@ -118,8 +119,6 @@ DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
-Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
-
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
@@ -177,6 +176,7 @@ float data_elec_imp_ohm[];
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
 
+
 String output_fname;
 String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
@@ -231,22 +231,12 @@ PFont p6; //small Open Sans
 ButtonHelpText buttonHelpText;
 
 boolean setupComplete = false;
-boolean isHubInitialized = false;
-boolean isHubObjectInitialized = true;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
 int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
-
-Process nodeHubby;
-String nodeHubName = "OpenBCIHub";
-Timer hubTimer = new Timer(true);
-boolean hubTimerHasStarted = false;
-int hubTimerCounter; //Count how many times GUI tries to connect to Hub
-int hubTimerLimit = 8; //Allow up to 8 tries for GUI to connect to Hub
-int hubTimerInterval = 2500; //try every 2.5 seconds, 8*2.5=20seconds
 
 PApplet ourApplet;
 
@@ -352,9 +342,6 @@ void setup() {
 }
 
 void delayedSetup() {
-    if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
-    hubInit(); // putting down here gives windows time to close any open apps
-
     smooth(); //turn this off if it's too slow
 
     surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -395,8 +382,10 @@ void delayedSetup() {
 
     myPresentation = new Presentation();
 
-    // Create GUI data folder and copy sample data if meditation file doesn't exist
+    // Create GUI data folder in Users' Documents and copy sample data if it doesn't already exist
     copyGUISampleData();
+
+    prepareExitHandler();
 
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
@@ -499,17 +488,6 @@ private void prepareExitHandler () {
                 w_networking.stopNetwork();
                 println("openBCI_GUI: shutDown: Network streams stopped");
             }
-            //Shutdown the hub
-            try {
-                if (hubStop()) {
-                    System.out.println("SHUTDOWN HUB");
-                } else {
-                    System.out.println("FAILED TO SHUTDOWN HUB");
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace(); // not much else to do at this point
-            }
 
             // finalize any playback files
             dataLogger.onShutDown();
@@ -518,142 +496,7 @@ private void prepareExitHandler () {
     ));
 }
 
-/**
-  * Starts the hub and sets prepares the exit handler.
-  */
-void hubInit() {
-    isHubInitialized = true;
-    hubStart();
-    prepareExitHandler();
-}
 
-/**
-  * Starts the node hub working, tested on mac and windows.
-  */
-void hubStart() {
-    println("Launching application from local data dir");
-    try {
-        // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
-        if (isWindows()) {
-            println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-            nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
-        } else if (isLinux()) {
-            println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-            nodeHubby = exec(dataPath("./OpenBCIHub/OpenBCIHub"));
-        } else {
-            println("OpenBCI_GUI: hubStart: OS Detected: Mac");
-            nodeHubby = launch(dataPath("OpenBCIHub.app"));
-        }
-        // hubRunning = true;
-    }
-    catch (Exception e) {
-        println("hubStart: " + e);
-    }
-}
-
-/**
-  * @description Single function to call at the termination program hook.
-  */
-boolean hubStop() {
-    if (isWindows()) {
-        return killRunningprocessWin();
-    } else {
-        killRunningProcessMac();
-        return true;
-    }
-}
-
-/**
-  * @description Helper function to determine if the system is linux or not.
-  * @return {boolean} true if os is linux, false otherwise.
-  */
-private boolean isLinux() {
-    return System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
-}
-
-/**
-  * @description Helper function to determine if the system is windows or not.
-  * @return {boolean} true if os is windows, false otherwise.
-  */
-private boolean isWindows() {
-    return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
-}
-
-/**
-  * @description Helper function to determine if the system is macOS or not.
-  * @return {boolean} true if os is windows, false otherwise.
-  */
-private boolean isMac() {
-    return !isWindows() && !isLinux();
-}
-
-/**
-  * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
-  *  function dubbed "death dealer"
-  */
-void killRunningProcessMac() {
-    try {
-        String line;
-        Process p = Runtime.getRuntime().exec("ps -e");
-        BufferedReader input =
-            new BufferedReader(new InputStreamReader(p.getInputStream()));
-        while ((line = input.readLine()) != null) {
-            if (line.contains(nodeHubName)) {
-                try {
-                    endProcess(getProcessIdFromLineMac(line));
-                    println("Killed: " + line);
-                }
-                catch (Exception err) {
-                    println("Failed to stop process: " + line + "\n\n");
-                    err.printStackTrace();
-                }
-            }
-        }
-        input.close();
-    }
-    catch (Exception err) {
-        err.printStackTrace();
-    }
-}
-
-/**
-  * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
-  *  function dubbed "death dealer" aka "cat killer"
-  */
-boolean killRunningprocessWin() {
-    try {
-        Runtime.getRuntime().exec("taskkill /F /IM OpenBCIHub.exe");
-        return true;
-    }
-    catch (Exception err) {
-        err.printStackTrace();
-        return false;
-    }
-}
-
-/**
-  * @description Parses a mac process line and grabs the pid, the first component.
-  * @return {int} the process id
-  */
-int getProcessIdFromLineMac(String line) {
-    line = trim(line);
-    String[] components = line.split(" ");
-    return Integer.parseInt(components[0]);
-}
-
-void endProcess(int pid) {
-    Runtime rt = Runtime.getRuntime();
-    try {
-        rt.exec("kill -9 " + pid);
-    }
-    catch (IOException err) {
-        err.printStackTrace();
-    }
-}
-
-int prevBytes = 0;
-int prevMillis = millis();
-int byteRate_perSec = 0;
 
 //used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
 
@@ -748,9 +591,6 @@ void initSystem() {
 
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
-    verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
-    hub.changeState(HubState.COMINIT);
-    // hub.searchDeviceStop();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -767,9 +607,9 @@ void initSystem() {
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
-            
+
             systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-            
+
             if (!abandonInit) {
                 controlPanel.close();
             } else {
@@ -785,17 +625,6 @@ void initSystem() {
     }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-    
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (hub.getFirmwareVersion() == null && hub.getProtocol().equals(PROTOCOL_WIFI)) {
-            println("Cyton+WiFi: Unable to find board firmware version");
-        } else if (hub.getFirmwareVersion().equals("v1.0.0")) {
-            //this means the firmware is very out of date, and commands may not work, so abandon init
-            abandonInit = true;
-        } else {
-            //println("FOUND FIRMWARE FROM HUB == " + hub.getFirmwareVersion());
-        }
-    }
 
     //DISABLE SOFTWARE SETTINGS FOR NOVAXR
     if (eegDataSource != DATASOURCE_NOVAXR) {
@@ -898,7 +727,7 @@ void initFFTObjectsAndBuffer() {
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
-    
+
     dataLogger.onStartStreaming();
 
     // start streaming on the chosen board
@@ -965,9 +794,6 @@ void haltSystem() {
 
         //reset variables for data processing
         curDataPacketInd = -1;
-        prevBytes = 0;
-        prevMillis = millis();
-        byteRate_perSec = 0;
 
         settings.settingsLoaded = false; //on halt, reset this value
 
@@ -982,7 +808,6 @@ void haltSystem() {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
         }
         systemMode = SYSTEMMODE_PREINIT;
-        hub.changeState(HubState.NOCOM);
 
         recentPlaybackFilesHaveUpdated = false;
 
@@ -1122,28 +947,6 @@ void systemDraw() { //for drawing to the screen
 
         helpWidget.draw();
     }
-
-    // TODO[brainflow]
-    // if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
-    //     if (!attemptingToConnect) {
-    //         output("Attempting to establish a connection with your OpenBCI Board...");
-    //         attemptingToConnect = true;
-    //     } else {
-    //         //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
-    //         pushStyle();
-    //         imageMode(CENTER);
-    //         image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
-    //         popStyle();
-    //     }
-
-    //     if (millis() - timeOfInit > settings.initTimeoutThreshold) {
-    //         haltSystem();
-    //         initSystemButton.but_txt = "START SESSION";
-    //         output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
-    //         controlPanel.open();
-    //         attemptingToConnect = false;
-    //     }
-    // }
 
     //draw presentation last, bc it is intended to be rendered on top of the GUI ...
     if (drawPresentation) {
