@@ -264,10 +264,8 @@ class HardwareSettingsController{
         if(channelSettingValues[_channelNumber][4] == '1'){     //is N pin being used...
             if (impedanceCheckValues[_channelNumber][1] < '1') { //if not checking/drawing impedance
                 initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
-                println("Imp[" + _channelNumber + "] is on.");
             } else {
                 initImpWrite(_channelNumber, 'n', '0'); //turn off impedance check for desired channel
-                println("Imp[" + _channelNumber + "] is off.");
             }
         }
 
