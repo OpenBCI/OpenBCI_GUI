@@ -14,6 +14,10 @@ import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 import java.awt.Desktop;
 
+void openConsole() {
+    ConsoleWindow.display();
+}
+
 static class ConsoleWindow extends PApplet {
     private static ConsoleWindow instance = null;
 
