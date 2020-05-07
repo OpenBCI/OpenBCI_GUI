@@ -292,7 +292,7 @@ class SoftwareSettings {
     private final String kJSONKeyVersion = "version";
     private final String kJSONKeySpectrogram = "spectrogram";
 
-    //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
+    //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
     int numChanloaded;
     boolean chanNumError = false;
@@ -1271,7 +1271,8 @@ class SoftwareSettings {
         String dataModeVersionToPrint = controlEventDataSource;
         if (eegDataSource == DATASOURCE_CYTON) {
             if (!settings.loadErrorCytonEvent) {
-                firmwareToPrint = " " + hub.firmwareVersion + ")";
+                //todo get cyton firmware version if possible during Init
+                firmwareToPrint = " " + "FIX ME" + ")";
             } else {
                 firmwareToPrint = "v.?)";
             }

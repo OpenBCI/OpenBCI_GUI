@@ -112,8 +112,6 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
-Serial serial_direct_board;
-
 ChannelPopup channelPopup;
 PollPopup pollPopup;
 RadioConfigBox rcBox;
@@ -992,25 +990,7 @@ class ControlPanel {
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
-            if (isHubObjectInitialized) {
-                output("Wifi Devices Refreshing");
-                wifiList.items.clear();
-                try {
-                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
-                    if (devices.isEmpty ()) {
-                        println("No WIFI Shields found");
-                    }
-                    for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
-                    }
-                    wifiList.updateMenu();
-                } catch (Exception e) {
-                    println("Exception in wifi shield scanning");
-                    e.printStackTrace ();
-                }
-            } else {
-                output("Please wait till hub is fully initalized");
-            }
+            wifiBox.refreshWifiList();
         }
 
         // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
@@ -1049,27 +1029,14 @@ class ControlPanel {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
-            if (isHubObjectInitialized) {
-                output("Protocol Serial Selected for Cyton");
-                if (hub.isPortOpen()) hub.closePort();
-                selectedProtocol = BoardProtocol.SERIAL; 
-            } else {
-                output("Please wait till hub is fully initalized");
-            }
+            selectedProtocol = BoardProtocol.SERIAL;
         }
 
         if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
-            if (isHubObjectInitialized) {
-                output("Protocol Wifi Selected for Cyton");
-                //if (hub.isPortOpen()) hub.closePort();
-                selectedProtocol = BoardProtocol.WIFI;
-                //hub.searchDeviceStart();
-            } else {
-                output("Please wait till hub is fully initalized");
-            }
+            selectedProtocol = BoardProtocol.WIFI;
         }
 
         if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
@@ -1305,9 +1272,7 @@ void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-    println("channel count set to " + str(nchan));
-    hub.initDataPackets(_nchan, 3);
-    // ganglion.initDataPackets(_nchan, 3);
+    println("Channel count set to " + str(nchan));
     updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
@@ -1505,13 +1470,6 @@ class BLEBox {
         popStyle();
 
         refreshBLE.draw();
-
-        /*if(isHubInitialized && isHubObjectInitialized && ganglion.isBLE() && hub.isSearching()){
-            image(loadingGIF_blue, w + 225,  y + padding*4 + 72 + 10, 20, 20);
-            refreshBLE.setString("SEARCHING...");
-        } else {
-            refreshBLE.setString("START SEARCH");
-        }*/
     }
 };
 
@@ -1597,7 +1555,7 @@ class WifiBox {
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
 
-            if((selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI) && hub.isSearching()){
+            if(selectedProtocol == BoardProtocol.WIFI){
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
                 refreshWifi.setString("SEARCHING...");
             } else {
@@ -1613,15 +1571,21 @@ class WifiBox {
     }
 
     public void refreshWifiList() {
-        println("refreshWifiList");
+        output("Wifi Devices Refreshing");
         wifiList.items.clear();
-        if (hub.deviceList != null) {
-            for (int i = 0; i < hub.deviceList.length; i++) {
-                String tempPort = hub.deviceList[i];
-                wifiList.addItem(makeItem(tempPort));
+        try {
+            List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
+            if (devices.isEmpty ()) {
+                println("No WIFI Shields found");
             }
+            for (int i = 0; i < devices.size(); i++) {
+                wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
+            }
+            wifiList.updateMenu();
+        } catch (Exception e) {
+            println("Exception in wifi shield scanning");
+            e.printStackTrace ();
         }
-        wifiList.updateMenu();
     }
 };
 

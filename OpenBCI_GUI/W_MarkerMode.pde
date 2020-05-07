@@ -84,8 +84,7 @@ class W_MarkerMode extends Widget {
             setupUDPMarkerListener();
         }
 
-        localValidLastMarker =  hub.validLastMarker;  // make a local copy so it can be manipulated in SYNTHETIC mode
-        hub.validLastMarker = 0;
+        // todo[brainflow] update localValidLastMarker here
 
         if (eegDataSource == DATASOURCE_SYNTHETIC) {
             localValidLastMarker = synthesizeMarkerData();
@@ -314,8 +313,7 @@ void udpReceiveHandler(byte[] data, String ip, int portRX) {
         if (intValue > 0 && intValue < 96) { // Since we only send single char ascii value markers (from space to char(126)
             String sendString = "`"+char(intValue+31);
             println("Marker value: "+udpString+" with numeric value of char("+intValue+") as : "+sendString);
-            hub.sendCommand(sendString);
-
+            //todo[brainflow] send marker command to cyton here
         } else {
             println("udpReceiveHandler::Warning:invalid UDP STIM of value: "+intValue+" Received String: "+udpString);
         }

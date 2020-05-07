@@ -1,7 +1,7 @@
 class DataLogger {
     //variables for writing EEG data out to a file
     private DataWriterODF fileWriterODF;
-    private OutputFile_BDF fileoutput_bdf;
+    private DataWriterBDF fileWriterBDF;
 
     DataLogger() {
 
@@ -12,9 +12,11 @@ class DataLogger {
     }
 
     public void uninitialize() {
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE){
-            closeLogFile();  //close log file
-        } 
+        closeLogFile();  //close log file
+    }
+
+    public void onShutDown() {
+        closeLogFile();  //close log file
     }
 
     public void update() {
@@ -39,7 +41,7 @@ class DataLogger {
             case OUTPUT_SOURCE_BDF:
                 // curBDFDataPacketInd = curDataPacketInd;
                 // thread("writeRawData_dataPacket_bdf");
-                fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
+                fileWriterBDF.writeRawData_dataPacket(newData);
                 break;
             case OUTPUT_SOURCE_NONE:
             default:
@@ -77,8 +79,8 @@ class DataLogger {
             return float(fileWriterODF.getRowsWritten())/getSampleRateSafe();
         }
         
-        if (outputDataSource == OUTPUT_SOURCE_BDF && fileoutput_bdf != null) {
-            return fileoutput_bdf.getRecordsWritten();
+        if (outputDataSource == OUTPUT_SOURCE_BDF && fileWriterBDF != null) {
+            return fileWriterBDF.getRecordsWritten();
         }
 
         return 0.f;
@@ -107,14 +109,14 @@ class DataLogger {
     * @param `_fileName` {String} - The meat of the file name
     */
     private void openNewLogFileBDF(String _fileName) {
-        if (fileoutput_bdf != null) {
+        if (fileWriterBDF != null) {
             println("OpenBCI_GUI: closing log file");
             closeLogFile();
         }
         //open the new file
-        fileoutput_bdf = new OutputFile_BDF(getSampleRateSafe(), nchan, _fileName);
+        fileWriterBDF = new DataWriterBDF(_fileName);
 
-        output_fname = fileoutput_bdf.fname;
+        output_fname = fileWriterBDF.fname;
         println("OpenBCI_GUI: openNewLogFile: opened BDF output file: " + output_fname); //Print filename of new BDF file to console
     }
 
@@ -156,10 +158,10 @@ class DataLogger {
     *  records.
     */
     private void closeLogFileBDF() {
-        if (fileoutput_bdf != null) {
-            fileoutput_bdf.closeFile();
+        if (fileWriterBDF != null) {
+            fileWriterBDF.closeFile();
         }
-        fileoutput_bdf = null;
+        fileWriterBDF = null;
     }
 
     /**

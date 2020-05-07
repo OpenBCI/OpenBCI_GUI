@@ -11,6 +11,19 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
+    private double[] scalers = null;
+    private Map<Character, Integer> gainCommandMap = new HashMap<Character, Integer>() {{
+        put('0', 1);
+        put('1', 2);
+        put('2', 4);
+        put('3', 6);
+        put('4', 8);
+        put('5', 12);
+        put('6', 24);
+    }};
+    // same for all channels for now, more likely will be a map soon
+    private final double brainflowGain = 24.0;
+
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
 
@@ -20,6 +33,10 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     public BoardNovaXR() {
         super();
+        scalers = new double[getNumEXGChannels()];
+        for (int i = 0; i < scalers.length; i++) {
+            scalers[i] = 1.0;
+        }
     }
 
     @Override
@@ -73,6 +90,18 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
         configBoard(command);
     }
 
+    @Override
+    protected double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        int[] exgChannels = getEXGChannels();
+        for (int i = 0; i < exgChannels.length; i++) {
+            for (int j = 0; j < data[exgChannels[i]].length; j++) {
+                data[exgChannels[i]][j] *= scalers[i];
+            }
+        }
+        return data;
+    }
+
     public void setChannelSettings(int channel, char[] channelSettings) {
         char powerDown = channelSettings[0];
         char gain = channelSettings[1];
@@ -84,6 +113,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
         String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
                                         powerDown, gain, inputType, bias, srb2, srb1);
         configBoard(command);
+        scalers[channel] = brainflowGain / gainCommandMap.get(gain);
     }
 
     @Override

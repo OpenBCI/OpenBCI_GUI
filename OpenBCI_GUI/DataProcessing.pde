@@ -21,18 +21,8 @@ float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster p
 //                       Global Functions
 //------------------------------------------------------------------------
 
-RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
 void processNewData() {
-    //compute instantaneous byte rate
-    float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
-
-    prevMillis = millis();           //store for next time
-    prevBytes = openBCI_byteCount; //store for next time
-
-    //compute smoothed byte rate
-    avgBitRate.addValue(inst_byteRate_perSec);
-    byteRate_perSec = (int)avgBitRate.calcMean();
 
     List<double[]> currentData = currentBoard.getData(getCurrentBoardBufferSize());
     int[] exgChannels = currentBoard.getEXGChannels();

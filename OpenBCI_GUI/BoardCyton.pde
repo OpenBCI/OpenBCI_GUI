@@ -123,6 +123,19 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+
+    private double[] scalers = null;
+    private Map<Character, Integer> gainCommandMap = new HashMap<Character, Integer>() {{
+        put('0', 1);
+        put('1', 2);
+        put('2', 4);
+        put('3', 6);
+        put('4', 8);
+        put('5', 12);
+        put('6', 24);
+    }};
+    // same for all channels
+    private final double brainflowGain = 24.0;
     
     private int[] accelChannelsCache = null;
     private int[] analogChannelsCache = null;
@@ -132,6 +145,14 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     protected String serialPort = "";
     protected String ipAddress = "";
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
+
+    public BoardCyton() {
+        super();
+        scalers = new double[getNumEXGChannels()];
+        for (int i = 0; i < scalers.length; i++) {
+            scalers[i] = 1.0;
+        }
+    }
 
     // implement mandatory abstract functions
     @Override
@@ -278,6 +299,18 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         configBoard(command);
     }
 
+    @Override
+    protected double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        int[] exgChannels = getEXGChannels();
+        for (int i = 0; i < exgChannels.length; i++) {
+            for (int j = 0; j < data[exgChannels[i]].length; j++) {
+                data[exgChannels[i]][j] *= scalers[i];
+            }
+        }
+        return data;
+    }
+
     public void setChannelSettings(int channel, char[] channelSettings) {
         char powerDown = channelSettings[0];
         char gain = channelSettings[1];
@@ -289,6 +322,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
                                         powerDown, gain, inputType, bias, srb2, srb1);
         configBoard(command);
+        scalers[channel] = brainflowGain / gainCommandMap.get(gain);
     }
 
     public CytonBoardMode getBoardMode() {
@@ -416,20 +450,7 @@ class CytonLegacy {
 
     //used to detect and flag error during initialization
     public boolean daisyNotAttached = false;
-
-    //some get methods
-    public float getSampleRate() {
-        if (isSerial()) {
-            if (nchan == NCHAN_CYTON_DAISY) {
-                return fsHzSerialCytonDaisy;
-            } else {
-                return fsHzSerialCyton;
-            }
-        } else {
-            return hub.getSampleRate();
-        }
-    }
-
+    public float getSampleRate() { return 0;}
     public int getBoardMode() {
         return curBoardMode;
     }
@@ -451,45 +472,12 @@ class CytonLegacy {
         return leadOffDrive_amps;
     }
 
-    public void setBoardMode(int boardMode) {
-        hub.sendCommand("/" + boardMode);
-        curBoardMode = boardMode;
-        println("Cyton: setBoardMode to :" + curBoardMode);
-    }
-
-    public void setSampleRate(int _sampleRate) {
-        sampleRate = _sampleRate;
-        // output("Setting sample rate for Cyton to " + sampleRate + "Hz");
-        println("Setting sample rate for Cyton to " + sampleRate + "Hz");
-        hub.setSampleRate(sampleRate);
-    }
-
-    public boolean setInterface(BoardProtocol _interface) {
-        curInterface = _interface;
-        // println("current interface: " + curInterface);
-        println("setInterface: curInterface: " + selectedProtocol);
-        if (isWifi()) {
-            //setSampleRate((int)fsHzWifi);
-            hub.setProtocol(PROTOCOL_WIFI);
-        } else if (isSerial()) {
-            //setSampleRate((int)fsHzSerialCyton);
-            hub.setProtocol(PROTOCOL_SERIAL);
-        }
-        return true;
-    }
-
     //constructors
     CytonLegacy() {};  //only use this if you simply want access to some of the constants
     CytonLegacy(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, BoardProtocol _interface) {
         curInterface = _interface;
 
         initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
-
-        if (isSerial()) {
-            hub.connectSerial(comPort);
-        } else if (isWifi()) {
-            hub.connectWifi(comPort);
-        }
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -523,12 +511,8 @@ class CytonLegacy {
         return closePort();
     }
 
-    public int closePort() {
-        if (isSerial()) {
-            return hub.disconnectSerial();
-        } else {
-            return hub.disconnectWifi();
-        }
+    private int closePort() {
+        return 0;
     }
 
     public int closeSDFile() {
@@ -537,6 +521,9 @@ class CytonLegacy {
         delay(100); //make sure 'j' gets sent to the board
         return 0;
     }
+
+    public boolean write(char val) {return false;}
+    public boolean write(char val, boolean _readyToSend) {return false;}
 
     public void syncWithHardware(int sdSetting) {
         switch (hardwareSyncStep) {
@@ -602,25 +589,12 @@ class CytonLegacy {
             break;
         case 6:
             println("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
-            hub.changeState(HubState.STOPPED);
             systemMode = 10;
             controlPanel.close();
             topNav.controlPanelCollapser.setIsActive(false);
             //renitialize GUI if nchan has been updated... needs to be built
             break;
         }
-    }
-
-    public boolean write(char val) {
-        if (hub.isHubRunning()) {
-            hub.sendCommand(val);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean write(char val, boolean _readyToSend) {
-        return write(val);
     }
 
     private boolean isSerial () {
@@ -632,31 +606,6 @@ class CytonLegacy {
         return curInterface == BoardProtocol.WIFI;
     }
 
-    public void startDataTransfer() {
-        if (isPortOpen()) {
-            // Now give the command to start binary data transmission
-            if (isSerial()) {
-                hub.changeState(HubState.NORMAL);  // make sure it's now interpretting as binary
-                println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
-                write(command_startBinary);
-            } else if (isWifi()) {
-                println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
-                write(command_startBinary);
-            }
-
-        } else {
-            println("Cyton: Port not open");
-        }
-    }
-
-    public void stopDataTransfer() {
-        if (isPortOpen()) {
-            hub.changeState(HubState.STOPPED);  // make sure it's now interpretting as binary
-            println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
-            write(command_stop);// + "\n");
-        }
-    }
-
     public void printRegisters() {
         if (isPortOpen()) {
             println("Cyton: printRegisters(): Writing ? to OpenBCI...");
@@ -664,12 +613,8 @@ class CytonLegacy {
         }
     }
 
-    private boolean isPortOpen() {
-        if (isWifi() || isSerial()) {
-            return hub.isPortOpen();
-        } else {
-            return false;
-        }
+    private boolean isPortOpen() {   
+        return false;
     }
 
     //activate or deactivate an EEG channel...channel counting is zero through nchan-1
@@ -775,38 +720,8 @@ class CytonLegacy {
         }
     }
 
-    /**
-      * Used right before a channel setting command is sent to the hub to convert
-      *  local values into the expected form for the hub.
-      */
     public String getInputTypeForCommand(char cmd) {
-        final String inputTypeShorted = "shorted";
-        final String inputTypeBiasMethod = "biasMethod";
-        final String inputTypeMvdd = "mvdd";
-        final String inputTypeTemp = "temp";
-        final String inputTypeTestsig = "testsig";
-        final String inputTypeBiasDrp = "biasDrp";
-        final String inputTypeBiasDrn = "biasDrn";
-        final String inputTypeNormal = "normal";
-        switch (cmd) {
-            case '1':
-                return inputTypeShorted;
-            case '2':
-                return inputTypeBiasMethod;
-            case '3':
-                return inputTypeMvdd;
-            case '4':
-                return inputTypeTemp;
-            case '5':
-                return inputTypeTestsig;
-            case '6':
-                return inputTypeBiasDrp;
-            case '7':
-                return inputTypeBiasDrn;
-            case '0':
-            default:
-                return inputTypeNormal;
-        }
+        return "";
     }
 
     /**
@@ -836,30 +751,13 @@ class CytonLegacy {
         }
     }
 
-    //FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
+    //not being used
     public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
-        JSONObject json = new JSONObject();
-        json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CHANNEL_SETTINGS);
-        json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
-        json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN, channelSettingValues[_numChannel][0] == '1');
-        json.setInt(TCP_JSON_KEY_CHANNEL_SET_GAIN, getGainForCommand(channelSettingValues[_numChannel][1]));
-        json.setString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE, getInputTypeForCommand(channelSettingValues[_numChannel][2]));
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS, channelSettingValues[_numChannel][3] == '1');
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB2, channelSettingValues[_numChannel][4] == '1');
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB1, channelSettingValues[_numChannel][5] == '1');
-        hub.writeJSON(json);
-        verbosePrint("done writing channel." + json); //debugging
+        return;
     }
 
     public void writeImpedanceSettings(int _numChannel, char[][] impedanceCheckValues) {  //numChannel counts from zero
-        JSONObject json = new JSONObject();
-        json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
-        json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
-        json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
-        json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel-1][0] == '1');
-        json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel-1][1] == '1');
-        hub.writeJSON(json);
+        return;
     }
 
     public int copyDataPacketTo(DataPacket_ADS1299 target) {

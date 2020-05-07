@@ -794,9 +794,9 @@ class W_Networking extends Widget {
                     return;
                 }
             } else {
-	                turnOffButton();        // Change apppearance of button
-	                stopNetwork();          // Stop streams
-	                output("Network Stream Stopped");
+                    turnOffButton();        // Change apppearance of button
+                    stopNetwork();          // Stop streams
+                    output("Network Stream Stopped");
             }
         // or if the networking guide button was pressed...
         } else if (guideButton.isActive && guideButton.isMouseHere()) {
@@ -1830,7 +1830,6 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
                     msg.clearArguments();
                     msg.add(i+1);
-                    //ADD Accelerometer data
                     msg.add((int)lastSample[analogChannels[i]]);
                     try {
                         this.osc.send(msg,this.netaddress);
@@ -1896,7 +1895,6 @@ class Stream extends Thread {
                 for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                     msg.clearArguments();
                     msg.add(i+1);
-                    //ADD Accelerometer data
                     msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
                     try {
                         this.osc.send(msg,this.netaddress);
