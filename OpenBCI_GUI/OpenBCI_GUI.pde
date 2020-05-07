@@ -382,8 +382,10 @@ void delayedSetup() {
 
     myPresentation = new Presentation();
 
-    // Create GUI data folder and copy sample data if meditation file doesn't exist
+    // Create GUI data folder in Users' Documents and copy sample data if it doesn't already exist
     copyGUISampleData();
+
+    prepareExitHandler();
 
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
@@ -620,11 +622,6 @@ void initSystem() {
     }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-    // todo - Check Cyton Firmware version here, if possible
-    //if (eegDataSource == DATASOURCE_CYTON) {
-        //whenfirmware is very out of date, and commands may not work, so abandon init
-        //abandonInit = true;
-    //}
 
     //DISABLE SOFTWARE SETTINGS FOR NOVAXR
     if (eegDataSource != DATASOURCE_NOVAXR) {
@@ -794,9 +791,6 @@ void haltSystem() {
 
         //reset variables for data processing
         curDataPacketInd = -1;
-        prevBytes = 0;
-        prevMillis = millis();
-        byteRate_perSec = 0;
 
         settings.settingsLoaded = false; //on halt, reset this value
 

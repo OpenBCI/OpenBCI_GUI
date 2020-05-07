@@ -1556,7 +1556,7 @@ class WifiBox {
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
 
-            if((selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)){
+            if(selectedProtocol == BoardProtocol.WIFI){
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
                 refreshWifi.setString("SEARCHING...");
             } else {
