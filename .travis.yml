@@ -12,6 +12,11 @@ addons:
       - /${TRAVIS_BRANCH}/latest
     working_dir: $TRAVIS_BUILD_DIR
 
+before_install:
+- if [ "$TRAVIS_OS_NAME" = osx ]; then openssl aes-256-cbc -K $encrypted_2f5d2771e3cb_key -iv $encrypted_2f5d2771e3cb_iv -in release_script/mac_only/Certificates.p12.enc -out release_script/mac_only/Certificates.p12 -d; fi
+- if [ "$TRAVIS_OS_NAME" = osx ]; then chmod +x release_script/mac_only/add-osx-cert.sh; fi
+- if [ "$TRAVIS_OS_NAME" = osx ]; then ./release_script/mac_only/add-osx-cert.sh; fi
+
 install:
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
