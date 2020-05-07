@@ -27,12 +27,8 @@ synchronized void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if (settings.expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
-            if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
-                parseKey(key);
-            } else {
-                parseKeycode(keyCode);
-            }
+        if (settings.expertModeToggle || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
+            parseKey(key);
         }
     }
 
@@ -289,119 +285,6 @@ void parseKey(char val) {
                 println("Interactivity: '" + key + "' Pressed...sending to Board...");
                 ((Board)currentBoard).sendCommand(str(key));
             }
-            break;
-    }
-}
-
-void parseKeycode(int val) {
-    //assumes that val is Java keyCode
-    switch (val) {
-        case 8:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received BACKSPACE keypress.  Ignoring...");
-            break;
-        case 9:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received TAB keypress.  Ignoring...");
-            //gui.showImpedanceButtons = !gui.showImpedanceButtons;
-            // gui.incrementGUIpage(); //deprecated with new channel controller
-            break;
-        case 10:
-            println("Enter was pressed.");
-            drawPresentation = !drawPresentation;
-            break;
-        case 16:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
-            break;
-        case 17:
-            //println("OpenBCI_GUI: parseKeycode(" + val + "): received CTRL keypress.  Ignoring...");
-            break;
-        case 18:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received ALT keypress.  Ignoring...");
-            break;
-        case 20:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received CAPS LOCK keypress.  Ignoring...");
-            break;
-        case 27:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Stopping OpenBCI...");
-            //stopRunning();
-            break;
-        case 33:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE UP keypress.  Ignoring...");
-            break;
-        case 34:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE DOWN keypress.  Ignoring...");
-            break;
-        case 35:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received END keypress.  Ignoring...");
-            break;
-        case 36:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
-            break;
-        case 37:
-            if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
-                if(myPresentation.currentSlide >= 0){
-                    myPresentation.slideBack();
-                    myPresentation.timeOfLastSlideChange = millis();
-                }
-            }
-            break;
-        case 38:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
-            break;
-        case 39:
-            if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
-                if(myPresentation.currentSlide < myPresentation.presentationSlides.length - 1){
-                    myPresentation.slideForward();
-                    myPresentation.timeOfLastSlideChange = millis();
-                }
-            }
-            break;
-        case 40:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
-            break;
-        case 112:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F1 keypress.  Ignoring...");
-            break;
-        case 113:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F2 keypress.  Ignoring...");
-            break;
-        case 114:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F3 keypress.  Ignoring...");
-            break;
-        case 115:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F4 keypress.  Ignoring...");
-            break;
-        case 116:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F5 keypress.  Ignoring...");
-            break;
-        case 117:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F6 keypress.  Ignoring...");
-            break;
-        case 118:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F7 keypress.  Ignoring...");
-            break;
-        case 119:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F8 keypress.  Ignoring...");
-            break;
-        case 120:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F9 keypress.  Ignoring...");
-            break;
-        case 121:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F10 keypress.  Ignoring...");
-            break;
-        case 122:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F11 keypress.  Ignoring...");
-            break;
-        case 123:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F12 keypress.  Ignoring...");
-            break;
-        case 127:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received DELETE keypress.  Ignoring...");
-            break;
-        case 155:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received INSERT keypress.  Ignoring...");
-            break;
-        default:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): value is not known.  Ignoring...");
             break;
     }
 }
