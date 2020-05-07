@@ -643,15 +643,6 @@ void initSystem() {
     midInit = false;
 } //end initSystem
 
-/**
-  * @description Useful function to get the correct sample rate based on data source
-  * @returns `float` - The frequency / sample rate of the data source
-  */
-// TODO[brainflow] remove this function
-int getSampleRateSafe() {
-    return currentBoard.getSampleRate();
-}
-
 public int getCurrentBoardBufferSize() {
     return dataBuff_len_sec * currentBoard.getSampleRate();
 }
@@ -661,7 +652,7 @@ public int getCurrentBoardBufferSize() {
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
 int getNfftSafe() {
-    int sampleRate = getSampleRateSafe();
+    int sampleRate = currentBoard.getSampleRate();
     switch (sampleRate) {
         case 500:
             return 512;
@@ -679,9 +670,9 @@ int getNfftSafe() {
 
 void initCoreDataObjects() {
     // Nfft = getNfftSafe();
-    nDataBackBuff = 3*getSampleRateSafe();
+    nDataBackBuff = 3*currentBoard.getSampleRate();
     dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
-    nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
+    nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
     dataBuffX = new float[getCurrentBoardBufferSize()];
     dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
     dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
