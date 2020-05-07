@@ -85,6 +85,7 @@ void appendAndShift(float[] data, float newData) {
 }
 
 //some data initialization routines
+//TODO[brainflow] remove this?
 void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
     //initialize the x and y data
     int xoffset = dataBuffX.length - 1;

@@ -142,10 +142,6 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //OpenBCI SD Card setting (if eegDataSource == 0)
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
-//cyton data packet
-int nDataBackBuff;
-int curDataPacketInd = -1;
-int curBDFDataPacketInd = -1;
 ////// ---- End variables related to the OpenBCI boards
 
 // define some timing variables for this program's operation
@@ -167,7 +163,6 @@ int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float accelerometerBuff[][]; // accelerometer buff 500 points
 float auxBuff[][];
 float data_elec_imp_ohm[];
 
@@ -667,26 +662,16 @@ int getNfftSafe() {
 }
 
 void initCoreDataObjects() {
-    // Nfft = getNfftSafe();
-    nDataBackBuff = 3*currentBoard.getSampleRate();
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
     dataBuffX = new float[getCurrentBoardBufferSize()];
     dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
     dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
     auxBuff = new float[3][nPointsPerUpdate];
-    accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
-    for (int i=0; i<n_aux_ifEnabled; i++) {
-        for (int j=0; j<accelerometerBuff[0].length; j++) {
-            accelerometerBuff[i][j] = 0;
-        }
-    }
-    //data_std_uV = new float[nchan];
+
     data_elec_imp_ohm = new float[nchan];
     is_railed = new DataStatus[nchan];
     for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
-    for (int i=0; i<nDataBackBuff; i++) {
-        dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
-    }
+
     dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
 
     //initialize the data
