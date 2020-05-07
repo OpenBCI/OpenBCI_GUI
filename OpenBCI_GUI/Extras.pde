@@ -332,26 +332,24 @@ class DataPacket_ADS1299 {
 
 class DataStatus {
     public boolean is_railed;
-    private int threshold_railed;
+    private double threshold_railed_uv;
     public boolean is_railed_warn;
-    private int threshold_railed_warn;
+    private double threshold_railed_warn_uv;
 
     DataStatus(int thresh_railed, int thresh_railed_warn) {
+        // convert int24 value to uV
+        double eeg_scaler =  (4.5 / (pow (2, 23) - 1) / 24.0 * 1000000.);
         is_railed = false;
-        threshold_railed = thresh_railed;
+        // convert thresholds to uV
+        threshold_railed_uv = thresh_railed * eeg_scaler;
         is_railed_warn = false;
-        threshold_railed_warn = thresh_railed_warn;
+        threshold_railed_warn_uv = thresh_railed_warn * eeg_scaler;
     }
     public void update(float data_value) {
-        // here we scale threshold which is originally is not converted to uVolts
-        float reversed_scaler = 1;
-        if (currentBoard instanceof BoardBrainFlow) {
-            reversed_scaler = BoardCytonConstants.scale_fac_uVolts_per_count;
-        }
         is_railed = false;
-        if (abs(data_value) >= threshold_railed * reversed_scaler) is_railed = true;
+        if (abs(data_value) >= threshold_railed_uv) is_railed = true;
         is_railed_warn = false;
-        if (abs(data_value) >= threshold_railed_warn * reversed_scaler) is_railed_warn = true;
+        if (abs(data_value) >= threshold_railed_warn_uv) is_railed_warn = true;
     }
 };
 

@@ -97,7 +97,7 @@ public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
 
 enum BoardProtocol {
-    NONE,  
+    NONE,
     SERIAL,
     BLE,
     WIFI,
@@ -488,6 +488,9 @@ private void prepareExitHandler () {
                 w_networking.stopNetwork();
                 println("openBCI_GUI: shutDown: Network streams stopped");
             }
+
+            // finalize any playback files
+            dataLogger.onShutDown();
         }
     }
     ));
@@ -604,9 +607,9 @@ void initSystem() {
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
-            
+
             systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-            
+
             if (!abandonInit) {
                 controlPanel.close();
             } else {
@@ -724,7 +727,7 @@ void initFFTObjectsAndBuffer() {
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
-    
+
     dataLogger.onStartStreaming();
 
     // start streaming on the chosen board

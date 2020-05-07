@@ -235,32 +235,31 @@ void Duration_AR(int n) {
 //one of these will be created for each channel (4, 8, or 16)
 class AnalogReadBar{
 
-    int analogInputPin;
-    int auxValuesPosition;
-    String analogInputString;
-    int x, y, w, h;
-    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
+    private int analogInputPin;
+    private int auxValuesPosition;
+    private String analogInputString;
+    private int x, y, w, h;
+    private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
-    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
-    GPointsArray analogReadPoints;
-    int nPoints;
-    int numSeconds;
-    float timeBetweenPoints;
-    int arBuffSize;
+    private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+    private GPointsArray analogReadPoints;
+    private int nPoints;
+    private int numSeconds;
+    private float timeBetweenPoints;
 
-    color channelColor; //color of plot trace
+    private color channelColor; //color of plot trace
 
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    int autoScaleYLim = 0;
+    private boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    private int autoScaleYLim = 0;
 
-    TextBox analogValue;
-    TextBox analogPin;
-    TextBox digitalPin;
+    private TextBox analogValue;
+    private TextBox analogPin;
+    private TextBox digitalPin;
 
-    boolean drawAnalogValue;
-    int lastProcessedDataPacketInd = 0;
+    private boolean drawAnalogValue;
+    private int lastProcessedDataPacketInd = 0;
 
-    int[] analogReadData;
+    private AnalogCapableBoard analogBoard;
 
     AnalogReadBar(PApplet _parent, int _analogInputPin, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
@@ -307,21 +306,7 @@ class AnalogReadBar{
             }
         }
 
-        nPoints = nPointsBasedOnDataSource(); //max duration 20s
-        arBuffSize = nPoints;
-        analogReadData = new int[nPoints];
-
-        analogReadPoints = new GPointsArray(nPoints);
-        timeBetweenPoints = (float)numSeconds / (float)nPoints;
-
-        for (int i = 0; i < arBuffSize; i++) {
-            float time = -(float)numSeconds + (float)i*timeBetweenPoints;
-            float analog_value = 0.0; //0.0 for all points to start
-            GPoint tempPoint = new GPoint(time, analog_value);
-            analogReadPoints.set(i, tempPoint);
-        }
-
-        plot.setPoints(analogReadPoints); //set the plot with 0.0 for all analogReadPoints to start
+        initArrays();
 
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
         analogValue.textColor = color(bgColor);
@@ -338,22 +323,39 @@ class AnalogReadBar{
         digitalPin.alignH = CENTER;
 
         drawAnalogValue = true;
+        analogBoard = (AnalogCapableBoard) currentBoard;
+    }
 
+    void initArrays() {
+        nPoints = nPointsBasedOnDataSource();
+        timeBetweenPoints = (float)numSeconds / (float)nPoints;
+        analogReadPoints = new GPointsArray(nPoints);
+
+        for (int i = 0; i < nPoints; i++) {
+            float time = calcTimeAxis(i);
+            float analog_value = 0.0; //0.0 for all points to start
+            analogReadPoints.set(i, time, analog_value, "");
+        }
+
+        plot.setPoints(analogReadPoints); //set the plot with 0.0 for all auxReadPoints to start
     }
 
     void update() {
 
-        //update the voltage value text string
-        float val = 0;
-
-        //update the voltage values
-        analogValue.string = String.format(getFmt(val),val);
+         // early out if unactive
+        if (!analogBoard.isAnalogActive()) {
+            return;
+        }
 
         // update data in plot
         updatePlotPoints();
         if(isAutoscale) {
             autoScale();
         }
+
+        //Fetch the last value in the buffer to display on screen
+        float val = analogReadPoints.getY(nPoints-1);
+        analogValue.string = String.format(getFmt(val),val);
     }
 
     private String getFmt(float val) {
@@ -368,48 +370,21 @@ class AnalogReadBar{
             return fmt;
     }
 
+    float calcTimeAxis(int sampleIndex) {
+        return -(float)numSeconds + (float)sampleIndex * timeBetweenPoints;
+    }
+
     void updatePlotPoints() {
-        // update data in plot
-        int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
-        if (numSamplesToProcess < 0) {
-            numSamplesToProcess += dataPacketBuff.length;
+        List<double[]> allData = currentBoard.getData(nPoints);
+        int[] channels = analogBoard.getAnalogChannels();
+
+        for (int i=0; i < nPoints; i++) {
+            float timey = calcTimeAxis(i);
+            float value = (float)allData.get(i)[channels[auxValuesPosition]];
+            analogReadPoints.set(i, timey, value, "");
         }
 
-        // Shift internal ring buffer numSamplesToProcess
-        if (numSamplesToProcess > 0) {
-            for(int i = 0; i < analogReadData.length - numSamplesToProcess; i++) {
-                analogReadData[i] = analogReadData[i + numSamplesToProcess];
-            }
-        }
-
-        // for each new sample
-        int samplesProcessed = 0;
-        while (samplesProcessed < numSamplesToProcess) {
-            lastProcessedDataPacketInd++;
-
-            // Watch for wrap around
-            if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-                lastProcessedDataPacketInd = 0;
-            }
-
-            int voltage = dataPacketBuff[lastProcessedDataPacketInd].auxValues[auxValuesPosition];
-
-            analogReadData[analogReadData.length - numSamplesToProcess + samplesProcessed] = voltage; //<>//
-
-            samplesProcessed++;
-        }
-
-        int arBuffDiff = arBuffSize - nPoints;
-        if (numSamplesToProcess > 0) {
-            for (int i = arBuffDiff; i < arBuffSize; i++) {
-                float timey = -(float)numSeconds + (float)(i-arBuffDiff)*timeBetweenPoints;
-                float voltage = analogReadData[i];
-
-                analogReadPoints.set(i-arBuffDiff, timey, voltage, "");
-
-            }
-            plot.setPoints(analogReadPoints); //reset the plot with updated analogReadPoints
-        }
+        plot.setPoints(analogReadPoints);
     }
 
     void draw() {

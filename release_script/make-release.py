@@ -159,16 +159,6 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
         assert(os.path.isfile(exe_dir))
 
-        ### On Windows, just sign the app
-        ###########################################################
-        if windows_signing:
-            try:
-                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
-                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
-            except subprocess.CalledProcessError as err:
-                print (err)
-                print ("WARNING: Failed to sign app.")
-
         # On Windows, set the application manifest
         ###########################################################
         try:
@@ -190,6 +180,16 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         except subprocess.CalledProcessError as err:
             print (err)
             print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
+
+        ### On Windows, sign the app
+        ###########################################################
+        if windows_signing:
+            try:
+                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+                    windows_pfx_password, "/tr", "http://timestamp.digicert.com", "/td", "SHA256", exe_dir])
+            except subprocess.CalledProcessError as err:
+                print (err)
+                print ("WARNING: Failed to sign app.")
 
     ### On Mac, make a .dmg and sign it
     ###########################################################
@@ -231,6 +231,8 @@ def main ():
     parser = argparse.ArgumentParser ()
     # use docs to check which parameters are required for specific board, e.g. for Cyton - set serial port
     parser.add_argument ('--no-prompts', action = 'store_true', help  = 'whether to prompt the user for anything', required = False)
+    parser.add_argument ('--pfx-path', type = str, help  = 'path to the pfx file for windows signing', required = False, default = '', nargs='?')
+    parser.add_argument ('--pfx-password', type = str, help  = 'password for the pfx file for windows signing', required = False, default = '', nargs='?')
     args = parser.parse_args ()
 
     # grab the sketch directory
@@ -238,9 +240,12 @@ def main ():
 
     # ask about signing
     windows_signing = False
-    windows_pfx_path = ''
-    windows_pfx_password = ''
-    if(not args.no_prompts):
+    windows_pfx_path = args.pfx_path;
+    windows_pfx_password = args.pfx_password;
+
+    if windows_pfx_path and windows_pfx_password:
+        windows_signing = True;
+    elif(not args.no_prompts):
         windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
 
     # Cleanup to start
