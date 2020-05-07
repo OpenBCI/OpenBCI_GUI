@@ -144,7 +144,6 @@ int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
 //cyton data packet
 int nDataBackBuff;
-DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
 int curDataPacketInd = -1;
 int curBDFDataPacketInd = -1;
 ////// ---- End variables related to the OpenBCI boards
@@ -671,7 +670,6 @@ int getNfftSafe() {
 void initCoreDataObjects() {
     // Nfft = getNfftSafe();
     nDataBackBuff = 3*currentBoard.getSampleRate();
-    dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
     dataBuffX = new float[getCurrentBoardBufferSize()];
     dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
