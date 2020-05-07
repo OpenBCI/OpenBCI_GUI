@@ -109,7 +109,7 @@ class SoftwareSettings {
     boolean[] channelActivitySave;
     int numSSVEPs;
     //Used to check if a playback file has data
-    int minNumRowsPlaybackFile = int(getSampleRateSafe());
+    int minNumRowsPlaybackFile = int(currentBoard.getSampleRate());
     //Spectrogram Widget settings
     int spectMaxFrqSave;
     int spectSampleRateSave;

@@ -188,7 +188,6 @@ PlotFontInfo fontInfo;
 
 //program variables
 boolean isRunning = false;
-int openBCI_byteCount = 0;
 StringBuilder board_message;
 
 //set window size
@@ -670,25 +669,24 @@ void initCoreDataObjects() {
 
     data_elec_imp_ohm = new float[nchan];
     is_railed = new DataStatus[nchan];
-    for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
+    for (int i=0; i<nchan; i++) {
+        is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
+    }
 
-    dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
-
-    //initialize the data
-    prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+    dataProcessing = new DataProcessing(nchan, currentBoard.getSampleRate());
 }
 
 void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // verbosePrint("Init FFT Buff – " + Ichan);
-        fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
+        fftBuff[Ichan] = new FFT(getNfftSafe(), currentBoard.getSampleRate());
     }  //make the FFT objects
 
     //Attempt initialization. If error, print to console and exit function.
     //Fixes GUI crash when trying to load outdated recordings
     try {
-        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), currentBoard.getSampleRate());
     } catch (ArrayIndexOutOfBoundsException e) {
         //e.printStackTrace();
         outputError("Playback file load error. Try using a more recent recording.");
@@ -763,9 +761,6 @@ void haltSystem() {
         if (systemMode == SYSTEMMODE_POSTINIT) {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
-
-        //reset variables for data processing
-        curDataPacketInd = -1;
 
         settings.settingsLoaded = false; //on halt, reset this value
 

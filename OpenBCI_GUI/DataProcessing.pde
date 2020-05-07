@@ -84,19 +84,6 @@ void appendAndShift(float[] data, float newData) {
     data[end] = newData;  //append new data
 }
 
-//some data initialization routines
-//TODO[brainflow] remove this?
-void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
-    //initialize the x and y data
-    int xoffset = dataBuffX.length - 1;
-    for (int i=0; i < dataBuffX.length; i++) {
-        dataBuffX[i] = ((float)(i-xoffset)) / fs_Hz; //x data goes from minus time up to zero
-        for (int Ichan = 0; Ichan < nchan; Ichan++) {
-            dataBuffY_uV[Ichan][i] = 0f;  //make the y data all zeros
-        }
-    }
-}
-
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
 
     float[] fooData;
@@ -503,10 +490,10 @@ class DataProcessing {
                 // if the frequency matches a band
                 if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
                     if (Ibin != 0 && Ibin != Nfft/2) {
-                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe() / 4;
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/currentBoard.getSampleRate() / 4;
                     }
                     else {
-                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe();
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/currentBoard.getSampleRate();
                     }
                     sum += psdx;
                     // binNum ++;

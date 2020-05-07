@@ -20,7 +20,7 @@ class W_PulseSensor extends Widget {
 // Pulse Sensor Visualizer Stuff
     int count = 0;
     int heart = 0;
-    int PulseBuffSize = dataPacketBuff.length; // Originally 400
+    int PulseBuffSize = 3*currentBoard.getSampleRate(); // Originally 400
     int BPMbuffSize = 100;
 
     int PulseWindowWidth;
@@ -65,7 +65,6 @@ class W_PulseSensor extends Widget {
     int Signal;                // holds the incoming raw data
     int IBI = 600;             // int that holds the time interval between beats! Must be seeded!
     boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
-    boolean QS = false;        // becomes true when Arduoino finds a beat.
     int lastProcessedDataPacketInd = 0;
     Button analogModeButton;
 
@@ -98,47 +97,21 @@ class W_PulseSensor extends Widget {
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (curDataPacketInd < 0) return;
+        List<double[]> allData = currentBoard.getData(PulseBuffSize);
+        int[] analogChannels = analogBoard.getAnalogChannels();
 
-        int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
-        if (numSamplesToProcess < 0) {
-            numSamplesToProcess += dataPacketBuff.length; //<>// //<>//
-        }
-        // Shift internal ring buffer numSamplesToProcess
-        if (numSamplesToProcess > 0) {
-            for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
-                PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>// //<>//
-            }
-        }
-
-        // for each new sample
-        int samplesProcessed = 0;
-        while (samplesProcessed < numSamplesToProcess) {
-            lastProcessedDataPacketInd++;
-
-            // Watch for wrap around
-            if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-                lastProcessedDataPacketInd = 0;
-            }
-
-            int signal = dataPacketBuff[lastProcessedDataPacketInd].auxValues[0];
-
-
+        for (int i=0; i < PulseBuffSize; i++ ) {
+            int signal = (int)(allData.get(i)[analogChannels[0]]);
             processSignal(signal);
-            PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>// //<>//
-            //println("BPM, Signal, IBI ~~~~ " + BPM + "," +  signal + "," + IBI);
-
-            samplesProcessed++;
+            PulseWaveY[i] = signal;
         }
+    }
 
-        if(QS){
-            QS = false;
-            for(int i=0; i<BPMwaveY.length-1; i++){
-                BPMwaveY[i] = BPMwaveY[i+1];
-            }
-            BPMwaveY[BPMwaveY.length-1] = BPM;
+    void addBPM(int bpm) {
+        for(int i=0; i<BPMwaveY.length-1; i++){
+            BPMwaveY[i] = BPMwaveY[i+1];
         }
-
+        BPMwaveY[BPMwaveY.length-1] = bpm;
     }
 
     void draw(){
@@ -220,19 +193,6 @@ class W_PulseSensor extends Widget {
         BPMposY = y - padding; // BPMwindowHeight + int(float(padding)*2.5);
         IBIposX = PulseWindowX + PulseWindowWidth/2; // + padding/2
         IBIposY = y - padding;
-
-        // float py;
-        // float by;
-        // for(int i=0; i<PulseWaveY.length; i++){
-        //   py = map(float(PulseWaveY[i]),
-        //     0.0,1023.0,
-        //     float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)
-        //   );
-        //   PulseWaveY[i] = int(py);
-        // }
-        // for(int i=0; i<BPMwaveY.length; i++){
-        //   BPMwaveY[i] = BPMwindowY + BPMwindowHeight-1;
-        // }
     }
 
     void initializePulseFinderVariables(){
@@ -248,7 +208,6 @@ class W_PulseSensor extends Widget {
         Signal = 512;
         IBI = 600;
         Pulse = false;
-        QS = false;
 
         theta = 0.0;
         amplitude = 300;
@@ -256,15 +215,10 @@ class W_PulseSensor extends Widget {
 
         thatTime = millis();
 
-        // float py = map(float(Signal),
-        //   0.0,1023.0,
-        //   float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)
-        // );
         for(int i=0; i<PulseWaveY.length; i++){
             PulseWaveY[i] = Signal;
-
-            // PulseWaveY[i] = PulseWindowY + PulseWindowHeight/2;
         }
+
         for(int i=0; i<BPMwaveY.length; i++){
             BPMwaveY[i] = BPM;
         }
@@ -356,8 +310,7 @@ class W_PulseSensor extends Widget {
                 runningTotal /= 10;                     // average the last 10 IBI values
                 BPM = 60000/runningTotal;               // how many beats can fit into a minute? that's BPM!
                 BPM = constrain(BPM,0,200);
-                QS = true;                              // set Quantified Self flag
-                // QS FLAG IS NOT CLEARED INSIDE THIS FUNCTION
+                addBPM(BPM);
             }
         }
 

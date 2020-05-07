@@ -25,7 +25,6 @@ W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
 W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
-W_MarkerMode w_markermode;
 W_playback w_playback;
 W_SSVEP w_ssvep;
 W_Spectrogram w_spectrogram;
@@ -113,7 +112,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
-    if(currentBoard instanceof BoardCyton){
+    if(currentBoard instanceof AnalogCapableBoard){
         //Cyton Widget_8
         w_pulsesensor = new W_PulseSensor(_this);
         w_pulsesensor.setTitle("Pulse Sensor");
@@ -133,13 +132,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_analogRead = new W_AnalogRead(_this);
         w_analogRead.setTitle("Analog Read");
         addWidget(w_analogRead, w);
-    }
-    
-    if(currentBoard instanceof MarkerCapableBoard) {
-        //Cyton Widget_11
-        w_markermode = new W_MarkerMode(_this);
-        w_markermode.setTitle("Marker Mode");
-        addWidget(w_markermode, w);
     }
     
     //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
