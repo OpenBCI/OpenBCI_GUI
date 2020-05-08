@@ -62,8 +62,8 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.2.0";
-String localGUIVersionDate = "January 2020";
+String localGUIVersionString = "v5.0.0-alpha.4";
+String localGUIVersionDate = "May 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
