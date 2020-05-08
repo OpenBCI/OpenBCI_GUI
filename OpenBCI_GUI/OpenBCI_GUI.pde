@@ -109,7 +109,6 @@ boolean showStartupError = false;
 String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
-// String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
@@ -134,7 +133,7 @@ String novaXR_ipAddress = "192.168.4.1";
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
-int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
+
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
 final int threshold_railed = int(pow(2, 23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
@@ -142,17 +141,7 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //OpenBCI SD Card setting (if eegDataSource == 0)
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
-//cyton data packet
-int nDataBackBuff;
-DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
-int curDataPacketInd = -1;
-int curBDFDataPacketInd = -1;
 ////// ---- End variables related to the OpenBCI boards
-
-// define some timing variables for this program's operation
-long timeOfLastFrame = 0;
-long timeOfInit;
-boolean attemptingToConnect = false;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -160,21 +149,14 @@ boolean attemptingToConnect = false;
 // The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
 final int UPDATE_MILLIS = 40;
 int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
-// final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
-// final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
-// final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
 
 //define some data fields for handling data here in processing
-float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float accelerometerBuff[][]; // accelerometer buff 500 points
-float auxBuff[][];
 float data_elec_imp_ohm[];
 
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
-
 
 String output_fname;
 String sessionName = "N/A";
@@ -185,16 +167,13 @@ public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 // Serial output
-String serial_output_portName = "/dev/tty.usbmodem1421";  //must edit this based on the name of the serial/COM port
 Serial serial_output;
-int serial_output_baud = 9600; //baud rate from the Arduino
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
 
 //program variables
 boolean isRunning = false;
-int openBCI_byteCount = 0;
 StringBuilder board_message;
 
 //set window size
@@ -495,13 +474,7 @@ private void prepareExitHandler () {
     ));
 }
 
-
-
 //used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
-
-void setupWidgetManager() {
-    wm = new WidgetManager(this);
-}
 
 //Initialize the system
 void initSystem() {
@@ -512,8 +485,7 @@ void initSystem() {
     println("=================================================");
     println("");
 
-    timeOfInit = millis(); //store this for timeout in case init takes too long
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- ");
 
     if (initSystemButton.but_txt == "START SESSION") {
         initSystemButton.but_txt = "STOP SESSION";
@@ -601,7 +573,7 @@ void initSystem() {
         //initilize the GUI
         topNav.initSecondaryNav();
 
-        setupWidgetManager();
+        wm = new WidgetManager(this);
 
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
@@ -642,15 +614,6 @@ void initSystem() {
     midInit = false;
 } //end initSystem
 
-/**
-  * @description Useful function to get the correct sample rate based on data source
-  * @returns `float` - The frequency / sample rate of the data source
-  */
-// TODO[brainflow] remove this function
-int getSampleRateSafe() {
-    return currentBoard.getSampleRate();
-}
-
 public int getCurrentBoardBufferSize() {
     return dataBuff_len_sec * currentBoard.getSampleRate();
 }
@@ -660,7 +623,7 @@ public int getCurrentBoardBufferSize() {
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
 int getNfftSafe() {
-    int sampleRate = getSampleRateSafe();
+    int sampleRate = currentBoard.getSampleRate();
     switch (sampleRate) {
         case 500:
             return 512;
@@ -677,44 +640,30 @@ int getNfftSafe() {
 }
 
 void initCoreDataObjects() {
-    // Nfft = getNfftSafe();
-    nDataBackBuff = 3*getSampleRateSafe();
-    dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
-    nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
-    dataBuffX = new float[getCurrentBoardBufferSize()];
+    nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
     dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
     dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
-    auxBuff = new float[3][nPointsPerUpdate];
-    accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
-    for (int i=0; i<n_aux_ifEnabled; i++) {
-        for (int j=0; j<accelerometerBuff[0].length; j++) {
-            accelerometerBuff[i][j] = 0;
-        }
-    }
-    //data_std_uV = new float[nchan];
+
     data_elec_imp_ohm = new float[nchan];
     is_railed = new DataStatus[nchan];
-    for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
-    for (int i=0; i<nDataBackBuff; i++) {
-        dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
+    for (int i=0; i<nchan; i++) {
+        is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
     }
-    dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
 
-    //initialize the data
-    prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+    dataProcessing = new DataProcessing(nchan, currentBoard.getSampleRate());
 }
 
 void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // verbosePrint("Init FFT Buff – " + Ichan);
-        fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
+        fftBuff[Ichan] = new FFT(getNfftSafe(), currentBoard.getSampleRate());
     }  //make the FFT objects
 
     //Attempt initialization. If error, print to console and exit function.
     //Fixes GUI crash when trying to load outdated recordings
     try {
-        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), currentBoard.getSampleRate());
     } catch (ArrayIndexOutOfBoundsException e) {
         //e.printStackTrace();
         outputError("Playback file load error. Try using a more recent recording.");
@@ -789,9 +738,6 @@ void haltSystem() {
         if (systemMode == SYSTEMMODE_POSTINIT) {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
-
-        //reset variables for data processing
-        curDataPacketInd = -1;
 
         settings.settingsLoaded = false; //on halt, reset this value
 
@@ -953,12 +899,7 @@ void systemDraw() { //for drawing to the screen
         //dataProcessing_user.drawTriggerFeedback();
     }
 
-    // use commented code below to verify frameRate and check latency
-    // println("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
-    // timeOfLastFrame = millis();
-
     buttonHelpText.draw();
-    //mouseOutOfBounds(); // to fix
 
     if (midInit) {
         drawOverlay();
@@ -1042,8 +983,7 @@ void drawStartupError() {
     popStyle();
 }
 
-void openConsole()
-{
+void openConsole() {
     ConsoleWindow.display();
 }
 
@@ -1066,53 +1006,3 @@ void drawOverlay() {
     popStyle();
 }
 
-//CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
-boolean mouseInFrame = false;
-boolean windowOriginSet = false;
-int appletOriginX = 0;
-int appletOriginY = 0;
-PVector loc;
-
-void mouseOutOfBounds() {
-    if (windowOriginSet && mouseInFrame) {
-
-        try {
-            if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
-                MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
-                MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
-                MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
-                mouseX = 0;
-                mouseY = 0;
-                // println("Mouse out of bounds!");
-                mouseInFrame = false;
-            }
-        }
-        catch (RuntimeException e) {
-            verbosePrint("Error happened while cursor left application...");
-        }
-    } else {
-        if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-            loc = getWindowLocation(P2D);
-            appletOriginX = (int)loc.x;
-            appletOriginY = (int)loc.y;
-            windowOriginSet = true;
-            mouseInFrame = true;
-        }
-    }
-}
-
-PVector getWindowLocation(String renderer) {
-    PVector l = new PVector();
-    if (renderer == P2D || renderer == P3D) {
-        com.jogamp.nativewindow.util.Point p = new com.jogamp.nativewindow.util.Point();
-        ((com.jogamp.newt.opengl.GLWindow)surface.getNative()).getLocationOnScreen(p);
-        l.x = p.getX();
-        l.y = p.getY();
-    } else if (renderer == JAVA2D) {
-        java.awt.Frame f =  (java.awt.Frame) ((processing.awt.PSurfaceAWT.SmoothCanvas) surface.getNative()).getFrame();
-        l.x = f.getX();
-        l.y = f.getY();
-    }
-    return l;
-}
-//END OF CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================

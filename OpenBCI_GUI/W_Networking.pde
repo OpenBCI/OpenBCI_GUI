@@ -2172,7 +2172,7 @@ class Stream extends Thread {
                         this.streamName,
                         this.streamType,
                         this.nChanLSL,
-                        getSampleRateSafe(),
+                        currentBoard.getSampleRate(),
                         LSL.ChannelFormat.float32,
                         stream_id
                     );

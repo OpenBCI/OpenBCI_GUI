@@ -343,7 +343,7 @@ class AuxReadBar{
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * getSampleRateSafe();
+        return numSeconds * currentBoard.getSampleRate();
     }
 
     void adjustTimeAxis(int _newTimeSize) {

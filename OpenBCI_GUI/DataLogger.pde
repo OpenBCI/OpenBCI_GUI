@@ -39,8 +39,6 @@ class DataLogger {
                 fileWriterODF.append(newData);
                 break;
             case OUTPUT_SOURCE_BDF:
-                // curBDFDataPacketInd = curDataPacketInd;
-                // thread("writeRawData_dataPacket_bdf");
                 fileWriterBDF.writeRawData_dataPacket(newData);
                 break;
             case OUTPUT_SOURCE_NONE:
@@ -76,7 +74,7 @@ class DataLogger {
 
     public float getSecondsWritten() {
         if (outputDataSource == OUTPUT_SOURCE_ODF && fileWriterODF != null) {
-            return float(fileWriterODF.getRowsWritten())/getSampleRateSafe();
+            return float(fileWriterODF.getRowsWritten())/currentBoard.getSampleRate();
         }
         
         if (outputDataSource == OUTPUT_SOURCE_BDF && fileWriterBDF != null) {

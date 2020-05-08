@@ -764,7 +764,6 @@ class ControlPanel {
                     sampleRate250.setColorNotPressed(isSelected_color);
                     sampleRate500.setColorNotPressed(colorNotPressed);
                     sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
-                    println("Sample Rate 250 Pressed!!!!!!");
                 }
 
                 if (sampleRate500.isMouseHere()) {
@@ -1943,7 +1942,6 @@ class SampleRateGanglionBox {
         fill(bgColor); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        // text("  " + str((int)ganglion.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
         sampleRate200.draw();
@@ -1985,7 +1983,6 @@ class SampleRateCytonBox {
         fill(bgColor); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("  " + str(getSampleRateSafe()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
         sampleRate250.draw();

@@ -602,7 +602,7 @@ class ChannelBar{
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * getSampleRateSafe();
+        return numSeconds * currentBoard.getSampleRate();
     }
 
     void adjustTimeAxis(int _newTimeSize) {
@@ -1014,6 +1014,6 @@ class TimeDisplay {
 //Used in the above PlaybackScrollbar class
 //Also used in OpenBCI_GUI in the app's title bar
 int getElapsedTimeInSeconds(int tableRowIndex) {
-    int elapsedTime = int(float(tableRowIndex)/getSampleRateSafe());
+    int elapsedTime = int(float(tableRowIndex)/currentBoard.getSampleRate());
     return elapsedTime;
 }
