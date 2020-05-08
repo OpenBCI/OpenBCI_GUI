@@ -358,8 +358,6 @@ void delayedSetup() {
 
     buttonHelpText = new ButtonHelpText();
 
-    myPresentation = new Presentation();
-
     // Create GUI data folder in Users' Documents and copy sample data if it doesn't already exist
     copyGUISampleData();
 
@@ -874,7 +872,6 @@ void systemDraw() { //for drawing to the screen
             println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
         }
 
-        //dataProcessing_user.draw();
         drawContainers();
     } else { //systemMode != 10
         //still print title information about fps
@@ -889,18 +886,14 @@ void systemDraw() { //for drawing to the screen
             controlPanel.draw();
         }
 
+        //Draw output window at the bottom of the GUI
         helpWidget.draw();
     }
 
-    //draw presentation last, bc it is intended to be rendered on top of the GUI ...
-    if (drawPresentation) {
-        myPresentation.draw();
-        //emg_widget.drawTriggerFeedback();
-        //dataProcessing_user.drawTriggerFeedback();
-    }
-
+    //Draw button help text close to the top
     buttonHelpText.draw();
 
+    //Draw Session Start overlay on top of everything
     if (midInit) {
         drawOverlay();
     }
@@ -981,10 +974,6 @@ void drawStartupError() {
     textAlign(LEFT, TOP);
     text(startupErrorMessage, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight);
     popStyle();
-}
-
-void openConsole() {
-    ConsoleWindow.display();
 }
 
 void drawOverlay() {
