@@ -1942,7 +1942,6 @@ class SampleRateGanglionBox {
         fill(bgColor); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        // text("  " + str((int)ganglion.getSampleRate()) + "Hz", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
         sampleRate200.draw();
