@@ -62,8 +62,8 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v4.2.0";
-String localGUIVersionDate = "January 2020";
+String localGUIVersionString = "v5.0.0-alpha.4";
+String localGUIVersionDate = "May 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -94,9 +94,10 @@ final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 final int DATASOURCE_NOVAXR = 4;
 public int eegDataSource = -1; //default to none of the options
+final static int NUM_ACCEL_DIMS = 3;
 
 enum BoardProtocol {
-    NONE,  
+    NONE,
     SERIAL,
     BLE,
     WIFI,
@@ -108,7 +109,6 @@ boolean showStartupError = false;
 String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
-// String playbackData_fname;  //leave blank to cause an "Open File" dialog box to appear at startup.  USEFUL!
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
@@ -118,8 +118,6 @@ DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
-Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
-
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
@@ -135,7 +133,7 @@ String novaXR_ipAddress = "192.168.4.1";
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
-int n_aux_ifEnabled = 3;  // this is the accelerometer data CHIP 2014-11-03
+
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
 final int threshold_railed = int(pow(2, 23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
@@ -143,17 +141,7 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //OpenBCI SD Card setting (if eegDataSource == 0)
 int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
 String sdSettingString = "Do not write to SD";
-//cyton data packet
-int nDataBackBuff;
-DataPacket_ADS1299 dataPacketBuff[]; //allocate later in InitSystem
-int curDataPacketInd = -1;
-int curBDFDataPacketInd = -1;
 ////// ---- End variables related to the OpenBCI boards
-
-// define some timing variables for this program's operation
-long timeOfLastFrame = 0;
-long timeOfInit;
-boolean attemptingToConnect = false;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -161,17 +149,10 @@ boolean attemptingToConnect = false;
 // The sampling rate should be ideally a multiple of 25, so as to make actual buffer update rate exactly 40ms
 final int UPDATE_MILLIS = 40;
 int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
-// final int nPointsPerUpdate = 50; //update the GUI after this many data points have been received
-// final int nPointsPerUpdate = 24; //update the GUI after this many data points have been received
-// final int nPointsPerUpdate = 10; //update the GUI after this many data points have been received
 
 //define some data fields for handling data here in processing
-float dataBuffX[];  //define the size later
 float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
 float dataBuffY_filtY_uV[][];
-float yLittleBuff_uV[][]; //small buffer used to send data to the filters
-float accelerometerBuff[][]; // accelerometer buff 500 points
-float auxBuff[][];
 float data_elec_imp_ohm[];
 
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -186,16 +167,13 @@ public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 // Serial output
-String serial_output_portName = "/dev/tty.usbmodem1421";  //must edit this based on the name of the serial/COM port
 Serial serial_output;
-int serial_output_baud = 9600; //baud rate from the Arduino
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
 
 //program variables
 boolean isRunning = false;
-int openBCI_byteCount = 0;
 StringBuilder board_message;
 
 //set window size
@@ -231,22 +209,12 @@ PFont p6; //small Open Sans
 ButtonHelpText buttonHelpText;
 
 boolean setupComplete = false;
-boolean isHubInitialized = false;
-boolean isHubObjectInitialized = true;
 color bgColor = color(1, 18, 41);
 color openbciBlue = color(31, 69, 110);
 int COLOR_SCHEME_DEFAULT = 1;
 int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
-
-Process nodeHubby;
-String nodeHubName = "OpenBCIHub";
-Timer hubTimer = new Timer(true);
-boolean hubTimerHasStarted = false;
-int hubTimerCounter; //Count how many times GUI tries to connect to Hub
-int hubTimerLimit = 8; //Allow up to 8 tries for GUI to connect to Hub
-int hubTimerInterval = 2500; //try every 2.5 seconds, 8*2.5=20seconds
 
 PApplet ourApplet;
 
@@ -352,9 +320,6 @@ void setup() {
 }
 
 void delayedSetup() {
-    if (!isWindows()) hubStop(); //kill any existing hubs before starting a new one..
-    hubInit(); // putting down here gives windows time to close any open apps
-
     smooth(); //turn this off if it's too slow
 
     surface.setResizable(true);  //updated from frame.setResizable in Processing 2
@@ -393,10 +358,10 @@ void delayedSetup() {
 
     buttonHelpText = new ButtonHelpText();
 
-    myPresentation = new Presentation();
-
-    // Create GUI data folder and copy sample data if meditation file doesn't exist
+    // Create GUI data folder in Users' Documents and copy sample data if it doesn't already exist
     copyGUISampleData();
+
+    prepareExitHandler();
 
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
@@ -499,17 +464,6 @@ private void prepareExitHandler () {
                 w_networking.stopNetwork();
                 println("openBCI_GUI: shutDown: Network streams stopped");
             }
-            //Shutdown the hub
-            try {
-                if (hubStop()) {
-                    System.out.println("SHUTDOWN HUB");
-                } else {
-                    System.out.println("FAILED TO SHUTDOWN HUB");
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace(); // not much else to do at this point
-            }
 
             // finalize any playback files
             dataLogger.onShutDown();
@@ -518,148 +472,7 @@ private void prepareExitHandler () {
     ));
 }
 
-/**
-  * Starts the hub and sets prepares the exit handler.
-  */
-void hubInit() {
-    isHubInitialized = true;
-    hubStart();
-    prepareExitHandler();
-}
-
-/**
-  * Starts the node hub working, tested on mac and windows.
-  */
-void hubStart() {
-    println("Launching application from local data dir");
-    try {
-        // https://forum.processing.org/two/discussion/13053/use-launch-for-applications-kept-in-data-folder
-        if (isWindows()) {
-            println("OpenBCI_GUI: hubStart: OS Detected: Windows");
-            nodeHubby = launch(dataPath("/OpenBCIHub/OpenBCIHub.exe"));
-        } else if (isLinux()) {
-            println("OpenBCI_GUI: hubStart: OS Detected: Linux");
-            nodeHubby = exec(dataPath("./OpenBCIHub/OpenBCIHub"));
-        } else {
-            println("OpenBCI_GUI: hubStart: OS Detected: Mac");
-            nodeHubby = launch(dataPath("OpenBCIHub.app"));
-        }
-        // hubRunning = true;
-    }
-    catch (Exception e) {
-        println("hubStart: " + e);
-    }
-}
-
-/**
-  * @description Single function to call at the termination program hook.
-  */
-boolean hubStop() {
-    if (isWindows()) {
-        return killRunningprocessWin();
-    } else {
-        killRunningProcessMac();
-        return true;
-    }
-}
-
-/**
-  * @description Helper function to determine if the system is linux or not.
-  * @return {boolean} true if os is linux, false otherwise.
-  */
-private boolean isLinux() {
-    return System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
-}
-
-/**
-  * @description Helper function to determine if the system is windows or not.
-  * @return {boolean} true if os is windows, false otherwise.
-  */
-private boolean isWindows() {
-    return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
-}
-
-/**
-  * @description Helper function to determine if the system is macOS or not.
-  * @return {boolean} true if os is windows, false otherwise.
-  */
-private boolean isMac() {
-    return !isWindows() && !isLinux();
-}
-
-/**
-  * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
-  *  function dubbed "death dealer"
-  */
-void killRunningProcessMac() {
-    try {
-        String line;
-        Process p = Runtime.getRuntime().exec("ps -e");
-        BufferedReader input =
-            new BufferedReader(new InputStreamReader(p.getInputStream()));
-        while ((line = input.readLine()) != null) {
-            if (line.contains(nodeHubName)) {
-                try {
-                    endProcess(getProcessIdFromLineMac(line));
-                    println("Killed: " + line);
-                }
-                catch (Exception err) {
-                    println("Failed to stop process: " + line + "\n\n");
-                    err.printStackTrace();
-                }
-            }
-        }
-        input.close();
-    }
-    catch (Exception err) {
-        err.printStackTrace();
-    }
-}
-
-/**
-  * @description Parses the running process list for processes whose name have ganglion hub, if found, kills them one by one.
-  *  function dubbed "death dealer" aka "cat killer"
-  */
-boolean killRunningprocessWin() {
-    try {
-        Runtime.getRuntime().exec("taskkill /F /IM OpenBCIHub.exe");
-        return true;
-    }
-    catch (Exception err) {
-        err.printStackTrace();
-        return false;
-    }
-}
-
-/**
-  * @description Parses a mac process line and grabs the pid, the first component.
-  * @return {int} the process id
-  */
-int getProcessIdFromLineMac(String line) {
-    line = trim(line);
-    String[] components = line.split(" ");
-    return Integer.parseInt(components[0]);
-}
-
-void endProcess(int pid) {
-    Runtime rt = Runtime.getRuntime();
-    try {
-        rt.exec("kill -9 " + pid);
-    }
-    catch (IOException err) {
-        err.printStackTrace();
-    }
-}
-
-int prevBytes = 0;
-int prevMillis = millis();
-int byteRate_perSec = 0;
-
 //used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
-
-void setupWidgetManager() {
-    wm = new WidgetManager(this);
-}
 
 //Initialize the system
 void initSystem() {
@@ -670,8 +483,7 @@ void initSystem() {
     println("=================================================");
     println("");
 
-    timeOfInit = millis(); //store this for timeout in case init takes too long
-    verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- " + timeOfInit);
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- ");
 
     if (initSystemButton.but_txt == "START SESSION") {
         initSystemButton.but_txt = "STOP SESSION";
@@ -748,9 +560,6 @@ void initSystem() {
 
     controlPanel.close();
     topNav.controlPanelCollapser.setIsActive(false);
-    verbosePrint("OpenBCI_GUI: initSystem: Initializing comms with hub....");
-    hub.changeState(HubState.COMINIT);
-    // hub.searchDeviceStop();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -762,14 +571,14 @@ void initSystem() {
         //initilize the GUI
         topNav.initSecondaryNav();
 
-        setupWidgetManager();
+        wm = new WidgetManager(this);
 
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
-            
+
             systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-            
+
             if (!abandonInit) {
                 controlPanel.close();
             } else {
@@ -785,17 +594,6 @@ void initSystem() {
     }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
-    
-    if (eegDataSource == DATASOURCE_CYTON) {
-        if (hub.getFirmwareVersion() == null && hub.getProtocol().equals(PROTOCOL_WIFI)) {
-            println("Cyton+WiFi: Unable to find board firmware version");
-        } else if (hub.getFirmwareVersion().equals("v1.0.0")) {
-            //this means the firmware is very out of date, and commands may not work, so abandon init
-            abandonInit = true;
-        } else {
-            //println("FOUND FIRMWARE FROM HUB == " + hub.getFirmwareVersion());
-        }
-    }
 
     //DISABLE SOFTWARE SETTINGS FOR NOVAXR
     if (eegDataSource != DATASOURCE_NOVAXR) {
@@ -814,15 +612,6 @@ void initSystem() {
     midInit = false;
 } //end initSystem
 
-/**
-  * @description Useful function to get the correct sample rate based on data source
-  * @returns `float` - The frequency / sample rate of the data source
-  */
-// TODO[brainflow] remove this function
-int getSampleRateSafe() {
-    return currentBoard.getSampleRate();
-}
-
 public int getCurrentBoardBufferSize() {
     return dataBuff_len_sec * currentBoard.getSampleRate();
 }
@@ -832,7 +621,7 @@ public int getCurrentBoardBufferSize() {
 * @returns `int` - Points of FFT. 125Hz, 200Hz, 250Hz -> 256points. 1000Hz -> 1024points. 1600Hz -> 2048 points.
 */
 int getNfftSafe() {
-    int sampleRate = getSampleRateSafe();
+    int sampleRate = currentBoard.getSampleRate();
     switch (sampleRate) {
         case 500:
             return 512;
@@ -849,45 +638,30 @@ int getNfftSafe() {
 }
 
 void initCoreDataObjects() {
-    // Nfft = getNfftSafe();
-    nDataBackBuff = 3*getSampleRateSafe();
-    dataPacketBuff = new DataPacket_ADS1299[nDataBackBuff]; // call the constructor here
-    nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * getSampleRateSafe()/ 1000.f));
-    dataBuffX = new float[getCurrentBoardBufferSize()];
+    nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
     dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
     dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
-    yLittleBuff_uV = new float[nchan][nPointsPerUpdate]; //small buffer used to send data to the filters
-    auxBuff = new float[3][nPointsPerUpdate];
-    accelerometerBuff = new float[3][500]; // 500 points = 25Hz * 20secs(Max Window)
-    for (int i=0; i<n_aux_ifEnabled; i++) {
-        for (int j=0; j<accelerometerBuff[0].length; j++) {
-            accelerometerBuff[i][j] = 0;
-        }
-    }
-    //data_std_uV = new float[nchan];
+
     data_elec_imp_ohm = new float[nchan];
     is_railed = new DataStatus[nchan];
-    for (int i=0; i<nchan; i++) is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
-    for (int i=0; i<nDataBackBuff; i++) {
-        dataPacketBuff[i] = new DataPacket_ADS1299(nchan, n_aux_ifEnabled);
+    for (int i=0; i<nchan; i++) {
+        is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
     }
-    dataProcessing = new DataProcessing(nchan, getSampleRateSafe());
 
-    //initialize the data
-    prepareData(dataBuffX, dataBuffY_uV, getSampleRateSafe());
+    dataProcessing = new DataProcessing(nchan, currentBoard.getSampleRate());
 }
 
 void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // verbosePrint("Init FFT Buff – " + Ichan);
-        fftBuff[Ichan] = new FFT(getNfftSafe(), getSampleRateSafe());
+        fftBuff[Ichan] = new FFT(getNfftSafe(), currentBoard.getSampleRate());
     }  //make the FFT objects
 
     //Attempt initialization. If error, print to console and exit function.
     //Fixes GUI crash when trying to load outdated recordings
     try {
-        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), getSampleRateSafe());
+        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), currentBoard.getSampleRate());
     } catch (ArrayIndexOutOfBoundsException e) {
         //e.printStackTrace();
         outputError("Playback file load error. Try using a more recent recording.");
@@ -898,7 +672,7 @@ void initFFTObjectsAndBuffer() {
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
-    
+
     dataLogger.onStartStreaming();
 
     // start streaming on the chosen board
@@ -963,12 +737,6 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-        //reset variables for data processing
-        curDataPacketInd = -1;
-        prevBytes = 0;
-        prevMillis = millis();
-        byteRate_perSec = 0;
-
         settings.settingsLoaded = false; //on halt, reset this value
 
         //reset connect loadStrings
@@ -982,7 +750,6 @@ void haltSystem() {
             controlPanel.recentPlaybackBox.getRecentPlaybackFiles();
         }
         systemMode = SYSTEMMODE_PREINIT;
-        hub.changeState(HubState.NOCOM);
 
         recentPlaybackFilesHaveUpdated = false;
 
@@ -1105,7 +872,6 @@ void systemDraw() { //for drawing to the screen
             println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
         }
 
-        //dataProcessing_user.draw();
         drawContainers();
     } else { //systemMode != 10
         //still print title information about fps
@@ -1120,45 +886,14 @@ void systemDraw() { //for drawing to the screen
             controlPanel.draw();
         }
 
+        //Draw output window at the bottom of the GUI
         helpWidget.draw();
     }
 
-    // TODO[brainflow]
-    // if ((hub.get_state() == HubState.COMINIT || hub.get_state() == HubState.SYNCWITHHARDWARE) && systemMode == SYSTEMMODE_PREINIT) {
-    //     if (!attemptingToConnect) {
-    //         output("Attempting to establish a connection with your OpenBCI Board...");
-    //         attemptingToConnect = true;
-    //     } else {
-    //         //@TODO: Fix this so that it shows during successful system inits ex. Cyton+Daisy w/ UserSettings
-    //         pushStyle();
-    //         imageMode(CENTER);
-    //         image(loadingGIF, width/2, height/2, 128, 128);//render loading gif...
-    //         popStyle();
-    //     }
-
-    //     if (millis() - timeOfInit > settings.initTimeoutThreshold) {
-    //         haltSystem();
-    //         initSystemButton.but_txt = "START SESSION";
-    //         output("Init timeout. Verify your Serial/COM Port. Power DOWN/UP your OpenBCI Board & Dongle, then retry Initialization.");
-    //         controlPanel.open();
-    //         attemptingToConnect = false;
-    //     }
-    // }
-
-    //draw presentation last, bc it is intended to be rendered on top of the GUI ...
-    if (drawPresentation) {
-        myPresentation.draw();
-        //emg_widget.drawTriggerFeedback();
-        //dataProcessing_user.drawTriggerFeedback();
-    }
-
-    // use commented code below to verify frameRate and check latency
-    // println("Time since start: " + millis() + " || Time since last frame: " + str(millis()-timeOfLastFrame));
-    // timeOfLastFrame = millis();
-
+    //Draw button help text close to the top
     buttonHelpText.draw();
-    //mouseOutOfBounds(); // to fix
 
+    //Draw Session Start overlay on top of everything
     if (midInit) {
         drawOverlay();
     }
@@ -1241,11 +976,6 @@ void drawStartupError() {
     popStyle();
 }
 
-void openConsole()
-{
-    ConsoleWindow.display();
-}
-
 void drawOverlay() {
     //Draw a gray overlay when the Start Session button is pressed
     pushStyle();
@@ -1265,53 +995,3 @@ void drawOverlay() {
     popStyle();
 }
 
-//CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================
-boolean mouseInFrame = false;
-boolean windowOriginSet = false;
-int appletOriginX = 0;
-int appletOriginY = 0;
-PVector loc;
-
-void mouseOutOfBounds() {
-    if (windowOriginSet && mouseInFrame) {
-
-        try {
-            if (MouseInfo.getPointerInfo().getLocation().x <= appletOriginX ||
-                MouseInfo.getPointerInfo().getLocation().x >= appletOriginX+width ||
-                MouseInfo.getPointerInfo().getLocation().y <= appletOriginY ||
-                MouseInfo.getPointerInfo().getLocation().y >= appletOriginY+height) {
-                mouseX = 0;
-                mouseY = 0;
-                // println("Mouse out of bounds!");
-                mouseInFrame = false;
-            }
-        }
-        catch (RuntimeException e) {
-            verbosePrint("Error happened while cursor left application...");
-        }
-    } else {
-        if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-            loc = getWindowLocation(P2D);
-            appletOriginX = (int)loc.x;
-            appletOriginY = (int)loc.y;
-            windowOriginSet = true;
-            mouseInFrame = true;
-        }
-    }
-}
-
-PVector getWindowLocation(String renderer) {
-    PVector l = new PVector();
-    if (renderer == P2D || renderer == P3D) {
-        com.jogamp.nativewindow.util.Point p = new com.jogamp.nativewindow.util.Point();
-        ((com.jogamp.newt.opengl.GLWindow)surface.getNative()).getLocationOnScreen(p);
-        l.x = p.getX();
-        l.y = p.getY();
-    } else if (renderer == JAVA2D) {
-        java.awt.Frame f =  (java.awt.Frame) ((processing.awt.PSurfaceAWT.SmoothCanvas) surface.getNative()).getFrame();
-        l.x = f.getX();
-        l.y = f.getY();
-    }
-    return l;
-}
-//END OF CODE FOR FIXING WEIRD EXIT CRASH ISSUE -- 7/27/16 ===========================

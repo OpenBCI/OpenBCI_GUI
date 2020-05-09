@@ -21,18 +21,8 @@ float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster p
 //                       Global Functions
 //------------------------------------------------------------------------
 
-RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
 void processNewData() {
-    //compute instantaneous byte rate
-    float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
-
-    prevMillis = millis();           //store for next time
-    prevBytes = openBCI_byteCount; //store for next time
-
-    //compute smoothed byte rate
-    avgBitRate.addValue(inst_byteRate_perSec);
-    byteRate_perSec = (int)avgBitRate.calcMean();
 
     List<double[]> currentData = currentBoard.getData(getCurrentBoardBufferSize());
     int[] exgChannels = currentBoard.getEXGChannels();
@@ -92,18 +82,6 @@ void appendAndShift(float[] data, float newData) {
         data[i]=data[i+nshift];  //shift data points down by 1
     }
     data[end] = newData;  //append new data
-}
-
-//some data initialization routines
-void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
-    //initialize the x and y data
-    int xoffset = dataBuffX.length - 1;
-    for (int i=0; i < dataBuffX.length; i++) {
-        dataBuffX[i] = ((float)(i-xoffset)) / fs_Hz; //x data goes from minus time up to zero
-        for (int Ichan = 0; Ichan < nchan; Ichan++) {
-            dataBuffY_uV[Ichan][i] = 0f;  //make the y data all zeros
-        }
-    }
 }
 
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
@@ -512,10 +490,10 @@ class DataProcessing {
                 // if the frequency matches a band
                 if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
                     if (Ibin != 0 && Ibin != Nfft/2) {
-                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe() / 4;
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/currentBoard.getSampleRate() / 4;
                     }
                     else {
-                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe();
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/currentBoard.getSampleRate();
                     }
                     sum += psdx;
                     // binNum ++;

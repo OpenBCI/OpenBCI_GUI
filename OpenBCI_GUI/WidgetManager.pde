@@ -21,13 +21,10 @@ W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
 W_template w_template1;
 W_emg w_emg;
-W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
 W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
-W_MarkerMode w_markermode;
 W_playback w_playback;
-W_SSVEP w_ssvep;
 W_Spectrogram w_spectrogram;
 W_NovaAux w_novaAux;
 
@@ -35,7 +32,7 @@ W_NovaAux w_novaAux;
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets start -- " + millis());
 
-    //Widget_0
+    //Widget_0 -- The Widget number helps when debugging GUI front-end
     w_timeSeries = new W_timeSeries(_this);
     w_timeSeries.setTitle("Time Series");
     addWidget(w_timeSeries, w);
@@ -55,6 +52,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     }
 
     if (novaXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
+        //NovaXR_Widget_2
         w_novaAux = new W_NovaAux(_this);
         w_novaAux.setTitle("NovaXR Aux");
         addWidget(w_novaAux, w);
@@ -99,21 +97,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets emg -- " + millis());
 
     //Cyton/Synthetic Widget_7, Ganglion/Playback Widget_8
-    w_focus = new W_Focus(_this);
-    w_focus.setTitle("Focus Widget");
-    addWidget(w_focus, w);
-    // println("  setupWidgets focus widget -- " + millis());
-
-    w_ssvep = new W_SSVEP(_this);
-    w_ssvep.setTitle("SSVEP_beta");
-    addWidget(w_ssvep, w);
-
     w_spectrogram = new W_Spectrogram(_this);
     w_spectrogram.setTitle("Spectrogram");
     addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
-    if(currentBoard instanceof BoardCyton){
+    if(currentBoard instanceof AnalogCapableBoard){
         //Cyton Widget_8
         w_pulsesensor = new W_PulseSensor(_this);
         w_pulsesensor.setTitle("Pulse Sensor");
@@ -135,26 +124,19 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_analogRead, w);
     }
     
-    if(currentBoard instanceof MarkerCapableBoard) {
-        //Cyton Widget_11
-        w_markermode = new W_MarkerMode(_this);
-        w_markermode.setTitle("Marker Mode");
-        addWidget(w_markermode, w);
-    }
-    
-    //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
+    //Cyton Widget_11, Synthetic Widget_8, Ganglion/Playback Widget_9
     //DEVELOPERS: Here is an example widget with the essentials/structure in place
     w_template1 = new W_template(_this);
     w_template1.setTitle("Widget Template 1");
     addWidget(w_template1, w);
 
-    // w_template2 = new W_template(_this);
-    // w_template2.setTitle("Widget Template 2");
-    // addWidget(w_template2, w);
-
-    // w_template3 = new W_template(_this);
-    // w_template3.setTitle("LSL Stream");
-    // addWidget(w_template3, w);
+    /*
+    //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10
+    w_focus = new W_Focus(_this);
+    w_focus.setTitle("Focus Widget");
+    addWidget(w_focus, w);
+    // println("  setupWidgets focus widget -- " + millis());
+    */
 
 }
 

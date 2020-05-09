@@ -41,7 +41,7 @@ class W_fft extends Widget {
 
     int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
     int xMax = xLimOptions[xLimOptions.length-1];   //maximum possible frequency in FFT
-    int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/getSampleRateSafe()));   // maxim value of FFT index
+    int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/currentBoard.getSampleRate()));   // maxim value of FFT index
     int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
 
 
@@ -107,7 +107,7 @@ class W_fft extends Widget {
     void update(){
 
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        float sr = getSampleRateSafe();
+        float sr = currentBoard.getSampleRate();
         int nfft = getNfftSafe();
 
         //update the points of the FFT channel arrays

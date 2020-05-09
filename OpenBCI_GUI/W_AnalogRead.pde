@@ -376,7 +376,7 @@ class AnalogReadBar{
 
     void updatePlotPoints() {
         List<double[]> allData = currentBoard.getData(nPoints);
-        int[] channels = analogBoard.getAnalogChannels(); 
+        int[] channels = analogBoard.getAnalogChannels();
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
@@ -425,7 +425,7 @@ class AnalogReadBar{
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * getSampleRateSafe();
+        return numSeconds * currentBoard.getSampleRate();
     }
 
     void adjustTimeAxis(int _newTimeSize) {

@@ -102,7 +102,7 @@ class W_Accelerometer extends Widget {
     }
 
     int nPointsBasedOnDataSource() {
-        return accelHorizLimit * getSampleRateSafe();
+        return accelHorizLimit * currentBoard.getSampleRate();
     }
 
     public boolean isVisible() {
@@ -406,7 +406,7 @@ class AccelerometerBar {
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * getSampleRateSafe();
+        return numSeconds * currentBoard.getSampleRate();
     }
 
     void adjustTimeAxis(int _newTimeSize) {

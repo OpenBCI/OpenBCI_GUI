@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, Focus, Band Power, SSVEP, and Spectrogram
+//                       -- Accelerometer, Analog Read, Head Plot, EMG, Band Power, and Spectrogram
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
@@ -39,7 +39,7 @@
 /////////////////////////////////
 class SoftwareSettings {
     //Current version to save to JSON
-    String settingsVersion = "2.0.0";
+    String settingsVersion = "3.0.0";
     //impose minimum gui width and height in openBCI_GUI.pde
     int minGUIWidth = 705;
     int minGUIHeight = 400;
@@ -94,9 +94,6 @@ class SoftwareSettings {
     int emguVLimSave;
     int emgCreepSave;
     int emgMinDeltauVSave;
-    //Focus widget settings
-    int focusThemeSave;
-    int focusKeySave;
     //default data types for streams 1-4 in Networking widget
     int nwDataType1;
     int nwDataType2;
@@ -104,12 +101,8 @@ class SoftwareSettings {
     int nwDataType4;
     String nwSerialPort;
     int nwProtocolSave;
-    //SSVEP Widget settings
-    int[] freqsSave;
-    boolean[] channelActivitySave;
-    int numSSVEPs;
     //Used to check if a playback file has data
-    int minNumRowsPlaybackFile = int(getSampleRateSafe());
+    int minNumRowsPlaybackFile = int(currentBoard.getSampleRate());
     //Spectrogram Widget settings
     int spectMaxFrqSave;
     int spectSampleRateSave;
@@ -171,7 +164,7 @@ class SoftwareSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Focus", "Pulse", "SSVEP"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Pulse"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -189,10 +182,6 @@ class SoftwareSettings {
     String[] emguVLimArray = {"50 uV", "100 uV", "200 uV", "400 uV"};
     String[] emgCreepArray = {"0.9", "0.95", "0.98", "0.99", "0.999"};
     String[] emgMinDeltauVArray = {"10 uV", "20 uV", "40 uV", "80 uV"};
-
-    //Used to set text in dropdown menus when loading Focus Setings
-    String[] focusThemeArray = {"Green", "Orange", "Cyan"};
-    String[] focusKeyArray = {"OFF", "UP", "SPACE"};
 
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
@@ -234,14 +223,6 @@ class SoftwareSettings {
     int emgCreepLoad;
     int emgMinDeltauVLoad;
 
-    //Focus widget settings
-    int focusThemeLoad;
-    int focusKeyLoad;
-
-    //SSVEP widget settings
-    int numSSVEPsLoad;
-    int[] ssvepFreqsLoad = new int[4];
-    List<Integer> loadSSVEPActiveChans = new ArrayList<Integer>();
 
     //Band Power widget settings
     //smoothing and filter dropdowns are linked to FFT, so no need to save again
@@ -285,14 +266,12 @@ class SoftwareSettings {
     private final String kJSONKeyNetworking = "networking";
     private final String kJSONKeyHeadplot = "headplot";
     private final String kJSONKeyEMG = "emg";
-    private final String kJSONKeyFocus = "focus";
     private final String kJSONKeyBandPower = "bandPower";
-    private final String kJSONKeySSVEP = "ssvep";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
     private final String kJSONKeySpectrogram = "spectrogram";
 
-    //used only in this tab to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
+    //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
     int numChanloaded;
     boolean chanNumError = false;
@@ -536,37 +515,6 @@ class SoftwareSettings {
         //Set the EMG JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyEMG, saveEMGSettings);
 
-        ///////////////////////////////////////////////Setup new JSON object to save Focus settings
-        JSONObject saveFocusSettings = new JSONObject();
-
-        //Save Focus theme
-        saveFocusSettings.setInt("Focus_theme", focusThemeSave);
-        //Save Focus keypress
-        saveFocusSettings.setInt("Focus_keypress", focusKeySave);
-        //Set the Focus JSON Object
-        saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
-
-        ///////////////////////////////////////////////Setup new JSON object to save SSVEP settings
-        JSONObject saveSSVEPSettings = new JSONObject();
-
-        int num_ssveps = numSSVEPs + 1; //add 1 here, dropdown items start count from 0
-        saveSSVEPSettings.setInt("NumSSVEPs", num_ssveps);
-        //Save data from the Active channel checkBoxes
-        JSONArray saveActiveChanSSVEP = new JSONArray();
-        int numActiveSSVEPChan = w_ssvep.numActiveChannels;
-        for (int i = 0; i < numActiveSSVEPChan; i++) {
-            int activeChan = w_ssvep.ssvepChanSelect.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
-            saveActiveChanSSVEP.setInt(i, activeChan);
-        }
-        saveSSVEPSettings.setJSONArray("activeChannels", saveActiveChanSSVEP);
-        //Save data from the 1 to 4 ssvep frequency dropdowns inside the widget
-        JSONObject ssvepFrequencies = new JSONObject();
-        for (int i = 0; i < num_ssveps; i++) {
-            ssvepFrequencies.setInt("SSVEP_"+i, w_ssvep.freqs[i]);
-        }
-        saveSSVEPSettings.setJSONObject("SSVEP_frequencies", ssvepFrequencies);
-        saveSettingsJSONData.setJSONObject(kJSONKeySSVEP, saveSSVEPSettings);
-
         ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
         JSONObject saveBPSettings = new JSONObject();
 
@@ -775,28 +723,6 @@ class SoftwareSettings {
         emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
         emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
-        //get the  Focus settings
-        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
-        focusThemeLoad = loadFocusSettings.getInt("Focus_theme");
-        focusKeyLoad = loadFocusSettings.getInt("Focus_keypress");
-
-        //Clear the list and array for holding SSVEP settings
-        loadSSVEPActiveChans.clear(); //clear this list so user can load settings over and over
-        ssvepFreqsLoad = new int[4]; //clear the dropdown settings array
-        //get the ssvep settings
-        JSONObject loadSSVEPSettings = loadSettingsJSONData.getJSONObject(kJSONKeySSVEP);
-        numSSVEPsLoad = loadSSVEPSettings.getInt("NumSSVEPs");
-        JSONObject loadSSVEPFreqs = loadSSVEPSettings.getJSONObject("SSVEP_frequencies");
-        for (int i = 0; i < numSSVEPsLoad; i++) {
-            int f = loadSSVEPFreqs.getInt("SSVEP_" + i);
-            ssvepFreqsLoad[i] = f;
-        }
-        JSONArray loadSSVEPChan = loadSSVEPSettings.getJSONArray("activeChannels");
-        for (int i = 0; i < loadSSVEPChan.size(); i++) {
-            loadSSVEPActiveChans.add(loadSSVEPChan.getInt(i));
-        }
-        //println("Settings: ssvep active chans loaded = " + loadSSVEPActiveChans);
-
         //Get Band Power widget settings
         loadBPActiveChans.clear();
         JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
@@ -989,51 +915,9 @@ class SoftwareSettings {
         minUVRange(emgMinDeltauVLoad);
             w_emg.cp5_widget.getController("minUVRange").getCaptionLabel().setText(emgMinDeltauVArray[emgMinDeltauVLoad]);
 
-        ////////////////////////////Apply Focus settings
-        ChooseFocusColor(focusThemeLoad);
-            w_focus.cp5_widget.getController("ChooseFocusColor").getCaptionLabel().setText(focusThemeArray[focusThemeLoad]);
-
-        StrokeKeyWhenFocused(focusKeyLoad);
-            w_focus.cp5_widget.getController("StrokeKeyWhenFocused").getCaptionLabel().setText(focusKeyArray[focusKeyLoad]);
-
-        ////////////////////////////Apply SSVEP settings
-        //Apply number ssveps dropdown
-        NumberSSVEP(numSSVEPsLoad - 1); //subtract 1 here because dropdowns count from 0
-            w_ssvep.cp5_widget.getController("NumberSSVEP").getCaptionLabel().setText(String.valueOf(numSSVEPsLoad));
-        //Apply ssvep frequency dropdowns
-        for (int i = 0; i < numSSVEPsLoad; i++) {
-            if (ssvepFreqsLoad[i] > 1) {
-                w_ssvep.cp5_ssvep.getController("Frequency_"+(i+1)).getCaptionLabel().setText(ssvepFreqsLoad[i]+" Hz");
-                w_ssvep.cp5_ssvep.get(ScrollableList.class, "Frequency_"+(i+1)).setValue(ssvepFreqsLoad[i] - 7);
-                w_ssvep.freqs[i] = ssvepFreqsLoad[i];
-            } else { // -1 - none selected
-                w_ssvep.cp5_ssvep.getController("Frequency_"+(i+1)).getCaptionLabel().setText("Frequency_"+(i+1));
-            }
-        }
-        //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
-        try {
-            //deactivate all channels and then activate the active channels
-            w_ssvep.ssvepChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "SSVEP_Channels").deactivateAll();
-            if (loadSSVEPActiveChans.size() > 0) {
-                int activeChanCounter = 0;
-                for (int i = 0; i < nchan; i++) {
-                    if (activeChanCounter  < loadSSVEPActiveChans.size()) {
-                        //subtract 1 because cp5 starts count from 0
-                        if (i == (loadSSVEPActiveChans.get(activeChanCounter) - 1)) {
-                            w_ssvep.ssvepChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "SSVEP_Channels").activate(i);
-                            activeChanCounter++;
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            println("Settings: Exception caught applying ssvep settings" + e);
-        }
-        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
-
         ////////////////////////////Apply Band Power settings
         try {
-            //use the same process as ssvep to apply channel checkbox settings
+            //apply channel checkbox settings
             w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").deactivateAll();
             if (loadBPActiveChans.size() > 0) {
                 int activeChanCounterBP = 0;
@@ -1050,7 +934,7 @@ class SoftwareSettings {
         } catch (Exception e) {
             println("Settings: Exception caught applying band power settings " + e);
         }
-        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
+        verbosePrint("Settings: Band Power Active Channels: " + loadBPActiveChans);
 
         ////////////////////////////Apply Spectrogram settings
         //Apply Max Freq dropdown
@@ -1061,41 +945,6 @@ class SoftwareSettings {
         SpectrogramLogLin(spectLogLinLoad);
             w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
 
-        
-        //Apply ssvepActiveChans settings by activating/deactivating check boxes for all channels
-        try {
-            //deactivate all channels and then activate the active channels
-            w_spectrogram.spectChanSelectTop.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Top").deactivateAll();
-            if (loadSpectActiveChanTop.size() > 0) {
-                int activeChanCounter = 0;
-                for (int i = 0; i < nchan; i++) {
-                    if (activeChanCounter  < loadSpectActiveChanTop.size()) {
-                        //subtract 1 because cp5 starts count from 0
-                        if (i == (loadSpectActiveChanTop.get(activeChanCounter) - 1)) {
-                            w_spectrogram.spectChanSelectTop.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Top").activate(i);
-                            activeChanCounter++;
-                        }
-                    }
-                }
-            }
-            //deactivate all channels and then activate the active channels
-            w_spectrogram.spectChanSelectBot.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Bot").deactivateAll();
-            if (loadSpectActiveChanBot.size() > 0) {
-                int activeChanCounter = 0;
-                for (int i = 0; i < nchan; i++) {
-                    if (activeChanCounter  < loadSpectActiveChanBot.size()) {
-                        //subtract 1 because cp5 starts count from 0
-                        if (i == (loadSpectActiveChanBot.get(activeChanCounter) - 1)) {
-                            w_spectrogram.spectChanSelectBot.cp5_channelCheckboxes.get(CheckBox.class, "Spectrogram_Channels_Bot").activate(i);
-                            activeChanCounter++;
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            println("Settings: Exception caught applying ssvep settings" + e);
-        }
-        verbosePrint("Settings: SSVEP Active Channels: " + loadSSVEPActiveChans);
         ///////////Apply Networking Settings
         //Update protocol with loaded value
         Protocol(nwProtocolLoad);
@@ -1271,7 +1120,8 @@ class SoftwareSettings {
         String dataModeVersionToPrint = controlEventDataSource;
         if (eegDataSource == DATASOURCE_CYTON) {
             if (!settings.loadErrorCytonEvent) {
-                firmwareToPrint = " " + hub.firmwareVersion + ")";
+                //todo get cyton firmware version if possible during Init
+                firmwareToPrint = " " + "FIX ME" + ")";
             } else {
                 firmwareToPrint = "v.?)";
             }
