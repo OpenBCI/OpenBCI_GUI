@@ -1,8 +1,9 @@
 # v5.0.0
 
 ### Improvements
-* Use BrainFlow Java Binding to handle data acquisition
+* Use BrainFlow Java Binding to handle data acquisition (no need to run the Hub!)
 * Speed up entire GUI by plotting data more efficiently
+* Updated OpenBCI Data Format (CSV) Files, with more detailed information and data
 * Improved Playback Mode and Time Series
 * Refactored GUI data flow
 * Add Travis and Appveyor CI tests and builds for all OS
@@ -11,9 +12,11 @@
 * Remove OpenBCI Hub #665
 * Missing Filter Button Label in Networking #696
 * Ganglion+WiFi Accelerometer Data not in Sync #512
-* Simplify Control Panel
+* General UI/UX improvements
 
 ### Deprecated Features
+* OpenBCI Hub - This is no longer required to run the GUI!
+* Old OBCI (CSV) Files - A converter will be made available
 * Presentation Mode
 * SSVEP_Beta Widget
 * Focus Widget
