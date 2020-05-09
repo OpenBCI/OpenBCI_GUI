@@ -142,7 +142,7 @@ public void controlEvent(ControlEvent theEvent) {
         protocolWifiCyton.setColorNotPressed(colorNotPressed);
         protocolSerialCyton.setColorNotPressed(colorNotPressed);
 
-        //Reset protocol and hide all cp5 elements
+        //Reset protocol
         selectedProtocol = BoardProtocol.NONE;
 
         //Perform this check in a way that ignores order of items in the menulist
