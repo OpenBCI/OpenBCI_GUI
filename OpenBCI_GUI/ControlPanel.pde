@@ -142,8 +142,8 @@ public void controlEvent(ControlEvent theEvent) {
         protocolWifiCyton.setColorNotPressed(colorNotPressed);
         protocolSerialCyton.setColorNotPressed(colorNotPressed);
 
+        //Reset protocol and hide all cp5 elements
         selectedProtocol = BoardProtocol.NONE;
-        controlPanel.novaXRBox.isShowing = false;
 
         //Perform this check in a way that ignores order of items in the menulist
         if (eegDataSource == DATASOURCE_CYTON) {
@@ -165,7 +165,7 @@ public void controlEvent(ControlEvent theEvent) {
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_NOVAXR) {
-            controlPanel.novaXRBox.isShowing = true;
+            selectedSamplingRate = 250; //default sampling rate
         }
     }
 
@@ -228,13 +228,28 @@ public void controlEvent(ControlEvent theEvent) {
     }
 
     //Check for event in NovaXR Mode List in Control Panel
-    if (novaXREnabled) {
-        if (theEvent.isFrom("novaXR_Modes")) {
-            Map bob = ((ScrollableList)theEvent.getController()).getItem(int(theEvent.getValue()));
-            String s = (String)bob.get("text");
-            println("ControlPanel: Selected NovaXR Board Mode: " + s);
-            //todo[brainflow] set config_board message here, send message on init session
+    if (theEvent.isFrom("novaXR_Modes")) {
+        int val = (int)(theEvent.getController()).getValue();
+        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+        String s = (String)bob.get("text");
+        switch (val) {
+            case 0:
+                novaXR_boardSetting = 'd';
+                break;
+            case 1:
+                novaXR_boardSetting = 'f';
+                break;
+            case 2:
+                novaXR_boardSetting = 'g';
+                break;
+            case 3:
+                novaXR_boardSetting = 'h';
+                break;
+            case 4:
+                novaXR_boardSetting = 'j';
+                break;
         }
+        println("ControlPanel: Selected NovaXR Board Mode: " + s + ". Config Char = " + novaXR_boardSetting);
     }
 
     if (theEvent.isFrom("maxFileDuration")) {
@@ -876,7 +891,7 @@ class ControlPanel {
                 }
             }
 
-            else if (novaXREnabled && eegDataSource == DATASOURCE_NOVAXR) {
+            else if (eegDataSource == DATASOURCE_NOVAXR) {
                 novaXRBox.mousePressed();
             }
 
@@ -1179,9 +1194,7 @@ class ControlPanel {
                                 "OpenBCI-sampleData-2-meditation.txt"));
         }
 
-        if (novaXREnabled) {
-            novaXRBox.mouseReleased();
-        }
+        novaXRBox.mouseReleased();
 
         //reset all buttons to false
         refreshPort.setIsActive(false);
@@ -2110,6 +2123,7 @@ class RecentPlaybackBox {
         padding = _padding;
 
         cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
+        cp5_recentPlayback_dropdown.setAutoDraw(false);
         getRecentPlaybackFiles();
 
         String[] temp = shortFileNames.array();
@@ -2117,7 +2131,6 @@ class RecentPlaybackBox {
         cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
-        cp5_recentPlayback_dropdown.setAutoDraw(false);
     }
 
     /////*Update occurs while control panel is open*/////
@@ -2151,9 +2164,6 @@ class RecentPlaybackBox {
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
-        if (!cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").isVisible()) {
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
-        }
         cp5_recentPlayback_dropdown.draw();
     }
 
@@ -2208,7 +2218,7 @@ class RecentPlaybackBox {
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .addItems(_items) // used to be .addItems(maxFreqList)
-            .setVisible(false)
+            .setVisible(true)
             ;
         cp5_recentPlayback_dropdown.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
@@ -2233,18 +2243,13 @@ class RecentPlaybackBox {
 
 class NovaXRBox {
     private int x, y, w, h, padding; //size and position
-    public boolean isShowing;
-    private boolean previousIsShowing;
     private Button novaXR250;
     private Button novaXR500;
-    private Button defaultMode;
-    private Button modeOne;
-    private Button modeTwo;
-    private String boxLabel = "CONFIG";
+    private String boxLabel = "NOVAXR CONFIG";
     private String ipTextLabel = "STATIC IP";
     private String sampleRateLabel = "SAMPLE RATE";
     private ControlP5 novaXRcp5;
-    private String[] novaXRModes = {"Default Mode", "Internal Signal"};
+    private String[] novaXRModes = {"Default Mode", "Internal Signal", "External Signal", "Preset 4", "Preset 5"};
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2252,9 +2257,8 @@ class NovaXRBox {
         w = _w;
         h = 127 + _padding;
         padding = _padding;
-        isShowing = false;
-        previousIsShowing = false;
         novaXRcp5 = new ControlP5(ourApplet);
+        novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
         novaXRcp5.addTextfield("novaXR_IP")
             .setPosition(x + w - 157 - padding, y + 14 + padding*2)
@@ -2271,7 +2275,7 @@ class NovaXRBox {
             .setText(novaXR_ipAddress)
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
-            .setVisible(false)
+            .setVisible(true)
             .setAutoClear(true); 
         novaXR250 = new Button (x + w - padding*2 - 60*2, y + 14 + padding*3 + 26, 60, 24, "250Hz", fontInfo.buttonLabel_size);
         novaXR250.setHelpText("Set Sampling Rate to 250Hz.");
@@ -2281,15 +2285,11 @@ class NovaXRBox {
         //x + padding, novaXR250.but_y + 24 + padding
         createDropdown("novaXR_Modes", Arrays.asList(novaXRModes));
         novaXRcp5.get(ScrollableList.class, "novaXR_Modes").setPosition(x + padding, novaXR250.but_y + 24 + padding);
+
     }
 
     public void update() {
-        //Check for state change so we don't call setVisible() every update
-        if (isShowing != previousIsShowing) {
-            novaXRcp5.get(Textfield.class, "novaXR_IP").setVisible(isShowing);
-            novaXRcp5.get(ScrollableList.class, "novaXR_Modes").setVisible(isShowing);
-            previousIsShowing = isShowing;
-        }
+        
     }
 
     public void draw() {
@@ -2332,10 +2332,12 @@ class NovaXRBox {
     public void mouseReleased() {
         if (novaXR250.isMouseHere() && novaXR250.wasPressed) {
             selectedSamplingRate = 250;
+            println("ControlPanel: NovaXR Sampling Rate set to: " + selectedSamplingRate);
         }
 
         if (novaXR500.isMouseHere() && novaXR500.wasPressed) {
             selectedSamplingRate = 500;
+            println("ControlPanel: NovaXR Sampling Rate set to: " + selectedSamplingRate);
         }
 
         novaXR250.setIsActive(false);
@@ -2357,7 +2359,7 @@ class NovaXRBox {
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .addItems(_items) // used to be .addItems(maxFreqList)
-            .setVisible(false)
+            .setVisible(true)
             ;
         novaXRcp5.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
