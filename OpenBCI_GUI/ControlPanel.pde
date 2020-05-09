@@ -2302,7 +2302,7 @@ class NovaXRBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("CONFIG", x + padding, y + padding);
+        text(boxLabel, x + padding, y + padding);
         textAlign(LEFT, TOP);
         textFont(p4, 14);
         text(ipTextLabel, x + padding, y + padding*2 + 17);
