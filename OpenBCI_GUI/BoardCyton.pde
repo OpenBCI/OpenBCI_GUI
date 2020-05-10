@@ -133,8 +133,6 @@ class CytonDefaultSettings extends ADS1299Settings {
 
 abstract class BoardCyton extends BoardBrainFlow
 implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, ADS1299SettingsBoard {
-    private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
-    private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private ADS1299Settings currentADS1299Settings;
@@ -144,8 +142,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     
     private int[] accelChannelsCache = null;
     private int[] analogChannelsCache = null;
-
-    private boolean[] exgChannelActive;
 
     protected String serialPort = "";
     protected String ipAddress = "";
@@ -168,10 +164,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public boolean initializeInternal() {        
-        exgChannelActive = new boolean[getNumEXGChannels()];
-        Arrays.fill(exgChannelActive, true);
-
+    public boolean initializeInternal() {
         return super.initializeInternal();
     }
 
@@ -183,14 +176,13 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
-        char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
-        sendCommand(str(charsToUse[channelIndex]));
-        exgChannelActive[channelIndex] = active;
+        currentADS1299Settings.powerDown[channelIndex] = active ? PowerDown.ON : PowerDown.OFF;
+        currentADS1299Settings.commit(channelIndex);
     }
     
     @Override
     public boolean isEXGChannelActive(int channelIndex) {
-        return exgChannelActive[channelIndex];
+        return currentADS1299Settings.powerDown[channelIndex] == PowerDown.ON;
     }
 
     @Override
