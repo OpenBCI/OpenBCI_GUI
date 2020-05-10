@@ -118,22 +118,27 @@ abstract class BoardCytonWifiBase extends BoardCyton {
     }
 };
 
+class CytonDefaultSettings extends ADS1299Settings {
+    CytonDefaultSettings(Board theBoard) {
+        super(theBoard);
+
+        Arrays.fill(powerDown, PowerDown.ON);
+        Arrays.fill(gain, Gain.X24);
+        Arrays.fill(inputType, InputType.NORMAL);
+        Arrays.fill(bias, Bias.INCLUDE);
+        Arrays.fill(srb2, Srb2.CONNECT);
+        Arrays.fill(srb1, Srb1.DISCONNECT);
+    }
+}
+
 abstract class BoardCyton extends BoardBrainFlow
-implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard {
+implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, ADS1299SettingsBoard {
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-    private double[] scalers = null;
-    private Map<Character, Integer> gainCommandMap = new HashMap<Character, Integer>() {{
-        put('0', 1);
-        put('1', 2);
-        put('2', 4);
-        put('3', 6);
-        put('4', 8);
-        put('5', 12);
-        put('6', 24);
-    }};
+    private ADS1299Settings currentADS1299Settings;
+
     // same for all channels
     private final double brainflowGain = 24.0;
     
@@ -148,10 +153,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     public BoardCyton() {
         super();
-        scalers = new double[getNumEXGChannels()];
-        for (int i = 0; i < scalers.length; i++) {
-            scalers[i] = 1.0;
-        }
+
+        currentADS1299Settings = new CytonDefaultSettings(this);
     }
 
     // implement mandatory abstract functions
@@ -181,7 +184,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
-        configBoard(str(charsToUse[channelIndex]));
+        sendCommand(str(charsToUse[channelIndex]));
         exgChannelActive[channelIndex] = active;
     }
     
@@ -282,7 +285,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         // for example: z 4 1 0 Z
         String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
-        configBoard(command);
+        sendCommand(command);
     }
 
     @Override
@@ -291,24 +294,22 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         int[] exgChannels = getEXGChannels();
         for (int i = 0; i < exgChannels.length; i++) {
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
-                data[exgChannels[i]][j] *= scalers[i];
+                // brainflow assumes a fixed gain of 24. Undo brainflow's scaling and apply new scale.
+                double scalar = brainflowGain / currentADS1299Settings.gain[i].getScalar();
+                data[exgChannels[i]][j] *= scalar;
             }
         }
         return data;
     }
 
-    public void setChannelSettings(int channel, char[] channelSettings) {
-        char powerDown = channelSettings[0];
-        char gain = channelSettings[1];
-        char inputType = channelSettings[2];
-        char bias = channelSettings[3];
-        char srb2 = channelSettings[4];
-        char srb1 = channelSettings[5];
+    @Override
+    public ADS1299Settings getADS1299Settings() {
+        return currentADS1299Settings;
+    }
 
-        String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
-                                        powerDown, gain, inputType, bias, srb2, srb1);
-        configBoard(command);
-        scalers[channel] = brainflowGain / gainCommandMap.get(gain);
+    @Override
+    public char getChannelSelector(int channel) {
+        return channelSelectForSettings[channel];
     }
 
     public CytonBoardMode getBoardMode() {
@@ -316,24 +317,20 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     private void setBoardMode(CytonBoardMode boardMode) {
-        configBoard("/" + boardMode.getValue());
+        sendCommand("/" + boardMode.getValue());
         currentBoardMode = boardMode;
     }
 
     public void closeSDFile() {
         println("Closing any open SD file. Writing 'j' to OpenBCI.");
-        configBoard("j"); // tell the SD file to close if one is open...
+        sendCommand("j"); // tell the SD file to close if one is open...
         delay(100); //make sure 'j' gets sent to the board
     }
 
     public void printRegisters() {
         println("Cyton: printRegisters(): Writing ? to OpenBCI...");
-        configBoard("?");
+        sendCommand("?");
     }
-
-    public void configureAllChannelsToDefault() {
-        configBoard("d");
-    };
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {

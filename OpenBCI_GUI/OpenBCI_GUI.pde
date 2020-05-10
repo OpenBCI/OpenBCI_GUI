@@ -224,9 +224,7 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-///////////Variables from HardwareSettingsController. This fixes a number of issues.
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
+///////////Variables from ADS1299SettingsController. This fixes a number of issues.
 char[][] impedanceCheckValues = new char [nchan][2];
 
 SoftwareSettings settings = new SoftwareSettings();
@@ -575,7 +573,6 @@ void initSystem() {
 
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-            w_timeSeries.hsc.loadDefaultChannelSettings();
 
             systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
 
@@ -678,6 +675,10 @@ void startRunning() {
     // start streaming on the chosen board
     currentBoard.startStreaming();
     isRunning = true;
+
+    // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
+    // close hardware settings if user starts streaming
+    w_timeSeries.closeADSSettings();
 }
 
 void stopRunning() {

@@ -4,23 +4,97 @@ import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = true;
 
+public enum NovaXRMode
+{
+    DEFAULT("Default Mode", "d"), 
+    INTERNAL_SIGNAL("Internal Signal", "f"), 
+    EXTERNAL_SIGNAL("External Signal", "g"), 
+    PRESET4("Preset 4", "h"),
+    PRESET5("Preset 5", "j");
+
+    private String name;
+    private String command;
+ 
+    NovaXRMode(String _name, String _command) {
+        this.name = _name;
+        this.command = _command;
+    }
+ 
+    public String getName() {
+        return name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+}
+
+class NovaXRDefaultSettings extends ADS1299Settings {
+    // TODO: modes go here
+    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode) {
+        super(theBoard);
+
+        Arrays.fill(powerDown, PowerDown.ON);
+
+        switch(mode) {
+            case DEFAULT:
+                Arrays.fill(gain, 0, 8, Gain.X8); // channels 1-8 with gain x8
+                Arrays.fill(gain, 8, 14, Gain.X4); // 9-14 with gain x4
+                Arrays.fill(gain, 14, 16, Gain.X12); // 15-16 with gain x12
+                
+                Arrays.fill(inputType, InputType.NORMAL);
+
+                // channels 9-14 don't include, all other channels include
+                Arrays.fill(bias, Bias.INCLUDE);
+                Arrays.fill(bias, 8, 14, Bias.NO_INCLUDE);
+
+                // channels 9-14 Connect, all other channels disconnect
+                Arrays.fill(srb2, Srb2.CONNECT);
+                Arrays.fill(srb2, 8, 14, Srb2.DISCONNECT);
+
+                Arrays.fill(srb1, Srb1.DISCONNECT);
+
+                break;
+
+            case INTERNAL_SIGNAL:
+                Arrays.fill(gain, Gain.X1);
+                Arrays.fill(inputType, InputType.TEST);
+                Arrays.fill(bias, Bias.NO_INCLUDE);
+                Arrays.fill(srb2, Srb2.DISCONNECT);
+                Arrays.fill(srb1, Srb1.DISCONNECT);
+                break;
+
+            case EXTERNAL_SIGNAL:
+                Arrays.fill(gain, Gain.X1);
+                Arrays.fill(inputType, InputType.NORMAL);
+                Arrays.fill(bias, Bias.NO_INCLUDE);
+                Arrays.fill(srb2, Srb2.DISCONNECT);
+                Arrays.fill(srb1, Srb1.DISCONNECT);
+                break;
+
+            case PRESET4:
+                // TODO[brainflow] This mode is not defined yet
+                break;
+
+            case PRESET5:
+                // TODO[brainflow] This mode is not defined yet
+                break;
+
+            default:
+                break;
+        }
+    }
+}
+
 class BoardNovaXR extends BoardBrainFlow
-implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
+implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299SettingsBoard{
 
     private final char[] deactivateChannelChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
     private final char[] activateChannelChars = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-    private double[] scalers = null;
-    private Map<Character, Integer> gainCommandMap = new HashMap<Character, Integer>() {{
-        put('0', 1);
-        put('1', 2);
-        put('2', 4);
-        put('3', 6);
-        put('4', 8);
-        put('5', 12);
-        put('6', 24);
-    }};
+    private ADS1299Settings currentADS1299Settings;
+
     // same for all channels for now, more likely will be a map soon
     private final double brainflowGain = 24.0;
 
@@ -31,12 +105,17 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
 
+    // TODO[brainflow] temporary constructor until we pass mode
     public BoardNovaXR() {
+        this(NovaXRMode.DEFAULT);
+    }
+
+    public BoardNovaXR(NovaXRMode mode) {
         super();
-        scalers = new double[getNumEXGChannels()];
-        for (int i = 0; i < scalers.length; i++) {
-            scalers[i] = 1.0;
-        }
+
+        // TODO[brainflow] Actually, we need to save the mode, send the mode command 
+        // on initialize, and then create the default settings
+        currentADS1299Settings = new NovaXRDefaultSettings(this, mode);
     }
 
     @Override
@@ -62,7 +141,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
-        configBoard(str(charsToUse[channelIndex]));
+        sendCommand(str(charsToUse[channelIndex]));
         exgChannelActive[channelIndex] = active;
     }
     
@@ -87,7 +166,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
         // for example: z 4 1 0 Z
         String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
-        configBoard(command);
+        sendCommand(command);
     }
 
     @Override
@@ -96,24 +175,22 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
         int[] exgChannels = getEXGChannels();
         for (int i = 0; i < exgChannels.length; i++) {
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
-                data[exgChannels[i]][j] *= scalers[i];
+                // brainflow assumes a fixed gain of 24. Undo brainflow's scaling and apply new scale.
+                double scalar = brainflowGain / currentADS1299Settings.gain[i].getScalar();
+                data[exgChannels[i]][j] *= scalar;
             }
         }
         return data;
     }
 
-    public void setChannelSettings(int channel, char[] channelSettings) {
-        char powerDown = channelSettings[0];
-        char gain = channelSettings[1];
-        char inputType = channelSettings[2];
-        char bias = channelSettings[3];
-        char srb2 = channelSettings[4];
-        char srb1 = channelSettings[5];
+    @Override
+    public ADS1299Settings getADS1299Settings() {
+        return currentADS1299Settings;
+    }
 
-        String command = String.format("x%c%c%c%c%c%c%cX", channelSelectForSettings[channel],
-                                        powerDown, gain, inputType, bias, srb2, srb1);
-        configBoard(command);
-        scalers[channel] = brainflowGain / gainCommandMap.get(gain);
+    @Override
+    public char getChannelSelector(int channel) {
+        return channelSelectForSettings[channel];
     }
 
     @Override

@@ -59,102 +59,102 @@ void parseKey(char val) {
 
         //deactivate channels 1-16
         case '1':
-            w_timeSeries.hsc.deactivateChannel(1-1);
+            currentBoard.setEXGChannelActive(1-1, false);
             break;
         case '2':
-            w_timeSeries.hsc.deactivateChannel(2-1);
+            currentBoard.setEXGChannelActive(2-1, false);
             break;
         case '3':
-            w_timeSeries.hsc.deactivateChannel(3-1);
+            currentBoard.setEXGChannelActive(3-1, false);
             break;
         case '4':
-            w_timeSeries.hsc.deactivateChannel(4-1);
+            currentBoard.setEXGChannelActive(4-1, false);
             break;
         case '5':
-            w_timeSeries.hsc.deactivateChannel(5-1);
+            currentBoard.setEXGChannelActive(5-1, false);
             break;
         case '6':
-            w_timeSeries.hsc.deactivateChannel(6-1);
+            currentBoard.setEXGChannelActive(6-1, false);
             break;
         case '7':
-            w_timeSeries.hsc.deactivateChannel(7-1);
+            currentBoard.setEXGChannelActive(7-1, false);
             break;
         case '8':
-            w_timeSeries.hsc.deactivateChannel(8-1);
+            currentBoard.setEXGChannelActive(8-1, false);
             break;
         case 'q':
-            w_timeSeries.hsc.deactivateChannel(9-1);
+            currentBoard.setEXGChannelActive(9-1, false);
             break;
         case 'w':
-            w_timeSeries.hsc.deactivateChannel(10-1);
+            currentBoard.setEXGChannelActive(10-1, false);
             break;
         case 'e':
-            w_timeSeries.hsc.deactivateChannel(11-1);
+            currentBoard.setEXGChannelActive(11-1, false);
             break;
         case 'r':
-            w_timeSeries.hsc.deactivateChannel(12-1);
+            currentBoard.setEXGChannelActive(12-1, false);
             break;
         case 't':
-            w_timeSeries.hsc.deactivateChannel(13-1);
+            currentBoard.setEXGChannelActive(13-1, false);
             break;
         case 'y':
-            w_timeSeries.hsc.deactivateChannel(14-1);
+            currentBoard.setEXGChannelActive(14-1, false);
             break;
         case 'u':
-            w_timeSeries.hsc.deactivateChannel(15-1);
+            currentBoard.setEXGChannelActive(15-1, false);
             break;
         case 'i':
-            w_timeSeries.hsc.deactivateChannel(16-1);
+            currentBoard.setEXGChannelActive(16-1, false);
             break;
 
         //activate channels 1-16
         case '!':
-            w_timeSeries.hsc.activateChannel(1-1);
+            currentBoard.setEXGChannelActive(1-1, true);
             break;
         case '@':
-            w_timeSeries.hsc.activateChannel(2-1);
+            currentBoard.setEXGChannelActive(2-1, true);
             break;
         case '#':
-            w_timeSeries.hsc.activateChannel(3-1);
+            currentBoard.setEXGChannelActive(3-1, true);
             break;
         case '$':
-            w_timeSeries.hsc.activateChannel(4-1);
+            currentBoard.setEXGChannelActive(4-1, true);
             break;
         case '%':
-            w_timeSeries.hsc.activateChannel(5-1);
+            currentBoard.setEXGChannelActive(5-1, true);
             break;
         case '^':
-            w_timeSeries.hsc.activateChannel(6-1);
+            currentBoard.setEXGChannelActive(6-1, true);
             break;
         case '&':
-            w_timeSeries.hsc.activateChannel(7-1);
+            currentBoard.setEXGChannelActive(7-1, true);
             break;
         case '*':
-            w_timeSeries.hsc.activateChannel(8-1);
+            currentBoard.setEXGChannelActive(8-1, true);
             break;
         case 'Q':
-            w_timeSeries.hsc.activateChannel(9-1);
+            currentBoard.setEXGChannelActive(9-1, true);
             break;
         case 'W':
-            w_timeSeries.hsc.activateChannel(10-1);
+            currentBoard.setEXGChannelActive(10-1, true);
             break;
         case 'E':
-            w_timeSeries.hsc.activateChannel(11-1);
+            currentBoard.setEXGChannelActive(11-1, true);
             break;
         case 'R':
-            w_timeSeries.hsc.activateChannel(12-1);
+            currentBoard.setEXGChannelActive(12-1, true);
             break;
         case 'T':
-            w_timeSeries.hsc.activateChannel(13-1);
+            currentBoard.setEXGChannelActive(13-1, true);
             break;
         case 'Y':
-            w_timeSeries.hsc.activateChannel(14-1);
+            currentBoard.setEXGChannelActive(14-1, true);
             break;
         case 'U':
-            w_timeSeries.hsc.activateChannel(15-1);
+            currentBoard.setEXGChannelActive(15-1, true);
             break;
         case 'I':
-            w_timeSeries.hsc.activateChannel(16-1);
+            currentBoard.setEXGChannelActive(16-1, true);
             break;
 
         //other controls
@@ -170,19 +170,28 @@ void parseKey(char val) {
 
         //Lowercase k sets Bias Don't Include all channels
         case 'k':
-            for (int i = 0; i < nchan; i++) { //for every channel
+            for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) { //for every channel
                 //BIAS off all channels
-                channelSettingValues[i][3] = '0';
-                println ("chan " + i + " bias don't include");
+                if (currentBoard instanceof ADS1299SettingsBoard) {
+                    ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
+                    ADS1299Settings settings = settingsBoard.getADS1299Settings();
+                    Arrays.fill(settings.bias, Bias.NO_INCLUDE);
+
+                    println ("chan " + i + " bias don't include");
+                }
             }
             break;
         //Lowercase l sets Bias Include all channels
         case 'l':
-            for (int i = 0; i < nchan; i++) { //for every channel
-                //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
-                //BIAS on all channells
-                channelSettingValues[i][3] = '1';
-                println ("chan " + i + " bias include");
+            for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) { //for every channel
+                //BIAS on all channels
+                if (currentBoard instanceof ADS1299SettingsBoard) {
+                    ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
+                    ADS1299Settings settings = settingsBoard.getADS1299Settings();
+                    Arrays.fill(settings.bias, Bias.INCLUDE);
+
+                    println ("chan " + i + " bias include");
+                }
             }
             break;
 
@@ -205,13 +214,7 @@ void parseKey(char val) {
             }
             break;
 
-        case 'd':
-            verbosePrint("Updating GUI's channel settings to default...");
-            w_timeSeries.hsc.loadDefaultChannelSettings();
-            
-            if(currentBoard instanceof BoardCyton) {
-                ((BoardCyton)currentBoard).configureAllChannelsToDefault();
-            }
+        case 'd':   
             break;
 
         case 'm':

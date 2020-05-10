@@ -83,7 +83,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
-        configBoard(str(charsToUse[channelIndex]));
+        sendCommand(str(charsToUse[channelIndex]));
         exgChannelActive[channelIndex] = active;
     }
     
@@ -112,7 +112,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
 
     @Override
     public void setAccelerometerActive(boolean active) {
-        configBoard(active ? "n" : "N");
+        sendCommand(active ? "n" : "N");
         isGettingAccel = active;
     }
 
@@ -130,7 +130,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
-        configBoard(checkImpedance ? "z" : "Z");
+        sendCommand(checkImpedance ? "z" : "Z");
         isCheckingImpedance = checkImpedance;
     }
     

@@ -23,7 +23,6 @@ class W_timeSeries extends Widget {
     float plotBottomWell;
     float playbackWidgetHeight;
     int channelBarHeight;
-    boolean showHardwareSettings = false;
 
     Button hardwareSettingsButton;
 
@@ -39,7 +38,7 @@ class W_timeSeries extends Widget {
 
     boolean allowSpillover = false;
 
-    HardwareSettingsController hsc;
+    private ADS1299SettingsController adsSettingsController;
 
     TextBox[] impValuesMontage;
 
@@ -102,7 +101,7 @@ class W_timeSeries extends Widget {
             channelBars[i] = tempBar;
         }
 
-        if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+        if(currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
@@ -120,7 +119,10 @@ class W_timeSeries extends Widget {
         int y_hsc = int(ts_y);
         int w_hsc = int(ts_w); //width of montage controls (on left of montage)
         int h_hsc = int(ts_h); //height of montage controls (on left of montage)
-        hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            adsSettingsController = new ADS1299SettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+        }
     }
 
     public boolean isVisible() {
@@ -141,18 +143,17 @@ class W_timeSeries extends Widget {
         if(visible && updating) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            hsc.update(); //update channel controller
+            if(currentBoard instanceof ADS1299SettingsBoard) {
+                adsSettingsController.update(); //update channel controller
+                //ignore top left button interaction when widgetSelector dropdown is active
+                ignoreButtonCheck(hardwareSettingsButton);
+            }
 
             if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
                 //scrub playback file
                 scrollbar.update();
             } else {
                 timeDisplay.update();
-            }
-            
-            if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
-                //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hardwareSettingsButton);
             }
 
             //update channel bars ... this means feeding new EEG data into plots
@@ -173,11 +174,6 @@ class W_timeSeries extends Widget {
                 channelBars[i].draw();
             }
 
-            // TODO[brainflow] move this behavior to the board classes
-            if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
-                hardwareSettingsButton.draw();
-            }
-
             //Display playback scrollbar or timeDisplay, depending on data source
             if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
@@ -188,8 +184,10 @@ class W_timeSeries extends Widget {
                 timeDisplay.draw();
             }
 
-            //draw channel controller
-            hsc.draw();
+            if(currentBoard instanceof ADS1299SettingsBoard) {
+                hardwareSettingsButton.draw();
+                adsSettingsController.draw();
+            }
 
             popStyle();
         }
@@ -214,10 +212,10 @@ class W_timeSeries extends Widget {
             channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
 
-        hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
+            adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
@@ -237,16 +235,16 @@ class W_timeSeries extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         if (!this.dropdownIsActive) {
-            if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+            if(currentBoard instanceof ADS1299SettingsBoard) {
                 if (hardwareSettingsButton.isMouseHere()) {
                     hardwareSettingsButton.setIsActive(true);
                 }
             }
         }
 
-        if(hsc.isVisible) {
+        if(adsSettingsController != null && adsSettingsController.isVisible) {
             if (!this.dropdownIsActive) {
-                hsc.mousePressed();
+                adsSettingsController.mousePressed();
             }
         } else {
             for(int i = 0; i < channelBars.length; i++) {
@@ -255,40 +253,48 @@ class W_timeSeries extends Widget {
         }
 
     }
-
+    
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         // TODO[brainflow] get rid of this insane if-statement logic
-        if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+        if(currentBoard instanceof ADS1299SettingsBoard) {
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
-                if(showHardwareSettings) {
-                    showHardwareSettings = false;
-                    hsc.isVisible = false;
-                    hardwareSettingsButton.setString("Hardware Settings");
-                } else{
-                    // if we change gains and other setting during the streaming there will be sync issue
-                    // force user to stop streaming first
-                    if (isRunning) {
-                        PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
-                        return;
-                    }
-                    showHardwareSettings = true;
-                    hsc.isVisible = true;
-                    hardwareSettingsButton.setString("Time Series");
-                }
+                setAdsSettingsVisible(!adsSettingsController.isVisible);
             }
             hardwareSettingsButton.setIsActive(false);
         }
 
-        if(hsc.isVisible) {
-            hsc.mouseReleased();
+        if(adsSettingsController != null && adsSettingsController.isVisible) {
+            adsSettingsController.mouseReleased();
         } else {
             for(int i = 0; i < channelBars.length; i++) {
                 channelBars[i].mouseReleased();
             }
         }
+    }
+
+    private void setAdsSettingsVisible(boolean visible) {
+        if(visible) {
+            if (isRunning) {
+                PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
+                return;
+            }
+
+            hardwareSettingsButton.setString("Time Series");
+        }
+        else {
+            hardwareSettingsButton.setString("Hardware Settings");
+        }
+
+        if (adsSettingsController != null) {
+            adsSettingsController.isVisible = visible;
+        }
+    }
+
+    public void closeADSSettings() {
+        setAdsSettingsVisible(false);
     }
 };
 
@@ -347,7 +353,6 @@ class ChannelBar{
     int channelIndex; //duh
     String channelString;
     int x, y, w, h;
-    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
     Button onOffButton;
     int onOff_diameter, impButton_diameter;
     Button impCheckButton;
@@ -373,7 +378,6 @@ class ChannelBar{
 
         channelIndex = _channelIndex;
         channelString = str(channelIndex + 1);
-        isOn = true;
 
         x = _x;
         y = _y;
@@ -485,6 +489,13 @@ class ChannelBar{
         updatePlotPoints();
         if(isAutoscale) {
             autoScale();
+        }
+
+        if(currentBoard.isEXGChannelActive(channelIndex)) {
+            onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
+        }
+        else {
+            onOffButton.setColorNotPressed(50); // power down == false, set color to vibrant
         }
     }
 
@@ -655,16 +666,7 @@ class ChannelBar{
     void mouseReleased() {
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff released");
-            if(isOn) {  // if channel is active
-                isOn = false; // deactivate it
-                w_timeSeries.hsc.deactivateChannel(channelIndex); //got to - 1 to make 0 indexed
-                onOffButton.setColorNotPressed(color(50));
-            }
-            else { // if channel is not active
-                isOn = true;
-                w_timeSeries.hsc.activateChannel(channelIndex);       // activate it
-                onOffButton.setColorNotPressed(channelColors[channelIndex%8]);
-            }
+            currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
         }
 
         onOffButton.setIsActive(false);
@@ -672,7 +674,7 @@ class ChannelBar{
         if(currentBoard instanceof ImpedanceSettingsBoard) {
             if(impCheckButton.isMouseHere() && impCheckButton.isActive()) {
                 println("[" + channelString + "] imp released");
-                w_timeSeries.hsc.toggleImpedanceCheck(channelIndex);  // 'n' indicates the N inputs and '1' indicates test impedance
+                w_timeSeries.adsSettingsController.toggleImpedanceCheck(channelIndex);  // 'n' indicates the N inputs and '1' indicates test impedance
                 if(drawImpValue) {
                     drawImpValue = false;
                     impCheckButton.setColorNotPressed(color(255)); //White background
