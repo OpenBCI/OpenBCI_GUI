@@ -77,25 +77,6 @@ class ADS1299SettingsController{
         popStyle();
     }
 
-    public void initImpWrite(int _numChannel, char pORn, char onORoff) {
-        verbosePrint("Writing impedance check settings (" + pORn + "," + onORoff +  ") for channel " + str(_numChannel+1) + " to OpenBCI!");
-
-        // TODO[brainflow] clean this up
-        if (pORn == 'p') {
-            impedanceCheckValues[_numChannel][0] = onORoff;
-        }
-        if (pORn == 'n') {
-            impedanceCheckValues[_numChannel][1] = onORoff;
-        }
-
-        if (currentBoard instanceof ImpedanceSettingsBoard) {
-            ((ImpedanceSettingsBoard)currentBoard).setImpedanceSettings(_numChannel, pORn, onORoff == '1');
-        }
-        else {
-            outputError("Impedance settings not implemented for this board");
-        }
-    }
-
     private void createAllButtons(int _channelBarHeight) {
         //the size and space of these buttons are dependendant on the size of the screen and full ChannelController
         verbosePrint("ChannelController: createChannelSettingButtons: creating channel setting buttons...");
@@ -198,6 +179,7 @@ class ADS1299SettingsController{
         if (isVisible) {
             for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
                 if(gainButtons[i].isMouseHere() && gainButtons[i].wasPressed) {
+                    // loops over the enum
                     boardSettings.gain[i] = boardSettings.gain[i].getNext();
                     boardSettings.commit(i);
                     gainButtons[i].wasPressed = false;
@@ -238,23 +220,5 @@ class ADS1299SettingsController{
         h = _h;
 
         resizeButtons(_channelBarHeight);
-    }
-
-    void toggleImpedanceCheck(int _channelNumber){ //Channel Numbers start at 1
-        if(boardSettings.srb2[_channelNumber] == Srb2.CONNECT){     //is N pin being used...
-            if (impedanceCheckValues[_channelNumber][1] < '1') { //if not checking/drawing impedance
-                initImpWrite(_channelNumber, 'n', '1');  // turn on the impedance check for the desired channel
-            } else {
-                initImpWrite(_channelNumber, 'n', '0'); //turn off impedance check for desired channel
-            }
-        }
-
-        if(boardSettings.srb2[_channelNumber] == Srb2.DISCONNECT){     //is P pin being used
-            if (impedanceCheckValues[_channelNumber][0] < '1') {    //is channel on
-                initImpWrite(_channelNumber, 'p', '1');
-            } else {
-                initImpWrite(_channelNumber, 'p', '0');
-            }
-        }
     }
 };

@@ -224,9 +224,6 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-///////////Variables from ADS1299SettingsController. This fixes a number of issues.
-char[][] impedanceCheckValues = new char [nchan][2];
-
 SoftwareSettings settings = new SoftwareSettings();
 
 //------------------------------------------------------------------------

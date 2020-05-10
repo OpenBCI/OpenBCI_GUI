@@ -92,6 +92,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private ADS1299Settings currentADS1299Settings;
+    private boolean isCheckingImpedance = false;
 
     // same for all channels for now, more likely will be a map soon
     private final double brainflowGain = 24.0;
@@ -141,24 +142,32 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     public boolean isEXGChannelActive(int channelIndex) {
         return currentADS1299Settings.powerDown[channelIndex] == PowerDown.ON;
     }
-
+    
     @Override
-    public void setImpedanceSettings(int channel, char pORn, boolean active) {
+    public void setCheckingImpedance(int channel, boolean active) {
         char p = '0';
         char n = '0';
 
         if (active) {
-            if (pORn == 'p') {
-                p = '1';
-            }
-            else if (pORn == 'n') {
+            Srb2 srb2sSetting = currentADS1299Settings.srb2[channel];
+            if (srb2sSetting == Srb2.CONNECT) {
                 n = '1';
+            }
+            else {
+                p = '1';
             }
         }
 
         // for example: z 4 1 0 Z
         String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
         sendCommand(command);
+
+        isCheckingImpedance = active;
+    }
+
+    @Override
+    public boolean isCheckingImpedance(int channel) {
+        return isCheckingImpedance;
     }
 
     @Override

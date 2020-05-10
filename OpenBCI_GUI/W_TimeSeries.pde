@@ -372,7 +372,6 @@ class ChannelBar{
     TextBox impValue;
 
     boolean drawVoltageValue;
-    boolean drawImpValue;
 
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
@@ -456,8 +455,6 @@ class ChannelBar{
         impValue.backgroundColor = color(255,255,255,125);
 
         drawVoltageValue = true;
-        drawImpValue = false;
-
     }
 
     void update() {
@@ -535,10 +532,6 @@ class ChannelBar{
 
         //draw onOff Button
         onOffButton.draw();
-        //draw impedance check Button
-        if(currentBoard instanceof ImpedanceSettingsBoard) {
-            impCheckButton.draw();
-        }
 
         //draw plot
         stroke(31,69,110, 50);
@@ -558,18 +551,20 @@ class ChannelBar{
         }
         plot.endDraw();
 
-        if(drawImpValue) {
-            impValue.draw();
+        //draw impedance check Button
+        if(currentBoard instanceof ImpedanceSettingsBoard) {
+            impCheckButton.draw();
+
+            if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
+                impValue.draw();
+            }
         }
+        
         if(drawVoltageValue) {
             voltageValue.draw();
         }
 
         popStyle();
-    }
-
-    void setDrawImp(boolean _trueFalse) {
-        drawImpValue = _trueFalse;
     }
 
     int nPointsBasedOnDataSource() {
@@ -674,15 +669,17 @@ class ChannelBar{
         if(currentBoard instanceof ImpedanceSettingsBoard) {
             if(impCheckButton.isMouseHere() && impCheckButton.isActive()) {
                 println("[" + channelString + "] imp released");
-                w_timeSeries.adsSettingsController.toggleImpedanceCheck(channelIndex);  // 'n' indicates the N inputs and '1' indicates test impedance
-                if(drawImpValue) {
-                    drawImpValue = false;
-                    impCheckButton.setColorNotPressed(color(255)); //White background
-                    impCheckButton.textColorNotActive = color(0); //Black text
-                } else {
-                    drawImpValue = true;
+
+                // flip impedance check
+                ImpedanceSettingsBoard impBoard = (ImpedanceSettingsBoard)currentBoard;
+                impBoard.setCheckingImpedance(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
+
+                if(impBoard.isCheckingImpedance(channelIndex)) {
                     impCheckButton.setColorNotPressed(color(50)); //Dark background
                     impCheckButton.textColorNotActive = color (255); //White text
+                } else {
+                    impCheckButton.setColorNotPressed(color(255)); //White background
+                    impCheckButton.textColorNotActive = color(0); //Black text
                 }
             }
             impCheckButton.setIsActive(false);
