@@ -122,6 +122,7 @@ class CytonDefaultSettings extends ADS1299Settings {
     CytonDefaultSettings(Board theBoard) {
         super(theBoard);
 
+        // the 'd' command is automatically sent by brainflow on prepare_session
         Arrays.fill(powerDown, PowerDown.ON);
         Arrays.fill(gain, Gain.X24);
         Arrays.fill(inputType, InputType.NORMAL);
@@ -136,7 +137,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private ADS1299Settings currentADS1299Settings;
-    private boolean isCheckingImpedance = false;
+    private boolean[] isCheckingImpedance;
 
     // same for all channels
     private final double brainflowGain = 24.0;
@@ -151,6 +152,10 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public BoardCyton() {
         super();
 
+        isCheckingImpedance = new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedance, false);
+
+        // The command 'd' is automatically sent by brainflow on prepare_session
         currentADS1299Settings = new CytonDefaultSettings(this);
     }
 
@@ -281,12 +286,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
         sendCommand(command);
 
-        isCheckingImpedance = active;
+        isCheckingImpedance[channel] = active;
     }
 
     @Override
     public boolean isCheckingImpedance(int channel) {
-        return isCheckingImpedance;
+        return isCheckingImpedance[channel];
     }
 
     @Override

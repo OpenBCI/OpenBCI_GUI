@@ -527,7 +527,8 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR();
+            //TODO[NovaXR]: pass the selected mode here from the UI
+            currentBoard = new BoardNovaXR(NovaXRMode.DEFAULT);
             //TODO[brainflow]
             //currentBoard = new BoardBrainFlowSynthetic();
             break;

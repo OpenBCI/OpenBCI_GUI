@@ -34,6 +34,9 @@ class NovaXRDefaultSettings extends ADS1299Settings {
     NovaXRDefaultSettings(Board theBoard, NovaXRMode mode) {
         super(theBoard);
 
+        // send the mode command to board
+        board.sendCommand(mode.getCommand());
+
         Arrays.fill(powerDown, PowerDown.ON);
 
         switch(mode) {
@@ -73,11 +76,11 @@ class NovaXRDefaultSettings extends ADS1299Settings {
                 break;
 
             case PRESET4:
-                // TODO[brainflow] This mode is not defined yet
+                // TODO[NovaXR] This mode is not defined yet
                 break;
 
             case PRESET5:
-                // TODO[brainflow] This mode is not defined yet
+                // TODO[NovaXR] This mode is not defined yet
                 break;
 
             default:
@@ -92,7 +95,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private ADS1299Settings currentADS1299Settings;
-    private boolean isCheckingImpedance = false;
+    private boolean[] isCheckingImpedance;
 
     // same for all channels for now, more likely will be a map soon
     private final double brainflowGain = 24.0;
@@ -101,23 +104,27 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     private int[] ppgChannelsCache = null;
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
-
-    // TODO[brainflow] temporary constructor until we pass mode
-    public BoardNovaXR() {
-        this(NovaXRMode.DEFAULT);
-    }
+    private NovaXRMode initialSettingsMode;
 
     public BoardNovaXR(NovaXRMode mode) {
         super();
 
-        // TODO[brainflow] Actually, we need to save the mode, send the mode command 
-        // on initialize, and then create the default settings
-        currentADS1299Settings = new NovaXRDefaultSettings(this, mode);
+        isCheckingImpedance = new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedance, false);
+
+        initialSettingsMode = mode;
     }
 
     @Override
     public boolean initializeInternal() {        
-        return super.initializeInternal();
+        boolean res = super.initializeInternal();
+
+        if (res) {
+            // NovaXRDefaultSettings() will send mode command to board
+            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode);
+        }
+
+        return res;
     }
 
     // implement mandatory abstract functions
@@ -162,12 +169,12 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
         String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
         sendCommand(command);
 
-        isCheckingImpedance = active;
+        isCheckingImpedance[channel] = active;
     }
 
     @Override
     public boolean isCheckingImpedance(int channel) {
-        return isCheckingImpedance;
+        return isCheckingImpedance[channel];
     }
 
     @Override
