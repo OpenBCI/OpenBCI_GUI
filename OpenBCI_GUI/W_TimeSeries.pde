@@ -257,7 +257,6 @@ class W_timeSeries extends Widget {
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        // TODO[brainflow] get rid of this insane if-statement logic
         if(currentBoard instanceof ADS1299SettingsBoard) {
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
