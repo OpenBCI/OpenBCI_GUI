@@ -168,33 +168,6 @@ void parseKey(char val) {
             //stopButtonWasPressed();
             break;
 
-        //Lowercase k sets Bias Don't Include all channels
-        case 'k':
-            for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) { //for every channel
-                //BIAS off all channels
-                if (currentBoard instanceof ADS1299SettingsBoard) {
-                    ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
-                    ADS1299Settings settings = settingsBoard.getADS1299Settings();
-                    Arrays.fill(settings.bias, Bias.NO_INCLUDE);
-
-                    println ("chan " + i + " bias don't include");
-                }
-            }
-            break;
-        //Lowercase l sets Bias Include all channels
-        case 'l':
-            for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) { //for every channel
-                //BIAS on all channels
-                if (currentBoard instanceof ADS1299SettingsBoard) {
-                    ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
-                    ADS1299Settings settings = settingsBoard.getADS1299Settings();
-                    Arrays.fill(settings.bias, Bias.INCLUDE);
-
-                    println ("chan " + i + " bias include");
-                }
-            }
-            break;
-
         ///////////////////// Save User settings lowercase n
         case 'n':
             println("Save key pressed!");
