@@ -25,16 +25,6 @@ class ADS1299SettingsController{
         createAllButtons(_channelBarHeight);
     }
 
-    public void activateChannel(int Ichan) {
-        println("OpenBCI_GUI: activating channel " + (Ichan+1));
-        currentBoard.setEXGChannelActive(Ichan, true);
-    }
-
-    public void deactivateChannel(int Ichan) {
-        println("OpenBCI_GUI: deactivating channel " + (Ichan+1));
-        currentBoard.setEXGChannelActive(Ichan, false);
-    }
-
     public void update(){
         for (int i=0; i<currentBoard.getNumEXGChannels(); i++) {
             // grab the name out of the enum directly.
