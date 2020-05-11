@@ -231,27 +231,11 @@ public void controlEvent(ControlEvent theEvent) {
     if (theEvent.isFrom("novaXR_Modes")) {
         int val = (int)(theEvent.getController()).getValue();
         Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        String s = (String)bob.get("text");
-        switch (val) {
-            case 0:
-                novaXR_boardSetting = 'd';
-                break;
-            case 1:
-                novaXR_boardSetting = 'f';
-                break;
-            case 2:
-                novaXR_boardSetting = 'g';
-                break;
-            case 3:
-                novaXR_boardSetting = 'h';
-                break;
-            case 4:
-                novaXR_boardSetting = 'j';
-                break;
-        }
-        println("ControlPanel: Selected NovaXR Board Mode: " + s + ". Config Char = " + novaXR_boardSetting);
+        // this will retrieve the enum object stored in the dropdown!
+        novaXR_boardSetting = (NovaXRMode)bob.get("value");
     }
 
+    //This dropdown is in the SessionData Box
     if (theEvent.isFrom("maxFileDuration")) {
         int n = (int)theEvent.getValue();
         settings.setLogFileDurationChoice(n);
@@ -2250,6 +2234,7 @@ class NovaXRBox {
     private String sampleRateLabel = "SAMPLE RATE";
     private ControlP5 novaXRcp5;
     private String[] novaXRModes = {"Default Mode", "Internal Signal", "External Signal", "Preset 4", "Preset 5"};
+    private ScrollableList modeList;
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2283,9 +2268,9 @@ class NovaXRBox {
         novaXR500 = new Button (x + w - padding - 60, y + 14 + padding*3 + 26, 60, 24, "500Hz", fontInfo.buttonLabel_size);
         novaXR500.setHelpText("Set Sampling Rate to 500Hz.");
         //x + padding, novaXR250.but_y + 24 + padding
-        createDropdown("novaXR_Modes", Arrays.asList(novaXRModes));
-        novaXRcp5.get(ScrollableList.class, "novaXR_Modes").setPosition(x + padding, novaXR250.but_y + 24 + padding);
-
+        createDropdown("novaXR_Modes");
+        modeList.setPosition(x + padding, novaXR250.but_y + 24 + padding);
+        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
     }
 
     public void update() {
@@ -2346,8 +2331,8 @@ class NovaXRBox {
         novaXR500.wasPressed = false;
     }
 
-    private void createDropdown(String name, List<String> _items){
-        novaXRcp5.addScrollableList(name)
+    private void createDropdown(String name){
+        modeList = novaXRcp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2355,16 +2340,22 @@ class NovaXRBox {
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
             // .setColorCursor(color(26,26,26))
-            .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
+            .setSize(w - padding*2,1*24)// + maxFreqList.size())
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
-            .addItems(_items) // used to be .addItems(maxFreqList)
+            // .addItems(_items) // used to be .addItems(maxFreqList)
             .setVisible(true)
             ;
+        // for each entry in the enum, add it to the dropdown.
+        for (NovaXRMode mode : NovaXRMode.values()) {
+            // this will store the *actual* enum object inside the dropdown!
+            modeList.addItem(mode.getName(), mode);
+        }
+        //Style the text in the ScrollableList
         novaXRcp5.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(_items.get(0))
+            .setText(NovaXRMode.DEFAULT.getName())
             .setFont(h4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2373,7 +2364,7 @@ class NovaXRBox {
         novaXRcp5.getController(name)
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(_items.get(0))
+            .setText(NovaXRMode.DEFAULT.getName())
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop

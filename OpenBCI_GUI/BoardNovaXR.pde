@@ -4,6 +4,31 @@ import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = true;
 
+public enum NovaXRMode
+{
+    DEFAULT("Default Mode", "d"), 
+    INTERNAL_SIGNAL("Internal Signal", "f"), 
+    EXTERNAL_SIGNAL("External Signal", "g"), 
+    PRESET4("Preset 4", "h"),
+    PRESET5("Preset 5", "j");
+
+    private String name;
+    private String command;
+ 
+    NovaXRMode(String _name, String _command) {
+        this.name = _name;
+        this.command = _command;
+    }
+ 
+    public String getName() {
+        return name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+}
+
 class BoardNovaXR extends BoardBrainFlow
 implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard {
 
