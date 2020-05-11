@@ -2340,11 +2340,9 @@ class NovaXRBox {
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
-            // .setColorCursor(color(26,26,26))
             .setSize(w - padding*2,1*24)// + maxFreqList.size())
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
-            // .addItems(_items) // used to be .addItems(maxFreqList)
             .setVisible(true)
             ;
         // for each entry in the enum, add it to the dropdown.
@@ -2353,8 +2351,7 @@ class NovaXRBox {
             modeList.addItem(mode.getName(), mode);
         }
         //Style the text in the ScrollableList
-        novaXRcp5.getController(name)
-            .getCaptionLabel() //the caption label is the text object in the primary bar
+        modeList.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(NovaXRMode.DEFAULT.getName())
             .setFont(h4)
@@ -2362,8 +2359,7 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        novaXRcp5.getController(name)
-            .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+        modeList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(NovaXRMode.DEFAULT.getName())
             .setFont(h5)
