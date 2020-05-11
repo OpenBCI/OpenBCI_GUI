@@ -233,6 +233,7 @@ public void controlEvent(ControlEvent theEvent) {
         Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
         // this will retrieve the enum object stored in the dropdown!
         novaXR_boardSetting = (NovaXRMode)bob.get("value");
+        println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
     }
 
     //This dropdown is in the SessionData Box
