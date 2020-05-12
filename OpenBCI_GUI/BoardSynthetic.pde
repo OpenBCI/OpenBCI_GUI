@@ -157,52 +157,51 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private void synthesizeEXGData(double[][] buffer, int sampleIndex) {
         float val_uV;
         for (int i = 0; i<getNumEXGChannels(); i++) {
-            int Ichan = exgChannels[i];
             if (isEXGChannelActive(i)) {
                 val_uV = randomGaussian()*sqrt(getSampleRate()/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-                if (Ichan==0) {
+                if (i==0) {
                     val_uV*= 10f;  //scale one channel higher
-                } else if (Ichan==1) {
+                } else if (i==1) {
                     //add sine wave at 10 Hz at 10 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * sine_freq_Hz / getSampleRate();
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);
-                } else if (Ichan==2) {
+                    sine_phase_rad[i] += 2.0f*PI * sine_freq_Hz / getSampleRate();
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[i]);
+                } else if (i==2) {
                     //15 Hz interference at 20 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * 15.0f / getSampleRate();  //15 Hz
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //20 uVrms
-                } else if (Ichan==3) {
+                    sine_phase_rad[i] += 2.0f*PI * 15.0f / getSampleRate();  //15 Hz
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[i]);    //20 uVrms
+                } else if (i==3) {
                     //20 Hz interference at 30 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * 20.0f / getSampleRate();  //20 Hz
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 30.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //30 uVrms
-                } else if (Ichan==4) {
+                    sine_phase_rad[i] += 2.0f*PI * 20.0f / getSampleRate();  //20 Hz
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 30.0f * sqrt(2.0)*sin(sine_phase_rad[i]);  //30 uVrms
+                } else if (i==4) {
                     //25 Hz interference at 40 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * 25.0f / getSampleRate();  //25 Hz
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 40.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //40 uVrms
-                } else if (Ichan==5) {
+                    sine_phase_rad[i] += 2.0f*PI * 25.0f / getSampleRate();  //25 Hz
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 40.0f * sqrt(2.0)*sin(sine_phase_rad[i]);  //40 uVrms
+                } else if (i==5) {
                     //30 Hz interference at 50 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * 30.0f / getSampleRate();  //30 Hz
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
-                } else if (Ichan==6) {
+                    sine_phase_rad[i] += 2.0f*PI * 30.0f / getSampleRate();  //30 Hz
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[i]);  //50 uVrms
+                } else if (i==6) {
                     //50 Hz interference at 60 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / getSampleRate();  //50 Hz
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 60.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //60 uVrms
-                } else if (Ichan==7) {
+                    sine_phase_rad[i] += 2.0f*PI * 50.0f / getSampleRate();  //50 Hz
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 60.0f * sqrt(2.0)*sin(sine_phase_rad[i]);  //60 uVrms
+                } else if (i==7) {
                     //60 Hz interference at 120 uVrms
-                    sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / getSampleRate();  //60 Hz
-                    if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                    val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //120 uVrms
+                    sine_phase_rad[i] += 2.0f*PI * 60.0f / getSampleRate();  //60 Hz
+                    if (sine_phase_rad[i] > 2.0f*PI) sine_phase_rad[i] -= 2.0f*PI;
+                    val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[i]);  //120 uVrms
                 }
             } else {
                 val_uV = 0.0f;
             }
 
-            buffer[Ichan][sampleIndex] = (double)(0.5 + val_uV); //convert to counts, the 0.5 is to ensure rounding
+            buffer[exgChannels[i]][sampleIndex] = (double)(0.5 + val_uV); //convert to counts, the 0.5 is to ensure rounding
         }
     }
 
