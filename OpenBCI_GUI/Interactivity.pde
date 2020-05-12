@@ -28,7 +28,9 @@ synchronized void keyPressed() {
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
         if (settings.expertModeToggle || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
-            parseKey(key);
+            if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
+                parseKey(key);
+            }
         }
     }
 
@@ -46,20 +48,13 @@ void parseKey(char val) {
             stopButtonWasPressed();
             break;
         case '.':
-            //This keyboard shortcut is not being used!
             break;
         case ',':
             drawContainers = !drawContainers;
             break;
         case '<':
-            //w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
             break;
         case '>':
-            /*
-            if(eegDataSource == DATASOURCE_GANGLION){
-                ganglion.enterBootloaderMode();
-            }
-            */
             break;
         case '{':
             if(colorScheme == COLOR_SCHEME_DEFAULT){
