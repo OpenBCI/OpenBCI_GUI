@@ -275,6 +275,10 @@ class W_timeSeries extends Widget {
     }
 
     private void setAdsSettingsVisible(boolean visible) {
+        if(!(currentBoard instanceof ADS1299SettingsBoard)) {
+            return;
+        }
+
         if(visible) {
             if (isRunning) {
                 PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
