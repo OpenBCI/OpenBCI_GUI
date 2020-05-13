@@ -1754,9 +1754,7 @@ class SessionDataBox {
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
-            int extraPadding = 
-                (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) 
-                || (selectedProtocol == BoardProtocol.SERIAL) ? 20 : 5;
+            int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC)  ? 5 : 20;
             fill(bgColor);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
