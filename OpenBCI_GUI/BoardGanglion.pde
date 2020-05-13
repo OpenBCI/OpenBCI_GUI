@@ -106,6 +106,20 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     }
 
     @Override
+    protected double[][] getNewDataInternal() {
+        if ((streaming) || (isCheckingImpedance)) {
+            try {
+                return boardShim.get_board_data();
+            } catch (BrainFlowError e) {
+                println("WARNING: could not get board data.");
+                e.printStackTrace();
+            }
+        }
+    
+        return emptyData;
+    }
+
+    @Override
     public boolean isAccelerometerActive() {
         return isGettingAccel;
     }
@@ -130,7 +144,28 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
-        configBoard(checkImpedance ? "z" : "Z");
+        // todo brainflow, we need to change button to start/stop streaming
+        if (checkImpedance) {
+            if (isCheckingImpedance) {
+                println("Already checking impedance.");
+                return;
+            }
+            if (streaming) {
+                stopStreaming();
+            }
+            configBoard("z");
+            startStreaming();
+        }
+        else {
+            if (!isCheckingImpedance) {
+                println ("Impedance is not running.");
+                return;
+            }
+            if (streaming) {
+                stopStreaming();
+            }
+            configBoard("Z");
+        }
         isCheckingImpedance = checkImpedance;
     }
     

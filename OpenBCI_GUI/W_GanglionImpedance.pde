@@ -10,6 +10,7 @@
 //
 ///////////////////////////////////////////////////,
 
+
 class W_GanglionImpedance extends Widget {
     Button startStopCheck;
     int padding = 24;
@@ -27,24 +28,29 @@ class W_GanglionImpedance extends Widget {
 
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
-        //draw start/stop impedance button
         startStopCheck.draw();
-        
-        if(((BoardGanglion)currentBoard).isCheckingImpedance()){
-            fill(bgColor);
-            textFont(p4, 14);
-            // todo[brainflow] fetch impedance data from buffer and display here
-            // may or may not need to be "adjusted" now
-            // current code doesn't crash, but also isn't right
-            for(int i = 0; i < data_elec_imp_ohm.length; i++){
+
+        //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
+        fill(bgColor);
+        textFont(p4, 14);
+
+        try {
+            BoardGanglion ganglion = (BoardGanglion)currentBoard;
+            List<double[]> data = ganglion.getData(1);
+            if (data.get(0).length != 1) {
+                println("Waiting for data");
+                return;
+            }
+            int resistanceChannels[] = BoardShim.get_resistance_channels(ganglion.getBoardIdInt());
+
+            for(int i = 0; i < resistanceChannels.length; i++){
                 String toPrint;
-                //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
-                //float adjustedImpedance = data_elec_imp_ohm[i]/2.0;
-                float adjustedImpedance = data_elec_imp_ohm[i];
-                if(i == 0){
+                float adjustedImpedance = (float)data.get(resistanceChannels[i])[0]/2.0;
+                if(i == 0) {
                     toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
                 } else {
                     toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
@@ -71,11 +77,13 @@ class W_GanglionImpedance extends Widget {
                 ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
                 popStyle();
             }
-            // Display a spinning gif if impedance check is on
-            image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
-        }
 
-        popStyle();
+            image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
+            popStyle();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     void screenResized(){
@@ -121,20 +129,3 @@ class W_GanglionImpedance extends Widget {
         startStopCheck.setIsActive(false);
     }
 };
-
-public float convertRawGanglionImpedanceToTarget(float _actual){
-    //the following impedance adjustment calculations were derived using empirical values from resistors between 1,2,3,4,REF-->D_G
-    float _target;
-
-    //V1 -- more accurate for lower impedances (< 22kOhcm) -> y = 0.0034x^3 - 0.1443x^2 + 3.1324x - 10.59
-    if(_actual <= 22){
-        // _target = (0.0004)*(pow(_actual,3)) - (0.0262)*(pow(_actual,2)) + (1.8349)*(_actual) - 6.6006;
-        _target = (0.0034)*(pow(_actual,3)) - (0.1443)*(pow(_actual,2)) + (3.1324)*(_actual) - 10.59;
-    }
-    //V2 -- more accurate for higher impedances (> 22kOhm) -> y = 0.000009x^4 - 0.001x^3 + 0.0409x^2 + 0.6445x - 1
-    else {
-        _target = (0.000009)*(pow(_actual,4)) - (0.001)*pow(_actual,3) + (0.0409)*(pow(_actual,2)) + (0.6445)*(pow(_actual,1)) - 1;
-    }
-
-    return _target;
-}
