@@ -15,6 +15,34 @@ enum CytonBoardMode {
     public int getValue() { return value; }
 }
 
+public enum CytonSDMode {   
+    NO_WRITE("Do not write to SD...", null),
+    MAX_5MIN("5 minute maximum", "A"),
+    MAX_15MIN("15 minute maximum", "S"),
+    MAX_30MIN("30 minute maximum", "F"),
+    MAX_1HR("1 hour maximum", "G"),
+    MAX_2HR("2 hour maximum", "H"),
+    MAX_4HR("4 hour maximum", "J"),
+    MAX_12HR("12 hour maximum", "K"),
+    MAX_24HR("24 hour maximum", "L");
+
+    private String name;
+    private String command;
+ 
+    CytonSDMode(String _name, String _command) {
+        this.name = _name;
+        this.command = _command;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+}
+
 static class BoardCytonConstants {
     static final float series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
     static final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
@@ -318,6 +346,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     private void setBoardMode(CytonBoardMode boardMode) {
         configBoard("/" + boardMode.getValue());
         currentBoardMode = boardMode;
+    }
+
+    public void openSDFile() {
+        println("Opening SD file. Writing " + cyton_sdSetting.getCommand() + " to OpenBCI.");
+        configBoard(cyton_sdSetting.getCommand()); // tell the SD file to close if one is open...
+        delay(100); //make sure 'j' gets sent to the board
     }
 
     public void closeSDFile() {
