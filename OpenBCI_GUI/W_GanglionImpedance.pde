@@ -47,10 +47,11 @@ class W_GanglionImpedance extends Widget {
             List<double[]> data = ganglion.getData(1);
             int resistanceChannels[] = BoardShim.get_resistance_channels(ganglion.getBoardIdInt());
 
+            // todo format in brainflow, 4 channels and reference. Does it match this code
             for(int i = 0; i < resistanceChannels.length; i++){
                 String toPrint;
                 float adjustedImpedance = (float)data.get(0)[resistanceChannels[i]]/2.0;
-                if(i == 0) {
+                if(i == (resistanceChannels.length - 1)) {
                     toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
                 } else {
                     toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
