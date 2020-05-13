@@ -140,8 +140,8 @@ public void controlEvent(ControlEvent theEvent) {
         protocolWifiCyton.setColorNotPressed(colorNotPressed);
         protocolSerialCyton.setColorNotPressed(colorNotPressed);
 
+        //Reset protocol
         selectedProtocol = BoardProtocol.NONE;
-        controlPanel.novaXRBox.isShowing = false;
 
         //Perform this check in a way that ignores order of items in the menulist
         if (eegDataSource == DATASOURCE_CYTON) {
@@ -163,7 +163,7 @@ public void controlEvent(ControlEvent theEvent) {
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_NOVAXR) {
-            controlPanel.novaXRBox.isShowing = true;
+            selectedSamplingRate = 250; //default sampling rate
         }
     }
 
@@ -225,6 +225,16 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
+    //Check for event in NovaXR Mode List in Control Panel
+    if (theEvent.isFrom("novaXR_Modes")) {
+        int val = (int)(theEvent.getController()).getValue();
+        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+        // this will retrieve the enum object stored in the dropdown!
+        novaXR_boardSetting = (NovaXRMode)bob.get("value");
+        println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
+    }
+
+    //This dropdown is in the SessionData Box
     if (theEvent.isFrom("maxFileDuration")) {
         int n = (int)theEvent.getValue();
         settings.setLogFileDurationChoice(n);
@@ -863,6 +873,10 @@ class ControlPanel {
                 }
             }
 
+            else if (eegDataSource == DATASOURCE_NOVAXR) {
+                novaXRBox.mousePressed();
+            }
+
             
             //The following buttons apply only to Cyton and Ganglion Modes for now
             if (autoSessionName.isMouseHere()) {
@@ -1130,6 +1144,8 @@ class ControlPanel {
                                 "Sample_Data" + System.getProperty("file.separator") + 
                                 "OpenBCI-sampleData-2-meditation.txt"));
         }
+
+        novaXRBox.mouseReleased();
 
         //reset all buttons to false
         refreshPort.setIsActive(false);
@@ -2051,6 +2067,7 @@ class RecentPlaybackBox {
         padding = _padding;
 
         cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
+        cp5_recentPlayback_dropdown.setAutoDraw(false);
         getRecentPlaybackFiles();
 
         String[] temp = shortFileNames.array();
@@ -2058,7 +2075,6 @@ class RecentPlaybackBox {
         cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
-        cp5_recentPlayback_dropdown.setAutoDraw(false);
     }
 
     /////*Update occurs while control panel is open*/////
@@ -2092,7 +2108,6 @@ class RecentPlaybackBox {
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setVisible(true);
         cp5_recentPlayback_dropdown.draw();
     }
 
@@ -2147,7 +2162,7 @@ class RecentPlaybackBox {
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .addItems(_items) // used to be .addItems(maxFreqList)
-            .setVisible(false)
+            .setVisible(true)
             ;
         cp5_recentPlayback_dropdown.getController(name)
             .getCaptionLabel() //the caption label is the text object in the primary bar
@@ -2171,23 +2186,29 @@ class RecentPlaybackBox {
 };
 
 class NovaXRBox {
-    int x, y, w, h, padding; //size and position
-    boolean isShowing;
-    private boolean previousIsShowing;
+    private int x, y, w, h, padding; //size and position
+    private Button novaXR250;
+    private Button novaXR500;
+    private String boxLabel = "NOVAXR CONFIG";
+    private String ipTextLabel = "STATIC IP";
+    private String sampleRateLabel = "SAMPLE RATE";
+    private ControlP5 novaXRcp5;
+    private String[] novaXRModes = {"Default Mode", "Internal Signal", "External Signal", "Preset 4", "Preset 5"};
+    private ScrollableList modeList;
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 67;
+        h = 127 + _padding;
         padding = _padding;
-        isShowing = false;
-        previousIsShowing = false;
+        novaXRcp5 = new ControlP5(ourApplet);
+        novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        cp5.addTextfield("novaXR_IP")
-            .setPosition(x + 60, y + 32)
+        novaXRcp5.addTextfield("novaXR_IP")
+            .setPosition(x + w - 157 - padding, y + 14 + padding*2)
             .setCaptionLabel("")
-            .setSize(187, 26)
+            .setSize(157, 26)
             .setFont(f2)
             .setFocus(false)
             .setColor(color(26, 26, 26))
@@ -2199,16 +2220,21 @@ class NovaXRBox {
             .setText(novaXR_ipAddress)
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
-            .setVisible(false)
+            .setVisible(true)
             .setAutoClear(true); 
+        novaXR250 = new Button (x + w - padding*2 - 60*2, y + 14 + padding*3 + 26, 60, 24, "250Hz", fontInfo.buttonLabel_size);
+        novaXR250.setHelpText("Set Sampling Rate to 250Hz.");
+        novaXR250.setColorNotPressed(isSelected_color);
+        novaXR500 = new Button (x + w - padding - 60, y + 14 + padding*3 + 26, 60, 24, "500Hz", fontInfo.buttonLabel_size);
+        novaXR500.setHelpText("Set Sampling Rate to 500Hz.");
+        //x + padding, novaXR250.but_y + 24 + padding
+        createDropdown("novaXR_Modes");
+        modeList.setPosition(x + padding, novaXR250.but_y + 24 + padding);
+        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
     }
 
     public void update() {
-        //Check for state change so we don't call setVisible() every update
-        if (isShowing != previousIsShowing) {
-            cp5.get(Textfield.class, "novaXR_IP").setVisible(isShowing);
-            previousIsShowing = isShowing;
-        }
+        
     }
 
     public void draw() {
@@ -2216,13 +2242,90 @@ class NovaXRBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h);
+        //draw flexible grey background for this box
+        rect(x, y, w, h + novaXRcp5.getController("novaXR_Modes").getHeight() - padding*2);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("IP", x + padding, y + padding);
+        text(boxLabel, x + padding, y + padding);
+        textAlign(LEFT, TOP);
+        textFont(p4, 14);
+        text(ipTextLabel, x + padding, y + padding*2 + 17);
+        text(sampleRateLabel, x + padding, y + padding*3 + 19 + 24);
         popStyle();
-        cp5.get(Textfield.class, "novaXR_IP").setPosition(x + 60, y + 32);
+        novaXR250.draw();
+        novaXR500.draw();
+        novaXRcp5.draw();
+    }
+
+    public void mousePressed() {
+        if (novaXR250.isMouseHere()) {
+            novaXR250.setIsActive(true);
+            novaXR250.wasPressed = true;
+            novaXR250.setColorNotPressed(isSelected_color);
+            novaXR500.setColorNotPressed(colorNotPressed);
+        }
+
+        if (novaXR500.isMouseHere()) {
+            novaXR500.setIsActive(true);
+            novaXR500.wasPressed = true;
+            novaXR500.setColorNotPressed(isSelected_color);
+            novaXR250.setColorNotPressed(colorNotPressed);
+        }
+    }
+
+    public void mouseReleased() {
+        if (novaXR250.isMouseHere() && novaXR250.wasPressed) {
+            selectedSamplingRate = 250;
+            println("ControlPanel: NovaXR Sampling Rate set to: " + selectedSamplingRate);
+        }
+
+        if (novaXR500.isMouseHere() && novaXR500.wasPressed) {
+            selectedSamplingRate = 500;
+            println("ControlPanel: NovaXR Sampling Rate set to: " + selectedSamplingRate);
+        }
+
+        novaXR250.setIsActive(false);
+        novaXR250.wasPressed = false;
+        novaXR500.setIsActive(false);
+        novaXR500.wasPressed = false;
+    }
+
+    private void createDropdown(String name){
+        modeList = novaXRcp5.addScrollableList(name)
+            .setOpen(false)
+            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorValueLabel(color(255))       // text color
+            .setColorCaptionLabel(color(255))
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setSize(w - padding*2,1*24)// + maxFreqList.size())
+            .setBarHeight(24) //height of top/primary bar
+            .setItemHeight(24) //height of all item/dropdown bars
+            .setVisible(true)
+            ;
+        // for each entry in the enum, add it to the dropdown.
+        for (NovaXRMode mode : NovaXRMode.values()) {
+            // this will store the *actual* enum object inside the dropdown!
+            modeList.addItem(mode.getName(), mode);
+        }
+        //Style the text in the ScrollableList
+        modeList.getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(NovaXRMode.DEFAULT.getName())
+            .setFont(h4)
+            .setSize(14)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        modeList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(NovaXRMode.DEFAULT.getName())
+            .setFont(h5)
+            .setSize(12) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
     }
 };
 

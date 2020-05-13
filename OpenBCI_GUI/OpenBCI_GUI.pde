@@ -129,6 +129,7 @@ String wifi_ipAddress = "192.168.4.1";
 // TODO remove, unused (I dont know how box should look like cause we have no inputs for it, so keep for now for ui only)
 // and I dont brave enough to touch code in ControlPanel.pde
 String novaXR_ipAddress = "192.168.4.1";
+NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
@@ -527,8 +528,7 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            //TODO[NovaXR]: pass the selected mode here from the UI
-            currentBoard = new BoardNovaXR(NovaXRMode.DEFAULT);
+            currentBoard = new BoardNovaXR(novaXR_boardSetting);
             //TODO[brainflow]
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
