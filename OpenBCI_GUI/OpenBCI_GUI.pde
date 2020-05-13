@@ -229,6 +229,8 @@ int numSettingsPerChannel = 6; //each channel has 6 different settings
 char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
 char[][] impedanceCheckValues = new char [nchan][2];
 
+NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
+
 SoftwareSettings settings = new SoftwareSettings();
 
 //------------------------------------------------------------------------

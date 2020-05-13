@@ -1,5 +1,4 @@
-import java.util.*; 
-
+import java.util.*;
 
 class W_NovaAux extends Widget {
 
