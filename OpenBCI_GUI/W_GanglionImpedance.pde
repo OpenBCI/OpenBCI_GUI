@@ -40,16 +40,16 @@ class W_GanglionImpedance extends Widget {
 
         try {
             BoardGanglion ganglion = (BoardGanglion)currentBoard;
-            List<double[]> data = ganglion.getData(1);
-            if (data.get(0).length != 1) {
-                println("Waiting for data");
+            if (!ganglion.isCheckingImpedance()) {
                 return;
             }
+
+            List<double[]> data = ganglion.getData(1);
             int resistanceChannels[] = BoardShim.get_resistance_channels(ganglion.getBoardIdInt());
 
             for(int i = 0; i < resistanceChannels.length; i++){
                 String toPrint;
-                float adjustedImpedance = (float)data.get(resistanceChannels[i])[0]/2.0;
+                float adjustedImpedance = (float)data.get(0)[resistanceChannels[i]]/2.0;
                 if(i == 0) {
                     toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
                 } else {
