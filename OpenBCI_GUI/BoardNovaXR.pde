@@ -97,14 +97,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     private ADS1299Settings currentADS1299Settings;
     private boolean[] isCheckingImpedance;
 
-    // same for all channels for now, more likely will be a map soon
-    private final double brainflowGain = 24.0;
-
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
     private NovaXRMode initialSettingsMode;
+
+    private final NovaXRDefaultSettings defaultSettings;
 
     public BoardNovaXR(NovaXRMode mode) {
         super();
@@ -113,6 +112,10 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
         Arrays.fill(isCheckingImpedance, false);
 
         initialSettingsMode = mode;
+
+        // store a copy of the default settings. This will be used to undo brainflow's
+        // gain scaling to re-scale in gui
+        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
     }
 
     @Override
@@ -183,7 +186,8 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
         int[] exgChannels = getEXGChannels();
         for (int i = 0; i < exgChannels.length; i++) {
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
-                // brainflow assumes a fixed gain of 24. Undo brainflow's scaling and apply new scale.
+                // brainflow assumes default gain. Undo brainflow's scaling and apply new scale.
+                double brainflowGain = defaultSettings.gain[i].getScalar();
                 double scalar = brainflowGain / currentADS1299Settings.gain[i].getScalar();
                 data[exgChannels[i]][j] *= scalar;
             }
