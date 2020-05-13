@@ -1264,8 +1264,8 @@ public void initButtonPressed(){
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
-
-            novaXR_ipAddress = cp5.get(Textfield.class, "novaXR_IP").getText();
+            
+            novaXR_ipAddress = controlPanel.novaXRBox.getIP();
 
             //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
             midInit = true;
@@ -2231,6 +2231,10 @@ class NovaXRBox {
         createDropdown("novaXR_Modes");
         modeList.setPosition(x + padding, novaXR250.but_y + 24 + padding);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
+    }
+
+    public String getIP() {
+        return novaXRcp5.get(Textfield.class, "novaXR_IP").getText();
     }
 
     public void update() {
