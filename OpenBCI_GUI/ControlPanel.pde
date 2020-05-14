@@ -1262,9 +1262,7 @@ public void initButtonPressed(){
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
-
-            novaXR_ipAddress = cp5.get(Textfield.class, "novaXR_IP").getText();
-
+            
             //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
             midInit = true;
             output("Attempting to Start Session..."); // Show this at the bottom of the GUI
@@ -2191,7 +2189,6 @@ class NovaXRBox {
     private Button novaXR250;
     private Button novaXR500;
     private String boxLabel = "NOVAXR CONFIG";
-    private String ipTextLabel = "STATIC IP";
     private String sampleRateLabel = "SAMPLE RATE";
     private ControlP5 novaXRcp5;
     private ScrollableList modeList;
@@ -2200,32 +2197,15 @@ class NovaXRBox {
         x = _x;
         y = _y;
         w = _w;
-        h = 127 + _padding;
+        h = 103 + _padding;
         padding = _padding;
         novaXRcp5 = new ControlP5(ourApplet);
         novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        novaXRcp5.addTextfield("novaXR_IP")
-            .setPosition(x + w - 157 - padding, y + 14 + padding*2)
-            .setCaptionLabel("")
-            .setSize(157, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(novaXR_ipAddress)
-            .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setVisible(true)
-            .setAutoClear(true); 
-        novaXR250 = new Button (x + w - padding*2 - 60*2, y + 14 + padding*3 + 26, 60, 24, "250Hz", fontInfo.buttonLabel_size);
+        novaXR250 = new Button (x + w - padding*2 - 60*2, y + 16 + padding*3, 60, 24, "250Hz", fontInfo.buttonLabel_size);
         novaXR250.setHelpText("Set Sampling Rate to 250Hz.");
         novaXR250.setColorNotPressed(isSelected_color);
-        novaXR500 = new Button (x + w - padding - 60, y + 14 + padding*3 + 26, 60, 24, "500Hz", fontInfo.buttonLabel_size);
+        novaXR500 = new Button (x + w - padding - 60, y + 16 + padding*3, 60, 24, "500Hz", fontInfo.buttonLabel_size);
         novaXR500.setHelpText("Set Sampling Rate to 500Hz.");
         //x + padding, novaXR250.but_y + 24 + padding
         createDropdown("novaXR_Modes");
@@ -2250,8 +2230,7 @@ class NovaXRBox {
         text(boxLabel, x + padding, y + padding);
         textAlign(LEFT, TOP);
         textFont(p4, 14);
-        text(ipTextLabel, x + padding, y + padding*2 + 17);
-        text(sampleRateLabel, x + padding, y + padding*3 + 19 + 24);
+        text(sampleRateLabel, x + padding, y + padding*3 + 19);
         popStyle();
         novaXR250.draw();
         novaXR500.draw();
