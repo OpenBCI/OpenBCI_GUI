@@ -411,7 +411,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         println("Cyton: printRegisters(): Writing ? to OpenBCI...");
         sendCommand("?");
     }
-
+    
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
         for (int i=0; i<getAccelerometerChannels().length; i++) {
