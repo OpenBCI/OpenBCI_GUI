@@ -357,39 +357,16 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public void startStreaming() {
-        println("Brainflow start streaming");
+        super.startStreaming();
         if(streaming) {
-            println("Already streaming, do nothing");
-            return;
-        }
-        openSDFile();
-        try {
-            boardShim.start_stream (3600);
-            streaming = true;
-        }
-        catch (BrainFlowError e) {
-            println("ERROR: Exception when starting stream");
-            e.printStackTrace();
-            streaming = false;
+            openSDFile();
         }
     }
 
     @Override
     public void stopStreaming() {
-        println("Brainflow stop streaming");
-        if(!streaming) {
-            println("Already stopped streaming, do nothing");
-            return;
-        }
-        streaming = false;
+        super.stopStreaming();
         closeSDFile();
-        try {
-            boardShim.stop_stream ();
-        }
-        catch (BrainFlowError e) {
-            println("ERROR: Exception when stoppping stream");
-            e.printStackTrace();
-        }
     }
 
     public void openSDFile() {

@@ -192,7 +192,9 @@ public void controlEvent(ControlEvent theEvent) {
         Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
         cyton_sdSetting = (CytonSDMode)bob.get("value");
         String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
-        if (val != 0) outputString += " recording time";
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            outputString += " recording time";
+        }
         output(outputString);
         verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
     }
