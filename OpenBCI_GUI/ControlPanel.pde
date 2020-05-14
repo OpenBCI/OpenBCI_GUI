@@ -1286,7 +1286,6 @@ void updateToNChan(int _nchan) {
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
     println("Channel count set to " + str(nchan));
-    updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
 //==============================================================================//
@@ -1768,7 +1767,9 @@ class SessionDataBox {
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
-            int extraPadding = controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC ? 20 : 5;
+            int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
+                ? 20 
+                : 5;
             fill(bgColor);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);

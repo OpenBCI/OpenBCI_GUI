@@ -40,21 +40,14 @@ synchronized void keyPressed() {
 }
 
 void parseKey(char val) {
-    int Ichan; boolean activate; int code_P_N_Both;
-
     //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
     switch (val) {
         case ' ':
+            // space to start/stop the stream
             stopButtonWasPressed();
-            break;
-        case '.':
             break;
         case ',':
             drawContainers = !drawContainers;
-            break;
-        case '<':
-            break;
-        case '>':
             break;
         case '{':
             if(colorScheme == COLOR_SCHEME_DEFAULT){
@@ -65,179 +58,116 @@ void parseKey(char val) {
             topNav.updateNavButtonsBasedOnColorScheme();
             println("Changing color scheme.");
             break;
-        case '/':
-            //Not being used
-            break;
-        case '\\':
-            //Not being used
-            break;
+
+        //deactivate channels 1-16
         case '1':
-            deactivateChannel(1-1);
+            currentBoard.setEXGChannelActive(1-1, false);
             break;
         case '2':
-            deactivateChannel(2-1);
+            currentBoard.setEXGChannelActive(2-1, false);
             break;
         case '3':
-            deactivateChannel(3-1);
+            currentBoard.setEXGChannelActive(3-1, false);
             break;
         case '4':
-            deactivateChannel(4-1);
+            currentBoard.setEXGChannelActive(4-1, false);
             break;
         case '5':
-            deactivateChannel(5-1);
+            currentBoard.setEXGChannelActive(5-1, false);
             break;
         case '6':
-            deactivateChannel(6-1);
+            currentBoard.setEXGChannelActive(6-1, false);
             break;
         case '7':
-            deactivateChannel(7-1);
+            currentBoard.setEXGChannelActive(7-1, false);
             break;
         case '8':
-            deactivateChannel(8-1);
+            currentBoard.setEXGChannelActive(8-1, false);
             break;
-
         case 'q':
-            if(nchan == 16){
-                deactivateChannel(9-1);
-            }
+            currentBoard.setEXGChannelActive(9-1, false);
             break;
         case 'w':
-            if(nchan == 16){
-                deactivateChannel(10-1);
-            }
+            currentBoard.setEXGChannelActive(10-1, false);
             break;
         case 'e':
-            if(nchan == 16){
-                deactivateChannel(11-1);
-            }
+            currentBoard.setEXGChannelActive(11-1, false);
             break;
         case 'r':
-            if(nchan == 16){
-                deactivateChannel(12-1);
-            }
+            currentBoard.setEXGChannelActive(12-1, false);
             break;
         case 't':
-            if(nchan == 16){
-                deactivateChannel(13-1);
-            }
+            currentBoard.setEXGChannelActive(13-1, false);
             break;
         case 'y':
-            if(nchan == 16){
-                deactivateChannel(14-1);
-            }
+            currentBoard.setEXGChannelActive(14-1, false);
             break;
         case 'u':
-            if(nchan == 16){
-                deactivateChannel(15-1);
-            }
+            currentBoard.setEXGChannelActive(15-1, false);
             break;
         case 'i':
-            if(nchan == 16){
-                deactivateChannel(16-1);
-            }
-            break;
-        case ':':
-            println("test..."); //@@@@@
-            boolean test = isNetworkingTextActive();
+            currentBoard.setEXGChannelActive(16-1, false);
             break;
 
-        //activate channels 1-8
+        //activate channels 1-16
         case '!':
-            activateChannel(1-1);
+            currentBoard.setEXGChannelActive(1-1, true);
             break;
         case '@':
-            activateChannel(2-1);
+            currentBoard.setEXGChannelActive(2-1, true);
             break;
         case '#':
-            activateChannel(3-1);
+            currentBoard.setEXGChannelActive(3-1, true);
             break;
         case '$':
-            activateChannel(4-1);
+            currentBoard.setEXGChannelActive(4-1, true);
             break;
         case '%':
-            activateChannel(5-1);
+            currentBoard.setEXGChannelActive(5-1, true);
             break;
         case '^':
-            activateChannel(6-1);
+            currentBoard.setEXGChannelActive(6-1, true);
             break;
         case '&':
-            activateChannel(7-1);
+            currentBoard.setEXGChannelActive(7-1, true);
             break;
         case '*':
-            activateChannel(8-1);
+            currentBoard.setEXGChannelActive(8-1, true);
             break;
-
-        //activate channels 9-16 (DAISY MODE ONLY)
         case 'Q':
-            if(nchan == 16){
-                activateChannel(9-1);
-            }
+            currentBoard.setEXGChannelActive(9-1, true);
             break;
         case 'W':
-            if(nchan == 16){
-                activateChannel(10-1);
-            }
+            currentBoard.setEXGChannelActive(10-1, true);
             break;
         case 'E':
-            if(nchan == 16){
-                activateChannel(11-1);
-            }
+            currentBoard.setEXGChannelActive(11-1, true);
             break;
         case 'R':
-            if(nchan == 16){
-                activateChannel(12-1);
-            }
+            currentBoard.setEXGChannelActive(12-1, true);
             break;
         case 'T':
-            if(nchan == 16){
-                activateChannel(13-1);
-            }
+            currentBoard.setEXGChannelActive(13-1, true);
             break;
         case 'Y':
-            if(nchan == 16){
-                activateChannel(14-1);
-            }
+            currentBoard.setEXGChannelActive(14-1, true);
             break;
         case 'U':
-            if(nchan == 16){
-                activateChannel(15-1);
-            }
+            currentBoard.setEXGChannelActive(15-1, true);
             break;
         case 'I':
-            if(nchan == 16){
-                activateChannel(16-1);
-            }
+            currentBoard.setEXGChannelActive(16-1, true);
             break;
 
         //other controls
         case 's':
-            println("case s...");
             stopRunning();
             //stopButtonWasPressed();
             break;
 
         case 'b':
-            println("case b...");
             startRunning();
             //stopButtonWasPressed();
-            break;
-
-        //Lowercase k sets Bias Don't Include all channels
-        case 'k':
-            for (int i = 0; i < nchan; i++) { //for every channel
-                //BIAS off all channels
-                channelSettingValues[i][3] = '0';
-                println ("chan " + i + " bias don't include");
-            }
-            break;
-        //Lowercase l sets Bias Include all channels
-        case 'l':
-            for (int i = 0; i < nchan; i++) { //for every channel
-                //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
-                //BIAS on all channells
-                channelSettingValues[i][3] = '1';
-                println ("chan " + i + " bias include");
-            }
             break;
 
         ///////////////////// Save User settings lowercase n
@@ -259,13 +189,7 @@ void parseKey(char val) {
             }
             break;
 
-        case 'd':
-            verbosePrint("Updating GUI's channel settings to default...");
-            w_timeSeries.hsc.loadDefaultChannelSettings();
-            
-            if(currentBoard instanceof BoardCyton) {
-                ((BoardCyton)currentBoard).configureAllChannelsToDefault();
-            }
+        case 'd':   
             break;
 
         case 'm':

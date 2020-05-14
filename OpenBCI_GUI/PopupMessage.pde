@@ -4,7 +4,7 @@ import processing.awt.PSurfaceAWT.SmoothCanvas;
 
 // Instantiate this class to show a popup message
 
-class PopupMessage extends PApplet {
+class PopupMessage extends PApplet implements Runnable {
     private final int defaultWidth = 500;
     private final int defaultHeight = 250;
 
@@ -28,6 +28,12 @@ class PopupMessage extends PApplet {
         headerMessage = header;
         message = msg;
 
+        Thread t = new Thread(this);
+        t.start();        
+    }
+
+    @Override
+    public void run() {
         PApplet.runSketch(new String[] {headerMessage}, this);
     }
 
