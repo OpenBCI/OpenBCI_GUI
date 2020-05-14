@@ -2198,7 +2198,7 @@ class NovaXRBox {
         x = _x;
         y = _y;
         w = _w;
-        h = 104 + _padding;
+        h = 104;
         padding = _padding;
         novaXRcp5 = new ControlP5(ourApplet);
         novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
