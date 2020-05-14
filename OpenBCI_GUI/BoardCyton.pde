@@ -396,14 +396,14 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         //If selected, send command to Cyton to enabled SD file recording for selected duration
         if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
             println("Opening SD file. Writing " + cyton_sdSetting.getCommand() + " to Cyton.");
-            configBoard(cyton_sdSetting.getCommand());
+            sendCommand(cyton_sdSetting.getCommand());
         }
     }
 
     public void closeSDFile() {
         if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
             println("Closing any open SD file. Writing 'j' to Cyton.");
-            configBoard("j"); // tell the SD file to close if one is open...
+            sendCommand("j"); // tell the SD file to close if one is open...
         }
     }
 
