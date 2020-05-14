@@ -357,16 +357,14 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public void startStreaming() {
+        openSDFile();
         super.startStreaming();
-        if(streaming) {
-            openSDFile();
-        }
     }
 
     @Override
     public void stopStreaming() {
-        super.stopStreaming();
         closeSDFile();
+        super.stopStreaming();
     }
 
     public void openSDFile() {
