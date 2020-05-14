@@ -348,16 +348,56 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         currentBoardMode = boardMode;
     }
 
+    @Override
+    public void startStreaming() {
+        println("Brainflow start streaming");
+        if(streaming) {
+            println("Already streaming, do nothing");
+            return;
+        }
+        openSDFile();
+        try {
+            boardShim.start_stream (3600);
+            streaming = true;
+        }
+        catch (BrainFlowError e) {
+            println("ERROR: Exception when starting stream");
+            e.printStackTrace();
+            streaming = false;
+        }
+    }
+
+    @Override
+    public void stopStreaming() {
+        println("Brainflow stop streaming");
+        if(!streaming) {
+            println("Already stopped streaming, do nothing");
+            return;
+        }
+        streaming = false;
+        closeSDFile();
+        try {
+            boardShim.stop_stream ();
+        }
+        catch (BrainFlowError e) {
+            println("ERROR: Exception when stoppping stream");
+            e.printStackTrace();
+        }
+    }
+
     public void openSDFile() {
-        println("Opening SD file. Writing " + cyton_sdSetting.getCommand() + " to OpenBCI.");
-        configBoard(cyton_sdSetting.getCommand()); // tell the SD file to close if one is open...
-        delay(100); //make sure 'j' gets sent to the board
+        //If selected, send command to Cyton to enabled SD file recording for selected duration
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            println("Opening SD file. Writing " + cyton_sdSetting.getCommand() + " to Cyton."); 
+            configBoard(cyton_sdSetting.getCommand());
+        }
     }
 
     public void closeSDFile() {
-        println("Closing any open SD file. Writing 'j' to OpenBCI.");
-        configBoard("j"); // tell the SD file to close if one is open...
-        delay(100); //make sure 'j' gets sent to the board
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            println("Closing any open SD file. Writing 'j' to Cyton.");
+            configBoard("j"); // tell the SD file to close if one is open...
+        }
     }
 
     public void printRegisters() {
