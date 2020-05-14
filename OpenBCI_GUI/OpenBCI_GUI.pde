@@ -62,7 +62,7 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha.4";
+String localGUIVersionString = "v5.0.0-alpha.5";
 String localGUIVersionDate = "May 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -125,6 +125,8 @@ String ganglion_portName = "N/A";
 
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
+
+NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
@@ -222,12 +224,6 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-///////////Variables from HardwareSettingsController. This fixes a number of issues.
-int numSettingsPerChannel = 6; //each channel has 6 different settings
-char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [channel#][Button#-value] ... this will incfluence text of button
-char[][] impedanceCheckValues = new char [nchan][2];
-
-//Instantiate GUI Software Settings
 SoftwareSettings settings = new SoftwareSettings();
 
 //------------------------------------------------------------------------
@@ -531,7 +527,7 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR();
+            currentBoard = new BoardNovaXR(novaXR_boardSetting);
             //TODO[brainflow]
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
@@ -574,7 +570,6 @@ void initSystem() {
 
         if (!abandonInit) {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-            w_timeSeries.hsc.loadDefaultChannelSettings();
 
             systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
 
@@ -677,6 +672,10 @@ void startRunning() {
     // start streaming on the chosen board
     currentBoard.startStreaming();
     isRunning = true;
+
+    // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
+    // close hardware settings if user starts streaming
+    w_timeSeries.closeADSSettings();
 }
 
 void stopRunning() {
@@ -993,4 +992,3 @@ void drawOverlay() {
     text(s, width/2 - textWidth(s)/2, height/2 + 8);
     popStyle();
 }
-

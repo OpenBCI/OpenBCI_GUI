@@ -1284,7 +1284,6 @@ void updateToNChan(int _nchan) {
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
     println("Channel count set to " + str(nchan));
-    updateChannelArrays(nchan); //make sure to reinitialize the channel arrays with the right number of channels
 }
 
 //==============================================================================//
@@ -2197,15 +2196,15 @@ class NovaXRBox {
         x = _x;
         y = _y;
         w = _w;
-        h = 103 + _padding;
+        h = 104;
         padding = _padding;
         novaXRcp5 = new ControlP5(ourApplet);
         novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        novaXR250 = new Button (x + w - padding*2 - 60*2, y + 16 + padding*3, 60, 24, "250Hz", fontInfo.buttonLabel_size);
+        novaXR250 = new Button (x + w - padding*2 - 60*2, y + 16 + padding*2, 60, 24, "250Hz", fontInfo.buttonLabel_size);
         novaXR250.setHelpText("Set Sampling Rate to 250Hz.");
         novaXR250.setColorNotPressed(isSelected_color);
-        novaXR500 = new Button (x + w - padding - 60, y + 16 + padding*3, 60, 24, "500Hz", fontInfo.buttonLabel_size);
+        novaXR500 = new Button (x + w - padding - 60, y + 16 + padding*2, 60, 24, "500Hz", fontInfo.buttonLabel_size);
         novaXR500.setHelpText("Set Sampling Rate to 500Hz.");
         //x + padding, novaXR250.but_y + 24 + padding
         createDropdown("novaXR_Modes");
@@ -2230,7 +2229,7 @@ class NovaXRBox {
         text(boxLabel, x + padding, y + padding);
         textAlign(LEFT, TOP);
         textFont(p4, 14);
-        text(sampleRateLabel, x + padding, y + padding*3 + 19);
+        text(sampleRateLabel, x + padding, y + padding*2 + 18);
         popStyle();
         novaXR250.draw();
         novaXR500.draw();
