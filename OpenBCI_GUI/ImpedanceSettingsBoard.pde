@@ -1,5 +1,6 @@
 
 interface ImpedanceSettingsBoard {
 
-    public void setImpedanceSettings(int channel, char pORn, boolean active);
+    public void setCheckingImpedance(int channel, boolean active);
+    public boolean isCheckingImpedance(int channel);
 };

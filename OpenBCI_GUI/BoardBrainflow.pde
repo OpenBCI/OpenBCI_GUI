@@ -207,22 +207,15 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void sendCommand(String command) {
-        if (command != null)
-            configBoard(command);
-    }
-
-    protected void configBoard(String configStr) {
-        if(!isConnected()) {
-            outputError("Cannot send " + configStr + " to board. The board is not connected");
-            return;
-        }
-        try {
-            println("Sending config string to board: " + configStr);
-            boardShim.config_board(configStr);
-        }
-        catch (BrainFlowError e) {
-            println("ERROR: Exception sending config string to board: " + configStr);
-            e.printStackTrace();
+        if (command != null && isConnected()) {
+            try {
+                println("Sending config string to board: " + command);
+                boardShim.config_board(command);
+            }
+            catch (BrainFlowError e) {
+                println("ERROR: Exception sending config string to board: " + command);
+                e.printStackTrace();
+            }
         }
     }
     
