@@ -14,11 +14,7 @@ import java.awt.datatransfer.*;
 import java.awt.Toolkit;
 import java.awt.Desktop;
 
-void openConsole() {
-    ConsoleWindow.display();
-}
-
-static class ConsoleWindow extends PApplet {
+static class ConsoleWindow extends PApplet implements Runnable {
     private static ConsoleWindow instance = null;
 
     PApplet logApplet;
@@ -39,12 +35,17 @@ static class ConsoleWindow extends PApplet {
     private int widthOfLastScreen = defaultWidth;
     private int heightOfLastScreen = defaultHeight;
 
-    public static void display() {
-        // enforce only one Console Window
+    static void display() {        // enforce only one Console Window
         if (instance == null) {
             instance = new ConsoleWindow();
-            PApplet.runSketch(new String[] {instance.getClass().getSimpleName()}, instance);
+            Thread t = new Thread(instance);
+            t.start();
         }
+    }
+
+    @Override
+    public void run() {
+        PApplet.runSketch(new String[] {instance.getClass().getSimpleName()}, instance);
     }
 
     private ConsoleWindow() {

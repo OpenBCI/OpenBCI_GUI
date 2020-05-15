@@ -83,7 +83,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         char[] charsToUse = active ? activateChannelChars : deactivateChannelChars;
-        configBoard(str(charsToUse[channelIndex]));
+        sendCommand(str(charsToUse[channelIndex]));
         exgChannelActive[channelIndex] = active;
     }
     
@@ -106,27 +106,13 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     }
 
     @Override
-    protected double[][] getNewDataInternal() {
-        if ((streaming) || (isCheckingImpedance)) {
-            try {
-                return boardShim.get_board_data();
-            } catch (BrainFlowError e) {
-                println("WARNING: could not get board data.");
-                e.printStackTrace();
-            }
-        }
-    
-        return emptyData;
-    }
-
-    @Override
     public boolean isAccelerometerActive() {
         return isGettingAccel;
     }
 
     @Override
     public void setAccelerometerActive(boolean active) {
-        configBoard(active ? "n" : "N");
+        sendCommand(active ? "n" : "N");
         isGettingAccel = active;
     }
 
@@ -151,9 +137,9 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
                 return;
             }
             if (streaming) {
-                stopStreaming();
+                stopRunning();
             }
-            configBoard("z");
+            sendCommand("z");
             startStreaming();
         }
         else {
@@ -164,7 +150,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
             if (streaming) {
                 stopStreaming();
             }
-            configBoard("Z");
+            sendCommand("Z");
         }
         isCheckingImpedance = checkImpedance;
     }
