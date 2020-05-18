@@ -38,53 +38,48 @@ class W_GanglionImpedance extends Widget {
         fill(bgColor);
         textFont(p4, 14);
 
-        try {
-            BoardGanglion ganglion = (BoardGanglion)currentBoard;
-            if (!ganglion.isCheckingImpedance()) {
-                return;
-            }
-
-            List<double[]> data = ganglion.getData(1);
-            int resistanceChannels[] = BoardShim.get_resistance_channels(ganglion.getBoardIdInt());
-
-            // todo format in brainflow, 4 channels and reference. Does it match this code
-            for(int i = 0; i < resistanceChannels.length; i++){
-                String toPrint;
-                float adjustedImpedance = (float)data.get(0)[resistanceChannels[i]]/2.0;
-                if(i == (resistanceChannels.length - 1)) {
-                    toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
-                } else {
-                    toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
-                }
-                text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
-
-                pushStyle();
-                stroke(bgColor);
-                //change the fill color based on the signal quality...
-                if(adjustedImpedance <= 0){ //no data yet...
-                    fill(255);
-                } else if(adjustedImpedance > 0 && adjustedImpedance <= 10){ //very good signal quality
-                    fill(49, 113, 89); //dark green
-                } else if(adjustedImpedance > 10 && adjustedImpedance <= 50){ //good signal quality
-                    fill(184, 220, 105); //yellow green
-                } else if(adjustedImpedance > 50 && adjustedImpedance <= 100){ //acceptable signal quality
-                    fill(221, 178, 13); //yellow
-                } else if(adjustedImpedance > 100 && adjustedImpedance <= 150){ //questionable signal quality
-                    fill(253, 94, 52); //orange
-                } else if(adjustedImpedance > 150){ //bad signal quality
-                    fill(224, 56, 45); //red
-                }
-
-                ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
-                popStyle();
-            }
-
-            image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
-            popStyle();
-        } catch (Exception e) {
-            e.printStackTrace();
+        BoardGanglion ganglion = (BoardGanglion)currentBoard;
+        if (!ganglion.isCheckingImpedance()) {
             return;
         }
+
+        int resistanceChannels[] = ganglion.getResistanceChannels();
+        List<double[]> data = ganglion.getData(1);
+
+        // todo format in brainflow, 4 channels and reference. Does it match this code
+        for(int i = 0; i < resistanceChannels.length; i++){
+            String toPrint;
+            float adjustedImpedance = (float)data.get(0)[resistanceChannels[i]]/2.0;
+            if(i == (resistanceChannels.length - 1)) {
+                toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
+            } else {
+                toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
+            }
+            text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
+
+            pushStyle();
+            stroke(bgColor);
+            //change the fill color based on the signal quality...
+            if(adjustedImpedance <= 0){ //no data yet...
+                fill(255);
+            } else if(adjustedImpedance > 0 && adjustedImpedance <= 10){ //very good signal quality
+                fill(49, 113, 89); //dark green
+            } else if(adjustedImpedance > 10 && adjustedImpedance <= 50){ //good signal quality
+                fill(184, 220, 105); //yellow green
+            } else if(adjustedImpedance > 50 && adjustedImpedance <= 100){ //acceptable signal quality
+                fill(221, 178, 13); //yellow
+            } else if(adjustedImpedance > 100 && adjustedImpedance <= 150){ //questionable signal quality
+                fill(253, 94, 52); //orange
+            } else if(adjustedImpedance > 150){ //bad signal quality
+                fill(224, 56, 45); //red
+            }
+
+            ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
+            popStyle();
+        }
+
+        image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
+        popStyle();
     }
 
     void screenResized(){

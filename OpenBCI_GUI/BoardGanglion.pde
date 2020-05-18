@@ -60,6 +60,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     private final char[] activateChannelChars =  {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
     
     private int[] accelChannelsCache = null;
+    private int[] resistanceChannelsCache = null;
 
     private boolean[] exgChannelActive;
 
@@ -127,6 +128,18 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
         }
         
         return accelChannelsCache;
+    }
+
+    public int[] getResistanceChannels() {
+        if (resistanceChannelsCache == null) {
+            try {
+                resistanceChannelsCache = BoardShim.get_resistance_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return resistanceChannelsCache;
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
