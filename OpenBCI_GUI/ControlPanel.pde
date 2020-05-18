@@ -623,26 +623,28 @@ class ControlPanel {
     }
 
     private void refreshPortListGanglion() {
-        try {
-            output("BLE Devices Refreshing");
-            bleList.items.clear();
-            String comPort = getBLED112Port();
-            if (comPort != null) {
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        final String comPort = getBLED112Port();
+        if (comPort != null) {
+            Thread thread = new Thread(){
+                public void run(){
+                    try {
+                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(makeItem(entry.getKey()));
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-            } else {
-                outputError("No BLED112 Dongle Found");
-            }
-        }
-        catch (GanglionError e)
-        {
-            println("Exception in ganglion scanning.");
-            e.printStackTrace ();
+            };
+            thread.start();
+        } else {
+            outputError("No BLED112 Dongle Found");
         }
     }
 
