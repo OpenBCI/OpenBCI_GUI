@@ -1587,19 +1587,24 @@ class WifiBox {
     public void refreshWifiList() {
         output("Wifi Devices Refreshing");
         wifiList.items.clear();
-        try {
-            List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
-            if (devices.isEmpty ()) {
-                println("No WIFI Shields found");
+        Thread thread = new Thread(){
+            public void run() {
+                try {
+                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
+                    if (devices.isEmpty ()) {
+                        println("No WIFI Shields found");
+                    }
+                    for (int i = 0; i < devices.size(); i++) {
+                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
+                    }
+                    wifiList.updateMenu();
+                } catch (Exception e) {
+                    println("Exception in wifi shield scanning");
+                    e.printStackTrace ();
+                }
             }
-            for (int i = 0; i < devices.size(); i++) {
-                wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
-            }
-            wifiList.updateMenu();
-        } catch (Exception e) {
-            println("Exception in wifi shield scanning");
-            e.printStackTrace ();
-        }
+        };
+        thread.start();
     }
 };
 
