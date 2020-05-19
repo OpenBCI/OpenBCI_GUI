@@ -1264,7 +1264,7 @@ public void initButtonPressed(){
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
-            
+
             //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
             midInit = true;
             output("Attempting to Start Session..."); // Show this at the bottom of the GUI
