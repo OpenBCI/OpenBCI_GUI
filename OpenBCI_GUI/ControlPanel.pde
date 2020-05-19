@@ -192,7 +192,9 @@ public void controlEvent(ControlEvent theEvent) {
         Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
         cyton_sdSetting = (CytonSDMode)bob.get("value");
         String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
-        if (val != 0) outputString += " recording time";
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            outputString += " recording time";
+        }
         output(outputString);
         verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
     }
@@ -1041,7 +1043,6 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.SERIAL;
-            sdBox.updatePosition();
         }
 
         if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
@@ -1049,7 +1050,6 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.WIFI;
-            sdBox.updatePosition();
         }
 
         if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
@@ -2356,10 +2356,10 @@ class PlaybackFileBox {
 
 class SDBox {
     final private String sdBoxDropdownName = "sdCardTimes";
-    
-    int x, y, w, h, padding; //size and position
-    ControlP5 cp5_sdBox;
+    private int x, y, w, h, padding; //size and position
+    private ControlP5 cp5_sdBox;
     private ScrollableList sdList;
+    private int prevY;
     boolean dropdownWasClicked = false;
 
     SDBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2368,6 +2368,7 @@ class SDBox {
         w = _w;
         h = 73;
         padding = _padding;
+        prevY = y;
 
         cp5_sdBox = new ControlP5(ourApplet);
         cp5_sdBox.setAutoDraw(false);
@@ -2379,6 +2380,10 @@ class SDBox {
 
     public void update() {
         openCloseDropdown();
+        if (y != prevY) { //When box's absolute y position changes, update cp5
+            updatePosition();
+            prevY = y;
+        }
     }
 
     public void draw() {
@@ -2401,7 +2406,7 @@ class SDBox {
         cp5_sdBox.draw();
     }
 
-    void createDropdown(String name){
+    private void createDropdown(String name){
 
         sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
@@ -2462,7 +2467,7 @@ class SDBox {
         sdList.setPosition(x + padding, y + padding*2 + 14);
     }
 
-    void closeDropdown() {
+    public void closeDropdown() {
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
         dropdownWasClicked = true;
         //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
