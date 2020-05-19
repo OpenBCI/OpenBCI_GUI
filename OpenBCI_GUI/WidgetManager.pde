@@ -199,7 +199,7 @@ class WidgetManager{
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         }
 
-        delay(1000);
+        //delay(1000);
 
         isWMInitialized = true;
     }

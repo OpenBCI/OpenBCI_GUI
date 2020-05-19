@@ -29,9 +29,11 @@ class Widget{
     private boolean isWidgetActive = false;
 
     //some variables for the dropdowns
-    int navH = 22;
-    int widgetSelectorWidth = 160;
-    int dropdownWidth = 64;
+    protected final int navH = 22;
+    private int widgetSelectorWidth = 160;
+    private int widgetSelectorHeight = 0;
+    protected final int dropdownWidth = 64;
+    private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
     Widget(PApplet _parent){
         pApplet = _parent;
@@ -131,7 +133,6 @@ class Widget{
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-        resizeWidgetSelector();
     }
 
     void setupNavDropdowns(){
@@ -190,6 +191,11 @@ class Widget{
         //if a dropdown is open and mouseX/mouseY is outside of dropdown, then close it
         // println("dropdowns.size() = " + dropdowns.size());
         dropdownIsActive = false;
+
+        if (!initialResize) {
+            resizeWidgetSelector(); //do this once after instantiation to grey background drawing error
+            initialResize = true;
+        }
 
         if(cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
             dropdownIsActive = true;
@@ -299,18 +305,17 @@ class Widget{
     void resizeWidgetSelector() {
         int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
         //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
-        int dropdownHeight = (dropdownsItemsToShow + 1) * (navH - 4);
+        widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
         if (wm != null) {
             int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
-            if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
+            if (widgetSelectorHeight > maxDropdownHeight) widgetSelectorHeight = maxDropdownHeight;
         }
-
 
         cp5_widget.getController("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             ;
         cp5_widget.getController("WidgetSelector")
-            .setSize(widgetSelectorWidth, dropdownHeight);
+            .setSize(widgetSelectorWidth, widgetSelectorHeight);
             ;
     }
 
@@ -329,9 +334,9 @@ class Widget{
         cp5_widget.setGraphics(pApplet, 0, 0);
 
         if (cp5_widget.getController("WidgetSelector") != null) {
-            resizeWidgetSelector(); //avoid nullPointer when session is started, resize here only when dropdown exists
+            resizeWidgetSelector();
         }
-        
+
         //Other dropdowns
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
