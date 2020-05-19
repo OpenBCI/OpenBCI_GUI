@@ -26,7 +26,7 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         // Dummy string
-        configBoard("SYNTHETIC PLACEHOLDER");
+        sendCommand("SYNTHETIC PLACEHOLDER");
     }
 
     @Override

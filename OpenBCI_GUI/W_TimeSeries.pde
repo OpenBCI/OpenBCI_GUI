@@ -23,7 +23,6 @@ class W_timeSeries extends Widget {
     float plotBottomWell;
     float playbackWidgetHeight;
     int channelBarHeight;
-    boolean showHardwareSettings = false;
 
     Button hardwareSettingsButton;
 
@@ -39,7 +38,7 @@ class W_timeSeries extends Widget {
 
     boolean allowSpillover = false;
 
-    HardwareSettingsController hsc;
+    private ADS1299SettingsController adsSettingsController;
 
     TextBox[] impValuesMontage;
 
@@ -47,7 +46,6 @@ class W_timeSeries extends Widget {
     private boolean updating = true;
 
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
-    boolean updateNumberOfChannelBars = false; //used if user selects new playback file using playback widget
 
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -99,11 +97,11 @@ class W_timeSeries extends Widget {
         //create our channel bars and populate our channelBars array!
         for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+            ChannelBar tempBar = new ChannelBar(_parent, i, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelIndex, int _x, int _y, int _w, int _h
             channelBars[i] = tempBar;
         }
 
-        if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+        if(currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
@@ -121,7 +119,10 @@ class W_timeSeries extends Widget {
         int y_hsc = int(ts_y);
         int w_hsc = int(ts_w); //width of montage controls (on left of montage)
         int h_hsc = int(ts_h); //height of montage controls (on left of montage)
-        hsc = new HardwareSettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            adsSettingsController = new ADS1299SettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+        }
     }
 
     public boolean isVisible() {
@@ -142,7 +143,11 @@ class W_timeSeries extends Widget {
         if(visible && updating) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            hsc.update(); //update channel controller
+            if(currentBoard instanceof ADS1299SettingsBoard) {
+                adsSettingsController.update(); //update channel controller
+                //ignore top left button interaction when widgetSelector dropdown is active
+                ignoreButtonCheck(hardwareSettingsButton);
+            }
 
             if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
                 //scrub playback file
@@ -150,16 +155,7 @@ class W_timeSeries extends Widget {
             } else {
                 timeDisplay.update();
             }
-            
-            if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
-                //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hardwareSettingsButton);
-            }
 
-            //update the number of channel bars if user has selected a new file using playback widget
-            if (updateNumberOfChannelBars) {
-                updateNumChannelBars(ourApplet);
-            }
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < numChannelBars; i++) {
                 channelBars[i].update();
@@ -178,11 +174,6 @@ class W_timeSeries extends Widget {
                 channelBars[i].draw();
             }
 
-            // TODO[brainflow] move this behavior to the board classes
-            if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
-                hardwareSettingsButton.draw();
-            }
-
             //Display playback scrollbar or timeDisplay, depending on data source
             if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
@@ -193,8 +184,10 @@ class W_timeSeries extends Widget {
                 timeDisplay.draw();
             }
 
-            //draw channel controller
-            hsc.draw();
+            if(currentBoard instanceof ADS1299SettingsBoard) {
+                hardwareSettingsButton.draw();
+                adsSettingsController.draw();
+            }
 
             popStyle();
         }
@@ -219,10 +212,10 @@ class W_timeSeries extends Widget {
             channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
 
-        hsc.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
 
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
+            adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
@@ -242,16 +235,16 @@ class W_timeSeries extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
 
         if (!this.dropdownIsActive) {
-            if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+            if(currentBoard instanceof ADS1299SettingsBoard) {
                 if (hardwareSettingsButton.isMouseHere()) {
                     hardwareSettingsButton.setIsActive(true);
                 }
             }
         }
 
-        if(hsc.isVisible) {
+        if(adsSettingsController != null && adsSettingsController.isVisible) {
             if (!this.dropdownIsActive) {
-                hsc.mousePressed();
+                adsSettingsController.mousePressed();
             }
         } else {
             for(int i = 0; i < channelBars.length; i++) {
@@ -260,35 +253,20 @@ class W_timeSeries extends Widget {
         }
 
     }
-
+    
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        // TODO[brainflow] get rid of this insane if-statement logic
-        if(eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_NOVAXR) {
+        if(currentBoard instanceof ADS1299SettingsBoard) {
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
-                if(showHardwareSettings) {
-                    showHardwareSettings = false;
-                    hsc.isVisible = false;
-                    hardwareSettingsButton.setString("Hardware Settings");
-                } else{
-                    // if we change gains and other setting during the streaming there will be sync issue
-                    // force user to stop streaming first
-                    if (isRunning) {
-                        PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
-                        return;
-                    }
-                    showHardwareSettings = true;
-                    hsc.isVisible = true;
-                    hardwareSettingsButton.setString("Time Series");
-                }
+                setAdsSettingsVisible(!adsSettingsController.isVisible);
             }
             hardwareSettingsButton.setIsActive(false);
         }
 
-        if(hsc.isVisible) {
-            hsc.mouseReleased();
+        if(adsSettingsController != null && adsSettingsController.isVisible) {
+            adsSettingsController.mouseReleased();
         } else {
             for(int i = 0; i < channelBars.length; i++) {
                 channelBars[i].mouseReleased();
@@ -296,37 +274,30 @@ class W_timeSeries extends Widget {
         }
     }
 
-    //Called when a user selects a new playback file from playback widget
-    void updateNumChannelBars(PApplet _parent) {
-        //println("NEW NCHAN = " + nchan);
-        numChannelBars = nchan;
-
-        //Clear the array that holds the channel bars
-        channelBars = null;
-
-        //Create new channel bars
-        channelBarHeight = int(ts_h/numChannelBars);
-
-        channelBars = new ChannelBar[numChannelBars];
-
-        //Create our channel bars and populate our channelBars array!
-        for(int i = 0; i < numChannelBars; i++) {
-            int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            ChannelBar tempBar = new ChannelBar(_parent, i+1, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
-            channelBars[i] = tempBar;
+    private void setAdsSettingsVisible(boolean visible) {
+        if(!(currentBoard instanceof ADS1299SettingsBoard)) {
+            return;
         }
 
-        /*
-        //this resizes all of the chanel bars
-        channelBarHeight = int(ts_h/numChannelBars);
+        if(visible) {
+            if (isRunning) {
+                PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
+                return;
+            }
 
-        for(int i = 0; i < numChannelBars; i++) {
-            int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+            hardwareSettingsButton.setString("Time Series");
         }
-        */
+        else {
+            hardwareSettingsButton.setString("Hardware Settings");
+        }
 
-        updateNumberOfChannelBars = false;
+        if (adsSettingsController != null) {
+            adsSettingsController.isVisible = visible;
+        }
+    }
+
+    public void closeADSSettings() {
+        setAdsSettingsVisible(false);
     }
 };
 
@@ -382,10 +353,9 @@ void Spillover(int n) {
 //one of these will be created for each channel (4, 8, or 16)
 class ChannelBar{
 
-    int channelNumber; //duh
+    int channelIndex; //duh
     String channelString;
     int x, y, w, h;
-    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
     Button onOffButton;
     int onOff_diameter, impButton_diameter;
     Button impCheckButton;
@@ -405,13 +375,11 @@ class ChannelBar{
     TextBox impValue;
 
     boolean drawVoltageValue;
-    boolean drawImpValue;
 
-    ChannelBar(PApplet _parent, int _channelNumber, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+    ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
-        channelNumber = _channelNumber;
-        channelString = str(channelNumber);
-        isOn = true;
+        channelIndex = _channelIndex;
+        channelString = str(channelIndex + 1);
 
         x = _x;
         y = _y;
@@ -425,17 +393,17 @@ class ChannelBar{
         }
 
         onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
-        onOffButton.setHelpText("Click to toggle channel " + channelNumber + ".");
+        onOffButton.setHelpText("Click to toggle channel " + channelString + ".");
         onOffButton.setFont(h2, 16);
         onOffButton.setCircleButton(true);
-        onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]); //Set channel button background colors
+        onOffButton.setColorNotPressed(channelColors[channelIndex%8]); //Set channel button background colors
         onOffButton.textColorNotActive = color(255); //Set channel button text to white
         onOffButton.hasStroke(false);
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        if(currentBoard instanceof ImpedanceSettingsBoard) {
             impButton_diameter = 22;
             impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
-            impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelNumber + ".");
+            impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelString + ".");
             impCheckButton.setFont(h3, 16); //override the default font and fontsize
             impCheckButton.setCircleButton(true);
             impCheckButton.setColorNotPressed(color(255)); //White background
@@ -450,13 +418,13 @@ class ChannelBar{
         plot.setPos(x + 36 + 4 + impButton_diameter, y);
         plot.setDim(w - 36 - 4 - impButton_diameter, h);
         plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[(channelNumber-1)%8]);
+        plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
         plot.setYLim(-200,200);
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
-        if(channelNumber == nchan) {
+        if(channelIndex == nchan-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
         }
         // plot.setBgColor(color(31,69,110));
@@ -468,8 +436,6 @@ class ChannelBar{
 
         for (int i = 0; i < nPoints; i++) {
             float time = -(float)numSeconds + (float)i*timeBetweenPoints;
-            // float time = (-float(numSeconds))*(float(i)/float(nPoints));
-            // float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][dataBuffY_filtY_uV.length-nPoints];
             float filt_uV_value = 0.0; //0.0 for all points to start
             GPoint tempPoint = new GPoint(time, filt_uV_value);
             channelPoints.set(i, tempPoint);
@@ -492,8 +458,6 @@ class ChannelBar{
         impValue.backgroundColor = color(255,255,255,125);
 
         drawVoltageValue = true;
-        drawImpValue = false;
-
     }
 
     void update() {
@@ -502,21 +466,21 @@ class ChannelBar{
         String fmt; float val;
 
         //update the voltage values
-        val = dataProcessing.data_std_uV[channelNumber-1];
+        val = dataProcessing.data_std_uV[channelIndex];
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
-            if (is_railed[channelNumber-1].is_railed == true) {
+            if (is_railed[channelIndex].is_railed == true) {
                 voltageValue.string = "RAILED";
-            } else if (is_railed[channelNumber-1].is_railed_warn == true) {
+            } else if (is_railed[channelIndex].is_railed_warn == true) {
                 voltageValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
             }
         }
 
         //update the impedance values
-        val = data_elec_imp_ohm[channelNumber-1]/1000;
+        val = data_elec_imp_ohm[channelIndex]/1000;
         impValue.string = String.format(getFmt(val),val) + " kOhm";
         if (is_railed != null) {
-            if (is_railed[channelNumber-1].is_railed == true) {
+            if (is_railed[channelIndex].is_railed == true) {
                 impValue.string = "RAILED";
             }
         }
@@ -525,6 +489,13 @@ class ChannelBar{
         updatePlotPoints();
         if(isAutoscale) {
             autoScale();
+        }
+
+        if(currentBoard.isEXGChannelActive(channelIndex)) {
+            onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
+        }
+        else {
+            onOffButton.setColorNotPressed(50); // power down == false, set color to vibrant
         }
     }
 
@@ -542,13 +513,13 @@ class ChannelBar{
 
     void updatePlotPoints() {
         // update data in plot
-        if(dataBuffY_filtY_uV[channelNumber-1].length > nPoints) {
-            for (int i = dataBuffY_filtY_uV[channelNumber-1].length - nPoints; i < dataBuffY_filtY_uV[channelNumber-1].length; i++) {
-                float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints))*timeBetweenPoints;
-                float filt_uV_value = dataBuffY_filtY_uV[channelNumber-1][i];
+        if(dataBuffY_filtY_uV[channelIndex].length > nPoints) {
+            for (int i = dataBuffY_filtY_uV[channelIndex].length - nPoints; i < dataBuffY_filtY_uV[channelIndex].length; i++) {
+                float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelIndex].length-nPoints))*timeBetweenPoints;
+                float filt_uV_value = dataBuffY_filtY_uV[channelIndex][i];
 
                 // update channel point in place
-                channelPoints.set(i-(dataBuffY_filtY_uV[channelNumber-1].length-nPoints), time, filt_uV_value, "");
+                channelPoints.set(i-(dataBuffY_filtY_uV[channelIndex].length-nPoints), time, filt_uV_value, "");
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
@@ -564,10 +535,6 @@ class ChannelBar{
 
         //draw onOff Button
         onOffButton.draw();
-        //draw impedance check Button
-        if(eegDataSource == DATASOURCE_CYTON) {
-            impCheckButton.draw();
-        }
 
         //draw plot
         stroke(31,69,110, 50);
@@ -581,24 +548,26 @@ class ChannelBar{
         plot.drawLines();
         // plot.drawPoints();
         // plot.drawYAxis();
-        if(channelNumber == nchan) { //only draw the x axis label on the bottom channel bar
+        if(channelIndex == nchan-1) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
         plot.endDraw();
 
-        if(drawImpValue) {
-            impValue.draw();
+        //draw impedance check Button
+        if(currentBoard instanceof ImpedanceSettingsBoard) {
+            impCheckButton.draw();
+
+            if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
+                impValue.draw();
+            }
         }
+        
         if(drawVoltageValue) {
             voltageValue.draw();
         }
 
         popStyle();
-    }
-
-    void setDrawImp(boolean _trueFalse) {
-        drawImpValue = _trueFalse;
     }
 
     int nPointsBasedOnDataSource() {
@@ -661,7 +630,7 @@ class ChannelBar{
         onOffButton.but_x = x + 6;
         onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        if(currentBoard instanceof ImpedanceSettingsBoard) {
             impCheckButton.but_x = x + 36;
             impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
         }
@@ -679,13 +648,13 @@ class ChannelBar{
 
     void mousePressed() {
         if(onOffButton.isMouseHere()) {
-            println("[" + channelNumber + "] onOff pressed");
+            println("[" + channelString + "] onOff pressed");
             onOffButton.setIsActive(true);
         }
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        if(currentBoard instanceof ImpedanceSettingsBoard) {
             if(impCheckButton.isMouseHere()) {
-                println("[" + channelNumber + "] imp pressed");
+                println("[" + channelString + "] imp pressed");
                 impCheckButton.setIsActive(true);
             }
         }
@@ -694,33 +663,26 @@ class ChannelBar{
 
     void mouseReleased() {
         if(onOffButton.isMouseHere()) {
-            println("[" + channelNumber + "] onOff released");
-            if(isOn) {  // if channel is active
-                isOn = false; // deactivate it
-                deactivateChannel(channelNumber - 1); //got to - 1 to make 0 indexed
-                onOffButton.setColorNotPressed(color(50));
-            }
-            else { // if channel is not active
-                isOn = true;
-                activateChannel(channelNumber - 1);       // activate it
-                onOffButton.setColorNotPressed(channelColors[(channelNumber-1)%8]);
-            }
+            println("[" + channelString + "] onOff released");
+            currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
         }
 
         onOffButton.setIsActive(false);
 
-        if(eegDataSource == DATASOURCE_CYTON) {
+        if(currentBoard instanceof ImpedanceSettingsBoard) {
             if(impCheckButton.isMouseHere() && impCheckButton.isActive()) {
-                println("[" + channelNumber + "] imp released");
-                w_timeSeries.hsc.toggleImpedanceCheck(channelNumber);  // 'n' indicates the N inputs and '1' indicates test impedance
-                if(drawImpValue) {
-                    drawImpValue = false;
-                    impCheckButton.setColorNotPressed(color(255)); //White background
-                    impCheckButton.textColorNotActive = color(0); //Black text
-                } else {
-                    drawImpValue = true;
+                println("[" + channelString + "] imp released");
+
+                // flip impedance check
+                ImpedanceSettingsBoard impBoard = (ImpedanceSettingsBoard)currentBoard;
+                impBoard.setCheckingImpedance(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
+
+                if(impBoard.isCheckingImpedance(channelIndex)) {
                     impCheckButton.setColorNotPressed(color(50)); //Dark background
                     impCheckButton.textColorNotActive = color (255); //White text
+                } else {
+                    impCheckButton.setColorNotPressed(color(255)); //White background
+                    impCheckButton.textColorNotActive = color(0); //Black text
                 }
             }
             impCheckButton.setIsActive(false);
