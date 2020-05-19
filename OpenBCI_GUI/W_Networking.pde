@@ -49,6 +49,10 @@ class W_Networking extends Widget {
     int row5;
     int itemWidth = 96;
     private final float datatypeDropdownScaling = .35;
+    private final int filtButW = 20;
+    private final int filtButH = 20;
+    private final int filtOffsetX = (itemWidth / 2) - 10;
+    private final int filtOffsetY = -15;
 
     /* UI */
     Boolean osc_visible;
@@ -525,18 +529,18 @@ class W_Networking extends Widget {
     void createRadioButtons(String name) {
         String id = name.substring(name.length()-1);
         cp5_networking.addRadioButton(name)
-                .setSize(10,10)
+                .setSize(20,20)
                 .setColorForeground(color(120))
                 .setColorBackground(color(200,200,200)) // text field bg color
                 .setColorActive(color(184,220,105))
                 .setColorLabel(color(0))
                 .setItemsPerRow(2)
                 .setSpacingColumn(40)
-                .addItem(id + "-Off", 0)
-                .addItem(id + "-On", 1)
+                .addItem("filter_stream_"+id, 0)
                 // .addItem("Off",0)
                 // .addItem("On",1)
-                .activate(0)
+                .hideLabels()
+                .activate(0) //filter on by default
                 .setVisible(false)
                 ;
     }
@@ -676,6 +680,7 @@ class W_Networking extends Widget {
         row4 = y+7*h/10;
         row5 = y+8*h/10;
         int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
+        
 
         //reset the button positions using new x and y
         startButton.setPos(x + w/2 - 70, y + h - 40 );
@@ -711,10 +716,10 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "OSC_ip4").setPosition(column4, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port4").setPosition(column4, row3 - offset);
             cp5_networking.get(Textfield.class, "OSC_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter4").setPosition(column4, row5 - 10);
+            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter4").setPosition(column4 + filtOffsetX, row5 + filtOffsetY);
         } else if (protocolMode.equals("UDP")) {
             for (String textField : udpTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
@@ -725,9 +730,9 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "UDP_port2").setPosition(column2, row3 - offset);
             cp5_networking.get(Textfield.class, "UDP_ip3").setPosition(column3, row2 - offset);
             cp5_networking.get(Textfield.class, "UDP_port3").setPosition(column3, row3 - offset);
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
+            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
         } else if (protocolMode.equals("LSL")) {
             for (String textField : lslTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
@@ -741,9 +746,9 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "LSL_name3").setPosition(column3,row2 - offset);
             cp5_networking.get(Textfield.class, "LSL_type3").setPosition(column3,row3 - offset);
             cp5_networking.get(Textfield.class, "LSL_numchan3").setPosition(column3,row4 - offset);
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
+            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3 + filtOffsetX, row5 + filtOffsetY);
         } else if (protocolMode.equals("Serial")) {
             //Serial Specific
             cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
@@ -753,7 +758,7 @@ class W_Networking extends Widget {
             // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
             // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
             cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //halfWidth
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row3 - 10);
+            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1 + filtOffsetX, row3 + filtOffsetY);
         }
 
         cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
@@ -1518,7 +1523,7 @@ class Stream extends Thread {
     }
 
     void sendFFTData() {
-        // UNFILTERED, for now, maybe this should be changed -RW
+        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown
         //EEG/FFT readings above 125Hz don't typically travel through the skull
         //So for now, only send out 0-125Hz with 1 bin per Hz
         //Bin 10 == 10Hz frequency range
