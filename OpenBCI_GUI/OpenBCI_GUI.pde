@@ -126,8 +126,6 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
 
-NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
-
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
@@ -136,10 +134,12 @@ int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show f
 DataStatus is_railed[];
 final int threshold_railed = int(pow(2, 23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
 final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller value as the warning threshold
-//OpenBCI SD Card setting (if eegDataSource == 0)
-int sdSetting = 0; //0 = do not write; 1 = 5 min; 2 = 15 min; 3 = 30 min; etc...
-String sdSettingString = "Do not write to SD";
-////// ---- End variables related to the OpenBCI boards
+
+//Cyton SD Card setting
+CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
+
+//NovaXR Default mode
+NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -990,4 +990,3 @@ void drawOverlay() {
     text(s, width/2 - textWidth(s)/2, height/2 + 8);
     popStyle();
 }
-
