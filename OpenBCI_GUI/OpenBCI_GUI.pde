@@ -126,7 +126,6 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
 
-NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
