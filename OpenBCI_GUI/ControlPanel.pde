@@ -2254,12 +2254,12 @@ class NovaXRBox {
         // for each entry in the enum, add it to the dropdown.
         for (NovaXRSettingsEnum value : enumValues) {
             // this will store the *actual* enum object inside the dropdown!
-            list.addItem(value.toString(), value);
+            list.addItem(value.getName(), value);
         }
         //Style the text in the ScrollableList
         list.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(enumValues[0].toString())
+            .setText(enumValues[0].getName())
             .setFont(h4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2267,7 +2267,7 @@ class NovaXRBox {
             ;
         list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(enumValues[0].toString())
+            .setText(enumValues[0].getName())
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
