@@ -199,13 +199,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public boolean initializeInternal() {
-        boolean b = super.initializeInternal();
-        openSDFile();
-        return b;
+        return super.initializeInternal();
     }
 
     @Override
     public void uninitializeInternal() {
+        closeSDFile();
         super.uninitializeInternal();
     }
 
@@ -358,6 +357,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public void startStreaming() {
+        openSDFile();
         super.startStreaming();
     }
 
