@@ -4,7 +4,12 @@ import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = true;
 
-public enum NovaXRSR
+interface NovaXRSettingsEnum {
+    public String getName();
+    public String getCommand();
+}
+
+public enum NovaXRSR implements NovaXRSettingsEnum
 {
     SR_250("250Hz", null), 
     SR_500("500Hz", null), 
@@ -18,16 +23,18 @@ public enum NovaXRSR
         this.command = _command;
     }
  
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getCommand() {
         return command;
     }
 }
 
-public enum NovaXRMode
+public enum NovaXRMode implements NovaXRSettingsEnum
 {
     DEFAULT("Default Mode", "d"), 
     INTERNAL_SIGNAL("Internal Signal", "f"), 
@@ -43,10 +50,12 @@ public enum NovaXRMode
         this.command = _command;
     }
  
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getCommand() {
         return command;
     }
