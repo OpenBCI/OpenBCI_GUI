@@ -4,6 +4,29 @@ import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = true;
 
+public enum NovaXRSR
+{
+    SR_250("250Hz", null), 
+    SR_500("500Hz", null), 
+    SR_1000("1000Hz", null);
+
+    private String name;
+    private String command;
+ 
+    NovaXRSR(String _name, String _command) {
+        this.name = _name;
+        this.command = _command;
+    }
+ 
+    public String getName() {
+        return name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+}
+
 public enum NovaXRMode
 {
     DEFAULT("Default Mode", "d"), 
