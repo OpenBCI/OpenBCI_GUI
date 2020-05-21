@@ -1194,8 +1194,8 @@ class Stream extends Thread {
 	
 	  // Bug #638: ArrayOutOfBoundsException was thrown if 
 	  // nPointsPerUpdate was larger than 10, as start was
-	  // set to dataBuffY_filtY_uV[0].length - 10.
-        start = dataBuffY_filtY_uV[0].length - nPointsPerUpdate;
+	  // set to dataProcessingFilteredBuffer[0].length - 10.
+        start = dataProcessingFilteredBuffer[0].length - nPointsPerUpdate;
     }
 
     /* OSC Stream */
@@ -1461,7 +1461,7 @@ class Stream extends Thread {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     msg.clearArguments();
                     for (int j=0;j<numChan;j++) {
-                        msg.add(dataBuffY_filtY_uV[j][start+i]);
+                        msg.add(dataProcessingFilteredBuffer[j][start+i]);
                     }
                     try {
                         this.osc.send(msg,this.netaddress);
@@ -1473,7 +1473,7 @@ class Stream extends Thread {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     String outputter = "{\"type\":\"eeg\",\"data\":[";
                     for (int j = 0; j < numChan; j++) {
-                        outputter += str(dataBuffY_filtY_uV[j][start+i]);
+                        outputter += str(dataProcessingFilteredBuffer[j][start+i]);
                         if (j != numChan - 1) {
                             outputter += ",";
                         } else {
@@ -1489,7 +1489,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 for (int i=0; i<nPointsPerUpdate;i++) {
                     for (int j=0;j<numChan;j++) {
-                        dataToSend[j+numChan*i] = dataBuffY_filtY_uV[j][i];
+                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][i];
                     }
                 }
                 // Add timestamp to LSL Stream
@@ -1498,7 +1498,7 @@ class Stream extends Thread {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     serialMessage = "["; //clear message
                     for (int j=0;j<numChan;j++) {
-                        float chan_uV_filt = dataBuffY_filtY_uV[j][start+i];//get chan uV float value and truncate to 3 decimal places
+                        float chan_uV_filt = dataProcessingFilteredBuffer[j][start+i];//get chan uV float value and truncate to 3 decimal places
                         String chan_uV_filt_3dec = String.format("%.3f", chan_uV_filt);
                         serialMessage += chan_uV_filt_3dec;//  serialMesage += //add 3 decimal float chan uV value as string to serialMessage
                         if (j < numChan-1) {

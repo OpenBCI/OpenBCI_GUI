@@ -232,7 +232,7 @@ class W_emg extends Widget {
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        process(dataBuffY_filtY_uV, fftBuff);
+        process(dataProcessingFilteredBuffer, fftBuff);
     }
 
     void draw() {

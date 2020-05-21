@@ -513,13 +513,13 @@ class ChannelBar{
 
     void updatePlotPoints() {
         // update data in plot
-        if(dataBuffY_filtY_uV[channelIndex].length > nPoints) {
-            for (int i = dataBuffY_filtY_uV[channelIndex].length - nPoints; i < dataBuffY_filtY_uV[channelIndex].length; i++) {
-                float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelIndex].length-nPoints))*timeBetweenPoints;
-                float filt_uV_value = dataBuffY_filtY_uV[channelIndex][i];
+        if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
+            for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
+                float time = -(float)numSeconds + (float)(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints))*timeBetweenPoints;
+                float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
 
                 // update channel point in place
-                channelPoints.set(i-(dataBuffY_filtY_uV[channelIndex].length-nPoints), time, filt_uV_value, "");
+                channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
