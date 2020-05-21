@@ -2202,10 +2202,10 @@ class NovaXRBox {
         novaXRcp5 = new ControlP5(ourApplet);
         novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        createDropdown("novaXR_SampleRates", sampleRateList, Arrays.asList(NovaXRSR.values()));
+        sampleRateList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
         sampleRateList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
         sampleRateList.setSize(120 + padding,(sampleRateList.getItems().size()+1)*24);
-        createDropdown("novaXR_Modes", modeList, Arrays.asList(NovaXRMode.values()));
+        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
         modeList.setPosition(x + padding, sampleRateList.getPosition()[1] + 24 + padding);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
     }
@@ -2238,8 +2238,8 @@ class NovaXRBox {
     public void mouseReleased() {
     }
 
-    private void createDropdown(String name, ScrollableList list, List<Enum> settings){
-        list = novaXRcp5.addScrollableList(name)
+    private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
+        ScrollableList list = novaXRcp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2252,14 +2252,14 @@ class NovaXRBox {
             .setVisible(true)
             ;
         // for each entry in the enum, add it to the dropdown.
-        for (Enum setting : settings) {
+        for (NovaXRSettingsEnum value : enumValues) {
             // this will store the *actual* enum object inside the dropdown!
-            list.addItem(setting.toString(), setting);
+            list.addItem(value.getName(), value);
         }
         //Style the text in the ScrollableList
         list.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(settings.get(0).toString())
+            .setText(enumValues[0].getName())
             .setFont(h4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2267,12 +2267,14 @@ class NovaXRBox {
             ;
         list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(settings.get(0).toString())
+            .setText(enumValues[0].getName())
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        return list;
     }
 };
 
