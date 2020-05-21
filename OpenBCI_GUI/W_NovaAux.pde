@@ -18,7 +18,6 @@ class W_NovaAux extends Widget {
 
     private boolean allowSpillover = false;
     private boolean visible = true;
-    private boolean updating = true;
 
     //Initial dropdown settings
     private int arInitialVertScaleIndex = 5;
@@ -72,9 +71,6 @@ class W_NovaAux extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public int getNumAnalogReads() {
         return numAnalogReadBars;
@@ -83,19 +79,15 @@ class W_NovaAux extends Widget {
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
 
     void update() {
-        if(visible && updating) {
+        if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < numAnalogReadBars; i++) {
                 analogReadBars[i].update();
             }
-
         }
     }
 

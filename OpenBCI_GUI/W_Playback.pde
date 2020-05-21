@@ -28,7 +28,6 @@ class W_playback extends Widget {
     int padding = 10;
 
     private boolean visible = true;
-    private boolean updating = true;
     private boolean menuHasUpdated = false;
     private boolean menuListIsLocked = false;
 
@@ -58,15 +57,9 @@ class W_playback extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
-    }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
     }
 
     void update() {
