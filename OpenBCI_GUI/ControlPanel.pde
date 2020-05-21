@@ -188,15 +188,15 @@ public void controlEvent(ControlEvent theEvent) {
 
     // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
     if (theEvent.isFrom("sdCardTimes")) {
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        sdSettingString = (String)bob.get("text");
-        sdSetting = int(theEvent.getValue());
-        if (sdSetting != 0) {
-            output("OpenBCI microSD Setting = " + sdSettingString + " recording time");
-        } else {
-            output("OpenBCI microSD Setting = " + sdSettingString);
+        int val = (int)(theEvent.getController()).getValue();
+        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+        cyton_sdSetting = (CytonSDMode)bob.get("value");
+        String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            outputString += " recording time";
         }
-        verbosePrint("SD setting = " + sdSetting);
+        output(outputString);
+        verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
     }
 
     if (theEvent.isFrom("channelListCP")) {
@@ -623,26 +623,28 @@ class ControlPanel {
     }
 
     private void refreshPortListGanglion() {
-        try {
-            output("BLE Devices Refreshing");
-            bleList.items.clear();
-            String comPort = getBLED112Port();
-            if (comPort != null) {
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        final String comPort = getBLED112Port();
+        if (comPort != null) {
+            Thread thread = new Thread(){
+                public void run(){
+                    try {
+                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(makeItem(entry.getKey()));
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-            } else {
-                outputError("No BLED112 Dongle Found");
-            }
-        }
-        catch (GanglionError e)
-        {
-            println("Exception in ganglion scanning.");
-            e.printStackTrace ();
+            };
+            thread.start();
+        } else {
+            outputError("No BLED112 Dongle Found");
         }
     }
 
@@ -1264,7 +1266,7 @@ public void initButtonPressed(){
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
-            
+
             //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
             midInit = true;
             output("Attempting to Start Session..."); // Show this at the bottom of the GUI
@@ -1585,19 +1587,24 @@ class WifiBox {
     public void refreshWifiList() {
         output("Wifi Devices Refreshing");
         wifiList.items.clear();
-        try {
-            List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
-            if (devices.isEmpty ()) {
-                println("No WIFI Shields found");
+        Thread thread = new Thread(){
+            public void run() {
+                try {
+                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
+                    if (devices.isEmpty ()) {
+                        println("No WIFI Shields found");
+                    }
+                    for (int i = 0; i < devices.size(); i++) {
+                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
+                    }
+                    wifiList.updateMenu();
+                } catch (Exception e) {
+                    println("Exception in wifi shield scanning");
+                    e.printStackTrace ();
+                }
             }
-            for (int i = 0; i < devices.size(); i++) {
-                wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
-            }
-            wifiList.updateMenu();
-        } catch (Exception e) {
-            println("Exception in wifi shield scanning");
-            e.printStackTrace ();
-        }
+        };
+        thread.start();
     }
 };
 
@@ -2275,7 +2282,7 @@ class NovaXRBox {
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
-            .setSize(w - padding*2,1*24)// + maxFreqList.size())
+            .setSize(w - padding*2, 24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .setVisible(true)
@@ -2366,19 +2373,10 @@ class PlaybackFileBox {
 
 class SDBox {
     final private String sdBoxDropdownName = "sdCardTimes";
-    final private String[] sdTimesStrings = {
-                        "Do not write to SD...", 
-                        "5 minute maximum", 
-                        "15 minute maximum", 
-                        "30 minute maximum",
-                        "1 hour maximum",
-                        "2 hours maximum",
-                        "4 hour maximum",
-                        "12 hour maximum",
-                        "24 hour maximum"
-                        };
-    int x, y, w, h, padding; //size and position
-    ControlP5 cp5_sdBox;
+    private int x, y, w, h, padding; //size and position
+    private ControlP5 cp5_sdBox;
+    private ScrollableList sdList;
+    private int prevY;
     boolean dropdownWasClicked = false;
 
     SDBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2387,17 +2385,22 @@ class SDBox {
         w = _w;
         h = 73;
         padding = _padding;
+        prevY = y;
 
         cp5_sdBox = new ControlP5(ourApplet);
-        createDropdown(sdBoxDropdownName, Arrays.asList(sdTimesStrings));
-        cp5_sdBox.setGraphics(ourApplet, 0,0);
-        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
-        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setSize(w - padding*2, int((sdTimesStrings.length / 2) + 1) * 24);
         cp5_sdBox.setAutoDraw(false);
+        createDropdown(sdBoxDropdownName);
+        cp5_sdBox.setGraphics(ourApplet, 0,0);
+        updatePosition();
+        sdList.setSize(w - padding*2, (int((sdList.getItems().size()+1)/1.5)) * 24);
     }
 
     public void update() {
         openCloseDropdown();
+        if (y != prevY) { //When box's absolute y position changes, update cp5
+            updatePosition();
+            prevY = y;
+        }
     }
 
     public void draw() {
@@ -2415,48 +2418,37 @@ class SDBox {
 
         pushStyle();
         fill(150);
-        rect(cp5_sdBox.getController(sdBoxDropdownName).getPosition()[0]-1, cp5_sdBox.getController(sdBoxDropdownName).getPosition()[1]-1, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getWidth()+2, cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).getHeight()+2);
+        rect(sdList.getPosition()[0]-1, sdList.getPosition()[1]-1, sdList.getWidth()+2, sdList.getHeight()+2);
         popStyle();
-
-        //set the correct position of the dropdown and make it visible if the SDBox class is being drawn
-        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setPosition(x + padding, y + padding*2 + 14);
-        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).setVisible(true);
         cp5_sdBox.draw();
     }
 
-    void createDropdown(String name, List<String> _items){
+    private void createDropdown(String name){
 
-        cp5_sdBox.addScrollableList(name)
+        sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            /*
-            .setColorBackground(color(31,69,110)) // text field bg color
-            .setColorValueLabel(color(0))       // text color
-            .setColorCaptionLabel(color(255))
-            .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
-            */
-            // .setColorCursor(color(26,26,26))
-
-            .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
+            .setSize(w - padding*2, 2*24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
-            .addItems(_items) // used to be .addItems(maxFreqList)
-            .setVisible(false)
+            .setVisible(true)
             ;
-        cp5_sdBox.getController(name)
-            .getCaptionLabel() //the caption label is the text object in the primary bar
+         // for each entry in the enum, add it to the dropdown.
+        for (CytonSDMode mode : CytonSDMode.values()) {
+            // this will store the *actual* enum object inside the dropdown!
+            sdList.addItem(mode.getName(), mode);
+        }
+        sdList.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(sdTimesStrings[0])
+            .setText(CytonSDMode.NO_WRITE.getName())
             .setFont(p4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        cp5_sdBox.getController(name)
-            .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+        sdList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(sdTimesStrings[0])
+            .setText(CytonSDMode.NO_WRITE.getName())
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
@@ -2488,7 +2480,11 @@ class SDBox {
         }
     }
 
-    void closeDropdown() {
+    public void updatePosition() {
+        sdList.setPosition(x + padding, y + padding*2 + 14);
+    }
+
+    public void closeDropdown() {
         cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
         dropdownWasClicked = true;
         //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");

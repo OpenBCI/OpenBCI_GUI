@@ -15,6 +15,34 @@ enum CytonBoardMode {
     public int getValue() { return value; }
 }
 
+public enum CytonSDMode {
+    NO_WRITE("Do not write to SD...", null),
+    MAX_5MIN("5 minute maximum", "A"),
+    MAX_15MIN("15 minute maximum", "S"),
+    MAX_30MIN("30 minute maximum", "F"),
+    MAX_1HR("1 hour maximum", "G"),
+    MAX_2HR("2 hour maximum", "H"),
+    MAX_4HR("4 hour maximum", "J"),
+    MAX_12HR("12 hour maximum", "K"),
+    MAX_24HR("24 hour maximum", "L");
+
+    private String name;
+    private String command;
+
+    CytonSDMode(String _name, String _command) {
+        this.name = _name;
+        this.command = _command;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+}
+
 static class BoardCytonConstants {
     static final float series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
     static final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
@@ -43,7 +71,7 @@ class BoardCytonSerialDaisy extends BoardCyton {
     public BoardCytonSerialDaisy() {
         super();
     }
-    
+
     public BoardCytonSerialDaisy(String serialPort) {
         super();
         this.serialPort = serialPort;
@@ -141,7 +169,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     // same for all channels
     private final double brainflowGain = 24.0;
-    
+
     private int[] accelChannelsCache = null;
     private int[] analogChannelsCache = null;
 
@@ -185,7 +213,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         currentADS1299Settings.powerDown[channelIndex] = active ? PowerDown.ON : PowerDown.OFF;
         currentADS1299Settings.commit(channelIndex);
     }
-    
+
     @Override
     public boolean isEXGChannelActive(int channelIndex) {
         return currentADS1299Settings.powerDown[channelIndex] == PowerDown.ON;
@@ -250,7 +278,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    public void setDigitalActive(boolean active) { 
+    public void setDigitalActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.DIGITAL);
         } else {
@@ -327,10 +355,31 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         currentBoardMode = boardMode;
     }
 
+    @Override
+    public void startStreaming() {
+        openSDFile();
+        super.startStreaming();
+    }
+
+    @Override
+    public void stopStreaming() {
+        closeSDFile();
+        super.stopStreaming();
+    }
+
+    public void openSDFile() {
+        //If selected, send command to Cyton to enabled SD file recording for selected duration
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            println("Opening SD file. Writing " + cyton_sdSetting.getCommand() + " to Cyton.");
+            sendCommand(cyton_sdSetting.getCommand());
+        }
+    }
+
     public void closeSDFile() {
-        println("Closing any open SD file. Writing 'j' to OpenBCI.");
-        sendCommand("j"); // tell the SD file to close if one is open...
-        delay(100); //make sure 'j' gets sent to the board
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            println("Closing any open SD file. Writing 'j' to Cyton.");
+            sendCommand("j"); // tell the SD file to close if one is open...
+        }
     }
 
     public void printRegisters() {
