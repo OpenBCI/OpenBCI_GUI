@@ -2189,8 +2189,9 @@ class NovaXRBox {
     private int x, y, w, h, padding; //size and position
     private String boxLabel = "NOVAXR CONFIG";
     private String sampleRateLabel = "SAMPLE RATE";
-    private ControlP5 novaXRcp5;
-    private ScrollableList sampleRateList;
+    private ControlP5 sr_cp5;
+    private ControlP5 mode_cp5;
+    private ScrollableList srList;
     private ScrollableList modeList;
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
@@ -2199,19 +2200,34 @@ class NovaXRBox {
         w = _w;
         h = 104;
         padding = _padding;
-        novaXRcp5 = new ControlP5(ourApplet);
-        novaXRcp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
+        sr_cp5 = new ControlP5(ourApplet);
+        sr_cp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
+        mode_cp5 = new ControlP5(ourApplet);
+        mode_cp5.setAutoDraw(false);
 
-        sampleRateList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
-        sampleRateList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
-        sampleRateList.setSize(120 + padding,(sampleRateList.getItems().size()+1)*24);
-        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
-        modeList.setPosition(x + padding, sampleRateList.getPosition()[1] + 24 + padding);
+        srList = createDropdown(sr_cp5, "novaXR_SampleRates", NovaXRSR.values());
+        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
+        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
+        modeList = createDropdown(mode_cp5, "novaXR_Modes", NovaXRMode.values());
+        modeList.setPosition(x + padding, y + h - 24 - padding);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
+        
+        
     }
 
     public void update() {
-        
+
+        //Lock the lower dropdown when top one is in use, compatible with auto open/close
+        if (srList.isInside()) {
+            modeList.lock();
+        } else {
+            if (modeList.isLock()) {
+                modeList.unlock();
+            }
+        }
+        autoOpenCloseScrollableList(srList);
+        autoOpenCloseScrollableList(modeList);
+
     }
 
     public void draw() {
@@ -2220,16 +2236,29 @@ class NovaXRBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         //draw flexible grey background for this box
-        rect(x, y, w, h + novaXRcp5.getController("novaXR_Modes").getHeight() - padding*2);
+        rect(x, y, w, h + modeList.getHeight() - padding*2);
+        popStyle();
+
+        //draw lower dropdown first
+        mode_cp5.draw();
+
+        pushStyle();
+        fill(boxColor);
+        strokeWeight(0);
+        //draw another grey box behind top dropdown, and above lower dropdown so it looks right
+        rect(x + w - padding*2 - 60*2 - 1, y + 16 + padding*2 - 1, srList.getWidth()+2, srList.getHeight()+2);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
+        //draw text labels
         text(boxLabel, x + padding, y + padding);
         textAlign(LEFT, TOP);
         textFont(p4, 14);
         text(sampleRateLabel, x + padding, y + padding*2 + 18);
         popStyle();
-        novaXRcp5.draw();
+        
+        //draw upper dropdown last, on top of everything in this box
+        sr_cp5.draw();
     }
 
     public void mousePressed() {
@@ -2238,8 +2267,8 @@ class NovaXRBox {
     public void mouseReleased() {
     }
 
-    private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
-        ScrollableList list = novaXRcp5.addScrollableList(name)
+    private ScrollableList createDropdown(ControlP5 _cp5, String name, NovaXRSettingsEnum[] enumValues){
+        ScrollableList list = _cp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2275,6 +2304,18 @@ class NovaXRBox {
             ;
 
         return list;
+    }
+
+    private void autoOpenCloseScrollableList(ScrollableList list) {
+        if (list.isOpen()){
+            if(!list.isMouseOver()){
+                list.close();
+            }
+        } else {
+            if(list.isMouseOver()){
+                list.open();
+            }
+        }
     }
 };
 

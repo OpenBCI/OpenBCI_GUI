@@ -11,8 +11,8 @@ interface NovaXRSettingsEnum {
 
 public enum NovaXRSR implements NovaXRSettingsEnum
 {
-    SR_250("250Hz", null), 
-    SR_500("500Hz", null), 
+    SR_250("250Hz", "~6"), 
+    SR_500("500Hz", "~5"), 
     SR_1000("1000Hz", null);
 
     private String name;
@@ -39,8 +39,8 @@ public enum NovaXRMode implements NovaXRSettingsEnum
     DEFAULT("Default Mode", "d"), 
     INTERNAL_SIGNAL("Internal Signal", "f"), 
     EXTERNAL_SIGNAL("External Signal", "g"), 
-    PRESET4("Preset 4", "h"),
-    PRESET5("Preset 5", "j");
+    PRESET4("All EEG", "h"),
+    PRESET5("ALL EMG", "j");
 
     private String name;
     private String command;
