@@ -143,7 +143,6 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     }
 
     public void setCheckingImpedance(boolean checkImpedance) {
-        // todo brainflow, we need to change button to start/stop streaming
         if (checkImpedance) {
             if (isCheckingImpedance) {
                 println("Already checking impedance.");

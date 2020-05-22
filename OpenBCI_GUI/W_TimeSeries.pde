@@ -43,7 +43,6 @@ class W_timeSeries extends Widget {
     TextBox[] impValuesMontage;
 
     private boolean visible = true;
-    private boolean updating = true;
 
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
 
@@ -128,19 +127,13 @@ class W_timeSeries extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
 
     void update() {
-        if(visible && updating) {
+        if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
@@ -585,10 +578,8 @@ class ChannelBar{
         }else{
             plot.getXAxis().setNTicks(10);
         }
-        if(w_timeSeries.isUpdating()) {
-            updatePlotPoints();
-        }
-        // println("New X axis = " + _newTimeSize);
+        
+        updatePlotPoints();
     }
 
     void adjustVertScale(int _vertScaleValue) {

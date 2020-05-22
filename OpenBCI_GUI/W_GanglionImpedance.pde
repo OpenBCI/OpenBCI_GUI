@@ -97,15 +97,12 @@ class W_GanglionImpedance extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        // todo[brainflow] needs just a little more work to reach feature parity, see comment below
         if (startStopCheck.isActive && startStopCheck.isMouseHere()) {
             if (currentBoard instanceof BoardGanglion) {
                 // ganglion is the only board which can check impedance, so we don't have an interface for it.
                 // if that changes in the future, consider making an interface.
                 BoardGanglion ganglionBoard = (BoardGanglion)currentBoard;
                 if (!ganglionBoard.isCheckingImpedance()) {
-                    // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
-                    //stopRunning();
                     // We need to either stop the time series data, or allow it to scroll, like currently. 
                     // the values in time series are not meaningful when Impedance check is active
                     topNav.stopButton.setString(stopButton_pressToStart_txt);

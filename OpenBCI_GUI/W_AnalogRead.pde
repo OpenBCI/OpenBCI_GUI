@@ -28,7 +28,6 @@ class W_AnalogRead extends Widget {
 
     private boolean allowSpillover = false;
     private boolean visible = true;
-    private boolean updating = true;
 
     //Initial dropdown settings
     private int arInitialVertScaleIndex = 5;
@@ -102,9 +101,6 @@ class W_AnalogRead extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public int getNumAnalogReads() {
         return numAnalogReadBars;
@@ -113,12 +109,9 @@ class W_AnalogRead extends Widget {
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
 
     void update() {
-        if(visible && updating) {
+        if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
@@ -442,9 +435,7 @@ class AnalogReadBar{
             plot.getXAxis().setNTicks(10);
         }
         if (w_analogRead != null) {
-            if(w_analogRead.isUpdating()) {
-                updatePlotPoints();
-            }
+            updatePlotPoints();
         }
     }
 

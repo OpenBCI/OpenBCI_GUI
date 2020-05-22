@@ -496,32 +496,5 @@ class InterfaceSerial {
         }
     }
 
-    private int interpret24bitAsInt32(byte[] byteArray) {
-        //little endian
-        int newInt = (
-            ((0xFF & byteArray[0]) << 16) |
-            ((0xFF & byteArray[1]) << 8) |
-            (0xFF & byteArray[2])
-            );
-        if ((newInt & 0x00800000) > 0) {
-            newInt |= 0xFF000000;
-        } else {
-            newInt &= 0x00FFFFFF;
-        }
-        return newInt;
-    }
-
-    private int interpret16bitAsInt32(byte[] byteArray) {
-        int newInt = (
-            ((0xFF & byteArray[0]) << 8) |
-            (0xFF & byteArray[1])
-            );
-        if ((newInt & 0x00008000) > 0) {
-            newInt |= 0xFFFF0000;
-        } else {
-            newInt &= 0x0000FFFF;
-        }
-        return newInt;
-    }
 
 };

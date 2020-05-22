@@ -526,7 +526,7 @@ void initSystem() {
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting);
-            //TODO[brainflow]
+            // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
@@ -695,14 +695,11 @@ void stopButtonWasPressed() {
     //toggle the data transfer state of the ADS1299...stop it or start it...
     if (isRunning) {
         verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
-        // todo[brainflow] Investigate if we need this setUpdating() thing
-        wm.setUpdating(false);
         stopRunning();
         topNav.stopButton.setString(stopButton_pressToStart_txt);
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
-        wm.setUpdating(true);
 
         startRunning();
         topNav.stopButton.setString(stopButton_pressToStop_txt);
