@@ -13,7 +13,7 @@ public enum NovaXRSR implements NovaXRSettingsEnum
 {
     SR_250("250Hz", "~6"), 
     SR_500("500Hz", "~5"), 
-    SR_1000("1000Hz", null);
+    SR_1000("1000Hz", "~4");
 
     private String name;
     private String command;
@@ -63,11 +63,13 @@ public enum NovaXRMode implements NovaXRSettingsEnum
 
 class NovaXRDefaultSettings extends ADS1299Settings {
     // TODO: modes go here
-    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode) {
+    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode, NovaXRSR sampleRate) {
         super(theBoard);
 
         // send the mode command to board
         board.sendCommand(mode.getCommand());
+        // send the sample rate command to the board
+        board.sendCommand(sampleRate.getCommand());
 
         Arrays.fill(powerDown, PowerDown.ON);
 
@@ -134,20 +136,22 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
     private NovaXRMode initialSettingsMode;
+    private NovaXRSR sampleRate;
 
     private final NovaXRDefaultSettings defaultSettings;
 
-    public BoardNovaXR(NovaXRMode mode) {
+    public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
         initialSettingsMode = mode;
+        sampleRate = _sampleRate;
 
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
+        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
     }
 
     @Override
@@ -156,7 +160,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
 
         if (res) {
             // NovaXRDefaultSettings() will send mode command to board
-            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode);
+            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode, sampleRate);
         }
 
         return res;

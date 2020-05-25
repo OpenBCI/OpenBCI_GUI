@@ -526,7 +526,7 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_boardSetting);
+            currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
             //TODO[brainflow]
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
