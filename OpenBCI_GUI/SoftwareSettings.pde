@@ -946,10 +946,10 @@ class SoftwareSettings {
         Protocol(nwProtocolLoad);
         //Update dropdowns and textfields in the Networking widget with loaded values
         w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
-        w_networking.cp5_networking.get(Button.class, "filter1").setSwitch(false);
-        w_networking.cp5_networking.get(Button.class, "filter2").setOff();
-        w_networking.cp5_networking.get(Button.class, "filter3").setOff();
-        w_networking.cp5_networking.get(Button.class, "filter4").setOff();
+        w_networking.cp5_networking.get(Toggle.class, "filter1").setState(false);
+        w_networking.cp5_networking.get(Toggle.class, "filter2").setState(false);
+        w_networking.cp5_networking.get(Toggle.class, "filter3").setState(false);
+        w_networking.cp5_networking.get(Toggle.class, "filter4").setState(false);
         switch (nwProtocolLoad) {
             case 3:  //Apply OSC if loaded
                 println("Apply OSC Networking Mode");
@@ -973,10 +973,10 @@ class SoftwareSettings {
                 w_networking.cp5_networking.get(Textfield.class, "OSC_address2").setText(nwOscAddress2Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_address3").setText(nwOscAddress3Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_address4").setText(nwOscAddress4Load);
-                if (nwOscFilter1Load) w_networking.cp5_networking.get(Button.class, "filter1").setOn();
-                if (nwOscFilter2Load) w_networking.cp5_networking.get(Button.class, "filter2").setOn();
-                if (nwOscFilter3Load) w_networking.cp5_networking.get(Button.class, "filter3").setOn();
-                if (nwOscFilter4Load) w_networking.cp5_networking.get(Button.class, "filter4").setOn();
+                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwOscFilter1Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwOscFilter2Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwOscFilter3Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter4").setState(nwOscFilter4Load);
                 break;
             case 2:  //Apply UDP if loaded
                 println("Apply UDP Networking Mode");
@@ -992,9 +992,9 @@ class SoftwareSettings {
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port1").setText(nwUdpPort1Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port2").setText(nwUdpPort2Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port3").setText(nwUdpPort3Load);
-                if (nwUdpFilter1Load) w_networking.cp5_networking.get(Button.class, "filter1").setOn();
-                if (nwUdpFilter2Load) w_networking.cp5_networking.get(Button.class, "filter2").setOn();
-                if (nwUdpFilter3Load) w_networking.cp5_networking.get(Button.class, "filter3").setOn();
+                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwUdpFilter1Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwUdpFilter2Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwUdpFilter3Load);
                 break;
             case 1:  //Apply LSL if loaded
                 println("Apply LSL Networking Mode");
@@ -1010,9 +1010,9 @@ class SoftwareSettings {
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type1").setText(nwLSLType1Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type2").setText(nwLSLType2Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type3").setText(nwLSLType3Load);
-                if (nwLSLFilter1Load) w_networking.cp5_networking.get(Button.class, "filter1").setOn();
-                if (nwLSLFilter2Load) w_networking.cp5_networking.get(Button.class, "filter2").setOn();
-                if (nwLSLFilter3Load) w_networking.cp5_networking.get(Button.class, "filter3").setOn();
+                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwLSLFilter1Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwLSLFilter2Load);
+                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwLSLFilter3Load);
                 break;
             case 0:  //Apply Serial if loaded
                 println("Apply Serial Networking Mode");
@@ -1020,7 +1020,7 @@ class SoftwareSettings {
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //Set text
                 w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
-                if (nwSerialFilter1Load) w_networking.cp5_networking.get(Button.class, "filter1").setOn();
+                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwSerialFilter1Load);
 
                 //Look for the portName in the dropdown list
                 int listSize = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItems().size();

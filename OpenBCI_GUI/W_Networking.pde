@@ -49,9 +49,9 @@ class W_Networking extends Widget {
     int row5;
     int itemWidth = 96;
     private final float datatypeDropdownScaling = .35;
-    private final int filtButW = 20;
+    private final int filtButW = 40;
     private final int filtButH = 20;
-    private final int filtOffsetX = (itemWidth / 2) - 10;
+    private final int filtOffsetX = (itemWidth / 2) - (filtButW / 2);
     private final int filtOffsetY = -15;
 
     /* UI */
@@ -170,7 +170,7 @@ class W_Networking extends Widget {
             cp5Map.put(datatypeNames[i], int(cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).getValue()));
             //filter radio buttons
             String filterName = "filter" + (i+1);
-            cp5Map.put(filterName, cp5_networking.get(Button.class, filterName).getBooleanValue());
+            cp5Map.put(filterName, cp5_networking.get(Toggle.class, filterName).getBooleanValue());
         }
         //osc textfields
         copyCP5TextToMap(oscTextFieldNames, cp5Map);
@@ -386,10 +386,10 @@ class W_Networking extends Widget {
         createBaudDropdown("baud_rate", baudRates);
         /* General Elements */
 
-        createButtons("filter1");
-        createButtons("filter2");
-        createButtons("filter3");
-        createButtons("filter4");
+        createButton("filter1");
+        createButton("filter2");
+        createButton("filter3");
+        createButton("filter4");
 
         for (int i = 0; i < datatypeNames.length; i++) {
             createDropdown(datatypeNames[i], dataTypes);
@@ -464,19 +464,19 @@ class W_Networking extends Widget {
             cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(false);
         }
 
-        cp5_networking.get(Button.class, "filter1").setVisible(true);
+        cp5_networking.get(Toggle.class, "filter1").setVisible(true);
         if (!serial_visible) {
-            cp5_networking.get(Button.class, "filter2").setVisible(true);
-            cp5_networking.get(Button.class, "filter3").setVisible(true);
+            cp5_networking.get(Toggle.class, "filter2").setVisible(true);
+            cp5_networking.get(Toggle.class, "filter3").setVisible(true);
         } else {
-            cp5_networking.get(Button.class, "filter2").setVisible(false);
-            cp5_networking.get(Button.class, "filter3").setVisible(false);
+            cp5_networking.get(Toggle.class, "filter2").setVisible(false);
+            cp5_networking.get(Toggle.class, "filter3").setVisible(false);
         }
         //Draw a 4th Filter button option if we are using OSC!
         if (protocolMode.equals("OSC")) {
-            cp5_networking.get(Button.class, "filter4").setVisible(true);
+            cp5_networking.get(Toggle.class, "filter4").setVisible(true);
         } else {
-            cp5_networking.get(Button.class, "filter4").setVisible(false);
+            cp5_networking.get(Toggle.class, "filter4").setVisible(false);
         }
     }
 
@@ -524,17 +524,26 @@ class W_Networking extends Widget {
     }
 
     /* Create radio buttons for filter toggling */
-    void createButtons(String name) {
-        cp5_networking.addButton(name)
+    void createButton(String name) {
+        cp5_networking.addToggle(name)
                 .setLabel("Off")
-                .setSize(35,20)
+                .setSize(filtButW, filtButH)
                 .setColorForeground(color(120))
                 .setColorBackground(color(200,200,200)) // text field bg color
                 .setColorActive(color(184,220,105))
                 .setColorLabel(color(0))
-                .setSwitch(false)
                 .setVisible(false)
                 ;
+        cp5_networking.getController(name)
+            .getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText("Off")
+            .setFont(h4)
+            .setSize(14)
+            .getStyle() //need to grab style before affecting margin and padding
+            .setMargin(-25, 0, 0, 0)
+            .setPaddingLeft(10)
+            ;
     }
 
     /* Creating DataType Dropdowns */
@@ -708,10 +717,10 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "OSC_ip4").setPosition(column4, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port4").setPosition(column4, row3 - offset);
             cp5_networking.get(Textfield.class, "OSC_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
-            cp5_networking.get(Button.class, "filter1").setPosition(column1 + filtOffsetX, row5 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter2").setPosition(column2 + filtOffsetX, row5 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter3").setPosition(column3 + filtOffsetX, row5 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter4").setPosition(column4 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter2").setPosition(column2 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter3").setPosition(column3 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter4").setPosition(column4 + filtOffsetX, row5 + filtOffsetY);
         } else if (protocolMode.equals("UDP")) {
             for (String textField : udpTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
@@ -722,9 +731,9 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "UDP_port2").setPosition(column2, row3 - offset);
             cp5_networking.get(Textfield.class, "UDP_ip3").setPosition(column3, row2 - offset);
             cp5_networking.get(Textfield.class, "UDP_port3").setPosition(column3, row3 - offset);
-            cp5_networking.get(Button.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
         } else if (protocolMode.equals("LSL")) {
             for (String textField : lslTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
@@ -735,9 +744,9 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "LSL_type2").setPosition(column2,row3 - offset);
             cp5_networking.get(Textfield.class, "LSL_name3").setPosition(column3,row2 - offset);
             cp5_networking.get(Textfield.class, "LSL_type3").setPosition(column3,row3 - offset);
-            cp5_networking.get(Button.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
-            cp5_networking.get(Button.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
         } else if (protocolMode.equals("Serial")) {
             //Serial Specific
             cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
@@ -747,7 +756,7 @@ class W_Networking extends Widget {
             // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
             // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
             cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //halfWidth
-            cp5_networking.get(Button.class, "filter1").setPosition(column1 + filtOffsetX, row3 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row3 + filtOffsetY);
         }
 
         cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
@@ -824,10 +833,10 @@ class W_Networking extends Widget {
         cp5_networking_portName.get(ScrollableList.class, "port_name").setVisible(false);
         cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setVisible(false);
 
-        cp5_networking.get(Button.class, "filter1").setVisible(false);
-        cp5_networking.get(Button.class, "filter2").setVisible(false);
-        cp5_networking.get(Button.class, "filter3").setVisible(false);
-        cp5_networking.get(Button.class, "filter4").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter1").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter2").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter3").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter4").setVisible(false);
 
     }
 
@@ -874,7 +883,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port1").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address1").getText();
-                filt_pos = cp5_networking.get(Button.class, "filter1").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, ip, port, address, filt_pos, nchan);
             } else {
                 stream1 = null;
@@ -883,7 +892,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port2").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address2").getText();
-                filt_pos = cp5_networking.get(Button.class, "filter2").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
                 stream2 = new Stream(dt2, ip, port, address, filt_pos, nchan);
             } else {
                 stream2 = null;
@@ -892,7 +901,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port3").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address3").getText();
-                filt_pos = cp5_networking.get(Button.class, "filter3").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
                 stream3 = new Stream(dt3, ip, port, address, filt_pos, nchan);
             } else {
                 stream3 = null;
@@ -901,7 +910,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip4").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port4").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address4").getText();
-                filt_pos = cp5_networking.get(Button.class, "filter4").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter4").getBooleanValue();
                 stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan);
             } else {
                 stream4 = null;
@@ -912,7 +921,7 @@ class W_Networking extends Widget {
             if (!dt1.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port1").getText());
-                filt_pos = cp5_networking.get(Button.class, "filter1").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, ip, port, filt_pos, nchan);
             } else {
                 stream1 = null;
@@ -920,7 +929,7 @@ class W_Networking extends Widget {
             if (!dt2.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port2").getText());
-                filt_pos = cp5_networking.get(Button.class, "filter2").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
                 stream2 = new Stream(dt2, ip, port, filt_pos, nchan);
             } else {
                 stream2 = null;
@@ -928,7 +937,7 @@ class W_Networking extends Widget {
             if (!dt3.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port3").getText());
-                filt_pos = cp5_networking.get(Button.class, "filter3").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
                 stream3 = new Stream(dt3, ip, port, filt_pos, nchan);
             } else {
                 stream3 = null;
@@ -942,7 +951,7 @@ class W_Networking extends Widget {
                 name = cp5_networking.get(Textfield.class, "LSL_name1").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type1").getText();
                 nChanLSL = getDataTypeNumChanLSL(dt1);
-                filt_pos = cp5_networking.get(Button.class, "filter1").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, name, type, nChanLSL, filt_pos, nchan);
             } else {
                 stream1 = null;
@@ -951,7 +960,7 @@ class W_Networking extends Widget {
                 name = cp5_networking.get(Textfield.class, "LSL_name2").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type2").getText();
                 nChanLSL = getDataTypeNumChanLSL(dt2);
-                filt_pos = cp5_networking.get(Button.class, "filter2").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
                 stream2 = new Stream(dt2, name, type, nChanLSL, filt_pos, nchan);
             } else {
                 stream2 = null;
@@ -960,7 +969,7 @@ class W_Networking extends Widget {
                 name = cp5_networking.get(Textfield.class, "LSL_name3").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type3").getText();
                 nChanLSL = getDataTypeNumChanLSL(dt3);
-                filt_pos = cp5_networking.get(Button.class, "filter3").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
                 stream3 = new Stream(dt3, name, type, nChanLSL, filt_pos, nchan);
             } else {
                 stream3 = null;
@@ -971,7 +980,7 @@ class W_Networking extends Widget {
                 println("ComPort: " + name);
                 println("Baudrate: " + Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
                 baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
-                filt_pos = cp5_networking.get(Button.class, "filter1").getBooleanValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, name, baudRate, filt_pos, pApplet, nchan);  //String dataType, String portName, int baudRate, int filter, PApplet _this
             } else {
                 stream1 = null;
@@ -2173,14 +2182,23 @@ void baud_rate(int n) {
     w_networking.closeAllDropdowns();
 }
 void filter1(int n) {
+    println("filter1=="+n);
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter1").setLabel(s);
     w_networking.closeAllDropdowns();
 }
 void filter2(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter2").setLabel(s);
     w_networking.closeAllDropdowns();
 }
 void filter3(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter3").setLabel(s);
     w_networking.closeAllDropdowns();
 }
 void filter4(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter4").setLabel(s);
     w_networking.closeAllDropdowns();
 }
