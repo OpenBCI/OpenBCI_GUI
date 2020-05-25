@@ -22,7 +22,7 @@ class W_playback extends Widget {
     //allow access to dataProcessing
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
-    Button selectPlaybackFileButton;
+    Button_obci selectPlaybackFileButton;
     MenuList playbackMenuList;
     //Used for spacing
     int padding = 10;
@@ -36,7 +36,7 @@ class W_playback extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //make a button to load new files
-        selectPlaybackFileButton = new Button (
+        selectPlaybackFileButton = new Button_obci (
             x + w/2 - (padding*2),
             y - navHeight + 2,
             200,

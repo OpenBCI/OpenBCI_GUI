@@ -24,8 +24,6 @@ class W_NovaAux extends Widget {
     private int arInitialVertScaleIndex = 5;
     private int arInitialHorizScaleIndex = 0;
 
-    //Button analogModeButton;
-
     W_NovaAux(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 

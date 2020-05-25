@@ -22,7 +22,7 @@ class W_DigitalRead extends Widget {
     private boolean visible = true;
     private boolean updating = true;
 
-    Button digitalModeButton;
+    Button_obci digitalModeButton;
 
     private DigitalCapableBoard digitalBoard;
 
@@ -78,7 +78,7 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "DIGITAL TOGGLE", 12);
+        digitalModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "DIGITAL TOGGLE", 12);
         digitalModeButton.setCornerRoundess((int)(navHeight-6));
         digitalModeButton.setFont(p5,12);
         digitalModeButton.setColorNotPressed(color(57,128,204));

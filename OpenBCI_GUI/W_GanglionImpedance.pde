@@ -11,13 +11,13 @@
 ///////////////////////////////////////////////////,
 
 class W_GanglionImpedance extends Widget {
-    Button startStopCheck;
+    Button_obci startStopCheck;
     int padding = 24;
 
     W_GanglionImpedance(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
+        startStopCheck = new Button_obci (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
         startStopCheck.setFont(p4, 14);
     }
 

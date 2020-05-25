@@ -24,7 +24,7 @@ class W_timeSeries extends Widget {
     float playbackWidgetHeight;
     int channelBarHeight;
 
-    Button hardwareSettingsButton;
+    Button_obci hardwareSettingsButton;
 
     ChannelBar[] channelBars;
     PlaybackScrollbar scrollbar;
@@ -102,7 +102,7 @@ class W_timeSeries extends Widget {
         }
 
         if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton = new Button((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+            hardwareSettingsButton = new Button_obci((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
             // hardwareSettingsButton.setStrokeColor((int)(color(150)));
@@ -356,9 +356,9 @@ class ChannelBar{
     int channelIndex; //duh
     String channelString;
     int x, y, w, h;
-    Button onOffButton;
+    Button_obci onOffButton;
     int onOff_diameter, impButton_diameter;
-    Button impCheckButton;
+    Button_obci impCheckButton;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -392,7 +392,7 @@ class ChannelBar{
             onOff_diameter = h - 2;
         }
 
-        onOffButton = new Button (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
+        onOffButton = new Button_obci (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
         onOffButton.setHelpText("Click to toggle channel " + channelString + ".");
         onOffButton.setFont(h2, 16);
         onOffButton.setCircleButton(true);
@@ -402,7 +402,7 @@ class ChannelBar{
 
         if(currentBoard instanceof ImpedanceSettingsBoard) {
             impButton_diameter = 22;
-            impCheckButton = new Button (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
+            impCheckButton = new Button_obci (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
             impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelString + ".");
             impCheckButton.setFont(h3, 16); //override the default font and fontsize
             impCheckButton.setCircleButton(true);
@@ -533,7 +533,7 @@ class ChannelBar{
         fill(255);
         rect(x,y,w,h);
 
-        //draw onOff Button
+        //draw onOff Button_obci
         onOffButton.draw();
 
         //draw plot
@@ -554,7 +554,7 @@ class ChannelBar{
         }
         plot.endDraw();
 
-        //draw impedance check Button
+        //draw impedance check Button_obci
         if(currentBoard instanceof ImpedanceSettingsBoard) {
             impCheckButton.draw();
 
@@ -706,7 +706,7 @@ class PlaybackScrollbar {
     private float sposMin, sposMax; // max and min values of slider
     private boolean over;           // is the mouse over the slider?
     private boolean locked;
-    private Button skipToStartButton;
+    private Button_obci skipToStartButton;
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
@@ -729,7 +729,7 @@ class PlaybackScrollbar {
 
         //Let's make a button to return to the start of playback!!
         skipToStart_diameter = 30;
-        skipToStartButton = new Button (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "");
+        skipToStartButton = new Button_obci (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "");
         skipToStartButton.setColorNotPressed(color(235)); //Set channel button background colors
         skipToStartButton.hasStroke(false);
         PImage bgImage = loadImage("skipToStart-30x26.png");
