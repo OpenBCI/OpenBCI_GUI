@@ -2210,7 +2210,6 @@ void baud_rate(int n) {
     w_networking.closeAllDropdowns();
 }
 void filter1(int n) {
-    println("filter1=="+n);
     String s = n == 1 ? "On" : "Off";
     w_networking.cp5_networking.get(Toggle.class, "filter1").setLabel(s);
     w_networking.closeAllDropdowns();
