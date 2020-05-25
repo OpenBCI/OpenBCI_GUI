@@ -148,12 +148,12 @@ public void controlEvent(ControlEvent theEvent) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
+            // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             updateToNChan(4);
-            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
+            // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
@@ -186,7 +186,7 @@ public void controlEvent(ControlEvent theEvent) {
         output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
     }
 
-    // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
+    // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
     if (theEvent.isFrom("sdCardTimes")) {
         int val = (int)(theEvent.getController()).getValue();
         Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
@@ -1021,7 +1021,7 @@ class ControlPanel {
             wifiBox.refreshWifiList();
         }
 
-        // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
+        // Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
             wifiBox.h = 208;
             setWiFiSearchStyle(WIFI_DYNAMIC);

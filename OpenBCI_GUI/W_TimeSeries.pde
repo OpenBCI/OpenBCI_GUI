@@ -43,7 +43,6 @@ class W_timeSeries extends Widget {
     TextBox[] impValuesMontage;
 
     private boolean visible = true;
-    private boolean updating = true;
 
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
 
@@ -128,19 +127,13 @@ class W_timeSeries extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
 
     void update() {
-        if(visible && updating) {
+        if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
@@ -513,13 +506,13 @@ class ChannelBar{
 
     void updatePlotPoints() {
         // update data in plot
-        if(dataBuffY_filtY_uV[channelIndex].length > nPoints) {
-            for (int i = dataBuffY_filtY_uV[channelIndex].length - nPoints; i < dataBuffY_filtY_uV[channelIndex].length; i++) {
-                float time = -(float)numSeconds + (float)(i-(dataBuffY_filtY_uV[channelIndex].length-nPoints))*timeBetweenPoints;
-                float filt_uV_value = dataBuffY_filtY_uV[channelIndex][i];
+        if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
+            for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
+                float time = -(float)numSeconds + (float)(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints))*timeBetweenPoints;
+                float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
 
                 // update channel point in place
-                channelPoints.set(i-(dataBuffY_filtY_uV[channelIndex].length-nPoints), time, filt_uV_value, "");
+                channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
@@ -585,10 +578,8 @@ class ChannelBar{
         }else{
             plot.getXAxis().setNTicks(10);
         }
-        if(w_timeSeries.isUpdating()) {
-            updatePlotPoints();
-        }
-        // println("New X axis = " + _newTimeSize);
+        
+        updatePlotPoints();
     }
 
     void adjustVertScale(int _vertScaleValue) {

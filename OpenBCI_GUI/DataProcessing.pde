@@ -32,19 +32,19 @@ void processNewData() {
     for (int Ichan=0; Ichan < channelCount; Ichan++) {
         
         for(int i = 0; i < getCurrentBoardBufferSize(); i++) {
-            dataBuffY_uV[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
+            dataProcessingRawBuffer[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
         }
 
-        dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
+        dataProcessingFilteredBuffer[Ichan] = dataProcessingRawBuffer[Ichan].clone();
     }
 
     //apply additional processing for the time-domain montage plot (ie, filtering)
-    dataProcessing.process(dataBuffY_filtY_uV, fftBuff);
+    dataProcessing.process(dataProcessingFilteredBuffer, fftBuff);
 
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataBuffY_uV[Ichan][dataBuffY_uV.length-1]);
+    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan][dataProcessingRawBuffer.length-1]);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -84,7 +84,7 @@ void appendAndShift(float[] data, float newData) {
     data[end] = newData;  //append new data
 }
 
-void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
+void initializeFFTObjects(FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
 
     float[] fooData;
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -93,9 +93,9 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float
 
         //do the FFT on the initial data
         if (isFFTFiltered == true) {
-            fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+            fooData = dataProcessingFilteredBuffer[Ichan];  //use the filtered data for the FFT
         } else {
-            fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
+            fooData = dataProcessingRawBuffer[Ichan];  //use the raw data for the FFT
         }
         fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);
         fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
@@ -420,7 +420,7 @@ class DataProcessing {
         filterIIR(filtCoeff_bp[currentFilt_ind].b, filtCoeff_bp[currentFilt_ind].a, data_forDisplay_uV[Ichan]); //bandpass
 
         //compute the standard deviation of the filtered signal...this is for the head plot
-        float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
+        float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data
         fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
         data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
 
@@ -432,9 +432,9 @@ class DataProcessing {
         //prepare the data for the new FFT
         float[] fooData;
         if (isFFTFiltered == true) {
-            fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+            fooData = dataProcessingFilteredBuffer[Ichan];  //use the filtered data for the FFT
         } else {
-            fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
+            fooData = dataProcessingRawBuffer[Ichan];  //use the raw data for the FFT
         }
         fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
         float meanData = mean(fooData);  //compute the mean
@@ -527,13 +527,13 @@ class DataProcessing {
         //find strongest channel
         int refChanInd = findMax(data_std_uV);
         //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
-        float[] refData_uV = dataBuffY_filtY_uV[refChanInd];  //use the filtered data
+        float[] refData_uV = dataProcessingFilteredBuffer[refChanInd];  //use the filtered data
         refData_uV = Arrays.copyOfRange(refData_uV, refData_uV.length-((int)fs_Hz), refData_uV.length);   //just grab the most recent second of data
 
 
         //compute polarity of each channel
         for (int Ichan=0; Ichan < nchan; Ichan++) {
-            float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
+            float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data
             fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
             float dotProd = calcDotProduct(fooData_filt, refData_uV);
             if (dotProd >= 0.0f) {

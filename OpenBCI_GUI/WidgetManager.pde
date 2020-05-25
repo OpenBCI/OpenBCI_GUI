@@ -173,7 +173,6 @@ class WidgetManager{
 
     public boolean isWMInitialized = false;
     private boolean visible = true;
-    private boolean updating = true;
 
     WidgetManager(PApplet _this){
         widgets = new ArrayList<Widget>();
@@ -206,16 +205,11 @@ class WidgetManager{
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
+
     void setupWidgetSelectorDropdowns(){
         //create the widgetSelector dropdown of each widget
         //println("widgets.size() = " + widgets.size());
