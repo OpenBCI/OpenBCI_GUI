@@ -218,6 +218,7 @@ class W_Networking extends Widget {
         //ignore top left button interaction when widgetSelector dropdown is active
         ignoreButtonCheck(guideButton);
         ignoreButtonCheck(dataOutputsButton);
+        filterButtonsCheck();
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -396,7 +397,7 @@ class W_Networking extends Widget {
         }
 
         // Start Button
-        startButton = new Button_obci(x + w/2 - 70,y+h-40,200,20,"Start",14);
+        startButton = new Button_obci(x + w/2 - 70,y+h-40,200,20,"Start " + protocolMode + " Stream",14);
         startButton.setFont(p4,14);
         startButton.setColorNotPressed(color(184,220,105));
         startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
@@ -523,7 +524,7 @@ class W_Networking extends Widget {
             ;
     }
 
-    /* Create radio buttons for filter toggling */
+    /* Create toggle buttons for filter toggling */
     void createButton(String name) {
         cp5_networking.addToggle(name)
                 .setLabel("Off")
@@ -656,6 +657,30 @@ class W_Networking extends Widget {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+    }
+
+    void filterButtonsCheck() {
+        boolean dropdownActive = false;
+        for (String datatypeName : datatypeNames) {
+            if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).isInside()) {
+                dropdownActive = true; //if any datatype dropdowns are in-use...
+            }
+        }
+        if (dropdownActive) { //lock all filter buttons
+            if (!cp5_networking.get(Toggle.class, "filter1").isLock()) {
+                cp5_networking.get(Toggle.class, "filter1").lock();
+                cp5_networking.get(Toggle.class, "filter2").lock();
+                cp5_networking.get(Toggle.class, "filter3").lock();
+                cp5_networking.get(Toggle.class, "filter4").lock();
+            }
+        } else {
+            if (cp5_networking.get(Toggle.class, "filter1").isLock()) {
+                cp5_networking.get(Toggle.class, "filter1").unlock();
+                cp5_networking.get(Toggle.class, "filter2").unlock();
+                cp5_networking.get(Toggle.class, "filter3").unlock();
+                cp5_networking.get(Toggle.class, "filter4").unlock();
+            }
+        }
     }
 
     void screenResized() {
@@ -843,12 +868,12 @@ class W_Networking extends Widget {
     /* Change appearance of Button_obci to off */
     void turnOffButton() {
         startButton.setColorNotPressed(color(184,220,105));
-        startButton.setString("Start");
+        startButton.setString("Start " + protocolMode + " Stream");
     }
 
     void turnOnButton() {
         startButton.setColorNotPressed(color(224, 56, 45));
-        startButton.setString("Stop");
+        startButton.setString("Stop " + protocolMode + " Stream");
     }
 
     boolean getNetworkActive() {
@@ -2156,10 +2181,13 @@ void Protocol(int protocolIndex) {
         w_networking.protocolMode = "Serial";
         w_networking.disableCertainOutputs((int)w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
     }
-    println("Networking: Protocol mode set to " + w_networking.protocolMode);
+    println("Networking: Protocol mode set to " + w_networking.protocolMode + ". Stopping network");
     w_networking.screenResized();
     w_networking.showCP5();
     closeAllDropdowns();
+    if (!w_networking.networkActive) {
+        w_networking.turnOffButton();
+    }
 }
 
 void dataType1(int n) {
