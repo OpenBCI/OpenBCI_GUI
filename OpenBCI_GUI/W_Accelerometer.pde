@@ -50,7 +50,6 @@ class W_Accelerometer extends Widget {
     float yMaxMin;
 
     private boolean visible = true;
-    private boolean updating = true;
     boolean accelInitHasOccured = false;
     private Button_obci accelModeButton;
 
@@ -108,21 +107,15 @@ class W_Accelerometer extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
-    }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
     }
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (visible && updating && accelBoard.isAccelerometerActive()) {
+        if (visible && accelBoard.isAccelerometerActive()) {
             //update the line graph and corresponding gplot points
             accelerometerBar.update();
 
@@ -219,18 +212,15 @@ class W_Accelerometer extends Widget {
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
-            //TODO[brainflow]
-            if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-                if (!accelBoard.isAccelerometerActive()) {
-                    accelBoard.setAccelerometerActive(true);
-                    output("Starting to read accelerometer");
-                } else {                    
-                    accelBoard.setAccelerometerActive(false);
-                }
+        if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
+            if (!accelBoard.isAccelerometerActive()) {
+                accelBoard.setAccelerometerActive(true);
+                output("Starting to read accelerometer");
+            } else {                    
+                accelBoard.setAccelerometerActive(false);
             }
-            accelModeButton.setIsActive(false);
         }
+        accelModeButton.setIsActive(false);
     }
 
     //Draw the current accelerometer values as text

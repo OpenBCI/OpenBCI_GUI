@@ -148,12 +148,12 @@ public void controlEvent(ControlEvent theEvent) {
             updateToNChan(8);
             chanButton8.setColorNotPressed(isSelected_color);
             chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
+            // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             updateToNChan(4);
-            // todo[brainflow] - WiFi autoconnect is used for "Dynamic IP"
+            // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
@@ -186,7 +186,7 @@ public void controlEvent(ControlEvent theEvent) {
         output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
     }
 
-    // todo[brainflow] This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
+    // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
     if (theEvent.isFrom("sdCardTimes")) {
         int val = (int)(theEvent.getController()).getValue();
         Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
@@ -623,26 +623,28 @@ class ControlPanel {
     }
 
     private void refreshPortListGanglion() {
-        try {
-            output("BLE Devices Refreshing");
-            bleList.items.clear();
-            String comPort = getBLED112Port();
-            if (comPort != null) {
-                BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                {
-                    // todo[brainflow] provide mac address to the board class
-                    bleList.addItem(makeItem(entry.getKey()));
-                    bleList.updateMenu();
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        final String comPort = getBLED112Port();
+        if (comPort != null) {
+            Thread thread = new Thread(){
+                public void run(){
+                    try {
+                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(makeItem(entry.getKey()));
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-            } else {
-                outputError("No BLED112 Dongle Found");
-            }
-        }
-        catch (GanglionError e)
-        {
-            println("Exception in ganglion scanning.");
-            e.printStackTrace ();
+            };
+            thread.start();
+        } else {
+            outputError("No BLED112 Dongle Found");
         }
     }
 
@@ -1006,7 +1008,7 @@ class ControlPanel {
             wifiBox.refreshWifiList();
         }
 
-        // todo[brainflow] Dynamic = Autoconnect, Static = Manually type IP address
+        // Dynamic = Autoconnect, Static = Manually type IP address
         if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
             wifiBox.h = 208;
             setWiFiSearchStyle(WIFI_DYNAMIC);
@@ -1264,7 +1266,7 @@ public void initButtonPressed(){
                 wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
                 println("Static IP address of " + wifi_ipAddress);
             }
-            
+
             //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
             midInit = true;
             output("Attempting to Start Session..."); // Show this at the bottom of the GUI
@@ -1585,19 +1587,24 @@ class WifiBox {
     public void refreshWifiList() {
         output("Wifi Devices Refreshing");
         wifiList.items.clear();
-        try {
-            List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
-            if (devices.isEmpty ()) {
-                println("No WIFI Shields found");
+        Thread thread = new Thread(){
+            public void run() {
+                try {
+                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
+                    if (devices.isEmpty ()) {
+                        println("No WIFI Shields found");
+                    }
+                    for (int i = 0; i < devices.size(); i++) {
+                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
+                    }
+                    wifiList.updateMenu();
+                } catch (Exception e) {
+                    println("Exception in wifi shield scanning");
+                    e.printStackTrace ();
+                }
             }
-            for (int i = 0; i < devices.size(); i++) {
-                wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
-            }
-            wifiList.updateMenu();
-        } catch (Exception e) {
-            println("Exception in wifi shield scanning");
-            e.printStackTrace ();
-        }
+        };
+        thread.start();
     }
 };
 

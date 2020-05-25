@@ -173,7 +173,6 @@ class WidgetManager{
 
     public boolean isWMInitialized = false;
     private boolean visible = true;
-    private boolean updating = true;
 
     WidgetManager(PApplet _this){
         widgets = new ArrayList<Widget>();
@@ -199,23 +198,16 @@ class WidgetManager{
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         }
 
-        delay(1000);
-
         isWMInitialized = true;
     }
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
+
     void setupWidgetSelectorDropdowns(){
         //create the widgetSelector dropdown of each widget
         //println("widgets.size() = " + widgets.size());

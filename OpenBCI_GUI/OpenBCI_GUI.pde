@@ -62,7 +62,7 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha.5";
+String localGUIVersionString = "v5.0.0-alpha.6";
 String localGUIVersionDate = "May 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -149,8 +149,8 @@ final int UPDATE_MILLIS = 40;
 int nPointsPerUpdate;   // no longer final, calculate every time in initSystem
 
 //define some data fields for handling data here in processing
-float dataBuffY_uV[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
-float dataBuffY_filtY_uV[][];
+float dataProcessingRawBuffer[][]; //2D array to handle multiple data channels, each row is a new channel so that dataBuffY[3][] is channel 4
+float dataProcessingFilteredBuffer[][];
 float data_elec_imp_ohm[];
 
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
@@ -526,7 +526,7 @@ void initSystem() {
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting);
-            //TODO[brainflow]
+            // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
@@ -631,8 +631,8 @@ int getNfftSafe() {
 
 void initCoreDataObjects() {
     nPointsPerUpdate = int(round(float(UPDATE_MILLIS) * currentBoard.getSampleRate()/ 1000.f));
-    dataBuffY_uV = new float[nchan][getCurrentBoardBufferSize()];
-    dataBuffY_filtY_uV = new float[nchan][getCurrentBoardBufferSize()];
+    dataProcessingRawBuffer = new float[nchan][getCurrentBoardBufferSize()];
+    dataProcessingFilteredBuffer = new float[nchan][getCurrentBoardBufferSize()];
 
     data_elec_imp_ohm = new float[nchan];
     is_railed = new DataStatus[nchan];
@@ -653,7 +653,7 @@ void initFFTObjectsAndBuffer() {
     //Attempt initialization. If error, print to console and exit function.
     //Fixes GUI crash when trying to load outdated recordings
     try {
-        initializeFFTObjects(fftBuff, dataBuffY_uV, getNfftSafe(), currentBoard.getSampleRate());
+        initializeFFTObjects(fftBuff, dataProcessingRawBuffer, getNfftSafe(), currentBoard.getSampleRate());
     } catch (ArrayIndexOutOfBoundsException e) {
         //e.printStackTrace();
         outputError("Playback file load error. Try using a more recent recording.");
@@ -695,14 +695,11 @@ void stopButtonWasPressed() {
     //toggle the data transfer state of the ADS1299...stop it or start it...
     if (isRunning) {
         verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
-        // todo[brainflow] Investigate if we need this setUpdating() thing
-        wm.setUpdating(false);
         stopRunning();
         topNav.stopButton.setString(stopButton_pressToStart_txt);
         topNav.stopButton.setColorNotPressed(color(184, 220, 105));
     } else { //not running
         verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
-        wm.setUpdating(true);
 
         startRunning();
         topNav.stopButton.setString(stopButton_pressToStop_txt);
