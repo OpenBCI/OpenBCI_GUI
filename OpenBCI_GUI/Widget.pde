@@ -32,7 +32,7 @@ class Widget{
     protected final int navH = 22;
     private int widgetSelectorWidth = 160;
     private int widgetSelectorHeight = 0;
-    protected final int dropdownWidth = 64;
+    private final int dropdownWidth = 64;
     private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
     Widget(PApplet _parent){
