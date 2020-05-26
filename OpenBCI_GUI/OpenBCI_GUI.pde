@@ -138,8 +138,9 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
-//NovaXR Default mode
-NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT;
+//NovaXR Default Settings
+NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
+NovaXRSR novaXR_sampleRate = NovaXRSR.SR_250;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -525,7 +526,7 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_boardSetting);
+            currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
             // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
