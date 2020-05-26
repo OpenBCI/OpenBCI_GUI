@@ -360,7 +360,7 @@ class Widget{
         }
     }
 
-    protected void ignoreButtonCheck(Button b) {
+    void ignoreButtonCheck(Button_obci b) {
         //ignore top left button interaction when widgetSelector dropdown is active
         if (dropdownIsActive) {
             b.setIgnoreHover(true);

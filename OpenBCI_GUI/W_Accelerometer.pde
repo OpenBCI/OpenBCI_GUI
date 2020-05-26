@@ -51,7 +51,7 @@ class W_Accelerometer extends Widget {
 
     private boolean visible = true;
     boolean accelInitHasOccured = false;
-    private Button accelModeButton;
+    private Button_obci accelModeButton;
 
     private AccelerometerCapableBoard accelBoard;
 
@@ -78,7 +78,7 @@ class W_Accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
-        accelModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
+        accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p5,12);
         accelModeButton.setColorNotPressed(color(57,128,204));

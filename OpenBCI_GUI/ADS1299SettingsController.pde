@@ -6,11 +6,11 @@ class ADS1299SettingsController{
 
     int spaceBetweenButtons = 5; //space between buttons
 
-    Button[] gainButtons;
-    Button[] inputTypeButtons;
-    Button[] biasButtons;
-    Button[] srb2Buttons;
-    Button[] srb1Buttons;
+    Button_obci[] gainButtons;
+    Button_obci[] inputTypeButtons;
+    Button_obci[] biasButtons;
+    Button_obci[] srb2Buttons;
+    Button_obci[] srb1Buttons;
 
     ADS1299Settings boardSettings;
 
@@ -73,18 +73,18 @@ class ADS1299SettingsController{
 
         int channelCount = currentBoard.getNumEXGChannels();
 
-        gainButtons = new Button[channelCount];
-        inputTypeButtons = new Button[channelCount];
-        biasButtons = new Button[channelCount];
-        srb2Buttons = new Button[channelCount];
-        srb1Buttons = new Button[channelCount];
+        gainButtons = new Button_obci[channelCount];
+        inputTypeButtons = new Button_obci[channelCount];
+        biasButtons = new Button_obci[channelCount];
+        srb2Buttons = new Button_obci[channelCount];
+        srb1Buttons = new Button_obci[channelCount];
 
         for (int i=0; i<channelCount; i++) {
-            gainButtons[i] = new Button(0, 0, 0, 0, "Unlabeled");
-            inputTypeButtons[i] = new Button(0, 0, 0, 0, "Unlabeled");
-            biasButtons[i] = new Button(0, 0, 0, 0, "Unlabeled");
-            srb2Buttons[i] = new Button(0, 0, 0, 0, "Unlabeled");
-            srb1Buttons[i] = new Button(0, 0, 0, 0, "Unlabeled");
+            gainButtons[i] = new Button_obci(0, 0, 0, 0, "Unlabeled");
+            inputTypeButtons[i] = new Button_obci(0, 0, 0, 0, "Unlabeled");
+            biasButtons[i] = new Button_obci(0, 0, 0, 0, "Unlabeled");
+            srb2Buttons[i] = new Button_obci(0, 0, 0, 0, "Unlabeled");
+            srb1Buttons[i] = new Button_obci(0, 0, 0, 0, "Unlabeled");
         }
 
         resizeButtons(_channelBarHeight);
