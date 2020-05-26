@@ -13,6 +13,7 @@
 * Missing Filter Button Label in Networking #696
 * Ganglion+WiFi Accelerometer Data not in Sync #512
 * General UI/UX improvements
+* Remove # Chan Textfield from LSL in Networking Widget #644
 
 ### Deprecated Features
 * OpenBCI Hub - This is no longer required to run the GUI!

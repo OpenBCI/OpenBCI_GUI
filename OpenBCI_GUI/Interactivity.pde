@@ -308,7 +308,7 @@ synchronized void mouseReleased() {
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Button {
+class Button_obci {
 
     int but_x, but_y, but_dx, but_dy;      // Position of square button
     //int rectSize = 90;     // Diameter of rect
@@ -339,13 +339,13 @@ class Button {
     boolean hasbgImage = false;
     private boolean ignoreHover = false;
 
-    public Button(int x, int y, int w, int h, String txt) {
+    public Button_obci(int x, int y, int w, int h, String txt) {
         setup(x, y, w, h, txt);
         buttonFont = p5;
         buttonTextSize = 12;
     }
 
-    public Button(int x, int y, int w, int h, String txt, int fontSize) {
+    public Button_obci(int x, int y, int w, int h, String txt, int fontSize) {
         setup(x, y, w, h, txt);
         buttonFont = p5;
         buttonTextSize = 12;
@@ -404,7 +404,7 @@ class Button {
 
     public void setString(String txt) {
         but_txt = txt;
-        //println("Button: setString: string = " + txt);
+        //println("Button_obci: setString: string = " + txt);
     }
 
     public void setHelpText(String _helpText){

@@ -66,7 +66,7 @@ class W_PulseSensor extends Widget {
     int IBI = 600;             // int that holds the time interval between beats! Must be seeded!
     boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
     int lastProcessedDataPacketInd = 0;
-    Button analogModeButton;
+    Button_obci analogModeButton;
 
     private AnalogCapableBoard analogBoard;
 
@@ -83,7 +83,7 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
+        analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p5,12);
         analogModeButton.setColorNotPressed(color(57,128,204));
