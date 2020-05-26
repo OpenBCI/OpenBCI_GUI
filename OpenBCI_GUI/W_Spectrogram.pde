@@ -429,27 +429,21 @@ class W_Spectrogram extends Widget {
         horizAxisLabelStrings.clear();
         LocalTime time;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
-            time = LocalTime.now();
-        } else {
-            try {
-                if (getCurrentTimeStamp().equals("TimeNotFound")) {
-                    time = LocalTime.now();
-                } else {
-                    long t = new Long(getCurrentTimeStamp());
-                    Date d =  new Date(t);
-                    String timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
-                    time = LocalTime.parse(timeFromPlayback);
-                }
-            } catch (NullPointerException e) {
-                println("Spectrogram: Timestamp error...");
-                e.printStackTrace();
+
+        try {
+            if (getCurrentTimeStamp().equals("TimeNotFound")) {
                 time = LocalTime.now();
-            } catch (NumberFormatException e) {
-                println("Spectrogram: Timestamp error...");
-                e.printStackTrace();
-                time = LocalTime.now();
+            } else {
+                time = LocalTime.parse(getCurrentTimeStamp());
             }
+        } catch (NullPointerException e) {
+            println("Spectrogram: Timestamp error...");
+            e.printStackTrace();
+            time = LocalTime.now();
+        } catch (NumberFormatException e) {
+            println("Spectrogram: Timestamp error...");
+            e.printStackTrace();
+            time = LocalTime.now();
         }
         
         
@@ -464,16 +458,14 @@ class W_Spectrogram extends Widget {
     //Find times to display for playback position
     String getCurrentTimeStamp() {
         //return current playback time
-        if (index_of_times != null && index_of_times.get(0) != null) { //Check if the hashmap is null to prevent exception
-            // TODO[brainflow] Fix up retrieval of time stamps
-            // if (currentTableRowIndex > playbackData_table.getRowCount()) {
-            //     return index_of_times.get(playbackData_table.getRowCount());
-            // } else {
-            //     return index_of_times.get(currentTableRowIndex);
-            // }
+        List<double[]> currentData = currentBoard.getData(1);
+        int timeStampChan = currentBoard.getTimestampChannel();
+        long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
+        if(timestampMS == 0) {
+            return "TimeNotFound";
         }
-        
-        return "TimeNotFound";
+        String output = new SimpleDateFormat("HH:mm:ss").format(timestampMS);
+        return output;
     }
 };
 
