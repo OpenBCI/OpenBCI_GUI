@@ -72,45 +72,45 @@ color boxStrokeColor = color(bgColor);
 color isSelected_color = color(184, 220, 105);
 color colorNotPressed = color(255);
 
-Button refreshPort;
-Button refreshBLE;
-Button refreshWifi;
-Button protocolSerialCyton;
-Button protocolWifiCyton;
-Button protocolWifiGanglion;
-Button protocolBLED112Ganglion;
+Button_obci refreshPort;
+Button_obci refreshBLE;
+Button_obci refreshWifi;
+Button_obci protocolSerialCyton;
+Button_obci protocolWifiCyton;
+Button_obci protocolWifiGanglion;
+Button_obci protocolBLED112Ganglion;
 
-Button initSystemButton;
-Button autoSessionName; // Reuse these buttons for Cyton and Ganglion
-Button outputBDF;
-Button outputODF;
+Button_obci initSystemButton;
+Button_obci autoSessionName; // Reuse these buttons for Cyton and Ganglion
+Button_obci outputBDF;
+Button_obci outputODF;
 
-Button sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
+Button_obci sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
 
-Button chanButton8;
-Button chanButton16;
-Button selectPlaybackFile;
-Button selectSDFile;
-Button popOutRadioConfigButton;
+Button_obci chanButton8;
+Button_obci chanButton16;
+Button_obci selectPlaybackFile;
+Button_obci selectSDFile;
+Button_obci popOutRadioConfigButton;
 
-//Radio Button Definitions
-Button getChannel;
-Button setChannel;
-Button ovrChannel;
-Button autoscan;
-Button systemStatus;
+//Radio Button_obci Definitions
+Button_obci getChannel;
+Button_obci setChannel;
+Button_obci ovrChannel;
+Button_obci autoscan;
+Button_obci systemStatus;
 
-Button sampleRate200; //Ganglion
-Button sampleRate250; //Cyton
-Button sampleRate500; //Cyton
-Button sampleRate1000;  //Cyton
-Button sampleRate1600; //Ganglion
-Button wifiIPAddressDynamic;
-Button wifiIPAddressStatic;
+Button_obci sampleRate200; //Ganglion
+Button_obci sampleRate250; //Cyton
+Button_obci sampleRate500; //Cyton
+Button_obci sampleRate1000;  //Cyton
+Button_obci sampleRate1600; //Ganglion
+Button_obci wifiIPAddressDynamic;
+Button_obci wifiIPAddressStatic;
 
-Button synthChanButton4;
-Button synthChanButton8;
-Button synthChanButton16;
+Button_obci synthChanButton4;
+Button_obci synthChanButton8;
+Button_obci synthChanButton16;
 
 ChannelPopup channelPopup;
 PollPopup pollPopup;
@@ -1356,7 +1356,7 @@ class DataSourceBox {
 
 class SerialBox {
     int x, y, w, h, padding; //size and position
-    Button autoConnect;
+    Button_obci autoConnect;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1365,9 +1365,9 @@ class SerialBox {
         h = 70;
         padding = _padding;
 
-        autoConnect = new Button(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
+        autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
-        popOutRadioConfigButton = new Button(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
+        popOutRadioConfigButton = new Button_obci(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
         popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
     }
 
@@ -1434,7 +1434,7 @@ class ComPortBox {
         padding = _padding;
         isShowing = false;
 
-        refreshPort = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
+        refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
         // println(w-padding*2);
         serialList.setPosition(x + padding, y + padding*3 + 8);
@@ -1472,7 +1472,7 @@ class BLEBox {
         w = _w;
         h = 140 + _padding;
         padding = _padding;
-        refreshBLE = new Button (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
+        refreshBLE = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
         bleList.setPosition(x + padding, y + padding*3 + 8);
     }
@@ -1506,12 +1506,12 @@ class WifiBox {
         h = 184 + _padding + 14;
         padding = _padding;
 
-        wifiIPAddressDynamic = new Button (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
+        wifiIPAddressDynamic = new Button_obci (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
         wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiIPAddressStatic = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
+        wifiIPAddressStatic = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
         wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
 
-        refreshWifi = new Button (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
+        refreshWifi = new Button_obci (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
 
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
@@ -1627,8 +1627,8 @@ class InterfaceBoxCyton {
         h = (24 + _padding) * 3;
         padding = _padding;
 
-        protocolSerialCyton = new Button (x + padding, y + padding * 3 + 4, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
-        protocolWifiCyton = new Button (x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        protocolSerialCyton = new Button_obci (x + padding, y + padding * 3 + 4, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
+        protocolWifiCyton = new Button_obci (x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
     }
 
     public void update() {}
@@ -1662,9 +1662,9 @@ class InterfaceBoxGanglion {
         int buttonHeight = 24;
 
         int paddingCount = 1;
-        protocolBLED112Ganglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
+        protocolBLED112Ganglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
         paddingCount ++;
-        protocolWifiGanglion = new Button (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        protocolWifiGanglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
         paddingCount ++;
     }
 
@@ -1711,13 +1711,13 @@ class SessionDataBox {
         maxDurTextWidth += padding*5 + 1;
 
         //button to autogenerate file name based on time/date
-        autoSessionName = new Button (x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
+        autoSessionName = new Button_obci (x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
         autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
-        outputODF = new Button (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
+        outputODF = new Button_obci (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
         outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
         //Output source is ODF by default
         if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        outputBDF = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
+        outputBDF = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
         outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
         if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
 
@@ -1910,9 +1910,9 @@ class ChannelCountBox {
         h = 73;
         padding = _padding;
 
-        chanButton8 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "8 CHANNELS", fontInfo.buttonLabel_size);
+        chanButton8 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "8 CHANNELS", fontInfo.buttonLabel_size);
         if (nchan == 8) chanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        chanButton16 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "16 CHANNELS", fontInfo.buttonLabel_size);
+        chanButton16 = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "16 CHANNELS", fontInfo.buttonLabel_size);
         if (nchan == 16) chanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
@@ -1952,8 +1952,8 @@ class SampleRateGanglionBox {
         h = 73;
         padding = _padding;
 
-        sampleRate200 = new Button (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "200Hz", fontInfo.buttonLabel_size);
-        sampleRate1600 = new Button (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1600Hz", fontInfo.buttonLabel_size);
+        sampleRate200 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "200Hz", fontInfo.buttonLabel_size);
+        sampleRate1600 = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1600Hz", fontInfo.buttonLabel_size);
         sampleRate1600.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
@@ -1992,9 +1992,9 @@ class SampleRateCytonBox {
         h = 73;
         padding = _padding;
 
-        sampleRate250 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
-        sampleRate500 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
-        sampleRate1000 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
+        sampleRate250 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
+        sampleRate500 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
+        sampleRate1000 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
         sampleRate1000.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
@@ -2035,11 +2035,11 @@ class SyntheticChannelCountBox {
         h = 73;
         padding = _padding;
 
-        synthChanButton4 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
+        synthChanButton4 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
         if (nchan == 4) synthChanButton4.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        synthChanButton8 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
+        synthChanButton8 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
         if (nchan == 8) synthChanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        synthChanButton16 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
+        synthChanButton16 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
         if (nchan == 16) synthChanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
     }
 
@@ -2335,11 +2335,11 @@ class PlaybackFileBox {
         h = 67;
         padding = _padding;
 
-        selectPlaybackFile = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
         selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     
         // Sample data button
-        sampleDataButton = new Button(x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, "Sample Data", 14);
+        sampleDataButton = new Button_obci(x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, "Sample Data", 14);
         sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
         sampleDataButton.setFont(p4, 14);
         sampleDataButton.setColorNotPressed(color(57,128,204));
@@ -2504,12 +2504,12 @@ class RadioConfigBox {
         isShowing = false;
 
         //typical button height + 20 for larger autoscan button
-        autoscan = new Button(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
+        autoscan = new Button_obci(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
         //smaller buttons below autoscan
-        getChannel = new Button(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button(x + padding, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-        setChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        ovrChannel = new Button(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+        ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
         
 
         //Set help text
@@ -2562,7 +2562,7 @@ class SDConverterBox {
         h = 67;
         padding = _padding;
 
-        selectSDFile = new Button (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT SD FILE", fontInfo.buttonLabel_size);
+        selectSDFile = new Button_obci (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT SD FILE", fontInfo.buttonLabel_size);
         selectSDFile.setHelpText("Click here to select an SD file generated by Cyton or Cyton+Daisy and convert to plain text format.");
     }
 
@@ -2677,7 +2677,7 @@ class InitBox {
         h = 50;
         padding = _padding;
 
-        initSystemButton = new Button (padding, y + padding, w-padding*2, h - padding*2, "START SESSION", fontInfo.buttonLabel_size);
+        initSystemButton = new Button_obci (padding, y + padding, w-padding*2, h - padding*2, "START SESSION", fontInfo.buttonLabel_size);
     }
 
     public void update() {

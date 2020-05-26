@@ -121,7 +121,7 @@ class W_emg extends Widget {
     boolean[] events;
     int currChannel;
     int theBaud;
-    Button connectButton;
+    Button_obci connectButton;
     Serial serialOutEMG;
     String theSerial;
 
@@ -245,7 +245,7 @@ class W_emg extends Widget {
 
         if (emgAdvanced) {
             if (connectButton != null) connectButton.draw();
-            else connectButton = new Button(int(x) + 2, int(y) - navHeight + 2, 100, navHeight - 6, "Connect", fontInfo.buttonLabel_size);
+            else connectButton = new Button_obci(int(x) + 2, int(y) - navHeight + 2, 100, navHeight - 6, "Connect", fontInfo.buttonLabel_size);
 
             stroke(1, 18, 41, 125);
 

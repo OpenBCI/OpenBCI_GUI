@@ -33,7 +33,7 @@ class W_AnalogRead extends Widget {
     private int arInitialVertScaleIndex = 5;
     private int arInitialHorizScaleIndex = 0;
 
-    Button analogModeButton;
+    Button_obci analogModeButton;
 
     private AnalogCapableBoard analogBoard;
 
@@ -83,7 +83,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         }
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
+        analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p5,12);
         analogModeButton.setColorNotPressed(color(57,128,204));

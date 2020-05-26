@@ -49,6 +49,10 @@ class W_Networking extends Widget {
     int row5;
     int itemWidth = 96;
     private final float datatypeDropdownScaling = .35;
+    private final int filtButW = 40;
+    private final int filtButH = 20;
+    private int filtOffsetX = (itemWidth / 2) - (filtButW / 2);
+    private final int filtOffsetY = -15;
 
     /* UI */
     Boolean osc_visible;
@@ -56,11 +60,11 @@ class W_Networking extends Widget {
     Boolean lsl_visible;
     Boolean serial_visible;
     List<String> dataTypes;
-    Button startButton;
+    Button_obci startButton;
     Boolean cp5ElementsAreActive = false;
     Boolean previousCP5State = false;
-    Button guideButton;
-    Button dataOutputsButton;
+    Button_obci guideButton;
+    Button_obci dataOutputsButton;
 
     /* Networking */
     Boolean networkActive;
@@ -96,13 +100,13 @@ class W_Networking extends Widget {
         "127.0.0.1","12347",
         "127.0.0.1","12348"};
     String[] lslTextFieldNames = {
-        "LSL_name1","LSL_type1","LSL_numchan1",
-        "LSL_name2","LSL_type2","LSL_numchan2",
-        "LSL_name3","LSL_type3","LSL_numchan3"};
+        "LSL_name1","LSL_type1",
+        "LSL_name2","LSL_type2",
+        "LSL_name3","LSL_type3"};
     String[] lslTextDefaultVals = {
-        "obci_eeg1","EEG",Integer.toString(nchan),
-        "obci_eeg2","EEG",Integer.toString(nchan),
-        "obci_eeg3","EEG",Integer.toString(nchan)};
+        "obci_eeg1","EEG",
+        "obci_eeg2","EEG",
+        "obci_eeg3","EEG"};
     String networkingGuideURL = "https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#networking";
     String dataOutputsURL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
     boolean configIsVisible = false;
@@ -166,7 +170,7 @@ class W_Networking extends Widget {
             cp5Map.put(datatypeNames[i], int(cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).getValue()));
             //filter radio buttons
             String filterName = "filter" + (i+1);
-            cp5Map.put(filterName, int(cp5_networking.get(RadioButton.class, filterName).getValue()));
+            cp5Map.put(filterName, cp5_networking.get(Toggle.class, filterName).getBooleanValue());
         }
         //osc textfields
         copyCP5TextToMap(oscTextFieldNames, cp5Map);
@@ -214,6 +218,7 @@ class W_Networking extends Widget {
         //ignore top left button interaction when widgetSelector dropdown is active
         ignoreButtonCheck(guideButton);
         ignoreButtonCheck(dataOutputsButton);
+        filterButtonsCheck();
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
             dataDropdownsShouldBeClosed = false;
@@ -295,21 +300,20 @@ class W_Networking extends Widget {
         //draw dropdown strokes
         pushStyle();
         fill(255);
-        if (!protocolMode.equals("Serial")) {
-            for (int i = 0; i < datatypeNames.length; i++) {
-                rect(cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[1] - 1, itemWidth + 2, cp5_networking_dropdowns.getController(datatypeNames[i]).getHeight()+2);
-            }
-        } else {
+        if (protocolMode.equals("Serial")) {
             rect(cp5_networking_portName.getController("port_name").getPosition()[0] - 1, cp5_networking_portName.getController("port_name").getPosition()[1] - 1, cp5_networking_portName.getController("port_name").getWidth() + 2, cp5_networking_portName.getController("port_name").getHeight()+2);
             cp5_networking_portName.draw();
             rect(cp5_networking_baudRate.getController("baud_rate").getPosition()[0] - 1, cp5_networking_baudRate.getController("baud_rate").getPosition()[1] - 1, cp5_networking_baudRate.getController("baud_rate").getWidth() + 2, cp5_networking_baudRate.getController("baud_rate").getHeight()+2);
             cp5_networking_baudRate.draw();
             rect(cp5_networking_dropdowns.getController("dataType1").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType1").getPosition()[1] - 1, cp5_networking_dropdowns.getController("dataType1").getWidth() + 2, cp5_networking_dropdowns.getController("dataType1").getHeight()+2);
+        } else {
+            for (int i = 0; i < datatypeNames.length; i++) {
+                rect(cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[1] - 1, itemWidth + 2, cp5_networking_dropdowns.getController(datatypeNames[i]).getHeight()+2);
+            }
         }
         cp5_networking_dropdowns.draw();
         popStyle();
 
-        // cp5_networking_dropdowns.draw();
         int headerFontSize = 18;
         fill(0,0,0);// Background fill: white
         textFont(h1, headerFontSize);
@@ -349,8 +353,7 @@ class W_Networking extends Widget {
             textFont(h1,headerFontSize);
             text("Name", column0,row2);
             text("Type", column0,row3);
-            text("# Chan", column0, row4);
-            text("Filters",column0,row5);
+            text("Filters",column0,row4);
         } else if (protocolMode.equals("Serial")) {
             textFont(f4,40);
             text("Serial", x+20,y+h/8+15);
@@ -384,23 +387,23 @@ class W_Networking extends Widget {
         createBaudDropdown("baud_rate", baudRates);
         /* General Elements */
 
-        createRadioButtons("filter1");
-        createRadioButtons("filter2");
-        createRadioButtons("filter3");
-        createRadioButtons("filter4");
+        createButton("filter1");
+        createButton("filter2");
+        createButton("filter3");
+        createButton("filter4");
 
         for (int i = 0; i < datatypeNames.length; i++) {
             createDropdown(datatypeNames[i], dataTypes);
         }
 
         // Start Button
-        startButton = new Button(x + w/2 - 70,y+h-40,200,20,"Start",14);
+        startButton = new Button_obci(x + w/2 - 70,y+h-40,200,20,"Start " + protocolMode + " Stream",14);
         startButton.setFont(p4,14);
         startButton.setColorNotPressed(color(184,220,105));
         startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
 
         // Networking Guide button
-        guideButton = new Button(x0 + 2, y0 + navH + 2, 125, navH - 6,"Networking Guide", 14);
+        guideButton = new Button_obci(x0 + 2, y0 + navH + 2, 125, navH - 6,"Networking Guide", 14);
         guideButton.setCornerRoundess((int)(navHeight-6));
         guideButton.setFont(p5,12);
         guideButton.setColorNotPressed(color(57,128,204));
@@ -411,7 +414,7 @@ class W_Networking extends Widget {
 
         //Data outputs spreadsheet button
         // Networking Data Type Guide button
-        dataOutputsButton = new Button(x0 + 2*2 + guideButton.but_dx, y0 + navH + 2, 100, navH - 6,"Data Outputs", 14);
+        dataOutputsButton = new Button_obci(x0 + 2*2 + guideButton.but_dx, y0 + navH + 2, 100, navH - 6,"Data Outputs", 14);
         dataOutputsButton.setCornerRoundess((int)(navHeight-6));
         dataOutputsButton.setFont(p5,12);
         dataOutputsButton.setColorNotPressed(color(57,128,204));
@@ -462,19 +465,19 @@ class W_Networking extends Widget {
             cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setVisible(false);
         }
 
-        cp5_networking.get(RadioButton.class, "filter1").setVisible(true);
+        cp5_networking.get(Toggle.class, "filter1").setVisible(true);
         if (!serial_visible) {
-            cp5_networking.get(RadioButton.class, "filter2").setVisible(true);
-            cp5_networking.get(RadioButton.class, "filter3").setVisible(true);
+            cp5_networking.get(Toggle.class, "filter2").setVisible(true);
+            cp5_networking.get(Toggle.class, "filter3").setVisible(true);
         } else {
-            cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
-            cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
+            cp5_networking.get(Toggle.class, "filter2").setVisible(false);
+            cp5_networking.get(Toggle.class, "filter3").setVisible(false);
         }
         //Draw a 4th Filter button option if we are using OSC!
         if (protocolMode.equals("OSC")) {
-            cp5_networking.get(RadioButton.class, "filter4").setVisible(true);
+            cp5_networking.get(Toggle.class, "filter4").setVisible(true);
         } else {
-            cp5_networking.get(RadioButton.class, "filter4").setVisible(false);
+            cp5_networking.get(Toggle.class, "filter4").setVisible(false);
         }
     }
 
@@ -521,24 +524,27 @@ class W_Networking extends Widget {
             ;
     }
 
-    /* Create radio buttons for filter toggling */
-    void createRadioButtons(String name) {
-        String id = name.substring(name.length()-1);
-        cp5_networking.addRadioButton(name)
-                .setSize(10,10)
+    /* Create toggle buttons for filter toggling */
+    void createButton(String name) {
+        cp5_networking.addToggle(name)
+                .setLabel("Off")
+                .setSize(filtButW, filtButH)
                 .setColorForeground(color(120))
                 .setColorBackground(color(200,200,200)) // text field bg color
                 .setColorActive(color(184,220,105))
                 .setColorLabel(color(0))
-                .setItemsPerRow(2)
-                .setSpacingColumn(40)
-                .addItem(id + "-Off", 0)
-                .addItem(id + "-On", 1)
-                // .addItem("Off",0)
-                // .addItem("On",1)
-                .activate(0)
                 .setVisible(false)
                 ;
+        cp5_networking.getController(name)
+            .getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText("Off")
+            .setFont(h4)
+            .setSize(14)
+            .getStyle() //need to grab style before affecting margin and padding
+            .setMargin(-25, 0, 0, 0)
+            .setPaddingLeft(10)
+            ;
     }
 
     /* Creating DataType Dropdowns */
@@ -653,6 +659,30 @@ class W_Networking extends Widget {
             ;
     }
 
+    void filterButtonsCheck() {
+        boolean dropdownActive = false;
+        for (String datatypeName : datatypeNames) {
+            if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeName).isInside()) {
+                dropdownActive = true; //if any datatype dropdowns are in-use...
+            }
+        }
+        if (dropdownActive) { //lock all filter buttons
+            if (!cp5_networking.get(Toggle.class, "filter1").isLock()) {
+                cp5_networking.get(Toggle.class, "filter1").lock();
+                cp5_networking.get(Toggle.class, "filter2").lock();
+                cp5_networking.get(Toggle.class, "filter3").lock();
+                cp5_networking.get(Toggle.class, "filter4").lock();
+            }
+        } else {
+            if (cp5_networking.get(Toggle.class, "filter1").isLock()) {
+                cp5_networking.get(Toggle.class, "filter1").unlock();
+                cp5_networking.get(Toggle.class, "filter2").unlock();
+                cp5_networking.get(Toggle.class, "filter3").unlock();
+                cp5_networking.get(Toggle.class, "filter4").unlock();
+            }
+        }
+    }
+
     void screenResized() {
         super.screenResized();
 
@@ -676,6 +706,7 @@ class W_Networking extends Widget {
         row4 = y+7*h/10;
         row5 = y+8*h/10;
         int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
+        filtOffsetX = (itemWidth / 2) - (filtButW / 2); //Recalculate filter button X position
 
         //reset the button positions using new x and y
         startButton.setPos(x + w/2 - 70, y + h - 40 );
@@ -711,10 +742,10 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "OSC_ip4").setPosition(column4, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port4").setPosition(column4, row3 - offset);
             cp5_networking.get(Textfield.class, "OSC_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter4").setPosition(column4, row5 - 10);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter2").setPosition(column2 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter3").setPosition(column3 + filtOffsetX, row5 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter4").setPosition(column4 + filtOffsetX, row5 + filtOffsetY);
         } else if (protocolMode.equals("UDP")) {
             for (String textField : udpTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
@@ -725,25 +756,22 @@ class W_Networking extends Widget {
             cp5_networking.get(Textfield.class, "UDP_port2").setPosition(column2, row3 - offset);
             cp5_networking.get(Textfield.class, "UDP_ip3").setPosition(column3, row2 - offset);
             cp5_networking.get(Textfield.class, "UDP_port3").setPosition(column3, row3 - offset);
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row4 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row4 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row4 - 10);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
         } else if (protocolMode.equals("LSL")) {
             for (String textField : lslTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
             }
             cp5_networking.get(Textfield.class, "LSL_name1").setPosition(column1,row2 - offset);
             cp5_networking.get(Textfield.class, "LSL_type1").setPosition(column1,row3 - offset);
-            cp5_networking.get(Textfield.class, "LSL_numchan1").setPosition(column1,row4 - offset);
             cp5_networking.get(Textfield.class, "LSL_name2").setPosition(column2,row2 - offset);
             cp5_networking.get(Textfield.class, "LSL_type2").setPosition(column2,row3 - offset);
-            cp5_networking.get(Textfield.class, "LSL_numchan2").setPosition(column2,row4 - offset);
             cp5_networking.get(Textfield.class, "LSL_name3").setPosition(column3,row2 - offset);
             cp5_networking.get(Textfield.class, "LSL_type3").setPosition(column3,row3 - offset);
-            cp5_networking.get(Textfield.class, "LSL_numchan3").setPosition(column3,row4 - offset);
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter2").setPosition(column2, row5 - 10);
-            cp5_networking.get(RadioButton.class, "filter3").setPosition(column3, row5 - 10);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter2").setPosition(column2 + filtOffsetX, row4 + filtOffsetY);
+            cp5_networking.get(Toggle.class, "filter3").setPosition(column3 + filtOffsetX, row4 + filtOffsetY);
         } else if (protocolMode.equals("Serial")) {
             //Serial Specific
             cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setPosition(column1, row2-offset);
@@ -753,7 +781,7 @@ class W_Networking extends Widget {
             // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (comPorts.size()+1)*(navH-4));
             // cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(fullColumnWidth, (4)*(navH-4)); //
             cp5_networking_portName.get(ScrollableList.class, "port_name").setSize(halfWidth, (5)*(navH-4)); //halfWidth
-            cp5_networking.get(RadioButton.class, "filter1").setPosition(column1, row3 - 10);
+            cp5_networking.get(Toggle.class, "filter1").setPosition(column1 + filtOffsetX, row3 + filtOffsetY);
         }
 
         cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setPosition(column1, row1-offset);
@@ -830,22 +858,22 @@ class W_Networking extends Widget {
         cp5_networking_portName.get(ScrollableList.class, "port_name").setVisible(false);
         cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setVisible(false);
 
-        cp5_networking.get(RadioButton.class, "filter1").setVisible(false);
-        cp5_networking.get(RadioButton.class, "filter2").setVisible(false);
-        cp5_networking.get(RadioButton.class, "filter3").setVisible(false);
-        cp5_networking.get(RadioButton.class, "filter4").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter1").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter2").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter3").setVisible(false);
+        cp5_networking.get(Toggle.class, "filter4").setVisible(false);
 
     }
 
-    /* Change appearance of Button to off */
+    /* Change appearance of Button_obci to off */
     void turnOffButton() {
         startButton.setColorNotPressed(color(184,220,105));
-        startButton.setString("Start");
+        startButton.setString("Start " + protocolMode + " Stream");
     }
 
     void turnOnButton() {
         startButton.setColorNotPressed(color(224, 56, 45));
-        startButton.setString("Stop");
+        startButton.setString("Stop " + protocolMode + " Stream");
     }
 
     boolean getNetworkActive() {
@@ -862,7 +890,7 @@ class W_Networking extends Widget {
         String ip;
         int port;
         String address;
-        int filt_pos;
+        boolean filt_pos;
         String name;
         int nChanLSL;
         int baudRate;
@@ -880,7 +908,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port1").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address1").getText();
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, ip, port, address, filt_pos, nchan);
             } else {
                 stream1 = null;
@@ -889,7 +917,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port2").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address2").getText();
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
                 stream2 = new Stream(dt2, ip, port, address, filt_pos, nchan);
             } else {
                 stream2 = null;
@@ -898,7 +926,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port3").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address3").getText();
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
                 stream3 = new Stream(dt3, ip, port, address, filt_pos, nchan);
             } else {
                 stream3 = null;
@@ -907,7 +935,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip4").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port4").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address4").getText();
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter4").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter4").getBooleanValue();
                 stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan);
             } else {
                 stream4 = null;
@@ -918,7 +946,7 @@ class W_Networking extends Widget {
             if (!dt1.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port1").getText());
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, ip, port, filt_pos, nchan);
             } else {
                 stream1 = null;
@@ -926,7 +954,7 @@ class W_Networking extends Widget {
             if (!dt2.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port2").getText());
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
                 stream2 = new Stream(dt2, ip, port, filt_pos, nchan);
             } else {
                 stream2 = null;
@@ -934,7 +962,7 @@ class W_Networking extends Widget {
             if (!dt3.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port3").getText());
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
                 stream3 = new Stream(dt3, ip, port, filt_pos, nchan);
             } else {
                 stream3 = null;
@@ -942,11 +970,13 @@ class W_Networking extends Widget {
 
             // Establish LSL Streams
         } else if (protocolMode.equals("LSL")) {
+            
+
             if (!dt1.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name1").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type1").getText();
-                nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "LSL_numchan1").getText());
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+                nChanLSL = getDataTypeNumChanLSL(dt1);
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, name, type, nChanLSL, filt_pos, nchan);
             } else {
                 stream1 = null;
@@ -954,8 +984,8 @@ class W_Networking extends Widget {
             if (!dt2.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name2").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type2").getText();
-                nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "LSL_numchan2").getText());
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter2").getValue();
+                nChanLSL = getDataTypeNumChanLSL(dt2);
+                filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
                 stream2 = new Stream(dt2, name, type, nChanLSL, filt_pos, nchan);
             } else {
                 stream2 = null;
@@ -963,22 +993,19 @@ class W_Networking extends Widget {
             if (!dt3.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name3").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type3").getText();
-                nChanLSL = Integer.parseInt(cp5_networking.get(Textfield.class, "LSL_numchan3").getText());
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter3").getValue();
+                nChanLSL = getDataTypeNumChanLSL(dt3);
+                filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
                 stream3 = new Stream(dt3, name, type, nChanLSL, filt_pos, nchan);
             } else {
                 stream3 = null;
             }
         } else if (protocolMode.equals("Serial")) {
-            // %%%%%
             if (!dt1.equals("None")) {
                 name = comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
                 println("ComPort: " + name);
-                // name = cp5_networking_portName.get(ScrollableList.class, "port_name").getItem((int)cp5_networking_portName.get(ScrollableList.class, "port_name").getValue());
                 println("Baudrate: " + Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
                 baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
-
-                filt_pos = (int)cp5_networking.get(RadioButton.class, "filter1").getValue();
+                filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
                 stream1 = new Stream(dt1, name, baudRate, filt_pos, pApplet, nchan);  //String dataType, String portName, int baudRate, int filter, PApplet _this
             } else {
                 stream1 = null;
@@ -1022,6 +1049,42 @@ class W_Networking extends Widget {
             stream4.quit();
             stream4=null;
         }
+    }
+
+    //Fix #644 - Remove confusing #Chan textfield from Networking Widget and account for this here
+    private int getDataTypeNumChanLSL(String dataType) {
+        if (dataType.equals("TimeSeries")) {
+            return currentBoard.getNumEXGChannels();
+        } else if (dataType.equals("FFT")) {
+            return 125;
+        } else if (dataType.equals("EMG")) {
+            return currentBoard.getNumEXGChannels();
+        } else if (dataType.equals("BandPower")) {
+            return 5;
+         } else if (dataType.equals("Pulse")) {
+            return 3;
+        } else if (dataType.equals("Accel/Aux")) {
+            if (currentBoard instanceof AccelerometerCapableBoard) {
+                AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard)currentBoard;
+                if (accelBoard.isAccelerometerActive()) {
+                    return accelBoard.getAccelerometerChannels().length;
+                }
+            }
+            if (currentBoard instanceof AnalogCapableBoard) {
+                AnalogCapableBoard analogBoard = (AnalogCapableBoard)currentBoard;
+                if (analogBoard.isAnalogActive()) {
+                    return analogBoard.getAnalogChannels().length;
+                }
+            }
+            if (currentBoard instanceof DigitalCapableBoard) {
+                DigitalCapableBoard digitalBoard = (DigitalCapableBoard)currentBoard;
+                if (digitalBoard.isDigitalActive()) {
+                    return digitalBoard.getDigitalChannels().length;
+                }
+            }
+        }
+        outputError("Error detecting numChan for LSL stream... please fix!");
+        return 0;
     }
 
     void clearCP5() {
@@ -1152,7 +1215,7 @@ class Stream extends Thread {
     String ip;
     int port;
     String address;
-    int filter;
+    boolean filter;
     String streamType;
     String streamName;
     int nChanLSL;
@@ -1199,7 +1262,7 @@ class Stream extends Thread {
     }
 
     /* OSC Stream */
-    Stream(String dataType, String ip, int port, String address, int filter, int _nchan) {
+    Stream(String dataType, String ip, int port, String address, boolean filter, int _nchan) {
         this.protocol = "OSC";
         this.dataType = dataType;
         this.ip = ip;
@@ -1214,7 +1277,7 @@ class Stream extends Thread {
         }
     }
     /*UDP Stream */
-    Stream(String dataType, String ip, int port, int filter, int _nchan) {
+    Stream(String dataType, String ip, int port, boolean filter, int _nchan) {
         this.protocol = "UDP";
         this.dataType = dataType;
         this.ip = ip;
@@ -1233,7 +1296,7 @@ class Stream extends Thread {
         }
     }
     /* LSL Stream */
-    Stream(String dataType, String streamName, String streamType, int nChanLSL, int filter, int _nchan) {
+    Stream(String dataType, String streamName, String streamType, int nChanLSL, boolean filter, int _nchan) {
         this.protocol = "LSL";
         this.dataType = dataType;
         this.streamName = streamName;
@@ -1249,7 +1312,7 @@ class Stream extends Thread {
     }
 
     // Serial Stream %%%%%
-    Stream(String dataType, String portName, int baudRate, int filter, PApplet _this, int _nchan) {
+    Stream(String dataType, String portName, int baudRate, boolean filter, PApplet _this, int _nchan) {
         // %%%%%
         this.protocol = "Serial";
         this.dataType = dataType;
@@ -1314,7 +1377,6 @@ class Stream extends Thread {
             } else {
                 if (checkForData()) {
                     sendData();
-                    //setDataFalse(); //Wait until all streams are done, Fixes 592
                 }
             }
         }
@@ -1390,7 +1452,7 @@ class Stream extends Thread {
     void sendTimeSeriesData() {
 
         // TIME SERIES UNFILTERED
-        if (filter==0) {
+        if (this.filter==false) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i=0;i<nPointsPerUpdate;i++) {
@@ -1456,7 +1518,7 @@ class Stream extends Thread {
 
 
         // TIME SERIES FILTERED
-        } else if (filter==1) {
+        } else {
             if (this.protocol.equals("OSC")) {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     msg.clearArguments();
@@ -1518,11 +1580,11 @@ class Stream extends Thread {
     }
 
     void sendFFTData() {
-        // UNFILTERED, for now, maybe this should be changed -RW
+        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown
         //EEG/FFT readings above 125Hz don't typically travel through the skull
         //So for now, only send out 0-125Hz with 1 bin per Hz
         //Bin 10 == 10Hz frequency range
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i=0;i<numChan;i++) {
@@ -1600,7 +1662,7 @@ class Stream extends Thread {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
         int numBandPower = 5; //DELTA, THETA, ALPHA, BETA, GAMMA
 
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i=0;i<numChan;i++) {
@@ -1639,7 +1701,7 @@ class Stream extends Thread {
                 }
                 // LSL
             } else if (this.protocol.equals("LSL")) {
-
+                // DELTA, THETA, ALPHA, BETA, GAMMA
                 float[] avgPowerLSL = new float[numChan*numBandPower];
                 for (int i=0; i<numChan;i++) {
                     for (int j=0;j<numBandPower;j++) {
@@ -1673,7 +1735,7 @@ class Stream extends Thread {
 
     void sendEMGData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i=0;i<numChan;i++) {
@@ -1706,13 +1768,11 @@ class Stream extends Thread {
                 }
                 // LSL
             } else if (this.protocol.equals("LSL")) {
-                if (filter==0) {
-                    for (int j=0;j<numChan;j++) {
-                        dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
-                    }
-                    // Add timestamp to LSL Stream
-                    outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+                for (int j=0;j<numChan;j++) {
+                    dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
                 }
+                // Add timestamp to LSL Stream
+                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
             } else if (this.protocol.equals("Serial")) {     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
                 serialMessage = "";
                 for (int i=0;i<numChan;i++) {
@@ -1738,7 +1798,7 @@ class Stream extends Thread {
 
     void sendAccelerometerData() {
         // UNFILTERED & FILTERED, Accel data is not affected by filters anyways
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
@@ -1812,7 +1872,7 @@ class Stream extends Thread {
         final int NUM_ANALOG_READS = analogChannels.length;
 
         // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
@@ -1877,7 +1937,7 @@ class Stream extends Thread {
     void sendDigitalReadData() {
         final int NUM_DIGITAL_READS = w_digitalRead.getNumDigitalReads();
         // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 for (int i = 0; i < NUM_DIGITAL_READS; i++) {
@@ -1941,7 +2001,7 @@ class Stream extends Thread {
     
     ////////////////////////////////////// Stream pulse data from W_PulseSensor
     void sendPulseData() {
-        if (this.filter==0 || this.filter==1) {
+        if (this.filter==false || this.filter==true) {
             // OSC
             if (this.protocol.equals("OSC")) {
                 //ADD BPM Data (BPM, Signal, IBI)
@@ -2050,7 +2110,7 @@ class Stream extends Thread {
             this.udp.log(false);
             output("UDP successfully connected");
         } else if (this.protocol.equals("LSL")) {
-            String stream_id = "openbcieeg12345";
+            String stream_id = "openbcigui";
             info_data = new LSL.StreamInfo(
                         this.streamName,
                         this.streamType,
@@ -2095,7 +2155,10 @@ class Stream extends Thread {
             attributes.append(str(this.nChanLSL));
             attributes.append(str(this.filter));
         } else if (this.protocol.equals("Serial")) {
-            // Add Serial Port Attributes %%%%%
+            attributes.append(this.dataType);
+            attributes.append(this.portName);
+            attributes.append(str(this.baudRate));
+            attributes.append(str(this.filter));
         }
         return attributes;
     }
@@ -2118,10 +2181,13 @@ void Protocol(int protocolIndex) {
         w_networking.protocolMode = "Serial";
         w_networking.disableCertainOutputs((int)w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
     }
-    println("Networking: Protocol mode set to " + w_networking.protocolMode);
+    println("Networking: Protocol mode set to " + w_networking.protocolMode + ". Stopping network");
     w_networking.screenResized();
     w_networking.showCP5();
     closeAllDropdowns();
+    if (!w_networking.networkActive) {
+        w_networking.turnOffButton();
+    }
 }
 
 void dataType1(int n) {
@@ -2144,14 +2210,22 @@ void baud_rate(int n) {
     w_networking.closeAllDropdowns();
 }
 void filter1(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter1").setLabel(s);
     w_networking.closeAllDropdowns();
 }
 void filter2(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter2").setLabel(s);
     w_networking.closeAllDropdowns();
 }
 void filter3(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter3").setLabel(s);
     w_networking.closeAllDropdowns();
 }
 void filter4(int n) {
+    String s = n == 1 ? "On" : "Off";
+    w_networking.cp5_networking.get(Toggle.class, "filter4").setLabel(s);
     w_networking.closeAllDropdowns();
 }

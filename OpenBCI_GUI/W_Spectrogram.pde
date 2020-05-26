@@ -18,7 +18,7 @@ class W_Spectrogram extends Widget {
     int xPos = 0;
     int hueLimit = 160;
 
-    Button widgetTemplateButton;
+    Button_obci widgetTemplateButton;
     PImage dataImg;
     int dataImageW = 1800;
     int dataImageH = 200;
@@ -97,7 +97,7 @@ class W_Spectrogram extends Widget {
         addDropdown("SpectrogramSampleRate", "Samples", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
         addDropdown("SpectrogramLogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.spectLogLinSave);
 
-        widgetTemplateButton = new Button (x + int(spectChanSelectBot.tri_xpos) + 10, y + navHeight + 2, 142, navHeight - 4, "Save Spectrogram", 10);
+        widgetTemplateButton = new Button_obci (x + int(spectChanSelectBot.tri_xpos) + 10, y + navHeight + 2, 142, navHeight - 4, "Save Spectrogram", 10);
         widgetTemplateButton.setFont(p4, 14);
     }
 
