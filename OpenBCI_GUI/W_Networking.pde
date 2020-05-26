@@ -51,7 +51,7 @@ class W_Networking extends Widget {
     private final float datatypeDropdownScaling = .35;
     private final int filtButW = 40;
     private final int filtButH = 20;
-    private final int filtOffsetX = (itemWidth / 2) - (filtButW / 2);
+    private int filtOffsetX = (itemWidth / 2) - (filtButW / 2);
     private final int filtOffsetY = -15;
 
     /* UI */
@@ -706,7 +706,7 @@ class W_Networking extends Widget {
         row4 = y+7*h/10;
         row5 = y+8*h/10;
         int offset = 15;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
-        
+        filtOffsetX = (itemWidth / 2) - (filtButW / 2); //Recalculate filter button X position
 
         //reset the button positions using new x and y
         startButton.setPos(x + w/2 - 70, y + h - 40 );
