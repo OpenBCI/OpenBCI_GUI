@@ -232,8 +232,6 @@ public void controlEvent(ControlEvent theEvent) {
         // this will retrieve the enum object stored in the dropdown!
         novaXR_sampleRate = (NovaXRSR)bob.get("value");
         println("ControlPanel: User selected NovaXR Sample Rate: " + novaXR_sampleRate.getName());
-        //((ScrollableList)theEvent.getController()).close();
-        controlPanel.novaXRBox.closeSRDropdown();
     }
 
     //Check for event in NovaXR Mode List in Control Panel
@@ -243,8 +241,6 @@ public void controlEvent(ControlEvent theEvent) {
         // this will retrieve the enum object stored in the dropdown!
         novaXR_boardSetting = (NovaXRMode)bob.get("value");
         println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
-        //((ScrollableList)theEvent.getController()).close();
-        controlPanel.novaXRBox.closeModeDropdown();
     }
 
     //This dropdown is in the SessionData Box
@@ -2213,8 +2209,6 @@ class NovaXRBox {
     private ControlP5 mode_cp5;
     private ScrollableList srList;
     private ScrollableList modeList;
-    private boolean srDropdownClicked = false;
-    private boolean modeDropdownClicked = false;
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2241,7 +2235,7 @@ class NovaXRBox {
 
     public void update() {
 
-        //Lock the lower dropdown when top one is in use, compatible with auto open/close
+        //Lock the lower dropdown when top one is in use
         if (srList.isInside()) {
             modeList.lock();
         } else {
@@ -2249,8 +2243,6 @@ class NovaXRBox {
                 modeList.unlock();
             }
         }
-        autoOpenCloseScrollableList(srList, srDropdownClicked);
-        autoOpenCloseScrollableList(modeList, modeDropdownClicked);
 
     }
 
@@ -2328,35 +2320,6 @@ class NovaXRBox {
             ;
 
         return list;
-    }
-    
-    //This method has been refined to allow users to auto-open/close AND click/select to close
-    private void autoOpenCloseScrollableList(ScrollableList list, boolean wasClicked) {
-        if (list.isOpen()) {
-            if (!list.isMouseOver()) {
-                list.close();
-            }
-        }
-
-        if (!wasClicked) {
-            if (!list.isOpen()) {
-                if (list.isMouseOver()) {
-                    list.open();
-                }
-            }
-        } else {
-            wasClicked = false;
-        }
-    }
-
-    public void closeSRDropdown() {
-        sr_cp5.get(ScrollableList.class, "novaXR_SampleRates").close();
-        srDropdownClicked = true;
-    }
-
-    public void closeModeDropdown() {
-        mode_cp5.get(ScrollableList.class, "novaXR_Modes").close();
-        modeDropdownClicked = true;
     }
 };
 
