@@ -397,22 +397,11 @@ class W_Spectrogram extends Widget {
         LocalTime time;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-        try {
-            if (getCurrentTimeStamp().equals("TimeNotFound")) {
-                time = LocalTime.now();
-            } else {
-                time = LocalTime.parse(getCurrentTimeStamp());
-            }
-        } catch (NullPointerException e) {
-            println("Spectrogram: Timestamp error...");
-            e.printStackTrace();
+        if (getCurrentTimeStamp() == 0) {
             time = LocalTime.now();
-        } catch (NumberFormatException e) {
-            println("Spectrogram: Timestamp error...");
-            e.printStackTrace();
-            time = LocalTime.now();
+        } else {
+            time = LocalTime.ofSecondOfDay(getCurrentTimeStamp());
         }
-        
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
@@ -423,16 +412,12 @@ class W_Spectrogram extends Widget {
 
     //Identical to the method in TimeSeries, but allows spectrogram to get the data directly from the playback data in the background
     //Find times to display for playback position
-    String getCurrentTimeStamp() {
+    private long getCurrentTimeStamp() {
         //return current playback time
         List<double[]> currentData = currentBoard.getData(1);
         int timeStampChan = currentBoard.getTimestampChannel();
         long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
-        if(timestampMS == 0) {
-            return "TimeNotFound";
-        }
-        String output = new SimpleDateFormat("HH:mm:ss").format(timestampMS);
-        return output;
+        return timestampMS;
     }
 };
 
