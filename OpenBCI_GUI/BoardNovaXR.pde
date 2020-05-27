@@ -11,16 +11,18 @@ interface NovaXRSettingsEnum {
 
 public enum NovaXRSR implements NovaXRSettingsEnum
 {
-    SR_250("250Hz", "~6"), 
-    SR_500("500Hz", "~5"), 
-    SR_1000("1000Hz", "~4");
+    SR_250("250Hz", "~6", 250),
+    SR_500("500Hz", "~5", 500),
+    SR_1000("1000Hz", "~4", 1000);
 
     private String name;
     private String command;
+    private int value;
  
-    NovaXRSR(String _name, String _command) {
+    NovaXRSR(String _name, String _command, int _value) {
         this.name = _name;
         this.command = _command;
+        this.value = _value;
     }
  
     @Override
@@ -31,6 +33,10 @@ public enum NovaXRSR implements NovaXRSettingsEnum
     @Override
     public String getCommand() {
         return command;
+    }
+
+    public int getValue() {
+        return value;
     }
 }
 
@@ -148,6 +154,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
 
         initialSettingsMode = mode;
         sampleRate = _sampleRate;
+        samplingRateCache = sampleRate.getValue();
 
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
