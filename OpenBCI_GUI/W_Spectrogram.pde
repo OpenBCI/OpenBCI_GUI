@@ -113,14 +113,10 @@ class W_Spectrogram extends Widget {
         
         
         
-        if (isRunning && eegDataSource != DATASOURCE_PLAYBACKFILE) {
+        if (isRunning) {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
             //Fetch/calculate the time strings for the horizontal axis ticks
-            fetchTimeStrings(numHorizAxisDivs);
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            xPos = dataImg.width - 1;
-            //Fetch playback data timestamp even when system is not running
             fetchTimeStrings(numHorizAxisDivs);
         }
         
@@ -284,7 +280,9 @@ class W_Spectrogram extends Widget {
             for (int i = 0; i <= numHorizAxisDivs; i++) {
                 float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
                 line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
-                text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
+                if (horizAxisLabelStrings.get(i) != null) {
+                    text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
+                }
             }
         popStyle();
         
@@ -394,18 +392,19 @@ class W_Spectrogram extends Widget {
 
     void fetchTimeStrings(int numAxisTicks) {
         horizAxisLabelStrings.clear();
-        LocalTime time;
+        LocalDateTime time;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
         if (getCurrentTimeStamp() == 0) {
-            time = LocalTime.now();
+            time = LocalDateTime.now();
         } else {
-            time = LocalTime.ofSecondOfDay(getCurrentTimeStamp());
+            time = LocalDateTime.ofInstant(Instant.ofEpochMilli(getCurrentTimeStamp()), 
+                                            TimeZone.getDefault().toZoneId()); 
         }
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
-            LocalTime t = time.plus(l, ChronoUnit.SECONDS);
+            LocalDateTime t = time.plus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
         }
     }
