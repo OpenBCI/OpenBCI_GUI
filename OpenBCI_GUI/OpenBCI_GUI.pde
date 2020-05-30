@@ -23,8 +23,6 @@ import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyM
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
 import java.util.*; //for Array.copyOfRange()
-import java.util.Map.Entry;
-import java.util.Map;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 import processing.net.*; // For TCP networking
@@ -39,7 +37,8 @@ import java.awt.MouseInfo;
 import java.lang.Process;
 import java.text.DateFormat; //Used in DataLogging.pde
 import java.text.SimpleDateFormat;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 // import java.net.InetAddress; // Used for ping, however not working right now.
