@@ -1,11 +1,20 @@
 
 abstract class Board implements DataSource {
 
-    private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
+    private FixedStack<double[]> accumulatedData;
     private double[][] dataThisFrame;
 
     // accessible by all boards, can be returned as valid empty data
     protected double[][] emptyData;
+
+    public Board(int fps, int samplingRate)
+    {
+        accumulatedData = new BufferedStack<double[]>(fps, samplingRate);
+    }
+
+    public Board() {
+        accumulatedData = new FixedStack<double[]>();
+    }
 
     @Override
     public boolean initialize() {
@@ -14,6 +23,11 @@ abstract class Board implements DataSource {
         double[] fillData = new double[getTotalChannelCount()];
         accumulatedData.setSize(getCurrentBoardBufferSize());
         accumulatedData.fill(fillData);
+        // need it for BufferedStack
+        if (accumulatedData instanceof Runnable) {
+            Thread thread = new Thread((Runnable)accumulatedData);
+            thread.start();
+        }
 
         emptyData = new double[getTotalChannelCount()][0];
 
@@ -23,6 +37,9 @@ abstract class Board implements DataSource {
     @Override
     public void uninitialize() {
         uninitializeInternal();
+        if (accumulatedData instanceof BufferedStack) {
+            ((BufferedStack)(accumulatedData)).stop();
+        }
     }
 
     @Override

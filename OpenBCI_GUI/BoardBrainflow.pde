@@ -19,6 +19,14 @@ abstract class BoardBrainFlow extends Board {
      */
     abstract protected BrainFlowInputParams getParams();
     abstract public BoardIds getBoardId();
+
+    public BoardBrainFlow (int fps, int samplingRate) {
+        super(fps, samplingRate);
+    }
+
+    public BoardBrainFlow () {
+        super();
+    }
     
     @Override
     public boolean initializeInternal() {

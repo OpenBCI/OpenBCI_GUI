@@ -623,6 +623,7 @@ int getNfftSafe() {
         case 1600:
             return 2048;
         case 125:
+            return 128;
         case 200:
         case 250:
         default:

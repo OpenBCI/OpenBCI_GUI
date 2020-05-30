@@ -23,6 +23,7 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private int accelSynthTime;
 
     public BoardSynthetic() {    
+        super();
         totalChannels = 0;
         sampleNumberChannel = totalChannels++;
         exgChannels = range(totalChannels, totalChannels + nchan);

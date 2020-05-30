@@ -4,6 +4,10 @@
  */
 class BoardNull extends Board {
 
+    public BoardNull() {
+        super();
+    }
+
     @Override
     public boolean initializeInternal() {
         return true;

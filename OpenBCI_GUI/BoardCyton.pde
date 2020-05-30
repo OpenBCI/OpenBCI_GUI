@@ -53,11 +53,14 @@ static class BoardCytonConstants {
 
 class BoardCytonSerial extends BoardCyton {
     public BoardCytonSerial() {
-        super();
+        // todo[brainflow] switch between bufferedstack and fixedstack
+        super(30, 250);
     }
 
     public BoardCytonSerial(String serialPort) {
-        super();
+        // todo[brainflow] switch between bufferedstack and fixedstack
+        super(30, 250); // use bufferedstack
+        //super(); // use fixedstack
         this.serialPort = serialPort;
     }
 
@@ -69,11 +72,13 @@ class BoardCytonSerial extends BoardCyton {
 
 class BoardCytonSerialDaisy extends BoardCyton {
     public BoardCytonSerialDaisy() {
-        super();
+        // todo[brainflow] switch between bufferedstack and fixedstack
+        super(30, 125);
     }
 
     public BoardCytonSerialDaisy(String serialPort) {
-        super();
+        // todo[brainflow] switch between bufferedstack and fixedstack
+        super(30, 125);
         this.serialPort = serialPort;
     }
 
@@ -179,7 +184,15 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     public BoardCyton() {
         super();
+        isCheckingImpedance = new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedance, false);
 
+        // The command 'd' is automatically sent by brainflow on prepare_session
+        currentADS1299Settings = new CytonDefaultSettings(this);
+    }
+
+    public BoardCyton(int fps, int samplingRate) {
+        super(fps, samplingRate);
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
