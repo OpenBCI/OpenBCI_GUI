@@ -36,9 +36,16 @@ def write_array (f, values):
     f.write ('%s\n' % string)
 
 
+def compare_floats (val1, val2):
+    return abs(val1 - val2) <= 1e-04
+
 def convert (old_file, new_file):
     with open (old_file) as f:
         old_lines = f.readlines ()
+
+    x_accel = '0.0'
+    y_accel = '0.0'
+    z_accel = '0.0'
 
     with open (new_file, 'w') as f:
 
@@ -77,9 +84,13 @@ def convert (old_file, new_file):
                     i = i + 1
                     new_data_points.append ('0.0')
                 # always 3 accel channels
-                new_data_points.append (data_points[i])
-                new_data_points.append (data_points[i + 1])
-                new_data_points.append (data_points[i + 2])
+                if not compare_floats (float(data_points[i]), 0.0):
+                    x_accel = data_points[i]
+                    y_accel = data_points[i + 1]
+                    z_accel = data_points[i + 2]
+                new_data_points.append (x_accel)
+                new_data_points.append (y_accel)
+                new_data_points.append (z_accel)
                 i = i + 3
                 while i < num_rows - 1:
                     i = i + 1
