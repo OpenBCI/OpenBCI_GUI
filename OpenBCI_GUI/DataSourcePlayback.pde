@@ -55,7 +55,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
             // some boards have configurable sample rate, so read it from header
             if (line.startsWith("%Sample Rate")) {
                 int startIndex = line.indexOf('=') + 2;
-                int endIndex = line.indexOf("Hz") - 1;
+                int endIndex = line.indexOf("Hz");
 
                 String hzString = line.substring(startIndex, endIndex);
                 sampleRate = Integer.parseInt(hzString);
