@@ -250,11 +250,11 @@ void system_status(RadioConfigBox rcConfig){
                 outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
             }
         }
-        if(serial_direct_board != null) serial_direct_board.stop();
     } else {
         println("Error, no board connected");
         rcConfig.print_onscreen("No board connected!");
     }
+    serial_direct_board.stop();
 }
 
 boolean system_status(){
@@ -286,6 +286,7 @@ boolean system_status(){
         println("Error, no board connected");
         return false;
     }
+    serial_direct_board.stop();
 }
 
 //Scans through channels until a success message has been found
@@ -302,6 +303,7 @@ void scan_channels(RadioConfigBox rcConfig){
         system_status(rcConfig);
         if(confirm_connected()) return; // break;
     }
+    serial_direct_board.stop();
 }
 
 
@@ -324,7 +326,7 @@ void get_channel(RadioConfigBox rcConfig){
             return;
         }
     }
-
+    serial_direct_board = new Serial(this, openBCI_portName, openBCI_baud); //force open the com port
     if(serial_direct_board != null){
         serial_direct_board.write(0xF0);
         serial_direct_board.write(0x00);
@@ -337,7 +339,8 @@ void get_channel(RadioConfigBox rcConfig){
         println("Error, no board connected");
         rcConfig.print_onscreen("No board connected!");
     }
-    }
+    serial_direct_board.stop();
+}
 
 //============== SET CHANNEL ===============
 //= Sets the radio and board channel.
@@ -359,6 +362,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
             return;
         }
     }
+    serial_direct_board = new Serial(this, openBCI_portName, openBCI_baud); //force open the com port
     if(serial_direct_board != null){
         if(channel_number > 0){
             serial_direct_board.write(0xF0);
@@ -375,6 +379,7 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
         println("Error, no board connected");
         rcConfig.print_onscreen("No board connected!");
     }
+    serial_direct_board.stop();
 }
 
 //========== SET CHANNEL OVERRIDE ===========
@@ -397,6 +402,7 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
             return;
         }
     }
+    serial_direct_board = new Serial(this, openBCI_portName, openBCI_baud); //force open the com port
     if(serial_direct_board != null){
         if(channel_number > 0){
             serial_direct_board.write(0xF0);
@@ -415,4 +421,5 @@ void set_channel_over(RadioConfigBox rcConfig, int channel_number){
         println("Error, no board connected");
         rcConfig.print_onscreen("No board connected!");
     }
+    serial_direct_board.stop();
 }
