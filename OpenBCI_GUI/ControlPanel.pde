@@ -205,10 +205,10 @@ public void controlEvent(ControlEvent theEvent) {
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
         if (setChannel.wasPressed) {
-            set_channel(rcBox, setChannelInt);
+            rcBox.setChannel(setChannelInt);
             setChannel.wasPressed = false;
         } else if(ovrChannel.wasPressed) {
-            set_channel_over(rcBox, setChannelInt);
+            rcBox.setChannelOverride(setChannelInt);
             ovrChannel.wasPressed = false;
         }
     }
@@ -611,13 +611,8 @@ class ControlPanel {
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
         cp5.get(MenuList.class, "serialList").setVisible(false);
-        // cp5Popup.hide(); // make sure to hide the controlP5 object
         popOutRadioConfigButton.setString("Manual >");
-        rcBox.print_onscreen("");
-        if (serial_direct_board != null) {
-            serial_direct_board.stop();
-        }
-        serial_direct_board = null;
+        rcBox.closeSerialPort();
     }
 
     private void refreshPortListCyton(){
@@ -958,8 +953,7 @@ class ControlPanel {
 
         if (rcBox.isShowing) {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
-                // if(serial_direct_board != null) // Radios_Config will handle creating the serial port JAM 1/2017
-                get_channel(rcBox);
+                rcBox.getChannel();
                 getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
                 hideChannelListCP();
@@ -980,14 +974,14 @@ class ControlPanel {
             }
 
             if(autoscan.isMouseHere() && autoscan.wasPressed){
+                rcBox.scanChannels();
                 autoscan.wasPressed = false;
                 autoscan.setIsActive(false);
-                scan_channels(rcBox);
                 hideChannelListCP();
             }
 
             if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-                system_status(rcBox);
+                rcBox.getSystemStatus();
                 systemStatus.setIsActive(false);
                 systemStatus.wasPressed = false;
                 hideChannelListCP();
@@ -1357,6 +1351,7 @@ class DataSourceBox {
 class SerialBox {
     int x, y, w, h, padding; //size and position
     Button_obci autoConnect;
+    RadioConfig cytonRadioCfg;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1364,6 +1359,7 @@ class SerialBox {
         w = _w;
         h = 70;
         padding = _padding;
+        cytonRadioCfg = new RadioConfig();
 
         autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
@@ -1397,9 +1393,7 @@ class SerialBox {
         String comPort = getCytonComPort();
         if (comPort != null) {
             openBCI_portName = comPort;
-            if (system_status()) {
-                serial_direct_board.stop(); //Stop serial port connection
-                serial_direct_board = null;
+            if (cytonRadioCfg.system_status()) {
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
@@ -2490,10 +2484,11 @@ class SDBox {
 
 
 class RadioConfigBox {
-    int x, y, w, h, padding; //size and position
-    String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
-    String last_message = initial_message;
+    private int x, y, w, h, padding; //size and position
+    private String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    private String last_message = initial_message;
     public boolean isShowing;
+    private RadioConfig cytonRadioCfg;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -2502,12 +2497,14 @@ class RadioConfigBox {
         h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
+        cytonRadioCfg = new RadioConfig();
 
-        //typical button height + 20 for larger autoscan button
+        //typical button height + 20 for larger autoscan button, full box width minus padding
         autoscan = new Button_obci(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
-        //smaller buttons below autoscan
-        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        //smaller buttons below autoscan - left column
+        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*4)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*4)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        //right column
         setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
         ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
         
@@ -2544,11 +2541,36 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
+        rect(x + padding, y + (padding*7) + 33 + (24*2), w-(padding*2), 135 - 21); //13 + 20 = 33 for larger autoscan
         fill(255);
         textFont(h3, 15);
-        text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
+        text(localstring, x + padding + 5, y + (padding*7) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 -15); //15 + 20 = 35
         this.last_message = localstring;
+    }
+
+    public void getChannel() {
+        cytonRadioCfg.get_channel(RadioConfigBox.this);
+    }
+
+    public void setChannel(int val) {
+        cytonRadioCfg.set_channel(RadioConfigBox.this, val);
+    }
+
+    public void setChannelOverride(int val) {
+        cytonRadioCfg.set_channel_over(RadioConfigBox.this, val);
+    }
+
+    public void scanChannels() {
+        cytonRadioCfg.scan_channels(RadioConfigBox.this);
+    }
+
+    public void getSystemStatus() {
+        cytonRadioCfg.system_status(RadioConfigBox.this);
+    }
+
+    public void closeSerialPort() {
+        print_onscreen("");
+        cytonRadioCfg.closeSerialPort();
     }
 };
 
