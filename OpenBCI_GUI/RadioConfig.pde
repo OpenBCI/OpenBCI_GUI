@@ -40,6 +40,7 @@ class RadioConfig {
                 return;
             }
         }
+        autoscanPressed = false;
         closeSerialPort();
     }
 
