@@ -204,17 +204,12 @@ public void controlEvent(ControlEvent theEvent) {
         //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
-        //TRY TO REMOVE THIS BEFORE PR
-        try {
-            if (setChannel.wasPressed) {
-                set_channel(rcBox, setChannelInt);
-                setChannel.wasPressed = false;
-            } else if(ovrChannel.wasPressed) {
-                set_channel_over(rcBox, setChannelInt);
-                ovrChannel.wasPressed = false;
-            }
-        } catch (RuntimeException e) {
-            e.printStackTrace();
+        if (setChannel.wasPressed) {
+            set_channel(rcBox, setChannelInt);
+            setChannel.wasPressed = false;
+        } else if(ovrChannel.wasPressed) {
+            set_channel_over(rcBox, setChannelInt);
+            ovrChannel.wasPressed = false;
         }
     }
 

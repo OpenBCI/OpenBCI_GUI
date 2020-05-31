@@ -359,14 +359,12 @@ void set_channel(RadioConfigBox rcConfig, int channel_number){
             return;
         }
     }
-    println("Able to connect.....");
-    serial_direct_board = new Serial(this, openBCI_portName, openBCI_baud);
     if(serial_direct_board != null){
         if(channel_number > 0){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x01);
             serial_direct_board.write(byte(channel_number));
-            delay(2000);
+            delay(1000);
             if(!print_bytes(rcConfig)){
                 print_bytes_error(rcConfig);
             }
