@@ -126,10 +126,14 @@ class W_Spectrogram extends Widget {
         
         
         
-        if (isRunning) {
+        if (isRunning && eegDataSource != DATASOURCE_PLAYBACKFILE) {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
             //Fetch/calculate the time strings for the horizontal axis ticks
+            fetchTimeStrings(numHorizAxisDivs);
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            xPos = dataImg.width - 1;
+            //Fetch playback data timestamp even when system is not running
             fetchTimeStrings(numHorizAxisDivs);
         }
         
@@ -313,9 +317,7 @@ class W_Spectrogram extends Widget {
             for (int i = 0; i <= numHorizAxisDivs; i++) {
                 float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
                 line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
-                if (horizAxisLabelStrings.get(i) != null) {
-                    text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
-                }
+                text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
             }
         popStyle();
         
@@ -425,31 +427,53 @@ class W_Spectrogram extends Widget {
 
     void fetchTimeStrings(int numAxisTicks) {
         horizAxisLabelStrings.clear();
-        LocalDateTime time;
+        LocalTime time;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-        if (getCurrentTimeStamp() == 0) {
-            time = LocalDateTime.now();
+        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
+            time = LocalTime.now();
         } else {
-            time = LocalDateTime.ofInstant(Instant.ofEpochMilli(getCurrentTimeStamp()), 
-                                            TimeZone.getDefault().toZoneId()); 
+            try {
+                if (getCurrentTimeStamp().equals("TimeNotFound")) {
+                    time = LocalTime.now();
+                } else {
+                    long t = new Long(getCurrentTimeStamp());
+                    Date d =  new Date(t);
+                    String timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
+                    time = LocalTime.parse(timeFromPlayback);
+                }
+            } catch (NullPointerException e) {
+                println("Spectrogram: Timestamp error...");
+                e.printStackTrace();
+                time = LocalTime.now();
+            } catch (NumberFormatException e) {
+                println("Spectrogram: Timestamp error...");
+                e.printStackTrace();
+                time = LocalTime.now();
+            }
         }
+        
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
-            LocalDateTime t = time.plus(l, ChronoUnit.SECONDS);
+            LocalTime t = time.plus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
         }
     }
 
     //Identical to the method in TimeSeries, but allows spectrogram to get the data directly from the playback data in the background
     //Find times to display for playback position
-    private long getCurrentTimeStamp() {
+    String getCurrentTimeStamp() {
         //return current playback time
-        List<double[]> currentData = currentBoard.getData(1);
-        int timeStampChan = currentBoard.getTimestampChannel();
-        long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
-        return timestampMS;
+        if (index_of_times != null && index_of_times.get(0) != null) { //Check if the hashmap is null to prevent exception
+            // TODO[brainflow] Fix up retrieval of time stamps
+            // if (currentTableRowIndex > playbackData_table.getRowCount()) {
+            //     return index_of_times.get(playbackData_table.getRowCount());
+            // } else {
+            //     return index_of_times.get(currentTableRowIndex);
+            // }
+        }
+        
+        return "TimeNotFound";
     }
 };
 

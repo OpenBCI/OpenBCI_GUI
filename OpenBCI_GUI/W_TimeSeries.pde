@@ -901,7 +901,7 @@ class TimeDisplay {
     String currentAbsoluteTimeToDisplay = "";
     String currentTimeInSecondsToDisplay = "";
     Boolean updatePosition = false;
-    LocalDateTime time;
+    LocalTime time;
     long startTime;
     boolean prevIsRunning = false;
 
@@ -958,7 +958,7 @@ class TimeDisplay {
     }
 
     String fetchCurrentTimeString() {
-        time = LocalDateTime.now();
+        time = LocalTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         return time.format(formatter);
     }

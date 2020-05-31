@@ -23,6 +23,8 @@ import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyM
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
 import processing.core.PApplet;
 import java.util.*; //for Array.copyOfRange()
+import java.util.Map.Entry;
+import java.util.Map;
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
 import processing.net.*; // For TCP networking
@@ -37,8 +39,7 @@ import java.awt.MouseInfo;
 import java.lang.Process;
 import java.text.DateFormat; //Used in DataLogging.pde
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.Instant;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 // import java.net.InetAddress; // Used for ping, however not working right now.
@@ -61,7 +62,7 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha.7";
+String localGUIVersionString = "v5.0.0-alpha.6";
 String localGUIVersionDate = "May 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -137,9 +138,8 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
-//NovaXR Default Settings
-NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
-NovaXRSR novaXR_sampleRate = NovaXRSR.SR_250;
+//NovaXR Default mode
+NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -525,7 +525,7 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
+            currentBoard = new BoardNovaXR(novaXR_boardSetting);
             // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
