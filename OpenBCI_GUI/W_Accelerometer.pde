@@ -128,7 +128,7 @@ class W_Accelerometer extends Widget {
         return lastAccelVals[val];
     }
 
-    String getButtonString() {
+    String getAccelButtonString() {
         if (accelBoard.isAccelerometerActive()) {
             return "Turn Accel. Off";
         }
@@ -158,18 +158,13 @@ class W_Accelerometer extends Widget {
         line(polarWindowX, polarWindowY-polarWindowHeight/2, polarWindowX, polarWindowY+polarWindowHeight/2);
         line(polarWindowX-polarCorner, polarWindowY+polarCorner, polarWindowX+polarCorner, polarWindowY-polarCorner);
 
-        fill(50);
-        textFont(p3, 16);
-        accelModeButton.setString(getButtonString());
-
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
-            accelModeButton.draw();
-        }
-
         if (accelBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
+        } else {
+            accelModeButton.setString(getAccelButtonString());
+            accelModeButton.draw();
         }
         popStyle();
     }
