@@ -2485,6 +2485,7 @@ class RadioConfigBox {
     private String last_message = initial_message;
     public boolean isShowing;
     private RadioConfig cytonRadioCfg;
+    private int linuxPadding = isLinux() ? -5 : 0;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -2523,7 +2524,7 @@ class RadioConfigBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RADIO CONFIGURATION", x + padding, y + padding);
+        text("RADIO CONFIGURATION", x + padding, y + padding + linuxPadding);
         popStyle();
         getChannel.draw();
         setChannel.draw();

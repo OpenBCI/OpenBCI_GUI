@@ -18,6 +18,7 @@ class RadioConfig {
     private Serial serial_direct_board;
     private String rcStringReceived = "";
     private boolean autoscanPressed = false;
+    private boolean overridePressed = false;
 
     RadioConfig() {
 
@@ -203,6 +204,7 @@ class RadioConfig {
 
     public void set_channel_over(RadioConfigBox rcConfig, int channel_number){
         println("Radios_Config: set_ovr_channel");
+        overridePressed = true;
         if(serial_direct_board == null){
             if(!connect_to_portName(rcConfig)){
                 return;
@@ -220,11 +222,11 @@ class RadioConfig {
 
             else rcConfig.print_onscreen("Please Select a Channel.");
         }
-
         else {
             println("Error, no board connected");
             rcConfig.print_onscreen("No board connected!");
         }
+        overridePressed = false;
         closeSerialPort();
     }
 
@@ -301,7 +303,7 @@ class RadioConfig {
                 rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? \n\nTry pressing AUTOSCAN.";
             } else if (rcStringReceived.equals("Success: System is Up")) {
                 rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
-            } else if (autoscanPressed && rcStringReceived.startsWith("Success: Host override")) {
+            } else if (!overridePressed && autoscanPressed && rcStringReceived.startsWith("Success: Host override")) {
                 rcStringReceived = "Please press AUTOSCAN one more time.";
             }
             rc.print_onscreen(rcStringReceived);
