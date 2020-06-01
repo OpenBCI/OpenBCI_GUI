@@ -57,7 +57,7 @@ def convert (old_file, new_file):
                 f.write (line)
             elif i == 2:
                 # sampling rate from double to int
-                patched_string = line.replace ('.0 Hz', 'Hz')
+                patched_string = line.replace ('.0 Hz', ' Hz')
                 sampling_rate = find_int_in_string (patched_string)
                 f.write (patched_string)
                 board_class, board_id = get_board_class (num_channels, sampling_rate)
