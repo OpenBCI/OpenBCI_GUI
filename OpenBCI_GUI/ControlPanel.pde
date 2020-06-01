@@ -55,16 +55,10 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
 MenuList sourceList;
 
 //Global buttons and elements for the control panel (changed within the classes below)
-MenuList serialList;
-String[] serialPorts = new String[Serial.list().length];
-
 MenuList bleList;
 MenuList wifiList;
-
 MenuList sdTimes;
-
 MenuList channelList;
-
 MenuList pollList;
 
 color boxColor = color(200);
@@ -308,6 +302,9 @@ class ControlPanel {
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
 
+    //Check if the number of serial ports changes
+    private int numSerialPorts = 0;
+
     //Track Dynamic and Static WiFi mode in Control Panel
     final public String WIFI_DYNAMIC = "dynamic";
     final public String WIFI_STATIC = "static";
@@ -371,7 +368,7 @@ class ControlPanel {
     }
 
     public void resetListItems(){
-        serialList.activeItem = -1;
+        comPortBox.serialList.activeItem = -1;
         bleList.activeItem = -1;
         wifiList.activeItem = -1;
     }
@@ -409,9 +406,10 @@ class ControlPanel {
         }
 
         //auto-update serial list
-        if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
-            println("Refreshing port list...");
+        if(SerialPort.getCommPorts().length != numSerialPorts && systemMode != SYSTEMMODE_POSTINIT){
+            println("Auto-Refreshing Cyton Port List...");
             refreshPortListCyton();
+            numSerialPorts = SerialPort.getCommPorts().length;
         }
 
         //update all boxes if they need to be
@@ -435,7 +433,6 @@ class ControlPanel {
         initBox.update();
 
         channelPopup.update();
-        serialList.updateMenu();
         bleList.updateMenu();
         wifiList.updateMenu();
         dataLogBoxGanglion.update();
@@ -480,18 +477,16 @@ class ControlPanel {
                         if (rcBox.isShowing) {
                             comPortBox.draw();
                             rcBox.draw();
-                            cp5.get(MenuList.class, "serialList").setVisible(true);
+                            comPortBox.serialList.setVisible(true);
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-                                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -525,7 +520,7 @@ class ControlPanel {
                 sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
-                cp5.get(MenuList.class, "serialList").setVisible(false);
+                comPortBox.serialList.setVisible(false);
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
@@ -610,20 +605,25 @@ class ControlPanel {
         cp5Popup.hide(); // make sure to hide the controlP5 object
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-        cp5.get(MenuList.class, "serialList").setVisible(false);
+        comPortBox.serialList.setVisible(false);
         popOutRadioConfigButton.setString("Manual >");
         rcBox.closeSerialPort();
     }
-
+    
     private void refreshPortListCyton(){
-        serialPorts = new String[Serial.list().length];
-        serialPorts = Serial.list();
-        serialList.items.clear();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
+        comPortBox.serialList.items.clear();
+        String name = "FT231X USB UART";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                comPortBox.serialList.addItem(makeItem(found));
+            }
         }
-        serialList.updateMenu();
+        comPortBox.serialList.updateMenu();
     }
 
     private void refreshPortListGanglion() {
@@ -672,7 +672,7 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
-        cp5.get(MenuList.class, "serialList").setVisible(false);
+        comPortBox.serialList.setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
@@ -1417,8 +1417,9 @@ class SerialBox {
 };
 
 class ComPortBox {
-    int x, y, w, h, padding; //size and position
-    boolean isShowing;
+    private int x, y, w, h, padding; //size and position
+    public boolean isShowing;
+    public MenuList serialList;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1430,16 +1431,11 @@ class ComPortBox {
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
-        // println(w-padding*2);
         serialList.setPosition(x + padding, y + padding*3 + 8);
-        serialPorts = Serial.list();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
-        }
     }
 
     public void update() {
+        serialList.updateMenu();
     }
 
     public void draw() {
