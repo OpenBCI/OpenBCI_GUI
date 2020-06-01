@@ -405,8 +405,10 @@ class ControlPanel {
             }
         }
 
-        //auto-update serial list
-        if(SerialPort.getCommPorts().length != numSerialPorts && systemMode != SYSTEMMODE_POSTINIT){
+        //auto-update Cyton port list
+        if(eegDataSource == DATASOURCE_CYTON && 
+            SerialPort.getCommPorts().length != numSerialPorts && 
+            systemMode != SYSTEMMODE_POSTINIT) {
             println("Auto-Refreshing Cyton Port List...");
             refreshPortListCyton();
             numSerialPorts = SerialPort.getCommPorts().length;
