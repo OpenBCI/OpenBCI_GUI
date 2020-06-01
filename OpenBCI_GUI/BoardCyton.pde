@@ -51,13 +51,22 @@ static class BoardCytonConstants {
     static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 }
 
-class BoardCytonSerial extends BoardCyton {
+class BoardCytonSerial extends BoardCytonSerialBase {
+    public BoardCytonSerial(boolean smoothData) {
+        super(smoothData);
+    }
+
     public BoardCytonSerial() {
-        super();
+        this(false);
+    }
+
+    public BoardCytonSerial(String serialPort, boolean smoothData) {
+        super(smoothData);
+        this.serialPort = serialPort;
     }
 
     public BoardCytonSerial(String serialPort) {
-        super();
+        super(false);
         this.serialPort = serialPort;
     }
 
@@ -67,13 +76,22 @@ class BoardCytonSerial extends BoardCyton {
     }
 };
 
-class BoardCytonSerialDaisy extends BoardCyton {
+class BoardCytonSerialDaisy extends BoardCytonSerialBase {
+    public BoardCytonSerialDaisy(boolean smoothData) {
+        super(smoothData);
+    }
+
     public BoardCytonSerialDaisy() {
-        super();
+        this(false);
+    }
+
+    public BoardCytonSerialDaisy(String serialPort, boolean smoothData) {
+        super(smoothData);
+        this.serialPort = serialPort;
     }
 
     public BoardCytonSerialDaisy(String serialPort) {
-        super();
+        super(false);
         this.serialPort = serialPort;
     }
 
@@ -81,6 +99,61 @@ class BoardCytonSerialDaisy extends BoardCyton {
     public BoardIds getBoardId() {
         return BoardIds.CYTON_DAISY_BOARD;
     }
+};
+
+abstract class BoardCytonSerialBase extends BoardCyton {
+
+    private Buffer<double[]> buffer = null;
+    private boolean smoothData;
+
+    public BoardCytonSerialBase(boolean smoothData) {
+        this.smoothData = smoothData;
+    }
+
+    public BoardCytonSerialBase() {
+        this(false);
+    }
+
+    @Override
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
+        if (res) {
+            if (smoothData) {
+                buffer = new Buffer<double[]>(30, getSampleRate());
+            }
+        }
+        return res;
+    }
+
+    @Override
+    protected double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        if (!smoothData) {
+            return data;
+        }
+        // transpose to push to buffer
+        for (int i = 0; i < data[0].length; i++) {
+            double[] newEntry = new double[getTotalChannelCount()];
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                newEntry[j] = data[j][i];
+            }
+            buffer.addNewEntry(newEntry);
+        }
+        int numData = buffer.getDataCount();
+        if (numData == 0) {
+            return emptyData;
+        }
+        // transpose back
+        double[][] res = new double[getTotalChannelCount()][numData];
+        for (int i = 0; i < numData; i++) {
+            double[] curData = buffer.popFirstEntry();
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                res[j][i] = curData[j];
+            }
+        }
+        return res;
+    }
+
 };
 
 class BoardCytonWifi extends BoardCytonWifiBase {
