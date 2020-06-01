@@ -78,7 +78,7 @@ class W_Accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
-        accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
+        accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "Turn Accel. On", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p5,12);
         accelModeButton.setColorNotPressed(color(57,128,204));
@@ -128,15 +128,6 @@ class W_Accelerometer extends Widget {
         return lastAccelVals[val];
     }
 
-    String getAccelButtonString() {
-        if (accelBoard.isAccelerometerActive()) {
-            return "Turn Accel. Off";
-        }
-        else {
-            return "Turn Accel. On";
-        }
-    }
-
     void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
@@ -163,7 +154,6 @@ class W_Accelerometer extends Widget {
             draw3DGraph();
             accelerometerBar.draw();
         } else {
-            accelModeButton.setString(getAccelButtonString());
             accelModeButton.draw();
         }
         popStyle();
