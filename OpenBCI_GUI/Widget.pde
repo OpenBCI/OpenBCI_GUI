@@ -133,22 +133,7 @@ class Widget{
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;        
 
-        // there's a bug in control p5 where clicking on the scroll list does not
-        // open it if you move the mouse while clicking. This fixes that.
-        scrollList.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent event) {
-                ScrollableList theList = (ScrollableList)(event.getController());
-                theList.open();
-            }
-        });
-
-        // close the dropdown if the mouse leaves it.
-        scrollList.onLeave(new CallbackListener() {
-            public void controlEvent(CallbackEvent event) {
-                ScrollableList theList = (ScrollableList)(event.getController());
-                theList.close();
-            }
-        });
+        makeScrollableListBetter(scrollList);
     }
 
     public void setupNavDropdowns(){
@@ -202,22 +187,7 @@ class Widget{
                 .setPaddingTop(3) //4-pixel vertical offset to center text
                 ;   
 
-            // there's a bug in control p5 where clicking on the scroll list does not
-            // open it if you move the mouse while clicking. This fixes that.
-            scrollList.onRelease(new CallbackListener() {
-                public void controlEvent(CallbackEvent event) {
-                    ScrollableList theList = (ScrollableList)(event.getController());
-                    theList.open();
-                }
-            });
-
-            // close the dropdown if the mouse leaves it.
-            scrollList.onLeave(new CallbackListener() {
-                public void controlEvent(CallbackEvent event) {
-                    ScrollableList theList = (ScrollableList)(event.getController());
-                    theList.close();
-                }
-            });
+            makeScrollableListBetter(scrollList);
         }
     }
     private void updateDropdowns(){

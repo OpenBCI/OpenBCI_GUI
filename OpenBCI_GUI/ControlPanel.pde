@@ -1796,7 +1796,7 @@ class SessionDataBox {
 
     void createDropdown(String name, List<String> _items){
 
-        cp5_dataLog_dropdown.addScrollableList(name)
+        ScrollableList scrollList = cp5_dataLog_dropdown.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             /*
@@ -1832,6 +1832,8 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
     }
 
     //Returns: 0 for Cyton, 1 for Ganglion
@@ -2161,7 +2163,7 @@ class RecentPlaybackBox {
 
     void createDropdown(String name, List<String> _items){
 
-        cp5_recentPlayback_dropdown.addScrollableList(name)
+        ScrollableList scrollList = cp5_recentPlayback_dropdown.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2194,6 +2196,8 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
     }
 };
 
@@ -2314,6 +2318,8 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(list);
 
         return list;
     }
@@ -2447,6 +2453,8 @@ class SDBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(sdList);
     }
 
     private void openCloseDropdown() {
