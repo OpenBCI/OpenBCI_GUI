@@ -153,6 +153,10 @@ class W_Accelerometer extends Widget {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
+
+            if (currentBoard instanceof BoardGanglion) {
+                accelModeButton.draw();
+            }
         } else {
             accelModeButton.draw();
         }
@@ -201,8 +205,10 @@ class W_Accelerometer extends Widget {
             if (!accelBoard.isAccelerometerActive()) {
                 accelBoard.setAccelerometerActive(true);
                 output("Starting to read accelerometer");
+                accelModeButton.setString("Turn Accel. Off");
             } else {                    
                 accelBoard.setAccelerometerActive(false);
+                accelModeButton.setString("Turn Accel. On");
             }
         }
         accelModeButton.setIsActive(false);
