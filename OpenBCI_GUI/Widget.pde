@@ -37,6 +37,7 @@ class Widget{
     Widget(PApplet _parent){
         pApplet = _parent;
         cp5_widget = new ControlP5(pApplet);
+        cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
         dropdowns = new ArrayList<NavBarDropdown>();
         //setup dropdown menus
 
@@ -69,22 +70,6 @@ class Widget{
         fill(200, 200, 200);
         rect(x0, y0+navH, w0, navH); //button bar
 
-        // fill(255);
-        // rect(x+2, y+2, navH-4, navH-4);
-        // fill(bgColor, 100);
-        // rect(x+4, y+4, (navH-10)/2, (navH-10)/2);
-        // rect(x+4, y+((navH-10)/2)+5, (navH-10)/2, (navH-10)/2);
-        // rect(x+((navH-10)/2)+5, y+4, (navH-10)/2, (navH-10)/2);
-        // rect(x+((navH-10)/2)+5, y+((navH-10)/2)+5, (navH-10)/2, (navH-10 )/2);
-        //
-        // fill(bgColor);
-        // textAlign(LEFT, CENTER);
-        // textFont(h2);
-        // textSize(16);
-        // text(widgetTitle, x+navH+2, y+navH/2 - 2); //title of widget -- left
-
-        // drawDropdowns(); //moved to WidgetManager, so that dropdowns draw on top of widget content
-
         popStyle();
     }
 
@@ -94,19 +79,13 @@ class Widget{
     }
 
     public void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
-        cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
-        // cp5_widget.setFont(h2, 16);
-        // cp5_widget.getCaptionLabel().toUpperCase(false);
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        //      SETUP the widgetSelector dropdown
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-
         cp5_widget.setColor(settings.dropdownColors);
         ScrollableList scrollList = cp5_widget.addScrollableList("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
             .setColor(settings.dropdownColors)
+            .setBackgroundColor(150)
             //.setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
@@ -137,24 +116,6 @@ class Widget{
     }
 
     public void setupNavDropdowns(){
-
-        cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
-        // cp5_widget.setFont(h3, 12);
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        //      SETUP all NavBarDropdowns
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /*
-        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-        dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
-        // dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
-        dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
-        dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
-        // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
-        dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
-        */
-
         cp5_widget.setColor(settings.dropdownColors);
         // println("Setting up dropdowns...");
         for(int i = 0; i < dropdowns.size(); i++){
@@ -165,6 +126,7 @@ class Widget{
                 .setFont(h5)
                 .setOpen(false)
                 .setColor(settings.dropdownColors)
+                .setBackgroundColor(150)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
                 .setItemHeight(navH-4)
@@ -221,38 +183,8 @@ class Widget{
     }
 
     private void drawDropdowns(){
-
-        //draw dropdown titles
-        pushStyle();
-
-        noStroke();
-        textFont(h5);
-        textSize(12);
-        textAlign(CENTER, BOTTOM);
-        fill(bgColor);
-        for(int i = 0; i < dropdowns.size(); i++){
-            int dropdownPos = dropdowns.size() - i;
-            // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
-            text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));
-        }
-
-        //draw background/stroke of widgetSelector dropdown
-        fill(150);
-        rect(cp5_widget.getController("WidgetSelector").getPosition()[0]-1, cp5_widget.getController("WidgetSelector").getPosition()[1]-1, widgetSelectorWidth+2, cp5_widget.get(ScrollableList.class, "WidgetSelector").getHeight()+2);
-
-        //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
-        fill(200);
-        for(int i = 0; i < dropdowns.size(); i++){
-            rect(cp5_widget.getController(dropdowns.get(i).id).getPosition()[0] - 1, cp5_widget.getController(dropdowns.get(i).id).getPosition()[1] - 1, dropdownWidth + 2, cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).getHeight()+2);
-        }
-
-        textAlign(RIGHT, TOP);
         cp5_widget.draw(); //this draws all cp5 elements... in this case, the scrollable lists that populate our dropdowns<>
-
-        popStyle();
     }
-
-
 
     public void mouseDragged(){
 

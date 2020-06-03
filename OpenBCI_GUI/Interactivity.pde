@@ -297,7 +297,9 @@ void makeScrollableListBetter(ScrollableList scrollList) {
     scrollList.onRelease(new CallbackListener() {
         public void controlEvent(CallbackEvent event) {
             ScrollableList theList = (ScrollableList)(event.getController());
-            theList.open();
+            if (!theList.isLock()) {
+                theList.open();
+            }
         }
     });
 

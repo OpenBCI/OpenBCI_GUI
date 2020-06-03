@@ -247,7 +247,6 @@ public void controlEvent(ControlEvent theEvent) {
     if (theEvent.isFrom("maxFileDuration")) {
         int n = (int)theEvent.getValue();
         settings.setLogFileDurationChoice(n);
-        controlPanel.dataLogBoxCyton.closeDropdown();
         println("ControlPanel: Chosen Recording Duration: " + n);
     }
 
@@ -1698,7 +1697,6 @@ class SessionDataBox {
     int maxDurTextWidth = 82;
     int maxDurText_x = 0;
     String maxDurDropdownName;
-    boolean dropdownWasClicked = false;
 
     SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource) {
         odfModeHeight = bdfModeHeight + 24 + _padding;
@@ -1751,7 +1749,7 @@ class SessionDataBox {
     }
 
     public void update() {
-        openCloseDropdown();
+
     }
 
     public void draw() {
@@ -1779,7 +1777,6 @@ class SessionDataBox {
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
             //Dropdown is drawn at the end of ControlPanel.draw()
             fill(bgColor);
-            rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
@@ -1799,6 +1796,7 @@ class SessionDataBox {
         ScrollableList scrollList = cp5_dataLog_dropdown.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
+            .setBackgroundColor(150)
             /*
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(0))       // text color
@@ -1834,6 +1832,20 @@ class SessionDataBox {
             ;
 
         makeScrollableListBetter(scrollList);
+
+        scrollList.onEnter(new CallbackListener() {
+            public void controlEvent(CallbackEvent event) {
+                lockElements(true);
+            }
+        });
+
+        scrollList.onLeave(new CallbackListener() {
+            public void controlEvent(CallbackEvent event) {
+                ScrollableList theList = (ScrollableList)(event.getController());
+                lockElements(theList.isOpen());
+            }
+        });
+
     }
 
     //Returns: 0 for Cyton, 1 for Ganglion
@@ -1847,32 +1859,6 @@ class SessionDataBox {
 
     public void setToBDFHeight() {
         h = bdfModeHeight;
-    }
-
-    private void openCloseDropdown() {
-        //Close the dropdown if it is open and mouse is no longer over it
-        if (cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
-            if (!cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
-                //println("----Closing dropdown " + maxDurDropdownName);
-                cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
-                lockElements(false);
-            }
-
-        }
-        // Open the dropdown if it's not open, but not if it was recently clicked
-        // Makes sure dropdown stays closed after user selects an option
-        if (!dropdownWasClicked) {
-            if (!cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
-                if (cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
-                    //println("++++Opening dropdown " + maxDurDropdownName);
-                    cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).open();
-                    lockElements(true);
-                }
-            }
-        } else {
-            // This flag is used to gate opening/closing the dropdown
-            dropdownWasClicked = false;
-        }
     }
 
     // True locks elements, False unlocks elements
@@ -1892,12 +1878,6 @@ class SessionDataBox {
             sampleRate200.setIgnoreHover(_toggle);
             sampleRate1600.setIgnoreHover(_toggle);
         }
-    }
-
-    void closeDropdown() {
-        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
-        dropdownWasClicked = true;
-        lockElements(false);
     }
 };
 
@@ -2205,8 +2185,7 @@ class NovaXRBox {
     private int x, y, w, h, padding; //size and position
     private String boxLabel = "NOVAXR CONFIG";
     private String sampleRateLabel = "SAMPLE RATE";
-    private ControlP5 sr_cp5;
-    private ControlP5 mode_cp5;
+    private ControlP5 localCP5;
     private ScrollableList srList;
     private ScrollableList modeList;
 
@@ -2216,34 +2195,20 @@ class NovaXRBox {
         w = _w;
         h = 104;
         padding = _padding;
-        sr_cp5 = new ControlP5(ourApplet);
-        sr_cp5.setGraphics(ourApplet, 0,0);
-        sr_cp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
-        mode_cp5 = new ControlP5(ourApplet);
-        mode_cp5.setGraphics(ourApplet, 0,0);
-        mode_cp5.setAutoDraw(false);
+        localCP5 = new ControlP5(ourApplet);
+        localCP5.setGraphics(ourApplet, 0,0);
+        localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        srList = createDropdown(sr_cp5, "novaXR_SampleRates", NovaXRSR.values());
-        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
-        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
-        modeList = createDropdown(mode_cp5, "novaXR_Modes", NovaXRMode.values());
+        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
         modeList.setPosition(x + padding, y + h - 24 - padding);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
-        
-        
+        srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
+        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
+        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
     }
 
     public void update() {
-
-        //Lock the lower dropdown when top one is in use
-        if (srList.isInside()) {
-            modeList.lock();
-        } else {
-            if (modeList.isLock()) {
-                modeList.unlock();
-            }
-        }
-
+        // nothing
     }
 
     public void draw() {
@@ -2255,14 +2220,7 @@ class NovaXRBox {
         rect(x, y, w, h + modeList.getHeight() - padding*2);
         popStyle();
 
-        //draw lower dropdown first
-        mode_cp5.draw();
-
         pushStyle();
-        fill(boxColor);
-        strokeWeight(0);
-        //draw another grey box behind top dropdown, and above lower dropdown so it looks right
-        rect(x + w - padding*2 - 60*2 - 1, y + 16 + padding*2 - 1, srList.getWidth()+2, srList.getHeight()+2);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
@@ -2273,8 +2231,8 @@ class NovaXRBox {
         text(sampleRateLabel, x + padding, y + padding*2 + 18);
         popStyle();
         
-        //draw upper dropdown last, on top of everything in this box
-        sr_cp5.draw();
+        //draw cp5 last, on top of everything in this box
+        localCP5.draw();
     }
 
     public void mousePressed() {
@@ -2283,14 +2241,15 @@ class NovaXRBox {
     public void mouseReleased() {
     }
 
-    private ScrollableList createDropdown(ControlP5 _cp5, String name, NovaXRSettingsEnum[] enumValues){
-        ScrollableList list = _cp5.addScrollableList(name)
+    private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
+        ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
+            .setBackgroundColor(150)
             .setSize(w - padding*2, 24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2376,7 +2335,6 @@ class SDBox {
     private ControlP5 cp5_sdBox;
     private ScrollableList sdList;
     private int prevY;
-    boolean dropdownWasClicked = false;
 
     SDBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2395,7 +2353,6 @@ class SDBox {
     }
 
     public void update() {
-        openCloseDropdown();
         if (y != prevY) { //When box's absolute y position changes, update cp5
             updatePosition();
             prevY = y;
@@ -2417,7 +2374,6 @@ class SDBox {
 
         pushStyle();
         fill(150);
-        rect(sdList.getPosition()[0]-1, sdList.getPosition()[1]-1, sdList.getWidth()+2, sdList.getHeight()+2);
         popStyle();
         cp5_sdBox.draw();
     }
@@ -2427,6 +2383,7 @@ class SDBox {
         sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
+            .setBackgroundColor(150)
             .setSize(w - padding*2, 2*24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2457,38 +2414,8 @@ class SDBox {
         makeScrollableListBetter(sdList);
     }
 
-    private void openCloseDropdown() {
-        //Close the dropdown if it is open and mouse is no longer over it
-        if (cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).isOpen()){
-            if (!cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
-                //println("----Closing dropdown " + maxDurDropdownName);
-                cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
-            }
-
-        }
-        // Open the dropdown if it's not open, but not if it was recently clicked
-        // Makes sure dropdown stays closed after user selects an option
-        if (!dropdownWasClicked) {
-            if (!cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).isOpen()){
-                if (cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
-                    //println("++++Opening dropdown " + maxDurDropdownName);
-                    cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).open();
-                }
-            }
-        } else {
-            // This flag is used to gate opening/closing the dropdown
-            dropdownWasClicked = false;
-        }
-    }
-
     public void updatePosition() {
         sdList.setPosition(x + padding, y + padding*2 + 14);
-    }
-
-    public void closeDropdown() {
-        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
-        dropdownWasClicked = true;
-        //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
     }
 };
 
