@@ -294,12 +294,10 @@ synchronized void mouseReleased() {
 void makeScrollableListBetter(ScrollableList scrollList) {
     // there's a bug in control p5 where clicking on the scroll list does not
     // open it if you move the mouse while clicking. This fixes that.
-    scrollList.onRelease(new CallbackListener() {
+    scrollList.onEndDrag(new CallbackListener() {
         public void controlEvent(CallbackEvent event) {
             ScrollableList theList = (ScrollableList)(event.getController());
-            if (!theList.isLock()) {
-                theList.open();
-            }
+            theList.setOpen(!theList.isOpen());
         }
     });
 
