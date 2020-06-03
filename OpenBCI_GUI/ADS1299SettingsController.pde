@@ -1,18 +1,18 @@
 
 class ADS1299SettingsController{
 
-    boolean isVisible = false;
-    int x, y, w, h;
+    private boolean isVisible = false;
+    private int x, y, w, h;
 
-    int spaceBetweenButtons = 5; //space between buttons
+    private int spaceBetweenButtons = 5; //space between buttons
 
-    Button_obci[] gainButtons;
-    Button_obci[] inputTypeButtons;
-    Button_obci[] biasButtons;
-    Button_obci[] srb2Buttons;
-    Button_obci[] srb1Buttons;
+    private Button_obci[] gainButtons;
+    private Button_obci[] inputTypeButtons;
+    private Button_obci[] biasButtons;
+    private Button_obci[] srb2Buttons;
+    private Button_obci[] srb1Buttons;
 
-    ADS1299Settings boardSettings;
+    private ADS1299Settings boardSettings;
 
     ADS1299SettingsController(int _x, int _y, int _w, int _h, int _channelBarHeight){
         x = _x;
@@ -33,6 +33,8 @@ class ADS1299SettingsController{
             biasButtons[i].setString(boardSettings.bias[i].getName());
             srb2Buttons[i].setString(boardSettings.srb2[i].getName());
             srb1Buttons[i].setString(boardSettings.srb1[i].getName());
+
+            
         }
     }
 
@@ -52,6 +54,33 @@ class ADS1299SettingsController{
                 biasButtons[i].draw();
                 srb2Buttons[i].draw();
                 srb1Buttons[i].draw();
+
+                // grey out buttons when the channel is not active
+                if (boardSettings.isChannelActive(i)) {
+                    gainButtons[i].setColorNotPressed(colorNotPressed);
+                    inputTypeButtons[i].setColorNotPressed(colorNotPressed);
+                    biasButtons[i].setColorNotPressed(colorNotPressed);
+                    srb2Buttons[i].setColorNotPressed(colorNotPressed);
+                    srb1Buttons[i].setColorNotPressed(colorNotPressed);
+
+                    gainButtons[i].setIgnoreHover(false);
+                    inputTypeButtons[i].setIgnoreHover(false);
+                    biasButtons[i].setIgnoreHover(false);
+                    srb2Buttons[i].setIgnoreHover(false);
+                    srb1Buttons[i].setIgnoreHover(false);
+                } else {
+                    gainButtons[i].setColorNotPressed(color(128));
+                    inputTypeButtons[i].setColorNotPressed(color(128));
+                    biasButtons[i].setColorNotPressed(color(128));
+                    srb2Buttons[i].setColorNotPressed(color(128));
+                    srb1Buttons[i].setColorNotPressed(color(128));
+
+                    gainButtons[i].setIgnoreHover(true);
+                    inputTypeButtons[i].setIgnoreHover(true);
+                    biasButtons[i].setIgnoreHover(true);
+                    srb2Buttons[i].setIgnoreHover(true);
+                    srb1Buttons[i].setIgnoreHover(true);
+                }
             }
 
             //draw column headers for channel settings behind EEG graph
@@ -141,25 +170,30 @@ class ADS1299SettingsController{
     public void mousePressed(){
         if (isVisible) {
             for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
-                if(gainButtons[i].isMouseHere()) {
-                    gainButtons[i].wasPressed = true;
-                    gainButtons[i].isActive = true;                    
-                }
-                if(inputTypeButtons[i].isMouseHere()) {
-                    inputTypeButtons[i].wasPressed = true;
-                    inputTypeButtons[i].isActive = true;                    
-                }
-                if(biasButtons[i].isMouseHere()) {
-                    biasButtons[i].wasPressed = true;
-                    biasButtons[i].isActive = true;                    
-                }
-                if(srb2Buttons[i].isMouseHere()) {
-                    srb2Buttons[i].wasPressed = true;
-                    srb2Buttons[i].isActive = true;                    
-                }
-                if(srb1Buttons[i].isMouseHere()) {
-                    srb1Buttons[i].wasPressed = true;
-                    srb1Buttons[i].isActive = true;                    
+
+                // buttons only work if the channel is active
+                if (boardSettings.isChannelActive(i)) {
+
+                    if(gainButtons[i].isMouseHere()) {
+                        gainButtons[i].wasPressed = true;
+                        gainButtons[i].isActive = true;                    
+                    }
+                    if(inputTypeButtons[i].isMouseHere()) {
+                        inputTypeButtons[i].wasPressed = true;
+                        inputTypeButtons[i].isActive = true;                    
+                    }
+                    if(biasButtons[i].isMouseHere()) {
+                        biasButtons[i].wasPressed = true;
+                        biasButtons[i].isActive = true;                    
+                    }
+                    if(srb2Buttons[i].isMouseHere()) {
+                        srb2Buttons[i].wasPressed = true;
+                        srb2Buttons[i].isActive = true;                    
+                    }
+                    if(srb1Buttons[i].isMouseHere()) {
+                        srb1Buttons[i].wasPressed = true;
+                        srb1Buttons[i].isActive = true;                    
+                    }
                 }
             }
         }
