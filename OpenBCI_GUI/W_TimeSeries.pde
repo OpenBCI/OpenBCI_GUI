@@ -239,12 +239,11 @@ class W_timeSeries extends Widget {
             if (!this.dropdownIsActive) {
                 adsSettingsController.mousePressed();
             }
-        } else {
-            for(int i = 0; i < channelBars.length; i++) {
-                channelBars[i].mousePressed();
-            }
         }
 
+        for(int i = 0; i < channelBars.length; i++) {
+            channelBars[i].mousePressed();
+        }
     }
     
     void mouseReleased() {
@@ -260,10 +259,10 @@ class W_timeSeries extends Widget {
 
         if(adsSettingsController != null && adsSettingsController.isVisible) {
             adsSettingsController.mouseReleased();
-        } else {
-            for(int i = 0; i < channelBars.length; i++) {
-                channelBars[i].mouseReleased();
-            }
+        } 
+        
+        for(int i = 0; i < channelBars.length; i++) {
+            channelBars[i].mouseReleased();
         }
     }
 

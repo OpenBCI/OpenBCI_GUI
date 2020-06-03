@@ -487,10 +487,6 @@ class Button_obci {
         return but_txt;
     }
 
-    public void setCurrentColor(color _color){
-        currentColor = _color;
-    }
-
     public void setColorPressed(color _color) {
         color_pressed = _color;
     }
