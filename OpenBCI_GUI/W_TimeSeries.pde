@@ -300,7 +300,6 @@ void VertScale_TS(int n) {
     for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
     }
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
@@ -325,7 +324,6 @@ void Duration(int n) {
             }
         }
     }
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -335,7 +333,6 @@ void Spillover(int n) {
     } else {
         w_timeSeries.allowSpillover = true;
     }
-    closeAllDropdowns();
 }
 
 

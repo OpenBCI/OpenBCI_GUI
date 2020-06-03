@@ -17,7 +17,6 @@ class Widget{
 
     private int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
-    private boolean dropdownsShouldBeClosed = false;
     protected boolean dropdownIsActive = false;
     private boolean widgetSelectorIsActive = false;
 
@@ -200,35 +199,12 @@ class Widget{
         //auto close dropdowns based on mouse location
         if(cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
             dropdownIsActive = true;
-            if(!cp5_widget.getController("WidgetSelector").isMouseOver()){
-                cp5_widget.get(ScrollableList.class, "WidgetSelector").close();
-            }
+
         }
         for(int i = 0; i < dropdowns.size(); i++){
             if(cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
                 //println("++++++++Mouse is over " + dropdowns.get(i).id);
                 dropdownIsActive = true;
-                if(!cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
-                    cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).close();
-                }
-            }
-        }
-
-        //onHover ... open ... no need to click
-        if(dropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
-            dropdownsShouldBeClosed = false;
-        } else{
-            if(!cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
-                if(cp5_widget.getController("WidgetSelector").isMouseOver()){
-                    cp5_widget.get(ScrollableList.class, "WidgetSelector").open();
-                }
-            }
-            for(int i = 0; i < dropdowns.size(); i++){
-                if(!cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
-                    if(cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
-                        cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).open();
-                    }
-                }
             }
         }
 
@@ -423,13 +399,6 @@ class NavBarDropdown{
 
 }
 
-void closeAllDropdowns(){
-    //close all dropdowns
-    for(int i = 0; i < wm.widgets.size(); i++){
-        wm.widgets.get(i).dropdownsShouldBeClosed = true;
-    }
-}
-
 void WidgetSelector(int n){
     println("New widget [" + n + "] selected for container...");
     //find out if the widget you selected is already active
@@ -451,8 +420,6 @@ void WidgetSelector(int n){
     wm.widgets.get(n).setIsActive(true);//activate the new widget
     wm.widgets.get(n).setContainer(theContainer);//map it to the current container
     //set the text of the widgetSelector to the newly selected widget
-
-    closeAllDropdowns();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

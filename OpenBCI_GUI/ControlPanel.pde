@@ -2159,10 +2159,6 @@ class RecentPlaybackBox {
         recentPlaybackFilesHaveUpdated = true;
     }
 
-    void closeAllDropdowns(){
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").close();
-    }
-
     void createDropdown(String name, List<String> _items){
 
         cp5_recentPlayback_dropdown.addScrollableList(name)

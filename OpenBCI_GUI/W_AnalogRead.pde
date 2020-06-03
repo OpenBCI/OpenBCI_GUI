@@ -201,7 +201,6 @@ void VertScale_AR(int n) {
     for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
             w_analogRead.analogReadBars[i].adjustVertScale(w_analogRead.yLimOptions[n]);
     }
-    //closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -218,7 +217,6 @@ void Duration_AR(int n) {
             w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
         }
     }
-    //closeAllDropdowns();
 }
 
 //========================================================================================================================

@@ -2184,7 +2184,6 @@ void Protocol(int protocolIndex) {
     println("Networking: Protocol mode set to " + w_networking.protocolMode + ". Stopping network");
     w_networking.screenResized();
     w_networking.showCP5();
-    closeAllDropdowns();
     if (!w_networking.networkActive) {
         w_networking.turnOffButton();
     }

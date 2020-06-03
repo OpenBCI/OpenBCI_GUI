@@ -261,7 +261,6 @@ class W_Accelerometer extends Widget {
 void accelVertScale(int n) {
     settings.accVertScaleSave = n;
     w_accelerometer.accelerometerBar.adjustVertScale(w_accelerometer.yLimOptions[n]);
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
@@ -275,7 +274,6 @@ void accelDuration(int n) {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(w_accelerometer.xLimOptions[n]);
     }
-    closeAllDropdowns();
 }
 
 //========================================================================================================================

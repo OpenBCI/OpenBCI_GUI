@@ -48,7 +48,6 @@ void SmoothEMG(int n){
         }
     }
     settings.emgSmoothingSave = n;
-    closeAllDropdowns();
 }
 
 void uVLimit(int n){
@@ -67,7 +66,6 @@ void uVLimit(int n){
         }
     }
     settings.emguVLimSave = n;
-    closeAllDropdowns();
 }
 
 void CreepSpeed(int n){
@@ -89,7 +87,6 @@ void CreepSpeed(int n){
         }
     }
     settings.emgCreepSave = n;
-    closeAllDropdowns();
 }
 
 void minUVRange(int n){
@@ -108,7 +105,6 @@ void minUVRange(int n){
         }
     }
     settings.emgMinDeltauVSave = n;
-    closeAllDropdowns();
 }
 
 class W_emg extends Widget {
@@ -1304,21 +1300,17 @@ class W_emg extends Widget {
 
 void ChannelSelection(int n) {
     w_emg.currChannel = n;
-    closeAllDropdowns();
 }
 
 void EventType(int n) {
     if (n == 0) w_emg.events[w_emg.currChannel] = true;
     else if (n == 1) w_emg.events[w_emg.currChannel] = false;
-    closeAllDropdowns();
 }
 
 void BaudRate(int n) {
     if (!w_emg.baudList.get(n).equals("NONE")) w_emg.theBaud = Integer.parseInt(w_emg.baudList.get(n));
-    closeAllDropdowns();
 }
 
 void SerialSelection(int n) {
     if (!w_emg.serList.get(n).equals("NONE")) w_emg.theSerial = w_emg.serList.get(n);
-    closeAllDropdowns();
 }
