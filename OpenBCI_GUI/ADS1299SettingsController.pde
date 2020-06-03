@@ -34,7 +34,32 @@ class ADS1299SettingsController{
             srb2Buttons[i].setString(boardSettings.srb2[i].getName());
             srb1Buttons[i].setString(boardSettings.srb1[i].getName());
 
-            
+            // grey out buttons when the channel is not active
+            if (boardSettings.isChannelActive(i)) {
+                gainButtons[i].setColorNotPressed(colorNotPressed);
+                inputTypeButtons[i].setColorNotPressed(colorNotPressed);
+                biasButtons[i].setColorNotPressed(colorNotPressed);
+                srb2Buttons[i].setColorNotPressed(colorNotPressed);
+                srb1Buttons[i].setColorNotPressed(colorNotPressed);
+
+                gainButtons[i].setIgnoreHover(false);
+                inputTypeButtons[i].setIgnoreHover(false);
+                biasButtons[i].setIgnoreHover(false);
+                srb2Buttons[i].setIgnoreHover(false);
+                srb1Buttons[i].setIgnoreHover(false);
+            } else {
+                gainButtons[i].setColorNotPressed(color(128));
+                inputTypeButtons[i].setColorNotPressed(color(128));
+                biasButtons[i].setColorNotPressed(color(128));
+                srb2Buttons[i].setColorNotPressed(color(128));
+                srb1Buttons[i].setColorNotPressed(color(128));
+
+                gainButtons[i].setIgnoreHover(true);
+                inputTypeButtons[i].setIgnoreHover(true);
+                biasButtons[i].setIgnoreHover(true);
+                srb2Buttons[i].setIgnoreHover(true);
+                srb1Buttons[i].setIgnoreHover(true);
+            }
         }
     }
 
@@ -54,33 +79,6 @@ class ADS1299SettingsController{
                 biasButtons[i].draw();
                 srb2Buttons[i].draw();
                 srb1Buttons[i].draw();
-
-                // grey out buttons when the channel is not active
-                if (boardSettings.isChannelActive(i)) {
-                    gainButtons[i].setColorNotPressed(colorNotPressed);
-                    inputTypeButtons[i].setColorNotPressed(colorNotPressed);
-                    biasButtons[i].setColorNotPressed(colorNotPressed);
-                    srb2Buttons[i].setColorNotPressed(colorNotPressed);
-                    srb1Buttons[i].setColorNotPressed(colorNotPressed);
-
-                    gainButtons[i].setIgnoreHover(false);
-                    inputTypeButtons[i].setIgnoreHover(false);
-                    biasButtons[i].setIgnoreHover(false);
-                    srb2Buttons[i].setIgnoreHover(false);
-                    srb1Buttons[i].setIgnoreHover(false);
-                } else {
-                    gainButtons[i].setColorNotPressed(color(128));
-                    inputTypeButtons[i].setColorNotPressed(color(128));
-                    biasButtons[i].setColorNotPressed(color(128));
-                    srb2Buttons[i].setColorNotPressed(color(128));
-                    srb1Buttons[i].setColorNotPressed(color(128));
-
-                    gainButtons[i].setIgnoreHover(true);
-                    inputTypeButtons[i].setIgnoreHover(true);
-                    biasButtons[i].setIgnoreHover(true);
-                    srb2Buttons[i].setIgnoreHover(true);
-                    srb1Buttons[i].setIgnoreHover(true);
-                }
             }
 
             //draw column headers for channel settings behind EEG graph
