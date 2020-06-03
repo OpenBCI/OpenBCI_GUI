@@ -102,7 +102,7 @@ class Widget{
         //////////////////////////////////////////////////////////////////////////////////////////////////////
 
         cp5_widget.setColor(settings.dropdownColors);
-        cp5_widget.addScrollableList("WidgetSelector")
+        ScrollableList scrollList = cp5_widget.addScrollableList("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
@@ -114,8 +114,8 @@ class Widget{
             .setItemHeight(navH-4) //height of all item/dropdown bars
             .addItems(_widgetOptions) // used to be .addItems(maxFreqList)
             ;
-        cp5_widget.getController("WidgetSelector")
-            .getCaptionLabel() //the caption label is the text object in the primary bar
+        
+        scrollList.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(widgetTitle)
             .setFont(h4)
@@ -123,15 +123,32 @@ class Widget{
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        cp5_widget.getController("WidgetSelector")
-            .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+        
+        scrollList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(widgetTitle)
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
-            ;
+            ;        
+
+        // there's a bug in control p5 where clicking on the scroll list does not
+        // open it if you move the mouse while clicking. This fixes that.
+        scrollList.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent event) {
+                ScrollableList theList = (ScrollableList)(event.getController());
+                theList.open();
+            }
+        });
+
+        // close the dropdown if the mouse leaves it.
+        scrollList.onLeave(new CallbackListener() {
+            public void controlEvent(CallbackEvent event) {
+                ScrollableList theList = (ScrollableList)(event.getController());
+                theList.close();
+            }
+        });
     }
 
     public void setupNavDropdowns(){
@@ -158,7 +175,7 @@ class Widget{
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
-            cp5_widget.addScrollableList(dropdowns.get(i).id)
+            ScrollableList scrollList = cp5_widget.addScrollableList(dropdowns.get(i).id)
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
@@ -168,22 +185,39 @@ class Widget{
                 .setItemHeight(navH-4)
                 .addItems(dropdowns.get(i).items) // used to be .addItems(maxFreqList)
                 ;
-            cp5_widget.getController(dropdowns.get(i).id)
-                .getCaptionLabel()
+                
+            scrollList.getCaptionLabel()
                 .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
                 .setText(dropdowns.get(i).returnDefaultAsString())
                 .setSize(12)
                 .getStyle()
                 .setPaddingTop(4)
                 ;
-            cp5_widget.getController(dropdowns.get(i).id)
-                .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+
+            scrollList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
                 .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
                 .setText(widgetTitle)
                 .setSize(12) //set the font size of the item bars to 14pt
                 .getStyle() //need to grab style before affecting the paddingTop
                 .setPaddingTop(3) //4-pixel vertical offset to center text
-                ;
+                ;   
+
+            // there's a bug in control p5 where clicking on the scroll list does not
+            // open it if you move the mouse while clicking. This fixes that.
+            scrollList.onRelease(new CallbackListener() {
+                public void controlEvent(CallbackEvent event) {
+                    ScrollableList theList = (ScrollableList)(event.getController());
+                    theList.open();
+                }
+            });
+
+            // close the dropdown if the mouse leaves it.
+            scrollList.onLeave(new CallbackListener() {
+                public void controlEvent(CallbackEvent event) {
+                    ScrollableList theList = (ScrollableList)(event.getController());
+                    theList.close();
+                }
+            });
         }
     }
     private void updateDropdowns(){
