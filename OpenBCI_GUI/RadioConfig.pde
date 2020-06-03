@@ -16,6 +16,7 @@
 class RadioConfig {
 
     private Serial serial_direct_board;
+    private final int NUM_RADIO_CHAN = 26;
     private String rcStringReceived = "";
     private boolean autoscanPressed = false;
     private boolean overridePressed = false;
@@ -34,7 +35,7 @@ class RadioConfig {
                 return;
             }
         }
-        for(int i = 1; i < 26; i++){
+        for(int i = 1; i < NUM_RADIO_CHAN; i++){
             set_channel_over(rcConfig,i);
             system_status(rcConfig);
             if (board_message != null && board_message.toString().toLowerCase().contains("success")) {
