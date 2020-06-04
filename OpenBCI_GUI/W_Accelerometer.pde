@@ -78,7 +78,7 @@ class W_Accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
-        String accelButtonText = (currentBoard instanceof BoardGanglion) ? "Turn Accel. Off" : "Turn Accel. On";
+        String accelButtonText = accelBoard.isAccelerometerActive() ? "Turn Accel. Off" : "Turn Accel. On";
         accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, accelButtonText, 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p5,12);
@@ -123,6 +123,9 @@ class W_Accelerometer extends Widget {
             //update the current Accelerometer values
             lastAccelVals = accelerometerBar.getLastAccelVals();
         }
+
+        String accelMode = accelBoard.isAccelerometerActive() ? "Turn Accel. Off" : "Turn Accel. On";
+        accelModeButton.setString(accelMode);
     }
 
     public float getLastAccelVal(int val) {
@@ -206,10 +209,8 @@ class W_Accelerometer extends Widget {
             if (!accelBoard.isAccelerometerActive()) {
                 accelBoard.setAccelerometerActive(true);
                 output("Starting to read accelerometer");
-                accelModeButton.setString("Turn Accel. Off");
             } else {                    
                 accelBoard.setAccelerometerActive(false);
-                accelModeButton.setString("Turn Accel. On");
             }
         }
         accelModeButton.setIsActive(false);
