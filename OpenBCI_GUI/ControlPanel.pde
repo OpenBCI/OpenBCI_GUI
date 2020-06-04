@@ -1497,7 +1497,8 @@ class BLEBox {
 };
 
 class WifiBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private boolean wifiIsRefreshing = false;
 
     WifiBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1578,12 +1579,11 @@ class WifiBox {
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
 
-            if(selectedProtocol == BoardProtocol.WIFI){
+            if (wifiIsRefreshing){
+                //Display spinning cog gif
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
-                refreshWifi.setString("SEARCHING...");
             } else {
-                refreshWifi.setString("START SEARCH");
-
+                //Draw small grey circle
                 pushStyle();
                 fill(#999999);
                 ellipseMode(CENTER);
@@ -1598,6 +1598,8 @@ class WifiBox {
         wifiList.items.clear();
         Thread thread = new Thread(){
             public void run() {
+                refreshWifi.setString("SEARCHING...");
+                wifiIsRefreshing = true;
                 try {
                     List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
                     if (devices.isEmpty ()) {
@@ -1611,6 +1613,8 @@ class WifiBox {
                     println("Exception in wifi shield scanning");
                     e.printStackTrace ();
                 }
+                refreshWifi.setString("START SEARCH");
+                wifiIsRefreshing = false;
             }
         };
         thread.start();
