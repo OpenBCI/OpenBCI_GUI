@@ -7,6 +7,7 @@
 * Improved Playback Mode and Time Series
 * Refactored GUI data flow
 * Add Travis and Appveyor CI tests and builds for all OS
+* Cyton Port manual selection only displays serial ports with a dongle connected.
 
 ### Bug Fixes
 * Remove OpenBCI Hub #665 #669 #708
