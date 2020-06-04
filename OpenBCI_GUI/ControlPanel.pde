@@ -631,47 +631,6 @@ class ControlPanel {
         serialList.updateMenu();
     }
 
-    private void refreshPortListGanglion() {
-        output("BLE Devices Refreshing");
-        bleList.items.clear();
-        final String comPort = getBLED112Port();
-        if (comPort != null) {
-            Thread thread = new Thread(){
-                public void run(){
-                    try {
-                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                        {
-                            bleList.addItem(makeItem(entry.getKey()));
-                            bleList.updateMenu();
-                        }
-                    } catch (GanglionError e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            thread.start();
-        } else {
-            outputError("No BLED112 Dongle Found");
-        }
-    }
-
-    private String getBLED112Port() {
-        String name = "Low Energy Dongle";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
-                return found;
-            }
-        }
-        return null;
-    }
-
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
@@ -1010,7 +969,7 @@ class ControlPanel {
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            refreshPortListGanglion();
+            bleBox.refreshGanglionBLEList();
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1038,7 +997,7 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
-            refreshPortListGanglion();
+            bleBox.refreshGanglionBLEList();
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
@@ -1464,7 +1423,8 @@ class ComPortBox {
 };
 
 class BLEBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private boolean bleIsRefreshing = false;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1492,7 +1452,68 @@ class BLEBox {
         text("BLE DEVICES", x + padding, y + padding);
         popStyle();
 
+        if (bleIsRefreshing) {
+            //Display spinning cog gif
+            image(loadingGIF_blue, w + 225,  refreshBLE.but_y + 4, 20, 20);
+        } else {
+            //Draw small grey circle
+            pushStyle();
+            fill(#999999);
+            ellipseMode(CENTER);
+            ellipse(w + 225 + 10, refreshBLE.but_y + 12, 12, 12);
+            popStyle();
+        }
+
         refreshBLE.draw();
+    }
+
+    public void mousePressed() {
+        
+    }
+
+    public void refreshGanglionBLEList() {
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        final String comPort = getBLED112Port();
+        if (comPort != null) {
+            Thread thread = new Thread(){
+                public void run(){
+                    refreshBLE.setString("SEARCHING...");
+                    bleIsRefreshing = true;
+                    try {
+                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(makeItem(entry.getKey()));
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
+                    refreshBLE.setString("START SEARCH");
+                    bleIsRefreshing = false;
+                }
+            };
+            thread.start();
+        } else {
+            outputError("No BLED112 Dongle Found");
+        }
+    }
+
+    public String getBLED112Port() {
+        String name = "Low Energy Dongle";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
+                return found;
+            }
+        }
+        return null;
     }
 };
 
