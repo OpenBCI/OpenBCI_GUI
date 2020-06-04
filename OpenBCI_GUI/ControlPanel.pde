@@ -163,7 +163,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     if (theEvent.isFrom("serialList")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        openBCI_portName = (String)bob.get("headline");
+        openBCI_portName = (String)bob.get("subline");
         output("OpenBCI Port Name = " + openBCI_portName);
     }
 
@@ -1378,7 +1378,7 @@ class ComPortBox {
                 String name = "FT231X USB UART";
                 LinkedList<String> comPorts = getCytonComPorts();
                 for (String comPort : comPorts) {
-                    serialList.addItem(makeItem(comPort));
+                    serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
                 }
                 serialList.updateMenu();
 
