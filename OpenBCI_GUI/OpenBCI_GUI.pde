@@ -517,11 +517,10 @@ void initSystem() {
                 currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
             }
             else {
-                // todo[brainflow] temp hardcode
                 String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
                 String ganglionMac = BLEMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionBLE(controlPanel.getBLED112Port(), ganglionMac);
+                currentBoard = new BoardGanglionBLE(controlPanel.bleBox.getBLED112Port(), ganglionMac);
             }
             break;
         case DATASOURCE_NOVAXR:
