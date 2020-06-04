@@ -252,6 +252,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
+    public boolean canDeactivateAccelerometer() {
+        return false;
+    }
+
+    @Override
     public int[] getAccelerometerChannels() {
         if (underlyingBoard instanceof AccelerometerCapableBoard) {
             return ((AccelerometerCapableBoard)underlyingBoard).getAccelerometerChannels();
@@ -271,6 +276,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
+    public boolean canDeactivateAnalog() {
+        return false;
+    }
+
+    @Override
     public int[] getAnalogChannels() {
         if (underlyingBoard instanceof AnalogCapableBoard) {
             return ((AnalogCapableBoard)underlyingBoard).getAnalogChannels();
@@ -287,6 +297,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     @Override
     public void setDigitalActive(boolean active) {
         // nothing
+    }
+
+    @Override
+    public boolean canDeactivateDigital() {
+        return false;
     }
 
     @Override
