@@ -1462,7 +1462,7 @@ class BLEBox {
         
     }
 
-    private void refreshPortListGanglion() {
+    private void refreshGanglionBLEList() {
         output("BLE Devices Refreshing");
         bleList.items.clear();
         
