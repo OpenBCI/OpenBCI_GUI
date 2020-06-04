@@ -1375,7 +1375,6 @@ class ComPortBox {
             public void run(){
                 refreshPort.setString("SEARCHING...");
 
-                String name = "FT231X USB UART";
                 LinkedList<String> comPorts = getCytonComPorts();
                 for (String comPort : comPorts) {
                     serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
