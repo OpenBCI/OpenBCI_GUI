@@ -1395,7 +1395,7 @@ class ComPortBox {
         LinkedList<String> results = new LinkedList<String>();
         for (int i = 0; i < comPorts.length; i++) {
             if (comPorts[i].toString().equals(name)) {
-                String found = "";
+                String found = "(Cyton) ";
                 if (isMac() || isLinux()) found += "/dev/";
                 found += comPorts[i].getSystemPortName().toString();
                 println("ControlPanel: Found Cyton Dongle on COM port: " + found);
