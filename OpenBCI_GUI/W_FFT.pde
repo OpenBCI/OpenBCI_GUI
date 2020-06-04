@@ -176,7 +176,6 @@ void MaxFreq(int n) {
     /* request the selected item based on index n */
     w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
     settings.fftMaxFrqSave = n; //save the xLim to variable for save/load settings
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the VertScale Dropdown
@@ -184,7 +183,6 @@ void VertScale(int n) {
 
     w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
     settings.fftMaxuVSave = n; //save the yLim to variable for save/load settings
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -198,7 +196,6 @@ void LogLin(int n) {
         //store the current setting to save
         settings.fftLogLinSave = 1;
     }
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the Smoothing Dropdown
@@ -208,7 +205,6 @@ void Smoothing(int n) {
     //since this function is called by both the BandPower and FFT Widgets the dropdown needs to be updated in both
     w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(settings.fftSmoothingArray[n]);
     w_bandPower.cp5_widget.getController("Smoothing").getCaptionLabel().setText(settings.fftSmoothingArray[n]);
-    closeAllDropdowns();
 
 }
 
@@ -225,5 +221,4 @@ void UnfiltFilt(int n) {
     //since this function is called by both the BandPower and FFT Widgets the dropdown needs to be updated in both
     w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(settings.fftFilterArray[n]);
     w_bandPower.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(settings.fftFilterArray[n]);
-    closeAllDropdowns();
 }

@@ -105,16 +105,12 @@ void Dropdown1(int n){
     } else if(n==1){
         //do this instead
     }
-
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
 void Dropdown2(int n){
     println("Item " + (n+1) + " selected from Dropdown 2");
-    closeAllDropdowns();
 }
 
 void Dropdown3(int n){
     println("Item " + (n+1) + " selected from Dropdown 3");
-    closeAllDropdowns();
 }

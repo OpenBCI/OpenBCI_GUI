@@ -147,7 +147,6 @@ void Duration_NovaAux(int n) {
             w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[n]);
         }
     }
-    //closeAllDropdowns();
 }
 
 //========================================================================================================================
