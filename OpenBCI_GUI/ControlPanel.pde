@@ -301,9 +301,6 @@ class ControlPanel {
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
 
-    //Check if the number of serial ports changes
-    private int numSerialPorts = 0;
-
     //Track Dynamic and Static WiFi mode in Control Panel
     final public String WIFI_DYNAMIC = "dynamic";
     final public String WIFI_STATIC = "static";
@@ -402,15 +399,6 @@ class ControlPanel {
                 cp5.hide();
                 cp5Popup.hide();
             }
-        }
-
-        //auto-update Cyton port list
-        if(eegDataSource == DATASOURCE_CYTON && 
-            SerialPort.getCommPorts().length != numSerialPorts && 
-            systemMode != SYSTEMMODE_POSTINIT) {
-            println("Auto-Refreshing Cyton Port List...");
-            refreshPortListCyton();
-            numSerialPorts = SerialPort.getCommPorts().length;
         }
 
         //update all boxes if they need to be
@@ -613,18 +601,29 @@ class ControlPanel {
     
     private void refreshPortListCyton(){
         comPortBox.serialList.items.clear();
-        String name = "FT231X USB UART";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                comPortBox.serialList.addItem(makeItem(found));
+
+        Thread thread = new Thread(){
+            public void run(){
+                refreshPort.setString("SEARCHING...");
+
+                String name = "FT231X USB UART";
+                SerialPort[] comPorts = SerialPort.getCommPorts();
+                for (int i = 0; i < comPorts.length; i++) {
+                    if (comPorts[i].toString().equals(name)) {
+                        String found = "";
+                        if (isMac() || isLinux()) found += "/dev/";
+                        found += comPorts[i].getSystemPortName().toString();
+                        println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                        comPortBox.serialList.addItem(makeItem(found));
+                    }
+                }
+                comPortBox.serialList.updateMenu();
+
+                refreshPort.setString("REFRESH LIST");
             }
-        }
-        comPortBox.serialList.updateMenu();
+        };
+
+        thread.start();
     }
 
     public void hideAllBoxes() {
@@ -959,7 +958,6 @@ class ControlPanel {
 
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
-            output("Serial/COM List Refreshed");
             refreshPortListCyton();
         }
 
@@ -996,7 +994,6 @@ class ControlPanel {
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-            println("protocolWifiGanglion");
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
@@ -1008,6 +1005,7 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.SERIAL;
+            refreshPortListCyton();
         }
 
         if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
@@ -1350,9 +1348,9 @@ class SerialBox {
 
     public void attemptAutoConnectCyton() {
         println("ControlPanel: Attempting to Auto-Connect to Cyton");
-        String comPort = getCytonComPort();
-        if (comPort != null) {
-            openBCI_portName = comPort;
+        LinkedList<String> comPorts = getCytonComPorts();
+        if (!comPorts.isEmpty()) {
+            openBCI_portName = comPorts.getFirst();
             if (cytonRadioCfg.system_status()) {
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
@@ -1360,20 +1358,22 @@ class SerialBox {
         }
     }
 
-    private String getCytonComPort() {
-        String name = "FT231X USB UART";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
+    private LinkedList<String> getCytonComPorts() {
+        final String name = "FT231X USB UART";
+        final SerialPort[] comPorts = SerialPort.getCommPorts();
+        LinkedList<String> results = new LinkedList<String>();
         for (int i = 0; i < comPorts.length; i++) {
             if (comPorts[i].toString().equals(name)) {
                 String found = "";
                 if (isMac() || isLinux()) found += "/dev/";
                 found += comPorts[i].getSystemPortName().toString();
                 println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                return found;
+                results.add(found);
             }
         }
-        return null;
-    }    
+
+        return results;
+    }  
 };
 
 class ComPortBox {
