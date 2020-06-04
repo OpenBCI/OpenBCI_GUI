@@ -55,16 +55,10 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
 MenuList sourceList;
 
 //Global buttons and elements for the control panel (changed within the classes below)
-MenuList serialList;
-String[] serialPorts = new String[Serial.list().length];
-
 MenuList bleList;
 MenuList wifiList;
-
 MenuList sdTimes;
-
 MenuList channelList;
-
 MenuList pollList;
 
 color boxColor = color(200);
@@ -205,10 +199,10 @@ public void controlEvent(ControlEvent theEvent) {
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
         if (setChannel.wasPressed) {
-            set_channel(rcBox, setChannelInt);
+            rcBox.setChannel(setChannelInt);
             setChannel.wasPressed = false;
         } else if(ovrChannel.wasPressed) {
-            set_channel_over(rcBox, setChannelInt);
+            rcBox.setChannelOverride(setChannelInt);
             ovrChannel.wasPressed = false;
         }
     }
@@ -308,6 +302,9 @@ class ControlPanel {
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
 
+    //Check if the number of serial ports changes
+    private int numSerialPorts = 0;
+
     //Track Dynamic and Static WiFi mode in Control Panel
     final public String WIFI_DYNAMIC = "dynamic";
     final public String WIFI_STATIC = "static";
@@ -371,7 +368,7 @@ class ControlPanel {
     }
 
     public void resetListItems(){
-        serialList.activeItem = -1;
+        comPortBox.serialList.activeItem = -1;
         bleList.activeItem = -1;
         wifiList.activeItem = -1;
     }
@@ -408,10 +405,13 @@ class ControlPanel {
             }
         }
 
-        //auto-update serial list
-        if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
-            println("Refreshing port list...");
+        //auto-update Cyton port list
+        if(eegDataSource == DATASOURCE_CYTON && 
+            SerialPort.getCommPorts().length != numSerialPorts && 
+            systemMode != SYSTEMMODE_POSTINIT) {
+            println("Auto-Refreshing Cyton Port List...");
             refreshPortListCyton();
+            numSerialPorts = SerialPort.getCommPorts().length;
         }
 
         //update all boxes if they need to be
@@ -435,7 +435,6 @@ class ControlPanel {
         initBox.update();
 
         channelPopup.update();
-        serialList.updateMenu();
         bleList.updateMenu();
         wifiList.updateMenu();
         dataLogBoxGanglion.update();
@@ -480,18 +479,16 @@ class ControlPanel {
                         if (rcBox.isShowing) {
                             comPortBox.draw();
                             rcBox.draw();
-                            cp5.get(MenuList.class, "serialList").setVisible(true);
+                            comPortBox.serialList.setVisible(true);
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-                                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -525,7 +522,7 @@ class ControlPanel {
                 sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
-                cp5.get(MenuList.class, "serialList").setVisible(false);
+                comPortBox.serialList.setVisible(false);
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
@@ -610,25 +607,25 @@ class ControlPanel {
         cp5Popup.hide(); // make sure to hide the controlP5 object
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-        cp5.get(MenuList.class, "serialList").setVisible(false);
-        // cp5Popup.hide(); // make sure to hide the controlP5 object
+        comPortBox.serialList.setVisible(false);
         popOutRadioConfigButton.setString("Manual >");
-        rcBox.print_onscreen("");
-        if (serial_direct_board != null) {
-            serial_direct_board.stop();
-        }
-        serial_direct_board = null;
+        rcBox.closeSerialPort();
     }
-
+    
     private void refreshPortListCyton(){
-        serialPorts = new String[Serial.list().length];
-        serialPorts = Serial.list();
-        serialList.items.clear();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
+        comPortBox.serialList.items.clear();
+        String name = "FT231X USB UART";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                comPortBox.serialList.addItem(makeItem(found));
+            }
         }
-        serialList.updateMenu();
+        comPortBox.serialList.updateMenu();
     }
 
     private void refreshPortListGanglion() {
@@ -677,7 +674,7 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
-        cp5.get(MenuList.class, "serialList").setVisible(false);
+        comPortBox.serialList.setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
@@ -958,8 +955,7 @@ class ControlPanel {
 
         if (rcBox.isShowing) {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
-                // if(serial_direct_board != null) // Radios_Config will handle creating the serial port JAM 1/2017
-                get_channel(rcBox);
+                rcBox.getChannel();
                 getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
                 hideChannelListCP();
@@ -980,14 +976,14 @@ class ControlPanel {
             }
 
             if(autoscan.isMouseHere() && autoscan.wasPressed){
+                rcBox.scanChannels();
                 autoscan.wasPressed = false;
                 autoscan.setIsActive(false);
-                scan_channels(rcBox);
                 hideChannelListCP();
             }
 
             if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-                system_status(rcBox);
+                rcBox.getSystemStatus();
                 systemStatus.setIsActive(false);
                 systemStatus.wasPressed = false;
                 hideChannelListCP();
@@ -1357,6 +1353,7 @@ class DataSourceBox {
 class SerialBox {
     int x, y, w, h, padding; //size and position
     Button_obci autoConnect;
+    RadioConfig cytonRadioCfg;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1364,6 +1361,7 @@ class SerialBox {
         w = _w;
         h = 70;
         padding = _padding;
+        cytonRadioCfg = new RadioConfig();
 
         autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
@@ -1397,9 +1395,7 @@ class SerialBox {
         String comPort = getCytonComPort();
         if (comPort != null) {
             openBCI_portName = comPort;
-            if (system_status()) {
-                serial_direct_board.stop(); //Stop serial port connection
-                serial_direct_board = null;
+            if (cytonRadioCfg.system_status()) {
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
@@ -1423,8 +1419,9 @@ class SerialBox {
 };
 
 class ComPortBox {
-    int x, y, w, h, padding; //size and position
-    boolean isShowing;
+    private int x, y, w, h, padding; //size and position
+    public boolean isShowing;
+    public MenuList serialList;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1436,16 +1433,11 @@ class ComPortBox {
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
-        // println(w-padding*2);
         serialList.setPosition(x + padding, y + padding*3 + 8);
-        serialPorts = Serial.list();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
-        }
     }
 
     public void update() {
+        serialList.updateMenu();
     }
 
     public void draw() {
@@ -2490,10 +2482,12 @@ class SDBox {
 
 
 class RadioConfigBox {
-    int x, y, w, h, padding; //size and position
-    String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
-    String last_message = initial_message;
+    private int x, y, w, h, padding; //size and position
+    private String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    private String last_message = initial_message;
     public boolean isShowing;
+    private RadioConfig cytonRadioCfg;
+    private int linuxPadding = isLinux() ? -5 : 0;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -2502,12 +2496,14 @@ class RadioConfigBox {
         h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
+        cytonRadioCfg = new RadioConfig();
 
-        //typical button height + 20 for larger autoscan button
+        //typical button height + 20 for larger autoscan button, full box width minus padding
         autoscan = new Button_obci(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
-        //smaller buttons below autoscan
-        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        //smaller buttons below autoscan - left column
+        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*4)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*4)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        //right column
         setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
         ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
         
@@ -2530,7 +2526,7 @@ class RadioConfigBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RADIO CONFIGURATION", x + padding, y + padding);
+        text("RADIO CONFIGURATION", x + padding, y + padding + linuxPadding);
         popStyle();
         getChannel.draw();
         setChannel.draw();
@@ -2544,11 +2540,36 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
+        rect(x + padding, y + (padding*7) + 33 + (24*2), w-(padding*2), 135 - 21); //13 + 20 = 33 for larger autoscan
         fill(255);
         textFont(h3, 15);
-        text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
+        text(localstring, x + padding + 5, y + (padding*7) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 -15); //15 + 20 = 35
         this.last_message = localstring;
+    }
+
+    public void getChannel() {
+        cytonRadioCfg.get_channel(RadioConfigBox.this);
+    }
+
+    public void setChannel(int val) {
+        cytonRadioCfg.set_channel(RadioConfigBox.this, val);
+    }
+
+    public void setChannelOverride(int val) {
+        cytonRadioCfg.set_channel_over(RadioConfigBox.this, val);
+    }
+
+    public void scanChannels() {
+        cytonRadioCfg.scan_channels(RadioConfigBox.this);
+    }
+
+    public void getSystemStatus() {
+        cytonRadioCfg.system_status(RadioConfigBox.this);
+    }
+
+    public void closeSerialPort() {
+        print_onscreen("");
+        cytonRadioCfg.closeSerialPort();
     }
 };
 
