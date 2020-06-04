@@ -228,9 +228,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         if(active) {
             setBoardMode(CytonBoardMode.DEFAULT);
         }
-        else {
-            setBoardMode(CytonBoardMode.ANALOG);
-        }
+        // no way of turning off accel.
     }
 
     @Override
