@@ -627,49 +627,6 @@ class ControlPanel {
         comPortBox.serialList.updateMenu();
     }
 
-    private void refreshPortListGanglion() {
-        output("BLE Devices Refreshing");
-        bleList.items.clear();
-        
-        Thread thread = new Thread(){
-            public void run(){
-                final String comPort = getBLED112Port();
-                if (comPort != null) {
-                    try {
-                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                        {
-                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
-                            bleList.updateMenu();
-                        }
-                    } catch (GanglionError e)
-                    {
-                        e.printStackTrace();
-                    }
-                } else {
-                    outputError("No BLED112 Dongle Found");
-                }
-            }
-        };
-
-        thread.start();
-    }
-
-    private String getBLED112Port() {
-        String name = "Low Energy Dongle";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
-                return found;
-            }
-        }
-        return null;
-    }
-
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
@@ -1007,7 +964,7 @@ class ControlPanel {
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            refreshPortListGanglion();
+            bleBox.refreshGanglionBLEList();
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1035,7 +992,7 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
-            refreshPortListGanglion();
+            bleBox.refreshGanglionBLEList();
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
@@ -1457,7 +1414,8 @@ class ComPortBox {
 };
 
 class BLEBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private boolean bleIsRefreshing = false;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1485,12 +1443,72 @@ class BLEBox {
         text("BLE DEVICES", x + padding, y + padding);
         popStyle();
 
+        if (bleIsRefreshing) {
+            //Display spinning cog gif
+            image(loadingGIF_blue, w + 225,  refreshBLE.but_y + 4, 20, 20);
+        } else {
+            //Draw small grey circle
+            pushStyle();
+            fill(#999999);
+            ellipseMode(CENTER);
+            ellipse(w + 225 + 10, refreshBLE.but_y + 12, 12, 12);
+            popStyle();
+        }
+
         refreshBLE.draw();
+    }
+
+    public void mousePressed() {
+        
+    }
+
+    private void refreshPortListGanglion() {
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        
+        Thread thread = new Thread(){
+            public void run(){
+                final String comPort = getBLED112Port();
+                if (comPort != null) {
+                    try {
+                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
+                } else {
+                    outputError("No BLED112 Dongle Found");
+                }
+            }
+        };
+
+        thread.start();
+    }
+
+    public String getBLED112Port() {
+        String name = "Low Energy Dongle";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
+                return found;
+            }
+        }
+        return null;
     }
 };
 
 class WifiBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private boolean wifiIsRefreshing = false;
 
     WifiBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1571,12 +1589,11 @@ class WifiBox {
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
 
-            if(selectedProtocol == BoardProtocol.WIFI){
+            if (wifiIsRefreshing){
+                //Display spinning cog gif
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
-                refreshWifi.setString("SEARCHING...");
             } else {
-                refreshWifi.setString("START SEARCH");
-
+                //Draw small grey circle
                 pushStyle();
                 fill(#999999);
                 ellipseMode(CENTER);
@@ -1591,6 +1608,8 @@ class WifiBox {
         wifiList.items.clear();
         Thread thread = new Thread(){
             public void run() {
+                refreshWifi.setString("SEARCHING...");
+                wifiIsRefreshing = true;
                 try {
                     List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
                     if (devices.isEmpty ()) {
@@ -1604,6 +1623,8 @@ class WifiBox {
                     println("Exception in wifi shield scanning");
                     e.printStackTrace ();
                 }
+                refreshWifi.setString("START SEARCH");
+                wifiIsRefreshing = false;
             }
         };
         thread.start();
