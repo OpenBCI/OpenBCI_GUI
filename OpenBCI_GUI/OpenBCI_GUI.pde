@@ -491,12 +491,10 @@ void initSystem() {
         case DATASOURCE_CYTON:
             if (selectedProtocol == BoardProtocol.SERIAL) {
                 if(nchan == 16) {
-                    // todo[brainflow] pass flag from UI, default false
-                    currentBoard = new BoardCytonSerialDaisy(openBCI_portName, true);
+                    currentBoard = new BoardCytonSerialDaisy(openBCI_portName);
                 }
                 else {
-                    // todo[brainflow] pass flag from UI, default false
-                    currentBoard = new BoardCytonSerial(openBCI_portName, true);
+                    currentBoard = new BoardCytonSerial(openBCI_portName);
                 }
             }
             else if (selectedProtocol == BoardProtocol.WIFI) {

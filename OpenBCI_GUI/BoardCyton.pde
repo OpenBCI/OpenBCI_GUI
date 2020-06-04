@@ -1,5 +1,5 @@
-
 import brainflow.*;
+
 
 enum CytonBoardMode {
     DEFAULT(0),
@@ -52,21 +52,12 @@ static class BoardCytonConstants {
 }
 
 class BoardCytonSerial extends BoardCytonSerialBase {
-    public BoardCytonSerial(boolean smoothData) {
-        super(smoothData);
-    }
-
     public BoardCytonSerial() {
-        this(false);
-    }
-
-    public BoardCytonSerial(String serialPort, boolean smoothData) {
-        super(smoothData);
-        this.serialPort = serialPort;
+        super();
     }
 
     public BoardCytonSerial(String serialPort) {
-        super(false);
+        super();
         this.serialPort = serialPort;
     }
 
@@ -77,21 +68,12 @@ class BoardCytonSerial extends BoardCytonSerialBase {
 };
 
 class BoardCytonSerialDaisy extends BoardCytonSerialBase {
-    public BoardCytonSerialDaisy(boolean smoothData) {
-        super(smoothData);
-    }
-
     public BoardCytonSerialDaisy() {
-        this(false);
-    }
-
-    public BoardCytonSerialDaisy(String serialPort, boolean smoothData) {
-        super(smoothData);
-        this.serialPort = serialPort;
+        super();
     }
 
     public BoardCytonSerialDaisy(String serialPort) {
-        super(false);
+        super();
         this.serialPort = serialPort;
     }
 
@@ -101,32 +83,44 @@ class BoardCytonSerialDaisy extends BoardCytonSerialBase {
     }
 };
 
-abstract class BoardCytonSerialBase extends BoardCyton {
+abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapableBoard{
 
     private Buffer<double[]> buffer = null;
-    private boolean smoothData;
-
-    public BoardCytonSerialBase(boolean smoothData) {
-        this.smoothData = smoothData;
-    }
+    private volatile boolean smoothData;
 
     public BoardCytonSerialBase() {
-        this(false);
+        super();
+        smoothData = false;
     }
 
+    // todo remove it and call setSmoothingActive from UI button,
+    // remove this method from here completely
     @Override
     public boolean initializeInternal() {
         boolean res = super.initializeInternal();
         if (res) {
-            if (smoothData) {
-                buffer = new Buffer<double[]>(30, getSampleRate());
-            }
+            setSmoothingActive(true);
         }
         return res;
     }
 
+    // synchronized is important to ensure that we dont free buffers during getting data
     @Override
-    protected double[][] getNewDataInternal() {
+    public synchronized void setSmoothingActive(boolean active) {
+        if (smoothData == active) {
+            return;
+        }
+        // dont touch accumulatedData buffer to dont pause streaming
+        if (active) {
+            buffer = new Buffer<double[]>(getSampleRate());
+        } else {
+            buffer = null;
+        }
+        smoothData = active;
+    }
+
+    @Override
+    protected synchronized double[][] getNewDataInternal() {
         double[][] data = super.getNewDataInternal();
         if (!smoothData) {
             return data;
