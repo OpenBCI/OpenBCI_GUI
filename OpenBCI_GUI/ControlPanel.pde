@@ -1468,6 +1468,8 @@ class BLEBox {
         
         Thread thread = new Thread(){
             public void run(){
+                refreshBLE.setString("SEARCHING...");
+                bleIsRefreshing = true;
                 final String comPort = getBLED112Port();
                 if (comPort != null) {
                     try {
@@ -1484,6 +1486,8 @@ class BLEBox {
                 } else {
                     outputError("No BLED112 Dongle Found");
                 }
+                refreshBLE.setString("START SEARCH");
+                bleIsRefreshing = false;
             }
         };
 
