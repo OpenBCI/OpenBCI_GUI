@@ -598,33 +598,6 @@ class ControlPanel {
         popOutRadioConfigButton.setString("Manual >");
         rcBox.closeSerialPort();
     }
-    
-    private void refreshPortListCyton(){
-        comPortBox.serialList.items.clear();
-
-        Thread thread = new Thread(){
-            public void run(){
-                refreshPort.setString("SEARCHING...");
-
-                String name = "FT231X USB UART";
-                SerialPort[] comPorts = SerialPort.getCommPorts();
-                for (int i = 0; i < comPorts.length; i++) {
-                    if (comPorts[i].toString().equals(name)) {
-                        String found = "";
-                        if (isMac() || isLinux()) found += "/dev/";
-                        found += comPorts[i].getSystemPortName().toString();
-                        println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                        comPortBox.serialList.addItem(makeItem(found));
-                    }
-                }
-                comPortBox.serialList.updateMenu();
-
-                refreshPort.setString("REFRESH LIST");
-            }
-        };
-
-        thread.start();
-    }
 
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
@@ -907,7 +880,7 @@ class ControlPanel {
         if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
             serialBox.autoConnect.wasPressed = false;
             serialBox.autoConnect.setIsActive(false);
-            serialBox.attemptAutoConnectCyton();
+            comPortBox.attemptAutoConnectCyton();
         }
 
         if (rcBox.isShowing) {
@@ -958,7 +931,7 @@ class ControlPanel {
 
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
-            refreshPortListCyton();
+            comPortBox.refreshPortListCyton();
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
@@ -1005,7 +978,7 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.SERIAL;
-            refreshPortListCyton();
+            comPortBox.refreshPortListCyton();
         }
 
         if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
@@ -1309,7 +1282,6 @@ class DataSourceBox {
 class SerialBox {
     int x, y, w, h, padding; //size and position
     Button_obci autoConnect;
-    RadioConfig cytonRadioCfg;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1317,7 +1289,6 @@ class SerialBox {
         w = _w;
         h = 70;
         padding = _padding;
-        cytonRadioCfg = new RadioConfig();
 
         autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
@@ -1345,41 +1316,13 @@ class SerialBox {
             autoConnect.draw();
         }
     }
-
-    public void attemptAutoConnectCyton() {
-        println("ControlPanel: Attempting to Auto-Connect to Cyton");
-        LinkedList<String> comPorts = getCytonComPorts();
-        if (!comPorts.isEmpty()) {
-            openBCI_portName = comPorts.getFirst();
-            if (cytonRadioCfg.system_status()) {
-                initButtonPressed();
-                buttonHelpText.setVisible(false);
-            }
-        }
-    }
-
-    private LinkedList<String> getCytonComPorts() {
-        final String name = "FT231X USB UART";
-        final SerialPort[] comPorts = SerialPort.getCommPorts();
-        LinkedList<String> results = new LinkedList<String>();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                results.add(found);
-            }
-        }
-
-        return results;
-    }  
 };
 
 class ComPortBox {
     private int x, y, w, h, padding; //size and position
     public boolean isShowing;
     public MenuList serialList;
+    RadioConfig cytonRadioCfg;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1388,6 +1331,7 @@ class ComPortBox {
         h = 140 + _padding;
         padding = _padding;
         isShowing = false;
+        cytonRadioCfg = new RadioConfig();
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
@@ -1411,6 +1355,57 @@ class ComPortBox {
         refreshPort.draw();
         popStyle();
     }
+
+    public void attemptAutoConnectCyton() {
+        println("ControlPanel: Attempting to Auto-Connect to Cyton");
+        LinkedList<String> comPorts = getCytonComPorts();
+        if (!comPorts.isEmpty()) {
+            openBCI_portName = comPorts.getFirst();
+            if (cytonRadioCfg.system_status()) {
+                initButtonPressed();
+                buttonHelpText.setVisible(false);
+            }
+        }
+    }
+
+    public void refreshPortListCyton(){
+        serialList.items.clear();
+
+        Thread thread = new Thread(){
+            public void run(){
+                refreshPort.setString("SEARCHING...");
+
+                String name = "FT231X USB UART";
+                LinkedList<String> comPorts = getCytonComPorts();
+                for (String comPort : comPorts) {
+                    serialList.addItem(makeItem(comPort));
+                }
+                serialList.updateMenu();
+
+                refreshPort.setString("REFRESH LIST");
+            }
+        };
+
+        thread.start();
+    }
+
+    private LinkedList<String> getCytonComPorts() {
+        final String name = "FT231X USB UART";
+        final SerialPort[] comPorts = SerialPort.getCommPorts();
+        LinkedList<String> results = new LinkedList<String>();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                results.add(found);
+            }
+        }
+
+        return results;
+    }
+
 };
 
 class BLEBox {
