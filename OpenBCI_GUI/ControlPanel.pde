@@ -630,27 +630,29 @@ class ControlPanel {
     private void refreshPortListGanglion() {
         output("BLE Devices Refreshing");
         bleList.items.clear();
-        final String comPort = getBLED112Port();
-        if (comPort != null) {
-            Thread thread = new Thread(){
-                public void run(){
+        
+        Thread thread = new Thread(){
+            public void run(){
+                final String comPort = getBLED112Port();
+                if (comPort != null) {
                     try {
                         BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
                         for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
                         {
-                            bleList.addItem(makeItem(entry.getKey()));
+                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
                             bleList.updateMenu();
                         }
                     } catch (GanglionError e)
                     {
                         e.printStackTrace();
                     }
+                } else {
+                    outputError("No BLED112 Dongle Found");
                 }
-            };
-            thread.start();
-        } else {
-            outputError("No BLED112 Dongle Found");
-        }
+            }
+        };
+
+        thread.start();
     }
 
     private String getBLED112Port() {
