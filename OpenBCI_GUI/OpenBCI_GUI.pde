@@ -61,7 +61,7 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-alpha.8";
+String localGUIVersionString = "v5.0.0-alpha.9";
 String localGUIVersionDate = "May 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
@@ -517,10 +517,12 @@ void initSystem() {
                 currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
             }
             else {
-                String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
+                // todo[brainflow] temp hardcode
+                String ganglionName = (String)(bleList.getItem(bleList.activeItem).get("headline"));
+                String ganglionPort = (String)(bleList.getItem(bleList.activeItem).get("subline"));
                 String ganglionMac = BLEMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionBLE(controlPanel.bleBox.getBLED112Port(), ganglionMac);
+                currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
             }
             break;
         case DATASOURCE_NOVAXR:

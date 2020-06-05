@@ -163,7 +163,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     if (theEvent.isFrom("serialList")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        openBCI_portName = (String)bob.get("headline");
+        openBCI_portName = (String)bob.get("subline");
         output("OpenBCI Port Name = " + openBCI_portName);
     }
 
@@ -301,9 +301,6 @@ class ControlPanel {
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
 
-    //Check if the number of serial ports changes
-    private int numSerialPorts = 0;
-
     //Track Dynamic and Static WiFi mode in Control Panel
     final public String WIFI_DYNAMIC = "dynamic";
     final public String WIFI_STATIC = "static";
@@ -402,15 +399,6 @@ class ControlPanel {
                 cp5.hide();
                 cp5Popup.hide();
             }
-        }
-
-        //auto-update Cyton port list
-        if(eegDataSource == DATASOURCE_CYTON && 
-            SerialPort.getCommPorts().length != numSerialPorts && 
-            systemMode != SYSTEMMODE_POSTINIT) {
-            println("Auto-Refreshing Cyton Port List...");
-            refreshPortListCyton();
-            numSerialPorts = SerialPort.getCommPorts().length;
         }
 
         //update all boxes if they need to be
@@ -609,22 +597,6 @@ class ControlPanel {
         comPortBox.serialList.setVisible(false);
         popOutRadioConfigButton.setString("Manual >");
         rcBox.closeSerialPort();
-    }
-    
-    private void refreshPortListCyton(){
-        comPortBox.serialList.items.clear();
-        String name = "FT231X USB UART";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                comPortBox.serialList.addItem(makeItem(found));
-            }
-        }
-        comPortBox.serialList.updateMenu();
     }
 
     public void hideAllBoxes() {
@@ -908,7 +880,7 @@ class ControlPanel {
         if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
             serialBox.autoConnect.wasPressed = false;
             serialBox.autoConnect.setIsActive(false);
-            serialBox.attemptAutoConnectCyton();
+            comPortBox.attemptAutoConnectCyton();
         }
 
         if (rcBox.isShowing) {
@@ -959,8 +931,7 @@ class ControlPanel {
 
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
-            output("Serial/COM List Refreshed");
-            refreshPortListCyton();
+            comPortBox.refreshPortListCyton();
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
@@ -996,7 +967,6 @@ class ControlPanel {
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-            println("protocolWifiGanglion");
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
@@ -1008,6 +978,7 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.SERIAL;
+            comPortBox.refreshPortListCyton();
         }
 
         if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
@@ -1311,7 +1282,6 @@ class DataSourceBox {
 class SerialBox {
     int x, y, w, h, padding; //size and position
     Button_obci autoConnect;
-    RadioConfig cytonRadioCfg;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1319,7 +1289,6 @@ class SerialBox {
         w = _w;
         h = 70;
         padding = _padding;
-        cytonRadioCfg = new RadioConfig();
 
         autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
@@ -1347,39 +1316,13 @@ class SerialBox {
             autoConnect.draw();
         }
     }
-
-    public void attemptAutoConnectCyton() {
-        println("ControlPanel: Attempting to Auto-Connect to Cyton");
-        String comPort = getCytonComPort();
-        if (comPort != null) {
-            openBCI_portName = comPort;
-            if (cytonRadioCfg.system_status()) {
-                initButtonPressed();
-                buttonHelpText.setVisible(false);
-            }
-        }
-    }
-
-    private String getCytonComPort() {
-        String name = "FT231X USB UART";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                return found;
-            }
-        }
-        return null;
-    }    
 };
 
 class ComPortBox {
     private int x, y, w, h, padding; //size and position
     public boolean isShowing;
     public MenuList serialList;
+    RadioConfig cytonRadioCfg;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1388,6 +1331,7 @@ class ComPortBox {
         h = 140 + _padding;
         padding = _padding;
         isShowing = false;
+        cytonRadioCfg = new RadioConfig();
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
@@ -1411,6 +1355,56 @@ class ComPortBox {
         refreshPort.draw();
         popStyle();
     }
+
+    public void attemptAutoConnectCyton() {
+        println("ControlPanel: Attempting to Auto-Connect to Cyton");
+        LinkedList<String> comPorts = getCytonComPorts();
+        if (!comPorts.isEmpty()) {
+            openBCI_portName = comPorts.getFirst();
+            if (cytonRadioCfg.system_status()) {
+                initButtonPressed();
+                buttonHelpText.setVisible(false);
+            }
+        }
+    }
+
+    public void refreshPortListCyton(){
+        serialList.items.clear();
+
+        Thread thread = new Thread(){
+            public void run(){
+                refreshPort.setString("SEARCHING...");
+
+                LinkedList<String> comPorts = getCytonComPorts();
+                for (String comPort : comPorts) {
+                    serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
+                }
+                serialList.updateMenu();
+
+                refreshPort.setString("REFRESH LIST");
+            }
+        };
+
+        thread.start();
+    }
+
+    private LinkedList<String> getCytonComPorts() {
+        final String name = "FT231X USB UART";
+        final SerialPort[] comPorts = SerialPort.getCommPorts();
+        LinkedList<String> results = new LinkedList<String>();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                results.add(found);
+            }
+        }
+
+        return results;
+    }
+
 };
 
 class BLEBox {
@@ -1462,34 +1456,36 @@ class BLEBox {
         
     }
 
-    public void refreshGanglionBLEList() {
+    private void refreshGanglionBLEList() {
         output("BLE Devices Refreshing");
         bleList.items.clear();
-        final String comPort = getBLED112Port();
-        if (comPort != null) {
-            Thread thread = new Thread(){
-                public void run(){
-                    refreshBLE.setString("SEARCHING...");
-                    bleIsRefreshing = true;
+        
+        Thread thread = new Thread(){
+            public void run(){
+                refreshBLE.setString("SEARCHING...");
+                bleIsRefreshing = true;
+                final String comPort = getBLED112Port();
+                if (comPort != null) {
                     try {
                         BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
                         for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
                         {
-                            bleList.addItem(makeItem(entry.getKey()));
+                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
                             bleList.updateMenu();
                         }
                     } catch (GanglionError e)
                     {
                         e.printStackTrace();
                     }
-                    refreshBLE.setString("START SEARCH");
-                    bleIsRefreshing = false;
+                } else {
+                    outputError("No BLED112 Dongle Found");
                 }
-            };
-            thread.start();
-        } else {
-            outputError("No BLED112 Dongle Found");
-        }
+                refreshBLE.setString("START SEARCH");
+                bleIsRefreshing = false;
+            }
+        };
+
+        thread.start();
     }
 
     public String getBLED112Port() {
