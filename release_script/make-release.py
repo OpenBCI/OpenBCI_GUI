@@ -18,6 +18,8 @@ import shutil
 import platform
 import subprocess
 import argparse
+import requests
+from bs4 import  BeautifulSoup
 
 ### Define platform-specific strings
 ###########################################################
@@ -37,6 +39,37 @@ data_dir_names = {
     LINUX : "data",
     MAC : os.path.join("OpenBCI_GUI.app", "Contents", "Java", "data")
 }
+
+def get_timestamp_ci():
+    repo_slug = None
+    commit_id = None
+
+    repo_slug = os.getenv("TRAVIS_REPO_SLUG")
+    if repo_slug is None:
+        repo_slug = os.getenv("APPVEYOR_REPO_NAME")
+
+    commit_id = os.getenv("TRAVIS_COMMIT")
+    if commit_id is None:
+        commit_id = os.getenv("APPVEYOR_REPO_COMMIT")
+
+    if repo_slug and commit_id:
+        url = "http://github.com/" + repo_slug + "/commit/" + commit_id;
+
+        page = requests.get(url)
+        soup = BeautifulSoup(page.content, features="html.parser")
+
+        timestamp = soup.find("relative-time")["datetime"]
+        timestamp = timestamp.replace(":", "-")
+        timestamp = timestamp.replace("T", "_")
+        timestamp = timestamp.replace("Z", "")
+
+        # write timestamp to file for use in CI
+        with open("timestamp.txt", 'w') as tempFile:
+            tempFile.write(timestamp)
+
+        return timestamp
+
+    return ""
 
 ### Function: Apply timestamp in code
 ###########################################################
@@ -67,6 +100,10 @@ def get_release_dir_name(sketch_dir, flavor, timestamp):
                 version_str = line[quotes_pos[0]+1:quotes_pos[1]]
                 print(version_str)
                 break
+
+    # write version string to file for use in CI
+    with open("versionstring.txt", 'w') as tempFile:
+        tempFile.write(version_str)
 
     new_name = "openbcigui_" + version_str + "_"
     if timestamp:
@@ -129,11 +166,13 @@ def build_app(sketch_dir, flavor):
 
 ### Function: Package the app in the expected file structure
 ###########################################################
-def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
+def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     # sanity check: is the build output there?
     build_dir = os.path.join(os.getcwd(), flavor)
     if not os.path.isdir(build_dir):
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
+
+    timestamp = get_timestamp_ci()
 
     # rename the build dir
     release_dir_name = get_release_dir_name(sketch_dir, flavor, timestamp)
@@ -252,7 +291,6 @@ def main ():
     parser.add_argument ('--no-prompts', action = 'store_true', help  = 'whether to prompt the user for anything', required = False)
     parser.add_argument ('--pfx-path', type = str, help  = 'path to the pfx file for windows signing', required = False, default = '', nargs='?')
     parser.add_argument ('--pfx-password', type = str, help  = 'password for the pfx file for windows signing', required = False, default = '', nargs='?')
-    parser.add_argument ('--timestamp', type = str, help  = 'timestamp to put in GUI', required = False, default = '', nargs='?')
     args = parser.parse_args ()
 
     # grab the sketch directory
@@ -268,10 +306,6 @@ def main ():
     elif(not args.no_prompts):
         windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
 
-    # apply timestamp to code
-    if args.timestamp:
-        apply_timestamp(sketch_dir, args.timestamp)
-
     # Cleanup to start
     cleanup_build_dirs()
 
@@ -281,7 +315,7 @@ def main ():
     build_app(sketch_dir, flavor)
 
     #package it up
-    package_app(sketch_dir, flavor, args.timestamp, windows_signing, windows_pfx_path, windows_pfx_password)
+    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
 
 if __name__ == "__main__":
     main ()
