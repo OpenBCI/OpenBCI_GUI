@@ -57,7 +57,7 @@ def apply_timestamp(sketch_dir, timestamp):
 
 ### Function: Rename flavor with GUI version
 ###########################################################
-def get_release_dir_name(sketch_dir, flavor):
+def get_release_dir_name(sketch_dir, flavor, timestamp):
     main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
     version_str = "VERSION.NOT.FOUND"
     with open(main_file_dir, 'r') as sketch_file:
@@ -69,6 +69,8 @@ def get_release_dir_name(sketch_dir, flavor):
                 break
 
     new_name = "openbcigui_" + version_str + "_"
+    if timestamp:
+        new_name += timestamp + "_"
     return flavor.replace("application.", new_name)
 
 ### Function: Find the sketch directory
@@ -127,14 +129,14 @@ def build_app(sketch_dir, flavor):
 
 ### Function: Package the app in the expected file structure
 ###########################################################
-def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
+def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     # sanity check: is the build output there?
     build_dir = os.path.join(os.getcwd(), flavor)
     if not os.path.isdir(build_dir):
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
 
     # rename the build dir
-    release_dir_name = get_release_dir_name(sketch_dir, flavor)
+    release_dir_name = get_release_dir_name(sketch_dir, flavor, timestamp)
     new_build_dir = os.path.join(os.getcwd(), release_dir_name)
     os.rename(build_dir, new_build_dir)
     build_dir = new_build_dir
