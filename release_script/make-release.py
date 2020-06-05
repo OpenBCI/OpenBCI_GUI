@@ -233,6 +233,7 @@ def main ():
     parser.add_argument ('--no-prompts', action = 'store_true', help  = 'whether to prompt the user for anything', required = False)
     parser.add_argument ('--pfx-path', type = str, help  = 'path to the pfx file for windows signing', required = False, default = '', nargs='?')
     parser.add_argument ('--pfx-password', type = str, help  = 'password for the pfx file for windows signing', required = False, default = '', nargs='?')
+    parser.add_argument ('--timestamp', type = str, help  = 'timestamp to put in GUI', required = False, default = '', nargs='?')
     args = parser.parse_args ()
 
     # grab the sketch directory
