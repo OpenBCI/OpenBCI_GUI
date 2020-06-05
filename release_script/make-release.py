@@ -173,6 +173,7 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
 
     timestamp = get_timestamp_ci()
+    apply_timestamp(sketch_dir, timestamp)
 
     # rename the build dir
     release_dir_name = get_release_dir_name(sketch_dir, flavor, timestamp)
