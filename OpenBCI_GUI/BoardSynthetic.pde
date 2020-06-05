@@ -117,6 +117,11 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
 
     @Override
+    public boolean canDeactivateAccelerometer() {
+        return false;
+    }
+
+    @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         exgChannelActive[channelIndex] = active;
     }

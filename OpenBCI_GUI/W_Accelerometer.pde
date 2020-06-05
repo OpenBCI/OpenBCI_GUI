@@ -81,7 +81,6 @@ class W_Accelerometer extends Widget {
         accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p5,12);
-        accelModeButton.setColorNotPressed(color(57,128,204));
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
@@ -122,18 +121,26 @@ class W_Accelerometer extends Widget {
             //update the current Accelerometer values
             lastAccelVals = accelerometerBar.getLastAccelVals();
         }
+
+        updateOnOffButton();
     }
 
     public float getLastAccelVal(int val) {
         return lastAccelVals[val];
     }
 
-    String getButtonString() {
-        if (accelBoard.isAccelerometerActive()) {
-            return "Turn Accel. Off";
+    private void updateOnOffButton() {	
+        if (accelBoard.isAccelerometerActive()) {	
+            accelModeButton.setString("Turn Accel. Off");	
+            accelModeButton.setIgnoreHover(!accelBoard.canDeactivateAccelerometer());
+            if(!accelBoard.canDeactivateAccelerometer()) {
+                accelModeButton.setColorNotPressed(color(128));
+            }
         }
         else {
-            return "Turn Accel. On";
+            accelModeButton.setString("Turn Accel. On");	
+            accelModeButton.setIgnoreHover(false);
+            accelModeButton.setColorNotPressed(color(57,128,204));
         }
     }
 
@@ -158,19 +165,14 @@ class W_Accelerometer extends Widget {
         line(polarWindowX, polarWindowY-polarWindowHeight/2, polarWindowX, polarWindowY+polarWindowHeight/2);
         line(polarWindowX-polarCorner, polarWindowY+polarCorner, polarWindowX+polarCorner, polarWindowY-polarCorner);
 
-        fill(50);
-        textFont(p3, 16);
-        accelModeButton.setString(getButtonString());
-
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
-            accelModeButton.draw();
-        }
-
         if (accelBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
         }
+
+        accelModeButton.draw();
+
         popStyle();
     }
 

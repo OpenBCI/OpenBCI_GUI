@@ -86,7 +86,6 @@ class W_PulseSensor extends Widget {
         analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p5,12);
-        analogModeButton.setColorNotPressed(color(57,128,204));
         analogModeButton.textColorNotActive = color(255);
         analogModeButton.hasStroke(false);
         analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton.");
@@ -104,6 +103,23 @@ class W_PulseSensor extends Widget {
             int signal = (int)(allData.get(i)[analogChannels[0]]);
             processSignal(signal);
             PulseWaveY[i] = signal;
+        }
+
+        updateOnOffButton();
+    }
+
+    private void updateOnOffButton() {	
+        if (analogBoard.isAnalogActive()) {	
+            analogModeButton.setString("Turn Analog Read Off");	
+            analogModeButton.setIgnoreHover(!analogBoard.canDeactivateAnalog());
+            if(!analogBoard.canDeactivateAnalog()) {
+                analogModeButton.setColorNotPressed(color(128));
+            }
+        }
+        else {
+            analogModeButton.setString("Turn Analog Read On");	
+            analogModeButton.setIgnoreHover(false);
+            analogModeButton.setColorNotPressed(color(57,128,204));
         }
     }
 
@@ -133,10 +149,7 @@ class W_PulseSensor extends Widget {
         text("BPM "+BPM, BPMposX, BPMposY);
         text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-        if (!analogBoard.isAnalogActive()) {
-            analogModeButton.setString("Turn Analog Read On");
-        } else {
-            analogModeButton.setString("Turn Analog Read Off");
+        if (analogBoard.isAnalogActive()) {
             drawWaves();
         }
 

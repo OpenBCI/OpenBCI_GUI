@@ -45,6 +45,11 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     }
 
     @Override
+    public boolean canDeactivateAccelerometer() {
+        return false;
+    }
+
+    @Override
     public int[] getAccelerometerChannels() {
         if (accelChannelsCache == null) {
             try {

@@ -118,6 +118,11 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     }
 
     @Override
+    public boolean canDeactivateAccelerometer() {
+        return true;
+    }
+
+    @Override
     public int[] getAccelerometerChannels() {
         if (accelChannelsCache == null) {
             try {
