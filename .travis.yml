@@ -19,8 +19,8 @@ before_install:
 
 install:
 # used for getting commit timestamp
-  - pip install requests
-  - pip install beautifulsoup4
+  - pip3 install requests
+  - pip3 install beautifulsoup4
   - GUI_COMMIT_ID=$(python $TRAVIS_BUILD_DIR/release_script/get_commit_time.py)
   - echo $GUI_COMMIT_ID
 
