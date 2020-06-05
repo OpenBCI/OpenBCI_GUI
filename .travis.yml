@@ -1,6 +1,8 @@
 os:
   - linux
   - osx
+  
+osx_image: xcode11.5
 
 addons:
   artifacts:
@@ -8,7 +10,7 @@ addons:
       - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_macosx.dmg | tr "\n" ":")
       - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_linux64.zip | tr "\n" ":")
     target_paths:
-      - /${TRAVIS_BRANCH}/${GUI_COMMIT_TIME}_${TRAVIS_COMMIT}
+      - /${TRAVIS_BRANCH}/${GUI_COMMIT_TIME}_commit(${TRAVIS_COMMIT})
     working_dir: $TRAVIS_BUILD_DIR
 
 before_install:
