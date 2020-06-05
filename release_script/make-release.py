@@ -43,13 +43,13 @@ data_dir_names = {
 def apply_timestamp(sketch_dir, timestamp):
     main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
 
-    data = ''
+    data = []
     with open(main_file_dir, 'r') as sketch_file:
         data = sketch_file.readlines()
 
-    for line in data:
-        if line.startswith("String localGUIVersionDate"):
-            line = "String localGUIVersionDate = " + timestamp
+    for i in range(0, len(data)):
+        if data[i].startswith("String localGUIVersionDate"):
+            data[i] = "String localGUIVersionDate = " + timestamp
             break
 
     with open(main_file_dir, 'w') as sketch_file:
