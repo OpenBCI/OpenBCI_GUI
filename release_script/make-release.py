@@ -49,7 +49,7 @@ def apply_timestamp(sketch_dir, timestamp):
 
     for i in range(0, len(data)):
         if data[i].startswith("String localGUIVersionDate"):
-            data[i] = "String localGUIVersionDate = " + timestamp + ";"
+            data[i] = "String localGUIVersionDate = \"" + timestamp + "\";"
             break
 
     with open(main_file_dir, 'w') as sketch_file:
