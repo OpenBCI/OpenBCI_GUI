@@ -38,6 +38,23 @@ data_dir_names = {
     MAC : os.path.join("OpenBCI_GUI.app", "Contents", "Java", "data")
 }
 
+### Function: Apply timestamp in code
+###########################################################
+def apply_timestamp(sketch_dir, timestamp):
+    main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
+
+    data = ''
+    with open(main_file_dir, 'r') as sketch_file:
+        data = sketch_file.readlines()
+
+    for line in data:
+        if line.startswith("String localGUIVersionDate"):
+            line = "String localGUIVersionDate = " + timestamp
+            break
+
+    with open(main_file_dir, 'w') as sketch_file:
+        sketch_file.writelines(data)
+
 ### Function: Rename flavor with GUI version
 ###########################################################
 def get_release_dir_name(sketch_dir, flavor):
@@ -241,13 +258,17 @@ def main ():
 
     # ask about signing
     windows_signing = False
-    windows_pfx_path = args.pfx_path;
-    windows_pfx_password = args.pfx_password;
+    windows_pfx_path = args.pfx_path
+    windows_pfx_password = args.pfx_password
 
     if windows_pfx_path and windows_pfx_password:
-        windows_signing = True;
+        windows_signing = True
     elif(not args.no_prompts):
         windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
+
+    # apply timestamp to code
+    if args.timestamp:
+        apply_timestamp(sketch_dir, args.timestamp)
 
     # Cleanup to start
     cleanup_build_dirs()

@@ -54,7 +54,7 @@ install:
 
 script:
   - cd $TRAVIS_BUILD_DIR
-  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts  
+  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts --timestamp ${GUI_COMMIT_TIME}
 
 notifications:
   email:
