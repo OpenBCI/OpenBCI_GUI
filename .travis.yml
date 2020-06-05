@@ -2,14 +2,16 @@ os:
   - linux
   - osx
 
+python:
+  - "3.8"
+
 addons:
   artifacts:
     paths: 
       - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_macosx.dmg | tr "\n" ":")
       - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_linux64.zip | tr "\n" ":")
     target_paths:
-      - /${TRAVIS_BRANCH}/${TRAVIS_COMMIT}
-      - /${TRAVIS_BRANCH}/latest
+      - /${TRAVIS_BRANCH}/${GUI_COMMIT_TIME}_${TRAVIS_COMMIT}
     working_dir: $TRAVIS_BUILD_DIR
 
 before_install:
@@ -19,10 +21,9 @@ before_install:
 
 install:
 # used for getting commit timestamp
-  - pip3 install requests
-  - pip3 install beautifulsoup4
-  - GUI_COMMIT_ID=$(python $TRAVIS_BUILD_DIR/release_script/get_commit_time.py)
-  - echo $GUI_COMMIT_ID
+  - pip install requests
+  - pip install beautifulsoup4
+  - GUI_COMMIT_TIME=$(python $TRAVIS_BUILD_DIR/release_script/get_commit_time.py)
 
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
