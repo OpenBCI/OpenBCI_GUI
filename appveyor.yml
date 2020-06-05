@@ -27,6 +27,12 @@ init:
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.3;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\;%PATH%
 
 install:
+  # used for getting commit timestamp
+  - python -m pip install requests
+  - python -m pip install beautifulsoup4
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\get_commit_time.py > tmpFile
+  - set /p GUI_COMMIT_TIME= < tmpFile
+
   # decrypt pfx file if env are set (not set in PR builds)
   - ps: if($env:PFX_SECRET) { iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1')) }
   - ps: if($env:PFX_SECRET) { appveyor-tools\secure-file -decrypt $env:APPVEYOR_BUILD_FOLDER\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT }
@@ -45,8 +51,7 @@ build_script:
   - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx
 
 deploy_script:
-  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%APPVEYOR_REPO_COMMIT% --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%GUI_COMMIT_TIME%_[%APPVEYOR_REPO_COMMIT%]  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
 
 notifications:
   - provider: Email
