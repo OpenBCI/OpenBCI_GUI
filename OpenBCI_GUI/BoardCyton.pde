@@ -1,35 +1,7 @@
-///////////////////////////////////////////////////////////////////////////////
-//
-// This class configures and manages the connection to the OpenBCI shield for
-// the Arduino.  The connection is implemented via a Serial connection.
-// The OpenBCI is configured using single letter text commands sent from the
-// PC to the Arduino.  The EEG data streams back from the Arduino to the PC
-// continuously (once started).  This class defaults to using binary transfer
-// for normal operation.
-//
-// Created: Chip Audette, Oct 2013
-// Modified: through April 2014
-// Modified again: Conor Russomanno Sept-Oct 2014
-// Modified for Daisy (16-chan) OpenBCI V3: Conor Russomanno Nov 2014
-// Modified Daisy Behaviors: Chip Audette Dec 2014
-//
-// Note: this class now expects the data format produced by OpenBCI V3.
-//
-/////////////////////////////////////////////////////////////////////////////
+import brainflow.*;
 
 
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
-
-final char command_stop = 's';
-// final String command_startText = "x";
-final char command_startBinary = 'b';
-
-final char[] command_deactivate_channel = {'1', '2', '3', '4', '5', '6', '7', '8', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i'};
-final char[] command_activate_channel = {'!', '@', '#', '$', '%', '^', '&', '*', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
-
-enum BoardMode {
+enum CytonBoardMode {
     DEFAULT(0),
     DEBUG(1),
     ANALOG(2),
@@ -37,493 +9,462 @@ enum BoardMode {
     MARKER(4);
 
     private final int value;
-    BoardMode(final int newValue) {
+    CytonBoardMode(final int newValue) {
         value = newValue;
     }
     public int getValue() { return value; }
 }
 
-//------------------------------------------------------------------------
-//                       Classes
-//------------------------------------------------------------------------
+public enum CytonSDMode {
+    NO_WRITE("Do not write to SD...", null),
+    MAX_5MIN("5 minute maximum", "A"),
+    MAX_15MIN("15 minute maximum", "S"),
+    MAX_30MIN("30 minute maximum", "F"),
+    MAX_1HR("1 hour maximum", "G"),
+    MAX_2HR("2 hour maximum", "H"),
+    MAX_4HR("4 hour maximum", "J"),
+    MAX_12HR("12 hour maximum", "K"),
+    MAX_24HR("24 hour maximum", "L");
 
-class Cyton {
+    private String name;
+    private String command;
 
-    private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
-    private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
-    private DataPacket_ADS1299 rawReceivedDataPacket;
-    private DataPacket_ADS1299 missedDataPacket;
-    private DataPacket_ADS1299 dataPacket;
+    CytonSDMode(String _name, String _command) {
+        this.name = _name;
+        this.command = _command;
+    }
 
-    private final int fsHzSerialCyton = 250;  //sample rate used by OpenBCI board...set by its Arduino code
-    private final int fsHzSerialCytonDaisy = 125;  //sample rate used by OpenBCI board...set by its Arduino code
-    private final int fsHzWifi = 1000;  //sample rate used by OpenBCI board...set by its Arduino code
-    private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-    private float openBCI_series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
-    private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
-    private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
-    //private final float scale_fac_accel_G_per_count = 1.0;  //to test stimulations  //final float scale_fac_accel_G_per_count = 1.0;
-    private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
+    public String getName() {
+        return name;
+    }
 
-    private BoardMode curBoardMode = BoardMode.DEFAULT;
+    public String getCommand() {
+        return command;
+    }
+}
 
-    private int curInterface = INTERFACE_SERIAL;
-    private int sampleRate = fsHzWifi;
+static class BoardCytonConstants {
+    static final float series_resistor_ohms = 2200; // Ohms. There is a series resistor on the 32 bit board.
+    static final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
+    static final float ADS1299_gain = 24.f;  //assumed gain setting for ADS1299.  set by its Arduino code
+    static final float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
+    static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
+}
 
-    // needed by interfaceserial
-    public int hardwareSyncStep = 0; //start this at 0...
-    public String potentialFailureMessage = "";
-    public String defaultChannelSettings = "";
-    public String daisyOrNot = "";
+class BoardCytonSerial extends BoardCytonSerialBase {
+    public BoardCytonSerial() {
+        super();
+    }
 
-    // used to detect and flag error during initialization
-    public boolean daisyNotAttached = false;
+    public BoardCytonSerial(String serialPort) {
+        super();
+        this.serialPort = serialPort;
+    }
 
-    //some get methods
-    public float getSampleRate() {
-        if (isSerial()) {
-            if (nchan == NCHAN_CYTON_DAISY) {
-                return fsHzSerialCytonDaisy;
-            } else {
-                return fsHzSerialCyton;
-            }
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_BOARD;
+    }
+};
+
+class BoardCytonSerialDaisy extends BoardCytonSerialBase {
+    public BoardCytonSerialDaisy() {
+        super();
+    }
+
+    public BoardCytonSerialDaisy(String serialPort) {
+        super();
+        this.serialPort = serialPort;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_DAISY_BOARD;
+    }
+};
+
+abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapableBoard{
+
+    private Buffer<double[]> buffer = null;
+    private volatile boolean smoothData;
+
+    public BoardCytonSerialBase() {
+        super();
+        smoothData = false;
+    }
+
+    // synchronized is important to ensure that we dont free buffers during getting data
+    @Override
+    public synchronized void setSmoothingActive(boolean active) {
+        if (smoothData == active) {
+            return;
+        }
+        // dont touch accumulatedData buffer to dont pause streaming
+        if (active) {
+            buffer = new Buffer<double[]>(getSampleRate());
         } else {
-            return hub.getSampleRate();
+            buffer = null;
         }
+        smoothData = active;
     }
 
-    public BoardMode getBoardMode() {
-        return curBoardMode;
-    }
-    public int getInterface() {
-        return curInterface;
-    }
-    public float get_series_resistor() {
-        return openBCI_series_resistor_ohms;
-    }
-    public float get_scale_fac_uVolts_per_count() {
-        return scale_fac_uVolts_per_count;
-    }
-    public float get_scale_fac_accel_G_per_count() {
-        return scale_fac_accel_G_per_count;
-    }
-    public float get_leadOffDrive_amps() {
-        return leadOffDrive_amps;
+    @Override
+    public boolean getSmoothingActive() {
+        return smoothData;
     }
 
-    public void setBoardMode(BoardMode boardMode) {
-        hub.sendCommand("/" + boardMode.getValue());
-        curBoardMode = boardMode;
-        println("Cyton: setBoardMode to :" + curBoardMode);
-    }
-
-    public void setSampleRate(int _sampleRate) {
-        sampleRate = _sampleRate;
-        // output("Setting sample rate for Cyton to " + sampleRate + "Hz");
-        println("Setting sample rate for Cyton to " + sampleRate + "Hz");
-        hub.setSampleRate(sampleRate);
-    }
-
-    public boolean setInterface(int _interface) {
-        curInterface = _interface;
-        // println("current interface: " + curInterface);
-        println("setInterface: curInterface: " + getInterface());
-        if (isWifi()) {
-            setSampleRate((int)fsHzWifi);
-            hub.setProtocol(PROTOCOL_WIFI);
-        } else if (isSerial()) {
-            setSampleRate((int)fsHzSerialCyton);
-            hub.setProtocol(PROTOCOL_SERIAL);
+    @Override
+    protected synchronized double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        if (!smoothData) {
+            return data;
         }
-        return true;
+        // transpose to push to buffer
+        for (int i = 0; i < data[0].length; i++) {
+            double[] newEntry = new double[getTotalChannelCount()];
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                newEntry[j] = data[j][i];
+            }
+            buffer.addNewEntry(newEntry);
+        }
+        int numData = buffer.getDataCount();
+        if (numData == 0) {
+            return emptyData;
+        }
+        // transpose back
+        double[][] res = new double[getTotalChannelCount()][numData];
+        for (int i = 0; i < numData; i++) {
+            double[] curData = buffer.popFirstEntry();
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                res[j][i] = curData[j];
+            }
+        }
+        return res;
     }
 
-    //constructors
-    Cyton() {};  //only use this if you simply want access to some of the constants
-    Cyton(PApplet applet, String comPort, int baud, int nEEGValuesPerOpenBCI, boolean useAux, int nAuxValuesPerOpenBCI, int _interface) {
-        curInterface = _interface;
+};
 
-        initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
-
-        if (isSerial()) {
-            hub.connectSerial(comPort);
-        } else if (isWifi()) {
-            hub.connectWifi(comPort);
-        }
+class BoardCytonWifi extends BoardCytonWifiBase {
+    public BoardCytonWifi() {
+        super();
+    }
+    public BoardCytonWifi(String ipAddress, int samplingRate) {
+        super(samplingRate);
+        this.ipAddress = ipAddress;
     }
 
-    public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
-        nEEGValuesPerPacket = _nEEGValuesPerPacket;
-        nAuxValuesPerPacket = _nAuxValuesPerPacket;
-        //allocate space for data packet
-        rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
-        //set all values to 0 so not null
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_WIFI_BOARD;
+    }
+};
 
-        for (int i = 0; i < nEEGValuesPerPacket; i++) {
-            rawReceivedDataPacket.values[i] = 0;
-            //prevDataPacket.values[i] = 0;
-        }
-
-        for (int i=0; i < nEEGValuesPerPacket; i++) {
-            dataPacket.values[i] = 0;
-            missedDataPacket.values[i] = 0;
-        }
-        for (int i = 0; i < nAuxValuesPerPacket; i++) {
-            rawReceivedDataPacket.auxValues[i] = 0;
-            dataPacket.auxValues[i] = 0;
-            missedDataPacket.auxValues[i] = 0;
-            //prevDataPacket.auxValues[i] = 0;
-        }
+class BoardCytonWifiDaisy extends BoardCytonWifiBase {
+    public BoardCytonWifiDaisy() {
+        super();
+    }
+    public BoardCytonWifiDaisy(String ipAddress, int samplingRate) {
+        super(samplingRate);
+        this.ipAddress = ipAddress;
     }
 
-    public int closeSDandPort() {
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.CYTON_DAISY_WIFI_BOARD;
+    }
+};
+
+abstract class BoardCytonWifiBase extends BoardCyton {
+    // https://docs.openbci.com/docs/02Cyton/CytonSDK#sample-rate
+    private Map<Integer, String> samplingRateCommands = new HashMap<Integer, String>() {{
+        put(16000, "~0");
+        put(8000, "~1");
+        put(4000, "~2");
+        put(2000, "~3");
+        put(1000, "~4");
+        put(500, "~5");
+        put(250, "~6");
+    }};
+
+    public BoardCytonWifiBase() {
+        super();
+    }
+
+    public BoardCytonWifiBase(int samplingRate) {
+        super();
+        samplingRateCache = samplingRate;
+    }
+
+    @Override
+    public boolean initializeInternal() {
+        boolean res = super.initializeInternal();
+
+        if ((res) && (samplingRateCache > 0)){
+            String command = samplingRateCommands.get(samplingRateCache);
+            sendCommand(command);
+        }
+        return res;
+    }
+};
+
+class CytonDefaultSettings extends ADS1299Settings {
+    CytonDefaultSettings(Board theBoard) {
+        super(theBoard);
+
+        // the 'd' command is automatically sent by brainflow on prepare_session
+        Arrays.fill(powerDown, PowerDown.ON);
+        Arrays.fill(gain, Gain.X24);
+        Arrays.fill(inputType, InputType.NORMAL);
+        Arrays.fill(bias, Bias.INCLUDE);
+        Arrays.fill(srb2, Srb2.CONNECT);
+        Arrays.fill(srb1, Srb1.DISCONNECT);
+    }
+}
+
+abstract class BoardCyton extends BoardBrainFlow
+implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, ADS1299SettingsBoard {
+    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+
+    private ADS1299Settings currentADS1299Settings;
+    private boolean[] isCheckingImpedance;
+
+    // same for all channels
+    private final double brainflowGain = 24.0;
+
+    private int[] accelChannelsCache = null;
+    private int[] analogChannelsCache = null;
+
+    protected String serialPort = "";
+    protected String ipAddress = "";
+    private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
+
+    public BoardCyton() {
+        super();
+
+        isCheckingImpedance = new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedance, false);
+
+        // The command 'd' is automatically sent by brainflow on prepare_session
+        currentADS1299Settings = new CytonDefaultSettings(this);
+    }
+
+    // implement mandatory abstract functions
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_port = serialPort;
+        params.ip_address = ipAddress;
+        params.ip_port = 6677;
+        return params;
+    }
+
+    @Override
+    public boolean initializeInternal() {
+        return super.initializeInternal();
+    }
+
+    @Override
+    public void uninitializeInternal() {
         closeSDFile();
-        return closePort();
+        super.uninitializeInternal();
     }
 
-    public int closePort() {
-        if (isSerial()) {
-            return hub.disconnectSerial();
-        } else {
-            return hub.disconnectWifi();
+    @Override
+    public void setEXGChannelActive(int channelIndex, boolean active) {
+        currentADS1299Settings.setChannelActive(channelIndex, active);
+    }
+    
+    @Override
+    public boolean isEXGChannelActive(int channelIndex) {
+        return currentADS1299Settings.isChannelActive(channelIndex);
+    }
+
+    @Override
+    public boolean isAccelerometerActive() {
+        return getBoardMode() == CytonBoardMode.DEFAULT;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        if(active) {
+            setBoardMode(CytonBoardMode.DEFAULT);
         }
+        // no way of turning off accel.
     }
 
-    public int closeSDFile() {
-        println("Closing any open SD file. Writing 'j' to OpenBCI.");
-        if (isPortOpen()) write('j'); // tell the SD file to close if one is open...
-        delay(100); //make sure 'j' gets sent to the board
-        return 0;
-    }
-
-    public void syncWithHardware(int sdSetting) {
-        switch (hardwareSyncStep) {
-        case 1: //send # of channels (8 or 16) ... (regular or daisy setup)
-            println("Cyton: syncWithHardware: [1] Sending channel count (" + nchan + ") to OpenBCI...");
-            if (nchan == 8) {
-            write('c');
-            }
-            if (nchan == 16) {
-            write('C', false);
-            }
-            break;
-        case 2: //reset hardware to default registers
-            println("Cyton: syncWithHardware: [2] Reseting OpenBCI registers to default... writing \'d\'...");
-            write('d'); // TODO: Why does this not get a $$$ readyToSend = false?
-            break;
-        case 3: //ask for series of channel setting ASCII values to sync with channel setting interface in GUI
-            println("Cyton: syncWithHardware: [3] Retrieving OpenBCI's channel settings to sync with GUI... writing \'D\'... waiting for $$$...");
-            write('D', false); //wait for $$$ to iterate... applies to commands expecting a response
-            break;
-        case 4: //check existing registers
-            println("Cyton: syncWithHardware: [4] Retrieving OpenBCI's full register map for verification... writing \'?\'... waiting for $$$...");
-            write('?', false); //wait for $$$ to iterate... applies to commands expecting a response
-            break;
-        case 5:
-            // write("j"); // send OpenBCI's 'j' commaned to make sure any already open SD file is closed before opening another one...
-            switch (sdSetting) {
-            case 1: //"5 min max"
-                write('A', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 2: //"15 min max"
-                write('S', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 3: //"30 min max"
-                write('F', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 4: //"1 hr max"
-                write('G', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 5: //"2 hr max"
-                write('H', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 6: //"4 hr max"
-                write('J', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 7: //"12 hr max"
-                write('K', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            case 8: //"24 hr max"
-                write('L', false); //wait for $$$ to iterate... applies to commands expecting a response
-                break;
-            default:
-                break; // Do Nothing
-            }
-            println("Cyton: syncWithHardware: [5] Writing selected SD setting (" + sdSettingString + ") to OpenBCI...");
-            //final hacky way of abandoning initiation if someone selected daisy but doesn't have one connected.
-            if(abandonInit){
-            haltSystem();
-            output("No daisy board present. Make sure you selected the correct number of channels.");
-            controlPanel.open();
-            abandonInit = false;
-            }
-            break;
-        case 6:
-            println("Cyton: syncWithHardware: The GUI is done initializing. Click outside of the control panel to interact with the GUI.");
-            hub.changeState(HubState.STOPPED);
-            systemMode = 10;
-            controlPanel.close();
-            topNav.controlPanelCollapser.setIsActive(false);
-            //renitialize GUI if nchan has been updated... needs to be built
-            break;
-        }
-    }
-
-    public boolean write(char val) {
-        if (hub.isHubRunning()) {
-            hub.sendCommand(val);
-            return true;
-        }
+    @Override
+    public boolean canDeactivateAccelerometer() {
         return false;
     }
 
-    public boolean write(char val, boolean _readyToSend) {
-        return write(val);
-    }
-
-    private boolean isSerial () {
-        // println("My interface is " + curInterface);
-        return curInterface == INTERFACE_SERIAL;
-    }
-
-    private boolean isWifi () {
-        return curInterface == INTERFACE_HUB_WIFI;
-    }
-
-    public void startDataTransfer() {
-        if (isPortOpen()) {
-            // Now give the command to start binary data transmission
-            if (isSerial()) {
-                hub.changeState(HubState.NORMAL);  // make sure it's now interpretting as binary
-                println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the serial port...");
-                write(command_startBinary);
-            } else if (isWifi()) {
-                println("Cyton: startDataTransfer(): writing \'" + command_startBinary + "\' to the wifi shield...");
-                write(command_startBinary);
+    @Override
+    public int[] getAccelerometerChannels() {
+        if (accelChannelsCache == null) {
+            try {
+                accelChannelsCache = BoardShim.get_accel_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
             }
+        }
 
-        } else {
-            println("Cyton: Port not open");
+        return accelChannelsCache;
+    }
+
+    @Override
+    public boolean isAnalogActive() {
+        return getBoardMode() == CytonBoardMode.ANALOG;
+    }
+
+    @Override
+    public void setAnalogActive(boolean active) {
+        if(active) {
+            setBoardMode(CytonBoardMode.ANALOG);
         }
     }
 
-    public void stopDataTransfer() {
-        if (isPortOpen()) {
-            hub.changeState(HubState.STOPPED);  // make sure it's now interpretting as binary
-            println("Cyton: startDataTransfer(): writing \'" + command_stop + "\' to the serial port...");
-            write(command_stop);// + "\n");
+    @Override
+    public boolean canDeactivateAnalog() {
+        return false;
+    }
+
+    @Override
+    public int[] getAnalogChannels() {
+        if (analogChannelsCache == null) {
+            try {
+                analogChannelsCache = BoardShim.get_analog_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return analogChannelsCache;
+    }
+
+    @Override
+    public boolean isDigitalActive() {
+        return getBoardMode() == CytonBoardMode.DIGITAL;
+    }
+
+    @Override
+    public void setDigitalActive(boolean active) {
+        if(active) {
+            setBoardMode(CytonBoardMode.DIGITAL);
+        }
+    }
+
+    @Override
+    public boolean canDeactivateDigital() {
+        return false;
+    }
+
+    @Override
+    public int[] getDigitalChannels() {
+        // the removeAll function will remove array indices 0 and 5.
+        // remove other_channel[0] because it's the end byte
+        // remove other_channels[5] because it does not contain digital data
+        int[] digitalChannels = ArrayUtils.removeAll(getOtherChannels(), 0, 5); // remove non-digital channels
+        return digitalChannels;
+    }
+
+    @Override
+    public void setCheckingImpedance(int channel, boolean active) {
+        char p = '0';
+        char n = '0';
+
+        if (active) {
+            Srb2 srb2sSetting = currentADS1299Settings.srb2[channel];
+            if (srb2sSetting == Srb2.CONNECT) {
+                n = '1';
+            }
+            else {
+                p = '1';
+            }
+        }
+
+        // for example: z 4 1 0 Z
+        String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        sendCommand(command);
+
+        isCheckingImpedance[channel] = active;
+    }
+
+    @Override
+    public boolean isCheckingImpedance(int channel) {
+        return isCheckingImpedance[channel];
+    }
+
+    @Override
+    protected double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        int[] exgChannels = getEXGChannels();
+        for (int i = 0; i < exgChannels.length; i++) {
+            for (int j = 0; j < data[exgChannels[i]].length; j++) {
+                // brainflow assumes a fixed gain of 24. Undo brainflow's scaling and apply new scale.
+                double scalar = brainflowGain / currentADS1299Settings.gain[i].getScalar();
+                data[exgChannels[i]][j] *= scalar;
+            }
+        }
+        return data;
+    }
+
+    @Override
+    public ADS1299Settings getADS1299Settings() {
+        return currentADS1299Settings;
+    }
+
+    @Override
+    public char getChannelSelector(int channel) {
+        return channelSelectForSettings[channel];
+    }
+
+    public CytonBoardMode getBoardMode() {
+        return currentBoardMode;
+    }
+
+    private void setBoardMode(CytonBoardMode boardMode) {
+        sendCommand("/" + boardMode.getValue());
+        currentBoardMode = boardMode;
+    }
+
+    @Override
+    public void startStreaming() {
+        openSDFile();
+        super.startStreaming();
+    }
+
+    @Override
+    public void stopStreaming() {
+        closeSDFile();
+        super.stopStreaming();
+    }
+
+    public void openSDFile() {
+        //If selected, send command to Cyton to enabled SD file recording for selected duration
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            println("Opening SD file. Writing " + cyton_sdSetting.getCommand() + " to Cyton.");
+            sendCommand(cyton_sdSetting.getCommand());
+        }
+    }
+
+    public void closeSDFile() {
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            println("Closing any open SD file. Writing 'j' to Cyton.");
+            sendCommand("j"); // tell the SD file to close if one is open...
         }
     }
 
     public void printRegisters() {
-        if (isPortOpen()) {
-            println("Cyton: printRegisters(): Writing ? to OpenBCI...");
-            write('?');
+        println("Cyton: printRegisters(): Writing ? to OpenBCI...");
+        sendCommand("?");
+    }
+    
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        for (int i=0; i<getAccelerometerChannels().length; i++) {
+            channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-    }
-
-    private boolean isPortOpen() {
-        if (isWifi() || isSerial()) {
-            return hub.isPortOpen();
-        } else {
-            return false;
+        for (int i=0; i<getAnalogChannels().length; i++) {
+            channelNames[getAnalogChannels()[i]] = "Analog Channel " + i;
         }
-    }
-
-    //activate or deactivate an EEG channel...channel counting is zero through nchan-1
-    public void changeChannelState(int Ichan, boolean activate) {
-        if (isPortOpen()) {
-            // if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
-            if ((Ichan >= 0)) {
-                if (activate) {
-                    // write(command_activate_channel[Ichan]);
-                    // gui.cc.powerUpChannel(Ichan);
-                    w_timeSeries.hsc.powerUpChannel(Ichan);
-                } else {
-                    // write(command_deactivate_channel[Ichan]);
-                    // gui.cc.powerDownChannel(Ichan);
-                    w_timeSeries.hsc.powerDownChannel(Ichan);
-                }
-            }
-        }
-    }
-
-    //deactivate an EEG channel...channel counting is zero through nchan-1
-    public void deactivateChannel(int Ichan) {
-        if (isPortOpen()) {
-            if ((Ichan >= 0) && (Ichan < command_deactivate_channel.length)) {
-                write(command_deactivate_channel[Ichan]);
-            }
-        }
-    }
-
-    //activate an EEG channel...channel counting is zero through nchan-1
-    public void activateChannel(int Ichan) {
-        if (isPortOpen()) {
-            if ((Ichan >= 0) && (Ichan < command_activate_channel.length)) {
-                write(command_activate_channel[Ichan]);
-            }
-        }
-    }
-
-    public void configureAllChannelsToDefault() {
-        write('d');
-    };
-
-    /**
-      * Used to convert a gain from the hub back into local codes.
-      */
-    public char getCommandForGain(int gain) {
-        switch (gain) {
-            case 1:
-                return '0';
-            case 2:
-                return '1';
-            case 4:
-                return '2';
-            case 6:
-                return '3';
-            case 8:
-                return '4';
-            case 12:
-                return '5';
-            case 24:
-            default:
-                return '6';
-        }
-    }
-
-    /**
-      * Used to convert raw code to hub code
-      * @param inputType {String} - The input from a hub sync channel with register settings
-      */
-    public char getCommandForInputType(String inputType) {
-        if (inputType.equals("normal")) return '0';
-        if (inputType.equals("shorted")) return '1';
-        if (inputType.equals("biasMethod")) return '2';
-        if (inputType.equals("mvdd")) return '3';
-        if (inputType.equals("temp")) return '4';
-        if (inputType.equals("testsig")) return '5';
-        if (inputType.equals("biasDrp")) return '6';
-        if (inputType.equals("biasDrn")) return '7';
-        return '0';
-    }
-
-    /**
-      * Used to convert a local channel code into a hub gain which is human
-      *  readable and in scientific values.
-      */
-    public int getGainForCommand(char cmd) {
-        switch (cmd) {
-            case '0':
-                return 1;
-            case '1':
-                return 2;
-            case '2':
-                return 4;
-            case '3':
-                return 6;
-            case '4':
-                return 8;
-            case '5':
-                return 12;
-            case '6':
-            default:
-                return 24;
-        }
-    }
-
-    /**
-      * Used right before a channel setting command is sent to the hub to convert
-      *  local values into the expected form for the hub.
-      */
-    public String getInputTypeForCommand(char cmd) {
-        final String inputTypeShorted = "shorted";
-        final String inputTypeBiasMethod = "biasMethod";
-        final String inputTypeMvdd = "mvdd";
-        final String inputTypeTemp = "temp";
-        final String inputTypeTestsig = "testsig";
-        final String inputTypeBiasDrp = "biasDrp";
-        final String inputTypeBiasDrn = "biasDrn";
-        final String inputTypeNormal = "normal";
-        switch (cmd) {
-            case '1':
-                return inputTypeShorted;
-            case '2':
-                return inputTypeBiasMethod;
-            case '3':
-                return inputTypeMvdd;
-            case '4':
-                return inputTypeTemp;
-            case '5':
-                return inputTypeTestsig;
-            case '6':
-                return inputTypeBiasDrp;
-            case '7':
-                return inputTypeBiasDrn;
-            case '0':
-            default:
-                return inputTypeNormal;
-        }
-    }
-
-    /**
-      * Used to convert a local index number to a hub human readable sd setting
-      *  command.
-      */
-    public String getSDSettingForSetting(int setting) {
-        switch (setting) {
-            case 1:
-                return "5min";
-            case 2:
-                return "15min";
-            case 3:
-                return "30min";
-            case 4:
-                return "1hour";
-            case 5:
-                return "2hour";
-            case 6:
-                return "4hour";
-            case 7:
-                return "12hour";
-            case 8:
-                return "24hour";
-            default:
-                return "";
-        }
-    }
-
-    // FULL DISCLAIMER: this method is messy....... very messy... we had to brute force a firmware miscue
-    public void writeChannelSettings(int _numChannel, char[][] channelSettingValues) {   //numChannel counts from zero
-        JSONObject json = new JSONObject();
-        json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_CHANNEL_SETTINGS);
-        json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
-        json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_POWER_DOWN, channelSettingValues[_numChannel][0] == '1');
-        json.setInt(TCP_JSON_KEY_CHANNEL_SET_GAIN, getGainForCommand(channelSettingValues[_numChannel][1]));
-        json.setString(TCP_JSON_KEY_CHANNEL_SET_INPUT_TYPE, getInputTypeForCommand(channelSettingValues[_numChannel][2]));
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_BIAS, channelSettingValues[_numChannel][3] == '1');
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB2, channelSettingValues[_numChannel][4] == '1');
-        json.setBoolean(TCP_JSON_KEY_CHANNEL_SET_SRB1, channelSettingValues[_numChannel][5] == '1');
-        hub.writeJSON(json);
-        verbosePrint("done writing channel." + json); //debugging
-    }
-
-    public void writeImpedanceSettings(int _numChannel, char[][] impedanceCheckValues) {  //numChannel counts from zero
-        JSONObject json = new JSONObject();
-        json.setString(TCP_JSON_KEY_TYPE, TCP_TYPE_IMPEDANCE);
-        json.setString(TCP_JSON_KEY_ACTION, TCP_ACTION_SET);
-        json.setInt(TCP_JSON_KEY_CHANNEL_NUMBER, _numChannel);
-        json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_P_INPUT, impedanceCheckValues[_numChannel-1][0] == '1');
-        json.setBoolean(TCP_JSON_KEY_IMPEDANCE_SET_N_INPUT, impedanceCheckValues[_numChannel-1][1] == '1');
-        hub.writeJSON(json);
-    }
-
-    public int copyDataPacketTo(DataPacket_ADS1299 target) {
-        return dataPacket.copyTo(target);
     }
 };

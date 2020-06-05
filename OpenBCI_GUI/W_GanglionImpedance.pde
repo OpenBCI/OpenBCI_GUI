@@ -10,14 +10,15 @@
 //
 ///////////////////////////////////////////////////,
 
+
 class W_GanglionImpedance extends Widget {
-    Button startStopCheck;
+    Button_obci startStopCheck;
     int padding = 24;
 
     W_GanglionImpedance(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        startStopCheck = new Button (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
+        startStopCheck = new Button_obci (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
         startStopCheck.setFont(p4, 14);
     }
 
@@ -36,10 +37,20 @@ class W_GanglionImpedance extends Widget {
         //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
         fill(bgColor);
         textFont(p4, 14);
-        for(int i = 0; i < ganglion.impedanceArray.length; i++){
+
+        BoardGanglion ganglion = (BoardGanglion)currentBoard;
+        if (!ganglion.isCheckingImpedance()) {
+            return;
+        }
+
+        int resistanceChannels[] = ganglion.getResistanceChannels();
+        List<double[]> data = ganglion.getData(1);
+
+        // todo format in brainflow, 4 channels and reference. Does it match this code
+        for(int i = 0; i < resistanceChannels.length; i++){
             String toPrint;
-            float adjustedImpedance = ganglion.impedanceArray[i]/2.0;
-            if(i == 0){
+            float adjustedImpedance = (float)data.get(0)[resistanceChannels[i]]/2.0;
+            if(i == (resistanceChannels.length - 1)) {
                 toPrint = "Reference Impedance \u2248 " + adjustedImpedance + " k\u2126";
             } else {
                 toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
@@ -67,12 +78,7 @@ class W_GanglionImpedance extends Widget {
             popStyle();
         }
 
-        if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
-            if(ganglion.isCheckingImpedance()){
-                image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
-            }
-        }
-
+        image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
         popStyle();
     }
 
@@ -91,41 +97,28 @@ class W_GanglionImpedance extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
-        if(startStopCheck.isActive && startStopCheck.isMouseHere()){
-            if(isHubInitialized && isHubObjectInitialized && eegDataSource == DATASOURCE_GANGLION){
-                if(ganglion.isCheckingImpedance()){
-                    //Stop impedance check
-                    ganglion.impedanceStop();
-                    startStopCheck.but_txt = "Start Impedance Check";
-                } else {
-                    // if is running... stopRunning and switch the state of the Start/Stop button back to Data Stream stopped
-                    stopRunning();
+        if (startStopCheck.isActive && startStopCheck.isMouseHere()) {
+            if (currentBoard instanceof BoardGanglion) {
+                // ganglion is the only board which can check impedance, so we don't have an interface for it.
+                // if that changes in the future, consider making an interface.
+                BoardGanglion ganglionBoard = (BoardGanglion)currentBoard;
+                if (!ganglionBoard.isCheckingImpedance()) {
+                    // We need to either stop the time series data, or allow it to scroll, like currently. 
+                    // the values in time series are not meaningful when Impedance check is active
                     topNav.stopButton.setString(stopButton_pressToStart_txt);
                     topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-                    println("Starting Ganlgion impedance check...");
+                    println("Starting Ganglion impedance check...");
                     //Start impedance check
-                    ganglion.impedanceStart();
+                    ganglionBoard.setCheckingImpedance(true);
                     startStopCheck.but_txt = "Stop Impedance Check";
+                } else {
+                    //Stop impedance check
+                    ganglionBoard.setCheckingImpedance(false);
+                    //ganglion.impedanceStop();
+                    startStopCheck.but_txt = "Start Impedance Check";
                 }
             }
         }
         startStopCheck.setIsActive(false);
     }
 };
-
-public float convertRawGanglionImpedanceToTarget(float _actual){
-    //the following impedance adjustment calculations were derived using empirical values from resistors between 1,2,3,4,REF-->D_G
-    float _target;
-
-    //V1 -- more accurate for lower impedances (< 22kOhcm) -> y = 0.0034x^3 - 0.1443x^2 + 3.1324x - 10.59
-    if(_actual <= 22){
-        // _target = (0.0004)*(pow(_actual,3)) - (0.0262)*(pow(_actual,2)) + (1.8349)*(_actual) - 6.6006;
-        _target = (0.0034)*(pow(_actual,3)) - (0.1443)*(pow(_actual,2)) + (3.1324)*(_actual) - 10.59;
-    }
-    //V2 -- more accurate for higher impedances (> 22kOhm) -> y = 0.000009x^4 - 0.001x^3 + 0.0409x^2 + 0.6445x - 1
-    else {
-        _target = (0.000009)*(pow(_actual,4)) - (0.001)*pow(_actual,3) + (0.0409)*(pow(_actual,2)) + (0.6445)*(pow(_actual,1)) - 1;
-    }
-
-    return _target;
-}

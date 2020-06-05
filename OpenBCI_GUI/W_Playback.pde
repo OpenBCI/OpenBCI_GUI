@@ -22,13 +22,12 @@ class W_playback extends Widget {
     //allow access to dataProcessing
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
-    Button selectPlaybackFileButton;
+    Button_obci selectPlaybackFileButton;
     MenuList playbackMenuList;
     //Used for spacing
     int padding = 10;
 
     private boolean visible = true;
-    private boolean updating = true;
     private boolean menuHasUpdated = false;
     private boolean menuListIsLocked = false;
 
@@ -36,7 +35,7 @@ class W_playback extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //make a button to load new files
-        selectPlaybackFileButton = new Button (
+        selectPlaybackFileButton = new Button_obci (
             x + w/2 - (padding*2),
             y - navHeight + 2,
             200,
@@ -58,15 +57,9 @@ class W_playback extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
-    }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
     }
 
     void update() {
@@ -199,11 +192,7 @@ void playbackSelectedWidgetButton(File selection) {
     } else {
         println("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
         playbackFileSelected(selection.getAbsolutePath(), selection.getName());
-        if (playbackFileIsEmpty) {
-            haltLoadingFile(selection.getAbsolutePath());
-        } else {
-            reInitAfterPlaybackSelected();
-        }
+        reInitAfterPlaybackSelected();
     }
 }
 
@@ -211,34 +200,15 @@ void playbackSelectedWidgetButton(File selection) {
 void userSelectedPlaybackMenuList (String filePath, int listItem) {
     if (new File(filePath).isFile()) {
         playbackFileSelected(filePath, listItem);
-        if (playbackFileIsEmpty) {
-            haltLoadingFile(filePath);
-        } else {
-            reInitAfterPlaybackSelected();
-        }
+        reInitAfterPlaybackSelected();
     } else {
         outputError("W_Playback: Selected file does not exist. Try another file or clear settings to remove this entry.");
     }
 }
 
 void reInitAfterPlaybackSelected() {
-    //Tell TS widget that the number of channel bars needs to be updated
-    w_timeSeries.updateNumberOfChannelBars = true;
-    //Reinitialize core data, EMG, FFT, and Headplot number of channels
-    reinitializeCoreDataAndFFTBuffer();
-    //Update the MenuList in the PlaybackHistory Widget
-    w_playback.refreshPlaybackList();
-    //Process the file again to fix issue. This makes indexes for playback slider load properly
-    try {
-        hasRepeated = false;
-        has_processed = false;
-        process_input_file();
-        println("+++GUI update process file has occurred");
-    }
-    catch(Exception e) {
-        isOldData = true;
-        output("+++Error processing timestamps, are you using old data?");
-    }
+    // restart the session with the new file
+    requestReinit();
 }
 
 //Called when user selects a playback file from dialog box
@@ -249,10 +219,6 @@ void playbackFileSelected(File selection) {
         println("DataLogging: playbackSelected: User selected " + selection.getAbsolutePath());
         //Set the name of the file
         playbackFileSelected(selection.getAbsolutePath(), selection.getName());
-        if (playbackFileIsEmpty) {
-            haltLoadingFile(selection.getAbsolutePath());
-            return;
-        }
     }
 }
 
@@ -271,10 +237,6 @@ void playbackFileSelected (String longName, int listItem) {
         playbackHistoryFileExists = false;
     }
     playbackFileSelected(longName, shortName);
-    if (playbackFileIsEmpty) {
-        haltLoadingFile(longName);
-        return;
-    }
 }
 
 //Handles the work for the above two cases
@@ -282,19 +244,11 @@ void playbackFileSelected (String longName, String shortName) {
     playbackData_fname = longName;
     playbackData_ShortName = shortName;
     //Process the playback file
-    processNewPlaybackFile();
-    if (playbackFileIsEmpty) return;
-    //Determine the number of channels
-    if (playbackData_table != null) {
-        determineNumChanFromFile(playbackData_table);
-    } else {
-        outputError("playbackFileSelected: Data table appears to be null! Please submit an issue on GitHub!");
-        return;
-    }
+
     //Output new playback settings to GUI as success
     outputSuccess("You have selected \""
-    + shortName + "\" for playback. "
-    + str(nchan) + " channels found.");
+    + shortName + "\" for playback.");
+
     try {
         savePlaybackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
         JSONArray recentFilesArray = savePlaybackHistoryJSON.getJSONArray("playbackFileHistory");
@@ -311,157 +265,6 @@ void playbackFileSelected (String longName, String shortName) {
     }
     //add playback file that was processed to the JSON history
     savePlaybackFileToHistory(longName);
-}
-
-void processNewPlaybackFile() { //Also used in DataLogging.pde
-    //Fix issue for processing successive playback files
-    indices = 0;
-    hasRepeated = false;
-    has_processed = false;
-    if (systemMode == SYSTEMMODE_POSTINIT) {
-        w_timeSeries.scrollbar.skipToStartButtonAction(); //sets scrollbar to 0
-    }
-    //initialize playback file
-    initPlaybackFileToTable();
-}
-
-//NEEDS TO BE UPDATED TO MORE EFFICIENT METHOD
-//Currently looks at the total number of Columns
-//Maybe try counting the number of columns after first index and before X...
-//...where X is the unique data type that occurs after last channel
-void determineNumChanFromFile(Table datatable) {
-    int numColumnsPlaybackFile = datatable.getColumnCount();
-    int numChannelsFoundInPlaybackFile;
-    if (numColumnsPlaybackFile > totalColumns16ChanThresh) {
-        numChannelsFoundInPlaybackFile = 16;
-    } else if (numColumnsPlaybackFile <= totalColumns4ChanThresh) {
-        numChannelsFoundInPlaybackFile = 4;
-    } else {
-        numChannelsFoundInPlaybackFile = 8;
-    }
-    updateToNChan(numChannelsFoundInPlaybackFile);
-}
-
-void initPlaybackFileToTable() { //also used in OpenBCI_GUI.pde on system start
-    //open and load the data file
-    println("OpenBCI_GUI: initSystem: loading playback data from " + playbackData_fname);
-    playbackFileIsEmpty = false; //reset this flag each time playback data is loaded
-    boolean errorLoadingTable = false;
-
-    errorLoadingTable = loadTableFromCSV();
-
-    //Sometimes the SD card converted files have blank space at the end, remove it and try to connect again
-    if (errorLoadingTable) {
-        println("initPlaybackFileToTable: Deleting last line of file and trying again...");
-        try {
-            RandomAccessFile f = new RandomAccessFile(playbackData_fname, "rw");
-            long length = f.length() - 1;
-            byte b; 
-            do {                     
-                length -= 1;
-                f.seek(length);
-                b = f.readByte();
-            } while (b != 10 && length > 0);
-            f.setLength(length+1);
-            f.close();
-            errorLoadingTable = loadTableFromCSV();
-        } catch (FileNotFoundException e) {
-            println("initPlaybackFileToTable: Unable to locate file : " + playbackData_fname);
-        } catch (IOException e) {
-            println("initPlaybackFileToTable: Unable to locate file : " + playbackData_fname);
-        }
-    }
-
-    //If we are still unable to load data into a table from file, exit method
-    if (errorLoadingTable) {
-        return;
-    }
-
-    try {
-        int rowCount = playbackData_table.getRowCount();
-        int fileDurationInSeconds = round(float(playbackData_table.getRowCount())/getSampleRateSafe());
-        println("OpenBCI_GUI: initSystem: loading complete.  " 
-                + rowCount 
-                + " rows of data, which is " 
-                +  fileDurationInSeconds
-                + " seconds of EEG data");
-        
-        //If a playback file has less than one second of data, throw an error using a flag
-        if (playbackData_table.getRowCount() <= settings.minNumRowsPlaybackFile) {
-            playbackFileIsEmpty = true;
-        }
-    } catch (NullPointerException e) {
-        println("initPlaybackFileToTable: Encountered an error - " + e);
-        e.printStackTrace();
-    }
-}
-
-boolean loadTableFromCSV () {
-    try {
-        playbackData_table = null;
-        playbackData_table = new Table_CSV(playbackData_fname);
-        //removing first column of data from data file...the first column is a time index and not eeg data
-        playbackData_table.removeColumn(0);
-        return false;
-    } catch (Exception e) {
-        println("initPlaybackFileToTable: Encountered an error while loading " + playbackData_fname);
-        return true;
-    }
-}
-
-void haltLoadingFile(String _filePath) {
-    if (systemMode == SYSTEMMODE_POSTINIT) {
-        abandonInit = true;
-        initSystemButton.setString("START SESSION");
-        controlPanel.open();
-        haltSystem();
-    }
-    //Go ahead and remove this file from the Playback History
-    JSONObject playbackHistoryJSON = loadJSONObject(userPlaybackHistoryFile);
-    JSONArray recentFilesArray = playbackHistoryJSON.getJSONArray("playbackFileHistory");
-    removePlaybackFileFromHistory(recentFilesArray, _filePath);
-    outputError("Playback file appears empty. Try loading a different file.");
-}
-
-//This gets called when a playback file is selected from the Playback History Widget
-void reinitializeCoreDataAndFFTBuffer() {
-    //println("Data Processing Number of Channels is: " + dataProcessing.nchan);
-    dataProcessing.nchan = nchan;
-    dataProcessing.fs_Hz = getSampleRateSafe();
-    dataProcessing.data_std_uV = new float[nchan];
-    dataProcessing.polarity = new float[nchan];
-    dataProcessing.newDataToSend = false;
-    dataProcessing.avgPowerInBins = new float[nchan][dataProcessing.processing_band_low_Hz.length];
-    dataProcessing.headWidePower = new float[dataProcessing.processing_band_low_Hz.length];
-    dataProcessing.defineFilters();  //define the filters anyway just so that the code doesn't bomb
-
-    //initialize core data objects
-    initCoreDataObjects();
-    //verbosePrint("W_Playback: initSystem: -- Init 1 -- " + millis());
-
-    initFFTObjectsAndBuffer();
-
-    //verbosePrint("W_Playback: initSystem: -- Init 2 -- " + millis());
-
-    //Update the number of channels for FFT
-    w_fft.fft_points = null;
-    w_fft.fft_points = new GPointsArray[nchan];
-    w_fft.initializeFFTPlot(ourApplet);
-    w_fft.update();
-
-    //Update the number of channels for EMG
-    w_emg.motorWidgets = null;
-    w_emg.updateEMGMotorWidgets(nchan);
-
-    //Update the number of channels for HeadPlot
-    w_headPlot.headPlot = null;
-    w_headPlot.updateHeadPlot(nchan);
-    
-    //Update channelSelect in bandPower and SSVEP widgets
-    w_bandPower.bpChanSelect.createCheckList(nchan);
-    w_bandPower.activateAllChannels();
-    w_ssvep.ssvepChanSelect.createCheckList(nchan);
-    w_ssvep.activateDefaultChannels();
 }
 
 void savePlaybackFileToHistory(String fileName) {

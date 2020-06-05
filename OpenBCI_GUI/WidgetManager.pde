@@ -21,21 +21,18 @@ W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
 W_template w_template1;
 W_emg w_emg;
-W_openBionics w_openbionics;
-W_Focus w_focus;
 W_PulseSensor w_pulsesensor;
 W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
-W_MarkerMode w_markermode;
 W_playback w_playback;
-W_SSVEP w_ssvep;
 W_Spectrogram w_spectrogram;
+W_NovaAux w_novaAux;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets start -- " + millis());
 
-    //Widget_0
+    //Widget_0 -- The Widget number helps when debugging GUI front-end
     w_timeSeries = new W_timeSeries(_this);
     w_timeSeries.setTitle("Time Series");
     addWidget(w_timeSeries, w);
@@ -47,13 +44,22 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_fft, w);
     // println("  setupWidgets fft -- " + millis());
 
-    //Widget_2
-    w_accelerometer = new W_Accelerometer(_this);
-    w_accelerometer.setTitle("Accelerometer");
-    addWidget(w_accelerometer, w);
+    if (currentBoard instanceof AccelerometerCapableBoard) {
+        //Widget_2
+        w_accelerometer = new W_Accelerometer(_this);
+        w_accelerometer.setTitle("Accelerometer");
+        addWidget(w_accelerometer, w);
+    }
+
+    if (novaXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
+        //NovaXR_Widget_2
+        w_novaAux = new W_NovaAux(_this);
+        w_novaAux.setTitle("NovaXR Aux");
+        addWidget(w_novaAux, w);
+    }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
-    if(nchan == 4 && eegDataSource == DATASOURCE_GANGLION){
+    if(nchan == 4 && currentBoard instanceof BoardGanglion){
         //If using Ganglion, this is Widget_3
         w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
@@ -91,61 +97,46 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets emg -- " + millis());
 
     //Cyton/Synthetic Widget_7, Ganglion/Playback Widget_8
-    w_focus = new W_Focus(_this);
-    w_focus.setTitle("Focus Widget");
-    addWidget(w_focus, w);
-    // println("  setupWidgets focus widget -- " + millis());
-
-    w_ssvep = new W_SSVEP(_this);
-    w_ssvep.setTitle("SSVEP_beta");
-    addWidget(w_ssvep, w);
-
     w_spectrogram = new W_Spectrogram(_this);
     w_spectrogram.setTitle("Spectrogram");
     addWidget(w_spectrogram, w);
 
     //only instantiate these widgets if you are using a Cyton board for live streaming
-    if(eegDataSource == DATASOURCE_CYTON){
+    if(currentBoard instanceof AnalogCapableBoard){
         //Cyton Widget_8
         w_pulsesensor = new W_PulseSensor(_this);
         w_pulsesensor.setTitle("Pulse Sensor");
         addWidget(w_pulsesensor, w);
         // println("  setupWidgets pulse sensor -- " + millis());
+    }
 
+    if(currentBoard instanceof DigitalCapableBoard) {
         //Cyton Widget_9
         w_digitalRead = new W_DigitalRead(_this);
         w_digitalRead.setTitle("Digital Read");
         addWidget(w_digitalRead, w);
-
+    }
+    
+    if(currentBoard instanceof AnalogCapableBoard) {
         //Cyton Widget_10
         w_analogRead = new W_AnalogRead(_this);
         w_analogRead.setTitle("Analog Read");
         addWidget(w_analogRead, w);
-
-        //Cyton Widget_11
-        w_markermode = new W_MarkerMode(_this);
-        w_markermode.setTitle("Marker Mode");
-        addWidget(w_markermode, w);
     }
-
     
-    //Cyton Widget_12, Synthetic Widget_8, Ganglion/Playback Widget_9
+    //Cyton Widget_11, Synthetic Widget_8, Ganglion/Playback Widget_9
     //DEVELOPERS: Here is an example widget with the essentials/structure in place
     w_template1 = new W_template(_this);
     w_template1.setTitle("Widget Template 1");
     addWidget(w_template1, w);
 
-    // w_template2 = new W_template(_this);
-    // w_template2.setTitle("Widget Template 2");
-    // addWidget(w_template2, w);
-
-    // w_openbionics = new W_OpenBionics(_this);
-    // w_openbionics.setTitle("OpenBionics");
-    // addWidget(w_openbionics,w);
-
-    // w_template3 = new W_template(_this);
-    // w_template3.setTitle("LSL Stream");
-    // addWidget(w_template3, w);
+    /*
+    //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10
+    w_focus = new W_Focus(_this);
+    w_focus.setTitle("Focus Widget");
+    addWidget(w_focus, w);
+    // println("  setupWidgets focus widget -- " + millis());
+    */
 
 }
 
@@ -182,7 +173,6 @@ class WidgetManager{
 
     public boolean isWMInitialized = false;
     private boolean visible = true;
-    private boolean updating = true;
 
     WidgetManager(PApplet _this){
         widgets = new ArrayList<Widget>();
@@ -208,23 +198,16 @@ class WidgetManager{
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         }
 
-        delay(1000);
-
         isWMInitialized = true;
     }
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
+
     void setupWidgetSelectorDropdowns(){
         //create the widgetSelector dropdown of each widget
         //println("widgets.size() = " + widgets.size());

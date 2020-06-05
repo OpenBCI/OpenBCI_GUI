@@ -20,10 +20,10 @@ class W_DigitalRead extends Widget {
     DigitalReadDot[] digitalReadDots;
 
     private boolean visible = true;
-    private boolean updating = true;
-    boolean digitalReadOn = false;
 
-    Button digitalModeButton;
+    Button_obci digitalModeButton;
+
+    private DigitalCapableBoard digitalBoard;
 
     W_DigitalRead(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -33,7 +33,7 @@ class W_DigitalRead extends Widget {
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
 
         //set number of digital reads
-        if (cyton.isWifi()) {
+        if (selectedProtocol == BoardProtocol.WIFI) {
             numDigitalReadDots = 3;
         } else {
             numDigitalReadDots = 5;
@@ -63,7 +63,7 @@ class W_DigitalRead extends Widget {
             } else if (i == 1) {
                 digitalPin = 12;
             } else if (i == 2) {
-                if (cyton.isWifi()) {
+                if (selectedProtocol == BoardProtocol.WIFI) {
                     digitalPin = 17;
                 } else {
                     digitalPin = 13;
@@ -77,18 +77,20 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        digitalModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
+        digitalModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "DIGITAL TOGGLE", 12);
         digitalModeButton.setCornerRoundess((int)(navHeight-6));
         digitalModeButton.setFont(p5,12);
         digitalModeButton.setColorNotPressed(color(57,128,204));
         digitalModeButton.textColorNotActive = color(255);
         digitalModeButton.hasStroke(false);
 
-        if (cyton.isWifi()) {
+        if (selectedProtocol == BoardProtocol.WIFI) {
             digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, and D17.");
         } else {
             digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18.");
         }
+
+        digitalBoard = (DigitalCapableBoard)currentBoard;
     }
 
     public int getNumDigitalReads() {
@@ -98,19 +100,13 @@ class W_DigitalRead extends Widget {
     public boolean isVisible() {
         return visible;
     }
-    public boolean isUpdating() {
-        return updating;
-    }
 
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
-    public void setUpdating(boolean _updating) {
-        updating = _updating;
-    }
 
     void update(){
-        if(visible && updating){
+        if(visible){
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
@@ -120,6 +116,23 @@ class W_DigitalRead extends Widget {
 
             //ignore top left button interaction when widgetSelector dropdown is active
             ignoreButtonCheck(digitalModeButton);
+        }
+
+        updateOnOffButton();
+    }
+
+    private void updateOnOffButton() {	
+        if (digitalBoard.isDigitalActive()) {	
+            digitalModeButton.setString("Turn Digital Read Off");	
+            digitalModeButton.setIgnoreHover(!digitalBoard.canDeactivateDigital());
+            if(!digitalBoard.canDeactivateDigital()) {
+                digitalModeButton.setColorNotPressed(color(128));
+            }
+        }
+        else {
+            digitalModeButton.setString("Turn Digital Read On");	
+            digitalModeButton.setIgnoreHover(false);
+            digitalModeButton.setColorNotPressed(color(57,128,204));
         }
     }
 
@@ -131,10 +144,7 @@ class W_DigitalRead extends Widget {
             pushStyle();
             //draw channel bars
             digitalModeButton.draw();
-            if (cyton.getBoardMode() != BoardMode.DIGITAL) {
-                digitalModeButton.setString("Turn Digital Read On");
-            } else {
-                digitalModeButton.setString("Turn Digital Read Off");
+            if (digitalBoard.isDigitalActive()) {
                 for(int i = 0; i < numDigitalReadDots; i++){
                     digitalReadDots[i].draw();
                 }
@@ -186,22 +196,16 @@ class W_DigitalRead extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
-            if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BoardMode.DIGITAL) {
-                    cyton.setBoardMode(BoardMode.DIGITAL);
-                    if (cyton.isWifi()) {
-                        output("Starting to read digital inputs on pin marked D11, D12 and D17");
-                    } else {
-                        output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
-                    }
-                    w_analogRead.analogReadOn = false;
-                    w_pulsesensor.analogReadOn = false;
-                    w_markermode.markerModeOn = false;
+            if (!digitalBoard.isDigitalActive()) {
+                digitalBoard.setDigitalActive(true);
+                if (selectedProtocol == BoardProtocol.WIFI) {
+                    output("Starting to read digital inputs on pin marked D11, D12 and D17");
                 } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
-                    output("Starting to read accelerometer");
+                    output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                 }
-                digitalReadOn = !digitalReadOn;
+            } else {
+                digitalBoard.setDigitalActive(false);
+                output("Starting to read accelerometer");
             }
         }
         digitalModeButton.setIsActive(false);
@@ -238,7 +242,11 @@ class DigitalReadDot{
     int dotHeight;
     float dotCorner;
 
+    DigitalCapableBoard digitalBoard;
+
     DigitalReadDot(PApplet _parent, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding){ // channel number, x/y location, height, width
+
+        digitalBoard = (DigitalCapableBoard)currentBoard;
 
         digitalInputPin = _digitalInputPin;
         digitalInputString = str(digitalInputPin);
@@ -274,18 +282,23 @@ class DigitalReadDot{
         digitalPin.alignH = CENTER;
     }
 
-    void update(){
+    void update() {
+        List<double[]> lastData = currentBoard.getData(1);
+        double[] lastSample = lastData.get(0);
+        int[] digitalChannels = digitalBoard.getDigitalChannels();
+
         //update the voltage values
         if (digitalInputPin == 11) {
-            digitalInputVal = (hub.validAccelValues[0] & 0xFF00) >> 8;
+            digitalInputVal = (int)lastSample[digitalChannels[0]];
         } else if (digitalInputPin == 12) {
-            digitalInputVal = hub.validAccelValues[0] & 0xFF;
+            digitalInputVal = (int)lastSample[digitalChannels[1]];
         } else if (digitalInputPin == 13) {
-            digitalInputVal = (hub.validAccelValues[1] & 0xFF00) >> 8;
+            digitalInputVal = (int)lastSample[digitalChannels[2]];
         } else if (digitalInputPin == 17) {
-            digitalInputVal = hub.validAccelValues[1] & 0xFF;
-        } else { // 18
-            digitalInputVal = hub.validAccelValues[2];
+            digitalInputVal = (int)lastSample[digitalChannels[3]];
+        } else {
+            // 18
+            digitalInputVal = (int)lastSample[digitalChannels[4]];
         }
 
         digitalValue.string = String.format("%d", digitalInputVal);

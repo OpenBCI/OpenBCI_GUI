@@ -14,7 +14,7 @@ class W_template extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-    Button widgetTemplateButton;
+    Button_obci widgetTemplateButton;
 
     W_template(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -26,7 +26,7 @@ class W_template extends Widget {
         addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
         addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
 
-        widgetTemplateButton = new Button (x + w/2, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
+        widgetTemplateButton = new Button_obci (x + w/2, y + h/2, 200, navHeight, "Design Your Own Widget!", 12);
         widgetTemplateButton.setFont(p4, 14);
         widgetTemplateButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
     }
@@ -105,16 +105,12 @@ void Dropdown1(int n){
     } else if(n==1){
         //do this instead
     }
-
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
 void Dropdown2(int n){
     println("Item " + (n+1) + " selected from Dropdown 2");
-    closeAllDropdowns();
 }
 
 void Dropdown3(int n){
     println("Item " + (n+1) + " selected from Dropdown 3");
-    closeAllDropdowns();
 }

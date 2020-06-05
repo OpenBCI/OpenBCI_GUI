@@ -48,7 +48,6 @@ void SmoothEMG(int n){
         }
     }
     settings.emgSmoothingSave = n;
-    closeAllDropdowns();
 }
 
 void uVLimit(int n){
@@ -67,7 +66,6 @@ void uVLimit(int n){
         }
     }
     settings.emguVLimSave = n;
-    closeAllDropdowns();
 }
 
 void CreepSpeed(int n){
@@ -89,7 +87,6 @@ void CreepSpeed(int n){
         }
     }
     settings.emgCreepSave = n;
-    closeAllDropdowns();
 }
 
 void minUVRange(int n){
@@ -108,7 +105,6 @@ void minUVRange(int n){
         }
     }
     settings.emgMinDeltauVSave = n;
-    closeAllDropdowns();
 }
 
 class W_emg extends Widget {
@@ -121,7 +117,7 @@ class W_emg extends Widget {
     boolean[] events;
     int currChannel;
     int theBaud;
-    Button connectButton;
+    Button_obci connectButton;
     Serial serialOutEMG;
     String theSerial;
 
@@ -232,7 +228,7 @@ class W_emg extends Widget {
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+        process(dataProcessingFilteredBuffer, fftBuff);
     }
 
     void draw() {
@@ -245,7 +241,7 @@ class W_emg extends Widget {
 
         if (emgAdvanced) {
             if (connectButton != null) connectButton.draw();
-            else connectButton = new Button(int(x) + 2, int(y) - navHeight + 2, 100, navHeight - 6, "Connect", fontInfo.buttonLabel_size);
+            else connectButton = new Button_obci(int(x) + 2, int(y) - navHeight + 2, 100, navHeight - 6, "Connect", fontInfo.buttonLabel_size);
 
             stroke(1, 18, 41, 125);
 
@@ -385,8 +381,6 @@ class W_emg extends Widget {
     }
 
     public void process(
-        float[][] data_newest_uV, //holds raw EEG data that is new since the last call
-        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
         float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
         FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
@@ -1306,21 +1300,17 @@ class W_emg extends Widget {
 
 void ChannelSelection(int n) {
     w_emg.currChannel = n;
-    closeAllDropdowns();
 }
 
 void EventType(int n) {
     if (n == 0) w_emg.events[w_emg.currChannel] = true;
     else if (n == 1) w_emg.events[w_emg.currChannel] = false;
-    closeAllDropdowns();
 }
 
 void BaudRate(int n) {
     if (!w_emg.baudList.get(n).equals("NONE")) w_emg.theBaud = Integer.parseInt(w_emg.baudList.get(n));
-    closeAllDropdowns();
 }
 
 void SerialSelection(int n) {
     if (!w_emg.serList.get(n).equals("NONE")) w_emg.theSerial = w_emg.serList.get(n);
-    closeAllDropdowns();
 }

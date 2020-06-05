@@ -16,21 +16,22 @@ TopNav topNav;
 
 class TopNav {
 
-    Button controlPanelCollapser;
-    Button fpsButton;
-    Button debugButton;
+    Button_obci controlPanelCollapser;
+    Button_obci fpsButton;
+    Button_obci debugButton;
 
-    Button stopButton;
+    Button_obci stopButton;
 
-    Button filtBPButton;
-    Button filtNotchButton;
+    Button_obci filtBPButton;
+    Button_obci filtNotchButton;
+    Button_obci smoothingButton;
 
-    Button tutorialsButton;
-    Button shopButton;
-    Button issuesButton;
-    Button updateGuiVersionButton;
-    Button layoutButton;
-    Button configButton;
+    Button_obci tutorialsButton;
+    Button_obci shopButton;
+    Button_obci issuesButton;
+    Button_obci updateGuiVersionButton;
+    Button_obci layoutButton;
+    Button_obci configButton;
 
     LayoutSelector layoutSelector;
     TutorialSelector tutorialSelector;
@@ -46,12 +47,12 @@ class TopNav {
     //constructor
     TopNav() {
         int w = 256;
-        controlPanelCollapser = new Button(3, 3, w, 26, "System Control Panel", fontInfo.buttonLabel_size);
+        controlPanelCollapser = new Button_obci(3, 3, w, 26, "System Control Panel", fontInfo.buttonLabel_size);
         controlPanelCollapser.setFont(h3, 16);
         controlPanelCollapser.setIsActive(true);
         controlPanelCollapser.isDropdownButton = true;
 
-        fpsButton = new Button(controlPanelCollapser.but_x + controlPanelCollapser.but_dx + 3, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
+        fpsButton = new Button_obci(controlPanelCollapser.but_x + controlPanelCollapser.but_dx + 3, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
         if (frameRateCounter==0) {
             fpsButton.setString("24 fps");
         }
@@ -67,33 +68,33 @@ class TopNav {
 
         fpsButton.setFont(h3, 16);
         fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate and see if it helps!");
-        //highRezButton = new Button(3+3+w+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
+        //highRezButton = new Button_obci(3+3+w+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
         controlPanelCollapser.setFont(h3, 16);
 
         //top right buttons from right to left
-        debugButton = new Button(width - 33 - 3, 3, 33, 26, " ", fontInfo.buttonLabel_size);
+        debugButton = new Button_obci(width - 33 - 3, 3, 33, 26, " ", fontInfo.buttonLabel_size);
         debugButton.setHelpText("Click to open the Console Log window.");
 
-        tutorialsButton = new Button(debugButton.but_x - 80 - 3, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
+        tutorialsButton = new Button_obci(debugButton.but_x - 80 - 3, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
         tutorialsButton.setFont(h3, 16);
         tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
 
-        issuesButton = new Button(tutorialsButton.but_x - 80 - 3, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
+        issuesButton = new Button_obci(tutorialsButton.but_x - 80 - 3, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
         issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
         issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/issues");
         issuesButton.setFont(h3, 16);
 
-        shopButton = new Button(issuesButton.but_x - 80 - 3, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
+        shopButton = new Button_obci(issuesButton.but_x - 80 - 3, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
         shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
         shopButton.setURL("http://shop.openbci.com/");
         shopButton.setFont(h3, 16);
 
-        configButton = new Button(width - 70 - 3, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
+        configButton = new Button_obci(width - 70 - 3, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
         configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
         configButton.setFont(h4, 14);
 
         //Lookup and check the local GUI version against the latest Github release
-        updateGuiVersionButton = new Button(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
+        updateGuiVersionButton = new Button_obci(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
         updateGuiVersionButton.setFont(h3, 16);
         
         checkInternetFetchGithubData();
@@ -106,21 +107,27 @@ class TopNav {
     }
 
     void initSecondaryNav() {
-        stopButton = new Button(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
+        stopButton = new Button_obci(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
         stopButton.setFont(h4, 14);
         stopButton.setColorNotPressed(color(184, 220, 105));
         stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
 
-        filtNotchButton = new Button(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
+        filtNotchButton = new Button_obci(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
         filtNotchButton.setFont(p5, 12);
         filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
 
-        filtBPButton = new Button(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
+        filtBPButton = new Button_obci(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
         filtBPButton.setFont(p5, 12);
         filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
 
+        if (currentBoard instanceof SmoothingCapableBoard) {
+            smoothingButton = new Button_obci(filtBPButton.but_x + filtBPButton.but_dx + 4, 35, 70, 26, getSmoothingString(), fontInfo.buttonLabel_size);
+            smoothingButton.setFont(p5, 12);
+            smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
+        }
+
         //right to left in top right (secondary nav)
-        layoutButton = new Button(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
+        layoutButton = new Button_obci(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
         layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
         layoutButton.setFont(h4, 14);
 
@@ -184,6 +191,11 @@ class TopNav {
             filtBPButton.textColorNotActive = color(bgColor);
             filtNotchButton.textColorNotActive = color(bgColor);
             layoutButton.textColorNotActive = color(bgColor);
+
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.textColorNotActive = color(bgColor);
+                smoothingButton.setColorNotPressed(color(255));
+            }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             filtBPButton.setColorNotPressed(color(57, 128, 204));
             filtNotchButton.setColorNotPressed(color(57, 128, 204));
@@ -192,6 +204,11 @@ class TopNav {
             filtBPButton.textColorNotActive = color(255);
             filtNotchButton.textColorNotActive = color(255);
             layoutButton.textColorNotActive = color(255);
+
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.setColorNotPressed(color(57, 128, 204));
+                smoothingButton.textColorNotActive = color(255);
+            }
         }
     }
 
@@ -254,11 +271,15 @@ class TopNav {
 
         popStyle();
 
+        //Draw these buttons during a Session
         if (systemMode == SYSTEMMODE_POSTINIT) {
             stopButton.draw();
             filtBPButton.draw();
             filtNotchButton.draw();
             layoutButton.draw();
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.draw();
+            }
         }
 
         controlPanelCollapser.draw();
@@ -310,6 +331,15 @@ class TopNav {
             if (topNav.filtNotchButton.isMouseHere()) {
                 filtNotchButton.setIsActive(true);
                 incrementNotchConfiguration();
+            }
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                if (smoothingButton.isMouseHere()) {
+                    smoothingButton.setIsActive(true);
+                    //toggle data smoothing on mousePress for capable boards
+                    SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
+                    smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
+                    smoothingButton.setString(getSmoothingString());
+                }
             }
             if (layoutButton.isMouseHere()) {
                 layoutButton.setIsActive(true);
@@ -379,7 +409,7 @@ class TopNav {
             toggleFrameRate();
         }
         if (debugButton.isMouseHere() && debugButton.isActive()) {
-            thread("openConsole");
+            ConsoleWindow.display();
         }
 
         if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
@@ -421,6 +451,10 @@ class TopNav {
             filtBPButton.setIsActive(false);
             filtNotchButton.setIsActive(false);
             layoutButton.setIsActive(false);
+
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.setIsActive(false);
+            }
         }
 
         fpsButton.setIsActive(false);
@@ -548,6 +582,10 @@ class TopNav {
             updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
         }
     }
+
+    private String getSmoothingString() {
+        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\nOn" : "Smoothing\nOff";
+    }
 }
 
 //=============== OLD STUFF FROM Gui_Manger.pde ===============//
@@ -573,7 +611,7 @@ class LayoutSelector {
     int x, y, w, h, margin, b_w, b_h;
     boolean isVisible;
 
-    ArrayList<Button> layoutOptions; //
+    ArrayList<Button_obci> layoutOptions; //
 
     LayoutSelector() {
         w = 180;
@@ -587,7 +625,7 @@ class LayoutSelector {
 
         isVisible = false;
 
-        layoutOptions = new ArrayList<Button>();
+        layoutOptions = new ArrayList<Button_obci>();
         addLayoutOptionButton();
     }
 
@@ -690,25 +728,25 @@ class LayoutSelector {
         //FIRST ROW
 
         //setup button 1 -- full screen
-        Button tempLayoutButton = new Button(x + margin, y + margin, b_w, b_h, "N/A");
+        Button_obci tempLayoutButton = new Button_obci(x + margin, y + margin, b_w, b_h, "N/A");
         PImage tempBackgroundImage = loadImage("layout_buttons/layout_1.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 2 -- 2x2
-        tempLayoutButton = new Button(x + 2*margin + b_w*1, y + margin, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 2*margin + b_w*1, y + margin, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_2.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 3 -- 2x1
-        tempLayoutButton = new Button(x + 3*margin + b_w*2, y + margin, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 3*margin + b_w*2, y + margin, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_3.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 4 -- 1x2
-        tempLayoutButton = new Button(x + 4*margin + b_w*3, y + margin, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 4*margin + b_w*3, y + margin, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_4.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
@@ -716,25 +754,25 @@ class LayoutSelector {
         //SECOND ROW
 
         //setup button 5
-        tempLayoutButton = new Button(x + margin, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + margin, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_5.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 6
-        tempLayoutButton = new Button(x + 2*margin + b_w*1, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 2*margin + b_w*1, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_6.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 7
-        tempLayoutButton = new Button(x + 3*margin + b_w*2, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 3*margin + b_w*2, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_7.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 8
-        tempLayoutButton = new Button(x + 4*margin + b_w*3, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 4*margin + b_w*3, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_8.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
@@ -743,25 +781,25 @@ class LayoutSelector {
 
         h = margin*4 + b_h*3;
         //setup button 9
-        tempLayoutButton = new Button(x + margin, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + margin, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_9.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 10
-        tempLayoutButton = new Button(x + 2*margin + b_w*1, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 2*margin + b_w*1, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_10.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 11
-        tempLayoutButton = new Button(x + 3*margin + b_w*2, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 3*margin + b_w*2, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_11.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
 
         //setup button 12
-        tempLayoutButton = new Button(x + 4*margin + b_w*3, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
+        tempLayoutButton = new Button_obci(x + 4*margin + b_w*3, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
         tempBackgroundImage = loadImage("layout_buttons/layout_12.png");
         tempLayoutButton.setBackgroundImage(tempBackgroundImage);
         layoutOptions.add(tempLayoutButton);
@@ -772,7 +810,7 @@ class ConfigSelector {
     int x, y, w, h, margin, b_w, b_h;
     boolean clearAllSettingsPressed;
     boolean isVisible;
-    ArrayList<Button> configOptions;
+    ArrayList<Button_obci> configOptions;
     int configHeight = 0;
     color newGreen = color(114,204,171);
     color expertPurple = color(135,95,154);
@@ -797,7 +835,7 @@ class ConfigSelector {
 
         isVisible = false;
 
-        configOptions = new ArrayList<Button>();
+        configOptions = new ArrayList<Button_obci>();
         addConfigButtons();
 
         buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
@@ -968,7 +1006,7 @@ class ConfigSelector {
         //Customize initial button appearance here
         //setup button 0 -- Expert Mode Toggle Button
         int buttonNumber = 0;
-        Button tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Turn Expert Mode On");
+        Button_obci tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Turn Expert Mode On");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(newGreen);
         tempConfigButton.setFontColorNotActive(color(255));
@@ -977,19 +1015,19 @@ class ConfigSelector {
 
         //setup button 1 -- Save Custom Settings
         buttonNumber++;
-        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
+        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
         tempConfigButton.setFont(p5, 12); 
         configOptions.add(tempConfigButton);
 
         //setup button 2 -- Load Custom Settings
         buttonNumber++;
-        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
+        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
         //setup button 3 -- Default Settings
         buttonNumber++;
-        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
+        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
@@ -997,7 +1035,7 @@ class ConfigSelector {
         buttonNumber = 0;
         //Update the height of the Settings dropdown
         h = margin*(buttonNumber+1) + b_h*(buttonNumber+1);
-        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
+        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setColorNotPressed(cautionRed);
         tempConfigButton.setFontColorNotActive(color(255));
@@ -1007,14 +1045,14 @@ class ConfigSelector {
         //setup button 5 -- Are You Sure? No
         buttonNumber++;
         //leave space for "Are You Sure?"
-        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "No");
+        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "No");
         tempConfigButton.setFont(p5, 12);
         configOptions.add(tempConfigButton);
 
 
         //setup button 6 -- Are You Sure? Yes
         buttonNumber++;
-        tempConfigButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
+        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setHelpText("Clicking 'Yes' will delete all user settings and stop the session if running.");
         configOptions.add(tempConfigButton);
@@ -1053,7 +1091,7 @@ class TutorialSelector {
     int x, y, w, h, margin, b_w, b_h;
     boolean isVisible;
 
-    ArrayList<Button> tutorialOptions; //
+    ArrayList<Button_obci> tutorialOptions; //
 
     TutorialSelector() {
         w = 180;
@@ -1068,7 +1106,7 @@ class TutorialSelector {
 
         isVisible = false;
 
-        tutorialOptions = new ArrayList<Button>();
+        tutorialOptions = new ArrayList<Button_obci>();
         addTutorialButtons();
     }
 
@@ -1175,35 +1213,35 @@ class TutorialSelector {
 
         //setup button 1 -- full screen
         int buttonNumber = 0;
-        Button tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
+        Button_obci tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 1;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
+        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 2;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Troubleshooting Guide");
+        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Troubleshooting Guide");
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 3;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
+        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
         tutorialOptions.add(tempTutorialButton);
 
         buttonNumber = 4;
         h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
+        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://openbci.com/forum/");
         tutorialOptions.add(tempTutorialButton);

@@ -20,7 +20,7 @@ class W_PulseSensor extends Widget {
 // Pulse Sensor Visualizer Stuff
     int count = 0;
     int heart = 0;
-    int PulseBuffSize = dataPacketBuff.length; // Originally 400
+    int PulseBuffSize = 3*currentBoard.getSampleRate(); // Originally 400
     int BPMbuffSize = 100;
 
     int PulseWindowWidth;
@@ -65,20 +65,13 @@ class W_PulseSensor extends Widget {
     int Signal;                // holds the incoming raw data
     int IBI = 600;             // int that holds the time interval between beats! Must be seeded!
     boolean Pulse = false;     // "True" when User's live heartbeat is detected. "False" when not a "live beat".
-    boolean QS = false;        // becomes true when Arduoino finds a beat.
     int lastProcessedDataPacketInd = 0;
-    boolean analogReadOn = false;
+    Button_obci analogModeButton;
 
-    // testing stuff
-
-    Button analogModeButton;
-
-
+    private AnalogCapableBoard analogBoard;
 
     W_PulseSensor(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-
 
         // Pulse Sensor Stuff
         eggshell = color(255, 253, 248);
@@ -90,71 +83,51 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        analogModeButton = new Button((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "Turn Analog Read On", 12);
+        analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
         analogModeButton.setCornerRoundess((int)(navHeight-6));
         analogModeButton.setFont(p5,12);
-        analogModeButton.setColorNotPressed(color(57,128,204));
         analogModeButton.textColorNotActive = color(255);
         analogModeButton.hasStroke(false);
         analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton.");
 
+        analogBoard = (AnalogCapableBoard)currentBoard;
     }
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (curDataPacketInd < 0) return;
+        List<double[]> allData = currentBoard.getData(PulseBuffSize);
+        int[] analogChannels = analogBoard.getAnalogChannels();
 
-        if (eegDataSource == DATASOURCE_CYTON) {  // LIVE FROM CYTON
-
-        } else if (eegDataSource == DATASOURCE_GANGLION) {  // LIVE FROM GANGLION
-
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
-
-        }
-        else {  // PLAYBACK
-
-        }
-
-        int numSamplesToProcess = curDataPacketInd - lastProcessedDataPacketInd;
-        if (numSamplesToProcess < 0) {
-            numSamplesToProcess += dataPacketBuff.length; //<>// //<>//
-        }
-        // Shift internal ring buffer numSamplesToProcess
-        if (numSamplesToProcess > 0) {
-            for(int i=0; i < PulseWaveY.length - numSamplesToProcess; i++){
-                PulseWaveY[i] = PulseWaveY[i+numSamplesToProcess]; //<>// //<>//
-            }
-        }
-
-        // for each new sample
-        int samplesProcessed = 0;
-        while (samplesProcessed < numSamplesToProcess) {
-            lastProcessedDataPacketInd++;
-
-            // Watch for wrap around
-            if (lastProcessedDataPacketInd > dataPacketBuff.length - 1) {
-                lastProcessedDataPacketInd = 0;
-            }
-
-            int signal = dataPacketBuff[lastProcessedDataPacketInd].auxValues[0];
-
-
+        for (int i=0; i < PulseBuffSize; i++ ) {
+            int signal = (int)(allData.get(i)[analogChannels[0]]);
             processSignal(signal);
-            PulseWaveY[PulseWaveY.length - numSamplesToProcess + samplesProcessed] = signal; //<>// //<>//
-            //println("BPM, Signal, IBI ~~~~ " + BPM + "," +  signal + "," + IBI);
-
-            samplesProcessed++;
+            PulseWaveY[i] = signal;
         }
 
-        if(QS){
-            QS = false;
-            for(int i=0; i<BPMwaveY.length-1; i++){
-                BPMwaveY[i] = BPMwaveY[i+1];
+        updateOnOffButton();
+    }
+
+    private void updateOnOffButton() {	
+        if (analogBoard.isAnalogActive()) {	
+            analogModeButton.setString("Turn Analog Read Off");	
+            analogModeButton.setIgnoreHover(!analogBoard.canDeactivateAnalog());
+            if(!analogBoard.canDeactivateAnalog()) {
+                analogModeButton.setColorNotPressed(color(128));
             }
-            BPMwaveY[BPMwaveY.length-1] = BPM;
         }
+        else {
+            analogModeButton.setString("Turn Analog Read On");	
+            analogModeButton.setIgnoreHover(false);
+            analogModeButton.setColorNotPressed(color(57,128,204));
+        }
+    }
 
+    void addBPM(int bpm) {
+        for(int i=0; i<BPMwaveY.length-1; i++){
+            BPMwaveY[i] = BPMwaveY[i+1];
+        }
+        BPMwaveY[BPMwaveY.length-1] = bpm;
     }
 
     void draw(){
@@ -176,10 +149,7 @@ class W_PulseSensor extends Widget {
         text("BPM "+BPM, BPMposX, BPMposY);
         text("IBI "+IBI+"mS", IBIposX, IBIposY);
 
-        if (cyton.getBoardMode() != BoardMode.ANALOG) {
-            analogModeButton.setString("Turn Analog Read On");
-        } else {
-            analogModeButton.setString("Turn Analog Read Off");
+        if (analogBoard.isAnalogActive()) {
             drawWaves();
         }
 
@@ -209,23 +179,12 @@ class W_PulseSensor extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(analogModeButton.isActive && analogModeButton.isMouseHere()){
-            if(cyton.isPortOpen()) {
-                if (cyton.getBoardMode() != BoardMode.ANALOG) {
-                    cyton.setBoardMode(BoardMode.ANALOG);
-                    output("Starting to read analog inputs on pin marked D11.");
-                    analogModeButton.setString("Turn Analog Read Off");
-                    w_analogRead.analogReadOn = true; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be activated also, this variable documents the change
-                    w_digitalRead.digitalReadOn = false;
-                    w_markermode.markerModeOn = false;
-                } else {
-                    cyton.setBoardMode(BoardMode.DEFAULT);
-                    output("Starting to read accelerometer");
-                    analogModeButton.setString("Turn Analog Read On");
-                    w_analogRead.analogReadOn = false; //w_PulseSensor is almost a sub-widget of w_AnalogRead, this is why AnalogRead will be de-activated also, this variable documents the change
-                    w_digitalRead.digitalReadOn = false;
-                    w_markermode.markerModeOn = false;
-                }
-                analogReadOn = !analogReadOn;
+            if (!analogBoard.isAnalogActive()) {
+                analogBoard.setAnalogActive(true);
+                output("Starting to read analog inputs on pin marked D11.");
+            } else {
+                analogBoard.setAnalogActive(false);
+                output("Starting to read accelerometer");
             }
         }
         analogModeButton.setIsActive(false);
@@ -247,19 +206,6 @@ class W_PulseSensor extends Widget {
         BPMposY = y - padding; // BPMwindowHeight + int(float(padding)*2.5);
         IBIposX = PulseWindowX + PulseWindowWidth/2; // + padding/2
         IBIposY = y - padding;
-
-        // float py;
-        // float by;
-        // for(int i=0; i<PulseWaveY.length; i++){
-        //   py = map(float(PulseWaveY[i]),
-        //     0.0,1023.0,
-        //     float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)
-        //   );
-        //   PulseWaveY[i] = int(py);
-        // }
-        // for(int i=0; i<BPMwaveY.length; i++){
-        //   BPMwaveY[i] = BPMwindowY + BPMwindowHeight-1;
-        // }
     }
 
     void initializePulseFinderVariables(){
@@ -275,7 +221,6 @@ class W_PulseSensor extends Widget {
         Signal = 512;
         IBI = 600;
         Pulse = false;
-        QS = false;
 
         theta = 0.0;
         amplitude = 300;
@@ -283,15 +228,10 @@ class W_PulseSensor extends Widget {
 
         thatTime = millis();
 
-        // float py = map(float(Signal),
-        //   0.0,1023.0,
-        //   float(PulseWindowY + PulseWindowHeight),float(PulseWindowY)
-        // );
         for(int i=0; i<PulseWaveY.length; i++){
             PulseWaveY[i] = Signal;
-
-            // PulseWaveY[i] = PulseWindowY + PulseWindowHeight/2;
         }
+
         for(int i=0; i<BPMwaveY.length; i++){
             BPMwaveY[i] = BPM;
         }
@@ -383,8 +323,7 @@ class W_PulseSensor extends Widget {
                 runningTotal /= 10;                     // average the last 10 IBI values
                 BPM = 60000/runningTotal;               // how many beats can fit into a minute? that's BPM!
                 BPM = constrain(BPM,0,200);
-                QS = true;                              // set Quantified Self flag
-                // QS FLAG IS NOT CLEARED INSIDE THIS FUNCTION
+                addBPM(BPM);
             }
         }
 

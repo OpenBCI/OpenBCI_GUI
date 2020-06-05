@@ -6,7 +6,6 @@ import ddf.minim.analysis.*; //for FFT
 
 DataProcessing dataProcessing;
 String curTimestamp;
-boolean hasRepeated = false;
 HashMap<Integer,String> index_of_times;
 
 // indexes
@@ -22,137 +21,37 @@ float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster p
 //                       Global Functions
 //------------------------------------------------------------------------
 
-//called from systemUpdate when mode=10 and isRunning = true
-void process_input_file() throws Exception {
-    index_of_times = new HashMap<Integer, String>();
-    indices = 0;
-    try {
-        while (!hasRepeated) {
-            currentTableRowIndex = getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-            if (curTimestamp != null) {
-                index_of_times.put(indices, curTimestamp.substring(1)); //remove white space from timestamp
-            } else {
-                index_of_times.put(indices, "notFound");
-            }
-            indices++;
-        }
-        println("number of indexes "+indices);
-        println("Finished filling hashmap");
-        has_processed = true;
-    }
-    catch (Exception e) {
-        e.printStackTrace();
-        throw new Exception();
-    }
-}
-
-/*************************/
-int getDataIfAvailable(int pointCounter) {
-
-    if (eegDataSource == DATASOURCE_CYTON) {
-        //get data from serial port as it streams in
-        //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * cyton.get_scale_fac_uVolts_per_count();
-            }
-            for (int auxChan=0; auxChan < 3; auxChan++) auxBuff[auxChan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].auxValues[auxChan];
-            pointCounter++; //increment counter for "little buffer"
-        }
-    } else if (eegDataSource == DATASOURCE_GANGLION) {
-        //get data from ble as it streams in
-        //next, gather any new data into the "little buffer"
-        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
-            lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
-                //scale the data into engineering units ("microvolts") and save to the "little buffer"
-                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * ganglion.get_scale_fac_uVolts_per_count();
-            }
-            pointCounter++; //increment counter for "little buffer"
-        }
-
-    } else {
-        // make or load data to simulate real time
-
-        //has enough time passed?
-        int current_millis = millis();
-        if (current_millis >= nextPlayback_millis) {
-            //prepare for next time
-            int increment_millis = int(round(float(nPointsPerUpdate)*1000.f/getSampleRateSafe())/playback_speed_fac);
-            if (nextPlayback_millis < 0) nextPlayback_millis = current_millis;
-            nextPlayback_millis += increment_millis;
-
-            // generate or read the data
-            lastReadDataPacketInd = 0;
-            for (int i = 0; i < nPointsPerUpdate; i++) {
-                dataPacketBuff[lastReadDataPacketInd].sampleIndex++;
-                switch (eegDataSource) {
-                case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
-                    synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-                    break;
-                case DATASOURCE_PLAYBACKFILE:
-                    currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-                    break;
-                default:
-                    //no action
-                }
-                //gather the data into the "little buffer"
-                for (int Ichan=0; Ichan < nchan; Ichan++) {
-                    //scale the data into engineering units..."microvolts"
-                    yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan]* cyton.get_scale_fac_uVolts_per_count();
-                }
-
-                pointCounter++;
-            } //close the loop over data points
-        } // close "has enough time passed"
-    }
-    return pointCounter;
-}
-
-RunningMean avgBitRate = new RunningMean(10);  //10 point running average...at 5 points per second, this should be 2 second running average
 
 void processNewData() {
 
-    //compute instantaneous byte rate
-    float inst_byteRate_perSec = (int)(1000.f * ((float)(openBCI_byteCount - prevBytes)) / ((float)(millis() - prevMillis)));
-
-    prevMillis=millis();           //store for next time
-    prevBytes = openBCI_byteCount; //store for next time
-
-    //compute smoothed byte rate
-    avgBitRate.addValue(inst_byteRate_perSec);
-    byteRate_perSec = (int)avgBitRate.calcMean();
+    List<double[]> currentData = currentBoard.getData(getCurrentBoardBufferSize());
+    int[] exgChannels = currentBoard.getEXGChannels();
+    int channelCount = currentBoard.getNumEXGChannels();
 
     //update the data buffers
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-        //append the new data to the larger data buffer...because we want the plotting routines
-        //to show more than just the most recent chunk of data.  This will be our "raw" data.
-        appendAndShift(dataBuffY_uV[Ichan], yLittleBuff_uV[Ichan]);
+    for (int Ichan=0; Ichan < channelCount; Ichan++) {
+        
+        for(int i = 0; i < getCurrentBoardBufferSize(); i++) {
+            dataProcessingRawBuffer[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
+        }
 
-        //make a copy of the data that we'll apply processing to.  This will be what is displayed on the full montage
-        dataBuffY_filtY_uV[Ichan] = dataBuffY_uV[Ichan].clone();
+        dataProcessingFilteredBuffer[Ichan] = dataProcessingRawBuffer[Ichan].clone();
     }
 
-    //if you want to, re-reference the montage to make it be a mean-head reference
-    if (false) rereferenceTheMontage(dataBuffY_filtY_uV);
-
     //apply additional processing for the time-domain montage plot (ie, filtering)
-    dataProcessing.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
+    dataProcessing.process(dataProcessingFilteredBuffer, fftBuff);
 
-    dataProcessing_user.process(yLittleBuff_uV, dataBuffY_uV, dataBuffY_filtY_uV, fftBuff);
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataPacketBuff[lastReadDataPacketInd].values[Ichan]);
+    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan][dataProcessingRawBuffer.length-1]);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // Calculate the impedance
-        float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / cyton.get_leadOffDrive_amps();
+        float impedance = (sqrt(2.0)*dataProcessing.data_std_uV[Ichan]*1.0e-6) / BoardCytonConstants.leadOffDrive_amps;
         // Subtract the 2.2kOhm resistor
-        impedance -= cyton.get_series_resistor();
+        impedance -= BoardCytonConstants.series_resistor_ohms;
         // Verify the impedance is not less than 0
         if (impedance < 0) {
             // Incase impedance some how dipped below 2.2kOhm
@@ -185,73 +84,7 @@ void appendAndShift(float[] data, float newData) {
     data[end] = newData;  //append new data
 }
 
-final float sine_freq_Hz = 10.0f;
-float[] sine_phase_rad = new float[nchan];
-
-void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV;
-    for (int Ichan=0; Ichan < nchan; Ichan++) {
-        if (isChannelActive(Ichan)) {
-            val_uV = randomGaussian()*sqrt(fs_Hz/2.0f); // ensures that it has amplitude of one unit per sqrt(Hz) of signal bandwidth
-            if (Ichan==0) val_uV*= 10f;  //scale one channel higher
-
-            if (Ichan==1) {
-                //add sine wave at 10 Hz at 10 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * sine_freq_Hz / fs_Hz;
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 10.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);
-            } else if (Ichan==2) {
-                //15 Hz interference at 20 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 15.0f / fs_Hz;  //15 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);    //20 uVrms
-            } else if (Ichan==3) {
-                //20 Hz interference at 30 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 20.0f / fs_Hz;  //20 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 30.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //30 uVrms
-            } else if (Ichan==4) {
-                //25 Hz interference at 40 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 25.0f / fs_Hz;  //25 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 40.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //40 uVrms
-            } else if (Ichan==5) {
-                //30 Hz interference at 50 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 30.0f / fs_Hz;  //30 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 50.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //50 uVrms
-            } else if (Ichan==6) {
-                //50 Hz interference at 80 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 50.0f / fs_Hz;  //50 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 120.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //80 uVrms
-            } else if (Ichan==7) {
-                //60 Hz interference at 100 uVrms
-                sine_phase_rad[Ichan] += 2.0f*PI * 60.0f / fs_Hz;  //60 Hz
-                if (sine_phase_rad[Ichan] > 2.0f*PI) sine_phase_rad[Ichan] -= 2.0f*PI;
-                val_uV += 20.0f * sqrt(2.0)*sin(sine_phase_rad[Ichan]);  //20 uVrms
-            }
-        } else {
-            val_uV = 0.0f;
-        }
-        curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-    }
-}
-
-//some data initialization routines
-void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {
-    //initialize the x and y data
-    int xoffset = dataBuffX.length - 1;
-    for (int i=0; i < dataBuffX.length; i++) {
-        dataBuffX[i] = ((float)(i-xoffset)) / fs_Hz; //x data goes from minus time up to zero
-        for (int Ichan = 0; Ichan < nchan; Ichan++) {
-            dataBuffY_uV[Ichan][i] = 0f;  //make the y data all zeros
-        }
-    }
-}
-
-
-void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float fs_Hz) {
+void initializeFFTObjects(FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
 
     float[] fooData;
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -260,88 +93,13 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataBuffY_uV, int Nfft, float
 
         //do the FFT on the initial data
         if (isFFTFiltered == true) {
-            fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+            fooData = dataProcessingFilteredBuffer[Ichan];  //use the filtered data for the FFT
         } else {
-            fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
+            fooData = dataProcessingRawBuffer[Ichan];  //use the raw data for the FFT
         }
         fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);
         fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
     }
-}
-
-
-int getPlaybackDataFromTable(Table datatable, int currentTableRowIndex, float scale_fac_uVolts_per_count, float scale_fac_accel_G_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV = 0.0f;
-    float[] acc_G = new float[n_aux_ifEnabled];
-    boolean acc_newData = false;
-
-    //check to see if we can load a value from the table
-    if (currentTableRowIndex >= datatable.getRowCount()) {
-        //end of file
-        println("OpenBCI_GUI: getPlaybackDataFromTable: End of playback data file.  Starting over...");
-        hasRepeated = true;
-        currentTableRowIndex = 0;
-    } else {
-        //get the row
-        TableRow row = datatable.getRow(currentTableRowIndex);
-        currentTableRowIndex++; //increment to the next row
-
-        //get each value
-        for (int Ichan=0; Ichan < nchan; Ichan++) {
-            if (isChannelActive(Ichan) && (Ichan < datatable.getColumnCount())) {
-                val_uV = row.getFloat(Ichan);
-            } else {
-                //use zeros for the missing channels
-                val_uV = 0.0f;
-            }
-
-            //put into data structure
-            curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-        }
-
-        // get accelerometer data
-        try{
-            for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
-
-                if (Iacc < datatable.getColumnCount()) {
-                    acc_G[Iacc] = row.getFloat(Iacc + nchan);
-                    if (Float.isNaN(acc_G[Iacc])) {
-                        acc_G[Iacc] = 0.0f;
-                    }
-                } else {
-                    //use zeros for bad data :)
-                    acc_G[Iacc] = 0.0f;
-                }
-
-                //put into data structure
-                curDataPacket.auxValues[Iacc] = (int) (0.5f+ acc_G[Iacc] / scale_fac_accel_G_per_count); //convert to counts, the 0.5 is to ensure rounding
-
-                // Wangshu Dec.6 2016
-                // as long as xyz are not zero at the same time, it should be fine...otherwise it will ignore it.
-                if (acc_G[Iacc] > 0.000001) {
-                    acc_newData = true;
-                }
-            }
-        } catch (ArrayIndexOutOfBoundsException e){
-        // println("Data does not exist... possibly an old file.");
-        }
-        if (acc_newData) {
-            for (int Iacc=0; Iacc < n_aux_ifEnabled; Iacc++) {
-                appendAndShift(accelerometerBuff[Iacc], acc_G[Iacc]);
-            }
-        }
-        // if available, get time stamp for use in playback
-        if (row.getColumnCount() >= nchan + NUM_ACCEL_DIMS + 2) {
-            try{
-                if (!isOldData) curTimestamp = row.getString(row.getColumnCount() - 1);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                println("Data does not exist... possibly an old file.");
-            }
-        } else {
-            curTimestamp = "-1";
-        }
-    } //end else
-    return currentTableRowIndex;
 }
 
 //------------------------------------------------------------------------
@@ -651,7 +409,8 @@ class DataProcessing {
         currentNotch_ind++;
         if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
         settings.dataProcessingNotchSave = currentNotch_ind;
-}
+    }
+    
     void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
         int Nfft = getNfftSafe();
         double foo;
@@ -661,7 +420,7 @@ class DataProcessing {
         filterIIR(filtCoeff_bp[currentFilt_ind].b, filtCoeff_bp[currentFilt_ind].a, data_forDisplay_uV[Ichan]); //bandpass
 
         //compute the standard deviation of the filtered signal...this is for the head plot
-        float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
+        float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data
         fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
         data_std_uV[Ichan]=std(fooData_filt); //compute the standard deviation for the whole array "fooData_filt"
 
@@ -673,9 +432,9 @@ class DataProcessing {
         //prepare the data for the new FFT
         float[] fooData;
         if (isFFTFiltered == true) {
-            fooData = dataBuffY_filtY_uV[Ichan];  //use the filtered data for the FFT
+            fooData = dataProcessingFilteredBuffer[Ichan];  //use the filtered data for the FFT
         } else {
-            fooData = dataBuffY_uV[Ichan];  //use the raw data for the FFT
+            fooData = dataProcessingRawBuffer[Ichan];  //use the raw data for the FFT
         }
         fooData = Arrays.copyOfRange(fooData, fooData.length-Nfft, fooData.length);   //trim to grab just the most recent block of data
         float meanData = mean(fooData);  //compute the mean
@@ -683,9 +442,6 @@ class DataProcessing {
 
         //compute the FFT
         fftBuff[Ichan].forward(fooData); //compute FFT on this channel of data
-
-        //convert to uV_per_bin...still need to confirm the accuracy of this code.
-        //Do we need to account for the power lost in the windowing function?   CHIP  2014-10-24
 
         // FFT ref: https://www.mathworks.com/help/matlab/ref/fft.html
         // first calculate double-sided FFT amplitude spectrum
@@ -734,10 +490,10 @@ class DataProcessing {
                 // if the frequency matches a band
                 if (FFT_freq_Hz >= processing_band_low_Hz[i] && FFT_freq_Hz < processing_band_high_Hz[i]) {
                     if (Ibin != 0 && Ibin != Nfft/2) {
-                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe() / 4;
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/currentBoard.getSampleRate() / 4;
                     }
                     else {
-                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/getSampleRateSafe();
+                        psdx = fftBuff[Ichan].getBand(Ibin) * fftBuff[Ichan].getBand(Ibin) * Nfft/currentBoard.getSampleRate();
                     }
                     sum += psdx;
                     // binNum ++;
@@ -748,10 +504,7 @@ class DataProcessing {
         }
     }
 
-    public void process(float[][] data_newest_uV, //holds raw EEG data that is new since the last call
-        float[][] data_long_uV, //holds a longer piece of buffered EEG data, of same length as will be plotted on the screen
-        float[][] data_forDisplay_uV, //put data here that should be plotted on the screen
-        FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+    public void process(float[][] data_forDisplay_uV, FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
         float prevFFTdata[] = new float[fftBuff[0].specSize()];
 
@@ -774,13 +527,13 @@ class DataProcessing {
         //find strongest channel
         int refChanInd = findMax(data_std_uV);
         //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
-        float[] refData_uV = dataBuffY_filtY_uV[refChanInd];  //use the filtered data
+        float[] refData_uV = dataProcessingFilteredBuffer[refChanInd];  //use the filtered data
         refData_uV = Arrays.copyOfRange(refData_uV, refData_uV.length-((int)fs_Hz), refData_uV.length);   //just grab the most recent second of data
 
 
         //compute polarity of each channel
         for (int Ichan=0; Ichan < nchan; Ichan++) {
-            float[] fooData_filt = dataBuffY_filtY_uV[Ichan];  //use the filtered data
+            float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data
             fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
             float dotProd = calcDotProduct(fooData_filt, refData_uV);
             if (dotProd >= 0.0f) {
