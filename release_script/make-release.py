@@ -82,7 +82,8 @@ def apply_timestamp(sketch_dir, timestamp):
 
     for i in range(0, len(data)):
         if data[i].startswith("String localGUIVersionDate"):
-            data[i] = "String localGUIVersionDate = \"" + timestamp + "\";"
+            print(data[i])
+            data[i] = "String localGUIVersionDate = \"" + timestamp + "\";\n"
             break
 
     with open(main_file_dir, 'w') as sketch_file:
@@ -166,14 +167,11 @@ def build_app(sketch_dir, flavor):
 
 ### Function: Package the app in the expected file structure
 ###########################################################
-def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
+def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     # sanity check: is the build output there?
     build_dir = os.path.join(os.getcwd(), flavor)
     if not os.path.isdir(build_dir):
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
-
-    timestamp = get_timestamp_ci()
-    apply_timestamp(sketch_dir, timestamp)
 
     # rename the build dir
     release_dir_name = get_release_dir_name(sketch_dir, flavor, timestamp)
@@ -312,11 +310,15 @@ def main ():
 
     flavor = flavors[LOCAL_OS]
 
+    timestamp = get_timestamp_ci()
+    if timestamp:
+        apply_timestamp(sketch_dir, timestamp)
+
     # run the build (processing-java)
     build_app(sketch_dir, flavor)
 
     #package it up
-    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
+    package_app(sketch_dir, flavor, timestamp, windows_signing, windows_pfx_path, windows_pfx_password)
 
 if __name__ == "__main__":
     main ()

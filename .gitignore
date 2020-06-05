@@ -16,5 +16,6 @@ OpenBCI_GUI/data/EEG_Data/*
 OpenBCI_GUI/data/OpenBCIHub/*
 OpenBCI_GUI/application.*
 openbcigui_*
+application.*
 *.autosave
 .vscode/*
