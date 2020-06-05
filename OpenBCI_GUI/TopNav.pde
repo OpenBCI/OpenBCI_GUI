@@ -189,7 +189,7 @@ class TopNav {
             layoutButton.setColorNotPressed(color(255));
 
             filtBPButton.textColorNotActive = color(bgColor);
-            filtNotchButton.textColorNotActive = color(bgColor);            
+            filtNotchButton.textColorNotActive = color(bgColor);
             layoutButton.textColorNotActive = color(bgColor);
 
             if (currentBoard instanceof SmoothingCapableBoard) {
@@ -202,7 +202,7 @@ class TopNav {
             layoutButton.setColorNotPressed(color(57, 128, 204));
 
             filtBPButton.textColorNotActive = color(255);
-            filtNotchButton.textColorNotActive = color(255);      
+            filtNotchButton.textColorNotActive = color(255);
             layoutButton.textColorNotActive = color(255);
 
             if (currentBoard instanceof SmoothingCapableBoard) {
