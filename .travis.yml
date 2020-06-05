@@ -53,7 +53,7 @@ install:
 
 script:
   - cd $TRAVIS_BUILD_DIR
-  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts --timestamp ${GUI_COMMIT_TIME}
+  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts
   # over script will write version and timestamp here
   - GUI_COMMIT_TIME=`cat timestamp.txt`
   - GUI_VERSION_STRING=`cat versionstring.txt`
