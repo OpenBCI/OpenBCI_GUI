@@ -18,6 +18,12 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" = osx ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./release_script/mac_only/add-osx-cert.sh; fi
 
 install:
+# used for getting commit timestamp
+  - pip install requests
+  - pip install beautifulsoup4
+  - GUI_COMMIT_ID=$(python $TRAVIS_BUILD_DIR/release_script/get_commit_time.py)
+  - echo $GUI_COMMIT_ID
+
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
 ### ### LINUX ### ###

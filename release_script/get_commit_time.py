@@ -1,15 +1,27 @@
 import requests
+import os
 from bs4 import  BeautifulSoup
 
 def main ():
-    
+    repo_slug = None
+    commit_id = None
 
+    repo_slug = os.getenv("TRAVIS_REPO_SLUG")
+    if repo_slug is None:
+        repo_slug = os.getenv("APPVEYOR_REPO_NAME")
 
-    page = requests.get("http://github.com/OpenBCI/OpenBCI_GUI/commit/a64d589b753a6d1e93c6655f85bf9b576ada2d2d")
+    commit_id = os.getenv("TRAVIS_COMMIT")
+    if commit_id is None:
+        commit_id = os.getenv("APPVEYOR_REPO_COMMIT")
+
+    url = "http://github.com/" + repo_slug + "/commit/" + commit_id;
+
+    page = requests.get(url)
     soup = BeautifulSoup(page.content, features="html.parser")
-    print(soup.find("relative-time")["datetime"])
 
+    timestamp = soup.find("relative-time")["datetime"]
 
+    print(timestamp)
 
 if __name__ == '__main__':
     main ()
