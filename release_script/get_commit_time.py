@@ -20,6 +20,7 @@ def main ():
     soup = BeautifulSoup(page.content, features="html.parser")
 
     timestamp = soup.find("relative-time")["datetime"]
+    timestamp = timestamp.replace(":", "_")
 
     print(timestamp)
 
