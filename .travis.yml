@@ -2,8 +2,7 @@ os:
   - linux
   - osx
 
-python:
-  - "3.8"
+language: python
 
 addons:
   artifacts:
