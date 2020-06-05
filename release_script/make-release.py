@@ -281,7 +281,7 @@ def main ():
     build_app(sketch_dir, flavor)
 
     #package it up
-    package_app(sketch_dir, flavor, timestamp, windows_signing, windows_pfx_path, windows_pfx_password)
+    package_app(sketch_dir, flavor, args.timestamp, windows_signing, windows_pfx_path, windows_pfx_password)
 
 if __name__ == "__main__":
     main ()
