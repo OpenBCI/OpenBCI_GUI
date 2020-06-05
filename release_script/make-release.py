@@ -64,7 +64,7 @@ def get_timestamp_ci():
         timestamp = timestamp.replace("Z", "")
 
         # write timestamp to file for use in CI
-        with open("timestamp.txt", 'w') as tempFile:
+        with open("temp/timestamp.txt", 'w') as tempFile:
             tempFile.write(timestamp)
 
         return timestamp
@@ -103,7 +103,7 @@ def get_release_dir_name(sketch_dir, flavor, timestamp):
                 break
 
     # write version string to file for use in CI
-    with open("versionstring.txt", 'w') as tempFile:
+    with open("temp/versionstring.txt", 'w') as tempFile:
         tempFile.write(version_str)
 
     new_name = "openbcigui_" + version_str + "_"

@@ -47,8 +47,8 @@ install:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx
-  - set /p GUI_COMMIT_TIME= < timestamp.txt
-  - set /p GUI_VERSION_STRING= < versionstring.txt
+  - set /p GUI_COMMIT_TIME= < temp\timestamp.txt
+  - set /p GUI_VERSION_STRING= < temp\versionstring.txt
 
 deploy_script:
   -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%GUI_VERSION_STRING%_%GUI_COMMIT_TIME%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
