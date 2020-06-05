@@ -93,17 +93,6 @@ abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapab
         smoothData = false;
     }
 
-    // todo remove it and call setSmoothingActive from UI button,
-    // remove this method from here completely
-    @Override
-    public boolean initializeInternal() {
-        boolean res = super.initializeInternal();
-        if (res) {
-            setSmoothingActive(true);
-        }
-        return res;
-    }
-
     // synchronized is important to ensure that we dont free buffers during getting data
     @Override
     public synchronized void setSmoothingActive(boolean active) {
