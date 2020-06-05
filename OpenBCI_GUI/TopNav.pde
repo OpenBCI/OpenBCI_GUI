@@ -336,7 +336,8 @@ class TopNav {
                 if (smoothingButton.isMouseHere()) {
                     smoothingButton.setIsActive(true);
                     //toggle data smoothing on mousePress for capable boards
-                    ((SmoothingCapableBoard)currentBoard).setSmoothingActive(!((SmoothingCapableBoard)currentBoard).getSmoothingActive());
+                    SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
+                    smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
                     smoothingButton.setString(getSmoothingString());
                 }
             }
