@@ -1,5 +1,5 @@
-
 import brainflow.*;
+
 
 enum CytonBoardMode {
     DEFAULT(0),
@@ -51,7 +51,7 @@ static class BoardCytonConstants {
     static final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
 }
 
-class BoardCytonSerial extends BoardCyton {
+class BoardCytonSerial extends BoardCytonSerialBase {
     public BoardCytonSerial() {
         super();
     }
@@ -67,7 +67,7 @@ class BoardCytonSerial extends BoardCyton {
     }
 };
 
-class BoardCytonSerialDaisy extends BoardCyton {
+class BoardCytonSerialDaisy extends BoardCytonSerialBase {
     public BoardCytonSerialDaisy() {
         super();
     }
@@ -81,6 +81,67 @@ class BoardCytonSerialDaisy extends BoardCyton {
     public BoardIds getBoardId() {
         return BoardIds.CYTON_DAISY_BOARD;
     }
+};
+
+abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapableBoard{
+
+    private Buffer<double[]> buffer = null;
+    private volatile boolean smoothData;
+
+    public BoardCytonSerialBase() {
+        super();
+        smoothData = false;
+    }
+
+    // synchronized is important to ensure that we dont free buffers during getting data
+    @Override
+    public synchronized void setSmoothingActive(boolean active) {
+        if (smoothData == active) {
+            return;
+        }
+        // dont touch accumulatedData buffer to dont pause streaming
+        if (active) {
+            buffer = new Buffer<double[]>(getSampleRate());
+        } else {
+            buffer = null;
+        }
+        smoothData = active;
+    }
+
+    @Override
+    public boolean getSmoothingActive() {
+        return smoothData;
+    }
+
+    @Override
+    protected synchronized double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        if (!smoothData) {
+            return data;
+        }
+        // transpose to push to buffer
+        for (int i = 0; i < data[0].length; i++) {
+            double[] newEntry = new double[getTotalChannelCount()];
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                newEntry[j] = data[j][i];
+            }
+            buffer.addNewEntry(newEntry);
+        }
+        int numData = buffer.getDataCount();
+        if (numData == 0) {
+            return emptyData;
+        }
+        // transpose back
+        double[][] res = new double[getTotalChannelCount()][numData];
+        for (int i = 0; i < numData; i++) {
+            double[] curData = buffer.popFirstEntry();
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                res[j][i] = curData[j];
+            }
+        }
+        return res;
+    }
+
 };
 
 class BoardCytonWifi extends BoardCytonWifiBase {

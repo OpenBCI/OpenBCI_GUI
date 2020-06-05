@@ -7,6 +7,7 @@
 * Improved Playback Mode and Time Series
 * Refactored GUI data flow
 * Add Travis and Appveyor CI tests and builds for all OS
+* Add data smoothing option for live Cyton data
 * Cyton Port manual selection only displays serial ports with a dongle connected.
 
 ### Bug Fixes
