@@ -518,10 +518,11 @@ void initSystem() {
             }
             else {
                 // todo[brainflow] temp hardcode
-                String ganglionName = (String)cp5.get(MenuList.class, "bleList").getItem(bleList.activeItem).get("headline");
+                String ganglionName = (String)(bleList.getItem(bleList.activeItem).get("headline"));
+                String ganglionPort = (String)(bleList.getItem(bleList.activeItem).get("subline"));
                 String ganglionMac = BLEMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionBLE(controlPanel.getBLED112Port(), ganglionMac);
+                currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
             }
             break;
         case DATASOURCE_NOVAXR:

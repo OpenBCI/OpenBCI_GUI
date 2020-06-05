@@ -550,7 +550,7 @@ class W_Networking extends Widget {
     /* Creating DataType Dropdowns */
     void createDropdown(String name, List<String> _items) {
 
-        cp5_networking_dropdowns.addScrollableList(name)
+        ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
                 .setOpen(false)
 
                 .setColorBackground(color(31,69,110)) // text field bg color
@@ -584,10 +584,12 @@ class W_Networking extends Widget {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
     }
 
     void createBaudDropdown(String name, List<String> _items) {
-        cp5_networking_baudRate.addScrollableList(name)
+        ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name)
                 .setOpen(false)
 
                 .setColorBackground(color(31,69,110)) // text field bg color
@@ -621,11 +623,13 @@ class W_Networking extends Widget {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
     }
 
     void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
         if (isEmpty) _items.add("None"); // Fix #642 and #637
-        cp5_networking_portName.addScrollableList(name)
+        ScrollableList scrollList = cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -657,6 +661,8 @@ class W_Networking extends Widget {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
     }
 
     void filterButtonsCheck() {
@@ -1493,7 +1499,7 @@ class Stream extends Thread {
                 }
                 // Add timestamp to LSL Stream
                 // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
-                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
+                outlet_data.push_chunk(dataToSend);
                 // SERIAL
             } else if (this.protocol.equals("Serial")) {         // Serial Output unfiltered
                 for (int i=0;i<nPointsPerUpdate;i++) {
@@ -1555,7 +1561,7 @@ class Stream extends Thread {
                     }
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
+                outlet_data.push_chunk(dataToSend);
             } else if (this.protocol.equals("Serial")) {
                 for (int i=0;i<nPointsPerUpdate;i++) {
                     serialMessage = "["; //clear message
@@ -1630,7 +1636,7 @@ class Stream extends Thread {
                 }
                 // Add timestamp to LSL Stream
                 // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
-                outlet_data.push_chunk(_dataToSend, System.currentTimeMillis());
+                outlet_data.push_chunk(_dataToSend);
             } else if (this.protocol.equals("Serial")) {
                 /////////////////////////////////THIS OUTPUT IS DISABLED
                 // Send FFT Data over Serial ... 
@@ -1709,7 +1715,7 @@ class Stream extends Thread {
                     }
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
+                outlet_data.push_chunk(dataToSend);
             } else if (this.protocol.equals("Serial")) {
                 for (int i=0;i<numChan;i++) {
                     serialMessage = "[" + (i+1) + ","; //clear message
@@ -1772,7 +1778,7 @@ class Stream extends Thread {
                     dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+                outlet_data.push_sample(dataToSend);
             } else if (this.protocol.equals("Serial")) {     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
                 serialMessage = "";
                 for (int i=0;i<numChan;i++) {
@@ -1837,7 +1843,7 @@ class Stream extends Thread {
                     dataToSend[i] = w_accelerometer.getLastAccelVal(i);
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+                outlet_data.push_sample(dataToSend);
             } else if (this.protocol.equals("Serial")) {
                 // Data Format: +0.900,-0.042,+0.254\n
                 // 7 chars per axis, including \n char for Z
@@ -1909,7 +1915,7 @@ class Stream extends Thread {
                     dataToSend[i] = (int)lastSample[analogChannels[i]];
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+                outlet_data.push_sample(dataToSend);
             } else if (this.protocol.equals("Serial")) {
                 // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
                 // 5 chars per pin, including \n char for Z
@@ -1974,7 +1980,7 @@ class Stream extends Thread {
                     dataToSend[i] = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+                outlet_data.push_sample(dataToSend);
             } else if (this.protocol.equals("Serial")) {
                 // Data Format: 0,1,0,1,0\n or 0,1,0\n depending if WiFi Shield is used
                 // 2 chars per pin, including \n char last pin
@@ -2040,7 +2046,7 @@ class Stream extends Thread {
                     dataToSend[2] = w_pulsesensor.IBI;
                 }
                 // Add timestamp to LSL Stream
-                outlet_data.push_chunk(dataToSend, System.currentTimeMillis());
+                outlet_data.push_chunk(dataToSend);
             // Serial
             } else if (this.protocol.equals("Serial")) {     // Send Pulse Data (BPM,Signal,IBI) over Serial
                 for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
@@ -2184,7 +2190,6 @@ void Protocol(int protocolIndex) {
     println("Networking: Protocol mode set to " + w_networking.protocolMode + ". Stopping network");
     w_networking.screenResized();
     w_networking.showCP5();
-    closeAllDropdowns();
     if (!w_networking.networkActive) {
         w_networking.turnOffButton();
     }

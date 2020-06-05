@@ -55,16 +55,10 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
 MenuList sourceList;
 
 //Global buttons and elements for the control panel (changed within the classes below)
-MenuList serialList;
-String[] serialPorts = new String[Serial.list().length];
-
 MenuList bleList;
 MenuList wifiList;
-
 MenuList sdTimes;
-
 MenuList channelList;
-
 MenuList pollList;
 
 color boxColor = color(200);
@@ -169,7 +163,7 @@ public void controlEvent(ControlEvent theEvent) {
 
     if (theEvent.isFrom("serialList")) {
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        openBCI_portName = (String)bob.get("headline");
+        openBCI_portName = (String)bob.get("subline");
         output("OpenBCI Port Name = " + openBCI_portName);
     }
 
@@ -205,10 +199,10 @@ public void controlEvent(ControlEvent theEvent) {
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
         if (setChannel.wasPressed) {
-            set_channel(rcBox, setChannelInt);
+            rcBox.setChannel(setChannelInt);
             setChannel.wasPressed = false;
         } else if(ovrChannel.wasPressed) {
-            set_channel_over(rcBox, setChannelInt);
+            rcBox.setChannelOverride(setChannelInt);
             ovrChannel.wasPressed = false;
         }
     }
@@ -247,7 +241,6 @@ public void controlEvent(ControlEvent theEvent) {
     if (theEvent.isFrom("maxFileDuration")) {
         int n = (int)theEvent.getValue();
         settings.setLogFileDurationChoice(n);
-        controlPanel.dataLogBoxCyton.closeDropdown();
         println("ControlPanel: Chosen Recording Duration: " + n);
     }
 
@@ -371,7 +364,7 @@ class ControlPanel {
     }
 
     public void resetListItems(){
-        serialList.activeItem = -1;
+        comPortBox.serialList.activeItem = -1;
         bleList.activeItem = -1;
         wifiList.activeItem = -1;
     }
@@ -408,12 +401,6 @@ class ControlPanel {
             }
         }
 
-        //auto-update serial list
-        if(Serial.list().length != serialPorts.length && systemMode != SYSTEMMODE_POSTINIT){
-            println("Refreshing port list...");
-            refreshPortListCyton();
-        }
-
         //update all boxes if they need to be
         dataSourceBox.update();
         serialBox.update();
@@ -435,7 +422,6 @@ class ControlPanel {
         initBox.update();
 
         channelPopup.update();
-        serialList.updateMenu();
         bleList.updateMenu();
         wifiList.updateMenu();
         dataLogBoxGanglion.update();
@@ -480,18 +466,16 @@ class ControlPanel {
                         if (rcBox.isShowing) {
                             comPortBox.draw();
                             rcBox.draw();
-                            cp5.get(MenuList.class, "serialList").setVisible(true);
+                            comPortBox.serialList.setVisible(true);
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-                                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                             } else if (pollPopup.wasClicked()) {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                                 cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                                cp5.get(MenuList.class, "serialList").setVisible(true); //make sure the serialList menulist is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -525,7 +509,7 @@ class ControlPanel {
                 sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
-                cp5.get(MenuList.class, "serialList").setVisible(false);
+                comPortBox.serialList.setVisible(false);
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
@@ -610,66 +594,9 @@ class ControlPanel {
         cp5Popup.hide(); // make sure to hide the controlP5 object
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-        cp5.get(MenuList.class, "serialList").setVisible(false);
-        // cp5Popup.hide(); // make sure to hide the controlP5 object
+        comPortBox.serialList.setVisible(false);
         popOutRadioConfigButton.setString("Manual >");
-        rcBox.print_onscreen("");
-        if (serial_direct_board != null) {
-            serial_direct_board.stop();
-        }
-        serial_direct_board = null;
-    }
-
-    private void refreshPortListCyton(){
-        serialPorts = new String[Serial.list().length];
-        serialPorts = Serial.list();
-        serialList.items.clear();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
-        }
-        serialList.updateMenu();
-    }
-
-    private void refreshPortListGanglion() {
-        output("BLE Devices Refreshing");
-        bleList.items.clear();
-        final String comPort = getBLED112Port();
-        if (comPort != null) {
-            Thread thread = new Thread(){
-                public void run(){
-                    try {
-                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
-                        {
-                            bleList.addItem(makeItem(entry.getKey()));
-                            bleList.updateMenu();
-                        }
-                    } catch (GanglionError e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            thread.start();
-        } else {
-            outputError("No BLED112 Dongle Found");
-        }
-    }
-
-    private String getBLED112Port() {
-        String name = "Low Energy Dongle";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
-                return found;
-            }
-        }
-        return null;
+        rcBox.closeSerialPort();
     }
 
     public void hideAllBoxes() {
@@ -677,7 +604,7 @@ class ControlPanel {
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
-        cp5.get(MenuList.class, "serialList").setVisible(false);
+        comPortBox.serialList.setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
         cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
@@ -953,13 +880,12 @@ class ControlPanel {
         if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
             serialBox.autoConnect.wasPressed = false;
             serialBox.autoConnect.setIsActive(false);
-            serialBox.attemptAutoConnectCyton();
+            comPortBox.attemptAutoConnectCyton();
         }
 
         if (rcBox.isShowing) {
             if(getChannel.isMouseHere() && getChannel.wasPressed){
-                // if(serial_direct_board != null) // Radios_Config will handle creating the serial port JAM 1/2017
-                get_channel(rcBox);
+                rcBox.getChannel();
                 getChannel.wasPressed = false;
                 getChannel.setIsActive(false);
                 hideChannelListCP();
@@ -980,14 +906,14 @@ class ControlPanel {
             }
 
             if(autoscan.isMouseHere() && autoscan.wasPressed){
+                rcBox.scanChannels();
                 autoscan.wasPressed = false;
                 autoscan.setIsActive(false);
-                scan_channels(rcBox);
                 hideChannelListCP();
             }
 
             if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-                system_status(rcBox);
+                rcBox.getSystemStatus();
                 systemStatus.setIsActive(false);
                 systemStatus.wasPressed = false;
                 hideChannelListCP();
@@ -1005,12 +931,11 @@ class ControlPanel {
 
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
-            output("Serial/COM List Refreshed");
-            refreshPortListCyton();
+            comPortBox.refreshPortListCyton();
         }
 
         if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            refreshPortListGanglion();
+            bleBox.refreshGanglionBLEList();
         }
 
         if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
@@ -1038,11 +963,10 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.BLED112;
-            refreshPortListGanglion();
+            bleBox.refreshGanglionBLEList();
         }
 
         if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-            println("protocolWifiGanglion");
             wifiList.items.clear();
             bleList.items.clear();
             controlPanel.hideAllBoxes();
@@ -1054,6 +978,7 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.SERIAL;
+            comPortBox.refreshPortListCyton();
         }
 
         if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
@@ -1391,40 +1316,13 @@ class SerialBox {
             autoConnect.draw();
         }
     }
-
-    public void attemptAutoConnectCyton() {
-        println("ControlPanel: Attempting to Auto-Connect to Cyton");
-        String comPort = getCytonComPort();
-        if (comPort != null) {
-            openBCI_portName = comPort;
-            if (system_status()) {
-                serial_direct_board.stop(); //Stop serial port connection
-                serial_direct_board = null;
-                initButtonPressed();
-                buttonHelpText.setVisible(false);
-            }
-        }
-    }
-
-    private String getCytonComPort() {
-        String name = "FT231X USB UART";
-        SerialPort[] comPorts = SerialPort.getCommPorts();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                return found;
-            }
-        }
-        return null;
-    }    
 };
 
 class ComPortBox {
-    int x, y, w, h, padding; //size and position
-    boolean isShowing;
+    private int x, y, w, h, padding; //size and position
+    public boolean isShowing;
+    public MenuList serialList;
+    RadioConfig cytonRadioCfg;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1433,19 +1331,15 @@ class ComPortBox {
         h = 140 + _padding;
         padding = _padding;
         isShowing = false;
+        cytonRadioCfg = new RadioConfig();
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
-        // println(w-padding*2);
         serialList.setPosition(x + padding, y + padding*3 + 8);
-        serialPorts = Serial.list();
-        for (int i = 0; i < serialPorts.length; i++) {
-            String tempPort = serialPorts[(serialPorts.length-1) - i]; //list backwards... because usually our port is at the bottom
-            serialList.addItem(makeItem(tempPort));
-        }
     }
 
     public void update() {
+        serialList.updateMenu();
     }
 
     public void draw() {
@@ -1461,10 +1355,61 @@ class ComPortBox {
         refreshPort.draw();
         popStyle();
     }
+
+    public void attemptAutoConnectCyton() {
+        println("ControlPanel: Attempting to Auto-Connect to Cyton");
+        LinkedList<String> comPorts = getCytonComPorts();
+        if (!comPorts.isEmpty()) {
+            openBCI_portName = comPorts.getFirst();
+            if (cytonRadioCfg.system_status()) {
+                initButtonPressed();
+                buttonHelpText.setVisible(false);
+            }
+        }
+    }
+
+    public void refreshPortListCyton(){
+        serialList.items.clear();
+
+        Thread thread = new Thread(){
+            public void run(){
+                refreshPort.setString("SEARCHING...");
+
+                LinkedList<String> comPorts = getCytonComPorts();
+                for (String comPort : comPorts) {
+                    serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
+                }
+                serialList.updateMenu();
+
+                refreshPort.setString("REFRESH LIST");
+            }
+        };
+
+        thread.start();
+    }
+
+    private LinkedList<String> getCytonComPorts() {
+        final String name = "FT231X USB UART";
+        final SerialPort[] comPorts = SerialPort.getCommPorts();
+        LinkedList<String> results = new LinkedList<String>();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                results.add(found);
+            }
+        }
+
+        return results;
+    }
+
 };
 
 class BLEBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private boolean bleIsRefreshing = false;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1492,12 +1437,76 @@ class BLEBox {
         text("BLE DEVICES", x + padding, y + padding);
         popStyle();
 
+        if (bleIsRefreshing) {
+            //Display spinning cog gif
+            image(loadingGIF_blue, w + 225,  refreshBLE.but_y + 4, 20, 20);
+        } else {
+            //Draw small grey circle
+            pushStyle();
+            fill(#999999);
+            ellipseMode(CENTER);
+            ellipse(w + 225 + 10, refreshBLE.but_y + 12, 12, 12);
+            popStyle();
+        }
+
         refreshBLE.draw();
+    }
+
+    public void mousePressed() {
+        
+    }
+
+    private void refreshGanglionBLEList() {
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        
+        Thread thread = new Thread(){
+            public void run(){
+                refreshBLE.setString("SEARCHING...");
+                bleIsRefreshing = true;
+                final String comPort = getBLED112Port();
+                if (comPort != null) {
+                    try {
+                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
+                } else {
+                    outputError("No BLED112 Dongle Found");
+                }
+                refreshBLE.setString("START SEARCH");
+                bleIsRefreshing = false;
+            }
+        };
+
+        thread.start();
+    }
+
+    public String getBLED112Port() {
+        String name = "Low Energy Dongle";
+        SerialPort[] comPorts = SerialPort.getCommPorts();
+        for (int i = 0; i < comPorts.length; i++) {
+            if (comPorts[i].toString().equals(name)) {
+                String found = "";
+                if (isMac() || isLinux()) found += "/dev/";
+                found += comPorts[i].getSystemPortName().toString();
+                println("ControlPanel: Found BLED112 Dongle on COM port: " + found);
+                return found;
+            }
+        }
+        return null;
     }
 };
 
 class WifiBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private boolean wifiIsRefreshing = false;
 
     WifiBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1578,12 +1587,11 @@ class WifiBox {
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
 
-            if(selectedProtocol == BoardProtocol.WIFI){
+            if (wifiIsRefreshing){
+                //Display spinning cog gif
                 image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
-                refreshWifi.setString("SEARCHING...");
             } else {
-                refreshWifi.setString("START SEARCH");
-
+                //Draw small grey circle
                 pushStyle();
                 fill(#999999);
                 ellipseMode(CENTER);
@@ -1598,6 +1606,8 @@ class WifiBox {
         wifiList.items.clear();
         Thread thread = new Thread(){
             public void run() {
+                refreshWifi.setString("SEARCHING...");
+                wifiIsRefreshing = true;
                 try {
                     List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
                     if (devices.isEmpty ()) {
@@ -1611,6 +1621,8 @@ class WifiBox {
                     println("Exception in wifi shield scanning");
                     e.printStackTrace ();
                 }
+                refreshWifi.setString("START SEARCH");
+                wifiIsRefreshing = false;
             }
         };
         thread.start();
@@ -1698,7 +1710,6 @@ class SessionDataBox {
     int maxDurTextWidth = 82;
     int maxDurText_x = 0;
     String maxDurDropdownName;
-    boolean dropdownWasClicked = false;
 
     SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource) {
         odfModeHeight = bdfModeHeight + 24 + _padding;
@@ -1751,7 +1762,7 @@ class SessionDataBox {
     }
 
     public void update() {
-        openCloseDropdown();
+
     }
 
     public void draw() {
@@ -1779,7 +1790,6 @@ class SessionDataBox {
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
             //Dropdown is drawn at the end of ControlPanel.draw()
             fill(bgColor);
-            rect(cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[0]-1, cp5_dataLog_dropdown.getController(maxDurDropdownName).getPosition()[1]-1, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getWidth()+2, cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).getHeight()+2);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
             cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
@@ -1796,9 +1806,10 @@ class SessionDataBox {
 
     void createDropdown(String name, List<String> _items){
 
-        cp5_dataLog_dropdown.addScrollableList(name)
+        ScrollableList scrollList = cp5_dataLog_dropdown.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
+            .setBackgroundColor(150)
             /*
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(0))       // text color
@@ -1832,6 +1843,22 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
+
+        scrollList.onEnter(new CallbackListener() {
+            public void controlEvent(CallbackEvent event) {
+                lockElements(true);
+            }
+        });
+
+        scrollList.onLeave(new CallbackListener() {
+            public void controlEvent(CallbackEvent event) {
+                ScrollableList theList = (ScrollableList)(event.getController());
+                lockElements(theList.isOpen());
+            }
+        });
+
     }
 
     //Returns: 0 for Cyton, 1 for Ganglion
@@ -1845,32 +1872,6 @@ class SessionDataBox {
 
     public void setToBDFHeight() {
         h = bdfModeHeight;
-    }
-
-    private void openCloseDropdown() {
-        //Close the dropdown if it is open and mouse is no longer over it
-        if (cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
-            if (!cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
-                //println("----Closing dropdown " + maxDurDropdownName);
-                cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
-                lockElements(false);
-            }
-
-        }
-        // Open the dropdown if it's not open, but not if it was recently clicked
-        // Makes sure dropdown stays closed after user selects an option
-        if (!dropdownWasClicked) {
-            if (!cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).isOpen()){
-                if (cp5_dataLog_dropdown.getController(maxDurDropdownName).isMouseOver()){
-                    //println("++++Opening dropdown " + maxDurDropdownName);
-                    cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).open();
-                    lockElements(true);
-                }
-            }
-        } else {
-            // This flag is used to gate opening/closing the dropdown
-            dropdownWasClicked = false;
-        }
     }
 
     // True locks elements, False unlocks elements
@@ -1890,12 +1891,6 @@ class SessionDataBox {
             sampleRate200.setIgnoreHover(_toggle);
             sampleRate1600.setIgnoreHover(_toggle);
         }
-    }
-
-    void closeDropdown() {
-        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).close();
-        dropdownWasClicked = true;
-        lockElements(false);
     }
 };
 
@@ -2159,13 +2154,9 @@ class RecentPlaybackBox {
         recentPlaybackFilesHaveUpdated = true;
     }
 
-    void closeAllDropdowns(){
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").close();
-    }
-
     void createDropdown(String name, List<String> _items){
 
-        cp5_recentPlayback_dropdown.addScrollableList(name)
+        ScrollableList scrollList = cp5_recentPlayback_dropdown.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2198,6 +2189,8 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(scrollList);
     }
 };
 
@@ -2205,8 +2198,7 @@ class NovaXRBox {
     private int x, y, w, h, padding; //size and position
     private String boxLabel = "NOVAXR CONFIG";
     private String sampleRateLabel = "SAMPLE RATE";
-    private ControlP5 sr_cp5;
-    private ControlP5 mode_cp5;
+    private ControlP5 localCP5;
     private ScrollableList srList;
     private ScrollableList modeList;
 
@@ -2216,34 +2208,20 @@ class NovaXRBox {
         w = _w;
         h = 104;
         padding = _padding;
-        sr_cp5 = new ControlP5(ourApplet);
-        sr_cp5.setGraphics(ourApplet, 0,0);
-        sr_cp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
-        mode_cp5 = new ControlP5(ourApplet);
-        mode_cp5.setGraphics(ourApplet, 0,0);
-        mode_cp5.setAutoDraw(false);
+        localCP5 = new ControlP5(ourApplet);
+        localCP5.setGraphics(ourApplet, 0,0);
+        localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        srList = createDropdown(sr_cp5, "novaXR_SampleRates", NovaXRSR.values());
-        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
-        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
-        modeList = createDropdown(mode_cp5, "novaXR_Modes", NovaXRMode.values());
+        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
         modeList.setPosition(x + padding, y + h - 24 - padding);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
-        
-        
+        srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
+        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
+        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
     }
 
     public void update() {
-
-        //Lock the lower dropdown when top one is in use
-        if (srList.isInside()) {
-            modeList.lock();
-        } else {
-            if (modeList.isLock()) {
-                modeList.unlock();
-            }
-        }
-
+        // nothing
     }
 
     public void draw() {
@@ -2255,14 +2233,7 @@ class NovaXRBox {
         rect(x, y, w, h + modeList.getHeight() - padding*2);
         popStyle();
 
-        //draw lower dropdown first
-        mode_cp5.draw();
-
         pushStyle();
-        fill(boxColor);
-        strokeWeight(0);
-        //draw another grey box behind top dropdown, and above lower dropdown so it looks right
-        rect(x + w - padding*2 - 60*2 - 1, y + 16 + padding*2 - 1, srList.getWidth()+2, srList.getHeight()+2);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
@@ -2273,8 +2244,8 @@ class NovaXRBox {
         text(sampleRateLabel, x + padding, y + padding*2 + 18);
         popStyle();
         
-        //draw upper dropdown last, on top of everything in this box
-        sr_cp5.draw();
+        //draw cp5 last, on top of everything in this box
+        localCP5.draw();
     }
 
     public void mousePressed() {
@@ -2283,14 +2254,15 @@ class NovaXRBox {
     public void mouseReleased() {
     }
 
-    private ScrollableList createDropdown(ControlP5 _cp5, String name, NovaXRSettingsEnum[] enumValues){
-        ScrollableList list = _cp5.addScrollableList(name)
+    private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
+        ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
+            .setBackgroundColor(150)
             .setSize(w - padding*2, 24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2318,6 +2290,8 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+
+        makeScrollableListBetter(list);
 
         return list;
     }
@@ -2374,7 +2348,6 @@ class SDBox {
     private ControlP5 cp5_sdBox;
     private ScrollableList sdList;
     private int prevY;
-    boolean dropdownWasClicked = false;
 
     SDBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2393,7 +2366,6 @@ class SDBox {
     }
 
     public void update() {
-        openCloseDropdown();
         if (y != prevY) { //When box's absolute y position changes, update cp5
             updatePosition();
             prevY = y;
@@ -2415,7 +2387,6 @@ class SDBox {
 
         pushStyle();
         fill(150);
-        rect(sdList.getPosition()[0]-1, sdList.getPosition()[1]-1, sdList.getWidth()+2, sdList.getHeight()+2);
         popStyle();
         cp5_sdBox.draw();
     }
@@ -2425,6 +2396,7 @@ class SDBox {
         sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
+            .setBackgroundColor(150)
             .setSize(w - padding*2, 2*24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2451,49 +2423,23 @@ class SDBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-    }
 
-    private void openCloseDropdown() {
-        //Close the dropdown if it is open and mouse is no longer over it
-        if (cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).isOpen()){
-            if (!cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
-                //println("----Closing dropdown " + maxDurDropdownName);
-                cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
-            }
-
-        }
-        // Open the dropdown if it's not open, but not if it was recently clicked
-        // Makes sure dropdown stays closed after user selects an option
-        if (!dropdownWasClicked) {
-            if (!cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).isOpen()){
-                if (cp5_sdBox.getController(sdBoxDropdownName).isMouseOver()){
-                    //println("++++Opening dropdown " + maxDurDropdownName);
-                    cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).open();
-                }
-            }
-        } else {
-            // This flag is used to gate opening/closing the dropdown
-            dropdownWasClicked = false;
-        }
+        makeScrollableListBetter(sdList);
     }
 
     public void updatePosition() {
         sdList.setPosition(x + padding, y + padding*2 + 14);
     }
-
-    public void closeDropdown() {
-        cp5_sdBox.get(ScrollableList.class, sdBoxDropdownName).close();
-        dropdownWasClicked = true;
-        //println("---- DROPDOWN CLICKED -> CLOSING DROPDOWN");
-    }
 };
 
 
 class RadioConfigBox {
-    int x, y, w, h, padding; //size and position
-    String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
-    String last_message = initial_message;
+    private int x, y, w, h, padding; //size and position
+    private String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    private String last_message = initial_message;
     public boolean isShowing;
+    private RadioConfig cytonRadioCfg;
+    private int linuxPadding = isLinux() ? -5 : 0;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -2502,12 +2448,14 @@ class RadioConfigBox {
         h = 275; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
+        cytonRadioCfg = new RadioConfig();
 
-        //typical button height + 20 for larger autoscan button
+        //typical button height + 20 for larger autoscan button, full box width minus padding
         autoscan = new Button_obci(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
-        //smaller buttons below autoscan
-        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
-        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        //smaller buttons below autoscan - left column
+        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*4)/2, 24, "STATUS", fontInfo.buttonLabel_size);
+        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*4)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        //right column
         setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
         ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
         
@@ -2530,7 +2478,7 @@ class RadioConfigBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RADIO CONFIGURATION", x + padding, y + padding);
+        text("RADIO CONFIGURATION", x + padding, y + padding + linuxPadding);
         popStyle();
         getChannel.draw();
         setChannel.draw();
@@ -2544,11 +2492,36 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*8) + 33 + (24*2), w-(padding*2), 135 - 21 - padding); //13 + 20 = 33 for larger autoscan
+        rect(x + padding, y + (padding*7) + 33 + (24*2), w-(padding*2), 135 - 21); //13 + 20 = 33 for larger autoscan
         fill(255);
         textFont(h3, 15);
-        text(localstring, x + padding + 5, y + (padding*8) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 - padding -15); //15 + 20 = 35
+        text(localstring, x + padding + 5, y + (padding*7) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 -15); //15 + 20 = 35
         this.last_message = localstring;
+    }
+
+    public void getChannel() {
+        cytonRadioCfg.get_channel(RadioConfigBox.this);
+    }
+
+    public void setChannel(int val) {
+        cytonRadioCfg.set_channel(RadioConfigBox.this, val);
+    }
+
+    public void setChannelOverride(int val) {
+        cytonRadioCfg.set_channel_over(RadioConfigBox.this, val);
+    }
+
+    public void scanChannels() {
+        cytonRadioCfg.scan_channels(RadioConfigBox.this);
+    }
+
+    public void getSystemStatus() {
+        cytonRadioCfg.system_status(RadioConfigBox.this);
+    }
+
+    public void closeSerialPort() {
+        print_onscreen("");
+        cytonRadioCfg.closeSerialPort();
     }
 };
 

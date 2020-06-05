@@ -5,5 +5,7 @@ interface AnalogCapableBoard {
 
     public void setAnalogActive(boolean active);
 
+    public boolean canDeactivateAnalog();
+
     public int[] getAnalogChannels();
 };

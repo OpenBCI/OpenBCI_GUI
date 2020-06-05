@@ -166,6 +166,9 @@ class ADS1299Settings {
     protected Board board;
     protected ADS1299SettingsBoard settingsBoard;
 
+    private Bias[] previousBias;
+    private Srb2[] previousSrb2; 
+
     ADS1299Settings(Board theBoard) {
         board = theBoard;
         settingsBoard = (ADS1299SettingsBoard)theBoard;
@@ -192,6 +195,30 @@ class ADS1299Settings {
 
         srb1 = new Srb1[channelCount];
         Arrays.fill(srb1, Srb1.DISCONNECT);
+
+        previousBias = bias.clone();
+        previousSrb2 = srb2.clone();
+    }
+
+    public boolean isChannelActive(int chan) {
+        return powerDown[chan] == PowerDown.ON;
+    }
+
+    public void setChannelActive(int chan, boolean active) {
+        if (active) {
+            bias[chan] = previousBias[chan];
+            srb2[chan] = previousSrb2[chan];
+
+        } else {
+            previousBias[chan] = bias[chan];
+            previousSrb2[chan] = srb2[chan];
+
+            bias[chan] = Bias.NO_INCLUDE;
+            srb2[chan] = Srb2.DISCONNECT;
+        }
+
+        powerDown[chan] = active ? PowerDown.ON : PowerDown.OFF;
+        commit(chan);
     }
 
     public void commit(int chan) {

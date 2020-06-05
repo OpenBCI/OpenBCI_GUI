@@ -291,10 +291,28 @@ synchronized void mouseReleased() {
     }
 }
 
+void makeScrollableListBetter(ScrollableList scrollList) {
+    // there's a bug in control p5 where clicking on the scroll list does not
+    // open it if you move the mouse while clicking. This fixes that.
+    scrollList.onEndDrag(new CallbackListener() {
+        public void controlEvent(CallbackEvent event) {
+            ScrollableList theList = (ScrollableList)(event.getController());
+            theList.setOpen(!theList.isOpen());
+        }
+    });
+
+    // close the dropdown if the mouse leaves it.
+    scrollList.onLeave(new CallbackListener() {
+        public void controlEvent(CallbackEvent event) {
+            ScrollableList theList = (ScrollableList)(event.getController());
+            theList.close();
+        }
+    });
+}
+
 //------------------------------------------------------------------------
 //                       Classes
 //------------------------------------------------------------------------
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -485,10 +503,6 @@ class Button_obci {
 
     public String getButtonText() {
         return but_txt;
-    }
-
-    public void setCurrentColor(color _color){
-        currentColor = _color;
     }
 
     public void setColorPressed(color _color) {

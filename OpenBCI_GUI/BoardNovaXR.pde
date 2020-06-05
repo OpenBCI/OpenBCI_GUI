@@ -187,13 +187,12 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
 
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
-        currentADS1299Settings.powerDown[channelIndex] = active ? PowerDown.ON : PowerDown.OFF;
-        currentADS1299Settings.commit(channelIndex);
+        currentADS1299Settings.setChannelActive(channelIndex, active);
     }
     
     @Override
     public boolean isEXGChannelActive(int channelIndex) {
-        return currentADS1299Settings.powerDown[channelIndex] == PowerDown.ON;
+        return currentADS1299Settings.isChannelActive(channelIndex);
     }
     
     @Override

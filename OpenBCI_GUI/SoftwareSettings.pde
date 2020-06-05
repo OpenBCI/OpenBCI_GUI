@@ -1113,18 +1113,7 @@ class SoftwareSettings {
 
     void initCheckPointFive() {
         //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
-        String firmwareToPrint = "";
         String dataModeVersionToPrint = controlEventDataSource;
-        if (eegDataSource == DATASOURCE_CYTON) {
-            if (!settings.loadErrorCytonEvent) {
-                //todo get cyton firmware version if possible during Init
-                firmwareToPrint = " " + "FIX ME" + ")";
-            } else {
-                firmwareToPrint = "v.?)";
-            }
-            dataModeVersionToPrint = controlEventDataSource.replace(")", " ");
-            dataModeVersionToPrint += firmwareToPrint;
-        }
 
         //Output messages when Loading settings is complete
         if (chanNumError == false

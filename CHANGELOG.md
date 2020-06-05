@@ -8,13 +8,15 @@
 * Refactored GUI data flow
 * Add Travis and Appveyor CI tests and builds for all OS
 * Add data smoothing option for live Cyton data
+* Cyton Port manual selection only displays serial ports with a dongle connected.
 
 ### Bug Fixes
-* Remove OpenBCI Hub #665
+* Remove OpenBCI Hub #665 #669 #708
+* General UI/UX improvements
 * Missing Filter Button Label in Networking #696
 * Ganglion+WiFi Accelerometer Data not in Sync #512
-* General UI/UX improvements
 * Remove # Chan Textfield from LSL in Networking Widget #644
+* LSL manual timestamping interferes with LSL clock_offset correction #775
 
 ### Deprecated Features
 * OpenBCI Hub - This is no longer required to run the GUI!

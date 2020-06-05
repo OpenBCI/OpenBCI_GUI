@@ -271,13 +271,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
-        currentADS1299Settings.powerDown[channelIndex] = active ? PowerDown.ON : PowerDown.OFF;
-        currentADS1299Settings.commit(channelIndex);
+        currentADS1299Settings.setChannelActive(channelIndex, active);
     }
-
+    
     @Override
     public boolean isEXGChannelActive(int channelIndex) {
-        return currentADS1299Settings.powerDown[channelIndex] == PowerDown.ON;
+        return currentADS1299Settings.isChannelActive(channelIndex);
     }
 
     @Override
@@ -291,6 +290,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             setBoardMode(CytonBoardMode.DEFAULT);
         }
         // no way of turning off accel.
+    }
+
+    @Override
+    public boolean canDeactivateAccelerometer() {
+        return false;
     }
 
     @Override
@@ -315,9 +319,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public void setAnalogActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.ANALOG);
-        } else {
-            setBoardMode(CytonBoardMode.DEFAULT);
         }
+    }
+
+    @Override
+    public boolean canDeactivateAnalog() {
+        return false;
     }
 
     @Override
@@ -342,9 +349,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public void setDigitalActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.DIGITAL);
-        } else {
-            setBoardMode(CytonBoardMode.DEFAULT);
         }
+    }
+
+    @Override
+    public boolean canDeactivateDigital() {
+        return false;
     }
 
     @Override

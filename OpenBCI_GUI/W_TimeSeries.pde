@@ -239,12 +239,11 @@ class W_timeSeries extends Widget {
             if (!this.dropdownIsActive) {
                 adsSettingsController.mousePressed();
             }
-        } else {
-            for(int i = 0; i < channelBars.length; i++) {
-                channelBars[i].mousePressed();
-            }
         }
 
+        for(int i = 0; i < channelBars.length; i++) {
+            channelBars[i].mousePressed();
+        }
     }
     
     void mouseReleased() {
@@ -260,10 +259,10 @@ class W_timeSeries extends Widget {
 
         if(adsSettingsController != null && adsSettingsController.isVisible) {
             adsSettingsController.mouseReleased();
-        } else {
-            for(int i = 0; i < channelBars.length; i++) {
-                channelBars[i].mouseReleased();
-            }
+        } 
+        
+        for(int i = 0; i < channelBars.length; i++) {
+            channelBars[i].mouseReleased();
         }
     }
 
@@ -300,7 +299,6 @@ void VertScale_TS(int n) {
     for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
     }
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the Duration Dropdown
@@ -325,7 +323,6 @@ void Duration(int n) {
             }
         }
     }
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the LogLin Dropdown
@@ -335,7 +332,6 @@ void Spillover(int n) {
     } else {
         w_timeSeries.allowSpillover = true;
     }
-    closeAllDropdowns();
 }
 
 

@@ -427,7 +427,6 @@ void SpectrogramMaxFreq(int n) {
     //Link the choices made in the FFT widget and the Spectrogram Widget for this parameter
     MaxFreq(n);
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
-    closeAllDropdowns();
     //reset the vertical axis labelss
     w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
     //Resize the height of the data image
@@ -459,10 +458,8 @@ void SpectrogramSampleRate(int n) {
     }
     w_spectrogram.horizAxisLabelStrings.clear();
     w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
-    closeAllDropdowns();
 }
 
 void SpectrogramLogLin(int n) {
     settings.spectLogLinSave = n;
-    closeAllDropdowns();
 }
