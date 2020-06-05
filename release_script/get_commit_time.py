@@ -21,6 +21,8 @@ def main ():
 
     timestamp = soup.find("relative-time")["datetime"]
     timestamp = timestamp.replace(":", "-")
+    timestamp = timestamp.replace("T", "--")
+    timestamp = timestamp.replace("Z", "")
 
     print(timestamp)
 
