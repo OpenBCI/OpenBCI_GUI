@@ -1,5 +1,4 @@
 import java.lang.Math;
-import java.util.Date;
 
 
 public class Buffer<T> extends LinkedList<T> {
@@ -11,7 +10,6 @@ public class Buffer<T> extends LinkedList<T> {
     Buffer(int samplingRate, int maxSize) {
         this.samplingRate = samplingRate;
         this.maxSize = maxSize;
-        Date date = new Date();
         msSinceLastCall = null;
     }
 
@@ -21,9 +19,6 @@ public class Buffer<T> extends LinkedList<T> {
     }
 
     public void addNewEntry(T object) {
-        while (this.size() >= maxSize) {
-            this.popFirstEntry();
-        }
         this.add(object);
     }
 
@@ -32,8 +27,7 @@ public class Buffer<T> extends LinkedList<T> {
     }
 
     public int getDataCount() {
-        Date date = new Date();
-        long currentTime = date.getTime();
+        long currentTime = millis();
         int numSamples = 0;
         // skip first call to set time
         if (msSinceLastCall != null) {
@@ -41,6 +35,10 @@ public class Buffer<T> extends LinkedList<T> {
             numSamples = (int)(samplingRate * deltaTimeSeconds);
         }
         msSinceLastCall = currentTime;
+        // ensure that buffer is not bigger than maxSize
+        if (this.size() > maxSize) {
+            numSamples += this.size() - maxSize;
+        }
         return Math.min(numSamples, this.size());
     }
 }
