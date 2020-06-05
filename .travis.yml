@@ -19,6 +19,7 @@ before_install:
 
 install:
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
+  - echo $TRAVIS_COMMIT_MESSAGE
 
 ### ### LINUX ### ###
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L http://download.processing.org/processing-3.5.3-linux64.tgz                            ;fi
