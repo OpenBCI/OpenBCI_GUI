@@ -70,7 +70,7 @@ def get_release_dir_name(sketch_dir, flavor, timestamp):
 
     new_name = "openbcigui_" + version_str + "_"
     if timestamp:
-        new_name += timestamp + "_"
+        new_name = new_name + timestamp + "_"
     return flavor.replace("application.", new_name)
 
 ### Function: Find the sketch directory
@@ -281,7 +281,7 @@ def main ():
     build_app(sketch_dir, flavor)
 
     #package it up
-    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
+    package_app(sketch_dir, flavor, timestamp, windows_signing, windows_pfx_path, windows_pfx_password)
 
 if __name__ == "__main__":
     main ()
