@@ -382,6 +382,10 @@ class AnalogReadBar{
         List<double[]> allData = currentBoard.getData(nPoints);
         int[] channels = analogBoard.getAnalogChannels();
 
+        if (channels.length == 0) {
+            return;
+        }
+        
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
             float value = (float)allData.get(i)[channels[auxValuesPosition]];
@@ -445,9 +449,8 @@ class AnalogReadBar{
         else {
             plot.getXAxis().setNTicks(10);
         }
-        if (w_analogRead != null) {
-            updatePlotPoints();
-        }
+        
+        updatePlotPoints();
     }
 
     void adjustVertScale(int _vertScaleValue) {
