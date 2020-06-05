@@ -117,6 +117,23 @@ class W_DigitalRead extends Widget {
             //ignore top left button interaction when widgetSelector dropdown is active
             ignoreButtonCheck(digitalModeButton);
         }
+
+        updateOnOffButton();
+    }
+
+    private void updateOnOffButton() {	
+        if (digitalBoard.isDigitalActive()) {	
+            digitalModeButton.setString("Turn Digital Read Off");	
+            digitalModeButton.setIgnoreHover(!digitalBoard.canDeactivateDigital());
+            if(!digitalBoard.canDeactivateDigital()) {
+                digitalModeButton.setColorNotPressed(color(128));
+            }
+        }
+        else {
+            digitalModeButton.setString("Turn Digital Read On");	
+            digitalModeButton.setIgnoreHover(false);
+            digitalModeButton.setColorNotPressed(color(57,128,204));
+        }
     }
 
     void draw(){
@@ -127,10 +144,7 @@ class W_DigitalRead extends Widget {
             pushStyle();
             //draw channel bars
             digitalModeButton.draw();
-            if (!digitalBoard.isDigitalActive()) {
-                digitalModeButton.setString("Turn Digital Read On");
-            } else {
-                digitalModeButton.setString("Turn Digital Read Off");
+            if (digitalBoard.isDigitalActive()) {
                 for(int i = 0; i < numDigitalReadDots; i++){
                     digitalReadDots[i].draw();
                 }

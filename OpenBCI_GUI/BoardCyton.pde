@@ -228,9 +228,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         if(active) {
             setBoardMode(CytonBoardMode.DEFAULT);
         }
-        else {
-            setBoardMode(CytonBoardMode.ANALOG);
-        }
+        // no way of turning off accel.
+    }
+
+    @Override
+    public boolean canDeactivateAccelerometer() {
+        return false;
     }
 
     @Override
@@ -255,9 +258,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public void setAnalogActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.ANALOG);
-        } else {
-            setBoardMode(CytonBoardMode.DEFAULT);
         }
+    }
+
+    @Override
+    public boolean canDeactivateAnalog() {
+        return false;
     }
 
     @Override
@@ -282,9 +288,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     public void setDigitalActive(boolean active) {
         if(active) {
             setBoardMode(CytonBoardMode.DIGITAL);
-        } else {
-            setBoardMode(CytonBoardMode.DEFAULT);
         }
+    }
+
+    @Override
+    public boolean canDeactivateDigital() {
+        return false;
     }
 
     @Override
