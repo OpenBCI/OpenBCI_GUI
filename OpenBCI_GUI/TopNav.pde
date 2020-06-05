@@ -120,9 +120,11 @@ class TopNav {
         filtBPButton.setFont(p5, 12);
         filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
 
-        smoothingButton = new Button_obci(filtBPButton.but_x + filtBPButton.but_dx + 4, 35, 70, 26, getSmoothingString(), fontInfo.buttonLabel_size);
-        smoothingButton.setFont(p5, 12);
-        smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
+        if (currentBoard instanceof SmoothingCapableBoard) {
+            smoothingButton = new Button_obci(filtBPButton.but_x + filtBPButton.but_dx + 4, 35, 70, 26, getSmoothingString(), fontInfo.buttonLabel_size);
+            smoothingButton.setFont(p5, 12);
+            smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
+        }
 
         //right to left in top right (secondary nav)
         layoutButton = new Button_obci(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
@@ -184,23 +186,29 @@ class TopNav {
         if (colorScheme == COLOR_SCHEME_DEFAULT) {
             filtBPButton.setColorNotPressed(color(255));
             filtNotchButton.setColorNotPressed(color(255));
-            smoothingButton.setColorNotPressed(color(255));
             layoutButton.setColorNotPressed(color(255));
 
             filtBPButton.textColorNotActive = color(bgColor);
-            filtNotchButton.textColorNotActive = color(bgColor);
-            smoothingButton.textColorNotActive = color(bgColor);
+            filtNotchButton.textColorNotActive = color(bgColor);            
             layoutButton.textColorNotActive = color(bgColor);
+
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.textColorNotActive = color(bgColor);
+                smoothingButton.setColorNotPressed(color(255));
+            }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             filtBPButton.setColorNotPressed(color(57, 128, 204));
             filtNotchButton.setColorNotPressed(color(57, 128, 204));
-            smoothingButton.setColorNotPressed(color(57, 128, 204));
             layoutButton.setColorNotPressed(color(57, 128, 204));
 
             filtBPButton.textColorNotActive = color(255);
-            filtNotchButton.textColorNotActive = color(255);
-            smoothingButton.textColorNotActive = color(255);
+            filtNotchButton.textColorNotActive = color(255);      
             layoutButton.textColorNotActive = color(255);
+
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.setColorNotPressed(color(57, 128, 204));
+                smoothingButton.textColorNotActive = color(255);
+            }
         }
     }
 
@@ -324,11 +332,13 @@ class TopNav {
                 filtNotchButton.setIsActive(true);
                 incrementNotchConfiguration();
             }
-            if (smoothingButton.isMouseHere()) {
-                smoothingButton.setIsActive(true);
-                //toggle data smoothing on mousePress for capable boards
-                ((SmoothingCapableBoard)currentBoard).setSmoothingActive(!((SmoothingCapableBoard)currentBoard).getSmoothingActive());
-                smoothingButton.setString(getSmoothingString());
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                if (smoothingButton.isMouseHere()) {
+                    smoothingButton.setIsActive(true);
+                    //toggle data smoothing on mousePress for capable boards
+                    ((SmoothingCapableBoard)currentBoard).setSmoothingActive(!((SmoothingCapableBoard)currentBoard).getSmoothingActive());
+                    smoothingButton.setString(getSmoothingString());
+                }
             }
             if (layoutButton.isMouseHere()) {
                 layoutButton.setIsActive(true);
@@ -439,8 +449,11 @@ class TopNav {
             stopButton.setIsActive(false);
             filtBPButton.setIsActive(false);
             filtNotchButton.setIsActive(false);
-            smoothingButton.setIsActive(false);
             layoutButton.setIsActive(false);
+
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                smoothingButton.setIsActive(false);
+            }
         }
 
         fpsButton.setIsActive(false);
