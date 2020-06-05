@@ -120,6 +120,11 @@ abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapab
     }
 
     @Override
+    public boolean getSmoothingActive() {
+        return smoothData;
+    }
+
+    @Override
     protected synchronized double[][] getNewDataInternal() {
         double[][] data = super.getNewDataInternal();
         if (!smoothData) {
