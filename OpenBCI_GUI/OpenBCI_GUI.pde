@@ -92,6 +92,7 @@ final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via 
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 final int DATASOURCE_NOVAXR = 4;
+final int DATASOURCE_SDCARD = 5;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
 
@@ -510,7 +511,12 @@ void initSystem() {
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
-            currentBoard = new DataSourcePlayback(playbackData_fname);
+            //currentBoard = new DataSourcePlayback(playbackData_fname);
+            currentBoard = new DataSourceSDCard(playbackData_fname);
+            break;
+        case DATASOURCE_SDCARD:
+            // todo add filename
+            currentBoard = new DataSourceSDCard(playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {

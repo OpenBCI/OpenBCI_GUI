@@ -429,11 +429,6 @@ class ControlPanel {
         wifiBox.update();
         interfaceBoxCyton.update();
         interfaceBoxGanglion.update();
-
-        //SD File Conversion
-        while (convertingSD == true) {
-            convertSDFile();
-        }
     }
 
     public void draw() {
@@ -1064,12 +1059,6 @@ class ControlPanel {
             selectInput("Select a pre-recorded file for playback:", 
                         "playbackFileSelected",
                         new File(settings.guiDataPath + "Recordings"));
-        }
-
-        if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("Select an SD file to convert to a playback file");
-            createPlaybackFileFromSD();
-            selectInput("Select an SD file to convert for playback:", "sdFileSelected");
         }
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
