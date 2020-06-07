@@ -30,8 +30,8 @@ class DataSourceSDCard implements DataSource, FileBoard  {
         Scanner reader = new Scanner(file);
         startTime = millis() / 1000.0;
         while (reader.hasNextLine()) {
-            String data = reader.nextLine();
-            String[] splitted = data.split(",");
+            String line = reader.nextLine();
+            String[] splitted = line.split(",");
             if (splitted.length < 8) {
                 continue;
             }
@@ -110,7 +110,7 @@ class DataSourceSDCard implements DataSource, FileBoard  {
         currentSample += numNewSamplesThisFrame;
 
         // don't go beyond raw data array size
-        currentSample = min(currentSample, data.size());
+        currentSample = min(currentSample, data.size() - 1);
     }
 
     @Override
@@ -154,7 +154,7 @@ class DataSourceSDCard implements DataSource, FileBoard  {
         if ((data == null) || (data.size() == 0)) {
             return 0;
         }
-        return data.size() - 1;
+        return exgChannels.length + 1;
     }
 
     @Override
