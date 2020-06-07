@@ -511,11 +511,12 @@ void initSystem() {
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
+            // todo add smth to control panel to chose DATASOURCE_SDCARD instead
             //currentBoard = new DataSourcePlayback(playbackData_fname);
             currentBoard = new DataSourceSDCard(playbackData_fname);
             break;
         case DATASOURCE_SDCARD:
-            // todo add filename
+            // todo add sd filename
             currentBoard = new DataSourceSDCard(playbackData_fname);
             break;
         case DATASOURCE_GANGLION:
