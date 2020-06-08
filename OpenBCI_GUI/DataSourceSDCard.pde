@@ -10,7 +10,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     private int counter;
     private int currentSample;
     private int timeOfLastUpdateMS;
-    private boolean initialized;
     private double accel_x;
     private double accel_y;
     private double accel_z;
@@ -24,7 +23,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         counter = 0;
         startTime = 0.0;
         timeOfLastUpdateMS = 0;
-        initialized = false;
         totalChannels = 0;
         accel_x = 0.0;
         accel_y = 0.0;
@@ -63,7 +61,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         }
         reader.close();
         println("Initialized, data len is " + data.size() + " Num EXG Channels is " + exgChannels.length);
-        initialized = true;
         return true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -76,25 +73,27 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         if (row.length < numChannels - 1) {
             return;
         }
-        for (int i = 0; i < numChannels; i++) {
-            Integer val = Integer.parseInt(row[i], 16);
-            double res = val;
-            if (i != 0) {
-                res = val * BoardCytonConstants.scale_fac_uVolts_per_count;
+        for (int i = 0; i < numChannels + 1; i++) {
+            double res = 0.0;
+            if (i == 0) {
+                res = Integer.parseInt(row[i], 16);
+            }
+            else {
+                res = parseInt24Hex(row[i]) * BoardCytonConstants.scale_fac_uVolts_per_count;
             }
             line[i] = res;
         }
         // new accel
         if (row.length >= numChannels + 4) {
-            accel_x = Integer.parseInt(row[numChannels + 1], 16);
-            accel_y = Integer.parseInt(row[numChannels + 2], 16);
-            accel_z = Integer.parseInt(row[numChannels +3], 16);
+            accel_x = parseInt16Hex(row[numChannels + 1]);
+            accel_y = parseInt16Hex(row[numChannels + 2]);
+            accel_z = parseInt16Hex(row[numChannels + 3]);
         }
         line[line.length - 4] = BoardCytonConstants.accelScale * accel_x;
         line[line.length - 3] = BoardCytonConstants.accelScale * accel_y;
         line[line.length - 2] = BoardCytonConstants.accelScale * accel_z;
         // add timestamp
-        double delay = (numChannels == 16) ? (1.0 / 125) : (1.0 / 250);
+        double delay = 1.0 / samplingRate;
         double timestamp = startTime + counter * delay;
         line[line.length - 1] = timestamp;
         data.add(line);
@@ -109,7 +108,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         counter = 0;
         startTime = 0.0;
         timeOfLastUpdateMS = 0;
-        initialized = false;
         totalChannels = 0;
         accel_x = 0.0;
         accel_y = 0.0;
@@ -259,6 +257,26 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     @Override
     public int[] getAccelerometerChannels() {
         return new int[]{totalChannels - 4, totalChannels - 3, totalChannels - 2};
+    }
+
+    private int parseInt24Hex(String hex) {
+        if (hex.charAt(0) > '7') {  // if the number is negative
+            hex = "FF" + hex;   // keep it negative
+        } else {                  // if the number is positive
+            hex = "00" + hex;   // keep it positive
+        }
+
+        return unhex(hex);
+    }
+
+    private int parseInt16Hex(String hex) {
+        if (hex.charAt(0) > '7') {  // if the number is negative
+            hex = "FFFF" + hex;   // keep it negative
+        } else {                  // if the number is positive
+            hex = "0000" + hex;   // keep it positive
+        }
+
+        return unhex(hex);
     }
 
 }
