@@ -1061,6 +1061,12 @@ class ControlPanel {
                         new File(settings.guiDataPath + "Recordings"));
         }
 
+        if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
+            output("Select an SD file to playback");
+            selectInput("Select an SD file to playback:", "sdFileSelected");
+        }
+
+
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", 
@@ -1145,7 +1151,7 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
             output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
