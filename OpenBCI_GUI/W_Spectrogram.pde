@@ -404,7 +404,7 @@ class W_Spectrogram extends Widget {
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
-            LocalDateTime t = time.plus(l, ChronoUnit.SECONDS);
+            LocalDateTime t = time.minus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
         }
     }
