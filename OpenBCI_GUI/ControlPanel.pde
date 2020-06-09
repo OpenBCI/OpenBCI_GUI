@@ -2546,7 +2546,7 @@ class SDConverterBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("CONVERT SD FOR PLAYBACK", x + padding, y + padding);
+        text("SELECT SD FILE FOR PLAYBACK", x + padding, y + padding);
         popStyle();
 
         selectSDFile.draw();

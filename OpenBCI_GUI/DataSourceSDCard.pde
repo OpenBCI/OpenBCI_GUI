@@ -47,7 +47,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
                     exgChannels = new int[] {1,2,3,4,5,6,7,8};
                     totalChannels = 13;
                 }
-                parseRow(splitted, 8);
             }
             else {
                 if (samplingRate == 0) {
@@ -55,7 +54,12 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
                     exgChannels = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
                     totalChannels = 21;
                 }
-                parseRow(splitted, 16);
+            }
+            try {
+                parseRow(splitted, exgChannels.length);
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
             }
             counter++;
         }
