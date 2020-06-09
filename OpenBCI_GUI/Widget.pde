@@ -184,6 +184,19 @@ class Widget{
 
     private void drawDropdowns(){
         cp5_widget.draw(); //this draws all cp5 elements... in this case, the scrollable lists that populate our dropdowns<>
+
+        //draw dropdown titles		
+        pushStyle();		
+        noStroke();		
+        textFont(h5);		
+        textSize(12);		
+        textAlign(CENTER, BOTTOM);		
+        fill(bgColor);		
+        for(int i = 0; i < dropdowns.size(); i++){		
+            int dropdownPos = dropdowns.size() - i;		
+            // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));		
+            text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));		
+        }
     }
 
     public void mouseDragged(){
