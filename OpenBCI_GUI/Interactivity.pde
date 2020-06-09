@@ -291,23 +291,52 @@ synchronized void mouseReleased() {
     }
 }
 
-void makeScrollableListBetter(ScrollableList scrollList) {
-    // there's a bug in control p5 where clicking on the scroll list does not
-    // open it if you move the mouse while clicking. This fixes that.
-    scrollList.onEndDrag(new CallbackListener() {
-        public void controlEvent(CallbackEvent event) {
-            ScrollableList theList = (ScrollableList)(event.getController());
-            theList.setOpen(!theList.isOpen());
-        }
-    });
+class CustomDropdownCallbackListener implements CallbackListener {
 
-    // close the dropdown if the mouse leaves it.
-    scrollList.onLeave(new CallbackListener() {
-        public void controlEvent(CallbackEvent event) {
-            ScrollableList theList = (ScrollableList)(event.getController());
+    private ScrollableList theList;
+    private Background theBg;
+
+    CustomDropdownCallbackListener(ScrollableList list, Background bg) {
+        theList = list;
+        theBg = bg;
+    }
+
+    @Override
+    public void controlEvent(CallbackEvent event) {
+        // close the dropdown if the mouse leaves it.
+        if(event.getAction() == ControlP5.ACTION_LEAVE) {
             theList.close();
         }
-    });
+
+        //there's a bug in control p5 where clicking on the scroll list does not
+        //open it if you move the mouse while clicking. This fixes that.
+        if(event.getAction() == ControlP5.ACTION_END_DRAG) {
+            theList.setOpen(!theList.isOpen());
+        }
+
+        float[] position = theList.getPosition().clone();
+        for (int i=0; i<position.length; i++) {
+            position[i] --;
+        }
+
+        theBg.setPosition(position);
+        theBg.setSize(theList.getWidth() + 2, theList.getHeight() + 3);
+        theBg.setVisible(theList.isOpen());
+    }
+}
+
+ScrollableList makeCustomDropdown(ControlP5 cp5, String name) {
+    Background bg = cp5.addBackground(name + "_Background")
+        .setVisible(false)
+        .setColorBackground(150)
+        ;
+
+    ScrollableList scrollList = cp5.addScrollableList(name);
+
+    scrollList.addCallback(new CustomDropdownCallbackListener(scrollList, bg));
+    scrollList.onEndDrag(new CustomDropdownCallbackListener(scrollList, bg));
+
+    return scrollList;
 }
 
 //------------------------------------------------------------------------
