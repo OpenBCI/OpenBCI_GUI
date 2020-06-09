@@ -108,6 +108,7 @@ boolean showStartupError = false;
 String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
+String sdData_fname = "N/A"; //only used if loading input data from a sd file
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
@@ -510,7 +511,17 @@ void initSystem() {
             currentBoard = new BoardSynthetic();
             break;
         case DATASOURCE_PLAYBACKFILE:
-            currentBoard = new DataSourcePlayback(playbackData_fname);
+            if (!playbackData_fname.equals("N/A")) {
+                currentBoard = new DataSourcePlayback(playbackData_fname);
+            } else {
+                if (!sdData_fname.equals("N/A")) {
+                    currentBoard = new DataSourceSDCard(sdData_fname);
+                }
+                else {
+                    // no code path to it
+                    println("Nor playback nor sd file selected.");
+                }
+            }
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
