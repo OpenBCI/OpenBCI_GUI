@@ -44,7 +44,7 @@ void processNewData() {
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan][dataProcessingRawBuffer.length-1]);
+    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan][dataProcessingRawBuffer.length-1], Ichan);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {

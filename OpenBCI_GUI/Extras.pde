@@ -210,24 +210,27 @@ int[] range(int first, int second) {
 
 class DataStatus {
     public boolean is_railed;
-    private double threshold_railed_uv;
+    private double threshold_railed;
     public boolean is_railed_warn;
-    private double threshold_railed_warn_uv;
+    private double threshold_railed_warn;
 
     DataStatus(int thresh_railed, int thresh_railed_warn) {
         // convert int24 value to uV
-        double eeg_scaler =  (4.5 / (pow (2, 23) - 1) / 24.0 * 1000000.);
         is_railed = false;
         // convert thresholds to uV
-        threshold_railed_uv = thresh_railed * eeg_scaler;
+        threshold_railed = thresh_railed;
         is_railed_warn = false;
-        threshold_railed_warn_uv = thresh_railed_warn * eeg_scaler;
+        threshold_railed_warn = thresh_railed_warn;
     }
-    public void update(float data_value) {
+    public void update(float data_value, int channel) {
         is_railed = false;
-        if (abs(data_value) >= threshold_railed_uv) is_railed = true;
         is_railed_warn = false;
-        if (abs(data_value) >= threshold_railed_warn_uv) is_railed_warn = true;
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
+            if (abs(data_value) >= threshold_railed * scaler) is_railed = true;
+            is_railed_warn = false;
+            if (abs(data_value) >= threshold_railed_warn * scaler) is_railed_warn = true;
+        }
     }
 };
 
