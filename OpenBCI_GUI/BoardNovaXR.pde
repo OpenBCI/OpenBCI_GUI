@@ -302,4 +302,9 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
             channelNames[getPPGChannels()[i]] = "PPG Channel " + i;
         }
     }
+
+    @Override
+    public double getGain(int channel) {
+        return getADS1299Settings().gain[channel].getScalar();
+    }
 };

@@ -467,4 +467,9 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             channelNames[getAnalogChannels()[i]] = "Analog Channel " + i;
         }
     }
+
+    @Override
+    public double getGain(int channel) {
+        return getADS1299Settings().gain[channel].getScalar();
+    }
 };
