@@ -75,7 +75,7 @@ class W_timeSeries extends Widget {
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
-        if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+        if((currentBoard instanceof FileBoard) && hasScrollbar) {
             playbackWidgetHeight = 50.0;
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
@@ -142,7 +142,7 @@ class W_timeSeries extends Widget {
                 ignoreButtonCheck(hardwareSettingsButton);
             }
 
-            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+            if((currentBoard instanceof FileBoard) && hasScrollbar) {
                 //scrub playback file
                 scrollbar.update();
             } else {
@@ -168,7 +168,7 @@ class W_timeSeries extends Widget {
             }
 
             //Display playback scrollbar or timeDisplay, depending on data source
-            if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+            if((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
                 stroke(31,69,110);
                 rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
@@ -212,7 +212,7 @@ class W_timeSeries extends Widget {
         }
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+        if((currentBoard instanceof FileBoard) && hasScrollbar) {
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
             pb_w = ts_w - ts_padding*4;
@@ -459,9 +459,9 @@ class ChannelBar{
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                voltageValue.string = "RAILED";
+                voltageValue.string = "RAILED - " + voltageValue.string;
             } else if (is_railed[channelIndex].is_railed_warn == true) {
-                voltageValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
+                voltageValue.string = "NEAR RAILED - " + voltageValue.string;
             }
         }
 
@@ -470,7 +470,7 @@ class ChannelBar{
         impValue.string = String.format(getFmt(val),val) + " kOhm";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                impValue.string = "RAILED";
+                impValue.string = "RAILED - " + impValue.string;
             }
         }
 
@@ -697,7 +697,7 @@ class PlaybackScrollbar {
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
-    private DataSourcePlayback playbackDataSource;
+    private FileBoard fileBoard;
     
     private final DateFormat currentTimeFormatShort = new SimpleDateFormat("mm:ss");
     private final DateFormat currentTimeFormatLong = new SimpleDateFormat("HH:mm:ss");
@@ -722,7 +722,7 @@ class PlaybackScrollbar {
         PImage bgImage = loadImage("skipToStart-30x26.png");
         skipToStartButton.setBackgroundImage(bgImage);
 
-        playbackDataSource = (DataSourcePlayback)currentBoard;
+        fileBoard = (FileBoard)currentBoard;
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -761,18 +761,18 @@ class PlaybackScrollbar {
     } //end update loop for PlaybackScrollbar
 
     void updateCursor() {
-        float currentSample = float(playbackDataSource.getCurrentSample());
-        float totalSamples = float(playbackDataSource.getTotalSamples());
+        float currentSample = float(fileBoard.getCurrentSample());
+        float totalSamples = float(fileBoard.getTotalSamples());
         float currentPlaybackPos = currentSample / totalSamples;
 
         spos =  lerp(sposMin, sposMax, currentPlaybackPos);
     }
 
     void scrubToPosition() {
-        int totalSamples = playbackDataSource.getTotalSamples();
+        int totalSamples = fileBoard.getTotalSamples();
         int newSamplePos = floor(totalSamples * getCursorPercentage());
 
-        playbackDataSource.goToIndex(newSamplePos);
+        fileBoard.goToIndex(newSamplePos);
     }
 
     float getCursorPercentage() {
@@ -791,8 +791,8 @@ class PlaybackScrollbar {
     }
 
     String getCurrentTimeToDisplaySeconds() {
-        double totalMillis = playbackDataSource.getTotalTimeSeconds() * 1000.0;
-        double currentMillis = playbackDataSource.getCurrentTimeSeconds() * 1000.0;
+        double totalMillis = fileBoard.getTotalTimeSeconds() * 1000.0;
+        double currentMillis = fileBoard.getCurrentTimeSeconds() * 1000.0;
 
         String totalTimeStr = formatCurrentTime(totalMillis);
         String currentTimeStr = formatCurrentTime(currentMillis);
@@ -885,7 +885,7 @@ class PlaybackScrollbar {
     //This function scrubs to the beginning of the playback file
     //Useful to 'reset' the scrollbar before loading a new playback file
     void skipToStartButtonAction() {       
-        playbackDataSource.goToIndex(0);
+        fileBoard.goToIndex(0);
     }
     
 };//end PlaybackScrollbar class

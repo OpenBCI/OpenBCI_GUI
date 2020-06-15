@@ -66,7 +66,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_ganglionImpedance, w);
     }
 
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE){
+    if(currentBoard instanceof DataSourcePlayback){
         //Playback Widget_3
         w_playback = new W_playback(_this);
         w_playback.setTitle("Playback History");

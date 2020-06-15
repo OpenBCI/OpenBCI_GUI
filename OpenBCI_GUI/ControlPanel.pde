@@ -429,11 +429,6 @@ class ControlPanel {
         wifiBox.update();
         interfaceBoxCyton.update();
         interfaceBoxGanglion.update();
-
-        //SD File Conversion
-        while (convertingSD == true) {
-            convertSDFile();
-        }
     }
 
     public void draw() {
@@ -1067,10 +1062,10 @@ class ControlPanel {
         }
 
         if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("Select an SD file to convert to a playback file");
-            createPlaybackFileFromSD();
-            selectInput("Select an SD file to convert for playback:", "sdFileSelected");
+            output("Select an SD file to playback");
+            selectInput("Select an SD file to playback:", "sdFileSelected");
         }
+
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
@@ -1156,7 +1151,7 @@ public void initButtonPressed(){
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
             return;
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
+        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
             output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
             initSystemButton.wasPressed = false;
             initSystemButton.setIsActive(false);
@@ -1806,7 +1801,7 @@ class SessionDataBox {
 
     void createDropdown(String name, List<String> _items){
 
-        ScrollableList scrollList = cp5_dataLog_dropdown.addScrollableList(name)
+        ScrollableList scrollList = new CustomScrollableList(cp5_dataLog_dropdown, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
@@ -1843,8 +1838,6 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(scrollList);
 
         scrollList.onEnter(new CallbackListener() {
             public void controlEvent(CallbackEvent event) {
@@ -2156,7 +2149,7 @@ class RecentPlaybackBox {
 
     void createDropdown(String name, List<String> _items){
 
-        ScrollableList scrollList = cp5_recentPlayback_dropdown.addScrollableList(name)
+        ScrollableList scrollList = new CustomScrollableList(cp5_recentPlayback_dropdown, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2189,8 +2182,6 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(scrollList);
     }
 };
 
@@ -2255,7 +2246,7 @@ class NovaXRBox {
     }
 
     private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
-        ScrollableList list = localCP5.addScrollableList(name)
+        ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2290,8 +2281,6 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(list);
 
         return list;
     }
@@ -2393,7 +2382,7 @@ class SDBox {
 
     private void createDropdown(String name){
 
-        sdList = cp5_sdBox.addScrollableList(name)
+        sdList = new CustomScrollableList(cp5_sdBox, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
@@ -2423,8 +2412,6 @@ class SDBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(sdList);
     }
 
     public void updatePosition() {
@@ -2551,7 +2538,7 @@ class SDConverterBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("CONVERT SD FOR PLAYBACK", x + padding, y + padding);
+        text("SELECT SD FILE FOR PLAYBACK", x + padding, y + padding);
         popStyle();
 
         selectSDFile.draw();
