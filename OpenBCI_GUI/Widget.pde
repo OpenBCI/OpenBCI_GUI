@@ -80,7 +80,7 @@ class Widget{
 
     public void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
         cp5_widget.setColor(settings.dropdownColors);
-        ScrollableList scrollList = makeCustomDropdown(cp5_widget, "WidgetSelector")
+        ScrollableList scrollList = new CustomScrollableList(cp5_widget, "WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
@@ -119,7 +119,7 @@ class Widget{
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
-            ScrollableList scrollList = makeCustomDropdown(cp5_widget, dropdowns.get(i).id)
+            ScrollableList scrollList = new CustomScrollableList(cp5_widget, dropdowns.get(i).id)
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)

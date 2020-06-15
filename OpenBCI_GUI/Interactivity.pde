@@ -291,69 +291,50 @@ synchronized void mouseReleased() {
     }
 }
 
-class CustomDropdownCallbackListener implements CallbackListener {
-
-    private ScrollableList theList;
-    private Background theBg;
-
-    CustomDropdownCallbackListener(ScrollableList list, Background bg) {
-        theList = list;
-        theBg = bg;
-    }
-
-    @Override
-    public void controlEvent(CallbackEvent event) {
-        // close the dropdown if the mouse leaves it.
-        if(event.getAction() == ControlP5.ACTION_LEAVE) {
-            theList.close();
-        }
-
-        //there's a bug in control p5 where clicking on the scroll list does not
-        //open it if you move the mouse while clicking. This fixes that.
-        if(event.getAction() == ControlP5.ACTION_END_DRAG) {
-            theList.setOpen(!theList.isOpen());
-        }
-
-        float[] position = theList.getPosition().clone();
-        for (int i=0; i<position.length; i++) {
-            position[i] --;
-        }
-
-        theBg.setPosition(position);
-        theBg.setSize(theList.getWidth() + 2, theList.getHeight() + 3);
-        theBg.setVisible(theList.isOpen());
-    }
-}
-
-ScrollableList makeCustomDropdown(ControlP5 cp5, String name) {
-    Background bg = cp5.addBackground(name + "_Background")
-        .setVisible(false)
-        .setColorBackground(150)
-        ;
-
-    ScrollableList scrollList = cp5.addScrollableList(name);
-
-    scrollList.addCallback(new CustomDropdownCallbackListener(scrollList, bg));
-    scrollList.onEndDrag(new CustomDropdownCallbackListener(scrollList, bg));
-
-    return scrollList;
-}
-
 //------------------------------------------------------------------------
 //                       Classes
 //------------------------------------------------------------------------
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Formerly Button.pde
-// This class creates and manages a button for use on the screen to trigger actions.
-//
-// Created: Chip Audette, Oct 2013.
-// Modified: Conor Russomanno, Oct 2014
-//
-// Based on Processing's "Button" example code
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
+class CustomScrollableList extends ScrollableList {
+
+    CustomScrollableList(ControlP5 cp5, String name) {
+        super(cp5, name);
+    }
+
+    @Override
+    protected void onEndDrag() {
+        super.onEndDrag();
+        setOpen(!isOpen());
+    }
+
+    @Override
+    protected void onLeave() {
+        super.onLeave();
+        close();
+    }
+
+    @Override
+    public ScrollableList updateDisplayMode( int theMode ) {
+        super.updateDisplayMode(theMode);
+
+        if (theMode == DEFAULT) {
+            _myControllerView = new CustomScrollableListView( );
+        }
+        
+        return this;
+    }
+
+    public class CustomScrollableListView extends ScrollableListView {
+        @Override
+        public void display(PGraphics g , ScrollableList c) {
+            // draw rect behind the dropdown 
+            fill(c.getBackgroundColor());
+            rect(-1, -1, c.getWidth()+2, c.getHeight()+2);
+
+            super.display(g, c);
+        }
+    }
+}
 
 class Button_obci {
 

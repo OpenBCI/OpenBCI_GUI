@@ -1806,7 +1806,7 @@ class SessionDataBox {
 
     void createDropdown(String name, List<String> _items){
 
-        ScrollableList scrollList =  makeCustomDropdown(cp5_dataLog_dropdown, name)
+        ScrollableList scrollList = new CustomScrollableList(cp5_dataLog_dropdown, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
@@ -2154,7 +2154,7 @@ class RecentPlaybackBox {
 
     void createDropdown(String name, List<String> _items){
 
-        ScrollableList scrollList = makeCustomDropdown(cp5_recentPlayback_dropdown, name)
+        ScrollableList scrollList = new CustomScrollableList(cp5_recentPlayback_dropdown, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2251,7 +2251,7 @@ class NovaXRBox {
     }
 
     private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
-        ScrollableList list = makeCustomDropdown(localCP5, name)
+        ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2387,7 +2387,7 @@ class SDBox {
 
     private void createDropdown(String name){
 
-        sdList = makeCustomDropdown(cp5_sdBox, name)
+        sdList = new CustomScrollableList(cp5_sdBox, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
