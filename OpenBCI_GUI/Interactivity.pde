@@ -300,13 +300,16 @@ class CustomScrollableList extends ScrollableList {
     CustomScrollableList(ControlP5 cp5, String name) {
         super(cp5, name);
     }
-
+    
+    // there's a bug in control p5 where clicking on the scroll list does not	
+    // open it if you move the mouse while clicking. This fixes that.
     @Override
     protected void onEndDrag() {
         super.onEndDrag();
         setOpen(!isOpen());
     }
 
+    // close the dropdown if the mouse leaves it.
     @Override
     protected void onLeave() {
         super.onLeave();
