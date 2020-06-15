@@ -459,9 +459,9 @@ class ChannelBar{
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                voltageValue.string = "RAILED";
+                voltageValue.string = "RAILED - " + voltageValue.string;
             } else if (is_railed[channelIndex].is_railed_warn == true) {
-                voltageValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
+                voltageValue.string = "NEAR RAILED - " + voltageValue.string;
             }
         }
 
@@ -470,7 +470,7 @@ class ChannelBar{
         impValue.string = String.format(getFmt(val),val) + " kOhm";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                impValue.string = "RAILED";
+                impValue.string = "RAILED - " + impValue.string;
             }
         }
 
