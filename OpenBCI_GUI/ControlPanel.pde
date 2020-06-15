@@ -1801,7 +1801,7 @@ class SessionDataBox {
 
     void createDropdown(String name, List<String> _items){
 
-        ScrollableList scrollList = cp5_dataLog_dropdown.addScrollableList(name)
+        ScrollableList scrollList = new CustomScrollableList(cp5_dataLog_dropdown, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
@@ -1838,8 +1838,6 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(scrollList);
 
         scrollList.onEnter(new CallbackListener() {
             public void controlEvent(CallbackEvent event) {
@@ -2151,7 +2149,7 @@ class RecentPlaybackBox {
 
     void createDropdown(String name, List<String> _items){
 
-        ScrollableList scrollList = cp5_recentPlayback_dropdown.addScrollableList(name)
+        ScrollableList scrollList = new CustomScrollableList(cp5_recentPlayback_dropdown, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2184,8 +2182,6 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(scrollList);
     }
 };
 
@@ -2250,7 +2246,7 @@ class NovaXRBox {
     }
 
     private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
-        ScrollableList list = localCP5.addScrollableList(name)
+        ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2285,8 +2281,6 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(list);
 
         return list;
     }
@@ -2388,7 +2382,7 @@ class SDBox {
 
     private void createDropdown(String name){
 
-        sdList = cp5_sdBox.addScrollableList(name)
+        sdList = new CustomScrollableList(cp5_sdBox, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
@@ -2418,8 +2412,6 @@ class SDBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        makeScrollableListBetter(sdList);
     }
 
     public void updatePosition() {

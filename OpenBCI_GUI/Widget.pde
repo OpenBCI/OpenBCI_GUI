@@ -80,7 +80,7 @@ class Widget{
 
     public void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
         cp5_widget.setColor(settings.dropdownColors);
-        ScrollableList scrollList = cp5_widget.addScrollableList("WidgetSelector")
+        ScrollableList scrollList = new CustomScrollableList(cp5_widget, "WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
@@ -111,8 +111,6 @@ class Widget{
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;        
-
-        makeScrollableListBetter(scrollList);
     }
 
     public void setupNavDropdowns(){
@@ -121,7 +119,7 @@ class Widget{
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
-            ScrollableList scrollList = cp5_widget.addScrollableList(dropdowns.get(i).id)
+            ScrollableList scrollList = new CustomScrollableList(cp5_widget, dropdowns.get(i).id)
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
@@ -147,9 +145,7 @@ class Widget{
                 .setSize(12) //set the font size of the item bars to 14pt
                 .getStyle() //need to grab style before affecting the paddingTop
                 .setPaddingTop(3) //4-pixel vertical offset to center text
-                ;   
-
-            makeScrollableListBetter(scrollList);
+                ;
         }
     }
     private void updateDropdowns(){
