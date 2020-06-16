@@ -65,28 +65,6 @@ void processNewData() {
     }
 }
 
-//helper function in handling the EEG data
-void appendAndShift(float[] data, float[] newData) {
-    int nshift = newData.length;
-    int end = data.length-nshift;
-    for (int i=0; i < end; i++) {
-        data[i]=data[i+nshift];  //shift data points down by 1
-    }
-    for (int i=0; i<nshift; i++) {
-        data[end+i] = newData[i];  //append new data
-    }
-}
-
-//help append and shift a single data
-void appendAndShift(float[] data, float newData) {
-    int nshift = 1;
-    int end = data.length-nshift;
-    for (int i=0; i < end; i++) {
-        data[i]=data[i+nshift];  //shift data points down by 1
-    }
-    data[end] = newData;  //append new data
-}
-
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
 
     float[] fooData;

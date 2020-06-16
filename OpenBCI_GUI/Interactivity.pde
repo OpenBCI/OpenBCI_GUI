@@ -291,40 +291,53 @@ synchronized void mouseReleased() {
     }
 }
 
-void makeScrollableListBetter(ScrollableList scrollList) {
-    // there's a bug in control p5 where clicking on the scroll list does not
-    // open it if you move the mouse while clicking. This fixes that.
-    scrollList.onEndDrag(new CallbackListener() {
-        public void controlEvent(CallbackEvent event) {
-            ScrollableList theList = (ScrollableList)(event.getController());
-            theList.setOpen(!theList.isOpen());
-        }
-    });
-
-    // close the dropdown if the mouse leaves it.
-    scrollList.onLeave(new CallbackListener() {
-        public void controlEvent(CallbackEvent event) {
-            ScrollableList theList = (ScrollableList)(event.getController());
-            theList.close();
-        }
-    });
-}
-
 //------------------------------------------------------------------------
 //                       Classes
 //------------------------------------------------------------------------
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Formerly Button.pde
-// This class creates and manages a button for use on the screen to trigger actions.
-//
-// Created: Chip Audette, Oct 2013.
-// Modified: Conor Russomanno, Oct 2014
-//
-// Based on Processing's "Button" example code
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
+class CustomScrollableList extends ScrollableList {
+
+    CustomScrollableList(ControlP5 cp5, String name) {
+        super(cp5, name);
+    }
+    
+    // there's a bug in control p5 where clicking on the scroll list does not	
+    // open it if you move the mouse while clicking. This fixes that.
+    @Override
+    protected void onEndDrag() {
+        super.onEndDrag();
+        setOpen(!isOpen());
+    }
+
+    // close the dropdown if the mouse leaves it.
+    @Override
+    protected void onLeave() {
+        super.onLeave();
+        close();
+    }
+
+    @Override
+    public ScrollableList updateDisplayMode( int theMode ) {
+        super.updateDisplayMode(theMode);
+
+        if (theMode == DEFAULT) {
+            _myControllerView = new CustomScrollableListView( );
+        }
+        
+        return this;
+    }
+
+    public class CustomScrollableListView extends ScrollableListView {
+        @Override
+        public void display(PGraphics g , ScrollableList c) {
+            // draw rect behind the dropdown 
+            fill(c.getBackgroundColor());
+            rect(-1, -1, c.getWidth()+2, c.getHeight()+2);
+
+            super.display(g, c);
+        }
+    }
+}
 
 class Button_obci {
 
