@@ -35,6 +35,7 @@ public enum BandPassRanges
     SevenToThirteen(7.0d, 13.0d),
     FifteenToFifty(15.0d, 50.0d),
     FiveToFifty(5.0d, 50.0d),
+    OneToHundred(1.0d, 100.0d),
     None(null, null);
 
     private Double start;
