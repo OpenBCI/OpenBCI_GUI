@@ -93,7 +93,7 @@ class DataProcessing {
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
-    BandPassRanges bpRange = BandPassRanges.OneToFifty;;
+    BandPassRanges bpRange = BandPassRanges.OneToFifty;
     BandStopRanges bsRange = BandStopRanges.Sixty;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
@@ -137,6 +137,7 @@ class DataProcessing {
         double foo;
 
         //filter the data in the time domain
+        // todo use double arrays here and convert to float only to plot data
         try {
             double[] tempArray = floatToDoubleArray(data_forDisplay_uV[Ichan]);
             if (bsRange != BandStopRanges.None) {

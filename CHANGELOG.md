@@ -10,6 +10,7 @@
 * Add data smoothing option for live Cyton data
 * Cyton Port manual selection only displays serial ports with a dongle connected.
 * Cyton SD file read works without conversion to playback file
+* Use BrainFlow filters, add 1-100 BandPass filter
 
 ### Bug Fixes
 * Remove OpenBCI Hub #665 #669 #708
