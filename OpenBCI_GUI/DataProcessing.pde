@@ -93,7 +93,7 @@ class DataProcessing {
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
-    BandPassRanges bpRange = BandPassRanges.OneToFifty;
+    BandPassRanges bpRange = BandPassRanges.FiveToFifty;
     BandStopRanges bsRange = BandStopRanges.Sixty;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30

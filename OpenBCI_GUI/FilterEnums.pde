@@ -25,16 +25,16 @@ public enum BandStopRanges
         if (freq == null) {
             return "None";
         }
-        return freq.toString();
+        return freq.intValue() + "Hz";
     }
 }
 
 public enum BandPassRanges
 {
-    OneToFifty(1.0d, 50.0d),
+    FiveToFifty(5.0d, 50.0d),
     SevenToThirteen(7.0d, 13.0d),
     FifteenToFifty(15.0d, 50.0d),
-    FiveToFifty(5.0d, 50.0d),
+    OneToFifty(1.0d, 50.0d),
     OneToHundred(1.0d, 100.0d),
     None(null, null);
 
@@ -65,6 +65,6 @@ public enum BandPassRanges
         if ((start == null) || (stop == null)) {
             return "None";
         }
-        return start.toString() + "-" + stop.toString();
+        return start.intValue() + "-" + stop.intValue() + "Hz";
     }
 }
