@@ -787,13 +787,6 @@ class SoftwareSettings {
 
         //}//end case for all objects in JSON
 
-        //Apply notch
-        dataProcessing.currentNotch_ind = loadNotchSetting;
-        topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessingNotchArray[loadNotchSetting];
-        //Apply Bandpass filter
-        dataProcessing.currentFilt_ind = loadBandpassSetting;
-        topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessingBPArray[loadBandpassSetting]; //this works
-
         //Apply Expert Mode toggle
         if (loadExpertModeToggle) {
             topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode Off");

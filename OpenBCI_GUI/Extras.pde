@@ -116,42 +116,38 @@ float filterWEA_1stOrderIIR(float[] filty, float learn_fac, float filt_state) {
     return prev;
 }
 
-void filterIIR(double[] filt_b, double[] filt_a, float[] data) {
-    int Nback = filt_b.length;
-    double[] prev_y = new double[Nback];
-    double[] prev_x = new double[Nback];
-
-    //step through data points
-    for (int i = 0; i < data.length; i++) {
-        //shift the previous outputs
-        for (int j = Nback-1; j > 0; j--) {
-            prev_y[j] = prev_y[j-1];
-            prev_x[j] = prev_x[j-1];
-        }
-
-        //add in the new point
-        prev_x[0] = data[i];
-
-        //compute the new data point
-        double out = 0;
-        for (int j = 0; j < Nback; j++) {
-            out += filt_b[j]*prev_x[j];
-            if (j > 0) {
-                out -= filt_a[j]*prev_y[j];
-            }
-        }
-
-        //save output value
-        prev_y[0] = out;
-        data[i] = (float)out;
-    }
-}
-
-
 void removeMean(float[] filty, int Nback) {
     float meanVal = mean(filty,Nback);
     for (int i=0; i < filty.length; i++) {
         filty[i] -= meanVal;
+    }
+}
+
+double[] floatToDoubleArray(float[] array) {
+    double[] res = new double[array.length];
+    for (int i = 0; i < res.length; i++) {
+        res[i] = (double)array[i];
+    }
+    return res;
+}
+
+float[] doubleToFloatArray(double[] array) {
+    float[] res = new float[array.length];
+    for (int i = 0; i < res.length; i++) {
+        res[i] = (float)array[i];
+    }
+    return res;
+}
+
+void floatToDoubleArray(float[] array, double[] res) {
+    for (int i = 0; i < array.length; i++) {
+        res[i] = (double)array[i];
+    }
+}
+
+void doubleToFloatArray(double[] array, float[] res) {
+    for (int i = 0; i < array.length; i++) {
+        res[i] = (float)array[i];
     }
 }
 
