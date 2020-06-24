@@ -15,10 +15,6 @@ class DataLogger {
         closeLogFile();  //close log file
     }
 
-    public void onShutDown() {
-        closeLogFile();  //close log file
-    }
-
     public void update() {
         limitRecordingFileDuration();
 
