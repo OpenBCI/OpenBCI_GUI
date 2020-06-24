@@ -15,39 +15,42 @@ class W_timeSeries extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
 
-    int numChannelBars;
-    float xF, yF, wF, hF;
-    float ts_padding;
-    float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
-    float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
-    float plotBottomWell;
-    float playbackWidgetHeight;
-    int channelBarHeight;
+    private int numChannelBars;
+    private float xF, yF, wF, hF;
+    private float ts_padding;
+    private float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+    private float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
+    private float plotBottomWell;
+    private float playbackWidgetHeight;
+    private int channelBarHeight;
 
-    Button_obci hardwareSettingsButton;
+    private Button_obci hardwareSettingsButton;
 
-    ChannelBar[] channelBars;
-    PlaybackScrollbar scrollbar;
-    TimeDisplay timeDisplay;
+    private ChannelSelect tsChanSelect;
+    private ChannelBar[] channelBars;
+    private PlaybackScrollbar scrollbar;
+    private TimeDisplay timeDisplay;
 
-    int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+    private int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+    private int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
-    int xLim = xLimOptions[1];  //start at 5s
-    int xMax = xLimOptions[0];  //start w/ autoscale
-
-    boolean allowSpillover = false;
+    private int xLim = xLimOptions[1];  //start at 5s
+    private int xMax = xLimOptions[0];  //start w/ autoscale
 
     private ADS1299SettingsController adsSettingsController;
 
-    TextBox[] impValuesMontage;
-
+    private boolean allowSpillover = false;
+    private TextBox[] impValuesMontage;
     private boolean visible = true;
-
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
 
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
+
+        //activate all channels in channelSelect by default
+        activateAllChannels();
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -101,7 +104,7 @@ class W_timeSeries extends Widget {
         }
 
         if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton = new Button_obci((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+            hardwareSettingsButton = new Button_obci((int)(x + 90), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
             // hardwareSettingsButton.setStrokeColor((int)(color(150)));
@@ -136,6 +139,17 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+            //Update channel checkboxes and active channels
+            tsChanSelect.update(x, y, w);
+            numChannelBars = tsChanSelect.activeChan.size();
+            channelBarHeight = int(ts_h/numChannelBars);
+
+            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+                int activeChan = tsChanSelect.activeChan.get(i);
+                int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
+                channelBars[activeChan].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+            }
+
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
@@ -150,8 +164,9 @@ class W_timeSeries extends Widget {
             }
 
             //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numChannelBars; i++) {
-                channelBars[i].update();
+            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+                channelBars[activeChan].update();
             }
         }
     }
@@ -163,8 +178,9 @@ class W_timeSeries extends Widget {
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
-            for(int i = 0; i < numChannelBars; i++) {
-                channelBars[i].draw();
+            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+                channelBars[activeChan].draw();
             }
 
             //Display playback scrollbar or timeDisplay, depending on data source
@@ -183,11 +199,15 @@ class W_timeSeries extends Widget {
             }
 
             popStyle();
+            
+            tsChanSelect.draw();
         }
     }
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+        tsChanSelect.screenResized(pApplet);
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -198,16 +218,9 @@ class W_timeSeries extends Widget {
         ts_y = yF + (ts_padding);
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-        channelBarHeight = int(ts_h/numChannelBars);
-
-        for(int i = 0; i < numChannelBars; i++) {
-            int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
-        }
-
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
+            hardwareSettingsButton.setPos((int)(x0 + 90), (int)(y0 + navHeight + 3));
             adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
         
@@ -226,6 +239,7 @@ class W_timeSeries extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
 
         if (!this.dropdownIsActive) {
             if(currentBoard instanceof ADS1299SettingsBoard) {
@@ -241,8 +255,9 @@ class W_timeSeries extends Widget {
             }
         }
 
-        for(int i = 0; i < channelBars.length; i++) {
-            channelBars[i].mousePressed();
+        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            channelBars[activeChan].mousePressed();
         }
     }
     
@@ -261,8 +276,9 @@ class W_timeSeries extends Widget {
             adsSettingsController.mouseReleased();
         } 
         
-        for(int i = 0; i < channelBars.length; i++) {
-            channelBars[i].mouseReleased();
+        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            channelBars[activeChan].mouseReleased();
         }
     }
 
@@ -290,6 +306,15 @@ class W_timeSeries extends Widget {
 
     public void closeADSSettings() {
         setAdsSettingsVisible(false);
+    }
+
+    private void activateAllChannels() {
+        tsChanSelect.activeChan.clear();
+        //Activate all channel checkboxes by default for this widget
+        for (int i = 0; i < nchan; i++) {
+            tsChanSelect.checkList.activate(i);
+            tsChanSelect.activeChan.add(i);
+        }
     }
 };
 
