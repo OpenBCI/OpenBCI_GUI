@@ -326,7 +326,6 @@ void delayedSetup() {
     frame.addComponentListener(new ComponentAdapter() {
         public void componentResized(ComponentEvent e) {
             if (e.getSource()==frame) {
-                println("OpenBCI_GUI: setup: RESIZED");
                 settings.screenHasBeenResized = true;
                 settings.timeOfLastScreenResize = millis();
                 // initializeGUI();
@@ -792,12 +791,9 @@ void systemUpdate() { // for updating data values and variables
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
         processNewData();
-
-        // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
-
+        
         //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
-            println("OpenBCI_GUI: setup: RESIZED");
             settings.screenHasBeenResized = true;
             settings.timeOfLastScreenResize = millis();
             settings.widthOfLastScreen = width;
@@ -810,11 +806,6 @@ void systemUpdate() { // for updating data values and variables
             imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
-        }
-        if (settings.screenHasBeenResized == true && (millis() - settings.timeOfLastScreenResize) > settings.reinitializeGUIdelay) {
-            settings.screenHasBeenResized = false;
-            println("systemUpdate: reinitializing GUI");
-            settings.timeOfGUIreinitialize = millis();
         }
 
         if (wm.isWMInitialized) {
@@ -860,22 +851,7 @@ void systemDraw() { //for drawing to the screen
             break;
         }
 
-        //wait 1 second for GUI to reinitialize
-        if ((millis() - settings.timeOfGUIreinitialize) > settings.reinitializeGUIdelay) {
-            // println("attempting to draw GUI...");
-            try {
-                // println("GUI DRAW!!! " + millis());
-                //draw GUI widgets (visible/invisible) using widget manager
-                wm.draw();
-            } catch (Exception e) {
-                println(e.getMessage());
-                settings.reinitializeGUIdelay = settings.reinitializeGUIdelay * 2;
-                println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + settings.reinitializeGUIdelay);
-            }
-        } else {
-            //reinitializing GUI after resize
-            println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
-        }
+        wm.draw();
 
         drawContainers();
     } else { //systemMode != 10
