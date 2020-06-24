@@ -123,7 +123,7 @@ class W_timeSeries extends Widget {
         int h_hsc = int(ts_h); //height of montage controls (on left of montage)
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            adsSettingsController = new ADS1299SettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+            adsSettingsController = new ADS1299SettingsController(tsChanSelect.activeChan, (int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
         }
     }
 
@@ -147,7 +147,12 @@ class W_timeSeries extends Widget {
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
                 int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-                channelBars[activeChan].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+                channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+            }
+
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                hardwareSettingsButton.setPos((int)(x0 + 90), (int)(y0 + navHeight + 3));
+                adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
             }
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
@@ -218,11 +223,6 @@ class W_timeSeries extends Widget {
         ts_y = yF + (ts_padding);
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-
-        if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton.setPos((int)(x0 + 90), (int)(y0 + navHeight + 3));
-            adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
-        }
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -622,7 +622,7 @@ class ChannelBar{
         plot.setYLim(-autoScaleYLim, autoScaleYLim);
     }
 
-    void screenResized(int _x, int _y, int _w, int _h) {
+    void resize(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
         w = _w;

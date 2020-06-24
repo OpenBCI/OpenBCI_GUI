@@ -14,12 +14,15 @@ class ADS1299SettingsController{
 
     private ADS1299Settings boardSettings;
 
-    ADS1299SettingsController(int _x, int _y, int _w, int _h, int _channelBarHeight){
+    private List<Integer> activeChannels;
+
+    ADS1299SettingsController(List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight){
         x = _x;
         y = _y;
         w = _w;
         h = _h;
 
+        activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
         boardSettings = settingsBoard.getADS1299Settings();
         createAllButtons(_channelBarHeight);
@@ -72,7 +75,7 @@ class ADS1299SettingsController{
             fill(0, 0, 0, 100);
             rect(x, y, w, h);
 
-            for (int i=0; i<currentBoard.getNumEXGChannels(); i++) {
+            for (int i : activeChannels) {
                 // grab the name out of the enum directly.
                 gainButtons[i].draw();
                 inputTypeButtons[i].draw();
@@ -123,9 +126,10 @@ class ADS1299SettingsController{
         int buttonH = 18;
         int buttonY = 0; //variables to be used for button creation below
 
-        for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
+        int rowCount = 0;
+        for (int i : activeChannels) {
             buttonX = x + spaceBetweenButtons;
-            buttonY = int(y + ((_channelBarHeight)*i) + (((_channelBarHeight)-buttonH)/2)); //timeSeries_widget.channelBarHeight
+            buttonY = int(y + ((_channelBarHeight)*rowCount) + (((_channelBarHeight)-buttonH)/2)); //timeSeries_widget.channelBarHeight
 
             final int buttonXIncrement = spaceBetweenButtons + buttonW;
 
@@ -161,13 +165,15 @@ class ADS1299SettingsController{
             srb1Buttons[i].but_y = buttonY;
             srb1Buttons[i].but_dx = buttonW;
             srb1Buttons[i].but_dy = buttonH;
+
+            rowCount++;
         }
     }
 
 
     public void mousePressed(){
         if (isVisible) {
-            for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
+            for (int i : activeChannels) {
 
                 // buttons only work if the channel is active
                 if (boardSettings.isChannelActive(i)) {
@@ -199,7 +205,7 @@ class ADS1299SettingsController{
 
     public void mouseReleased(){
         if (isVisible) {
-            for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
+            for (int i : activeChannels) {
                 if(gainButtons[i].isMouseHere() && gainButtons[i].wasPressed) {
                     // loops over the enum
                     boardSettings.gain[i] = boardSettings.gain[i].getNext();
