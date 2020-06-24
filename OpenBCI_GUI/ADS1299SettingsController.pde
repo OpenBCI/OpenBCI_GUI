@@ -241,7 +241,7 @@ class ADS1299SettingsController{
         }
     }
 
-    public void screenResized(int _x, int _y, int _w, int _h, int _channelBarHeight){
+    public void resize(int _x, int _y, int _w, int _h, int _channelBarHeight){
         x = _x;
         y = _y;
         w = _w;

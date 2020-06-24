@@ -152,7 +152,7 @@ class W_timeSeries extends Widget {
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettingsButton.setPos((int)(x0 + 90), (int)(y0 + navHeight + 3));
-                adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
             }
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
