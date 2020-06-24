@@ -860,23 +860,22 @@ void systemDraw() { //for drawing to the screen
             break;
         }
 
-        wm.draw();
-        
-        // //wait 1 second for GUI to reinitialize
-        // if ((millis() - settings.timeOfGUIreinitialize) > settings.reinitializeGUIdelay) {
-        //     // println("attempting to draw GUI...");
-        //     try {
-        //         // println("GUI DRAW!!! " + millis());
-        //         //draw GUI widgets (visible/invisible) using widget manager
-        //     } catch (Exception e) {
-        //         println(e.getMessage());
-        //         settings.reinitializeGUIdelay = settings.reinitializeGUIdelay * 2;
-        //         println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + settings.reinitializeGUIdelay);
-        //     }
-        // } else {
-        //     //reinitializing GUI after resize
-        //     println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
-        // }
+        //wait 1 second for GUI to reinitialize
+        if ((millis() - settings.timeOfGUIreinitialize) > settings.reinitializeGUIdelay) {
+            // println("attempting to draw GUI...");
+            try {
+                // println("GUI DRAW!!! " + millis());
+                //draw GUI widgets (visible/invisible) using widget manager
+                wm.draw();
+            } catch (Exception e) {
+                println(e.getMessage());
+                settings.reinitializeGUIdelay = settings.reinitializeGUIdelay * 2;
+                println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + settings.reinitializeGUIdelay);
+            }
+        } else {
+            //reinitializing GUI after resize
+            println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
+        }
 
         drawContainers();
     } else { //systemMode != 10
