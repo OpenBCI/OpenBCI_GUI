@@ -1,6 +1,6 @@
 import brainflow.*;
 
-class BoardBrainFlowStreaming extends BoardBrainFlow {
+class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCapableBoard {
 
     private int masterBoardId;
     private String ipAddress;
@@ -64,6 +64,35 @@ class BoardBrainFlowStreaming extends BoardBrainFlow {
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
         // do nothing here
+    }
+
+    @Override
+    public boolean isAccelerometerActive() {
+        if (getAccelerometerChannels().length != 0) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        // nothing
+    }
+
+    @Override
+    public boolean canDeactivateAccelerometer() {
+        return false;
+    }
+
+    @Override
+    public int[] getAccelerometerChannels() {
+        try {
+            return BoardShim.get_accel_channels(masterBoardId);
+        } catch (BrainFlowError e) {
+            // nothing
+        }
+
+        return new int[0];
     }
 
 };
