@@ -121,7 +121,6 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
                 e.printStackTrace();
                 
             }
-            batteryChannelCache = 1;
         }
 
         return batteryChannelCache;
