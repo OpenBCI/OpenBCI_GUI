@@ -437,30 +437,13 @@ synchronized void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-/**
-  * This allows us to kill the running node process on quit.
-  */
 private void prepareExitHandler () {
+    // This callback will run when the GUI quits
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         public void run () {
             System.out.println("SHUTDOWN HOOK");
-            //If user starts system and quits the app,
-            //save user settings for current mode!
-            try {
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    settings.save(settings.getPath("User", eegDataSource, nchan));
-                }
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-            //Close network streams
-            if (w_networking != null && w_networking.getNetworkActive()) {
-                w_networking.stopNetwork();
-                println("openBCI_GUI: shutDown: Network streams stopped");
-            }
-
-            // finalize any playback files
-            dataLogger.onShutDown();
+            
+            haltSystem();
         }
     }
     ));
