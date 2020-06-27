@@ -2,19 +2,19 @@ import java.util.*;
 
 class W_NovaAux extends Widget {
 
-    private int numAnalogReadBars;
-    float xF, yF, wF, hF;
-    float arPadding;
+    public int numAuxReadBars;
+    private float xF, yF, wF, hF;
+    private float arPadding;
     // values for actual time series chart (rectangle encompassing all analogReadBars)
-    float ar_x, ar_y, ar_h, ar_w;
-    float plotBottomWell;
-    float playbackWidgetHeight;
-    int analogReadBarHeight;
+    private float ar_x, ar_y, ar_h, ar_w;
+    private float plotBottomWell;
+    private float playbackWidgetHeight;
+    private int analogReadBarHeight;
 
-    AuxReadBar[] analogReadBars;
+    private AuxReadBar[] analogReadBars;
 
-    int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+    private int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+    private int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
     private boolean allowSpillover = false;
     private boolean visible = true;
@@ -38,7 +38,7 @@ class W_NovaAux extends Widget {
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //set number of analog reads
-        numAnalogReadBars = 2;
+        numAuxReadBars = 4;
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -51,14 +51,14 @@ class W_NovaAux extends Widget {
         ar_y = yF + (arPadding);
         ar_w = wF - arPadding*2;
         ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
-        analogReadBarHeight = int(ar_h/numAnalogReadBars);
+        analogReadBarHeight = int(ar_h/numAuxReadBars);
 
-        analogReadBars = new AuxReadBar[numAnalogReadBars];
+        analogReadBars = new AuxReadBar[numAuxReadBars];
 
         //create our channel bars and populate our analogReadBars array!
-        for(int i = 0; i < numAnalogReadBars; i++) {
+        for(int i = 0; i < numAuxReadBars; i++) {
             int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
-            AuxReadBar tempBar = new AuxReadBar(_parent, i+1, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, int _x, int _y, int _w, int _h
+            AuxReadBar tempBar = new AuxReadBar(_parent, i+1, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, totalChannels, int _x, int _y, int _w, int _h
             analogReadBars[i] = tempBar;
             analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
             //sync horiz axis to Time Series by default
@@ -71,7 +71,7 @@ class W_NovaAux extends Widget {
     }
 
     public int getNumAnalogReads() {
-        return numAnalogReadBars;
+        return numAuxReadBars;
     }
 
     public void setVisible(boolean _visible) {
@@ -83,7 +83,7 @@ class W_NovaAux extends Widget {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numAnalogReadBars; i++) {
+            for(int i = 0; i < numAuxReadBars; i++) {
                 analogReadBars[i].update();
             }
         }
@@ -96,7 +96,7 @@ class W_NovaAux extends Widget {
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars 
-            for(int i = 0; i < numAnalogReadBars; i++) {
+            for(int i = 0; i < numAuxReadBars; i++) {
                 analogReadBars[i].draw();
             }
             popStyle();
@@ -115,9 +115,9 @@ class W_NovaAux extends Widget {
         ar_y = yF + (arPadding);
         ar_w = wF - arPadding*2;
         ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
-        analogReadBarHeight = int(ar_h/numAnalogReadBars);
+        analogReadBarHeight = int(ar_h/numAuxReadBars);
 
-        for(int i = 0; i < numAnalogReadBars; i++) {
+        for(int i = 0; i < numAuxReadBars; i++) {
             int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
             analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
         }
@@ -128,7 +128,7 @@ class W_NovaAux extends Widget {
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_NovaAux(int n) {
-    for(int i = 0; i < w_novaAux.numAnalogReadBars; i++) {
+    for(int i = 0; i < w_novaAux.numAuxReadBars; i++) {
             w_novaAux.analogReadBars[i].adjustVertScale(w_novaAux.yLimOptions[n]);
     }
 }
@@ -140,7 +140,7 @@ void Duration_NovaAux(int n) {
     //settings.arHorizScaleSave = n;
 
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    for(int i = 0; i < w_novaAux.numAnalogReadBars; i++) {
+    for(int i = 0; i < w_novaAux.numAuxReadBars; i++) {
         if (n == 0) {
             w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[settings.tsHorizScaleSave]);
         } else {
@@ -156,38 +156,46 @@ void Duration_NovaAux(int n) {
 //one of these will be created for each channel (4, 8, or 16)
 class AuxReadBar{
 
-    int auxValuesPosition;
-    String analogInputString;
-    int x, y, w, h;
-    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
+    private int auxValuesPosition;
+    private String auxChanLabel;
+    private int x, y, w, h;
+    private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
-    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
-    GPointsArray auxReadPoints;
-    int nPoints;
-    int numSeconds;
-    float timeBetweenPoints;
+    private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+    private GPointsArray auxReadPoints;
+    private int nPoints;
+    private int numSeconds;
+    private float timeBetweenPoints;
 
-    color channelColor; //color of plot trace
+    private color channelColor; //color of plot trace
 
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    int autoScaleYLim = 0;
+    private boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    private int autoScaleYLim = 0;
 
-    TextBox analogValue;
-    TextBox analogPin;
+    private TextBox analogValue;
+    private TextBox analogPin;
 
-    boolean drawAnalogValue;
-    int lastProcessedDataPacketInd = 0;
+    private boolean drawAnalogValue;
+    private int lastProcessedDataPacketInd = 0;
 
     // todo board may have multiple eda/ppg sensors and EDA/PPGCapableBoard return 2d array due to it
     // this widget should also operate on 2d arrays. Temporary get only the first row from 2d array
     private EDACapableBoard edaBoard;
     private PPGCapableBoard ppgBoard;
+    private BatteryInfoCapableBoard batteryBoard;
 
     AuxReadBar(PApplet _parent, int auxChanNum, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
         auxValuesPosition = auxChanNum;
 
-        analogInputString = str(auxValuesPosition);
+        if (auxChanNum == 1 || auxChanNum == 2) {
+            auxChanLabel = "PPG_" + auxChanNum; 
+        } else if (auxChanNum == 3) {
+            auxChanLabel = "EDA";
+        } else {
+            auxChanLabel = "Battery";
+        }
+        
         isOn = true;
 
         x = _x;
@@ -217,7 +225,7 @@ class AuxReadBar{
         analogValue.drawBackground = true;
         analogValue.backgroundColor = color(255,255,255,125);
 
-        analogPin = new TextBox("Aux" + analogInputString, x+3, y + h);
+        analogPin = new TextBox(auxChanLabel, x+3, y + h);
         analogPin.textColor = color(bgColor);
         analogPin.alignH = CENTER;
 
@@ -244,12 +252,12 @@ class AuxReadBar{
 
     void update() {
         // early out if unactive
-        if (auxValuesPosition == 1) {
-            if (!edaBoard.isEDAActive()) {
+        if (auxValuesPosition == 1 || auxValuesPosition == 2) {
+            if (!ppgBoard.isPPGActive()) {
                 return;
             }
-        } else {
-            if (!ppgBoard.isPPGActive()) {
+        } else if (auxValuesPosition == 3) {
+            if (!edaBoard.isEDAActive()) {
                 return;
             }
         }
@@ -284,12 +292,16 @@ class AuxReadBar{
 
     void updatePlotPoints() {
         List<double[]> allData = currentBoard.getData(nPoints);
-        int[] channels;
+        int[] channels = new int[2];
+        int channelNumber = 0;
 
-        if (auxValuesPosition == 1) {
+        if (auxValuesPosition == 1 || auxValuesPosition == 2) {
+            channels = ppgBoard.getPPGChannels(); 
+            channelNumber = auxValuesPosition - 1;
+        } else if (auxValuesPosition == 3) {
             channels = edaBoard.getEDAChannels(); 
         } else {
-            channels = ppgBoard.getPPGChannels(); 
+            channels[0] = batteryBoard.getBatteryInfo();
         }
 
         for (int i=0; i < nPoints; i++) {
@@ -315,7 +327,7 @@ class AuxReadBar{
         plot.drawGridLines(0);
         plot.drawLines();
         
-        if(auxValuesPosition == 2) { //only draw the x axis label on the bottom channel bar
+        if(auxValuesPosition == w_novaAux.numAuxReadBars) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
