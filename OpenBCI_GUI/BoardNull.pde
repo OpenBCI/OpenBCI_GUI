@@ -21,12 +21,12 @@ class BoardNull extends Board {
 
     @Override
     public void startStreaming() {
-        println("WARNING: calling 'startStreaming' on a NULL board!");
+        // empty
     }
 
     @Override
     public void stopStreaming() {
-        println("WARNING: calling 'stopStreaming' on a NULL board!");
+        // empty
     }
 
     public boolean isConnected() {
