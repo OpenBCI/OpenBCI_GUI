@@ -234,6 +234,7 @@ class AuxReadBar{
         // otherwise should throw and exception and maybe popup message
         edaBoard = (EDACapableBoard) currentBoard;
         ppgBoard = (PPGCapableBoard) currentBoard;
+        batteryBoard = (BatteryInfoCapableBoard) currentBoard;
     }
 
     void initArrays() {
@@ -297,7 +298,7 @@ class AuxReadBar{
 
         if (auxValuesPosition == 1 || auxValuesPosition == 2) {
             channels = ppgBoard.getPPGChannels(); 
-            channelNumber = auxValuesPosition - 1;
+            //channelNumber = auxValuesPosition - 1;
         } else if (auxValuesPosition == 3) {
             channels = edaBoard.getEDAChannels(); 
         } else {
@@ -306,7 +307,7 @@ class AuxReadBar{
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
-            float value = (float)allData.get(i)[channels[0]];
+            float value = (float)allData.get(i)[channels[channelNumber]];
             auxReadPoints.set(i, timey, value, "");
         }
 
