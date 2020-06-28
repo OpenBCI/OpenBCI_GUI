@@ -139,14 +139,20 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+            // offset based on wether channel select is open or not.
+            int chanSelectOffset = 0;
+            if (tsChanSelect.isVisible()) {
+                chanSelectOffset = navHeight;
+            }
+
             //Update channel checkboxes and active channels
             tsChanSelect.update(x, y, w);
             numChannelBars = tsChanSelect.activeChan.size();
-            channelBarHeight = int(ts_h/numChannelBars);
+            channelBarHeight = int((ts_h - chanSelectOffset)/numChannelBars);
 
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
-                int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
+                int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
                 channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
             }
 
