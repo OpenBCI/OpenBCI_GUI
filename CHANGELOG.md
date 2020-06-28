@@ -19,6 +19,7 @@
 * Ganglion+WiFi Accelerometer Data not in Sync #512
 * Remove # Chan Textfield from LSL in Networking Widget #644
 * LSL manual timestamping interferes with LSL clock_offset correction #775
+* Fixed a graphics related error on linux #816
 
 ### Deprecated Features
 * OpenBCI Hub - This is no longer required to run the GUI!
