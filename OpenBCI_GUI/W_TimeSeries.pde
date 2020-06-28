@@ -139,7 +139,7 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            // offset based on wether channel select is open or not.
+            // offset based on whether channel select is open or not.
             int chanSelectOffset = 0;
             if (tsChanSelect.isVisible()) {
                 chanSelectOffset = navHeight;
