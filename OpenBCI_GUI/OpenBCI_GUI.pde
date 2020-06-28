@@ -511,7 +511,7 @@ void initSystem() {
             //currentBoard = new BoardSynthetic();
             // temp for testing wo UI changes
             // todo get these values from UI panel
-            currentBoard = new BoardBrainFlowStreaming(BoardIds.SYNTHETIC_BOARD.get_code(), "225.1.1.1", 6677);
+            currentBoard = new BoardBrainFlowStreaming(BoardIds.SYNTHETIC_BOARD, "225.1.1.1", 6677);
             break;
         case DATASOURCE_PLAYBACKFILE:
             if (!playbackData_fname.equals("N/A")) {

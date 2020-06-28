@@ -2,11 +2,11 @@ import brainflow.*;
 
 class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCapableBoard {
 
-    private int masterBoardId;
+    private BoardIds masterBoardId;
     private String ipAddress;
     private int ipPort;
 
-    public BoardBrainFlowStreaming(int masterBoardId, String ipAddress, int ipPort) {
+    public BoardBrainFlowStreaming(BoardIds masterBoardId, String ipAddress, int ipPort) {
         super();
         this.masterBoardId = masterBoardId;
         this.ipAddress = ipAddress;
@@ -19,14 +19,14 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
         BrainFlowInputParams params = new BrainFlowInputParams();
         params.ip_address = ipAddress;
         params.ip_port = ipPort;
-        params.other_info = Integer.toString(masterBoardId, 10);
+        params.other_info = Integer.toString(masterBoardId.get_code(), 10);
         return params;
     }
 
     // for streaming board need to use master board id in function like  get_eeg_channels
     @Override
     public BoardIds getBoardId() {
-        return BoardIds.from_code(masterBoardId);
+        return masterBoardId;
     }
 
     @Override
@@ -36,7 +36,8 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
             boardShim = new BoardShim (BoardIds.STREAMING_BOARD.get_code(), getParams());
             try {
                 BoardShim.enable_dev_board_logger();
-                BoardShim.set_log_file("brainflow_log.txt");
+                BoardShim.set_log_file(settings.consoleDataPath + "Brainflow_" +
+                    DirectoryManager.getFileNameDateTime() + ".txt");
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
@@ -87,7 +88,7 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
     @Override
     public int[] getAccelerometerChannels() {
         try {
-            return BoardShim.get_accel_channels(masterBoardId);
+            return BoardShim.get_accel_channels(masterBoardId.get_code());
         } catch (BrainFlowError e) {
             // nothing
         }

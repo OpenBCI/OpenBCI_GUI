@@ -26,7 +26,8 @@ abstract class BoardBrainFlow extends Board {
             boardShim = new BoardShim (getBoardIdInt(), getParams());
             try {
                 BoardShim.enable_dev_board_logger();
-                BoardShim.set_log_file("brainflow_log.txt");
+                BoardShim.set_log_file(settings.consoleDataPath + "Brainflow_" +
+                    DirectoryManager.getFileNameDateTime() + ".txt");
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
