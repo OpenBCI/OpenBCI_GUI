@@ -104,7 +104,7 @@ class W_timeSeries extends Widget {
         }
 
         if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton = new Button_obci((int)(x + 90), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+            hardwareSettingsButton = new Button_obci((int)(x + 80), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
             // hardwareSettingsButton.setStrokeColor((int)(color(150)));
@@ -151,7 +151,7 @@ class W_timeSeries extends Widget {
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettingsButton.setPos((int)(x0 + 90), (int)(y0 + navHeight + 3));
+                hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
             }
 
