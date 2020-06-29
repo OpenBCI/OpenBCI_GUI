@@ -284,7 +284,7 @@ class AuxReadBar{
 
         if (auxValuesPosition == 1 || auxValuesPosition == 2) {
             channels = ppgBoard.getPPGChannels(); 
-            //channelNumber = auxValuesPosition - 1;
+            channelNumber = auxValuesPosition - 1;
         } else if (auxValuesPosition == 3) {
             channels = edaBoard.getEDAChannels(); 
         } else {
