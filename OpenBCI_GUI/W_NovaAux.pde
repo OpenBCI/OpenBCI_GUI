@@ -352,7 +352,7 @@ class AuxReadBar{
             isAutoscale = true;
         } else {
             isAutoscale = false;
-            plot.setYLim(-_vertScaleValue, _vertScaleValue);
+            plot.setYLim(0, _vertScaleValue); //Plot Y values >= 0
         }
     }
 
@@ -365,7 +365,7 @@ class AuxReadBar{
                 }
             }
         }
-        plot.setYLim(-autoScaleYLim, autoScaleYLim);
+        plot.setYLim(0, autoScaleYLim); //Plot Y values >= 0
     }
 
     void screenResized(int _x, int _y, int _w, int _h) {
