@@ -223,9 +223,12 @@ class DataStatus {
         is_railed_warn = false;
         if (currentBoard instanceof ADS1299SettingsBoard) {
             double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
-            if (abs(data_value) >= threshold_railed * scaler) is_railed = true;
-            is_railed_warn = false;
-            if (abs(data_value) >= threshold_railed_warn * scaler) is_railed_warn = true;
+            if (abs(data_value) >= threshold_railed * scaler) {
+                is_railed = true;
+            }
+            if (abs(data_value) >= threshold_railed_warn * scaler) {
+                is_railed_warn = true;
+            }
         }
     }
 };
