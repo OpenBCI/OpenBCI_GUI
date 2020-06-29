@@ -13,29 +13,26 @@ class W_NovaAux extends Widget {
 
     private AuxReadBar[] analogReadBars;
 
-    private int[] xLimOptions = {0, 1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    private int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
-
+    public int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+    public int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+    //Used to set text in dropdown menus when loading Analog Read settings
+    private String[] vertScaleOptions = {"Auto", "50", "100", "200", "400", "1000", "10000"};
+    private String[] horizScaleOptions = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
     private boolean allowSpillover = false;
     private boolean visible = true;
 
     //Initial dropdown settings
     private int arInitialVertScaleIndex = 5;
-    private int arInitialHorizScaleIndex = 0;
+    private int arInitialHorizScaleIndex = 2;
 
     W_NovaAux(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //Analog Read settings
-        settings.arVertScaleSave = 5; //updates in VertScale_AR()
-        settings.arHorizScaleSave = 0; //updates in Duration_AR()
-
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("VertScale_NovaAux", "Vert Scale", Arrays.asList(settings.arVertScaleArray), arInitialVertScaleIndex);
-        addDropdown("Duration_NovaAux", "Window", Arrays.asList(settings.arHorizScaleArray), arInitialHorizScaleIndex);
-        // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
+        addDropdown("VertScale_NovaAux", "Vert Scale", Arrays.asList(vertScaleOptions), arInitialVertScaleIndex);
+        addDropdown("Duration_NovaAux", "Window", Arrays.asList(horizScaleOptions), arInitialHorizScaleIndex);
 
         //set number of analog reads
         numAuxReadBars = 4;
@@ -61,8 +58,7 @@ class W_NovaAux extends Widget {
             AuxReadBar tempBar = new AuxReadBar(_parent, i+1, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, totalChannels, int _x, int _y, int _w, int _h
             analogReadBars[i] = tempBar;
             analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
-            //sync horiz axis to Time Series by default
-            analogReadBars[i].adjustTimeAxis(20);
+            analogReadBars[i].adjustTimeAxis(xLimOptions[arInitialHorizScaleIndex]);
         }
     }
 
@@ -121,8 +117,6 @@ class W_NovaAux extends Widget {
             int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
             analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
         }
-
-        // analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
     }
 };
 
@@ -135,17 +129,9 @@ void VertScale_NovaAux(int n) {
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration_NovaAux(int n) {
-    // println("adjust duration to: " + w_analogRead.analogReadBars[i].adjustTimeAxis(n));
     //set analog read x axis to the duration selected from dropdown
-    //settings.arHorizScaleSave = n;
-
-    //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     for(int i = 0; i < w_novaAux.numAuxReadBars; i++) {
-        if (n == 0) {
-            w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[settings.tsHorizScaleSave]);
-        } else {
-            w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[n]);
-        }
+        w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[n]);
     }
 }
 
