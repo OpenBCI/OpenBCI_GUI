@@ -46,8 +46,6 @@ class SoftwareSettings {
     //for screen resizing
     boolean screenHasBeenResized = false;
     float timeOfLastScreenResize = 0;
-    float timeOfGUIreinitialize = 0;
-    int reinitializeGUIdelay = 125;
     int widthOfLastScreen = 0;
     int heightOfLastScreen = 0;
     //default layout variables
