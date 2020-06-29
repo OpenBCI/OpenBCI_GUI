@@ -288,7 +288,6 @@ class SoftwareSettings {
     int loadErrorTimerStart;
     int loadErrorTimeWindow = 5000; //Time window in milliseconds to apply channel settings to Cyton board. This is to avoid a GUI crash at ~ 4500-5000 milliseconds.
     Boolean loadErrorCytonEvent = false;
-    Boolean settingsLoaded = false; //Used to determine if settings are done loading successfully after init
     final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
     SoftwareSettings() {
@@ -357,28 +356,8 @@ class SoftwareSettings {
         try {
             this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
         } catch (Exception e) {
-            println("InitSettings: Error trying to save settings");
+            println("InitSettings: Error trying to save default settings");
             //e.printStackTrace();
-        }
-
-        //Try Auto-load GUI settings between checkpoints 4 and 5 during system init.
-        //Otherwise, load default settings.
-        String settingsFileToLoad = getPath("User", eegDataSource, nchan);
-        try {
-            this.load(settingsFileToLoad);
-            errorUserSettingsNotFound = false;
-        } catch (Exception e) {
-            //e.printStackTrace();
-            println("InitSettings: " + settingsFileToLoad + " not found or other error.");
-            errorUserSettingsNotFound = true;
-            File f = new File(settingsFileToLoad);
-            //Only delete the settings file for other errors
-            //Leave file if it's just a channelNumber error or DataSource mismatch
-            if (!chanNumError && !dataSourceError) {
-                if (f.exists()) {
-                    if (f.delete()) println("SoftwareSettings: Removed old/broken settings file.");
-                }
-            }
         }
     }
 
@@ -1103,38 +1082,11 @@ class SoftwareSettings {
     }
 
     void initCheckPointFive() {
-        //Prepare the data mode and version, if needed, to be printed at init checkpoint 5 below
-        String dataModeVersionToPrint = controlEventDataSource;
-
-        //Output messages when Loading settings is complete
-        if (chanNumError == false
-            && dataSourceError == false
-            && errorUserSettingsNotFound == false
-            && loadErrorCytonEvent == false) {
-                verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-                if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
-                    outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
-                }
-        } else if (chanNumError) {
-            verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid number of channels in JSON " + millis()); //Print the error to console
-            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Channel number error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-        } else if (dataSourceError) {
-            verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Invalid data source " + millis()); //Print the error to console
-            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Data source error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-        } else if (errorUserSettingsNotFound) {
-            verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: File not found. " + millis()); //Print the error to console
-            output("The new data source is " + dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. User Settings Error: Default Settings Loaded."); //Show a normal message for loading Default Settings
-        } else {
-            verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Load settings error: Connection Error: Failed to apply channel settings to Cyton" + millis()); //Print the error to console
-            outputError(dataModeVersionToPrint + " and NCHAN = [" + nchan + "]. Connection Error: Channel settings failed to apply to Cyton."); //Show a normal message for loading Default Settings
-        }
-
         if (eegDataSource == DATASOURCE_NOVAXR) {
-            outputSuccess("Settings Loaded! NovaXR Firmware == " + "WIP");
+            outputSuccess("NovaXR Firmware == " + "WIP");
+        } else {
+            outputSuccess("Session started!");
         }
-
-        //At this point, either User or Default settings have been Loaded. Use this var to keep track of this.
-        settingsLoaded = true;
     }
 
     void loadKeyPressed() {

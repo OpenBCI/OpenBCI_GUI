@@ -581,15 +581,15 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-    //DISABLE SOFTWARE SETTINGS FOR NOVAXR
-    if (eegDataSource != DATASOURCE_NOVAXR) {
+    
+    if (eegDataSource != DATASOURCE_NOVAXR) { //don't save default settings for NovaXR
         if (!abandonInit) {
-            //Init software settings: create default settings files, load user settings, etc.
+            //Init software settings: create default settings file that is datasource unique
             settings.init();
             settings.initCheckPointFive();
         } else {
             haltSystem();
-            outputError("Failed to connect. Check that the device is powered on and in range.");
+            outputError("Failed to save Default Settings during Init. Please submit an Issue on GitHub.");
             controlPanel.open();
             systemMode = SYSTEMMODE_PREINIT; // leave this here
         }
@@ -723,8 +723,6 @@ void haltSystem() {
         if (systemMode == SYSTEMMODE_POSTINIT) {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
-
-        settings.settingsLoaded = false; //on halt, reset this value
 
         //reset connect loadStrings
         openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
