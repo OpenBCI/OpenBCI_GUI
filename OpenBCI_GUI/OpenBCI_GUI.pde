@@ -501,7 +501,7 @@ void initSystem() {
                 }
                 else {
                     // no code path to it
-                    println("Nor playback nor sd file selected.");
+                    println("No playback or SD file selected.");
                 }
             }
             break;
