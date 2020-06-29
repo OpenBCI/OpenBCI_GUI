@@ -5,9 +5,6 @@ stack: python 3
 
 clone_depth: 3
 
-artifacts:
-  - path: openbcigui_*.zip
-
 environment:
   AWS_ACCESS_KEY_ID:
     secure: 41Lh3mnlU+lVcr5eX3bTgmsKqcebacVgDOww7zb0r4E=
