@@ -117,7 +117,6 @@ class W_BandPower extends Widget {
 
         popStyle();
         bpChanSelect.draw();
-        pushStyle();
     }
 
     void screenResized() {

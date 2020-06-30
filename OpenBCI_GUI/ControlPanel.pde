@@ -1360,6 +1360,12 @@ class ComPortBox {
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
+            else {                
+                outputWarn("Found a Cyton dongle, but could not connect to the board.");
+            }
+        }
+        else {
+            outputWarn("No Cyton dongles were found.");
         }
     }
 
@@ -1384,16 +1390,18 @@ class ComPortBox {
     }
 
     private LinkedList<String> getCytonComPorts() {
-        final String name = "FT231X USB UART";
+        final String[] names = {"FT231X USB UART", "VCP0"};
         final SerialPort[] comPorts = SerialPort.getCommPorts();
         LinkedList<String> results = new LinkedList<String>();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                results.add(found);
+        for (SerialPort comPort : comPorts) {
+            for (String name : names) {
+                if (comPort.toString().equals(name)) {
+                    String found = "";
+                    if (isMac() || isLinux()) found += "/dev/";
+                    found += comPort.getSystemPortName();
+                    println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                    results.add(found);
+                }
             }
         }
 

@@ -234,6 +234,9 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
+    //LINUX GFX FIX #816
+    System.setProperty("jogl.disable.openglcore", "false");
+
     // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
     // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {

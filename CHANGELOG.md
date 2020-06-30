@@ -11,6 +11,7 @@
 * Cyton Port manual selection only displays serial ports with a dongle connected.
 * Cyton SD file read works without conversion to playback file
 * Use BrainFlow filters, add 1-100 BandPass filter
+* Can Hide/Show channels in time series
 
 ### Bug Fixes
 * Remove OpenBCI Hub #665 #669 #708
@@ -19,6 +20,7 @@
 * Ganglion+WiFi Accelerometer Data not in Sync #512
 * Remove # Chan Textfield from LSL in Networking Widget #644
 * LSL manual timestamping interferes with LSL clock_offset correction #775
+* Fixed a graphics related error on linux #816
 
 ### Deprecated Features
 * OpenBCI Hub - This is no longer required to run the GUI!
