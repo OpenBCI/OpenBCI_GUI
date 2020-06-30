@@ -113,7 +113,7 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
     }
 
     @Override
-    public Integer getBatteryInfo() {
+    public Integer getBatteryChannel() {
         if (batteryChannelCache == null) {
             try {
                 batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
@@ -137,6 +137,6 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-        channelNames[getBatteryInfo()] = "Battery Info Channel";
+        channelNames[getBatteryChannel()] = "Battery Info Channel";
     }
 };

@@ -1,5 +1,5 @@
 
 interface BatteryInfoCapableBoard {
 
-    public Integer getBatteryInfo();
+    public Integer getBatteryChannel();
 };

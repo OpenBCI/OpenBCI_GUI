@@ -279,21 +279,25 @@ class AuxReadBar{
 
     void updatePlotPoints() {
         List<double[]> allData = currentBoard.getData(nPoints);
-        int[] channels = new int[2];
-        int channelNumber = 0;
-
-        if (auxValuesPosition == 1 || auxValuesPosition == 2) {
-            channels = ppgBoard.getPPGChannels(); 
-            channelNumber = auxValuesPosition - 1;
-        } else if (auxValuesPosition == 3) {
-            channels = edaBoard.getEDAChannels(); 
-        } else {
-            channels[0] = batteryBoard.getBatteryInfo();
+        int channel = 0;
+        switch (auxValuesPosition) {
+            case 1:
+                channel = ppgBoard.getPPGChannels()[0];
+                break;
+            case 2:
+                channel = ppgBoard.getPPGChannels()[1];
+                break;
+            case 3:
+                channel = edaBoard.getEDAChannels()[0];
+                break;
+            default:
+                channel = batteryBoard.getBatteryChannel();
+                break;
         }
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
-            float value = (float)allData.get(i)[channels[channelNumber]];
+            float value = (float)allData.get(i)[channel];
             auxReadPoints.set(i, timey, value, "");
         }
 

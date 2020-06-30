@@ -295,7 +295,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     }
 
     @Override
-    public Integer getBatteryInfo() {
+    public Integer getBatteryChannel() {
         if (batteryChannelCache == null) {
             try {
                 batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
