@@ -2438,15 +2438,12 @@ class RadioConfigBox {
     private int autoscanH = 45;
     private int buttonH = 24;
     private int statusWindowH = 115;
-    private int linuxPadding = isLinux() ? -5 : 0;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
         y = _y;
         w = _w + 10;
         h = (_padding*6) + headerH + (buttonH*2) + autoscanH + statusWindowH;
-        println(h);
-        //h = 285; //255 + 20 for larger autoscan button
         padding = _padding;
         isShowing = false;
         cytonRadioCfg = new RadioConfig();
@@ -2479,7 +2476,7 @@ class RadioConfigBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RADIO CONFIGURATION", x + padding, y + padding + linuxPadding);
+        text("RADIO CONFIGURATION", x + padding, y + padding);
         popStyle();
         getChannel.draw();
         setChannel.draw();
