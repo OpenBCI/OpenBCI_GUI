@@ -3,6 +3,7 @@ abstract class Board implements DataSource {
 
     private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
     private double[][] dataThisFrame;
+    private PacketLossTracker packetLossTracker;
 
     // accessible by all boards, can be returned as valid empty data
     protected double[][] emptyData;
@@ -16,6 +17,8 @@ abstract class Board implements DataSource {
         accumulatedData.fill(fillData);
 
         emptyData = new double[getTotalChannelCount()][0];
+
+        packetLossTracker = setupPacketLossTracker();
 
         return res;
     }
@@ -38,6 +41,12 @@ abstract class Board implements DataSource {
             }
 
             accumulatedData.push(newEntry);
+        }
+
+        if( packetLossTracker != null) {
+            //TODO: make all API including getNewDataInternal() return List<double[]> 
+            // and we can just pass dataThisFrame here.
+            packetLossTracker.addSamples(getData(dataThisFrame[0].length));
         }
     }
 
@@ -65,7 +74,7 @@ abstract class Board implements DataSource {
         Arrays.fill(names, "Other");
 
         names[getTimestampChannel()] = "Timestamp";
-        names[getSampleNumberChannel()] = "Sample Index";
+        names[getSampleIndexChannel()] = "Sample Index";
 
         int[] exgChannels = getEXGChannels();
         for (int i=0; i<exgChannels.length; i++) {
@@ -94,5 +103,7 @@ abstract class Board implements DataSource {
     protected abstract void updateInternal();
 
     protected abstract void addChannelNamesInternal(String[] channelNames);
+
+    protected abstract PacketLossTracker setupPacketLossTracker();
 
 };

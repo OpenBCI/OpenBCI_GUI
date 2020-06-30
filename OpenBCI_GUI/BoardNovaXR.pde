@@ -2,7 +2,7 @@ import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-final boolean novaXREnabled = false;
+final boolean novaXREnabled = true;
 
 interface NovaXRSettingsEnum {
     public String getName();
@@ -306,5 +306,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     @Override
     public double getGain(int channel) {
         return getADS1299Settings().gain[channel].getScalar();
+    }
+    
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 };

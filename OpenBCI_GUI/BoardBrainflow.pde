@@ -6,7 +6,7 @@ abstract class BoardBrainFlow extends Board {
 
     protected BoardShim boardShim = null;
     protected int samplingRateCache = -1;
-    protected int packetNumberChannelCache = -1;
+    protected int sampleIndexChannelCache = -1;
     protected int timeStampChannelCache = -1;
     protected int totalChannelsCache = -1;
     protected int[] exgChannelsCache = null;
@@ -188,17 +188,17 @@ abstract class BoardBrainFlow extends Board {
     }
     
     @Override
-    public int getSampleNumberChannel() {
-        if(packetNumberChannelCache < 0) {
+    public int getSampleIndexChannel() {
+        if(sampleIndexChannelCache < 0) {
             try {
-                packetNumberChannelCache = BoardShim.get_package_num_channel(getBoardIdInt());
+                sampleIndexChannelCache = BoardShim.get_package_num_channel(getBoardIdInt());
             } catch (BrainFlowError e) {
                 println("WARNING: failed to get package num channel from BoardShim");
                 e.printStackTrace();
             }
         }
 
-        return packetNumberChannelCache;
+        return sampleIndexChannelCache;
     }
 
     public int getBoardIdInt() {

@@ -182,4 +182,9 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
     }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return new PacketLossTrackerGanglion(getSampleIndexChannel(), getTimestampChannel());
+    }
 };

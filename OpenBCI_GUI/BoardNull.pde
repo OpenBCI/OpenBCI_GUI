@@ -49,7 +49,7 @@ class BoardNull extends Board {
     }
     
     @Override
-    public int getSampleNumberChannel() {
+    public int getSampleIndexChannel() {
         return 0;
     }
 
@@ -79,5 +79,11 @@ class BoardNull extends Board {
 
     protected void addChannelNamesInternal(String[] channelNames) {
         // nothing
+    }
+    
+    
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return null;
     }
 };

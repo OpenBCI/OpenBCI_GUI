@@ -12,7 +12,7 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     private int samplingIntervalMS;
     private boolean[] exgChannelActive;
 
-    private int sampleNumberChannel;
+    private int sampleIndexChannel;
     private int[] exgChannels;
     private int[] accelChannels;
     private int timestampChannel;
@@ -24,7 +24,7 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
 
     public BoardSynthetic() {    
         totalChannels = 0;
-        sampleNumberChannel = totalChannels++;
+        sampleIndexChannel = totalChannels++;
         exgChannels = range(totalChannels, totalChannels + nchan);
         totalChannels += nchan;
         accelChannels = range(totalChannels, totalChannels + NUM_ACCEL_DIMS);
@@ -97,8 +97,8 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
     }
     
     @Override
-    public int getSampleNumberChannel() {
-        return sampleNumberChannel;
+    public int getSampleIndexChannel() {
+        return sampleIndexChannel;
     }
 
     @Override
@@ -230,5 +230,10 @@ class BoardSynthetic extends Board implements AccelerometerCapableBoard {
         for (int i=0; i<accelChannels.length; i++) {
             channelNames[accelChannels[i]] = "Accel Channel " + i;
         }
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return null;
     }
 };

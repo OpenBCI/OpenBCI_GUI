@@ -524,7 +524,7 @@ void initSystem() {
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
             // Replace line above with line below to test brainflow synthetic
-            //currentBoard = new BoardBrainFlowSynthetic();
+            currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;
