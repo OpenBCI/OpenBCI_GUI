@@ -1230,8 +1230,6 @@ class DataSourceBox {
     int boxHeight = 24;
     int spacing = 43;
 
-    CheckBox sourceCheckBox;
-
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
         if (novaXREnabled) numItems = 5;
         x = _x;
@@ -1240,7 +1238,7 @@ class DataSourceBox {
         h = spacing + (numItems * boxHeight);
         padding = _padding;
 
-        sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p4);
+        sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p3);
         // sourceList.itemHeight = 28;
         // sourceList.padding = 9;
         sourceList.setPosition(x + padding, y + padding*2 + 13);
@@ -1329,7 +1327,7 @@ class ComPortBox {
         cytonRadioCfg = new RadioConfig();
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
+        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p3);
         serialList.setPosition(x + padding, y + padding*3 + 8);
     }
 
@@ -1421,7 +1419,7 @@ class BLEBox {
         h = 140 + _padding;
         padding = _padding;
         refreshBLE = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
+        bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p3);
         bleList.setPosition(x + padding, y + padding*3 + 8);
     }
 
@@ -1524,7 +1522,7 @@ class WifiBox {
         wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
 
         refreshWifi = new Button_obci (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
+        wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p3);
 
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
         // Call to update the list
@@ -2571,7 +2569,7 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p4);
+        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p3);
         channelList.setPosition(x+padding, y+padding*3);
 
         for (int i = 1; i < 26; i++) {
@@ -2612,7 +2610,7 @@ class PollPopup {
         padding = _padding;
         clicked = false;
 
-        pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p4);
+        pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p3);
         pollList.setPosition(x+padding, y+padding*3);
 
         for (int i = 0; i < 256; i++) {
@@ -2720,7 +2718,7 @@ public class MenuList extends controlP5.Controller {
     boolean updateMenu;
     int hoverItem = -1;
     int activeItem = -1;
-    PFont menuFont = p4;
+    PFont menuFont;
     int padding = 7;
 
     MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
@@ -2731,9 +2729,7 @@ public class MenuList extends controlP5.Controller {
         final ControlP5 cc = c; //allows check for isLocked() below
         final String _theName = theName;
 
-        menuFont = p4;
-        getValueLabel().setSize(14);
-        getCaptionLabel().setSize(14);
+        menuFont = theFont;
 
         setView(new ControllerView<MenuList>() {
 
