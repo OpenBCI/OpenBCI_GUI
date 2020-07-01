@@ -38,8 +38,6 @@ class PacketLossTracker {
             int sampleIndex = (int)(sample[sampleIndexChannel]);
             int lastSampleIndex = (int)(lastSample[sampleIndexChannel]);
 
-            println("PROCESSING " + sampleIndex);
-
             // special case: loop back
             int numLostSamples = calculateLostSamples(lastSampleIndex, sampleIndex);
             if (numLostSamples > 0) {
@@ -70,7 +68,8 @@ class PacketLossTracker {
 
     private void onSamplesLost(int numLostSamples, double[] previousSample, double[] nextSample) {
         totalLostSamples += numLostSamples;
-        // println("LOST SAMPLES " + numLostSamples + " Between " +  previousSample[sampleIndexChannel] + "-" + nextSample[sampleIndexChannel]);
+
+        println("WARNING: Lost " + numLostSamples + " Samples Between " +  (int)previousSample[sampleIndexChannel] + "-" + (int)nextSample[sampleIndexChannel]);
     }
 }
 

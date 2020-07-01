@@ -3,6 +3,10 @@ import subprocess
 import os
 
 # add files here that need to be copied to the unit testing sketch
+# Question: Why not copy all PDE files?
+# Answer:   Some PDE files depend on globals declared in OpenBCI_Gui.pde
+#           and we do not copy OpenBCI_Gui.pde because it delcared a setup()
+#           function which conflicts with the unit test sketch
 files_to_unittest = [
     "PacketLossTracker.pde",
 ]
