@@ -1,21 +1,33 @@
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 import org.hamcrest.SelfDescribing;
 
 static OpenBCI_GUI_unittests currentApplet;
 final String failFileName = "UNITTEST_FAILURE";
 
+// define a test suite with all test classes
+// add test classes here
+@RunWith(Suite.class)
+@SuiteClasses({
+        PacketLossTracker_UnitTests.class,
+        PacketLossTrackerCytonSerialDaisy_UnitTests.class, })
+public class AllTests {};
+
 void setup() {
     currentApplet = this;
 
-    runTests();
+    boolean success = runTests();
+    notifySuccess(success);
     exit();
 }
 
-private void runTests() {
+private boolean runTests() {
 
-    Result result = JUnitCore.runClasses(PacketLossTracker_UnitTests.class);
+    Result result = JUnitCore.runClasses(AllTests.class);
 
     int failureCount = result.getFailureCount();
     int runCount = result.getRunCount();
@@ -26,7 +38,7 @@ private void runTests() {
         println("\t" + failure.toString());
     }
 
-    notifySuccess(result.wasSuccessful());
+    return result.wasSuccessful();
 }
 
 private void notifySuccess(boolean success) {

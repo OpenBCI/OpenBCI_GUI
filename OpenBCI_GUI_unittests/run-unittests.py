@@ -5,7 +5,7 @@ import os
 # add files here that need to be copied to the unit testing sketch
 # Question: Why not copy all PDE files?
 # Answer:   Some PDE files depend on globals declared in OpenBCI_GUI.pde
-#           and we do not copy OpenBCI_GUI.pde because it delcared a setup()
+#           and we do not copy OpenBCI_GUI.pde because it delcares a setup()
 #           function which conflicts with the unit test sketch
 #           Once we get rid of globals we could copy all PDEs
 files_to_unittest = [
@@ -27,6 +27,11 @@ def main ():
     cwd = os.getcwd()
     sketch_dir = os.path.join(cwd, sketch_dir)
     subprocess.check_call(["processing-java", "--sketch=" + sketch_dir, "--run"])
+
+    # delete files copied above
+    for filename in files_to_unittest:
+        filepath = os.path.join(sketch_dir, filename)
+        os.remove(filepath)
 
     fail_file = os.path.join(sketch_dir, "UNITTEST_FAILURE")
     if os.path.exists(fail_file):
