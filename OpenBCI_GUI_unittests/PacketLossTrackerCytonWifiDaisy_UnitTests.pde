@@ -96,6 +96,48 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
         Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
         Assert.assertEquals(9, packetLossTracker.getTotalLostSamples());
     }
+    
+
+    @Test
+    public void testPacketLossEndOnly() {
+        double[][] data =  {
+            {240, 240},
+            {242, 242},
+            {244, 244},
+            {246, 246},
+            {0, 0},
+            {2, 2},
+            {4, 4},
+            {6, 6},
+        };
+
+        List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
+
+        packetLossTracker.addSamples(input);
+
+        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
+        Assert.assertEquals(4, packetLossTracker.getTotalLostSamples());
+    }
+
+    @Test
+    public void testPacketLossBeginningOnly() {
+        double[][] data =  {
+            {248, 248},
+            {250, 250},
+            {252, 252},
+            {254, 254},
+            {10, 10},
+            {12, 12},
+            {14, 14},
+        };
+
+        List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
+
+        packetLossTracker.addSamples(input);
+
+        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
+        Assert.assertEquals(5, packetLossTracker.getTotalLostSamples());
+    }
 
     @Test
     public void testPacketLossMultiple() {

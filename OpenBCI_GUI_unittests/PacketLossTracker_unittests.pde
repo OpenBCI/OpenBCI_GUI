@@ -65,9 +65,9 @@ public static class PacketLossTracker_UnitTests{
             {0, 0},
             {1, 1},
             {2, 2},
-            {7, 3},
-            {8, 4},
-            {9, 5},
+            {7, 7},
+            {8, 8},
+            {9, 9},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -97,6 +97,48 @@ public static class PacketLossTracker_UnitTests{
 
         Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
         Assert.assertEquals(9, packetLossTracker.getTotalLostSamples());
+    }
+
+    @Test
+    public void testPacketLossEndOnly() {
+        double[][] data =  {
+            {247, 247},
+            {248, 248},
+            {249, 249},
+            {250, 250},
+            {0, 0},
+            {1, 1},
+            {2, 2},
+            {3, 3},
+        };
+
+        List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
+
+        packetLossTracker.addSamples(input);
+
+        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
+        Assert.assertEquals(5, packetLossTracker.getTotalLostSamples());
+    }
+
+    @Test
+    public void testPacketLossBeginningOnly() {
+        double[][] data =  {
+            {252, 252},
+            {253, 253},
+            {254, 254},
+            {255, 255},
+            {6, 6},
+            {7, 7},
+            {8, 8},
+            {9, 9},
+        };
+
+        List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
+
+        packetLossTracker.addSamples(input);
+
+        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
+        Assert.assertEquals(6, packetLossTracker.getTotalLostSamples());
     }
 
     @Test
