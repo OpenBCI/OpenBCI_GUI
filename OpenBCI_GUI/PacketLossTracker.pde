@@ -1,3 +1,4 @@
+import java.util.List;
 
 class PacketLossTracker {
 
@@ -7,6 +8,9 @@ class PacketLossTracker {
     private int maxSampleIndex;
     private double[] lastSample = null;
 
+    private int totalReceivedSamples = 0;
+    private int totalLostSamples = 0;
+
     PacketLossTracker(int _sampleIndexChannel, int _timestampChannel, int _minSampleIndex, int _maxSampleIndex) {
         sampleIndexChannel = _sampleIndexChannel;
         timestampChannel = _timestampChannel;
@@ -14,12 +18,21 @@ class PacketLossTracker {
         maxSampleIndex = _maxSampleIndex;
     }
 
+    public int getTotalReceivedSamples() {
+        return totalReceivedSamples;
+    }
+
+    public int getTotalLostSamples() {
+        return totalLostSamples;
+    }
+
     public void addSamples(List<double[]> newSamples) {
         for (double[] sample : newSamples) {
+            totalReceivedSamples++;
             // handle first call
             if (lastSample == null) {
                 lastSample = sample;
-                return;
+                continue;
             }
 
             int sampleIndex = (int)(sample[sampleIndexChannel]);
@@ -34,6 +47,7 @@ class PacketLossTracker {
             }
 
             lastSample = sample;
+
         }
     }
 
@@ -55,6 +69,7 @@ class PacketLossTracker {
     }
 
     private void onSamplesLost(int numLostSamples, double[] previousSample, double[] nextSample) {
+        totalLostSamples += numLostSamples;
         // println("LOST SAMPLES " + numLostSamples + " Between " +  previousSample[sampleIndexChannel] + "-" + nextSample[sampleIndexChannel]);
     }
 }
