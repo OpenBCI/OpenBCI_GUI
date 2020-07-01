@@ -29,7 +29,6 @@ def main ():
     subprocess.check_call(["processing-java", "--sketch=" + sketch_dir, "--run"])
 
     fail_file = os.path.join(sketch_dir, "UNITTEST_FAILURE")
-    print(fail_file)
     if os.path.exists(fail_file):
         exit(1)
 
