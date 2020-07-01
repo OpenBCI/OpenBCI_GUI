@@ -20,7 +20,7 @@ private void runTests() {
     int failureCount = result.getFailureCount();
     int runCount = result.getRunCount();
 
-    println("Test Failed: " + failureCount + "/" + runCount);
+    println("Tests Failed: " + failureCount + "/" + runCount);
 
     for (Failure failure : result.getFailures()) {
         println("\t" + failure.toString());

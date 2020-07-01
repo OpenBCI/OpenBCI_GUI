@@ -38,7 +38,6 @@ class PacketLossTracker {
             int sampleIndex = (int)(sample[sampleIndexChannel]);
             int lastSampleIndex = (int)(lastSample[sampleIndexChannel]);
 
-            // special case: loop back
             int numLostSamples = calculateLostSamples(lastSampleIndex, sampleIndex);
             if (numLostSamples > 0) {
                 onSamplesLost(numLostSamples, lastSample, sample);
@@ -52,6 +51,7 @@ class PacketLossTracker {
     protected int calculateLostSamples(int previousSampleIndex, int nextSampleIndex) {
         int numLostSamples = 0;
 
+        // special case: loop back
         if (nextSampleIndex < previousSampleIndex) {
             // add up the count of any lost samples
             // eg, if maxSampleIndex is 255, previousSampleIndex is 252 and nextSampleIndex is 4
@@ -69,6 +69,8 @@ class PacketLossTracker {
     private void onSamplesLost(int numLostSamples, double[] previousSample, double[] nextSample) {
         totalLostSamples += numLostSamples;
 
+        // TODO: for now, print the packet loss event. We will need to store packet loss event data
+        // to report it in the widget.
         println("WARNING: Lost " + numLostSamples + " Samples Between " +  (int)previousSample[sampleIndexChannel] + "-" + (int)nextSample[sampleIndexChannel]);
     }
 }
