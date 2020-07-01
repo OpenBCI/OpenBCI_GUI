@@ -30,7 +30,7 @@ def main ():
 
     fail_file = os.path.join(sketch_dir, "UNITTEST_FAILURE")
     if os.path.exists(fail_file):
-        exit(1)
+        exit(1) # create CI failure
 
 
 if __name__ == "__main__":
