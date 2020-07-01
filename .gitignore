@@ -16,6 +16,7 @@ OpenBCI_GUI/data/EEG_Data/*
 OpenBCI_GUI/data/OpenBCIHub/*
 OpenBCI_GUI/application.*
 OpenBCI_GUI_unittests/*.pde
+OpenBCI_GUI_unittests/UNITTEST_FAILURE
 !OpenBCI_GUI_unittests/*_unittests.pde
 openbcigui_*
 *.autosave
