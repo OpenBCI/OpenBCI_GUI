@@ -1,20 +1,21 @@
+
+import org.junit.runners.Suite;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 import org.hamcrest.SelfDescribing;
 
-static OpenBCI_GUI_unittests currentApplet;
+static OpenBCI_GUI_UnitTests currentApplet;
 final String failFileName = "UNITTEST_FAILURE";
 
 // define a test suite with all test classes
 // add test classes here
 @RunWith(Suite.class)
-@SuiteClasses({
+@Suite.SuiteClasses({
         PacketLossTracker_UnitTests.class,
-        PacketLossTrackerCytonSerialDaisy_UnitTests.class, })
+        PacketLossTrackerCytonSerialDaisy_UnitTests.class, 
+        PacketLossTrackerCytonWifiDaisy_UnitTests.class, })
 public class AllTests {};
 
 void setup() {

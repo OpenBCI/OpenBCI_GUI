@@ -111,8 +111,21 @@ class PacketLossTrackerCytonWifiDaisy extends PacketLossTracker {
 
     @Override
     protected int calculateLostSamples(int previousSampleIndex, int nextSampleIndex) {
-        // TODO IMPLEMENT
-        return 0;
+        int numLostSamples = 0;
+        
+        // special case: loop back
+        if (nextSampleIndex < previousSampleIndex) {
+            // add up the count of any lost samples
+            // eg, if maxSampleIndex is 255, previousSampleIndex is 252 and nextSampleIndex is 4
+            // we will count 7 lost samples
+            numLostSamples += (maxSampleIndex - previousSampleIndex) / 2;
+            numLostSamples += (nextSampleIndex - minSampleIndex) / 2;
+        }
+        else {
+            numLostSamples = (nextSampleIndex - previousSampleIndex - 2) / 2;
+        }
+
+        return numLostSamples;
     }
 }
 
