@@ -73,7 +73,7 @@ class PacketLossTracker {
     }
 }
 
-// packet index range 1-255, odd numbers only (skips evens)
+// sample index range 1-255, odd numbers only (skips evens)
 class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
 
     PacketLossTrackerCytonSerialDaisy(int _sampleIndexChannel, int _timestampChannel) {
@@ -87,7 +87,8 @@ class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
     }
 }
 
-// packet index range 0-254, even numbers only (skips odds)
+// // sample index range 0-100, all sample indexes are duplicated except for zero.
+ index range 0-254, even numbers only (skips odds)
 class PacketLossTrackerCytonWifiDaisy extends PacketLossTracker {
 
     PacketLossTrackerCytonWifiDaisy(int _sampleIndexChannel, int _timestampChannel) {
@@ -101,7 +102,7 @@ class PacketLossTrackerCytonWifiDaisy extends PacketLossTracker {
     }
 }
 
-// packet index range 0-100, all packed indexes are duplicated except for zero.
+// sample index range 0-100, all sample indexes are duplicated except for zero.
 // eg 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, ... , 99, 99, 100, 100, 0, 1, 1, 2, 2, 3, 3, ...
 class PacketLossTrackerGanglion extends PacketLossTracker {
 
