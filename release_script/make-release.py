@@ -106,7 +106,7 @@ def build_app(sketch_dir, flavor):
     # so we can't reliably check for success or failure
     # https://github.com/processing/processing/issues/5468
     print ("Using sketch: " + sketch_dir)
-    subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
+    subprocess.check_call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
 
 ### Function: Package the app in the expected file structure
 ###########################################################
