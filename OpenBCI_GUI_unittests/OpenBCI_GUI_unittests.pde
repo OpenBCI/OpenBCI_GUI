@@ -26,9 +26,14 @@ private void runTests() {
         println("\t" + failure.toString());
     }
 
+    notifySuccess(result.wasSuccessful());
+}
+
+private void notifySuccess(boolean success) {
+    // If there was a failure, write an empty file to notify python script
     File file = sketchFile(failFileName);
     file.delete();
-    if(!result.wasSuccessful()) {
+    if(!success) {
         PrintWriter output = createWriter(failFileName);
         output.close();
     }
