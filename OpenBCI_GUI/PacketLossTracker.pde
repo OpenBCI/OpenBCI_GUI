@@ -87,8 +87,7 @@ class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
     }
 }
 
-// // sample index range 0-100, all sample indexes are duplicated except for zero.
- index range 0-254, even numbers only (skips odds)
+// sample index range 0-254, even numbers only (skips odds)
 class PacketLossTrackerCytonWifiDaisy extends PacketLossTracker {
 
     PacketLossTrackerCytonWifiDaisy(int _sampleIndexChannel, int _timestampChannel) {
