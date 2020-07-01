@@ -134,6 +134,6 @@ public static class PacketLossTracker_UnitTests {
 
         int totalSize = input1.size() + input2.size() + input3.size();
         Assert.assertEquals(totalSize, packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(114, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(14, packetLossTracker.getTotalLostSamples());
     }
 }
