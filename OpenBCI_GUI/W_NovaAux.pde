@@ -144,6 +144,7 @@ class AuxReadBar{
 
     private int auxValuesPosition;
     private String auxChanLabel;
+    private int channel = 0; //used to track Board channel number
     private int x, y, w, h;
     private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
@@ -180,6 +181,21 @@ class AuxReadBar{
             auxChanLabel = "EDA";
         } else {
             auxChanLabel = "Battery";
+        }
+
+        switch (auxValuesPosition) {
+            case 1:
+                channel = ppgBoard.getPPGChannels()[0];
+                break;
+            case 2:
+                channel = ppgBoard.getPPGChannels()[1];
+                break;
+            case 3:
+                channel = edaBoard.getEDAChannels()[0];
+                break;
+            default:
+                channel = batteryBoard.getBatteryChannel();
+                break;
         }
         
         isOn = true;
@@ -279,21 +295,6 @@ class AuxReadBar{
 
     void updatePlotPoints() {
         List<double[]> allData = currentBoard.getData(nPoints);
-        int channel = 0;
-        switch (auxValuesPosition) {
-            case 1:
-                channel = ppgBoard.getPPGChannels()[0];
-                break;
-            case 2:
-                channel = ppgBoard.getPPGChannels()[1];
-                break;
-            case 3:
-                channel = edaBoard.getEDAChannels()[0];
-                break;
-            default:
-                channel = batteryBoard.getBatteryChannel();
-                break;
-        }
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
