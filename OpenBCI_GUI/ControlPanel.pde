@@ -1412,7 +1412,7 @@ class ComPortBox {
 
 class BLEBox {
     private int x, y, w, h, padding; //size and position
-    private boolean bleIsRefreshing = false;
+    private volatile boolean bleIsRefreshing = false;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1460,6 +1460,10 @@ class BLEBox {
     }
 
     private void refreshGanglionBLEList() {
+        if (bleIsRefreshing) {
+            output("BLE Devices Refreshing in progress");
+            return;
+        }
         output("BLE Devices Refreshing");
         bleList.items.clear();
         
