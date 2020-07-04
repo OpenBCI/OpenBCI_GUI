@@ -130,7 +130,7 @@ class NovaXRDefaultSettings extends ADS1299Settings {
 }
 
 class BoardNovaXR extends BoardBrainFlow
-implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299SettingsBoard{
+implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard{
 
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
@@ -139,6 +139,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
 
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
+    private Integer batteryChannelCache = null;
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
     private NovaXRMode initialSettingsMode;
@@ -291,6 +292,19 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
         }
 
         return edaChannelsCache;
+    }
+
+    @Override
+    public Integer getBatteryChannel() {
+        if (batteryChannelCache == null) {
+            try {
+                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return batteryChannelCache;
     }
     
     @Override
