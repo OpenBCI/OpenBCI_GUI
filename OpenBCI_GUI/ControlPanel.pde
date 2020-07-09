@@ -84,7 +84,6 @@ Button_obci sampleDataButton; // Used to easily find GUI sample data for Playbac
 Button_obci chanButton8;
 Button_obci chanButton16;
 Button_obci selectPlaybackFile;
-Button_obci selectSDFile;
 Button_obci popOutRadioConfigButton;
 
 //Radio Button_obci Definitions
@@ -213,8 +212,9 @@ public void controlEvent(ControlEvent theEvent) {
         //println("got a menu event from item " + s);
         String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
         if (new File(filePath).isFile()) {
-            playbackFileSelected(filePath, s);
+            playbackFileFromList(filePath, s);
         } else {
+            verbosePrint("Playback History: " + filePath);
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
     }
@@ -765,10 +765,6 @@ class ControlPanel {
                     selectPlaybackFile.setIsActive(true);
                     selectPlaybackFile.wasPressed = true;
                 }
-                if (selectSDFile.isMouseHere()) {
-                    selectSDFile.setIsActive(true);
-                    selectSDFile.wasPressed = true;
-                }
                 if (sampleDataButton.isMouseHere()) {
                     sampleDataButton.setIsActive(true);
                     sampleDataButton.wasPressed = true;
@@ -1057,11 +1053,6 @@ class ControlPanel {
                         new File(settings.guiDataPath + "Recordings"));
         }
 
-        if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("Select an SD file for playback");
-            selectInput("Select an SD file for playback:", "sdFileSelected");
-        }
-
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
@@ -1123,8 +1114,6 @@ class ControlPanel {
         chanButton16.wasPressed  = false;
         selectPlaybackFile.setIsActive(false);
         selectPlaybackFile.wasPressed = false;
-        selectSDFile.setIsActive(false);
-        selectSDFile.wasPressed = false;
         sampleDataButton.setIsActive(false);
         sampleDataButton.wasPressed = false;
     }
@@ -2053,17 +2042,19 @@ class SyntheticChannelCountBox {
 };
 
 class RecentPlaybackBox {
-    int x, y, w, h, padding; //size and position
-    StringList shortFileNames = new StringList();
-    StringList longFilePaths = new StringList();
+    private int x, y, w, h, padding; //size and position
+    private StringList shortFileNames = new StringList();
+    private StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
-    ControlP5 cp5_recentPlayback_dropdown;
+    private ControlP5 cp5_recentPlayback_dropdown;
+    private int titleH = 14;
+    private int buttonH = 24;
 
     RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 67;
+        h = titleH + buttonH + _padding*3;
         padding = _padding;
 
         cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
@@ -2074,7 +2065,7 @@ class RecentPlaybackBox {
         createDropdown("recentFiles", Arrays.asList(temp));
         cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
+        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
     }
 
     /////*Update occurs while control panel is open*/////
@@ -2085,7 +2076,7 @@ class RecentPlaybackBox {
             getRecentPlaybackFiles();
             String[] temp = shortFileNames.array();
             cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
+            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
         }
     }
 
@@ -2102,7 +2093,7 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2);
+        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2.5);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
@@ -2293,7 +2284,7 @@ class PlaybackFileBox {
         x = _x;
         y = _y;
         w = _w;
-        h = (buttonH * 2) + (_padding * 4) + titleH;
+        h = buttonH + (_padding * 3) + titleH;
         padding = _padding;
 
         selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
@@ -2307,9 +2298,6 @@ class PlaybackFileBox {
         sampleDataButton.setFontColorNotActive(color(255));
         sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
         sampleDataButton.hasStroke(false);
-
-        selectSDFile = new Button_obci (x + padding, y + padding*3 + buttonH + titleH, w - padding*2, buttonH, "SELECT SD CARD FILE", fontInfo.buttonLabel_size);
-        selectSDFile.setHelpText("Click here to select an SD file generated by Cyton or Cyton+Daisy.");
     }
 
     public void update() {
@@ -2329,7 +2317,6 @@ class PlaybackFileBox {
 
         selectPlaybackFile.draw();
         sampleDataButton.draw();
-        selectSDFile.draw();
     }
 };
 
