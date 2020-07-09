@@ -1354,7 +1354,7 @@ class ComPortBox {
         LinkedList<String> comPorts = getCytonComPorts();
         if (!comPorts.isEmpty()) {
             openBCI_portName = comPorts.getFirst();
-            if (cytonRadioCfg.system_status()) {
+            if (cytonRadioCfg.get_channel()) {
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
