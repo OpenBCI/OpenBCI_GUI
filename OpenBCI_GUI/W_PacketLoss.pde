@@ -40,25 +40,40 @@ class W_PacketLoss extends Widget {
 
         textAlign(LEFT);
 
+        // TODO: make a table class to clean this up a little
+
         int[] colOffset = {0, round(w * 0.25f), round(w * 0.50f), round(w * 0.75f)};
         int[] rowOffset = {20, 40, 60, 80, 100};
+        int pad = 5;
 
-        text("packets lost", x + colOffset[0], y+rowOffset[1]);
-        text("packets received", x + colOffset[0], y+rowOffset[2]);
-        text("packets expected", x + colOffset[0], y+rowOffset[3]);
-        text("% packets lost", x + colOffset[0], y+rowOffset[4]);
+        stroke(0);
+        // draw row lines
+        line(x, y+rowOffset[0], x+w, y+rowOffset[0]);
+        line(x, y+rowOffset[1], x+w, y+rowOffset[1]);
+        line(x, y+rowOffset[2], x+w, y+rowOffset[2]);
+        line(x, y+rowOffset[3], x+w, y+rowOffset[3]);
 
-        text("entire session", x+colOffset[1], y+rowOffset[0]);
-        text(nfc(samplesLostSession), x+colOffset[1], y+rowOffset[1]);
-        text(nfc(samplesReceivedSession), x+colOffset[1], y+rowOffset[2]);
-        text(nfc(samplesExpectedSession), x+colOffset[1], y+rowOffset[3]);
-        text(nf(percentLostSession, 0, 4 /*decimals*/), x+colOffset[1], y+rowOffset[4]);
+        // draw column lines
+        line(x+colOffset[1], y, x+colOffset[1], y+rowOffset[4]);
+        line(x+colOffset[2], y, x+colOffset[2], y+rowOffset[4]);
+        line(x+colOffset[3], y, x+colOffset[3], y+rowOffset[4]);
 
-        text("contiguous stream", x+colOffset[2], y+rowOffset[0]);
-        text(nfc(samplesLostStream), x+colOffset[2], y+rowOffset[1]);
-        text(nfc(samplesReceivedStream), x+colOffset[2], y+rowOffset[2]);
-        text(nfc(samplesExpectedStream), x+colOffset[2], y+rowOffset[3]);
-        text(nf(percentLostStream, 0, 4 /*decimals*/), x+colOffset[2], y+rowOffset[4]);
+        text("packets lost", x+colOffset[0]+pad, y+rowOffset[1]-pad);
+        text("packets received", x+colOffset[0]+pad, y+rowOffset[2]-pad);
+        text("packets expected", x+colOffset[0]+pad, y+rowOffset[3]-pad);
+        text("% packets lost", x+colOffset[0]+pad, y+rowOffset[4]-pad);
+
+        text("entire session", x+colOffset[1]+pad, y+rowOffset[0]-pad);
+        text(nfc(samplesLostSession), x+colOffset[1]+pad, y+rowOffset[1]-pad);
+        text(nfc(samplesReceivedSession), x+colOffset[1]+pad, y+rowOffset[2]-pad);
+        text(nfc(samplesExpectedSession), x+colOffset[1]+pad, y+rowOffset[3]-pad);
+        text(nf(percentLostSession, 0, 4 /*decimals*/), x+colOffset[1]+pad, y+rowOffset[4]-pad);
+
+        text("contiguous stream", x+colOffset[2]+pad, y+rowOffset[0]-pad);
+        text(nfc(samplesLostStream), x+colOffset[2]+pad, y+rowOffset[1]-pad);
+        text(nfc(samplesReceivedStream), x+colOffset[2]+pad, y+rowOffset[2]-pad);
+        text(nfc(samplesExpectedStream), x+colOffset[2]+pad, y+rowOffset[3]-pad);
+        text(nf(percentLostStream, 0, 4 /*decimals*/), x+colOffset[2]+pad, y+rowOffset[4]-pad);
 
         popStyle();
 
