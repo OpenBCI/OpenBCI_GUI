@@ -87,9 +87,8 @@ class W_playback extends Widget {
     }
 
     void draw() {
-        //Only draw if the widget is visible and User settings have been loaded
-        //settingsLoadedCheck is set to true after default settings are saved between Init checkpoints 4 and 5
-        if(visible && settings.settingsLoaded) {
+        //Only draw if the widget is visible
+        if(visible) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
             //x,y,w,h are the positioning variables of the Widget class
