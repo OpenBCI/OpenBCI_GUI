@@ -26,11 +26,11 @@ class PacketLossTracker {
         timestampChannel = _timestampChannel;
     }
 
-    public int getTotalReceivedSamples() {
+    public int getReceivedSamplesSession() {
         return totalReceivedSamples;
     }
 
-    public int getTotalLostSamples() {
+    public int getLostSamplesSession() {
         return totalLostSamples;
     }
 
