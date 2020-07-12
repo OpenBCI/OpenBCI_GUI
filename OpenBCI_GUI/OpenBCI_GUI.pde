@@ -589,12 +589,6 @@ void initSystem() {
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
-        
-        if (abandonInit) {
-            haltSystem();
-            controlPanel.open();
-            systemMode = SYSTEMMODE_PREINIT; // leave this here
-        }
     }
 
     midInit = false;
