@@ -161,6 +161,7 @@ class PacketLossTrackerGanglion extends PacketLossTracker {
     }
 
     public void setAccelerometerActive(boolean active) {
+        // choose correct array based on wether accel is active or not
         if (active) {
             sampleIndexArray = sampleIndexArrayAccel;
         }
