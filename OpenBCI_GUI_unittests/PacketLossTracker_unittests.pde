@@ -33,8 +33,8 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(0, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -55,8 +55,8 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(0, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -74,8 +74,8 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(4, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(4, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -95,8 +95,8 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(9, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(9, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -116,8 +116,8 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(5, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(5, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -137,8 +137,8 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(6, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(6, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -175,7 +175,43 @@ public static class PacketLossTracker_UnitTests{
         packetLossTracker.addSamples(input3);
 
         int totalSize = input1.size() + input2.size() + input3.size();
-        Assert.assertEquals(totalSize, packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(14, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(totalSize, packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(14, packetLossTracker.getLostSamplesSession());
+    }
+
+    @Test
+    public void testPacketLossAcrossStreams() {
+        double[][] data1 =  {
+            {0, 0},
+            {1, 1},
+            {2, 2},
+            {7, 7},
+            {8, 8},
+            {9, 9},
+        };
+
+        double[][] data2=  {
+            {10, 10},
+            {11, 11},
+            {0, 0},
+            {1, 1},
+            {2, 2},
+            {8, 8},
+            {9, 9},
+            {10, 10},
+        };
+
+        List<double[]> input1 = new ArrayList<double[]>(Arrays.asList(data1));
+        packetLossTracker.addSamples(input1);
+
+        // start a new stream
+        packetLossTracker.onStreamStart();
+
+        List<double[]> input2 = new ArrayList<double[]>(Arrays.asList(data2));
+        packetLossTracker.addSamples(input2);
+
+        // we lost 9 samples in the entire session, but only 5 samples in the last stream
+        Assert.assertEquals(9, packetLossTracker.getLostSamplesSession());
+        Assert.assertEquals(5, packetLossTracker.getLostSamplesStream());
     }
 }

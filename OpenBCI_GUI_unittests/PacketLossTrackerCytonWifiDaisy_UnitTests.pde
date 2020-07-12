@@ -31,8 +31,8 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(0, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -53,8 +53,8 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(0, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -72,8 +72,8 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(4, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(4, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -93,8 +93,8 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(9, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(9, packetLossTracker.getLostSamplesSession());
     }
     
 
@@ -115,8 +115,8 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(4, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(4, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -135,8 +135,8 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(5, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(5, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -173,7 +173,7 @@ public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
         packetLossTracker.addSamples(input3);
 
         int totalSize = input1.size() + input2.size() + input3.size();
-        Assert.assertEquals(totalSize, packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(10, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(totalSize, packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(10, packetLossTracker.getLostSamplesSession());
     }
 }

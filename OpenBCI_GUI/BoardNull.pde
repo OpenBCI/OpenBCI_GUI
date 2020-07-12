@@ -19,16 +19,6 @@ class BoardNull extends Board {
         // empty
     }
 
-    @Override
-    public void startStreaming() {
-        // empty
-    }
-
-    @Override
-    public void stopStreaming() {
-        // empty
-    }
-
     public boolean isConnected() {
         return false;
     }

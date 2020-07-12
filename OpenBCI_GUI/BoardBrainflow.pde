@@ -63,11 +63,14 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void startStreaming() {
+        super.startStreaming();
+
         println("Brainflow start streaming");
         if(streaming) {
             println("Already streaming, do nothing");
             return;
         }
+
         try {
             boardShim.start_stream (3600);
             streaming = true;
@@ -81,6 +84,8 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void stopStreaming() {
+        super.stopStreaming();
+        
         println("Brainflow stop streaming");
         if(!streaming) {
             println("Already stopped streaming, do nothing");
@@ -88,7 +93,7 @@ abstract class BoardBrainFlow extends Board {
         }
         streaming = false;
         try {
-            boardShim.stop_stream ();
+            boardShim.stop_stream();
         }
         catch (BrainFlowError e) {
             println("ERROR: Exception when stoppping stream");

@@ -29,6 +29,17 @@ abstract class Board implements DataSource {
     }
 
     @Override
+    public void startStreaming() {
+        packetLossTracker.onStreamStart();
+    }
+
+    @Override
+    public void stopStreaming() {
+        
+        // empty
+    }
+
+    @Override
     public void update() {
         updateInternal();
 

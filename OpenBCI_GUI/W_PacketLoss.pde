@@ -10,6 +10,8 @@ class W_PacketLoss extends Widget {
     private int samplesReceivedStream = 0;
     private int samplesExpectedSession = 0;
     private int samplesExpectedStream = 0;
+    private float percentLostSession = 0.f;
+    private float percentLostStream = 0.f;
 
     W_PacketLoss(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -23,6 +25,12 @@ class W_PacketLoss extends Widget {
         samplesLostSession = packetLossTracker.getLostSamplesSession();
         samplesReceivedSession = packetLossTracker.getReceivedSamplesSession();
         samplesExpectedSession = samplesLostSession + samplesReceivedSession;
+        percentLostSession = calcPercent(samplesExpectedSession, samplesLostSession);
+
+        samplesLostStream = packetLossTracker.getLostSamplesStream();
+        samplesReceivedStream = packetLossTracker.getReceivedSamplesStream();
+        samplesExpectedStream = samplesLostStream + samplesReceivedStream;
+        percentLostStream = calcPercent(samplesExpectedStream, samplesLostStream);
     }
 
     void draw(){
@@ -32,9 +40,25 @@ class W_PacketLoss extends Widget {
 
         textAlign(LEFT);
 
-        text("SamplesLostSession: " + samplesLostSession, x, y+20);
-        text("SamplesReceivedSession: " + samplesReceivedSession, x, y+40);
-        text("SamplesExpectedSession: " + samplesExpectedSession, x, y+60);
+        int[] colOffset = {0, round(w * 0.25f), round(w * 0.50f), round(w * 0.75f)};
+        int[] rowOffset = {20, 40, 60, 80, 100};
+
+        text("packets lost", x + colOffset[0], y+rowOffset[1]);
+        text("packets received", x + colOffset[0], y+rowOffset[2]);
+        text("packets expected", x + colOffset[0], y+rowOffset[3]);
+        text("% packets lost", x + colOffset[0], y+rowOffset[4]);
+
+        text("entire session", x+colOffset[1], y+rowOffset[0]);
+        text(nfc(samplesLostSession), x+colOffset[1], y+rowOffset[1]);
+        text(nfc(samplesReceivedSession), x+colOffset[1], y+rowOffset[2]);
+        text(nfc(samplesExpectedSession), x+colOffset[1], y+rowOffset[3]);
+        text(nf(percentLostSession, 0, 4 /*decimals*/), x+colOffset[1], y+rowOffset[4]);
+
+        text("contiguous stream", x+colOffset[2], y+rowOffset[0]);
+        text(nfc(samplesLostStream), x+colOffset[2], y+rowOffset[1]);
+        text(nfc(samplesReceivedStream), x+colOffset[2], y+rowOffset[2]);
+        text(nfc(samplesExpectedStream), x+colOffset[2], y+rowOffset[3]);
+        text(nf(percentLostStream, 0, 4 /*decimals*/), x+colOffset[2], y+rowOffset[4]);
 
         popStyle();
 
@@ -52,6 +76,14 @@ class W_PacketLoss extends Widget {
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
+    }
+
+    private float calcPercent(float total, float fraction) {
+        if(total == 0) {
+            return 0;
+        }
+
+        return fraction * 100 / total;
     }
 
 };

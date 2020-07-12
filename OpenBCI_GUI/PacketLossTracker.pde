@@ -6,9 +6,12 @@ class PacketLossTracker {
     private int timestampChannel;
     private double[] lastSample = null;
     private int lastSampleIndexLocation;
+    private boolean newStream = false;
 
-    private int totalReceivedSamples = 0;
-    private int totalLostSamples = 0;
+    private int receivedSamplesSession = 0;
+    private int receivedSamplesStream = 0;
+    private int lostSamplesSession = 0;
+    private int lostSamplesStream = 0;
 
     protected ArrayList<Integer> sampleIndexArray = new ArrayList<Integer>();
 
@@ -26,19 +29,48 @@ class PacketLossTracker {
         timestampChannel = _timestampChannel;
     }
 
+    public void onStreamStart() {
+        receivedSamplesStream = 0;
+        lostSamplesStream = 0;
+        newStream = true;
+        reset();
+    }
+
     public int getReceivedSamplesSession() {
-        return totalReceivedSamples;
+        return receivedSamplesSession;
+    }
+
+    public int getReceivedSamplesStream() {
+        return receivedSamplesStream;
     }
 
     public int getLostSamplesSession() {
-        return totalLostSamples;
+        return lostSamplesSession;
+    }
+
+    public int getLostSamplesStream() {
+        return lostSamplesStream;
     }
 
     public void addSamples(List<double[]> newSamples) {
-        for (double[] sample : newSamples) {
+        receivedSamplesSession += newSamples.size();
+        receivedSamplesStream += newSamples.size();
 
-            totalReceivedSamples++;
+        for (double[] sample : newSamples) {
             int currentSampleIndex = (int)(sample[sampleIndexChannel]);
+
+            // handle new stream start
+            if (newStream) {
+                // wait until we restart the sample index array. this handles the case
+                // of starting a new stream and there are still samples from the
+                // previous stream in the serial buffer
+                if (currentSampleIndex == sampleIndexArray.get(0)) {
+                    lastSample = sample;
+                    lastSampleIndexLocation = 0;
+                    newStream = false;
+                }
+                continue;
+            }
 
             // handle first call
             if (lastSample == null) {
@@ -57,6 +89,7 @@ class PacketLossTracker {
 
                 if (numSamplesLost > sampleIndexArray.size()) {
                     // we looped the entire array, the new sample is not part of the current array
+                    println("WATRNING: LOOPED AROUJD");
                     break;
                 }
             }
@@ -78,7 +111,8 @@ class PacketLossTracker {
     }
 
     private void onSamplesLost(int numLostSamples, double[] previousSample, double[] nextSample) {
-        totalLostSamples += numLostSamples;
+        lostSamplesSession += numLostSamples;
+        lostSamplesStream += numLostSamples;
 
         // TODO: for now, print the packet loss event. We will need to store packet loss event data
         // to report it in the widget.

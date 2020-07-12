@@ -32,8 +32,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(0, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -60,8 +60,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(0, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -86,8 +86,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(6, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(6, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -111,8 +111,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(11, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(11, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -137,8 +137,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(12, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(12, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -164,8 +164,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(1, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(1, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -190,8 +190,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(6, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(6, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -215,8 +215,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(7, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(7, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -241,8 +241,8 @@ public static class PacketLossTrackerGanglion_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(6, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(6, packetLossTracker.getLostSamplesSession());
     }
 
     @Test
@@ -284,7 +284,7 @@ public static class PacketLossTrackerGanglion_UnitTests{
         packetLossTracker.addSamples(input3);
 
         int totalSize = input1.size() + input2.size() + input3.size();
-        Assert.assertEquals(totalSize, packetLossTracker.getTotalReceivedSamples());
-        Assert.assertEquals(17, packetLossTracker.getTotalLostSamples());
+        Assert.assertEquals(totalSize, packetLossTracker.getReceivedSamplesSession());
+        Assert.assertEquals(17, packetLossTracker.getLostSamplesSession());
     }
 }
