@@ -85,6 +85,10 @@ abstract class Board implements DataSource {
         return names;
     }
 
+    public PacketLossTracker getPacketLossTracker() {
+        return packetLossTracker;
+    }
+
     public abstract boolean isConnected();
 
     public abstract void sendCommand(String command);

@@ -70,6 +70,8 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     private boolean isCheckingImpedance = false;
     private boolean isGettingAccel = false;
 
+    private PacketLossTrackerGanglion packetLossTrackerGanglion;
+
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {
@@ -115,6 +117,12 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     public void setAccelerometerActive(boolean active) {
         sendCommand(active ? "n" : "N");
         isGettingAccel = active;
+
+        if (packetLossTrackerGanglion != null) {
+            // tell the packet loss tracket, because the sample indices change based
+            // on wether accel is active or not
+            packetLossTrackerGanglion.setAccelerometerActive(active);
+        }
     }
 
     @Override
@@ -185,6 +193,8 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
 
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
-        return new PacketLossTrackerGanglion(getSampleIndexChannel(), getTimestampChannel());
+        packetLossTrackerGanglion = new PacketLossTrackerGanglion(getSampleIndexChannel(), getTimestampChannel());
+        packetLossTrackerGanglion.setAccelerometerActive(isAccelerometerActive());
+        return packetLossTrackerGanglion;
     }
 };
