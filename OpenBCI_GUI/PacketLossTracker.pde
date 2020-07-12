@@ -54,6 +54,11 @@ class PacketLossTracker {
             while (sampleIndexArray.get(lastSampleIndexLocation) != currentSampleIndex) {
                 incrementLastSampleIndexLocation();
                 numSamplesLost++;
+
+                if (numSamplesLost > sampleIndexArray.size()) {
+                    // we looped the entire array, the new sample is not part of the current array
+                    break;
+                }
             }
 
             if (numSamplesLost > 0) {
