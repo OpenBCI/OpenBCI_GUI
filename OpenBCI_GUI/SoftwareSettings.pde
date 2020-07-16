@@ -356,8 +356,8 @@ class SoftwareSettings {
         try {
             this.save(defaultSettingsFileToSave); //to avoid confusion with save() image
         } catch (Exception e) {
-            println("InitSettings: Error trying to save default settings");
-            //e.printStackTrace();
+            outputError("Failed to save Default Settings during Init. Please submit an Issue on GitHub.");
+            e.printStackTrace();
         }
     }
 

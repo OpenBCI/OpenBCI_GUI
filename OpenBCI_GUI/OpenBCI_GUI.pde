@@ -586,16 +586,9 @@ void initSystem() {
 
     
     if (eegDataSource != DATASOURCE_NOVAXR) { //don't save default settings for NovaXR
-        if (!abandonInit) {
-            //Init software settings: create default settings file that is datasource unique
-            settings.init();
-            settings.initCheckPointFive();
-        } else {
-            haltSystem();
-            outputError("Failed to save Default Settings during Init. Please submit an Issue on GitHub.");
-            controlPanel.open();
-            systemMode = SYSTEMMODE_PREINIT; // leave this here
-        }
+        //Init software settings: create default settings file that is datasource unique
+        settings.init();
+        settings.initCheckPointFive();
     }
 
     midInit = false;

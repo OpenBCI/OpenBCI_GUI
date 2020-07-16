@@ -322,23 +322,16 @@ class TopNav {
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (stopButton.isMouseHere()) {
                 stopButton.setIsActive(true);
-                stopButtonWasPressed();
             }
             if (filtBPButton.isMouseHere()) {
                 filtBPButton.setIsActive(true);
-                incrementFilterConfiguration();
             }
             if (topNav.filtNotchButton.isMouseHere()) {
                 filtNotchButton.setIsActive(true);
-                incrementNotchConfiguration();
             }
             if (currentBoard instanceof SmoothingCapableBoard) {
                 if (smoothingButton.isMouseHere()) {
                     smoothingButton.setIsActive(true);
-                    //toggle data smoothing on mousePress for capable boards
-                    SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
-                    smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
-                    smoothingButton.setString(getSmoothingString());
                 }
             }
             if (layoutButton.isMouseHere()) {
@@ -439,6 +432,25 @@ class TopNav {
         }
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
+            if (stopButton.isMouseHere() && stopButton.isActive()) {
+                stopButtonWasPressed();
+            }
+            if (filtBPButton.isMouseHere() && filtBPButton.isActive()) {
+                incrementFilterConfiguration();
+            }
+            if (filtNotchButton.isMouseHere() && filtNotchButton.isActive()) {
+                filtNotchButton.setIsActive(true);
+                incrementNotchConfiguration();
+            }
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                if (smoothingButton.isMouseHere() && smoothingButton.isActive()) {
+                    smoothingButton.setIsActive(true);
+                    //toggle data smoothing on mousePress for capable boards
+                    SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
+                    smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
+                    smoothingButton.setString(getSmoothingString());
+                }
+            }
             if (!tutorialSelector.isVisible) { //make sure that you can't open the layout selector accidentally
                 if (layoutButton.isMouseHere() && layoutButton.isActive()) {
                     layoutSelector.toggleVisibility();
