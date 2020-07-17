@@ -40,13 +40,16 @@ class PacketLossTracker {
     private PacketRecord sessionPacketRecord = new PacketRecord(0, 0);
     private PacketRecord streamPacketRecord = new PacketRecord(0, 0);
 
-    // hold 60 seconds worth of packet records
-    private TimeTrackingQueue<PacketRecord> packetRecords = new TimeTrackingQueue<PacketRecord>(60 * 1000);
+    private TimeTrackingQueue<PacketRecord> packetRecords;
 
     protected ArrayList<Integer> sampleIndexArray = new ArrayList<Integer>();
 
     PacketLossTracker(int _sampleIndexChannel, int _timestampChannel, int _minSampleIndex, int _maxSampleIndex) {        
-        this(_sampleIndexChannel, _timestampChannel);
+        this(_sampleIndexChannel, _timestampChannel,  _minSampleIndex, _maxSampleIndex, new RealTimeProvider());
+    }
+
+    PacketLossTracker(int _sampleIndexChannel, int _timestampChannel, int _minSampleIndex, int _maxSampleIndex, TTQTimeProvider _timeProvider) {        
+        this(_sampleIndexChannel, _timestampChannel, _timeProvider);
 
         // add indices to array of indices
         for (int i = _minSampleIndex; i <= _maxSampleIndex; i++) {
@@ -54,7 +57,8 @@ class PacketLossTracker {
         }
     }
 
-    PacketLossTracker(int _sampleIndexChannel, int _timestampChannel) {
+    PacketLossTracker(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
+        packetRecords = new TimeTrackingQueue<PacketRecord>(60 * 1000, _timeProvider);
         sampleIndexChannel = _sampleIndexChannel;
         timestampChannel = _timestampChannel;
     }
@@ -156,17 +160,17 @@ class PacketLossTracker {
     protected void reset() {
         lastSample = null;
     }
-
-    public void freezeQueue_UNITTEST(boolean shouldFreeze) {
-        packetRecords.setFreeze_UNITTEST(shouldFreeze);
-    }
 }
 
 // sample index range 1-255, odd numbers only (skips evens)
 class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
 
     PacketLossTrackerCytonSerialDaisy(int _sampleIndexChannel, int _timestampChannel) {
-        super(_sampleIndexChannel, _timestampChannel);
+        this(_sampleIndexChannel, _timestampChannel, new RealTimeProvider());
+    }
+
+    PacketLossTrackerCytonSerialDaisy(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
+        super(_sampleIndexChannel, _timestampChannel, _timeProvider);
 
         // add indices to array of indices
         // 1-255, odd numbers only (skips evens)
@@ -182,7 +186,11 @@ class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
 class PacketLossTrackerCytonWifiDaisy extends PacketLossTracker {
 
     PacketLossTrackerCytonWifiDaisy(int _sampleIndexChannel, int _timestampChannel) {
-        super(_sampleIndexChannel, _timestampChannel);
+        this(_sampleIndexChannel, _timestampChannel, new RealTimeProvider());
+    }
+
+    PacketLossTrackerCytonWifiDaisy(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
+        super(_sampleIndexChannel, _timestampChannel, _timeProvider);
 
         // add indices to array of indices
         // 0-254, even numbers only (skips odds)
@@ -203,7 +211,11 @@ class PacketLossTrackerGanglion extends PacketLossTracker {
     ArrayList<Integer> sampleIndexArrayNoAccel = new ArrayList<Integer>();
 
     PacketLossTrackerGanglion(int _sampleIndexChannel, int _timestampChannel) {
-        super(_sampleIndexChannel, _timestampChannel);
+        this(_sampleIndexChannel, _timestampChannel, new RealTimeProvider());
+    }
+
+    PacketLossTrackerGanglion(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
+        super(_sampleIndexChannel, _timestampChannel, _timeProvider);
 
         {
             // add indices to array of indices

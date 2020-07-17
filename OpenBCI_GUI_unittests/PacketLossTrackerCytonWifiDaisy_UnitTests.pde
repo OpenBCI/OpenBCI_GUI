@@ -7,13 +7,15 @@ import org.junit.Before;
 public static class PacketLossTrackerCytonWifiDaisy_UnitTests {
 
     PacketLossTrackerCytonWifiDaisy packetLossTracker;
+    FakeTimeProvider fakeTimeProvider;
 
     @Before
     public void setUp() {
         int sampleIndexChannel = 0;
         int timestampChannel = 1;
+        fakeTimeProvider = currentApplet.new FakeTimeProvider();
         packetLossTracker = currentApplet.new PacketLossTrackerCytonWifiDaisy(
-                sampleIndexChannel, timestampChannel);
+                sampleIndexChannel, timestampChannel, fakeTimeProvider);
     }
 
     @Test

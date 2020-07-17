@@ -7,6 +7,7 @@ import org.junit.Before;
 public static class PacketLossTracker_UnitTests{
 
     PacketLossTracker packetLossTracker;
+    FakeTimeProvider fakeTimeProvider;
 
     @Before
     public void setUp() {
@@ -14,8 +15,9 @@ public static class PacketLossTracker_UnitTests{
         int timestampChannel = 1;
         int minSampleIndex = 0;
         int maxSampleIndex = 255;
+        fakeTimeProvider = currentApplet.new FakeTimeProvider();
         packetLossTracker = currentApplet.new PacketLossTracker(
-                sampleIndexChannel, timestampChannel, minSampleIndex, maxSampleIndex);
+                sampleIndexChannel, timestampChannel, minSampleIndex, maxSampleIndex, fakeTimeProvider);
     }
 
     @Test
@@ -253,13 +255,14 @@ public static class PacketLossTracker_UnitTests{
         List<double[]> input3 = new ArrayList<double[]>(Arrays.asList(data3));
 
         packetLossTracker.addSamples(input1);
-        currentApplet.delay(100);
+        fakeTimeProvider.addMS(100);
         packetLossTracker.addSamples(input2);
-        currentApplet.delay(100);
+        fakeTimeProvider.addMS(100);
         packetLossTracker.addSamples(input3);
-        currentApplet.delay(50);
+        fakeTimeProvider.addMS(50);
 
-        packetLossTracker.freezeQueue_UNITTEST(true);
+        // let the expiration tread do work
+        currentApplet.delay(100);
 
         List<PacketRecord> allRecords = packetLossTracker.getAllPacketRecordsForLast(500);
         PacketRecord completecumulativeRecord = packetLossTracker.getCumulativePacketRecordForLast(500);
