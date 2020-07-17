@@ -33,8 +33,9 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(input.size(), record.numReceived);
+        Assert.assertEquals(0, record.numLost);
     }
 
     @Test
@@ -55,8 +56,9 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(0, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(input.size(), record.numReceived);
+        Assert.assertEquals(0, record.numLost);
     }
 
     @Test
@@ -74,8 +76,9 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(4, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(input.size(), record.numReceived);
+        Assert.assertEquals(4, record.numLost);
     }
 
     @Test
@@ -95,8 +98,9 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(9, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(input.size(), record.numReceived);
+        Assert.assertEquals(9, record.numLost);
     }
 
     @Test
@@ -116,8 +120,9 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(5, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(input.size(), record.numReceived);
+        Assert.assertEquals(5, record.numLost);
     }
 
     @Test
@@ -137,8 +142,9 @@ public static class PacketLossTracker_UnitTests{
 
         packetLossTracker.addSamples(input);
 
-        Assert.assertEquals(input.size(), packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(6, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(input.size(), record.numReceived);
+        Assert.assertEquals(6, record.numLost);
     }
 
     @Test
@@ -175,8 +181,9 @@ public static class PacketLossTracker_UnitTests{
         packetLossTracker.addSamples(input3);
 
         int totalSize = input1.size() + input2.size() + input3.size();
-        Assert.assertEquals(totalSize, packetLossTracker.getReceivedSamplesSession());
-        Assert.assertEquals(14, packetLossTracker.getLostSamplesSession());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        Assert.assertEquals(totalSize, record.numReceived);
+        Assert.assertEquals(14, record.numLost);
     }
 
     @Test
@@ -211,7 +218,66 @@ public static class PacketLossTracker_UnitTests{
         packetLossTracker.addSamples(input2);
 
         // we lost 9 samples in the entire session, but only 5 samples in the last stream
-        Assert.assertEquals(9, packetLossTracker.getLostSamplesSession());
-        Assert.assertEquals(5, packetLossTracker.getLostSamplesStream());
+        PacketRecord record = packetLossTracker.getSessionPacketRecord();
+        PacketRecord streamRecord = packetLossTracker.getStreamPacketRecord();
+        Assert.assertEquals(9, record.numLost);
+        Assert.assertEquals(5, streamRecord.numLost);
+    }
+
+    
+    @Test
+    public void testLastMillisPacketRecord() {
+        double[][] data1 =  {
+            {249, 249},
+            {250, 250},
+            {251, 251},
+            {252, 252},
+        };
+
+        double[][] data2 = {
+            {6, 6},
+            {7, 7},
+            {8, 8},
+            {9, 9},
+        };
+
+        double[][] data3 =  {
+            {15, 15},
+            {16, 16},
+            {17, 17},
+            {18, 18}, 
+        };
+
+        List<double[]> input1 = new ArrayList<double[]>(Arrays.asList(data1));
+        List<double[]> input2 = new ArrayList<double[]>(Arrays.asList(data2));
+        List<double[]> input3 = new ArrayList<double[]>(Arrays.asList(data3));
+
+        packetLossTracker.addSamples(input1);
+        currentApplet.delay(100);
+        packetLossTracker.addSamples(input2);
+        currentApplet.delay(100);
+        packetLossTracker.addSamples(input3);
+        currentApplet.delay(50);
+
+        List<PacketRecord> allRecords = packetLossTracker.getAllPacketRecordsForLast(500);
+        PacketRecord completecumulativeRecord = packetLossTracker.getCumulativePacketRecordForLast(500);
+
+        List<PacketRecord> partialRecords = packetLossTracker.getAllPacketRecordsForLast(200);
+        PacketRecord partialCumulativeRecord = packetLossTracker.getCumulativePacketRecordForLast(200);
+        
+        Assert.assertEquals(3, allRecords.size());
+        Assert.assertEquals(4, allRecords.get(2).numReceived);
+        Assert.assertEquals(4, allRecords.get(1).numReceived);
+        Assert.assertEquals(9, allRecords.get(1).numLost);
+        Assert.assertEquals(4, allRecords.get(0).numReceived);
+        Assert.assertEquals(5, allRecords.get(0).numLost);
+
+        Assert.assertEquals(12, completecumulativeRecord.numReceived);
+        Assert.assertEquals(14, completecumulativeRecord.numLost);
+
+        Assert.assertArrayEquals(partialRecords.toArray(), allRecords.subList(0, 2).toArray());
+
+        Assert.assertEquals(8, partialCumulativeRecord.numReceived);
+        Assert.assertEquals(14, partialCumulativeRecord.numLost);
     }
 }

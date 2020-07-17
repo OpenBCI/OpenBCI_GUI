@@ -4,33 +4,23 @@ class W_PacketLoss extends Widget {
     private ControlP5 packetLossCP5;
     private PacketLossTracker packetLossTracker;
 
-    private int samplesLostSession = 0;
-    private int samplesLostStream = 0;
-    private int samplesReceivedSession = 0;
-    private int samplesReceivedStream = 0;
-    private int samplesExpectedSession = 0;
-    private int samplesExpectedStream = 0;
-    private float percentLostSession = 0.f;
-    private float percentLostStream = 0.f;
+    private PacketRecord sessionPacketRecord;
+    private PacketRecord streamPacketRecord;
+    private PacketRecord lastMillisPacketRecord;
 
     W_PacketLoss(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         packetLossTracker = ((Board)currentBoard).getPacketLossTracker();
+        sessionPacketRecord = packetLossTracker.getSessionPacketRecord();
+        streamPacketRecord = packetLossTracker.getStreamPacketRecord();
     }
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        samplesLostSession = packetLossTracker.getLostSamplesSession();
-        samplesReceivedSession = packetLossTracker.getReceivedSamplesSession();
-        samplesExpectedSession = samplesLostSession + samplesReceivedSession;
-        percentLostSession = calcPercent(samplesExpectedSession, samplesLostSession);
-
-        samplesLostStream = packetLossTracker.getLostSamplesStream();
-        samplesReceivedStream = packetLossTracker.getReceivedSamplesStream();
-        samplesExpectedStream = samplesLostStream + samplesReceivedStream;
-        percentLostStream = calcPercent(samplesExpectedStream, samplesLostStream);
+        // TODO hardcoded 10 seconds
+        lastMillisPacketRecord = packetLossTracker.getCumulativePacketRecordForLast(10*1000);
     }
 
     void draw(){
@@ -64,16 +54,22 @@ class W_PacketLoss extends Widget {
         text("% packets lost", x+colOffset[0]+pad, y+rowOffset[4]-pad);
 
         text("entire session", x+colOffset[1]+pad, y+rowOffset[0]-pad);
-        text(nfc(samplesLostSession), x+colOffset[1]+pad, y+rowOffset[1]-pad);
-        text(nfc(samplesReceivedSession), x+colOffset[1]+pad, y+rowOffset[2]-pad);
-        text(nfc(samplesExpectedSession), x+colOffset[1]+pad, y+rowOffset[3]-pad);
-        text(nf(percentLostSession, 0, 4 /*decimals*/), x+colOffset[1]+pad, y+rowOffset[4]-pad);
+        text(nfc(sessionPacketRecord.numLost), x+colOffset[1]+pad, y+rowOffset[1]-pad);
+        text(nfc(sessionPacketRecord.numReceived), x+colOffset[1]+pad, y+rowOffset[2]-pad);
+        text(nfc(sessionPacketRecord.getNumExpected()), x+colOffset[1]+pad, y+rowOffset[3]-pad);
+        text(nf(sessionPacketRecord.getLostPercent(), 0, 4 /*decimals*/), x+colOffset[1]+pad, y+rowOffset[4]-pad);
 
         text("contiguous stream", x+colOffset[2]+pad, y+rowOffset[0]-pad);
-        text(nfc(samplesLostStream), x+colOffset[2]+pad, y+rowOffset[1]-pad);
-        text(nfc(samplesReceivedStream), x+colOffset[2]+pad, y+rowOffset[2]-pad);
-        text(nfc(samplesExpectedStream), x+colOffset[2]+pad, y+rowOffset[3]-pad);
-        text(nf(percentLostStream, 0, 4 /*decimals*/), x+colOffset[2]+pad, y+rowOffset[4]-pad);
+        text(nfc(streamPacketRecord.numLost), x+colOffset[2]+pad, y+rowOffset[1]-pad);
+        text(nfc(streamPacketRecord.numReceived), x+colOffset[2]+pad, y+rowOffset[2]-pad);
+        text(nfc(streamPacketRecord.getNumExpected()), x+colOffset[2]+pad, y+rowOffset[3]-pad);
+        text(nf(streamPacketRecord.getLostPercent(), 0, 4 /*decimals*/), x+colOffset[2]+pad, y+rowOffset[4]-pad);
+        
+        text("last 10s", x+colOffset[3]+pad, y+rowOffset[0]-pad);
+        text(nfc(lastMillisPacketRecord.numLost), x+colOffset[3]+pad, y+rowOffset[1]-pad);
+        text(nfc(lastMillisPacketRecord.numReceived), x+colOffset[3]+pad, y+rowOffset[2]-pad);
+        text(nfc(lastMillisPacketRecord.getNumExpected()), x+colOffset[3]+pad, y+rowOffset[3]-pad);
+        text(nf(lastMillisPacketRecord.getLostPercent(), 0, 4 /*decimals*/), x+colOffset[2]+pad, y+rowOffset[4]-pad);
 
         popStyle();
 

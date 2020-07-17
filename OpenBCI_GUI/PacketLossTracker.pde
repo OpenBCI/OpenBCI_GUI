@@ -1,5 +1,34 @@
 import java.util.List;
 
+class PacketRecord {
+    public int numLost;
+    public int numReceived;
+
+    PacketRecord(int _numLost, int _numReceived) {
+        numLost = _numLost;
+        numReceived = _numReceived;
+    }
+
+    public int getNumExpected() {
+        return numLost + numReceived;
+    }
+
+    public float getLostPercent() {
+        if(getNumExpected() == 0) {
+            return 0;
+        }
+
+        return numLost * 100 / getNumExpected();
+    }
+
+    public void appendAll(List<PacketRecord> toAppend) {
+        for (PacketRecord record : toAppend) {
+            numLost += record.numLost;
+            numReceived += record.numReceived;
+        }
+    }
+}
+
 class PacketLossTracker {
 
     private int sampleIndexChannel;
@@ -8,10 +37,11 @@ class PacketLossTracker {
     private int lastSampleIndexLocation;
     private boolean newStream = false;
 
-    private int receivedSamplesSession = 0;
-    private int receivedSamplesStream = 0;
-    private int lostSamplesSession = 0;
-    private int lostSamplesStream = 0;
+    private PacketRecord sessionPacketRecord = new PacketRecord(0, 0);
+    private PacketRecord streamPacketRecord = new PacketRecord(0, 0);
+
+    // hold 60 seconds worth of packet records
+    private TimeTrackingQueue<PacketRecord> packetRecords = new TimeTrackingQueue<PacketRecord>(60 * 1000);
 
     protected ArrayList<Integer> sampleIndexArray = new ArrayList<Integer>();
 
@@ -30,31 +60,38 @@ class PacketLossTracker {
     }
 
     public void onStreamStart() {
-        receivedSamplesStream = 0;
-        lostSamplesStream = 0;
+        streamPacketRecord.numLost = 0;
+        streamPacketRecord.numReceived = 0;
         newStream = true;
         reset();
     }
 
-    public int getReceivedSamplesSession() {
-        return receivedSamplesSession;
+    public PacketRecord getSessionPacketRecord() {
+        return sessionPacketRecord;
     }
 
-    public int getReceivedSamplesStream() {
-        return receivedSamplesStream;
+    public PacketRecord getStreamPacketRecord() {
+        return streamPacketRecord;
     }
 
-    public int getLostSamplesSession() {
-        return lostSamplesSession;
+    public List<PacketRecord> getAllPacketRecordsForLast(int milliseconds) {
+        return packetRecords.getLastData(milliseconds);
     }
 
-    public int getLostSamplesStream() {
-        return lostSamplesStream;
+    public PacketRecord getCumulativePacketRecordForLast(int milliseconds) {
+        List<PacketRecord> allRecords = getAllPacketRecordsForLast(milliseconds);
+        PacketRecord result = new PacketRecord(0, 0);
+        result.appendAll(allRecords);
+        return result;
     }
 
     public void addSamples(List<double[]> newSamples) {
-        receivedSamplesSession += newSamples.size();
-        receivedSamplesStream += newSamples.size();
+        sessionPacketRecord.numReceived += newSamples.size();
+        streamPacketRecord.numReceived += newSamples.size();
+
+        // create packet record for this call, add received count.
+        // loss count will be added in the for loop
+        PacketRecord currentRecord = new PacketRecord(0, newSamples.size());
 
         for (double[] sample : newSamples) {
             int currentSampleIndex = (int)(sample[sampleIndexChannel]);
@@ -95,12 +132,18 @@ class PacketLossTracker {
             }
 
             if (numSamplesLost > 0) {
-                // we lost some samples
-                onSamplesLost(numSamplesLost, lastSample, sample);
+                sessionPacketRecord.numLost += numSamplesLost;
+                streamPacketRecord.numLost += numSamplesLost;
+                currentRecord.numLost += numSamplesLost;
+
+                // print the packet loss event
+                println("WARNING: Lost " + numSamplesLost + " Samples Between " +  (int)lastSample[sampleIndexChannel] + "-" + (int)sample[sampleIndexChannel]);
             }
 
             lastSample = sample;
         }
+
+        packetRecords.push(currentRecord);
     }
 
     private void incrementLastSampleIndexLocation() {
@@ -108,15 +151,6 @@ class PacketLossTracker {
         // make sure to loop around if we reach the end of the list
         lastSampleIndexLocation ++;
         lastSampleIndexLocation = lastSampleIndexLocation % sampleIndexArray.size();
-    }
-
-    private void onSamplesLost(int numLostSamples, double[] previousSample, double[] nextSample) {
-        lostSamplesSession += numLostSamples;
-        lostSamplesStream += numLostSamples;
-
-        // TODO: for now, print the packet loss event. We will need to store packet loss event data
-        // to report it in the widget.
-        println("WARNING: Lost " + numLostSamples + " Samples Between " +  (int)previousSample[sampleIndexChannel] + "-" + (int)nextSample[sampleIndexChannel]);
     }
 
     protected void reset() {
