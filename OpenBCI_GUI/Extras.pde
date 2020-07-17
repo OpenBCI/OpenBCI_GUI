@@ -209,26 +209,54 @@ class DataStatus {
     private double threshold_railed;
     public boolean is_railed_warn;
     private double threshold_railed_warn;
+    private double percentage;
+    public String notificationString;
 
-    DataStatus(int thresh_railed, int thresh_railed_warn) {
-        // convert int24 value to uV
+    DataStatus(double thresh_railed, double thresh_railed_warn) {
+        notificationString = "";
         is_railed = false;
-        // convert thresholds to uV
         threshold_railed = thresh_railed;
         is_railed_warn = false;
         threshold_railed_warn = thresh_railed_warn;
+        percentage = 0.0;
     }
-    public void update(float data_value, int channel) {
+    // here data is a full range for 20sec of data and doesnt take in account window size
+    public void update(float[] data, int channel) {
+        percentage = 0.0;
         is_railed = false;
         is_railed_warn = false;
+
+        if (data.length < 1) {
+            return;
+        }
+
         if (currentBoard instanceof ADS1299SettingsBoard) {
             double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
-            if (abs(data_value) >= threshold_railed * scaler) {
+            double maxVal = scaler * pow (2, 23);
+
+            // [todo] it should be done somewhere in data processing once
+            // instead copypasting this logic in all widgets and here
+            int numSeconds = 3; // temp hardcode
+            int nPoints = numSeconds * currentBoard.getSampleRate();
+            int endPos = data.length;
+            int startPos = Math.max(0, endPos - nPoints);
+
+            float max = Math.abs(data[startPos]);
+            for (int i = startPos; i < endPos; i++) {
+                if (Math.abs(data[i]) > max) {
+                    max = Math.abs(data[i]);
+                }
+            }
+            percentage = (max / maxVal) * 100.0;
+
+            if (percentage > threshold_railed) {
                 is_railed = true;
             }
-            if (abs(data_value) >= threshold_railed_warn * scaler) {
+            if (percentage > threshold_railed_warn) {
                 is_railed_warn = true;
             }
+
+            notificationString = "RAILED " + String.format("%1$,.2f", percentage) + "% ";
         }
     }
 };
