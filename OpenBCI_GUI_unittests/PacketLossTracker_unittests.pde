@@ -259,6 +259,8 @@ public static class PacketLossTracker_UnitTests{
         packetLossTracker.addSamples(input3);
         currentApplet.delay(50);
 
+        packetLossTracker.freezeQueue_UNITTEST(true);
+
         List<PacketRecord> allRecords = packetLossTracker.getAllPacketRecordsForLast(500);
         PacketRecord completecumulativeRecord = packetLossTracker.getCumulativePacketRecordForLast(500);
 
@@ -275,7 +277,7 @@ public static class PacketLossTracker_UnitTests{
         Assert.assertEquals(12, completecumulativeRecord.numReceived);
         Assert.assertEquals(14, completecumulativeRecord.numLost);
 
-        Assert.assertArrayEquals(partialRecords.toArray(), allRecords.subList(0, 2).toArray());
+        Assert.assertArrayEquals(allRecords.subList(0, 2).toArray(), partialRecords.toArray());
 
         Assert.assertEquals(8, partialCumulativeRecord.numReceived);
         Assert.assertEquals(14, partialCumulativeRecord.numLost);

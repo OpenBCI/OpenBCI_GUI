@@ -2,6 +2,7 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 public class TimeTrackingQueue<T> extends Thread {
+    private boolean freeze = false;
     private int maxTimeMillis;
     private LinkedList<Integer> timeList = new LinkedList<Integer>();
     private LinkedList<T> objectList = new LinkedList<T>();
@@ -26,7 +27,7 @@ public class TimeTrackingQueue<T> extends Thread {
 
     // if we have an item to expire, remove it
     private synchronized boolean expireLast() {
-        if (!timeList.isEmpty() && timeList.peekLast() + maxTimeMillis < millis()) {
+        if (!freeze && !timeList.isEmpty() && timeList.peekLast() + maxTimeMillis < millis()) {
             timeList.removeLast();
             objectList.removeLast();
             return true;
@@ -59,5 +60,9 @@ public class TimeTrackingQueue<T> extends Thread {
 
         // sublist excludes the last index so we need to add 1 to be accurate
         return objectList.subList(0, endIndex + 1);
+    }
+
+    public void setFreeze_UNITTEST(boolean shouldFreeze) {
+        freeze = shouldFreeze;
     }
 }

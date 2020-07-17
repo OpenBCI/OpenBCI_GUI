@@ -156,6 +156,10 @@ class PacketLossTracker {
     protected void reset() {
         lastSample = null;
     }
+
+    public void freezeQueue_UNITTEST(boolean shouldFreeze) {
+        packetRecords.setFreeze(shouldFreeze);
+    }
 }
 
 // sample index range 1-255, odd numbers only (skips evens)

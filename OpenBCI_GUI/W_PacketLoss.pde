@@ -69,7 +69,7 @@ class W_PacketLoss extends Widget {
         text(nfc(lastMillisPacketRecord.numLost), x+colOffset[3]+pad, y+rowOffset[1]-pad);
         text(nfc(lastMillisPacketRecord.numReceived), x+colOffset[3]+pad, y+rowOffset[2]-pad);
         text(nfc(lastMillisPacketRecord.getNumExpected()), x+colOffset[3]+pad, y+rowOffset[3]-pad);
-        text(nf(lastMillisPacketRecord.getLostPercent(), 0, 4 /*decimals*/), x+colOffset[2]+pad, y+rowOffset[4]-pad);
+        text(nf(lastMillisPacketRecord.getLostPercent(), 0, 4 /*decimals*/), x+colOffset[3]+pad, y+rowOffset[4]-pad);
 
         popStyle();
 
