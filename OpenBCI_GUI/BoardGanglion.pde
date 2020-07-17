@@ -119,8 +119,8 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
         isGettingAccel = active;
 
         if (packetLossTrackerGanglion != null) {
-            // tell the packet loss tracket, because the sample indices change based
-            // on wether accel is active or not
+            // notify the packet loss tracker, because the sample indices change based
+            // on whether accel is active or not
             packetLossTrackerGanglion.setAccelerometerActive(active);
         }
     }

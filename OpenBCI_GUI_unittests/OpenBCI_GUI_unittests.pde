@@ -16,7 +16,8 @@ final String failFileName = "UNITTEST_FAILURE";
         PacketLossTracker_UnitTests.class,
         PacketLossTrackerCytonSerialDaisy_UnitTests.class, 
         PacketLossTrackerCytonWifiDaisy_UnitTests.class,  
-        PacketLossTrackerGanglion_UnitTests.class, })
+        PacketLossTrackerGanglion_UnitTests.class,  
+        TimeTrackingQueue_UnitTests.class, })
 public class AllTests {};
 
 void setup() {
