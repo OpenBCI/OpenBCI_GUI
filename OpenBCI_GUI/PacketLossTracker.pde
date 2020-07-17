@@ -158,7 +158,7 @@ class PacketLossTracker {
     }
 
     public void freezeQueue_UNITTEST(boolean shouldFreeze) {
-        packetRecords.setFreeze(shouldFreeze);
+        packetRecords.setFreeze_UNITTEST(shouldFreeze);
     }
 }
 

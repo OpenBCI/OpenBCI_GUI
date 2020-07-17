@@ -20,8 +20,8 @@ public static class TimeTrackingQueue_UnitTests{
             currentApplet.delay(100);
             timeTrackingQueue.push(true);
         }
-        
-        timeTrackingQueue.setFreeze(true);
+
+        timeTrackingQueue.setFreeze_UNITTEST(true);
 
         // make sure it only has 1 second worth of data
         Assert.assertEquals(10, timeTrackingQueue.size());
@@ -40,7 +40,7 @@ public static class TimeTrackingQueue_UnitTests{
             timeTrackingQueue.push(true);
         }
 
-        timeTrackingQueue.setFreeze(true);
+        timeTrackingQueue.setFreeze_UNITTEST(true);
 
         // make sure it only has 1 second worth of data
         Assert.assertEquals(60, timeTrackingQueue.size());
@@ -91,7 +91,7 @@ public static class TimeTrackingQueue_UnitTests{
             timeTrackingQueue.push(true);
             timeTrackingQueue.push(true);
         }
-        timeTrackingQueue.setFreeze(true);
+        timeTrackingQueue.setFreeze_UNITTEST(true);
 
         // 500ms of data
         List<Boolean> halfSecData = timeTrackingQueue.getLastData(500);
