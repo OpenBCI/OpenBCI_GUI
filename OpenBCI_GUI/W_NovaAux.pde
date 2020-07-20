@@ -175,6 +175,12 @@ class AuxReadBar{
 
         auxValuesPosition = auxChanNum;
 
+        // todo add check that current board implements these interfaces before casting
+        // otherwise should throw and exception and maybe popup message
+        edaBoard = (EDACapableBoard) currentBoard;
+        ppgBoard = (PPGCapableBoard) currentBoard;
+        batteryBoard = (BatteryInfoCapableBoard) currentBoard;
+
         if (auxChanNum == 1 || auxChanNum == 2) {
             auxChanLabel = "PPG_" + auxChanNum; 
         } else if (auxChanNum == 3) {
@@ -232,11 +238,7 @@ class AuxReadBar{
         analogPin.alignH = CENTER;
 
         drawAnalogValue = true;
-        // todo add check that current board implements these interfaces before casting
-        // otherwise should throw and exception and maybe popup message
-        edaBoard = (EDACapableBoard) currentBoard;
-        ppgBoard = (PPGCapableBoard) currentBoard;
-        batteryBoard = (BatteryInfoCapableBoard) currentBoard;
+        
     }
 
     void initArrays() {
