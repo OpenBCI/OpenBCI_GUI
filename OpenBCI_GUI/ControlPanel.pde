@@ -860,14 +860,10 @@ class ControlPanel {
             if (selectedProtocol == BoardProtocol.SERIAL) {
                 if (rcBox.isShowing) {
                     hideRadioPopoutBox();
-                    serialBox.autoConnect.setIgnoreHover(false);
-                    serialBox.autoConnect.setColorNotPressed(255);
                 } else {
                     rcBox.isShowing = true;
                     rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("Manual <");
-                    serialBox.autoConnect.setIgnoreHover(true);
-                    serialBox.autoConnect.setColorNotPressed(140);
                 }
             }
         }

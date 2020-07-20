@@ -15,10 +15,10 @@ class PacketRecord {
 
     public float getLostPercent() {
         if(getNumExpected() == 0) {
-            return 0;
+            return 0.f;
         }
 
-        return numLost * 100 / getNumExpected();
+        return numLost * 100.f / getNumExpected();
     }
 
     public void appendAll(List<PacketRecord> toAppend) {

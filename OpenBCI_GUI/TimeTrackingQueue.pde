@@ -1,8 +1,6 @@
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-// For unit testing, we can pass a unique implementation of TTQTimeProvider
-// that controls time
 interface TTQTimeProvider {
     public int getMS();
 }
@@ -13,6 +11,8 @@ class RealTimeProvider implements TTQTimeProvider {
     }
 }
 
+// For unit testing, we can pass this mock TTQTimeProvider
+// that controls time
 class FakeTimeProvider implements TTQTimeProvider {
     private int ms = 0;
 
@@ -88,6 +88,11 @@ public class TimeTrackingQueue<T> extends Thread {
         }
 
         // sublist excludes the last index so we need to add 1 to be accurate
-        return objectList.subList(0, endIndex + 1);
+        List<T> data = objectList.subList(0, endIndex + 1);
+        // return a copy of the sublist, because this list can be modified on a separate thread
+        return new ArrayList<T>(data);
+
+
+        
     }
 }
