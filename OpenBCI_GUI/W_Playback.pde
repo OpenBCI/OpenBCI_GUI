@@ -46,7 +46,7 @@ class W_playback extends Widget {
         //make a MenuList
         int initialWidth = w - padding*2;
         cp5_playback = new ControlP5(pApplet);
-        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p4);
+        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p3);
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(initialWidth, h - padding*2);
         playbackMenuList.scrollerLength = 40;
