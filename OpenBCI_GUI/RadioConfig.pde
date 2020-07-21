@@ -152,6 +152,38 @@ class RadioConfig {
         closeSerialPort();
     }
 
+    public boolean get_channel(){
+        println("Cyton AutoConnect Button: get_channel");
+        if(serial_direct_board == null){
+            if(!connect_to_portName()){
+                return false;
+            }
+        }
+        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        if(serial_direct_board != null){
+            serial_direct_board.write(0xF0);
+            serial_direct_board.write(0x00);
+            delay(50);
+            if(!print_bytes()){
+                closeSerialPort();
+                return false;
+            } else {
+                String[] s = split(rcStringReceived, ':');
+                closeSerialPort();
+                if (s[0].equals("Success")) {
+                    outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                    return true;
+                } else {
+                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    return false;
+                }
+            }
+        } else {
+            println("Error, no board connected");
+            return false;
+        }
+    }
+
     //============== SET CHANNEL ===============
     //= Sets the radio and board channel.
     //=
