@@ -259,7 +259,8 @@ boolean playbackFileSelected (String longName, String shortName) {
             if (!line.startsWith("%Board")) {
                 playbackData_fname = "N/A";
                 playbackData_ShortName = "N/A";
-                outputError("Found GUI v4 or earlier file. Please convert this file using provided Python script.");
+                outputError("Found GUI v4 or earlier file. Please convert this file using the provided Python script.");
+                PopupMessage msg = new PopupMessage("GUI v5 File Converter", "Found GUI v4 or earlier file. Please convert this file using the provided Python script. Press the button below to access this open-source fix.", "LINK", "https://github.com/OpenBCI/OpenBCI_GUI/tree/development/tools");
                 return false;
             }    
         } else if (line.equals("%STOP AT")) {
