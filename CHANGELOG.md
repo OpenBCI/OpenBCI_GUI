@@ -4,6 +4,7 @@
 * Use BrainFlow Java Binding to handle data acquisition (no need to run the Hub!)
 * Speed up entire GUI by plotting data more efficiently
 * Updated OpenBCI Data Format (CSV) Files, with more detailed information and data
+* Popup with link to GUI v4 file coverter script
 * Improved Playback Mode and Time Series
 * Refactored GUI data flow
 * Add Travis and Appveyor CI tests and builds for all OS

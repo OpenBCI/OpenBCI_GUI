@@ -16,6 +16,8 @@ class PopupMessage extends PApplet implements Runnable {
 
     private String message = "Empty Popup";
     private String headerMessage = "Error";
+    private String buttonMessage = "OK";
+    private String buttonLink = null;
 
     private color headerColor = openbciBlue;
     private color buttonColor = openbciBlue;
@@ -27,6 +29,18 @@ class PopupMessage extends PApplet implements Runnable {
 
         headerMessage = header;
         message = msg;
+
+        Thread t = new Thread(this);
+        t.start();        
+    }
+
+    public PopupMessage(String header, String msg, String btnMsg, String btnLink) {
+        super();
+
+        headerMessage = header;
+        message = msg;
+        buttonMessage = btnMsg;
+        buttonLink = btnLink;
 
         Thread t = new Thread(this);
         t.start();        
@@ -50,18 +64,18 @@ class PopupMessage extends PApplet implements Runnable {
 
         cp5 = new ControlP5(this);
 
-        cp5.addButton("onOkButtonPressed")
+        cp5.addButton("onButtonPressed")
             .setPosition(width/2 - buttonWidth/2, height - buttonHeight - padding)
             .setSize(buttonWidth, buttonHeight)
             .setColorLabel(color(255))
             .setColorForeground(buttonColor)
             .setColorBackground(buttonColor);
-        cp5.getController("onOkButtonPressed")
+        cp5.getController("onButtonPressed")
             .getCaptionLabel()
             .setFont(createFont("Arial",20,true))
             .toUpperCase(false)
             .setSize(20)
-            .setText("OK");
+            .setText(buttonMessage);
     }
 
     @Override
@@ -114,7 +128,10 @@ class PopupMessage extends PApplet implements Runnable {
         dispose();
     }
 
-    public void onOkButtonPressed() {
+    public void onButtonPressed() {
+        if (buttonLink != null) {
+            link(buttonLink);
+        }
         noLoop();
         Frame frame = ( (SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
         frame.dispose();
