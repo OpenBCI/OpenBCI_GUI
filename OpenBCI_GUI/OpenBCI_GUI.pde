@@ -500,7 +500,7 @@ void initSystem() {
             }
             break;
         case DATASOURCE_SYNTHETIC:
-            currentBoard = new BoardSynthetic();
+            currentBoard = new BoardBrainFlowSynthetic(nchan);
             break;
         case DATASOURCE_PLAYBACKFILE:
             if (!playbackData_fname.equals("N/A")) {

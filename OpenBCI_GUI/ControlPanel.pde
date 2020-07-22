@@ -294,7 +294,6 @@ class ControlPanel {
     PlaybackFileBox playbackFileBox;
     NovaXRBox novaXRBox;
     StreamingBoardBox streamingBoardBox;
-    SDConverterBox sdConverterBox;
     BLEBox bleBox;
     SessionDataBox dataLogBoxGanglion;
     WifiBox wifiBox;
