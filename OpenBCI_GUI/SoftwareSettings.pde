@@ -581,7 +581,11 @@ class SoftwareSettings {
         ///ADD more global settings above this line in the same formats as above/////////
 
         //Let's save the JSON array to a file!
-        saveJSONObject(saveSettingsJSONData, saveGUISettingsFileLocation);
+        try {
+            saveJSONObject(saveSettingsJSONData, saveGUISettingsFileLocation);
+        } catch (RuntimeException e ) {
+            e.printStackTrace();
+        }
 
     }  //End of Save GUI Settings function
 
