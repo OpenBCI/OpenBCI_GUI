@@ -61,8 +61,8 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-beta.0";
-String localGUIVersionDate = "June 2020";
+String localGUIVersionString = "v5.0.0-beta.2";
+String localGUIVersionDate = "July 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -241,6 +241,9 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
+    //LINUX GFX FIX #816
+    System.setProperty("jogl.disable.openglcore", "false");
+
     // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
     // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {
@@ -333,7 +336,6 @@ void delayedSetup() {
     frame.addComponentListener(new ComponentAdapter() {
         public void componentResized(ComponentEvent e) {
             if (e.getSource()==frame) {
-                println("OpenBCI_GUI: setup: RESIZED");
                 settings.screenHasBeenResized = true;
                 settings.timeOfLastScreenResize = millis();
                 // initializeGUI();
@@ -444,30 +446,13 @@ synchronized void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-/**
-  * This allows us to kill the running node process on quit.
-  */
 private void prepareExitHandler () {
+    // This callback will run when the GUI quits
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         public void run () {
             System.out.println("SHUTDOWN HOOK");
-            //If user starts system and quits the app,
-            //save user settings for current mode!
-            try {
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    settings.save(settings.getPath("User", eegDataSource, nchan));
-                }
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-            //Close network streams
-            if (w_networking != null && w_networking.getNetworkActive()) {
-                w_networking.stopNetwork();
-                println("openBCI_GUI: shutDown: Network streams stopped");
-            }
-
-            // finalize any playback files
-            dataLogger.onShutDown();
+            
+            haltSystem();
         }
     }
     ));
@@ -526,7 +511,7 @@ void initSystem() {
                 }
                 else {
                     // no code path to it
-                    println("Nor playback nor sd file selected.");
+                    println("No playback or SD file selected.");
                 }
             }
             break;
@@ -608,18 +593,11 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-    //DISABLE SOFTWARE SETTINGS FOR NOVAXR
-    if (eegDataSource != DATASOURCE_NOVAXR) {
-        if (!abandonInit) {
-            //Init software settings: create default settings files, load user settings, etc.
-            settings.init();
-            settings.initCheckPointFive();
-        } else {
-            haltSystem();
-            outputError("Failed to connect. Check that the device is powered on and in range.");
-            controlPanel.open();
-            systemMode = SYSTEMMODE_PREINIT; // leave this here
-        }
+    
+    if (eegDataSource != DATASOURCE_NOVAXR) { //don't save default settings for NovaXR
+        //Init software settings: create default settings file that is datasource unique
+        settings.init();
+        settings.initCheckPointFive();
     }
 
     midInit = false;
@@ -751,8 +729,6 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-        settings.settingsLoaded = false; //on halt, reset this value
-
         //reset connect loadStrings
         openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
         ganglion_portName = "";
@@ -801,12 +777,9 @@ void systemUpdate() { // for updating data values and variables
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
         processNewData();
-
-        // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
-
+        
         //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
-            println("OpenBCI_GUI: setup: RESIZED");
             settings.screenHasBeenResized = true;
             settings.timeOfLastScreenResize = millis();
             settings.widthOfLastScreen = width;
@@ -819,11 +792,6 @@ void systemUpdate() { // for updating data values and variables
             imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
-        }
-        if (settings.screenHasBeenResized == true && (millis() - settings.timeOfLastScreenResize) > settings.reinitializeGUIdelay) {
-            settings.screenHasBeenResized = false;
-            println("systemUpdate: reinitializing GUI");
-            settings.timeOfGUIreinitialize = millis();
         }
 
         if (wm.isWMInitialized) {
@@ -869,22 +837,7 @@ void systemDraw() { //for drawing to the screen
             break;
         }
 
-        //wait 1 second for GUI to reinitialize
-        if ((millis() - settings.timeOfGUIreinitialize) > settings.reinitializeGUIdelay) {
-            // println("attempting to draw GUI...");
-            try {
-                // println("GUI DRAW!!! " + millis());
-                //draw GUI widgets (visible/invisible) using widget manager
-                wm.draw();
-            } catch (Exception e) {
-                println(e.getMessage());
-                settings.reinitializeGUIdelay = settings.reinitializeGUIdelay * 2;
-                println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + settings.reinitializeGUIdelay);
-            }
-        } else {
-            //reinitializing GUI after resize
-            println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
-        }
+        wm.draw();
 
         drawContainers();
     } else { //systemMode != 10

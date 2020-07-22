@@ -224,7 +224,6 @@ class Widget{
 
     private void resizeWidgetSelector() {
         int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
-        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
         widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
         if (wm != null) {
             int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);

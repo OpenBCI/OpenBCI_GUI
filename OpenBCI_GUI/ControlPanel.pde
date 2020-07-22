@@ -84,7 +84,6 @@ Button_obci sampleDataButton; // Used to easily find GUI sample data for Playbac
 Button_obci chanButton8;
 Button_obci chanButton16;
 Button_obci selectPlaybackFile;
-Button_obci selectSDFile;
 Button_obci popOutRadioConfigButton;
 
 //Radio Button_obci Definitions
@@ -215,8 +214,9 @@ public void controlEvent(ControlEvent theEvent) {
         //println("got a menu event from item " + s);
         String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
         if (new File(filePath).isFile()) {
-            playbackFileSelected(filePath, s);
+            playbackFileFromList(filePath, s);
         } else {
+            verbosePrint("Playback History: " + filePath);
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
     }
@@ -348,8 +348,7 @@ class ControlPanel {
         //boxes active when eegDataSource = Playback
         int playbackWidth = int(w * 1.35);
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
-        sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
-        recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
+        recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
         novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
 
@@ -417,7 +416,6 @@ class ControlPanel {
         //update playback box sizes when dropdown is selected
         recentPlaybackBox.update();
         playbackFileBox.update();
-        sdConverterBox.update();
 
         novaXRBox.update();
         streamingBoardBox.update();
@@ -507,7 +505,6 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
-                sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
                 comPortBox.serialList.setVisible(false);
@@ -776,10 +773,6 @@ class ControlPanel {
                 if (selectPlaybackFile.isMouseHere()) {
                     selectPlaybackFile.setIsActive(true);
                     selectPlaybackFile.wasPressed = true;
-                }
-                if (selectSDFile.isMouseHere()) {
-                    selectSDFile.setIsActive(true);
-                    selectSDFile.wasPressed = true;
                 }
                 if (sampleDataButton.isMouseHere()) {
                     sampleDataButton.setIsActive(true);
@@ -1073,11 +1066,6 @@ class ControlPanel {
                         new File(settings.guiDataPath + "Recordings"));
         }
 
-        if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("Select an SD file to playback");
-            selectInput("Select an SD file to playback:", "sdFileSelected");
-        }
-
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
@@ -1140,8 +1128,6 @@ class ControlPanel {
         chanButton16.wasPressed  = false;
         selectPlaybackFile.setIsActive(false);
         selectPlaybackFile.wasPressed = false;
-        selectSDFile.setIsActive(false);
-        selectSDFile.wasPressed = false;
         sampleDataButton.setIsActive(false);
         sampleDataButton.wasPressed = false;
     }
@@ -1242,8 +1228,6 @@ class DataSourceBox {
     int boxHeight = 24;
     int spacing = 43;
 
-    CheckBox sourceCheckBox;
-
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
         if (novaXREnabled) numItems = 5;
         x = _x;
@@ -1252,7 +1236,7 @@ class DataSourceBox {
         h = spacing + (numItems * boxHeight);
         padding = _padding;
 
-        sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p4);
+        sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p3);
         // sourceList.itemHeight = 28;
         // sourceList.padding = 9;
         sourceList.setPosition(x + padding, y + padding*2 + 13);
@@ -1342,7 +1326,7 @@ class ComPortBox {
         cytonRadioCfg = new RadioConfig();
 
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p4);
+        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p3);
         serialList.setPosition(x + padding, y + padding*3 + 8);
     }
 
@@ -1369,10 +1353,16 @@ class ComPortBox {
         LinkedList<String> comPorts = getCytonComPorts();
         if (!comPorts.isEmpty()) {
             openBCI_portName = comPorts.getFirst();
-            if (cytonRadioCfg.system_status()) {
+            if (cytonRadioCfg.get_channel()) {
                 initButtonPressed();
                 buttonHelpText.setVisible(false);
             }
+            else {                
+                outputWarn("Found a Cyton dongle, but could not connect to the board.");
+            }
+        }
+        else {
+            outputWarn("No Cyton dongles were found.");
         }
     }
 
@@ -1397,16 +1387,18 @@ class ComPortBox {
     }
 
     private LinkedList<String> getCytonComPorts() {
-        final String name = "FT231X USB UART";
+        final String[] names = {"FT231X USB UART", "VCP0"};
         final SerialPort[] comPorts = SerialPort.getCommPorts();
         LinkedList<String> results = new LinkedList<String>();
-        for (int i = 0; i < comPorts.length; i++) {
-            if (comPorts[i].toString().equals(name)) {
-                String found = "";
-                if (isMac() || isLinux()) found += "/dev/";
-                found += comPorts[i].getSystemPortName().toString();
-                println("ControlPanel: Found Cyton Dongle on COM port: " + found);
-                results.add(found);
+        for (SerialPort comPort : comPorts) {
+            for (String name : names) {
+                if (comPort.toString().equals(name)) {
+                    String found = "";
+                    if (isMac() || isLinux()) found += "/dev/";
+                    found += comPort.getSystemPortName();
+                    println("ControlPanel: Found Cyton Dongle on COM port: " + found);
+                    results.add(found);
+                }
             }
         }
 
@@ -1417,7 +1409,7 @@ class ComPortBox {
 
 class BLEBox {
     private int x, y, w, h, padding; //size and position
-    private boolean bleIsRefreshing = false;
+    private volatile boolean bleIsRefreshing = false;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1426,7 +1418,7 @@ class BLEBox {
         h = 140 + _padding;
         padding = _padding;
         refreshBLE = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p4);
+        bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p3);
         bleList.setPosition(x + padding, y + padding*3 + 8);
     }
 
@@ -1465,6 +1457,10 @@ class BLEBox {
     }
 
     private void refreshGanglionBLEList() {
+        if (bleIsRefreshing) {
+            output("BLE Devices Refreshing in progress");
+            return;
+        }
         output("BLE Devices Refreshing");
         bleList.items.clear();
         
@@ -1529,7 +1525,7 @@ class WifiBox {
         wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
 
         refreshWifi = new Button_obci (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p4);
+        wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p3);
 
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
         // Call to update the list
@@ -2070,17 +2066,19 @@ class SyntheticChannelCountBox {
 };
 
 class RecentPlaybackBox {
-    int x, y, w, h, padding; //size and position
-    StringList shortFileNames = new StringList();
-    StringList longFilePaths = new StringList();
+    private int x, y, w, h, padding; //size and position
+    private StringList shortFileNames = new StringList();
+    private StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
-    ControlP5 cp5_recentPlayback_dropdown;
+    private ControlP5 cp5_recentPlayback_dropdown;
+    private int titleH = 14;
+    private int buttonH = 24;
 
     RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 67;
+        h = titleH + buttonH + _padding*3;
         padding = _padding;
 
         cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
@@ -2091,7 +2089,7 @@ class RecentPlaybackBox {
         createDropdown("recentFiles", Arrays.asList(temp));
         cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
+        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
     }
 
     /////*Update occurs while control panel is open*/////
@@ -2102,7 +2100,7 @@ class RecentPlaybackBox {
             getRecentPlaybackFiles();
             String[] temp = shortFileNames.array();
             cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
+            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
         }
     }
 
@@ -2119,7 +2117,7 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2);
+        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2.5);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
@@ -2440,18 +2438,20 @@ class StreamingBoardBox {
 };
 
 class PlaybackFileBox {
-    int x, y, w, h, padding; //size and position
-    int sampleDataButton_w = 100;
-    int sampleDataButton_h = 20;
+    private int x, y, w, h, padding; //size and position
+    private int sampleDataButton_w = 100;
+    private int sampleDataButton_h = 20;
+    private int titleH = 14;
+    private int buttonH = 24;
 
     PlaybackFileBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 67;
+        h = buttonH + (_padding * 3) + titleH;
         padding = _padding;
 
-        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
         selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     
         // Sample data button
@@ -2579,25 +2579,28 @@ class RadioConfigBox {
     private String last_message = initial_message;
     public boolean isShowing;
     private RadioConfig cytonRadioCfg;
-    private int linuxPadding = isLinux() ? -5 : 0;
+    private int headerH = 15;
+    private int autoscanH = 45;
+    private int buttonH = 24;
+    private int statusWindowH = 115;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
         y = _y;
         w = _w + 10;
-        h = 275; //255 + 20 for larger autoscan button
+        h = (_padding*6) + headerH + (buttonH*2) + autoscanH + statusWindowH;
         padding = _padding;
         isShowing = false;
         cytonRadioCfg = new RadioConfig();
 
         //typical button height + 20 for larger autoscan button, full box width minus padding
-        autoscan = new Button_obci(x + padding, y + padding + 18, w-(padding*2), 24 + 20, "AUTOSCAN", fontInfo.buttonLabel_size);
+        autoscan = new Button_obci(x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH, "AUTOSCAN", fontInfo.buttonLabel_size);
         //smaller buttons below autoscan - left column
-        systemStatus = new Button_obci(x + padding, y + padding*2 + 18 + 44, (w-padding*4)/2, 24, "STATUS", fontInfo.buttonLabel_size);
-        getChannel = new Button_obci(x + padding, y + padding*3 + 18 + 24 + 44, (w-padding*4)/2, 24, "GET CHANNEL", fontInfo.buttonLabel_size);
+        systemStatus = new Button_obci(x + padding, y + padding*3 + headerH + autoscanH, (w-padding*4)/2, buttonH, "STATUS", fontInfo.buttonLabel_size);
+        getChannel = new Button_obci(x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*4)/2, buttonH, "GET CHANNEL", fontInfo.buttonLabel_size);
         //right column
-        setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*2 + 18 + 44, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + 18 + 24 + 44, (w-padding*3)/2, 24, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
+        setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + headerH + autoscanH, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
+        ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
         
 
         //Set help text
@@ -2618,7 +2621,7 @@ class RadioConfigBox {
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("RADIO CONFIGURATION", x + padding, y + padding + linuxPadding);
+        text("RADIO CONFIGURATION", x + padding, y + padding);
         popStyle();
         getChannel.draw();
         setChannel.draw();
@@ -2630,12 +2633,14 @@ class RadioConfigBox {
     }
 
     public void print_onscreen(String localstring){
+        pushStyle();
         textAlign(LEFT);
         fill(bgColor);
-        rect(x + padding, y + (padding*7) + 33 + (24*2), w-(padding*2), 135 - 21); //13 + 20 = 33 for larger autoscan
+        rect(x + padding, y + padding*5 + headerH + buttonH*2 + autoscanH, w-(padding*2), statusWindowH);
         fill(255);
         textFont(h3, 15);
-        text(localstring, x + padding + 5, y + (padding*7) + 5 + (24*2) + 35, (w-padding*3 ), 135 - 24 -15); //15 + 20 = 35
+        text(localstring, x + padding + 5, y + padding*6 + headerH + buttonH*2 + autoscanH, w - padding*3, statusWindowH - padding);
+        popStyle();
         this.last_message = localstring;
     }
 
@@ -2665,39 +2670,6 @@ class RadioConfigBox {
     }
 };
 
-class SDConverterBox {
-    int x, y, w, h, padding; //size and position
-
-    SDConverterBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 67;
-        padding = _padding;
-
-        selectSDFile = new Button_obci (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT SD FILE", fontInfo.buttonLabel_size);
-        selectSDFile.setHelpText("Click here to select an SD file generated by Cyton or Cyton+Daisy and convert to plain text format.");
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("SELECT SD FILE FOR PLAYBACK", x + padding, y + padding);
-        popStyle();
-
-        selectSDFile.draw();
-    }
-};
-
 class ChannelPopup {
     int x, y, w, h, padding; //size and position
     boolean clicked;
@@ -2711,7 +2683,7 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p4);
+        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p3);
         channelList.setPosition(x+padding, y+padding*3);
 
         for (int i = 1; i < 26; i++) {
@@ -2752,7 +2724,7 @@ class PollPopup {
         padding = _padding;
         clicked = false;
 
-        pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p4);
+        pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p3);
         pollList.setPosition(x+padding, y+padding*3);
 
         for (int i = 0; i < 256; i++) {
@@ -2860,7 +2832,7 @@ public class MenuList extends controlP5.Controller {
     boolean updateMenu;
     int hoverItem = -1;
     int activeItem = -1;
-    PFont menuFont = p4;
+    PFont menuFont;
     int padding = 7;
 
     MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
@@ -2871,9 +2843,7 @@ public class MenuList extends controlP5.Controller {
         final ControlP5 cc = c; //allows check for isLocked() below
         final String _theName = theName;
 
-        menuFont = p4;
-        getValueLabel().setSize(14);
-        getCaptionLabel().setSize(14);
+        menuFont = theFont;
 
         setView(new ControllerView<MenuList>() {
 
