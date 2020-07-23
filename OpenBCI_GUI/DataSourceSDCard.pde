@@ -284,14 +284,3 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     }
 
 }
-
-
-void sdFileSelected(File selection) {
-    if (selection == null) {
-        println("Window was closed or the user hit cancel.");
-    } else {
-        println("User selected " + selection.getAbsolutePath());
-        playbackData_fname = "N/A"; // to create instance of DataSourceSDCard
-        sdData_fname = selection.getAbsolutePath();
-    }
-}

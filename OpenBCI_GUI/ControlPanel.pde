@@ -84,7 +84,6 @@ Button_obci sampleDataButton; // Used to easily find GUI sample data for Playbac
 Button_obci chanButton8;
 Button_obci chanButton16;
 Button_obci selectPlaybackFile;
-Button_obci selectSDFile;
 Button_obci popOutRadioConfigButton;
 
 //Radio Button_obci Definitions
@@ -213,8 +212,9 @@ public void controlEvent(ControlEvent theEvent) {
         //println("got a menu event from item " + s);
         String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
         if (new File(filePath).isFile()) {
-            playbackFileSelected(filePath, s);
+            playbackFileFromList(filePath, s);
         } else {
+            verbosePrint("Playback History: " + filePath);
             outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
         }
     }
@@ -291,7 +291,6 @@ class ControlPanel {
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
     NovaXRBox novaXRBox;
-    SDConverterBox sdConverterBox;
     BLEBox bleBox;
     SessionDataBox dataLogBoxGanglion;
     WifiBox wifiBox;
@@ -345,8 +344,7 @@ class ControlPanel {
         //boxes active when eegDataSource = Playback
         int playbackWidth = int(w * 1.35);
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
-        sdConverterBox = new SDConverterBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
-        recentPlaybackBox = new RecentPlaybackBox(x + w, (sdConverterBox.y + sdConverterBox.h), playbackWidth, h, globalPadding);
+        recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
         novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
         
@@ -412,7 +410,6 @@ class ControlPanel {
         //update playback box sizes when dropdown is selected
         recentPlaybackBox.update();
         playbackFileBox.update();
-        sdConverterBox.update();
 
         novaXRBox.update();
 
@@ -501,7 +498,6 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
-                sdConverterBox.draw();
 
                 //set other CP5 controllers invisible
                 comPortBox.serialList.setVisible(false);
@@ -768,10 +764,6 @@ class ControlPanel {
                 if (selectPlaybackFile.isMouseHere()) {
                     selectPlaybackFile.setIsActive(true);
                     selectPlaybackFile.wasPressed = true;
-                }
-                if (selectSDFile.isMouseHere()) {
-                    selectSDFile.setIsActive(true);
-                    selectSDFile.wasPressed = true;
                 }
                 if (sampleDataButton.isMouseHere()) {
                     sampleDataButton.setIsActive(true);
@@ -1057,11 +1049,6 @@ class ControlPanel {
                         new File(settings.guiDataPath + "Recordings"));
         }
 
-        if (selectSDFile.isMouseHere() && selectSDFile.wasPressed) {
-            output("Select an SD file to playback");
-            selectInput("Select an SD file to playback:", "sdFileSelected");
-        }
-
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
@@ -1123,8 +1110,6 @@ class ControlPanel {
         chanButton16.wasPressed  = false;
         selectPlaybackFile.setIsActive(false);
         selectPlaybackFile.wasPressed = false;
-        selectSDFile.setIsActive(false);
-        selectSDFile.wasPressed = false;
         sampleDataButton.setIsActive(false);
         sampleDataButton.wasPressed = false;
     }
@@ -2063,17 +2048,19 @@ class SyntheticChannelCountBox {
 };
 
 class RecentPlaybackBox {
-    int x, y, w, h, padding; //size and position
-    StringList shortFileNames = new StringList();
-    StringList longFilePaths = new StringList();
+    private int x, y, w, h, padding; //size and position
+    private StringList shortFileNames = new StringList();
+    private StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
-    ControlP5 cp5_recentPlayback_dropdown;
+    private ControlP5 cp5_recentPlayback_dropdown;
+    private int titleH = 14;
+    private int buttonH = 24;
 
     RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 67;
+        h = titleH + buttonH + _padding*3;
         padding = _padding;
 
         cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
@@ -2084,7 +2071,7 @@ class RecentPlaybackBox {
         createDropdown("recentFiles", Arrays.asList(temp));
         cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
+        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
     }
 
     /////*Update occurs while control panel is open*/////
@@ -2095,7 +2082,7 @@ class RecentPlaybackBox {
             getRecentPlaybackFiles();
             String[] temp = shortFileNames.array();
             cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * 24);
+            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
         }
     }
 
@@ -2112,7 +2099,7 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2);
+        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2.5);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
@@ -2293,18 +2280,20 @@ class NovaXRBox {
 };
 
 class PlaybackFileBox {
-    int x, y, w, h, padding; //size and position
-    int sampleDataButton_w = 100;
-    int sampleDataButton_h = 20;
+    private int x, y, w, h, padding; //size and position
+    private int sampleDataButton_w = 100;
+    private int sampleDataButton_h = 20;
+    private int titleH = 14;
+    private int buttonH = 24;
 
     PlaybackFileBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 67;
+        h = buttonH + (_padding * 3) + titleH;
         padding = _padding;
 
-        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT PLAYBACK FILE", fontInfo.buttonLabel_size);
+        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
         selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     
         // Sample data button
@@ -2520,39 +2509,6 @@ class RadioConfigBox {
     public void closeSerialPort() {
         print_onscreen("");
         cytonRadioCfg.closeSerialPort();
-    }
-};
-
-class SDConverterBox {
-    int x, y, w, h, padding; //size and position
-
-    SDConverterBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 67;
-        padding = _padding;
-
-        selectSDFile = new Button_obci (x + padding, y + padding*2 + 13, w - padding*2, 24, "SELECT SD FILE", fontInfo.buttonLabel_size);
-        selectSDFile.setHelpText("Click here to select an SD file generated by Cyton or Cyton+Daisy and convert to plain text format.");
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("SELECT SD FILE FOR PLAYBACK", x + padding, y + padding);
-        popStyle();
-
-        selectSDFile.draw();
     }
 };
 
