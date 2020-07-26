@@ -83,7 +83,11 @@ class W_Accelerometer extends Widget {
         accelModeButton.setFont(p5,12);
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
+        accelModeButton.setColorNotPressed(color(57,128,204));
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
+        if(!accelBoard.canDeactivateAccelerometer()) {
+            accelModeButton.setColorNotPressed(color(128));
+        }
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -133,14 +137,10 @@ class W_Accelerometer extends Widget {
         if (accelBoard.isAccelerometerActive()) {	
             accelModeButton.setString("Turn Accel. Off");	
             accelModeButton.setIgnoreHover(!accelBoard.canDeactivateAccelerometer());
-            if(!accelBoard.canDeactivateAccelerometer()) {
-                accelModeButton.setColorNotPressed(color(128));
-            }
         }
         else {
             accelModeButton.setString("Turn Accel. On");	
             accelModeButton.setIgnoreHover(false);
-            accelModeButton.setColorNotPressed(color(57,128,204));
         }
     }
 
@@ -204,10 +204,8 @@ class W_Accelerometer extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
-            if (accelModeButton.isMouseHere()) {
-                accelModeButton.setIsActive(true);
-            }
+        if (accelModeButton.isMouseHere()) {
+            accelModeButton.setIsActive(true);
         }
     }
 
