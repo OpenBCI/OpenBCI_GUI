@@ -143,7 +143,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         }
 
         // don't go beyond raw data array size
-        currentSample = min(currentSample, getTotalSamples());        
+        currentSample = min(currentSample, getTotalSamples());
     }
 
     @Override
