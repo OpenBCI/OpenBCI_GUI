@@ -372,10 +372,13 @@ void delayedSetup() {
 
 public void copyGUISampleData(){
     String directoryName = settings.guiDataPath + File.separator + "Sample_Data" + File.separator;
-    String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
+    String guiv4_fileToCheck = directoryName + "OpenBCI-sampleData-2-meditation.txt";
+    String guiv5_fileToCheck = directoryName + "OpenBCI_GUI-v5-meditation.txt";
     File directory = new File(directoryName);
-    File fileToCheck = new File(fileToCheckString);
-    if (!fileToCheck.exists()){
+    File fileToCheck = new File(guiv4_fileToCheck);
+
+    //Case when user opens GUI for the first time on this computer
+    if (!guiv4_fileToCheck.exists() && !guiv5_fileToCheck.exists()){
         println("OpenBCI_GUI::Setup: Copying sample data to Documents/OpenBCI_GUI/Sample_Data");
         // Make the entire directory path including parents
         directory.mkdirs();
@@ -396,7 +399,9 @@ public void copyGUISampleData(){
         } catch (IOException e) {
             outputError("Setup: Error trying to copy Sample Data to Documents directory.");
         }
-    } else {
+    } else if (guiv4_fileToCheck.exists()){
+        
+    } else if (guiv5_fileToCheck.exists()){
         println("OpenBCI_GUI::Setup: Sample Data exists in Documents folder.");
     }
 
