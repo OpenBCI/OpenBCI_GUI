@@ -1,6 +1,5 @@
 import java.awt.Frame;
 import processing.awt.PSurfaceAWT;
-import processing.awt.PSurfaceAWT.SmoothCanvas;
 
 // Instantiate this class to show a popup message
 
@@ -133,7 +132,7 @@ class PopupMessage extends PApplet implements Runnable {
             link(buttonLink);
         }
         noLoop();
-        Frame frame = ( (SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
         frame.dispose();
         exit();
     }
