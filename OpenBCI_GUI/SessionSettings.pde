@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
-//                       This sketch saves and loads the following User Settings:
+//                       This sketch saves and loads User Settings that appear during Sessions.
 //                       -- All Time Series widget settings in Live, Playback, and Synthetic modes
 //                       -- All FFT widget settings
 //                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
@@ -35,9 +35,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////
-//   SoftwareSettings Class    //
+//   SessionSettings Class    //
 /////////////////////////////////
-class SoftwareSettings {
+class SessionSettings {
     //Current version to save to JSON
     String settingsVersion = "3.0.0";
     //impose minimum gui width and height in openBCI_GUI.pde
@@ -290,7 +290,7 @@ class SoftwareSettings {
     Boolean loadErrorCytonEvent = false;
     final int initTimeoutThreshold = 12000; //Timeout threshold in milliseconds
 
-    SoftwareSettings() {
+    SessionSettings() {
         //Instantiated on app start in OpenBCI_GUI.pde
         dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
         dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
@@ -546,7 +546,7 @@ class SoftwareSettings {
                 //println("widget"+i+" is not active");
             }
         }
-        println("SoftwareSettings: " + numActiveWidgets + " active widgets saved!");
+        println("SessionSettings: " + numActiveWidgets + " active widgets saved!");
         //Print what widgets are in the containers used by current layout for only the number of active widgets
         //for (int i = 0; i < numActiveWidgets; i++) {
             //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
@@ -1121,7 +1121,7 @@ class SoftwareSettings {
                 if (f.delete()) {
                     outputError("Found old/broken GUI settings. Please reconfigure the GUI and save new settings.");
                 } else {
-                    outputError("SoftwareSettings: Error deleting old/broken settings file...");
+                    outputError("SessionSettings: Error deleting old/broken settings file...");
                 }
             }
         }
@@ -1162,15 +1162,14 @@ class SoftwareSettings {
             File f = new File(defaultSettingsFileToLoad);
             if (f.exists()) {
                 if (f.delete()) {
-                    println("SoftwareSettings: Old/Broken Default Settings file succesfully deleted.");
+                    println("SessionSettings: Old/Broken Default Settings file succesfully deleted.");
                 } else {
-                    println("SoftwareSettings: Error deleting Default Settings file...");
+                    println("SessionSettings: Error deleting Default Settings file...");
                 }
             }
         }
     }
 
-    
 } //end of Software Settings class
 
 void imposeMinimumGUIDimensions() {
@@ -1190,9 +1189,9 @@ void imposeMinimumGUIDimensions() {
 // Select file to save custom settings using dropdown in TopNav.pde
 void saveConfigFile(File selection) {
     if (selection == null) {
-        println("SoftwareSettings: saveConfigFile: Window was closed or the user hit cancel.");
+        println("SessionSettings: saveConfigFile: Window was closed or the user hit cancel.");
     } else {
-        println("SoftwareSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
+        println("SessionSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
         settings.saveDialogName = selection.getAbsolutePath();
         settings.save(settings.saveDialogName); //save current settings to JSON file in SavedData
         outputSuccess("Settings Saved! The GUI will now load with these settings. Click \"Default\" to revert to factory settings."); //print success message to screen
@@ -1202,9 +1201,9 @@ void saveConfigFile(File selection) {
 // Select file to load custom settings using dropdown in TopNav.pde
 void loadConfigFile(File selection) {
     if (selection == null) {
-        println("SoftwareSettings: loadConfigFile: Window was closed or the user hit cancel.");
+        println("SessionSettings: loadConfigFile: Window was closed or the user hit cancel.");
     } else {
-        println("SoftwareSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
+        println("SessionSettings: loadConfigFile: User selected " + selection.getAbsolutePath());
         //output("You have selected \"" + selection.getAbsolutePath() + "\" to Load custom settings.");
         settings.loadDialogName = selection.getAbsolutePath();
         try {
@@ -1216,7 +1215,7 @@ void loadConfigFile(File selection) {
                     outputSuccess("Settings Loaded!");
                 }
         } catch (Exception e) {
-            println("SoftwareSettings: Incompatible settings file or other error");
+            println("SessionSettings: Incompatible settings file or other error");
             if (settings.chanNumError == true) {
                 outputError("Settings Error:  Channel Number Mismatch Detected");
             } else if (settings.dataSourceError == true) {
