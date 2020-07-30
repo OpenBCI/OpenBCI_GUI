@@ -135,6 +135,10 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
 
         currentSample += numNewSamplesThisFrame;
 
+        if (endOfFileReached()) {
+            stopButtonWasPressed();
+        }
+
         // don't go beyond raw data array size
         currentSample = min(currentSample, data.size() - 1);
     }
@@ -261,6 +265,11 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     @Override
     public int[] getAccelerometerChannels() {
         return new int[]{totalChannels - 4, totalChannels - 3, totalChannels - 2};
+    }
+
+    @Override
+    public boolean endOfFileReached() {
+        return currentSample >= getTotalSamples();
     }
 
     private int parseInt24Hex(String hex) {
