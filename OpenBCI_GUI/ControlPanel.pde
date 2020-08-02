@@ -1050,7 +1050,7 @@ class ControlPanel {
             output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", 
                         "playbackFileSelected",
-                        new File(settings.guiDataPath + "Recordings"));
+                        new File(DirectoryManager.getGuiDataPath() + "Recordings"));
         }
 
 
@@ -1058,7 +1058,7 @@ class ControlPanel {
             output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", 
                         "playbackFileSelected", 
-                        new File(settings.guiDataPath + 
+                        new File(DirectoryManager.getGuiDataPath() + 
                                 "Sample_Data" + System.getProperty("file.separator") + 
                                 "OpenBCI-sampleData-2-meditation.txt"));
         }

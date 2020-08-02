@@ -223,7 +223,6 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-GuiSettings guiSettings;
 SessionSettings settings = new SessionSettings();
 
 //------------------------------------------------------------------------
@@ -355,8 +354,7 @@ void delayedSetup() {
 
     buttonHelpText = new ButtonHelpText();
 
-    
-    guiSettings = new GuiSettings();
+    DirectoryManager.initSampleData();
 
     prepareExitHandler();
 

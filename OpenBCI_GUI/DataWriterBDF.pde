@@ -116,7 +116,7 @@ public class DataWriterBDF {
     private String nbSamplesPerDataRecordEEG[] = new String[nbChan];
     private String reservedEEG[] = new String[nbChan];
 
-    private String tempWriterPrefix = settings.recordingsPath+"temp.txt";
+    private String tempWriterPrefix = DirectoryManager.getRecordingsPath()+"temp.txt";
 
     private int fs_Hz = 250;
     private int accel_Hz = 25;
@@ -610,7 +610,7 @@ public class DataWriterBDF {
       * @returns {String} - A fully qualified name of an output file with `str`.
       */
     private String getFileName(String s) {
-        String output = settings.recordingsPath+"OpenBCI-BDF-";
+        String output = DirectoryManager.getRecordingsPath()+"OpenBCI-BDF-";
         output += s;
         output += ".bdf";
         return output;

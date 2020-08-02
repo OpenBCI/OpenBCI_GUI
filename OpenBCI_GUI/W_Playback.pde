@@ -15,7 +15,7 @@ ControlP5 cp5_playback;
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
 JSONObject loadPlaybackHistoryJSON;
-final String userPlaybackHistoryFile = settings.settingsPath+"UserPlaybackHistory.json";
+final String userPlaybackHistoryFile = DirectoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 boolean playbackHistoryFileExists = false;
 String playbackData_ShortName;
 boolean recentPlaybackFilesHaveUpdated = false;
