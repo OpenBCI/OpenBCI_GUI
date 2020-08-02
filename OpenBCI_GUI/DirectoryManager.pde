@@ -75,7 +75,7 @@ class DirectoryManager {
                 }
             }
         } catch (IOException e) {
-            println("Setup: Error trying to copy Sample Data to Documents directory.");
+            println("OpenBCI_GUI::Setup: Error trying to copy Sample Data to Documents directory.");
         }
     }
 
