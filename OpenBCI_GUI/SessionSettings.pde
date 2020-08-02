@@ -1029,7 +1029,7 @@ class SessionSettings {
       * Output Success message to bottom of GUI when done
       */
     void clearAll() {
-        for (File file: new File(settingsPath).listFiles())
+        for (File file: new File(directoryManager.getSettingsPath()).listFiles())
             if (!file.isDirectory())
                 file.delete();
         controlPanel.recentPlaybackBox.cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
@@ -1044,7 +1044,7 @@ class SessionSettings {
       * @returns {String} - filePath or Error if mode not specified correctly
       */
     String getPath(String _mode, int dataSource, int _nchan) {
-        String filePath = settingsPath;
+        String filePath = directoryManager.getSettingsPath();
         String[] fileNames = new String[7];
         if (_mode.equals("Default")) {
             fileNames = defaultSettingsFiles;
