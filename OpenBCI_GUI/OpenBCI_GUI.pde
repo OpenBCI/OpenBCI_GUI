@@ -165,6 +165,14 @@ final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/f
 public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
 
+//Used mostly in W_playback.pde
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+String userPlaybackHistoryFile;
+boolean playbackHistoryFileExists = false;
+String playbackData_ShortName;
+boolean recentPlaybackFilesHaveUpdated = false;
+
 // Serial output
 Serial serial_output;
 
@@ -223,7 +231,8 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-SoftwareSettings settings = new SoftwareSettings();
+SessionSettings settings;
+DirectoryManager directoryManager;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -282,6 +291,8 @@ void setup() {
             "If this error persists, contact the OpenBCI team for support.";
         return; // early exit
     }
+    
+    directoryManager = new DirectoryManager();
 
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
@@ -289,10 +300,15 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    println("Console Log Started at Local Time: " + DirectoryManager.getFileNameDateTime());
+    println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
+    
+    // Copy sample data to the Users' Documents folder +  create Recordings folder
+    directoryManager.init();
+    settings = new SessionSettings();
+    userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
     //open window
     ourApplet = this;
@@ -354,9 +370,6 @@ void delayedSetup() {
 
     buttonHelpText = new ButtonHelpText();
 
-    // Create GUI data folder in Users' Documents and copy sample data if it doesn't already exist
-    copyGUISampleData();
-
     prepareExitHandler();
 
     synchronized(this) {
@@ -367,44 +380,6 @@ void delayedSetup() {
 
         setupComplete = true; // signal that the setup thread has finished
         println("OpenBCI_GUI::Setup: Setup is complete!");
-    }
-}
-
-public void copyGUISampleData(){
-    String directoryName = settings.guiDataPath + File.separator + "Sample_Data" + File.separator;
-    String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
-    File directory = new File(directoryName);
-    File fileToCheck = new File(fileToCheckString);
-    if (!fileToCheck.exists()){
-        println("OpenBCI_GUI::Setup: Copying sample data to Documents/OpenBCI_GUI/Sample_Data");
-        // Make the entire directory path including parents
-        directory.mkdirs();
-        try {
-            List<File> results = new ArrayList<File>();
-            File[] filesFound = new File(dataPath("EEG_Sample_Data")).listFiles();
-            //If this pathname does not denote a directory, then listFiles() returns null.
-            for (File file : filesFound) {
-                if (file.isFile()) {
-                    results.add(file);
-                }
-            }
-            for(File file : results) {
-                Files.copy(file.toPath(),
-                    (new File(directoryName + file.getName())).toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException e) {
-            outputError("Setup: Error trying to copy Sample Data to Documents directory.");
-        }
-    } else {
-        println("OpenBCI_GUI::Setup: Sample Data exists in Documents folder.");
-    }
-
-    //Create \Documents\OpenBCI_GUI\Recordings\ if it doesn't exist
-    String recordingDirString = settings.guiDataPath + File.separator + "Recordings";
-    File recDirectory = new File(recordingDirString);
-    if (recDirectory.mkdir()) {
-        println("OpenBCI_GUI::Setup: Created \\Documents\\OpenBCI_GUI\\Recordings\\");
     }
 }
 
