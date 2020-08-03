@@ -149,7 +149,8 @@ class W_timeSeries extends Widget {
             tsChanSelect.update(x, y, w);
             numChannelBars = tsChanSelect.activeChan.size();
             channelBarHeight = int((ts_h - chanSelectOffset)/numChannelBars);
-
+            
+            /*
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
                 int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
@@ -160,6 +161,7 @@ class W_timeSeries extends Widget {
                 hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
             }
+            */
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 adsSettingsController.update(); //update channel controller
@@ -240,6 +242,22 @@ class W_timeSeries extends Widget {
         } else {
             int td_h = 18;
             timeDisplay.screenResized(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
+        }
+
+        // offset based on whether channel select is open or not.
+        int chanSelectOffset = 0;
+        if (tsChanSelect.isVisible()) {
+            chanSelectOffset = navHeight;
+        }
+        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
+            channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+        }
+
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
+            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
     }
 
@@ -373,12 +391,14 @@ void Spillover(int n) {
 //one of these will be created for each channel (4, 8, or 16)
 class ChannelBar{
 
+    PApplet pApplet;
     int channelIndex; //duh
     String channelString;
     int x, y, w, h;
     Button_obci onOffButton;
     int onOff_diameter, impButton_diameter;
     Button_obci impCheckButton;
+    ControlP5 cbCp5;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -397,6 +417,11 @@ class ChannelBar{
     boolean drawVoltageValue;
 
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+        
+        pApplet = _parent;
+        cbCp5 = new ControlP5(pApplet);
+        cbCp5.setGraphics(pApplet, x, y);
+        cbCp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
         channelIndex = _channelIndex;
         channelString = str(channelIndex + 1);
@@ -433,6 +458,10 @@ class ChannelBar{
         } else {
             impButton_diameter = 0;
         }
+
+        createButton("increaseYscale", "+", x + w/2 - 11, y + 4, 22, int(h/8));
+        createButton("decreaseYscale", "-", x + w/2 - 11, y + h - int(h/8) - 4, 22, int(h/8));
+
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + 36 + 4 + impButton_diameter, y);
@@ -556,6 +585,8 @@ class ChannelBar{
         //draw onOff Button_obci
         onOffButton.draw();
 
+        cbCp5.draw();
+
         //draw plot
         stroke(31,69,110, 50);
         fill(color(125,30,12,30));
@@ -634,6 +665,13 @@ class ChannelBar{
         w = _w;
         h = _h;
 
+        cbCp5.setGraphics(pApplet, x, y);
+
+        cbCp5.get(Button.class, "increaseYscale").setPosition(x + 11, y + 4);
+        //cbCp5.get(Button.class, "increaseYscale").setSize(22, int(h/8));
+        cbCp5.get(Button.class, "decreaseYscale").setPosition(x + 11, y + h - int(h/8) - 4);
+        //cbCp5.get(Button.class, "decreaseYscale").setSize(22, int(h/8));
+
         if(h > 26) {
             onOff_diameter = 26;
             onOffButton.but_dx = onOff_diameter;
@@ -705,6 +743,21 @@ class ChannelBar{
             }
             impCheckButton.setIsActive(false);
         }
+    }
+
+    void createButton (String bName, String bText, int _x, int _y, int _w, int _h) {
+        cbCp5.addButton(bName)
+                .setPosition(_x, _y)
+                .setSize(_w, _h)
+                .setColorLabel(color(255))
+                .setColorForeground(color(31, 69, 110))
+                .setColorBackground(color(144, 100));
+        cbCp5.getController(bName)
+                .getCaptionLabel()
+                .setFont(createFont("Arial",14,true))
+                .toUpperCase(false)
+                .setSize(14)
+                .setText(bText);
     }
 };
 
